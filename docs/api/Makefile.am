@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
+SUBDIRS = dbus
+
 NULL =
 
 # We require automake 1.6 at least.
@@ -45,7 +47,10 @@ IGNORE_HFILES =						\
 HTML_IMAGES=
 
 # Extra SGML files that are included by $(DOC_MAIN_SGML_FILE).
-content_files = version.xml
+content_files =						\
+	version.xml					\
+	dbus/pk-interface.ref.xml			\
+	$(NULL)
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
 # These files must be listed here *and* in content_files

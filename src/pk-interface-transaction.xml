@@ -1,239 +1,1575 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<node name="/">
+<!DOCTYPE node PUBLIC
+"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" [
+  <!ENTITY ERROR_GENERAL "org.freedesktop.PackageKit.Denied">
+]>
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
   <interface name="org.freedesktop.PackageKit.Transaction">
+    <doc:doc>
+      <doc:description>
+        <doc:para>
+          The root interface is used for interacting with the daemon.
+        </doc:para>
+      </doc:description>
+    </doc:doc>
 
+    <!--*****************************************************************************************-->
     <method name="AcceptEula">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="eula_id" direction="in"/>
-    </method>
-    <method name="Cancel">
-    </method>
-    <method name="GetAllowCancel">
-      <arg type="b" name="allow_cancel" direction="out"/>
-    </method>
-    <method name="GetDepends">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
-      <arg type="b" name="recursive" direction="in"/>
-    </method>
-    <method name="GetDetails">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="package_id" direction="in"/>
-    </method>
-    <method name="GetFiles">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="package_id" direction="in"/>
-    </method>
-    <method name="GetOldTransactions">
-      <arg type="u" name="number" direction="in"/>
-    </method>
-    <method name="GetPackageLast">
-      <arg type="s" name="package" direction="out"/>
-    </method>
-    <method name="GetPackages">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-    </method>
-    <method name="GetProgress">
-      <arg type="u" name="percentage" direction="out"/>
-      <arg type="u" name="subpercentage" direction="out"/>
-      <arg type="u" name="elapsed" direction="out"/>
-      <arg type="u" name="remaining" direction="out"/>
-    </method>
-    <method name="GetRepoList">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-    </method>
-    <method name="GetRequires">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
-      <arg type="b" name="recursive" direction="in"/>
-    </method>
-    <method name="GetRole">
-      <arg type="s" name="status" direction="out"/>
-      <arg type="s" name="package_id" direction="out"/>
-    </method>
-    <method name="GetStatus">
-      <arg type="s" name="status" direction="out"/>
-    </method>
-    <method name="GetUpdateDetail">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="package_id" direction="in"/>
-    </method>
-    <method name="GetUpdates">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-    </method>
-    <method name="InstallFiles">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="b" name="trusted" direction="in"/>
-      <arg type="as" name="full_paths" direction="in"/>
-    </method>
-    <method name="InstallPackages">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="as" name="package_ids" direction="in"/>
-    </method>
-    <method name="InstallSignature">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="sig_type" direction="in"/>
-      <arg type="s" name="key_id" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
-    </method>
-    <method name="IsCallerActive">
-      <arg type="b" name="is_active" direction="out"/>
-    </method>
-    <method name="RefreshCache">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="b" name="force" direction="in"/>
-    </method>
-    <method name="RemovePackages">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="as" name="package_ids" direction="in"/>
-      <arg type="b" name="allow_deps" direction="in"/>
-      <arg type="b" name="autoremove" direction="in"/>
-    </method>
-    <method name="RepoEnable">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="repo_id" direction="in"/>
-      <arg type="b" name="enabled" direction="in"/>
-    </method>
-    <method name="RepoSetData">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="repo_id" direction="in"/>
-      <arg type="s" name="parameter" direction="in"/>
-      <arg type="s" name="value" direction="in"/>
-    </method>
-    <method name="Resolve">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="package" direction="in"/>
-    </method>
-    <method name="Rollback">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="transaction_id" direction="in"/>
-    </method>
-    <method name="SearchDetails">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="search" direction="in"/>
-    </method>
-    <method name="SearchFile">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="search" direction="in"/>
-    </method>
-    <method name="SearchGroup">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="search" direction="in"/>
-    </method>
-    <method name="SearchName">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="search" direction="in"/>
-    </method>
-    <method name="UpdatePackages">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="as" name="package_ids" direction="in"/>
-    </method>
-    <method name="UpdateSystem">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-    </method>
-    <method name="WhatProvides">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="type" direction="in"/>
-      <arg type="s" name="search" direction="in"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="s" name="eula_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
 
+    <!--*****************************************************************************************-->
+    <method name="Cancel">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetAllowCancel">
+      <arg type="b" name="allow_cancel" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetDepends">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="package_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="b" name="recursive" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetDetails">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="package_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetFiles">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="package_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetOldTransactions">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="u" name="number" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetPackageLast">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="package" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetPackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetProgress">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="u" name="percentage" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="subpercentage" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="elapsed" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="remaining" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetRepoList">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetRequires">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="package_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="b" name="recursive" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetRole">
+      <arg type="s" name="status" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="package_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetStatus">
+      <arg type="s" name="status" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetUpdateDetail">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="s" name="package_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetUpdates">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="InstallFiles">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="b" name="trusted" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="as" name="full_paths" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="InstallPackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="as" name="package_ids" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="InstallSignature">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="s" name="sig_type" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="key_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="package_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="IsCallerActive">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="b" name="is_active" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="RefreshCache">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="b" name="force" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="RemovePackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="as" name="package_ids" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="b" name="allow_deps" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="b" name="autoremove" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="RepoEnable">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="s" name="repo_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="b" name="enabled" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="RepoSetData">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="s" name="repo_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="parameter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="value" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="Resolve">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="package" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="Rollback">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="s" name="transaction_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="SearchDetails">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="search" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="SearchFile">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="search" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="SearchGroup">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="search" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="SearchName">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="search" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="UpdatePackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+      <arg type="as" name="package_ids" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="UpdateSystem">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+      </doc:doc>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="WhatProvides">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="filter" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="type" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="search" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
     <signal name="AllowCancel">
-      <arg type="b" name="allow_cancel" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="b" name="allow_cancel" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="CallerActiveChanged">
-      <arg type="b" name="is_active" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="b" name="is_active" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="Details">
-      <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="license" direction="out"/>
-      <arg type="s" name="group" direction="out"/>
-      <arg type="s" name="detail" direction="out"/>
-      <arg type="s" name="url" direction="out"/>
-      <arg type="t" name="size" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="package_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="license" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="group" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="detail" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="url" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="t" name="size" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="ErrorCode">
-      <arg type="s" name="code" direction="out"/>
-      <arg type="s" name="details" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="code" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="details" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="Files">
-      <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="file_list" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="package_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="file_list" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="Finished">
-      <arg type="s" name="status" direction="out"/>
-      <arg type="u" name="runtime" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="status" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="runtime" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="Message">
-      <arg type="s" name="message" direction="out"/>
-      <arg type="s" name="details" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="message" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="details" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="Package">
-      <arg type="s" name="info" direction="out"/>
-      <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="summary" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="info" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="package_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="summary" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="ProgressChanged">
-      <arg type="u" name="percentage" direction="out"/>
-      <arg type="u" name="subpercentage" direction="out"/>
-      <arg type="u" name="elapsed" direction="out"/>
-      <arg type="u" name="remaining" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="u" name="percentage" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="subpercentage" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="elapsed" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="remaining" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="RepoDetail">
-      <arg type="s" name="repo_id" direction="out"/>
-      <arg type="s" name="description" direction="out"/>
-      <arg type="b" name="enabled" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="repo_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="description" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="b" name="enabled" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="RepoSignatureRequired">
-      <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="repository_name" direction="out"/>
-      <arg type="s" name="key_url" direction="out"/>
-      <arg type="s" name="key_userid" direction="out"/>
-      <arg type="s" name="key_id" direction="out"/>
-      <arg type="s" name="key_fingerprint" direction="out"/>
-      <arg type="s" name="key_timestamp" direction="out"/>
-      <arg type="s" name="type" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="package_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="repository_name" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="key_url" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="key_userid" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="key_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="key_fingerprint" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="key_timestamp" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="type" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="EulaRequired">
-      <arg type="s" name="eula_id" direction="out"/>
-      <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="vendor_name" direction="out"/>
-      <arg type="s" name="license_agreement" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="eula_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="package_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="vendor_name" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="license_agreement" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="RequireRestart">
-      <arg type="s" name="type" direction="out"/>
-      <arg type="s" name="details" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="type" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="details" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="StatusChanged">
-      <arg type="s" name="status" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="status" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="Transaction">
-      <arg type="s" name="old_tid" direction="out"/>
-      <arg type="s" name="timespec" direction="out"/>
-      <arg type="b" name="succeeded" direction="out"/>
-      <arg type="s" name="role" direction="out"/>
-      <arg type="u" name="duration" direction="out"/>
-      <arg type="s" name="data" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="old_tid" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="timespec" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="b" name="succeeded" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="role" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="duration" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="data" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="UpdateDetail">
-      <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="updates" direction="out"/>
-      <arg type="s" name="obsoletes" direction="out"/>
-      <arg type="s" name="vendor_url" direction="out"/>
-      <arg type="s" name="bugzilla_url" direction="out"/>
-      <arg type="s" name="cve_url" direction="out"/>
-      <arg type="s" name="restart" direction="out"/>
-      <arg type="s" name="update_text" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            xxx
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="package_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="updates" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="obsoletes" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="vendor_url" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="bugzilla_url" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="cve_url" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="restart" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="update_text" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              xxx
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
 
   </interface>

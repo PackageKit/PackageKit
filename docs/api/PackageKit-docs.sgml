@@ -8,12 +8,34 @@
     <title>PackageKit Reference Manual</title>
     <releaseinfo>
       for PackageKit &version;
-      <!--
-      The latest version of this documentation can be found on-line at
-      <ulink role="online-location" url="http://[SERVER]/PackageKit/index.html">http://[SERVER]/PackageKit/</ulink>.
-      -->
     </releaseinfo>
+    <authorgroup>
+      <author>
+        <firstname>Richard</firstname>
+        <surname>Hughes</surname>
+        <affiliation>
+          <address>
+            <email>richard@hughsie.com</email>
+          </address>
+        </affiliation>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2008</year>
+      <holder>The PackageKit Authors</holder>
+    </copyright>
   </bookinfo>
+
+  <reference id="ref-dbus">
+    <title>D-Bus API Reference</title>
+    <partintro>
+      <para>
+        This part documents the D-Bus interface used to access the PackageKit daemon.
+      </para>
+    </partintro>
+    <xi:include href="dbus/pk-interface.ref.xml"/>
+    <xi:include href="dbus/pk-interface-transaction.ref.xml"/>
+  </reference>
 
   <chapter>
     <title>libpackagekit</title>
