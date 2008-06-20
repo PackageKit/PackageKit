@@ -1211,7 +1211,8 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is sent when the backend decides that the transaction can no longer be
+            cancelled, or is now able to be cancelled.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1219,7 +1220,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              If the backend is in a cancelable state.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1231,7 +1232,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is emitted when the session program that started the transaction exits.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1239,7 +1240,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              If the caller is active, usually FALSE.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1251,7 +1252,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal allows the backend to convey more details about the package.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1259,7 +1260,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The package ID
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1268,7 +1269,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The license, e.g. <literal>GPLv2+</literal> or <literal>proprietary</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1277,7 +1278,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The enumerated package group description
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1286,7 +1287,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The multi-line package description.
+              NOTE: Tabs may have to be stripped from the description to avoid being split.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1295,7 +1297,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The upstream project homepage
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1304,7 +1306,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The size of the package in bytes. This should be the size of the entire package file,
+              not the size of the files installed on the system.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1316,7 +1319,10 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is used to report errors back to the session program.
+          </doc:para>
+          <doc:para>
+            Errors should only be send on fatal abort.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1324,7 +1330,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              Enumerated type, e.g. <literal>no-network</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1333,7 +1339,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              Long description or error, e.g. <literal>failed to connect to mytry.xml</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1345,7 +1351,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is used to push file lists from the backend to the session.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1353,7 +1359,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The Package ID that called the method.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1362,7 +1368,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The file list, with each file seporated with <literal>;</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1374,15 +1380,15 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is used to signal that the transaction has finished.
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="status" direction="out">
+      <arg type="s" name="exit" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The PkExitEnum describing the exit status of the transaction.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1391,7 +1397,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The amount of time in ms that the transaction ran for.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1403,15 +1409,20 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is sent when the backend wants to send a message to the session.
+          </doc:para>
+          <doc:para>
+            This allows the backend to queue up a message to be shown after the transaction has
+            completed.
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="message" direction="out">
+      <arg type="s" name="type" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              One of <literal>warning</literal>, <literal>notice</literal>, or
+              <literal>daemon</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1420,7 +1431,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              Required details about the message, non-localised.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1432,7 +1443,16 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal allows the backend to communicate packages to the session.
+          </doc:para>
+          <doc:para>
+            If updating, as packages are updated then emit them to the screen.
+            This allows a summary to be presented after the transaction.
+          </doc:para>
+          <doc:para>
+            When returning results from a search always return
+            <literal>installed</literal> before <literal>available</literal> for
+            the same package name.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1440,7 +1460,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A valid <literal>info</literal> string enumerated type
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1449,7 +1469,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A valid package ID string with as much data as known
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1458,7 +1478,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The one line package summary, e.g. Clipart for OpenOffice
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1470,7 +1490,12 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal describes the completion of the transaction.
+          </doc:para>
+          <doc:para>
+            This is optional.
+            Backends should send the percentage fields to 101 if the amount complete
+            cannot be calculated.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1478,7 +1503,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The percentage complete of the whole transaction.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1487,7 +1512,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The percentage complete of the individual task, for example, downloading.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1496,7 +1521,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The amount of time in seconds this transaction has been in the
+              running state
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1505,7 +1531,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The amount of time in seconds this transaction will take to
+              complete. Zero is sent for unknown.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1517,7 +1544,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal describes a repository on the system.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1525,7 +1552,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The repository ID.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1534,7 +1561,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A description of the repository.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1543,7 +1570,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              If the repository is enabled and in use.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1555,7 +1582,21 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is emitted when a transaction is not possible due to a missing security
+            certificate.
+          </doc:para>
+          <doc:para>
+            Some backends support repositories which use a cryptographic
+            signature, such as GPG. If a package cannot be installed
+            because it is signed with a key that has not been verified,
+            this signal is generated so the user can choose to accept or
+            decline the key.
+          </doc:para>
+          <doc:para>
+            This signal includes information that can be used to verify
+            that the key should be trusted, such as a URL for the company
+            or person who owns the key, the key's ID, the userid of
+            the key creator, and the date the key was generated.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1563,7 +1604,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A package ID for the package that is trying to be installed
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1572,7 +1613,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The name of the repository associated with the provided key.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1581,7 +1622,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The URL provided with the key.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1590,7 +1631,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The user id associated with the key.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1599,7 +1640,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A unique identifier for the key.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1608,7 +1649,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The hashed fingerprint of the key.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1617,7 +1658,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The date the key was created.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1626,7 +1667,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The type of signature used. <literal>gpg</literal>, for example.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1638,7 +1679,11 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is emitted when a transaction is not possible due to a EULA that needs to
+            be agreed to at install time.
+          </doc:para>
+          <doc:para>
+            Some backends support EULAs, which have to be agreed to before the install can proceed.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1646,7 +1691,10 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The <literal>eula_id</literal> which identifies the EULA - this is provided
+              so that if a specific EULA has previously agreed to a EULA from Acme Corp it is
+              not asked again.
+              An example <literal>eula_id</literal>'s is <literal>vmware5_single_user</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1655,7 +1703,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A package ID for the package that is trying to be installed.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1664,7 +1712,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The vendor that is providing the EULA.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1673,7 +1721,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The full text EULA.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1685,7 +1733,15 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is sent when the session program should notify the user that a restart is
+            required.
+          </doc:para>
+          <doc:para>
+            This is optional, but highly recommended.
+          </doc:para>
+          <doc:para>
+            This can be sent as many times as needed by the backend script.
+            PackageKit will always choose the 'worst' method in the UI notification.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1693,7 +1749,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              One of <literal>system</literal>, <literal>application</literal> or
+              <literal>session</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1702,7 +1759,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              Optional details about the restart
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1714,7 +1771,13 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is sent when the status of the transaction has changed.
+          </doc:para>
+          <doc:para>
+            This is optional, but highly recommended.
+            It gives the GUI tools a chance to show a different icon to show what stage the
+            transaction is in, for instance, a downloading icon can be shown whilst in the
+            <literal>download</literal> state.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1722,7 +1785,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              One of <literal>download</literal>, <literal>install</literal>,
+              <literal>update</literal> or <literal>remove</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1734,7 +1798,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is sent when more details are required about a specific transaction.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1742,7 +1806,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The transaction ID of the old transaction.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1751,7 +1815,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The timespec of the old transaction.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1760,7 +1824,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              If the transaction succeeded.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1769,7 +1833,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The role enumerated type.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1778,7 +1842,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The duration of the transaction in seconds.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1787,7 +1851,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              Any data associated with the transaction.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1799,7 +1863,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal xxx
+            This signal is sent when more details are required about a specific update.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1807,7 +1871,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The package ID
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1816,7 +1880,11 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A list of package_id's that are to be updated, seporated by <literal>^</literal>.
+              This odd delimited was chosen as <literal>\t</literal> is already being used in the
+              spawned backends, and <literal>^</literal> is a banned character in a package_id.
+              This will change in 0.3.x where <literal>updates</literal> will be a proper string
+              array field.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1825,7 +1893,9 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A list of package_id's that are to be obsoleted, seporated by <literal>^</literal>
+              This will change in 0.3.x where <literal>obsoletes</literal> will be a proper string
+              array field.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1834,7 +1904,10 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A URL with more details on the update, e.g. a page with more
+              information on the update.
+              The format of this command should be
+              <literal>http://www.foo.org/page.html?4567;Update to SELinux</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1843,7 +1916,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A bugzilla URL with more details on the update.
+              If no URL is available then this field should be left empty.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1852,7 +1926,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A CVE URL with more details on the security advisory.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1861,7 +1935,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A valid restart type, e.g. <literal>system</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1870,7 +1944,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The update text describing the update in a non-localised way.
+              Newlines should be converted to <literal>;</literal> before printed.
             </doc:para>
           </doc:summary>
         </doc:doc>
