@@ -8,7 +8,7 @@
     <doc:doc>
       <doc:description>
         <doc:para>
-          The root interface is used for interacting with the daemon.
+          The transaction interface is used for interacting with indervidual transactions.
         </doc:para>
       </doc:description>
     </doc:doc>
@@ -19,7 +19,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This allows the user to accept a end user licence agreement.
+            This method allows the user to accept a end user licence agreement.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.accept-eula</doc:permission>
@@ -40,7 +40,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            Cancel a transaction that is already running
+            This method cancels a transaction that is already running
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -72,7 +72,18 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method returns packages that this package depends on.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Status</literal> and
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>available</literal> or <literal>installed</literal>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -80,7 +91,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -89,7 +100,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A single Package ID.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -98,7 +109,11 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              Either <literal>true</literal> or <literal>false</literal>. If yes then the requirements should be
+              returned for all packages returned.
+              This means if gnome-power-manager depends on NetworkManager
+              and NetworkManager depends on HAL, then GetDepends on
+              gnome-power-manager should return both HAL and NetworkManager.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -111,7 +126,15 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method should return all the details about a specific
+            <literal>package_id</literal>.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Status</literal> and
+            <literal>Error</literal> and
+            <literal>Details</literal>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -119,7 +142,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A single Package ID.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -132,7 +155,14 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method should return the file list of the <literal>package_id</literal>.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Status</literal> and
+            <literal>Error</literal> and
+            <literal>Files</literal>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -140,7 +170,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A single Package ID.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -152,7 +182,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method allows a client to view details for old transactions.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -160,7 +190,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The number of past transactions, or 0 for all known transactions.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -172,7 +202,9 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method emits the package that was last emmitted from the daemon.
+            This allows any GUI that is monitoring transactions to accurately reflect the current
+            state of the transaction at startup.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -180,7 +212,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The last package_id.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -193,7 +225,17 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method returns all the packages without a search term.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>available</literal> or <literal>installed</literal>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -201,7 +243,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -213,7 +255,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method gets the progress completion of the daemon.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -221,7 +263,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The percentage complete of the whole transaction.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -230,7 +272,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The percentage complete of the individual task, for example, downloading.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -239,7 +281,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The amount of time elapsed during the transaction.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -248,7 +290,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The estimated remamining time of the transaction, or 0 if not known.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -261,7 +303,10 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method returns the list of repositories used in the system.
+          </doc:para>
+          <doc:para>
+            This method should emit <literal>RepoDetail</literal>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -269,7 +314,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -282,7 +327,20 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method returns packages that depend on this package.
+            This is useful to know, as if <literal>package_id</literal> is being
+            removed, we can warn the user what else would be removed.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Status</literal> and
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>available</literal> or <literal>installed</literal>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -290,7 +348,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -299,7 +357,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A single Package ID.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -308,7 +366,11 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              Either <literal>true</literal> or <literal>false</literal>. If yes then the requirements should be
+              returned for all packages returned.
+              This means if gnome-power-manager depends on NetworkManager
+              and NetworkManager depends on HAL, then GetRequires on
+              HAL should return both gnome-power-manager and NetworkManager.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -317,27 +379,27 @@
 
     <!--*****************************************************************************************-->
     <method name="GetRole">
-      <arg type="s" name="status" direction="out">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method returns the current role of the transaction.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="role" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The PkRoleEnum in text form.
             </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            xxx
-          </doc:para>
-        </doc:description>
-      </doc:doc>
       <arg type="s" name="package_id" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The original package_id that was used to start the transaction.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -346,22 +408,22 @@
 
     <!--*****************************************************************************************-->
     <method name="GetStatus">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method returns the status of the transaction.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
       <arg type="s" name="status" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The PkStatusEnum in string form.
             </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            xxx
-          </doc:para>
-        </doc:description>
-      </doc:doc>
     </method>
 
     <!--*****************************************************************************************-->
@@ -370,7 +432,12 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method returns details about a specific update.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>UpdateDetail</literal> and
+            <literal>Error</literal>
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -378,7 +445,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A single Package ID.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -391,7 +458,41 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method should return a list of packages that are installed and are upgradable.
+            It should only return the newest update for each installed package.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>blocked</literal>,
+            <literal>low</literal>,
+            <literal>normal</literal>,
+            <literal>important</literal> or
+            <literal>security</literal>.
+          </doc:para>
+          <doc:para>
+            The status <literal>blocked</literal> signifies the package cannot be
+            updated, probably due to other dependencies not being met.
+            This type allows the GUI tools to show to the user that an update
+            exists, but cannot be installed.
+            The reason for it not being installed should be put into the update
+            description when doing GetUpdateDetail.
+          </doc:para>
+          <doc:para>
+            A filter such as <literal>basename</literal> or <literal>gui</literal>
+            is also useful if you want to do filtering on the method to only show
+            the main packages rather than the complete list.
+            The complete list is available but specifying <literal>none</literal>
+            as the filter.
+            Using no filter which may be useful in advanced tools or when using
+            libpackagekit and searching for an update of a specific name.
+            Other filter types may be present, but can be safely ignored of the
+            backend does not support them.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -399,7 +500,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -412,7 +513,24 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method installs local package files onto the local system.
+          </doc:para>
+          <doc:para>
+            The installer should always install extra dependant packages automatically.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Status</literal> and
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>downloading</literal>,
+            <literal>updating</literal>,
+            <literal>installing</literal> or
+            <literal>removing</literal>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.localinstall-untrusted</doc:permission>
@@ -421,7 +539,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              If the package is trusted, i.e. if it has a pre-trusted security signature.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -430,7 +548,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              An array of full path and filenames to packages.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -443,7 +561,26 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method installs new packages on the local system.
+          </doc:para>
+          <doc:para>
+            The installer should always install extra packages automatically
+            as the use could call GetDepends prior to the install if a confirmation
+            is required in the UI.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Status</literal> and
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>downloading</literal>,
+            <literal>updating</literal>,
+            <literal>installing</literal> or
+            <literal>removing</literal>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.install</doc:permission>
@@ -452,7 +589,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              An array of package IDs.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -465,7 +602,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method allows us to install new security keys.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.install-signature</doc:permission>
@@ -474,7 +611,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A key type, e.g. <literal>gpg</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -483,7 +620,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A key ID, e.g. <literal>BB7576AC</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -492,7 +629,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A PackageID for the package that the user is trying to install
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -504,7 +641,10 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method allows us to find if the original caller of the method is still connected
+            to the session bus.
+            This is usually an indication that the client can handle it's own error handling and
+            EULA callbacks rather than another program taking over.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -512,7 +652,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              If the client is still connected.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -525,7 +665,18 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method should fetch updated meta-data for all enabled repositories.
+            This operation should be only scheduled when the computer is idle as
+            the network connection will be very active, and will the computer will
+            have have non-trivial levels of hard disk and processor activity.
+            For these reasons, it should not be done automatically when on battery
+            power.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Error</literal> and
+            <literal>Package</literal>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.refresh-cache</doc:permission>
@@ -534,7 +685,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              If the caches should be cleaned and reloaded even if there is valid, up to date data.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -547,7 +698,21 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method removes packages from the local system.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Status</literal> and
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>downloading</literal>,
+            <literal>updating</literal>,
+            <literal>installing</literal> or
+            <literal>removing</literal>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.remove</doc:permission>
@@ -556,7 +721,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              An array of package IDs.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -565,7 +730,10 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              Either <literal>true</literal> or <literal>false</literal>.
+              If <literal>true</literal> allow other packages to be removed with the package,
+              but <literal>false</literal> should cause the script to abort if other packages
+              are dependant on the package.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -574,7 +742,14 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              Either <literal>true</literal> or <literal>false</literal>.
+              This option is only really interesting on embedded devices with a limited amount of
+              flash storage.
+              It suggests to the packagekit backend that dependencies installed at the same time as
+              the package should also be removed if they are not required by anything else.
+              For instance, if you install OpenOffice, it might download libneon as a dependency.
+              When <literal>auto_remove</literal> is set to true, and you remove OpenOffice then
+              libneon will also get removed automatically.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -587,7 +762,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method enables the repository specified.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.repo-change</doc:permission>
@@ -596,7 +771,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A repository identifier, e.g. <literal>fedora-development-debuginfo</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -605,7 +780,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              <literal>true</literal> if enabled, <literal>false</literal> if disabled.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -618,7 +793,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method allows arbitary data to be passed to the repository handler.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.repo-change</doc:permission>
@@ -627,7 +802,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A repository identifier, e.g. <literal>fedora-development-debuginfo</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -636,7 +811,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The backend specific value, e.g. <literal>set-download-url</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -645,7 +820,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The backend specific value, e.g. <literal>http://foo.bar.org/baz</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -658,7 +833,17 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method turns a single package name into a package_id suitable for the
+            other methods.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>available</literal> or <literal>installed</literal>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -666,7 +851,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -675,7 +860,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A single package name, e.g. <literal>scribus-clipart</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -688,7 +873,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method rolls back the package database to a previous transaction.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.rollback</doc:permission>
@@ -697,7 +882,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A valid transaction ID.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -710,15 +895,30 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method allows deeper searching than SearchName().
           </doc:para>
-        </doc:description>
+          <doc:para>
+            Do not refresh the package cache. This should be fast.
+            This is very similar to search-name.
+            This should search as much data as possible, including, if possible
+            repo names, package summaries, descriptions and URLs.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>available</literal> or <literal>installed</literal>.
+          </doc:para>        </doc:description>
       </doc:doc>
       <arg type="s" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -727,7 +927,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A single word search term with no wildcard chars.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -740,15 +940,29 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method searches for files on the local system and files in available packages.
           </doc:para>
-        </doc:description>
+          <doc:para>
+            This should search for files.
+            This should allow an application to find out what package owns
+            a file on the system.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>available</literal> or <literal>installed</literal>.
+          </doc:para>        </doc:description>
       </doc:doc>
       <arg type="s" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -757,7 +971,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A single local path on the system
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -770,7 +984,20 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method returns packages from a given group enumerated type.
+          </doc:para>
+          <doc:para>
+            Do not refresh the package cache. This should be fast.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>available</literal> or <literal>installed</literal>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -778,7 +1005,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -787,7 +1014,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              An enumerated group_type, or <literal>unknown</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -800,7 +1027,42 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method searches the package database by package name.
+          </doc:para>
+          <doc:para>
+            Do not refresh the package cache. This should be fast.
+          </doc:para>
+          <doc:para>
+            Try to emit <literal>installed</literal> before
+            <literal>available</literal> packages first, as it allows the client
+            program to perform the GUI filtering and matching whilst the daemon is
+            running the transaction.
+          </doc:para>
+          <doc:para>
+            If the backend includes <literal>installed</literal> and
+            <literal>available</literal> versions of the same package when searching
+            then the <literal>available</literal> version will have to be filtered
+            in the backend.
+          </doc:para>
+          <doc:para>
+            The search query in the backend should not be case sensitive, and
+            should not be sensitive to <literal>_</literal> or <literal>-</literal>.
+          </doc:para>
+          <doc:para>
+            The search methods should return all results in all repositories.
+            This may mean that multiple versions of package are returned.
+            If this is not what is wanted by the client program, then the
+            <literal>newest</literal> filter should be used.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>available</literal> or <literal>installed</literal>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -808,7 +1070,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -817,7 +1079,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A single word search term with no wildcard chars
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -830,7 +1092,20 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method updates existing packages on the local system.
+          </doc:para>
+          <doc:para>
+            The installer should always update extra packages automatically to fulfil dependencies.
+          </doc:para>
+          <doc:para>
+            This should allow an application to find out what package owns a file on the system.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Status</literal> and
+            <literal>Error</literal> and
+            <literal>Package</literal>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.update-package</doc:permission>
@@ -839,7 +1114,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              An array of package IDs.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -852,9 +1127,28 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method updates all packages on the system to thier newest versions.
+          </doc:para>
+          <doc:para>
+            The installer should update all the updateable packages on the system,
+            including automatically installing any new packages that are needed for
+            dependancies.
           </doc:para>
         </doc:description>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Error</literal> and
+            <literal>RequireRestart</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>downloading</literal>,
+            <literal>updating</literal>,
+            <literal>installing</literal> or
+            <literal>removing</literal>.
+          </doc:para>
         <doc:permission>Callers need the org.freedesktop.packagekit.update-system</doc:permission>
       </doc:doc>
     </method>
@@ -865,7 +1159,20 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This method returns packages that provide the supplied attributes.
+            This method is useful for finding out what package(s) provide a modalias
+            or GStreamer codec string.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>Progress</literal>,
+            <literal>Status</literal> and
+            <literal>Error</literal> and
+            <literal>Package</literal>.
+          </doc:para>
+          <doc:para>
+            <literal>Package</literal> enumerated types should be
+            <literal>available</literal> or <literal>installed</literal>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -873,7 +1180,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -882,7 +1189,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A PkProvideType, e.g. <literal>PK_PROVIDES_ENUM_CODEC</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -891,7 +1198,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              The data to send to the backend to get the packages.
+              Note: This is backend specific.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -903,7 +1211,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -923,7 +1231,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -943,7 +1251,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1008,7 +1316,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1037,7 +1345,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1066,7 +1374,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1095,7 +1403,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1124,7 +1432,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1162,7 +1470,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1209,7 +1517,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1247,7 +1555,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1330,7 +1638,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1377,7 +1685,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1406,7 +1714,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1426,7 +1734,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1491,7 +1799,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This signal xxx
           </doc:para>
         </doc:description>
       </doc:doc>
