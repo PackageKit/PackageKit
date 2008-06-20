@@ -50,6 +50,7 @@ HTML_IMAGES=
 content_files =						\
 	version.xml					\
 	dbus/pk-interface.ref.xml			\
+	dbus/pk-interface-transaction.ref.xml		\
 	$(NULL)
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
