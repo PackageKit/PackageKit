@@ -16,9 +16,7 @@ SPEC_XML_FILES =			\
 	pk-developer-faq.xml		\
 	pk-concepts.xml			\
 	pk-introduction.xml		\
-	pk-methods.xml			\
 	pk-reference.xml		\
-	pk-signals.xml			\
 	pk-reference.xml		\
 	pk-introduction.xml
 

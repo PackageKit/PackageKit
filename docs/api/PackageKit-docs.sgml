@@ -38,16 +38,21 @@
   </reference>
 
   <chapter>
-    <title>libpackagekit</title>
+    <title>libpackagekit GObjects</title>
     <xi:include href="xml/pk-connection.xml"/>
     <xi:include href="xml/pk-extra.xml"/>
     <xi:include href="xml/pk-client.xml"/>
     <xi:include href="xml/pk-package-list.xml"/>
     <xi:include href="xml/pk-control.xml"/>
     <xi:include href="xml/pk-task-list.xml"/>
+  </chapter>
+
+  <chapter>
+    <title>libpackagekit glib helpers</title>
     <xi:include href="xml/pk-debug.xml"/>
     <xi:include href="xml/pk-common.xml"/>
     <xi:include href="xml/pk-enum.xml"/>
     <xi:include href="xml/pk-package-id.xml"/>
   </chapter>
 </book>
+
