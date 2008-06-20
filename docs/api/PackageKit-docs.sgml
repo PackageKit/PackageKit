@@ -26,7 +26,28 @@
     </copyright>
   </bookinfo>
 
-  <reference id="ref-dbus">
+  <reference id="specification">
+    <title>PackageKit Specification</title>
+    <partintro>
+      <para>
+        PackageKit is a D-Bus abstraction layer that allows the session user
+        to manage packages in a secure way using a cross-distro, cross-architecture API.
+        PackageKit is built using a lightweight backend architecture.
+        PackageKit is product and vendor neutral and is currently being developed by a small team
+        of developers.
+      </para>
+      <para>
+        This part documents core features of PackageKit.
+      </para>
+    </partintro>
+    <xi:include href="spec/pk-introduction.xml"/>
+    <xi:include href="spec/pk-concepts.xml"/>
+    <xi:include href="spec/pk-backend-compiled.xml"/>
+    <xi:include href="spec/pk-backend-dbus.xml"/>
+    <xi:include href="spec/pk-backend-spawn.xml"/>
+  </reference>
+
+  <reference id="api-reference">
     <title>D-Bus API Reference</title>
     <partintro>
       <para>
@@ -37,22 +58,43 @@
     <xi:include href="dbus/pk-interface-transaction.ref.xml"/>
   </reference>
 
-  <chapter>
+  <reference id="libpackagekit-gobject">
     <title>libpackagekit GObjects</title>
+    <partintro>
+      <para>
+        This part documents GObjects used in libpackagekit.
+      </para>
+    </partintro>
     <xi:include href="xml/pk-connection.xml"/>
     <xi:include href="xml/pk-extra.xml"/>
     <xi:include href="xml/pk-client.xml"/>
     <xi:include href="xml/pk-package-list.xml"/>
     <xi:include href="xml/pk-control.xml"/>
     <xi:include href="xml/pk-task-list.xml"/>
-  </chapter>
+  </reference>
 
-  <chapter>
+  <reference id="libpackagekit-helpers">
     <title>libpackagekit glib helpers</title>
+    <partintro>
+      <para>
+        This part documents helper funtions in libpackagekit.
+      </para>
+    </partintro>
     <xi:include href="xml/pk-debug.xml"/>
     <xi:include href="xml/pk-common.xml"/>
     <xi:include href="xml/pk-enum.xml"/>
     <xi:include href="xml/pk-package-id.xml"/>
-  </chapter>
+  </reference>
+
+  <reference id="faq">
+    <title>Frequently asked questions</title>
+    <partintro>
+      <para>
+        This part has answers to developer frequently asked questions.
+      </para>
+    </partintro>
+    <xi:include href="spec/pk-developer-faq.xml"/>
+  </reference>
+
 </book>
 

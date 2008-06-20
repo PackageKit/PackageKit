@@ -459,7 +459,6 @@ man/Makefile
 docs/Makefile
 docs/html/Makefile
 docs/html/img/Makefile
-docs/spec/Makefile
 docs/api/Makefile
 docs/api/dbus/Makefile
 docs/api/version.xml
