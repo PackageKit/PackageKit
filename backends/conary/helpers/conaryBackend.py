@@ -541,7 +541,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             categories = self._get_metadata(id, 'categories') or "unknown"
 
             # Package size goes here, but I don't know how to find that for conary packages.
-            self.details(shortDesc, id, categories, longDesc, url, 0)
+            self.details(id, None,  categories, longDesc, url, 0)
         else:
             self.error(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
 

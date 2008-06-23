@@ -309,6 +309,33 @@ pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
 }
 
 /**
+ * pk_package_list_remove:
+ **/
+gboolean
+pk_package_list_remove (PkPackageList *plist, const gchar *package_id)
+{
+	PkPackageItem *item;
+	guint i;
+	guint length;
+	gboolean ret = FALSE;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	length = plist->priv->array->len;
+	for (i=0; i<length; i++) {
+		item = g_ptr_array_index (plist->priv->array, i);
+		ret = pk_package_id_equal (item->package_id, package_id);
+		if (ret) {
+			pk_package_item_free (item);
+			g_ptr_array_remove_index (plist->priv->array, i);
+			break;
+		}
+	}
+	return ret;
+}
+
+/**
  * pk_package_list_contains_item:
  **/
 gboolean

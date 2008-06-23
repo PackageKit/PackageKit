@@ -113,8 +113,6 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.a
 
-install -m644 docs/spec/pk-structure.png $RPM_BUILD_ROOT%{_datadir}/doc/packagekit/
-
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/yumDBUSBackend.py
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
 
@@ -136,10 +134,6 @@ update-mime-database %{_datadir}/mime
 %files -f %{name}.lang
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING 
-%dir %{_datadir}/doc/packagekit
-%doc %{_datadir}/doc/packagekit/pk-reference.html
-%doc %{_datadir}/doc/packagekit/pk-structure.png
-
 %dir %{_datadir}/PackageKit
 %dir %{_datadir}/PackageKit/helpers
 %dir %{_sysconfdir}/PackageKit

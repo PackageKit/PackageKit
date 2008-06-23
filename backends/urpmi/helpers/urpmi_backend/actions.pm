@@ -16,9 +16,9 @@ use perl_packagekit::prints;
 use Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
-  perform_installation 
-  perform_file_search 
-  perform_requires_search
+perform_installation 
+perform_file_search 
+perform_requires_search
 );
 
 sub perform_installation {
@@ -111,11 +111,11 @@ sub perform_installation {
     if ($subtype eq 'start') {
       if ($type eq 'trans') {
         print "Preparing packages installation ...\n";
-	pk_print_status(PK_STATUS_ENUM_INSTALL);
+        pk_print_status(PK_STATUS_ENUM_INSTALL);
       } 
       elsif (defined $pkg) {
         printf("Installing package %s ...\n", $pkg->name);
-	pk_print_package(INFO_INSTALLING, get_package_id($pkg), $pkg->summary);
+        pk_print_package(INFO_INSTALLING, get_package_id($pkg), $pkg->summary);
       }
     } 
     elsif ($subtype eq 'progress') {
@@ -157,7 +157,7 @@ sub perform_installation {
       completed => sub {
         undef $lock;
         undef $rpm_lock;
-	pk_print_status(PK_STATUS_ENUM_FINISHED);
+        pk_print_status(PK_STATUS_ENUM_FINISHED);
       },
       post_download => sub {
         # Fix me !

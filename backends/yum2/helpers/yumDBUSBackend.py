@@ -452,7 +452,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     if group == key:
                         if self._do_extra_filtering(pkg, fltlist):
                             package_list.append((pkg,INFO_INSTALLED))
-                    installed_nevra.append(self._get_nevra(pkg))                        
+                    installed_nevra.append(self._get_nevra(pkg))
 
             if not FILTER_INSTALLED in fltlist:
                 # Check available for group
@@ -1576,8 +1576,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         desc = desc.replace('\n',' ')
         desc = desc.replace('__PARAGRAPH_SEPARATOR__','\n')
 
-        self._show_details(id, pkg.license, "unknown", desc, pkg.url,
-                             pkg.size)
+        # this takes oodles of time
+        pkgGroupDict = self._buildGroupDict()
+        group = GROUP_OTHER
+        if pkgGroupDict.has_key(pkg.name):
+            cg = pkgGroupDict[pkg.name]
+            if groupMap.has_key(cg):
+                # use PK group name
+                group = groupMap[cg]
+
+        self._show_details(id, pkg.license, group, desc, pkg.url, pkg.size)
 
     def _getEVR(self,idver):
         '''
@@ -1731,10 +1739,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.require_restart(RESTART_SYSTEM,"")
                 break
 
+    def _truncate(text,length,etc='...'):
+        if len(text) < length:
+            return text
+        else:
+            return text[:length] + etc
+
     def _format_msgs(self,msgs):
         if isinstance(msgs,basestring):
              msgs = msgs.split('\n')
         text = ";".join(msgs)
+        text = self._truncate(text, 1024);
         text = text.replace("Missing Dependency: ","")
         text = text.replace(" (installed)","")
         return text

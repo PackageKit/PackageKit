@@ -56,6 +56,74 @@
         </para>
       </listitem>
     </itemizedlist>
+    <informaltable>
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>Situation</entry>
+            <entry>Value</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>Searching</entry>
+            <entry><literal>installed</literal></entry>
+            <entry>If installed</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>available</literal></entry>
+            <entry>If available to install</entry>
+          </row>
+          <row>
+            <entry>Getting Updates</entry>
+            <entry><literal>low</literal></entry>
+            <entry>If update is of low severity</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>normal</literal></entry>
+            <entry>If update is of normal severity</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>important</literal></entry>
+            <entry>If update is very important</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>security</literal></entry>
+            <entry>If the update is security sensitive</entry>
+          </row>
+          <row>
+            <entry>Installing/Updating/Removing</entry>
+            <entry><literal>downloading</literal></entry>
+            <entry>If we are downloading this package</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>updating</literal></entry>
+            <entry>If we are updating this package</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>installing</literal></entry>
+            <entry>If we are installing this package</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>removing</literal></entry>
+            <entry>If we are removing this package</entry>
+          </row>
+          <row>
+            <entry>Otherwise</entry>
+            <entry><literal>unknown</literal></entry>
+            <entry>If we cannot use any other option</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
     <para>
       The backend must ensure that the package_id only matches on one
       single package.

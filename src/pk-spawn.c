@@ -99,12 +99,11 @@ pk_spawn_read_fd_into_buffer (gint fd, GString *string)
  * pk_spawn_emit_whole_lines:
  **/
 static gboolean
-pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
+pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 {
 	guint i;
 	guint size;
 	gchar **lines;
-	gchar *message;
 	guint bytes_processed;
 
 	/* ITS4: ignore, GString is always NULL terminated */
@@ -124,14 +123,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 	bytes_processed = 0;
 	/* we only emit n-1 strings */
 	for (i=0; i<(size-1); i++) {
-		message = g_locale_to_utf8 (lines[i], -1, NULL, NULL, NULL);
-		if (message == NULL) {
-			pk_warning ("cannot covert line to UTF8: %s", lines[i]);
-		} else if (is_stdout) {
-			pk_debug ("emitting stdout %s", message);
-			g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, message);
-		}
-		g_free (message);
+		g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, lines[i]);
 		/* ITS4: ignore, g_strsplit always NULL terminates */
 		bytes_processed += strlen (lines[i]) + 1;
 	}
@@ -157,7 +149,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	}
 
 	pk_spawn_read_fd_into_buffer (spawn->priv->stdout_fd, spawn->priv->stdout_buf);
-	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf, TRUE);
+	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf);
 
 	/* check if the child exited */
 	if (waitpid (spawn->priv->child_pid, &status, WNOHANG) != spawn->priv->child_pid)

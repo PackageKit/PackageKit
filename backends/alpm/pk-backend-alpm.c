@@ -67,7 +67,7 @@ package_source_free (PackageSource *source)
 }
 
 gchar *
-pkg_to_package_id_str (pmpkg_t *pkg, gchar *repo)
+pkg_to_package_id_str (pmpkg_t *pkg, const gchar *repo)
 {
 	gchar *arch = (gchar *) alpm_pkg_get_arch (pkg);
 	if (arch == NULL)
@@ -83,7 +83,7 @@ pkg_from_package_id_str (const gchar *package_id_str)
 
 	/* do all this fancy stuff */
 	pmdb_t *repo = NULL;
-	if (strcmp ("installed", pkg_id->data) == 0)
+	if (strcmp (ALPM_LOCAL_DB_ALIAS, pkg_id->data) == 0)
 		repo = alpm_option_get_localdb ();
 	else {
 		alpm_list_t *iterator;
@@ -117,11 +117,15 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 
 	switch (event) {
 		case PM_TRANS_EVT_REMOVE_START:
+			pk_backend_set_allow_cancel (backend_instance, FALSE);
+
 			package_id_str = pkg_to_package_id_str (data1, ALPM_LOCAL_DB_ALIAS);
 			pk_backend_package (backend_instance, PK_INFO_ENUM_REMOVING, package_id_str, alpm_pkg_get_desc (data1));
 			g_free (package_id_str);
 			break;
 		case PM_TRANS_EVT_ADD_START:
+			pk_backend_set_allow_cancel (backend_instance, FALSE);
+
 			pk_backend_set_status (backend_instance, PK_STATUS_ENUM_INSTALL);
 			package_id_needle = pkg_to_package_id_str (data1, "");
 			pk_debug ("needle is %s", package_id_needle);
@@ -876,12 +880,88 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * backend_get_cancel:
+ **/
+static void
+backend_get_cancel (PkBackend *backend)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
+}
+
+/**
+ * backend_get_depends:
+ */
+static void
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_allow_cancel (backend, FALSE);
+
+	pmpkg_t *pkg = pkg_from_package_id_str (package_id);
+	if (pkg == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
+		pk_backend_finished (backend);
+		return;
+	}
+
+	pk_debug ("alpm: filters is: %i", filters);
+
+	alpm_list_t *iterator;
+	for (iterator = alpm_pkg_get_depends (pkg); iterator; iterator = alpm_list_next (iterator)) {
+		pmdepend_t *dep = alpm_list_getdata (iterator);
+		pmpkg_t *dep_pkg;
+		gboolean found = FALSE;
+
+		if (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+			/* search in sync dbs */
+			alpm_list_t *db_iterator;
+			for (db_iterator = alpm_option_get_syncdbs (); found == FALSE && db_iterator; db_iterator = alpm_list_next (db_iterator)) {
+				pmdb_t *syncdb = alpm_list_getdata (db_iterator);
+
+				pk_debug ("alpm: searching for %s in %s", alpm_dep_get_name (dep), alpm_db_get_name (syncdb));
+
+				dep_pkg = alpm_db_get_pkg (syncdb, alpm_dep_get_name (dep));
+				if (dep_pkg && alpm_depcmp (dep_pkg, dep)) {
+					found = TRUE;
+					gchar *dep_package_id_str = pkg_to_package_id_str (dep_pkg, alpm_db_get_name (syncdb));
+					pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, dep_package_id_str, alpm_pkg_get_desc (dep_pkg));
+					g_free (dep_package_id_str);
+				}
+			}
+		}
+
+		if (!pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+			pk_debug ("alpm: searching for %s in local db", alpm_dep_get_name (dep));
+
+			/* search in local db */
+			dep_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), alpm_dep_get_name (dep));
+			if (dep_pkg && alpm_depcmp (dep_pkg, dep)) {
+				found = TRUE;
+				gchar *dep_package_id_str = pkg_to_package_id_str (dep_pkg, ALPM_LOCAL_DB_ALIAS);
+				pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, dep_package_id_str, alpm_pkg_get_desc (dep_pkg));
+				g_free (dep_package_id_str);
+			}
+		}
+
+		if (found == FALSE) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
+			pk_backend_finished (backend);
+			return;
+		}
+	}
+
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_get_details:
  */
 static void
 backend_get_details (PkBackend *backend, const gchar *package_id)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_allow_cancel (backend, FALSE);
+
 	pmpkg_t *pkg = pkg_from_package_id_str (package_id);
 	if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
@@ -905,6 +985,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 	gchar *licenses = g_string_free (licenses_str, FALSE);
 
 	pk_backend_details (backend, package_id, licenses, PK_GROUP_ENUM_OTHER, alpm_pkg_get_desc (pkg), alpm_pkg_get_url(pkg), alpm_pkg_get_size (pkg));
+	g_free (licenses);
 	pk_backend_finished (backend);
 }
 
@@ -915,6 +996,8 @@ static void
 backend_get_files (PkBackend *backend, const gchar *package_id)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_allow_cancel (backend, FALSE);
+
 	pmpkg_t *pkg = pkg_from_package_id_str (package_id);
 	if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
@@ -986,10 +1069,61 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 
 	// Iterate on repository list
 	alpm_list_t *iterator;
-	for (iterator = repos; iterator; iterator = alpm_list_next(iterator)) {
+	for (iterator = repos; iterator; iterator = alpm_list_next (iterator)) {
 		pmdb_t *db = alpm_list_getdata (repos);
 		pk_backend_repo_detail (backend, alpm_db_get_name (db), alpm_db_get_name (db), TRUE);
 		repos = alpm_list_next (repos);
+	}
+
+	pk_backend_finished (backend);
+}
+
+static void
+backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_allow_cancel (backend, FALSE);
+
+	// TODO: add changelog code here
+	PkPackageId *pk_package_id = pk_package_id_new_from_string (package_id);
+
+	pmpkg_t *obsolete_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), pk_package_id->name);
+
+	gchar *obsolete_package_id = obsolete_pkg ? pkg_to_package_id_str (obsolete_pkg, ALPM_LOCAL_DB_ALIAS) : NULL;
+	pk_backend_update_detail (backend, package_id, obsolete_package_id, "", "", "", "", PK_RESTART_ENUM_NONE,
+		obsolete_pkg ? "Update to latest available version" : "Install as a dependency for another update");
+	g_free (obsolete_package_id);
+
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_get_updates:
+ */
+static void
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_allow_cancel (backend, FALSE);
+
+	// iterate through list installed packages to find update for each
+	alpm_list_t *iterator;
+	for (iterator = alpm_db_getpkgcache (alpm_option_get_localdb ()); iterator; iterator = alpm_list_next (iterator)) {
+		pmpkg_t *pkg = alpm_list_getdata (iterator);
+
+		alpm_list_t *db_iterator;
+		for (db_iterator = alpm_option_get_syncdbs (); db_iterator; db_iterator = alpm_list_next (db_iterator)) {
+			pmdb_t *db = alpm_list_getdata (db_iterator);
+			pmpkg_t *repo_pkg = alpm_db_get_pkg (db, alpm_pkg_get_name (pkg));
+
+			if (repo_pkg != NULL && alpm_pkg_vercmp (alpm_pkg_get_version (pkg), alpm_pkg_get_version (repo_pkg)) < 0) {
+				gchar *package_id_str = pkg_to_package_id_str (repo_pkg, alpm_db_get_name (db));
+				pk_backend_package (backend, PK_INFO_ENUM_NORMAL, package_id_str, alpm_pkg_get_desc (repo_pkg));
+				g_free (package_id_str);
+
+				break;
+			}
+		}
 	}
 
 	pk_backend_finished (backend);
@@ -1412,15 +1546,15 @@ PK_BACKEND_OPTIONS (
 		backend_destroy,				/* destroy */
 		backend_get_groups,				/* get_groups */
 		backend_get_filters,				/* get_filters */
-		NULL,						/* cancel */
-		NULL,						/* get_depends */
+		backend_get_cancel,				/* cancel */
+		backend_get_depends,				/* get_depends */
 		backend_get_details,				/* get_details */
 		backend_get_files,				/* get_files */
 		backend_get_packages,				/* get_packages */
 		backend_get_repo_list,				/* get_repo_list */
 		NULL,						/* get_requires */
-		NULL,						/* get_update_detail */
-		NULL,						/* get_updates */
+		backend_get_update_detail,			/* get_update_detail */
+		backend_get_updates,				/* get_updates */
 		backend_install_files,				/* install_files */
 		backend_install_packages,			/* install_packages */
 		NULL,						/* install_signature */

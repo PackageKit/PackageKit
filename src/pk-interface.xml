@@ -1,58 +1,355 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<node name="/">
+<!DOCTYPE node PUBLIC
+"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" [
+  <!ENTITY ERROR_GENERAL "org.freedesktop.packagekit.Denied">
+]>
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
   <interface name="org.freedesktop.PackageKit">
+    <doc:doc>
+      <doc:description>
+        <doc:para>
+          The root interface is used for interacting with the daemon.
+        </doc:para>
+      </doc:description>
+    </doc:doc>
 
+    <!--*****************************************************************************************-->
     <method name="GetActions">
-      <arg type="s" name="actions" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets a list of all the actions that are supported by the backend.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="actions" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A list of actions, e.g. <literal>search-name;get-updates;update-system</literal>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetBackendDetail">
-      <arg type="s" name="name" direction="out"/>
-      <arg type="s" name="author" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets any details about the backend being used by PackageKit
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="name" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The name of the backend, e.g. yum
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="author" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The author of the backend, e.g. <literal>Richard Hughes &lt;richard@hughsie.com&gt;</literal>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetFilters">
-      <arg type="s" name="filters" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets the list of filters that the backend supports
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="filters" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The list of filters as a string, e.g. <literal>installed;devel</literal>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetGroups">
-      <arg type="s" name="groups" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets the groups that are supported
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="groups" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The group list, e.g. <literal>accesories;games;system</literal>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetTid">
-      <arg type="s" name="tid" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets a new transaction ID from the daemon
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="tid" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The tid, e.g. <literal>45_dafeca_checkpoint32</literal>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetTimeSinceAction">
-      <arg type="s" name="role" direction="in"/>
-      <arg type="u" name="seconds" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method allows us to query how long since an action has successfully completed.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="role" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The role, e.g. <literal>update-system</literal>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="seconds" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The amount of time in seconds
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetTransactionList">
-      <arg type="as" name="transactions" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets the transaction list of any transactions that are in progress
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="as" name="transactions" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A list of transaction ID's
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
+
+    <!--*****************************************************************************************-->
     <method name="StateHasChanged">
-      <arg type="s" name="reason" direction="in"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method suggests to PackageKit that the package backend state may have changed.
+            This allows plugins to the native package manager to suggest that PackageKit drops
+            it's caches.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="reason" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The reason of the state change, FIXME
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
+
+    <!--*****************************************************************************************-->
     <method name="SuggestDaemonQuit">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Suggests to the daemon that it should quit as soon as possible, for instance if a native
+            package management tool is waiting to be used.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
     </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetNetworkState">
-      <arg type="s" name="state" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets the network state from the daemon. This is provided as some clients may not want
+            to use NetworkManager if the system daemon is configured to use something else.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="state" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The network state, e.g. FIXME
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
+
+    <!--*****************************************************************************************-->
     <method name="SetProxy">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="proxy_http" direction="in"/>
-      <arg type="s" name="proxy_ftp" direction="in"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Sets the proxy used by the dameon.
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.packagekit.set-proxy</doc:permission>
+      </doc:doc>
+      <arg type="s" name="proxy_http" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The HTTP proxy, e.g. FIXME
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="proxy_ftp" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The FTP proxy, e.g. FIXME
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
 
+
+    <!--*****************************************************************************************-->
     <signal name="TransactionListChanged">
-      <arg type="as" name="transactions" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The transaction list has changed, because either a transaction has finished or a new
+            transaction created.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="as" name="transactions" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A list of transaction ID's.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="Locked">
-      <arg type="b" name="is_locked" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is emitted when the backend is locked and native tools would fail.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="b" name="is_locked" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              If we have locked the package backend.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="NetworkStateChanged">
-      <arg type="s" name="state" direction="out"/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is emitted when the network state has changed
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="state" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The new network state
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="RestartSchedule">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            A system restart has been sceduled
+          </doc:para>
+        </doc:description>
+      </doc:doc>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="RepoListChanged">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is emitted when the repository list has changed
+          </doc:para>
+        </doc:description>
+      </doc:doc>
     </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="UpdatesChanged">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is emitted when the number of updates has changed
+          </doc:para>
+        </doc:description>
+      </doc:doc>
     </signal>
 
   </interface>

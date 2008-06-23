@@ -109,6 +109,11 @@ AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
 dnl ---------------------------------------------------------------------------
+dnl - xsltproc
+dnl ---------------------------------------------------------------------------
+AC_PATH_PROG([XSLTPROC], [xsltproc])
+
+dnl ---------------------------------------------------------------------------
 dnl - Is GIO available?
 dnl ---------------------------------------------------------------------------
 PKG_CHECK_MODULES(GIO, gio-2.0 >= $GIO_REQUIRED, PK_BUILD_GIO="yes", PK_BUILD_GIO="no")
@@ -454,8 +459,8 @@ man/Makefile
 docs/Makefile
 docs/html/Makefile
 docs/html/img/Makefile
-docs/spec/Makefile
 docs/api/Makefile
+docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
 contrib/udev/Makefile

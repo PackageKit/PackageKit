@@ -336,11 +336,31 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # basename filter if specified
         if FILTER_BASENAME in fltlist:
-            for (pkg,status) in self._basename_filter(package_list):
-                self._show_package(pkg,status)
-        else:
-            for (pkg,status) in package_list:
-                self._show_package(pkg,status)
+            package_list = self._basename_filter(package_list)
+
+        # newest filter
+        if FILTER_NEWEST in fltlist:
+            package_list = self._do_newest_filtering(package_list)
+
+        self._show_package_list(package_list)
+
+    def _show_package_list(self,lst):
+        for (pkg,status) in lst:
+            self._show_package(pkg,status)
+
+    def _do_newest_filtering(self,pkglist):
+        '''
+        Only return the newest package for each name.arch
+        '''
+        newest = {}
+        for pkg,state in pkglist:
+            key = (pkg.name, pkg.arch)
+            if key in newest and pkg <= newest[key][0]:
+                continue
+            newest[key] = (pkg,state)
+        return newest.values()
+
+
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
@@ -503,11 +523,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # basename filter if specified
         if FILTER_BASENAME in fltlist:
-            for (pkg,status) in self._basename_filter(package_list):
-                self._show_package(pkg,status)
-        else:
-            for (pkg,status) in package_list:
-                self._show_package(pkg,status)
+            package_list = self._basename_filter(package_list)
+
+        # newest filter
+        if FILTER_NEWEST in fltlist:
+            package_list = self._do_newest_filtering(package_list)
+
+        self._show_package_list(package_list)
 
     @handle_repo_error
     def get_packages(self,filters):
@@ -539,11 +561,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # basename filter if specified
         if FILTER_BASENAME in fltlist:
-            for (pkg,status) in self._basename_filter(package_list):
-                self._show_package(pkg,status)
-        else:
-            for (pkg,status) in package_list:
-                self._show_package(pkg,status)
+            package_list = self._basename_filter(package_list)
+
+        # newest filter
+        if FILTER_NEWEST in fltlist:
+            package_list = self._do_newest_filtering(package_list)
+
+        self._show_package_list(package_list)
 
     @handle_repo_error
     def search_file(self,filters,key):
@@ -1012,7 +1036,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
             except yum.Errors.InstallError,e:
                 self.error(ERROR_LOCAL_INSTALL_FAILED,str(e))
-                
+
     def _check_local_file(self, pkg):
         """
         Duplicates some of the checks that yumbase.installLocal would
@@ -1074,10 +1098,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.require_restart(RESTART_SYSTEM,"")
                 break
 
+    def _truncate(self, text,length,etc='...'):
+        if len(text) < length:
+            return text
+        else:
+            return text[:length] + etc
+
     def _format_msgs(self,msgs):
         if isinstance(msgs,basestring):
              msgs = msgs.split('\n')
         text = ";".join(msgs)
+        text = self._truncate(text, 1024);
         text = text.replace("Missing Dependency: ","")
         text = text.replace(" (installed)","")
         return text
@@ -1184,8 +1215,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         desc = desc.replace('\n\n',';')
         desc = desc.replace('\n',' ')
 
-        self.details(id,pkg.license,"unknown",desc,pkg.url,
-                         pkg.size)
+        # this takes oodles of time
+        pkgGroupDict = self._buildGroupDict()
+        group = GROUP_OTHER
+        if pkgGroupDict.has_key(pkg.name):
+            cg = pkgGroupDict[pkg.name]
+            if groupMap.has_key(cg):
+                # use PK group name
+                group = groupMap[cg]
+
+        self.details(id,pkg.license,group,desc,pkg.url,pkg.size)
 
     def get_files(self,package):
         self._check_init()

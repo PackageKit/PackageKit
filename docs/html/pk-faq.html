@@ -184,7 +184,7 @@ The daemon lets you schedule transactions using either the raw
 <a href="http://gitweb.freedesktop.org/?p=packagekit.git;a=blob;f=src/pk-interface-transaction.xml">
 DBUS methods</a>, or using <a href="http://www.packagekit.org/gtk-doc/PkClient.html">libpackagekit</a>.
 The transactions are very fine grained, so an application would have to manage
-<a href="http://www.packagekit.org/pk-reference.html#introduction-ideas-transactions">
+<a href="http://www.packagekit.org/gtk-doc/introduction-ideas-transactions.html">
 the transaction process</a> itself.
 This would mean handling the EULA and GPG callbacks in each application. This is less than ideal.
 </p>
@@ -218,7 +218,7 @@ applet then you can use an alternate interface provided by your desktop.
 Using this shared session service you can use the following DBUS methods
 to make PackageKit just do the right thing.
 All the additional
-<a href="http://www.packagekit.org/pk-reference.html#introduction-ideas-transactions">
+<a href="http://www.packagekit.org/gtk-doc/introduction-ideas-transactions.html">
 confirmation, package downloads, GPG and EULA prompting is done automatically.</a>
 </p>
 <p>
@@ -278,6 +278,7 @@ The methods available on this interface are:
 <li><code>InstallProvideFile("/usr/share/fonts/sarai/Sarai_07.ttf")</code></li>
 <li><code>InstallLocalFile("/home/dave/Desktop/lirc-0.6.6-4.rhfc1.dag.i686.rpm")</code></li>
 <li><code>InstallMimeType("application/x-rpm")</code></li>
+<li><code>InstallFont("lang(en_GB)")</code></li>
 </ul>
 <p>
 Please email me or the
