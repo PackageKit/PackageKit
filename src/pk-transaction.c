@@ -457,7 +457,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-		packages = pk_package_list_get_string (transaction->priv->package_list);
+		packages = pk_package_list_to_string (transaction->priv->package_list);
 		if (pk_strzero (packages) == FALSE) {
 			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
 		}

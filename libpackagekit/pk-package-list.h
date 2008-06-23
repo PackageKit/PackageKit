@@ -67,7 +67,9 @@ gboolean	 pk_package_list_remove			(PkPackageList		*plist,
 							 const gchar		*package_id);
 gboolean	 pk_package_list_contains_item		(PkPackageList		*plist,
 							 PkPackageItem		*item);
-gchar		*pk_package_list_get_string		(PkPackageList		*plist)
+gchar		*pk_package_list_to_string		(PkPackageList		*plist)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		**pk_package_list_to_argv		(PkPackageList		*plist)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_package_list_get_size		(PkPackageList		*plist);
 gboolean	 pk_package_list_sort			(PkPackageList		*plist);

@@ -134,10 +134,10 @@ pk_package_list_add_list (PkPackageList *plist, PkPackageList *list)
 }
 
 /**
- * pk_package_list_get_string:
+ * pk_package_list_to_string:
  **/
 gchar *
-pk_package_list_get_string (PkPackageList *plist)
+pk_package_list_to_string (PkPackageList *plist)
 {
 	PkPackageItem *item;
 	guint i;
@@ -161,6 +161,32 @@ pk_package_list_get_string (PkPackageList *plist)
 	}
 
 	return g_string_free (package_cache, FALSE);
+}
+
+/**
+ * pk_package_list_to_argv:
+ **/
+gchar **
+pk_package_list_to_argv (PkPackageList *plist)
+{
+	PkPackageItem *item;
+	GPtrArray *array;
+	gchar **package_ids;
+	guint length;
+	guint i;
+
+	array = g_ptr_array_new ();
+	length = plist->priv->array->len;
+	for (i=0; i<length; i++) {
+		item = g_ptr_array_index (plist->priv->array, i);
+		g_ptr_array_add (array, item->package_id);
+	}
+
+	/* convert to argv */
+	package_ids = pk_ptr_array_to_argv (array);
+	g_ptr_array_free (array, TRUE);
+
+	return package_ids;
 }
 
 /**
@@ -485,7 +511,7 @@ libst_package_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add entry");
-	text = pk_package_list_get_string (plist);
+	text = pk_package_list_to_string (plist);
 	if (pk_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!")) {
 		libst_success (test, NULL);
 	} else {
