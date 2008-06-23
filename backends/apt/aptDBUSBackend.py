@@ -602,7 +602,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         installed package will be returned.
         '''
         origin = ''
-        if installed == False and pkg.isInstalled:
+        if installed == True and pkg.isInstalled:
             pkgver = pkg.installedVersion
         else:
             pkgver = pkg.candidateVersion
