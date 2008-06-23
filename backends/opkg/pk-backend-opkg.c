@@ -556,7 +556,7 @@ backend_update_package_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	gint err = 0;
-	const gchar *package_id;
+	gchar **package_ids;
 
 	package_id = pk_backend_get_string (backend, "pkgid");
 	pi = pk_package_id_new_from_string (package_id);
@@ -655,7 +655,7 @@ static gboolean
 backend_get_details_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
-	const gchar *package_id;
+	gchar **package_ids;
 	int group_index;
 	PkGroupEnum group = 0;
 	opkg_package_t *pkg;
@@ -699,7 +699,7 @@ backend_get_details_thread (PkBackend *backend)
 }
 
 static void
-backend_get_details (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_thread_create (backend, backend_get_details_thread);

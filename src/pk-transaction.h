@@ -105,14 +105,14 @@ gboolean	 pk_transaction_get_allow_cancel	(PkTransaction	*transaction,
 							 GError		**error);
 void		 pk_transaction_get_depends		(PkTransaction	*transaction,
 							 const gchar	*filter,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_details		(PkTransaction	*transaction,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_files		(PkTransaction	*transaction,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_old_transactions	(PkTransaction	*transaction,
 							 guint		 number,
@@ -134,7 +134,7 @@ void		 pk_transaction_get_repo_list		(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_requires		(PkTransaction	*transaction,
 							 const gchar	*filter,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_role		(PkTransaction	*transaction,
@@ -145,7 +145,7 @@ gboolean	 pk_transaction_get_status		(PkTransaction	*transaction,
 							 const gchar	**status,
 							 GError		**error);
 void		 pk_transaction_get_update_detail	(PkTransaction	*transaction,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_updates		(PkTransaction	*transaction,
 							 const gchar	*filter,
@@ -184,7 +184,7 @@ void		 pk_transaction_repo_set_data		(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_resolve			(PkTransaction	*transaction,
 							 const gchar	*filter,
-							 const gchar	*package,
+							 gchar		**packages,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_rollback		(PkTransaction	*transaction,
 							 const gchar	*transaction_id,

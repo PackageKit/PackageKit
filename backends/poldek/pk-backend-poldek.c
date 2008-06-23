@@ -1834,7 +1834,7 @@ backend_get_depends_thread (PkBackend *backend)
 	struct pkg	*pkg;
 	tn_array	*deppkgs, *available, *installed;
 	gint		i;
-	const gchar *package_id;
+	gchar **package_ids;
 
 	pb_load_packages (backend);
 
@@ -1867,7 +1867,7 @@ backend_get_depends_thread (PkBackend *backend)
 }
 
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -1882,7 +1882,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 static gboolean
 backend_get_details_thread (PkBackend *backend)
 {
-	const gchar *package_id;
+	gchar **package_ids;
 	struct pkg	*pkg = NULL;
 
 	package_id = pk_backend_get_string (backend, "package_id");
@@ -1926,7 +1926,7 @@ backend_get_details_thread (PkBackend *backend)
 }
 
 static void
-backend_get_details (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -1941,7 +1941,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 static gboolean
 backend_get_files_thread (PkBackend *backend)
 {
-	const gchar *package_id;
+	gchar **package_ids;
 	struct pkg	*pkg;
 
 	package_id = pk_backend_get_string (backend, "package_id");
@@ -1999,7 +1999,7 @@ backend_get_files_thread (PkBackend *backend)
 }
 
 static void
-backend_get_files (PkBackend *backend, const gchar *package_id)
+backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2031,7 +2031,7 @@ backend_get_requires_thread (PkBackend *backend)
 	struct pkg	*pkg;
 	tn_array	*reqpkgs, *available, *installed;
 	gint		i;
-	const gchar *package_id;
+	gchar **package_ids;
 
 	pb_load_packages (backend);
 
@@ -2062,7 +2062,7 @@ backend_get_requires_thread (PkBackend *backend)
 }
 
 static void
-backend_get_requires (PkBackend	*backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend	*backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2115,7 +2115,7 @@ static gboolean
 backend_get_update_detail_thread (PkBackend *backend)
 {
 	PkPackageId	*pi;
-	const gchar *package_id;
+	gchar **package_ids;
 	struct poclidek_rcmd	*rcmd;
 	gchar		*command;
 
@@ -2207,7 +2207,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 }
 
 static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2487,7 +2487,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);

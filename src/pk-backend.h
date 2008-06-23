@@ -191,22 +191,22 @@ typedef struct {
 	void		(*cancel)			(PkBackend	*backend);
 	void		(*get_depends)			(PkBackend	*backend,
 							 PkFilterEnum	 filters,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive);
-	void		(*get_details)		(PkBackend	*backend,
-							 const gchar	*package_id);
+	void		(*get_details)			(PkBackend	*backend,
+							 gchar		**package_ids);
 	void		(*get_files)			(PkBackend	*backend,
-							 const gchar	*package_id);
+							 gchar		**package_ids);
 	void		(*get_packages)			(PkBackend	*backend,
 							 PkFilterEnum	 filters);
 	void		(*get_repo_list)		(PkBackend	*backend,
 							 PkFilterEnum	 filters);
 	void		(*get_requires)			(PkBackend	*backend,
 							 PkFilterEnum	 filters,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive);
 	void		(*get_update_detail)		(PkBackend	*backend,
-							 const gchar	*package_id);
+							 gchar		**package_ids);
 	void		(*get_updates)			(PkBackend	*backend,
 							 PkFilterEnum	 filters);
 	void		(*install_files)		(PkBackend	*backend,
@@ -233,7 +233,7 @@ typedef struct {
 							 const gchar	*value);
 	void		(*resolve)			(PkBackend	*backend,
 							 PkFilterEnum	 filters,
-							 const gchar	*package);
+							 gchar		**packages);
 	void		(*rollback)			(PkBackend	*backend,
 							 const gchar	*transaction_id);
 	void		(*search_details)		(PkBackend	*backend,

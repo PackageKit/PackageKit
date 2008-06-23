@@ -140,12 +140,12 @@ class PackageKitBaseBackend:
         print >> sys.stdout,"details\t%s\t%s\t%s\t%s\t%s\t%ld" % (id,license,group,desc,url,bytes)
         sys.stdout.flush()
 
-    def files(self, id, file_list):
+    def files(self,id,file_list):
         '''
         Send 'files' signal
         @param file_list: List of the files in the package, separated by ';'
         '''
-        print >> sys.stdout,"files\t%s\t%s" % (id, file_list)
+        print >> sys.stdout,"files\t%s\t%s" % (id,file_list)
         sys.stdout.flush()
 
     def update_detail(self,id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text):
@@ -208,7 +208,7 @@ class PackageKitBaseBackend:
         ''' split up a package id name;ver;arch;data into a tuple
             containing (name,ver,arch,data)
         '''
-        return tuple(id.split(';', 4))
+        return tuple(id.split(';',4))
 
     def check_license_field(self,license_field):
         '''
@@ -304,14 +304,14 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_update_detail(self,package):
+    def get_update_detail(self,package_ids_ids):
         '''
         Implement the {backend}-get-update-detail functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_depends(self,filters,package,recursive):
+    def get_depends(self,filters,package_ids,recursive):
         '''
         Implement the {backend}-get-depends functionality
         Needed to be implemented in a sub class
@@ -325,7 +325,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_requires(self,filters,package,recursive):
+    def get_requires(self,filters,package_ids,recursive):
         '''
         Implement the {backend}-get-requires functionality
         Needed to be implemented in a sub class
@@ -353,14 +353,14 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def install_packages(self, packages):
+    def install_packages(self,package_ids):
         '''
         Implement the {backend}-install functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def install_files (self, trusted, inst_files):
+    def install_files (self,trusted,inst_files):
         '''
         Implement the {backend}-install_files functionality
         Install the package containing the inst_file file
@@ -368,7 +368,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def service_pack (self, location):
+    def service_pack (self,location):
         '''
         Implement the {backend}-service-pack functionality
         Update the computer from a service pack in location
@@ -376,40 +376,40 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def resolve(self, name):
+    def resolve(self,name):
         '''
         Implement the {backend}-resolve functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def remove_packages(self, allowdep, packages):
+    def remove_packages(self,allowdep,package_ids):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def update_packages(self, package):
+    def update_packages(self,package):
         '''
         Implement the {backend}-update functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_details(self, package):
+    def get_details(self,package):
         '''
         Implement the {backend}-get-details functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_files(self, package):
+    def get_files(self,package):
         '''
         Implement the {backend}-get-files functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def get_updates(self,filter):
         '''
@@ -418,21 +418,21 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def repo_enable(self, repoid, enable):
+    def repo_enable(self,repoid,enable):
         '''
         Implement the {backend}-repo-enable functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def repo_set_data(self, repoid, parameter, value):
+    def repo_set_data(self,repoid,parameter,value):
         '''
         Implement the {backend}-repo-set-data functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_repo_list(self, filters):
+    def get_repo_list(self,filters):
         '''
         Implement the {backend}-get-repo-list functionality
         Needed to be implemented in a sub class
@@ -540,7 +540,7 @@ class PackagekitProgress:
         self.percent = startpct + incr
 
 
-def exceptionHandler(typ, value, tb, base):
+def exceptionHandler(typ,value,tb,base):
     # Restore original exception handler
     sys.excepthook = sys.__excepthook__
     # Call backend custom Traceback handler
@@ -549,13 +549,13 @@ def exceptionHandler(typ, value, tb, base):
         errmsg = 'Error Type: %s;' % str(typ)
         errmsg += 'Error Value: %s;' % str(value)
         for tub in etb:
-            f,l,m,c = tub # file,lineno, function, codeline
-            errmsg += '  File : %s , line %s, in %s;' % (f,str(l),m)
+            f,l,m,c = tub # file,lineno,function,codeline
+            errmsg += '  File : %s, line %s, in %s;' % (f,str(l),m)
             errmsg += '    %s;' % c
         # send the traceback to PackageKit
         base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
 
 
 def installExceptionHandler(base):
-    sys.excepthook = lambda typ, value, tb: exceptionHandler(typ, value, tb,base)
+    sys.excepthook = lambda typ,value,tb: exceptionHandler(typ,value,tb,base)
 

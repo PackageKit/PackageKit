@@ -1426,19 +1426,22 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_depends (PkClient *client, PkFilterEnum filters, const gchar *package_id, gboolean recursive, GError **error)
+pk_client_get_depends (PkClient *client, PkFilterEnum filters, gchar **package_ids, gboolean recursive, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
+	gchar *package_ids_temp;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
-	/* check the PackageID here to avoid a round trip if invalid */
-	ret = pk_package_id_check (package_id);
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
-				     "package_id '%s' is not valid", package_id);
+				     "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		return FALSE;
 	}
 
@@ -1451,7 +1454,7 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, const gchar *pack
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
 	client->priv->cached_filters = filters;
-	client->priv->cached_package_id = g_strdup (package_id);
+	client->priv->cached_package_ids = g_strdupv (package_ids);
 	client->priv->cached_force = recursive;
 
 	/* check to see if we have a valid proxy */
@@ -1462,7 +1465,7 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, const gchar *pack
 	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", error,
 				 G_TYPE_STRING, filter_text,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
@@ -1543,19 +1546,22 @@ pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_requires (PkClient *client, PkFilterEnum filters, const gchar *package_id, gboolean recursive, GError **error)
+pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_ids, gboolean recursive, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
+	gchar *package_ids_temp;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
-	/* check the PackageID here to avoid a round trip if invalid */
-	ret = pk_package_id_check (package_id);
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
-				     "package_id '%s' is not valid", package_id);
+				     "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		return FALSE;
 	}
 
@@ -1568,7 +1574,7 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, const gchar *pac
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
 	client->priv->cached_filters = filters;
-	client->priv->cached_package_id = g_strdup (package_id);
+	client->priv->cached_package_ids = g_strdupv (package_ids);
 	client->priv->cached_force = recursive;
 
 	/* check to see if we have a valid proxy */
@@ -1579,7 +1585,7 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, const gchar *pac
 	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", error,
 				 G_TYPE_STRING, filter_text,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
@@ -1673,18 +1679,21 @@ pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum 
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_update_detail (PkClient *client, const gchar *package_id, GError **error)
+pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **error)
 {
 	gboolean ret;
+	gchar *package_ids_temp;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
-	/* check the PackageID here to avoid a round trip if invalid */
-	ret = pk_package_id_check (package_id);
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
-				     "package_id '%s' is not valid", package_id);
+				     "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		return FALSE;
 	}
 
@@ -1696,7 +1705,7 @@ pk_client_get_update_detail (PkClient *client, const gchar *package_id, GError *
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
-	client->priv->cached_package_id = g_strdup (package_id);
+	client->priv->cached_package_ids = g_strdupv (package_ids);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -1704,7 +1713,7 @@ pk_client_get_update_detail (PkClient *client, const gchar *package_id, GError *
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdateDetail", error,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
@@ -1782,13 +1791,13 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_resolve (PkClient *client, PkFilterEnum filters, const gchar *package, GError **error)
+pk_client_resolve (PkClient *client, PkFilterEnum filters, gchar **packages, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package != NULL, FALSE);
+	g_return_val_if_fail (packages != NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1799,7 +1808,7 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, const gchar *package,
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_RESOLVE;
 	client->priv->cached_filters = filters;
-	client->priv->cached_package_id = g_strdup (package);
+	client->priv->cached_package_ids = g_strdupv (packages);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -1809,7 +1818,7 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, const gchar *package,
 	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", error,
 				 G_TYPE_STRING, filter_text,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRV, packages,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
 	if (ret && !client->priv->is_finished) {
@@ -1837,18 +1846,21 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, const gchar *package,
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_details (PkClient *client, const gchar *package_id, GError **error)
+pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 {
 	gboolean ret;
+	gchar *package_ids_temp;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
-	/* check the PackageID here to avoid a round trip if invalid */
-	ret = pk_package_id_check (package_id);
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
-				     "package_id '%s' is not valid", package_id);
+				     "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		return FALSE;
 	}
 
@@ -1860,7 +1872,7 @@ pk_client_get_details (PkClient *client, const gchar *package_id, GError **error
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DETAILS;
-	client->priv->cached_package_id = g_strdup (package_id);
+	client->priv->cached_package_ids = g_strdupv (package_ids);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -1868,7 +1880,7 @@ pk_client_get_details (PkClient *client, const gchar *package_id, GError **error
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDetails", error,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
@@ -1894,18 +1906,21 @@ pk_client_get_details (PkClient *client, const gchar *package_id, GError **error
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
+pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 {
 	gboolean ret;
+	gchar *package_ids_temp;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
-	/* check the PackageID here to avoid a round trip if invalid */
-	ret = pk_package_id_check (package_id);
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
-				     "package_id '%s' is not valid", package_id);
+				     "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		return FALSE;
 	}
 
@@ -1917,7 +1932,7 @@ pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_FILES;
-	client->priv->cached_package_id = g_strdup (package_id);
+	client->priv->cached_package_ids = g_strdupv (package_ids);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -1925,7 +1940,7 @@ pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetFiles", error,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
@@ -2419,103 +2434,6 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 		}
 	}
 
-	return ret;
-}
-
-/**
- * pk_client_update_package:
- * @client: a valid #PkClient instance
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
- * @error: a %GError to put the error code and message in, or %NULL
- *
- * Update a specific package to the newest available version.
- *
- * Return value: %TRUE if the daemon queued the transaction
- **/
-gboolean
-pk_client_update_package (PkClient *client, const gchar *package_id, GError **error)
-{
-	gchar **package_ids;
-	gboolean ret;
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
-
-	package_ids = g_strsplit (package_id, "|", 1);
-	ret = pk_client_update_packages (client, package_ids, error);
-	g_strfreev (package_ids);
-	return ret;
-}
-
-/**
- * pk_client_install_package:
- * @client: a valid #PkClient instance
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
- * @error: a %GError to put the error code and message in, or %NULL
- *
- * Install a specific package.
- *
- * Return value: %TRUE if the daemon queued the transaction
- **/
-gboolean
-pk_client_install_package (PkClient *client, const gchar *package_id, GError **error)
-{
-	gchar **package_ids;
-	gboolean ret;
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
-
-	package_ids = g_strsplit (package_id, "|", 1);
-	ret = pk_client_install_packages (client, package_ids, error);
-	g_strfreev (package_ids);
-	return ret;
-}
-
-/**
- * pk_client_install_file:
- * @client: a valid #PkClient instance
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
- * @error: a %GError to put the error code and message in, or %NULL
- *
- * Install a specific package.
- *
- * Return value: %TRUE if the daemon queued the transaction
- **/
-gboolean
-pk_client_install_file (PkClient *client, gboolean trusted, const gchar *file_rel, GError **error)
-{
-	gchar **files_rel;
-	gboolean ret;
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (file_rel != NULL, FALSE);
-
-	files_rel = g_strsplit (file_rel, "|", 1);
-	ret = pk_client_install_files (client, trusted, files_rel, error);
-	g_strfreev (files_rel);
-	return ret;
-}
-
-/**
- * pk_client_remove_package:
- * @client: a valid #PkClient instance
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
- * @error: a %GError to put the error code and message in, or %NULL
- *
- * Remove a specific package.
- *
- * Return value: %TRUE if the daemon queued the transaction
- **/
-gboolean
-pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean allow_deps,
-			  gboolean autoremove, GError **error)
-{
-	gchar **package_ids;
-	gboolean ret;
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
-
-	package_ids = g_strsplit (package_id, "|", 1);
-	ret = pk_client_remove_packages (client, package_ids, allow_deps, autoremove, error);
-	g_strfreev (package_ids);
 	return ret;
 }
 
@@ -3075,19 +2993,19 @@ pk_client_requeue (PkClient *client, GError **error)
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		ret = pk_client_get_depends (client, priv->cached_filters, priv->cached_package_id, priv->cached_force, error);
+		ret = pk_client_get_depends (client, priv->cached_filters, priv->cached_package_ids, priv->cached_force, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
-		ret = pk_client_get_update_detail (client, priv->cached_package_id, error);
+		ret = pk_client_get_update_detail (client, priv->cached_package_ids, error);
 	} else if (priv->role == PK_ROLE_ENUM_RESOLVE) {
-		ret = pk_client_resolve (client, priv->cached_filters, priv->cached_package_id, error);
+		ret = pk_client_resolve (client, priv->cached_filters, priv->cached_package_ids, error);
 	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
 		ret = pk_client_rollback (client, priv->cached_transaction_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_DETAILS) {
-		ret = pk_client_get_details (client, priv->cached_package_id, error);
+		ret = pk_client_get_details (client, priv->cached_package_ids, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
-		ret = pk_client_get_files (client, priv->cached_package_id, error);
+		ret = pk_client_get_files (client, priv->cached_package_ids, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		ret = pk_client_get_requires (client, priv->cached_filters, priv->cached_package_id, priv->cached_force, error);
+		ret = pk_client_get_requires (client, priv->cached_filters, priv->cached_package_ids, priv->cached_force, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
 		ret = pk_client_get_updates (client, priv->cached_filters, error);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {

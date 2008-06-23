@@ -104,7 +104,7 @@ backend_cancel (PkBackend *backend)
  * backend_get_details:
  */
 static void
-backend_get_details (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_spawn_helper (spawn, "get-details.py", package_id, NULL);
 }
@@ -113,7 +113,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
  * backend_get_files:
  */
 static void
-backend_get_files (PkBackend *backend, const gchar *package_id)
+backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_spawn_helper (spawn, "get-files.py", package_id, NULL);
 }
@@ -134,7 +134,7 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
  * backend_get_update_detail:
  */
 static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_spawn_helper (spawn, "get-update-detail.py", package_id, NULL);
 }
@@ -252,7 +252,7 @@ backend_update_system (PkBackend *backend)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_enums_to_text (filters);

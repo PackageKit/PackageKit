@@ -96,11 +96,11 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="package_id" direction="in">
+      <arg type="as" name="package_ids" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A single Package ID.
+              An array of package IDs.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -138,11 +138,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="package_id" direction="in">
+      <arg type="as" name="package_ids" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A single Package ID.
+              An array of package IDs.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -166,11 +166,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="package_id" direction="in">
+      <arg type="as" name="package_ids" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A single Package ID.
+              An array of package IDs.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -353,11 +353,11 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="package_id" direction="in">
+      <arg type="as" name="package_ids" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A single Package ID.
+              An array of package IDs.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -441,11 +441,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="package_id" direction="in">
+      <arg type="as" name="package_ids" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A single Package ID.
+              An array of package IDs.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -856,11 +856,11 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="package" direction="in">
+      <arg type="as" name="package" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A single package name, e.g. <literal>scribus-clipart</literal>.
+              An array of package names, e.g. <literal>scribus-clipart</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>

@@ -76,7 +76,7 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_finished (backend);
 }
@@ -85,7 +85,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
  * backend_get_details:
  */
 static void
-backend_get_details (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }
@@ -94,7 +94,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
  * backend_get_details:
  */
 static void
-backend_get_files (PkBackend *backend, const gchar *package_id)
+backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }
@@ -103,7 +103,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_finished (backend);
 }
@@ -112,7 +112,7 @@ backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *pac
  * backend_get_update_detail:
  */
 static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }
@@ -176,7 +176,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }

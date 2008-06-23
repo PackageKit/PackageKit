@@ -117,7 +117,7 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
@@ -131,7 +131,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
  * backend_get_details:
  */
 static void
-backend_get_details (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_details (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
@@ -150,7 +150,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
  * backend_get_files:
  */
 static void
-backend_get_files (PkBackend *backend, const gchar *package_id)
+backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_files (backend, "gnome-power-manager;2.6.19;i386;fedora",
@@ -161,7 +161,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
@@ -217,10 +217,10 @@ backend_get_update_detail_timeout (gpointer data)
  * backend_get_update_detail:
  */
 static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	_package_id = package_id;
+	_package_id = package_ids[0];
 	_signal_timeout = g_timeout_add (500, backend_get_update_detail_timeout, backend);
 }
 
@@ -434,14 +434,14 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	if (pk_strequal (package, "vips-doc")) {
+	if (pk_strequal (packages[0], "vips-doc")) {
 		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 				    "vips-doc;7.12.4-2.fc8;noarch;linva",
 				    "The vips documentation package.");
-	} else if (pk_strequal (package, "glib2")) {
+	} else if (pk_strequal (packages[0], "glib2")) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 				    "glib2;2.14.0;i386;fedora", "The GLib library");
 	}

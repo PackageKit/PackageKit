@@ -32,6 +32,7 @@
 #include <dbus/dbus-glib.h>
 
 #include <pk-debug.h>
+#include <pk-package-ids.h>
 #include <pk-client.h>
 #include <pk-control.h>
 #include <pk-package-id.h>
@@ -487,6 +488,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	guint length;
 	PkPackageItem *item;
 	PkPackageList *list;
+	gchar **packages;
 
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package);
@@ -501,7 +503,9 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	}
 
 	/* we need to resolve it */
-	ret = pk_client_resolve (client_task, filter, package, error);
+	packages = pk_package_ids_from_id (package);
+	ret = pk_client_resolve (client_task, filter, packages, error);
+	g_strfreev (packages);
 	if (ret == FALSE) {
 		pk_warning ("Resolve is not supported in this backend");
 		return NULL;
@@ -719,8 +723,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	gboolean ret = TRUE;
 	PkPackageItem *item;
 	PkPackageId *ident;
-	guint i, j;
-	guint size;
+	guint i;
 	guint length;
 	gboolean remove;
 	GPtrArray *array;
@@ -758,32 +761,24 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 		goto out;
 	}
 
-	/* get the requires packages for each package_id */
-	length = g_strv_length (package_ids);
-	for (i=0; i<length; i++) {
-		ret = pk_client_reset (client_task, error);
-		if (!ret) {
-			pk_warning ("failed to reset");
-			break;
-		}
-
-		pk_debug ("Getting installed requires for %s", package_ids[i]);
-		/* see if any packages require this one */
-		ret = pk_client_get_requires (client_task, PK_FILTER_ENUM_INSTALLED, package_ids[i], TRUE, error);
-		if (!ret) {
-			pk_warning ("failed to get requires");
-			break;
-		}
-
-		/* see how many packages there are */
-		list_single = pk_client_get_package_list (client_task);
-		size = pk_package_list_get_size (list_single);
-		for (j=0; j<size; j++) {
-			item = pk_package_list_get_item (list_single, j);
-			pk_package_list_add_item (list, item);
-		}
-		g_object_unref (list_single);
+	ret = pk_client_reset (client_task, error);
+	if (!ret) {
+		pk_warning ("failed to reset");
+		goto out;
 	}
+
+	pk_debug ("Getting installed requires for %s", package_ids[0]);
+	/* see if any packages require this one */
+	ret = pk_client_get_requires (client_task, PK_FILTER_ENUM_INSTALLED, package_ids, TRUE, error);
+	if (!ret) {
+		pk_warning ("failed to get requires");
+		goto out;
+	}
+
+	/* see how many packages there are */
+	list_single = pk_client_get_package_list (client_task);
+	pk_package_list_add_list (list, list_single);
+	g_object_unref (list_single);
 
 	/* one of the get-requires failed */
 	if (!ret) {
@@ -839,12 +834,17 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 {
 	gboolean ret;
 	gchar *package_id;
+	gchar **package_ids;
+
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
 	if (package_id == NULL) {
 		g_print ("%s\n", _("Could not find a package with that name to update"));
 		return FALSE;
 	}
-	ret = pk_client_update_package (client, package_id, error);
+
+	package_ids = pk_package_ids_from_id (package_id);
+	ret = pk_client_update_packages (client, package_ids, error);
+	g_strfreev (package_ids);
 	g_free (package_id);
 	return ret;
 }
@@ -857,12 +857,15 @@ pk_console_get_requires (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
+	gchar **package_ids;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
 		g_print ("%s\n", _("Could not find what packages require this package"));
 		return FALSE;
 	}
-	ret = pk_client_get_requires (client, PK_FILTER_ENUM_NONE, package_id, TRUE, error);
+	package_ids = pk_package_ids_from_id (package_id);
+	ret = pk_client_get_requires (client, PK_FILTER_ENUM_NONE, package_ids, TRUE, error);
+	g_strfreev (package_ids);
 	g_free (package_id);
 	return ret;
 }
@@ -875,12 +878,15 @@ pk_console_get_depends (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
+	gchar **package_ids;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
 		g_print ("%s\n", _("Could not get dependencies for this package"));
 		return FALSE;
 	}
-	ret = pk_client_get_depends (client, PK_FILTER_ENUM_NONE, package_id, FALSE, error);
+	package_ids = pk_package_ids_from_id (package_id);
+	ret = pk_client_get_depends (client, PK_FILTER_ENUM_NONE, package_ids, FALSE, error);
+	g_strfreev (package_ids);
 	g_free (package_id);
 	return ret;
 }
@@ -893,12 +899,15 @@ pk_console_get_details (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
+	gchar **package_ids;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
 		g_print ("%s\n", _("Could not find details for this package"));
 		return FALSE;
 	}
-	ret = pk_client_get_details (client, package_id, error);
+	package_ids = pk_package_ids_from_id (package_id);
+	ret = pk_client_get_details (client, package_ids, error);
+	g_strfreev (package_ids);
 	g_free (package_id);
 	return ret;
 }
@@ -911,12 +920,15 @@ pk_console_get_files (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
+	gchar **package_ids;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
 		g_print (_("Could not find the files for this package"));
 		return FALSE;
 	}
-	ret = pk_client_get_files (client, package_id, error);
+	package_ids = pk_package_ids_from_id (package_id);
+	ret = pk_client_get_files (client, package_ids, error);
+	g_strfreev (package_ids);
 	g_free (package_id);
 	return ret;
 }
@@ -929,12 +941,15 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 {
 	gboolean ret;
 	gchar *package_id;
+	gchar **package_ids;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
 	if (package_id == NULL) {
 		g_print ("%s\n", "Could not find the update details for this package");
 		return FALSE;
 	}
-	ret = pk_client_get_update_detail (client, package_id, error);
+	package_ids = pk_package_ids_from_id (package_id);
+	ret = pk_client_get_update_detail (client, package_ids, error);
+	g_strfreev (package_ids);
 	g_free (package_id);
 	return ret;
 }
@@ -1274,6 +1289,7 @@ main (int argc, char *argv[])
 	gchar *options_help;
 	gchar *filter = NULL;
 	gchar *summary;
+	gchar **package_ids;
 	gboolean ret;
 	const gchar *mode;
 	const gchar *value = NULL;
@@ -1486,7 +1502,9 @@ main (int argc, char *argv[])
 			g_print (_("You need to specify a package name to resolve"));
 			goto out;
 		}
-		ret = pk_client_resolve (client, filters, value, &error);
+		package_ids = pk_package_ids_from_id (value);
+		ret = pk_client_resolve (client, filters, package_ids, &error);
+		g_strfreev (package_ids);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {

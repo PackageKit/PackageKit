@@ -125,7 +125,7 @@ static gboolean
 backend_get_requires_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
-	const gchar *package_id;
+	gchar **package_ids;
 
 	package_id = pk_backend_get_string (backend, "package_id");
 	pi = pk_package_id_new_from_string (package_id);
@@ -249,7 +249,7 @@ backend_get_requires_thread (PkBackend *backend)
   * backend_get_requires:
   */
 static void
-backend_get_requires(PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_requires(PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_thread_create (backend, backend_get_requires_thread);
 }
@@ -297,7 +297,7 @@ backend_get_filters (PkBackend *backend)
 static gboolean
 backend_get_depends_thread (PkBackend *backend)
 {
-	const gchar *package_id;
+	gchar **package_ids;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
@@ -450,7 +450,7 @@ backend_get_depends_thread (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_uint (backend, "type", DEPS_TYPE_DEPENDS);
 	pk_backend_thread_create (backend, backend_get_depends_thread);
@@ -459,7 +459,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 static gboolean
 backend_get_details_thread (PkBackend *backend)
 {
-	const gchar *package_id;
+	gchar **package_ids;
 	PkPackageId *pi;
 
 	package_id = pk_backend_get_string (backend, "package_id");
@@ -551,7 +551,7 @@ backend_get_details_thread (PkBackend *backend)
  * backend_get_details:
  */
 static void
-backend_get_details (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_get_details_thread);
 }
@@ -803,7 +803,7 @@ static gboolean
 backend_get_update_detail_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
-	const gchar *package_id;
+	gchar **package_ids;
 
 	package_id = pk_backend_get_string (backend, "package_id");
 	pi = pk_package_id_new_from_string (package_id);
@@ -888,7 +888,7 @@ backend_get_update_detail_thread (PkBackend *backend)
   * backend_get_update_detail
   */
 static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_get_update_detail_thread);
 }
@@ -1161,7 +1161,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 static gboolean
 backend_resolve_thread (PkBackend *backend)
 {
-	const gchar *package_id = pk_backend_get_string (backend, "package_id");
+	gchar **package_ids = pk_backend_get_string (backend, "package_id");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1207,7 +1207,7 @@ backend_resolve_thread (PkBackend *backend)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_resolve_thread);
 }
@@ -1406,7 +1406,7 @@ static gboolean
 backend_get_files_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
-	const gchar *package_id;
+	gchar **package_ids;
 
 	package_id = pk_backend_get_string (backend, "package_id");
 	pi = pk_package_id_new_from_string (package_id);
@@ -1479,7 +1479,7 @@ backend_get_files_thread (PkBackend *backend)
   * backend_get_files:
   */
 static void
-backend_get_files(PkBackend *backend, const gchar *package_id)
+backend_get_files(PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_get_files_thread);
 }

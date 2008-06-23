@@ -687,7 +687,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return reqlist
 
-    def get_requires(self,filters,package,recursive):
+    def get_requires(self,filters,package_ids,recursive):
         '''
         Print a list of requires for a given package
         '''
@@ -695,19 +695,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        pkg,inst = self._findPackage(package)
-        # FIXME: This is a hack, it simulates a removal of the
-        # package and return the transaction
-        if inst and pkg:
-            txmbrs = self.yumbase.remove(po=pkg)
-            if txmbrs:
-                rc,msgs =  self.yumbase.buildTransaction()
-                if rc !=2:
-                    self.error(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
-                else:
-                    for txmbr in self.yumbase.tsInfo:
-                        if txmbr.po.name != pkg.name:
-                            self._show_package(txmbr.po,INFO_INSTALLED)
+        for package in package_ids:
+            pkg,inst = self._findPackage(package)
+            # FIXME: This is a hack, it simulates a removal of the
+            # package and return the transaction
+            if inst and pkg:
+                txmbrs = self.yumbase.remove(po=pkg)
+                if txmbrs:
+                    rc,msgs =  self.yumbase.buildTransaction()
+                    if rc !=2:
+                        self.error(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
+                    else:
+                        for txmbr in self.yumbase.tsInfo:
+                            if txmbr.po.name != pkg.name:
+                                self._show_package(txmbr.po,INFO_INSTALLED)
 
     def _is_inst(self,pkg):
         # search only for requested arch
@@ -798,7 +799,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             bestdeps.append(best)
         return unique(bestdeps)
 
-    def get_depends(self,filters,package,recursive):
+    def get_depends(self,filters,package_ids,recursive):
         '''
         Print a list of depends for a given package
         '''
@@ -808,24 +809,25 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
 
         fltlist = filters.split(';')
-        name = package.split(';')[0]
 
-        pkg,inst = self._findPackage(package)
-        results = {}
-        if pkg:
-            deps = self._get_best_dependencies(pkg)
-        else:
-            self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
-        for pkg in deps:
-            if pkg.name != name:
-                pkgver = self._get_package_ver(pkg)
-                id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repoid)
+        for package in package_ids:
+            name = package.split(';')[0]
+            pkg,inst = self._findPackage(package)
+            results = {}
+            if pkg:
+                deps = self._get_best_dependencies(pkg)
+            else:
+                self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
+            for pkg in deps:
+                if pkg.name != name:
+                    pkgver = self._get_package_ver(pkg)
+                    id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repoid)
 
-                if self._is_inst_arch(pkg) and FILTER_NOT_INSTALLED not in fltlist:
-                    self.package(id,INFO_INSTALLED,pkg.summary)
-                else:
-                    if self._installable(pkg) and FILTER_INSTALLED not in fltlist:
-                        self.package(id,INFO_AVAILABLE,pkg.summary)
+                    if self._is_inst_arch(pkg) and FILTER_NOT_INSTALLED not in fltlist:
+                        self.package(id,INFO_INSTALLED,pkg.summary)
+                    else:
+                        if self._installable(pkg) and FILTER_INSTALLED not in fltlist:
+                            self.package(id,INFO_AVAILABLE,pkg.summary)
 
     def update_system(self):
         '''
@@ -904,26 +906,27 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
 
         fltlist = filters.split(';')
-        # Get installed packages
-        installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
-        if FILTER_NOT_INSTALLED not in fltlist:
-            for pkg in installedByKey:
-                self._show_package(pkg,INFO_INSTALLED)
-        # Get available packages
-        if FILTER_INSTALLED not in fltlist:
-            for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
-                if pkg.name == name:
-                    show = True
-                    for instpo in installedByKey:
-                        # Check if package have a smaller & equal EVR to a inst pkg
-                        if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
-                            show = False
-                    if show:
-                        self._show_package(pkg,INFO_AVAILABLE)
-                        break
+        for package in package_ids:
+            # Get installed packages
+            installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
+            if FILTER_NOT_INSTALLED not in fltlist:
+                for pkg in installedByKey:
+                    self._show_package(pkg,INFO_INSTALLED)
+            # Get available packages
+            if FILTER_INSTALLED not in fltlist:
+                for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                    if pkg.name == name:
+                        show = True
+                        for instpo in installedByKey:
+                            # Check if package have a smaller & equal EVR to a inst pkg
+                            if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
+                                show = False
+                        if show:
+                            self._show_package(pkg,INFO_AVAILABLE)
+                            break
 
     @handle_repo_error
-    def install_packages(self,packages):
+    def install_packages(self,package_ids):
         '''
         Implement the {backend}-install-packages functionality
         This will only work with yum 3.2.4 or higher
@@ -934,7 +937,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_RUNNING)
         txmbrs = []
         already_warned = False
-        for package in packages:
+        for package in package_ids:
             pkg,inst = self._findPackage(package)
             if pkg and not inst:
                 repo = self.yumbase.repos.getRepo(pkg.repoid)
@@ -1062,7 +1065,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         return True
 
-    def update_packages(self,packages):
+    def update_packages(self,package_ids):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
@@ -1073,7 +1076,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_RUNNING)
         txmbrs = []
         try:
-            for package in packages:
+            for package in package_ids:
                 pkg,inst = self._findPackage(package)
                 if pkg:
                     txmbr = self.yumbase.update(po=pkg)
@@ -1193,7 +1196,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package %s is not installed" % package)
 
-    def get_details(self,package):
+    def get_details(self,package_ids):
         '''
         Print a detailed details for a given package
         '''
@@ -1202,11 +1205,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.status(STATUS_INFO)
 
-        pkg,inst = self._findPackage(package)
-        if pkg:
-            self._show_details(pkg)
-        else:
-            self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
+        for package in package_ids:
+            pkg,inst = self._findPackage(package)
+            if pkg:
+                self._show_details(pkg)
+            else:
+                self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
 
     def _show_details(self,pkg):
         pkgver = self._get_package_ver(pkg)
@@ -1226,22 +1230,23 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.details(id,pkg.license,group,desc,pkg.url,pkg.size)
 
-    def get_files(self,package):
+    def get_files(self,package_ids):
         self._check_init()
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
-        pkg,inst = self._findPackage(package)
-        if pkg:
-            files = pkg.returnFileEntries('dir')
-            files.extend(pkg.returnFileEntries()) # regular files
+        for package in package_ids:
+            pkg,inst = self._findPackage(package)
+            if pkg:
+                files = pkg.returnFileEntries('dir')
+                files.extend(pkg.returnFileEntries()) # regular files
 
-            file_list = ";".join(files)
+                file_list = ";".join(files)
 
-            self.files(package,file_list)
-        else:
-            self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
+                self.files(package,file_list)
+            else:
+                self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
 
     def _pkg_to_id(self,pkg):
         pkgver = self._get_package_ver(pkg)
@@ -1478,7 +1483,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return "",urls,"none"
 
-    def get_update_detail(self,package):
+    def get_update_detail(self,package_ids):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
@@ -1486,14 +1491,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        pkg,inst = self._findPackage(package)
-        update = self._get_updated(pkg)
-        obsolete = self._get_obsoleted(pkg.name)
-        desc,urls,reboot = self._get_update_extras(pkg)
-        cve_url = self._format_list(urls['cve'])
-        bz_url = self._format_list(urls['bugzilla'])
-        vendor_url = self._format_list(urls['vendor'])
-        self.update_detail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
+        for package in package_ids:
+            pkg,inst = self._findPackage(package)
+            update = self._get_updated(pkg)
+            obsolete = self._get_obsoleted(pkg.name)
+            desc,urls,reboot = self._get_update_extras(pkg)
+            cve_url = self._format_list(urls['cve'])
+            bz_url = self._format_list(urls['bugzilla'])
+            vendor_url = self._format_list(urls['vendor'])
+            self.update_detail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
 
     def repo_set_data(self,repoid,parameter,value):
         '''

@@ -15,5 +15,5 @@ import sys
 from yumBackend import PackageKitYumBackend
 package = sys.argv[1]
 backend = PackageKitYumBackend(sys.argv[1:])
-backend.get_details(package)
+backend.get_details(package.split('|'))
 sys.exit(0)

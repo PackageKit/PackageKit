@@ -103,7 +103,7 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_dbus_get_depends (dbus, filters, package_id, recursive);
 }
@@ -112,7 +112,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
  * backend_get_details:
  */
 static void
-backend_get_details (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_dbus_get_details (dbus, package_id);
 }
@@ -121,7 +121,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
  * backend_get_files:
  */
 static void
-backend_get_files (PkBackend *backend, const gchar *package_id)
+backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_dbus_get_files (dbus, package_id);
 }
@@ -130,7 +130,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_dbus_get_requires (dbus, filters, package_id, recursive);
 }
@@ -148,7 +148,7 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
  * backend_get_update_detail:
  */
 static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_dbus_get_update_detail (dbus, package_id);
 }
@@ -268,7 +268,7 @@ backend_update_system (PkBackend *backend)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
 	pk_backend_dbus_resolve (dbus, filters, package_id);
 }

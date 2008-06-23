@@ -40,6 +40,21 @@
 #include "pk-package-ids.h"
 
 /**
+ * pk_package_ids_from_id:
+ * @package_id: A single package_id
+ *
+ * Form a composite string array of package_id's from
+ * a single package_id
+ *
+ * Return value: the string array, or %NULL if invalid, free with g_strfreev()
+ **/
+gchar **
+pk_package_ids_from_id (const gchar *package_id)
+{
+	return g_strsplit (package_id, "|", 1);
+}
+
+/**
  * pk_package_ids_from_array:
  * @array: the GPtrArray of package_id's
  *
@@ -160,8 +175,12 @@ pk_package_ids_to_text (gchar **package_ids, const gchar *delimiter)
 	GString *string;
 	gchar *string_ret;
 
-	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (delimiter != NULL, NULL);
+
+	/* special case as this is allowed */
+	if (package_ids == NULL) {
+		return g_strdup ("(null)");
+	}
 
 	string = g_string_new ("");
 

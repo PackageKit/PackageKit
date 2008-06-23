@@ -35,6 +35,7 @@
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-package-id.h>
+#include <pk-package-ids.h>
 #include <pk-extra.h>
 
 #include "pk-import-common.h"
@@ -57,6 +58,7 @@ pk_import_specspo_get_summary (const gchar *name)
 	PkPackageItem *item;
 	GError *error = NULL;
 	PkPackageList *list;
+	gchar **names;
 
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
@@ -67,7 +69,9 @@ pk_import_specspo_get_summary (const gchar *name)
 
 	pk_client_set_use_buffer (client, TRUE, NULL);
 	pk_client_set_synchronous (client, TRUE, NULL);
-	ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, name, &error);
+	names = pk_package_ids_from_id (name);
+	ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, names, &error);
+	g_strfreev (names);
 	if (!ret) {
 		pk_warning ("failed to resolve: %s", error->message);
 		g_error_free (error);

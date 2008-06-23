@@ -204,7 +204,7 @@ backend_install_packages_thread (PkBackend *backend)
 {
 	gboolean result;
 	PkPackageId *pi;
-	const gchar *package_id;
+	gchar **package_ids;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -273,7 +273,7 @@ backend_get_details_thread (PkBackend *backend)
 	PackageSearch *ps;
 	GList *list;
 	sqlite3 *db;
-	const gchar *package_id;
+	gchar **package_ids;
 
 	package_id = pk_backend_get_string (backend, "package_id");
 	db = db_open();
@@ -316,7 +316,7 @@ backend_get_files_thread (PkBackend *backend)
 	PkPackageId *pi;
 	gchar *files;
 	sqlite3 *db;
-	const gchar *package_id;
+	gchar **package_ids;
 
 	db = db_open();
 	package_id = pk_backend_get_string (backend, "package_id");
@@ -349,7 +349,7 @@ backend_get_depends_requires_thread (PkBackend *backend)
 	PkPackageId *pi;
 	GList *list = NULL;
 	sqlite3 *db;
-	const gchar *package_id;
+	gchar **package_ids;
 	int deps_type;
 
 	db = db_open ();
@@ -450,7 +450,7 @@ backend_get_filters (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_uint (backend, "type", DEPS_TYPE_DEPENDS);
 	pk_backend_thread_create (backend, backend_get_depends_requires_thread);
@@ -460,7 +460,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
  * backend_get_details:
  */
 static void
-backend_get_details (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_get_details_thread);
 }
@@ -469,7 +469,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
  * backend_get_files:
  */
 static void
-backend_get_files (PkBackend *backend, const gchar *package_id)
+backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_get_files_thread);
 }
@@ -478,7 +478,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_uint (backend, "type", DEPS_TYPE_REQUIRES);
 	pk_backend_thread_create (backend, backend_get_depends_requires_thread);

@@ -825,19 +825,19 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		desc->get_depends (priv->backend, priv->cached_filters, priv->cached_package_id, priv->cached_force);
+		desc->get_depends (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
-		desc->get_update_detail (priv->backend, priv->cached_package_id);
+		desc->get_update_detail (priv->backend, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_RESOLVE) {
-		desc->resolve (priv->backend, priv->cached_filters, priv->cached_package_id);
+		desc->resolve (priv->backend, priv->cached_filters, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
 		desc->rollback (priv->backend, priv->cached_transaction_id);
 	} else if (priv->role == PK_ROLE_ENUM_GET_DETAILS) {
-		desc->get_details (priv->backend, priv->cached_package_id);
+		desc->get_details (priv->backend, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
-		desc->get_files (priv->backend, priv->cached_package_id);
+		desc->get_files (priv->backend, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		desc->get_requires (priv->backend, priv->cached_filters, priv->cached_package_id, priv->cached_force);
+		desc->get_requires (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
 	} else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
 		desc->what_provides (priv->backend, priv->cached_filters, priv->cached_provides, priv->cached_search);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
@@ -1220,16 +1220,19 @@ pk_transaction_get_allow_cancel (PkTransaction *transaction, gboolean *allow_can
  * pk_transaction_get_depends:
  **/
 void
-pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, const gchar *package_id,
+pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gchar **package_ids,
 			    gboolean recursive, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetDepends method called: %s, %i", package_id, recursive);
+	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	pk_debug ("GetDepends method called: %s (recursive %i)", package_ids_temp, recursive);
+	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_depends == NULL) {
@@ -1247,20 +1250,13 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, con
 		return;
 	}
 
-	/* check for sanity */
-	ret = pk_strvalidate (package_id);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (ret == FALSE) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id '%s' is not valid", package_id);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1270,7 +1266,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, con
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
-	transaction->priv->cached_package_id = g_strdup (package_id);
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DEPENDS);
@@ -1292,16 +1288,18 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, con
  * pk_transaction_get_details:
  **/
 void
-pk_transaction_get_details (PkTransaction *transaction, const gchar *package_id,
-				DBusGMethodInvocation *context)
+pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetDetails method called: %s", package_id);
+	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	pk_debug ("GetDetails method called: %s", package_ids_temp);
+	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_details == NULL) {
@@ -1312,20 +1310,13 @@ pk_transaction_get_details (PkTransaction *transaction, const gchar *package_id,
 		return;
 	}
 
-	/* check for sanity */
-	ret = pk_strvalidate (package_id);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (ret == FALSE) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id '%s' is not valid", package_id);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1334,7 +1325,7 @@ pk_transaction_get_details (PkTransaction *transaction, const gchar *package_id,
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_package_id = g_strdup (package_id);
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS);
 
@@ -1355,16 +1346,18 @@ pk_transaction_get_details (PkTransaction *transaction, const gchar *package_id,
  * pk_transaction_get_files:
  **/
 void
-pk_transaction_get_files (PkTransaction *transaction, const gchar *package_id,
-			  DBusGMethodInvocation *context)
+pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetFiles method called: %s", package_id);
+	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	pk_debug ("GetFiles method called: %s", package_ids_temp);
+	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_files == NULL) {
@@ -1375,20 +1368,13 @@ pk_transaction_get_files (PkTransaction *transaction, const gchar *package_id,
 		return;
 	}
 
-	/* check for sanity */
-	ret = pk_strvalidate (package_id);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (ret == FALSE) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id '%s' is not valid", package_id);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1397,7 +1383,7 @@ pk_transaction_get_files (PkTransaction *transaction, const gchar *package_id,
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_package_id = g_strdup (package_id);
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_FILES);
 
@@ -1586,16 +1572,19 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
  * pk_transaction_get_requires:
  **/
 void
-pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, const gchar *package_id,
-			gboolean recursive, DBusGMethodInvocation *context)
+pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gchar **package_ids,
+			     gboolean recursive, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetRequires method called: %s, %i", package_id, recursive);
+	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	pk_debug ("GetRequires method called: %s (recursive %i)", package_ids_temp, recursive);
+	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_requires == NULL) {
@@ -1613,20 +1602,13 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, co
 		return;
 	}
 
-	/* check for sanity */
-	ret = pk_strvalidate (package_id);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (ret == FALSE) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id '%s' is not valid", package_id);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1636,7 +1618,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, co
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
-	transaction->priv->cached_package_id = g_strdup (package_id);
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REQUIRES);
@@ -1699,16 +1681,19 @@ pk_transaction_get_status (PkTransaction *transaction,
  * pk_transaction_get_update_detail:
  **/
 void
-pk_transaction_get_update_detail (PkTransaction *transaction, const gchar *package_id,
-			     DBusGMethodInvocation *context)
+pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_ids,
+				  DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetUpdateDetail method called: %s", package_id);
+	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	pk_debug ("GetUpdateDetail method called: %s", package_ids_temp);
+	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_update_detail == NULL) {
@@ -1719,20 +1704,13 @@ pk_transaction_get_update_detail (PkTransaction *transaction, const gchar *packa
 		return;
 	}
 
-	/* check for sanity */
-	ret = pk_strvalidate (package_id);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (ret == FALSE) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id '%s' is not valid", package_id);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1741,7 +1719,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, const gchar *packa
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_package_id = g_strdup (package_id);
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 
@@ -2338,15 +2316,20 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
  **/
 void
 pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
-			const gchar *package, DBusGMethodInvocation *context)
+			gchar **packages, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
+	gchar *packages_temp;
+	guint i;
+	guint length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("Resolve method called: %s, %s", filter, package);
+	packages_temp = pk_package_ids_to_text (packages, ", ");
+	pk_debug ("Resolve method called: %s, %s", filter, packages_temp);
+	g_free (packages_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->resolve == NULL) {
@@ -2365,19 +2348,22 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* check for sanity */
-	ret = pk_strvalidate (package);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
-		dbus_g_method_return_error (context, error);
-		return;
+	length = g_strv_length (packages);
+	for (i=0; i<length; i++) {
+		ret = pk_strvalidate (packages[i]);
+		if (!ret) {
+			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+					     "Invalid input passed to daemon");
+			dbus_g_method_return_error (context, error);
+			return;
+		}
 	}
 
 	/* set the dbus name, so we can get the disconnect */
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_package_id = g_strdup (package);
+	transaction->priv->cached_package_ids = g_strdupv (packages);
 	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_RESOLVE);

@@ -957,7 +957,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
  * backend_get_details:
  */
 static void
-backend_get_details (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, FALSE);
@@ -993,7 +993,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
  * backend_get_files:
  */
 static void
-backend_get_files (PkBackend *backend, const gchar *package_id)
+backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, FALSE);

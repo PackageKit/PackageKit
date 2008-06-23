@@ -29,6 +29,7 @@
 #include "pk-common.h"
 #include "pk-client.h"
 #include "pk-package-list.h"
+#include "pk-package-ids.h"
 #include "pk-marshal.h"
 #include "pk-catalog.h"
 
@@ -112,6 +113,7 @@ pk_catalog_process_type (PkCatalog *catalog)
 	GError *error = NULL;
 	gchar **parts = NULL;
 	gchar *distro_id_part;
+	gchar **packages;
 	const gchar *package;
 	gboolean ret = TRUE;
 	guint i;
@@ -171,7 +173,9 @@ pk_catalog_process_type (PkCatalog *catalog)
 
 		/* do the actions */
 		if (mode == PK_CATALOG_PROGRESS_PACKAGES) {
-			ret = pk_client_resolve (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, package, &error);
+			packages = pk_package_ids_from_id (package);
+			ret = pk_client_resolve (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, packages, &error);
+			g_strfreev (packages);
 		} else if (mode == PK_CATALOG_PROGRESS_FILES) {
 			ret = pk_client_search_file (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, package, &error);
 		} else if (mode == PK_CATALOG_PROGRESS_PROVIDES) {

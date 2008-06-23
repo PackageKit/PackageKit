@@ -229,7 +229,7 @@ gboolean	 pk_client_search_file			(PkClient	*client,
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_depends			(PkClient	*client,
 							 PkFilterEnum	 filters,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -238,12 +238,12 @@ gboolean	 pk_client_get_packages			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_update_detail		(PkClient	*client,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_requires			(PkClient	*client,
 							 PkFilterEnum	 filters,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -254,16 +254,10 @@ gboolean	 pk_client_what_provides		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_details			(PkClient	*client,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 GError		**error);
 gboolean	 pk_client_get_files			(PkClient	*client,
-							 const gchar	*package_id,
-							 GError		**error)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_remove_package		(PkClient	*client,
-							 const gchar	*package_id,
-							 gboolean	 allow_deps,
-							 gboolean	 autoremove,
+							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_remove_packages		(PkClient	*client,
@@ -276,10 +270,6 @@ gboolean	 pk_client_refresh_cache		(PkClient	*client,
 							 gboolean	 force,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_install_package		(PkClient	*client,
-							 const gchar	*package_id,
-							 GError		**error)
-							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_packages		(PkClient	*client,
 							 gchar		**package_ids,
 							 GError		**error)
@@ -287,10 +277,6 @@ gboolean	 pk_client_install_packages		(PkClient	*client,
 gboolean	 pk_client_install_signature		(PkClient	*client,
 							 PkSigTypeEnum	 type,
 							 const gchar	*key_id,
-							 const gchar	*package_id,
-							 GError		**error)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_update_package		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -310,7 +296,7 @@ gboolean	 pk_client_install_file			(PkClient	*client,
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_resolve			(PkClient	*client,
 							 PkFilterEnum	 filters,
-							 const gchar	*package,
+							 gchar		**packages,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_rollback			(PkClient	*client,
