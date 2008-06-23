@@ -695,11 +695,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
+
+        percentage = 0;
+        bump = 100 / len(package_ids)
+        deps_list = []
+        resolve_list = []
+
         for package in package_ids:
+            self.percentage(percentage)
             pkg,inst = self._findPackage(package)
             # FIXME: This is a hack, it simulates a removal of the
             # package and return the transaction
             if inst and pkg:
+                resolve_list.append(pkg)
                 txmbrs = self.yumbase.remove(po=pkg)
                 if txmbrs:
                     rc,msgs =  self.yumbase.buildTransaction()
@@ -707,8 +715,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self.error(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
                     else:
                         for txmbr in self.yumbase.tsInfo:
-                            if txmbr.po.name != pkg.name:
-                                self._show_package(txmbr.po,INFO_INSTALLED)
+                            if pkg not in deps_list:
+                                deps_list.append(txmbr.po)
+            percentage += bump
+
+        # remove any of the original names
+        for pkg in resolve_list:
+            if pkg in deps_list:
+                deps_list.remove(pkg)
+
+        # each unique name, emit
+        for pkg in deps_list:
+            id = self._pkg_to_id(pkg)
+            self.package(id,INFO_INSTALLED,pkg.summary)
+        self.percentage(100)
 
     def _is_inst(self,pkg):
         # search only for requested arch
@@ -810,24 +830,43 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         fltlist = filters.split(';')
 
+        percentage = 0;
+        bump = 100 / len(package_ids)
+        deps_list = []
+        resolve_list = []
+
         for package in package_ids:
+            self.percentage(percentage)
             name = package.split(';')[0]
             pkg,inst = self._findPackage(package)
             results = {}
             if pkg:
+                resolve_list.append(pkg)
                 deps = self._get_best_dependencies(pkg)
+                # if not present, add
+                for pkg in deps:
+                    if pkg not in deps_list:
+                        deps_list.append(pkg)
             else:
                 self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
-            for pkg in deps:
-                if pkg.name != name:
-                    pkgver = self._get_package_ver(pkg)
-                    id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repoid)
+                break
+            percentage += bump
 
-                    if self._is_inst_arch(pkg) and FILTER_NOT_INSTALLED not in fltlist:
-                        self.package(id,INFO_INSTALLED,pkg.summary)
-                    else:
-                        if self._installable(pkg) and FILTER_INSTALLED not in fltlist:
-                            self.package(id,INFO_AVAILABLE,pkg.summary)
+        # remove any of the original names
+        for pkg in resolve_list:
+            if pkg in deps_list:
+                deps_list.remove(pkg)
+
+        # each unique name, emit
+        for pkg in deps_list:
+            id = self._pkg_to_id(pkg)
+
+            if self._is_inst_arch(pkg) and FILTER_NOT_INSTALLED not in fltlist:
+                self.package(id,INFO_INSTALLED,pkg.summary)
+            else:
+                if self._installable(pkg) and FILTER_INSTALLED not in fltlist:
+                    self.package(id,INFO_AVAILABLE,pkg.summary)
+        self.percentage(100)
 
     def update_system(self):
         '''
