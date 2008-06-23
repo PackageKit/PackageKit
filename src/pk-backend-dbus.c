@@ -757,7 +757,7 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
  * pk_backend_dbus_resolve:
  **/
 gboolean
-pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *package)
+pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkFilterEnum filters, gchar **packages)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -765,14 +765,14 @@ pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkFilterEnum filters, cons
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package != NULL, FALSE);
+	g_return_val_if_fail (packages != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Resolve", &error,
 				 G_TYPE_STRING, filters_text,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRV, packages,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -957,7 +957,7 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
  * pk_backend_dbus_get_depends:
  **/
 gboolean
-pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -965,14 +965,14 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDepends", &error,
 				 G_TYPE_STRING, filters_text,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -992,7 +992,7 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
  * pk_backend_dbus_get_requires:
  **/
 gboolean
-pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -1000,14 +1000,14 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkFilterEnum filters,
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRequires", &error,
 				 G_TYPE_STRING, filters_text,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -1059,19 +1059,19 @@ pk_backend_dbus_get_packages (PkBackendDbus *backend_dbus, PkFilterEnum filters)
  * pk_backend_dbus_get_update_detail:
  **/
 gboolean
-pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, gchar **package_ids)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetUpdateDetail", &error,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1089,19 +1089,19 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *pac
  * pk_backend_dbus_get_details:
  **/
 gboolean
-pk_backend_dbus_get_details (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_get_details (PkBackendDbus *backend_dbus, gchar **package_ids)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDetails", &error,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1119,19 +1119,19 @@ pk_backend_dbus_get_details (PkBackendDbus *backend_dbus, const gchar *package_i
  * pk_backend_dbus_get_files:
  **/
 gboolean
-pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, gchar **package_ids)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetFiles", &error,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);

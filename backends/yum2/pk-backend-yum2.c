@@ -105,7 +105,7 @@ backend_cancel (PkBackend *backend)
 static void
 backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
-	pk_backend_dbus_get_depends (dbus, filters, package_id, recursive);
+	pk_backend_dbus_get_depends (dbus, filters, package_ids, recursive);
 }
 
 /**
@@ -114,7 +114,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_i
 static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_dbus_get_details (dbus, package_id);
+	pk_backend_dbus_get_details (dbus, package_ids);
 }
 
 /**
@@ -123,7 +123,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_dbus_get_files (dbus, package_id);
+	pk_backend_dbus_get_files (dbus, package_ids);
 }
 
 /**
@@ -132,7 +132,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 static void
 backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
-	pk_backend_dbus_get_requires (dbus, filters, package_id, recursive);
+	pk_backend_dbus_get_requires (dbus, filters, package_ids, recursive);
 }
 
 /**
@@ -150,7 +150,7 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_dbus_get_update_detail (dbus, package_id);
+	pk_backend_dbus_get_update_detail (dbus, package_ids);
 }
 
 /**
@@ -268,9 +268,9 @@ backend_update_system (PkBackend *backend)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
 {
-	pk_backend_dbus_resolve (dbus, filters, package_id);
+	pk_backend_dbus_resolve (dbus, filters, packages);
 }
 
 /**

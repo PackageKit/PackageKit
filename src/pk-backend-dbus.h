@@ -68,7 +68,7 @@ gboolean	 pk_backend_dbus_refresh_cache		(PkBackendDbus	*backend_dbus,
 gboolean	 pk_backend_dbus_update_system		(PkBackendDbus	*backend_dbus);
 gboolean	 pk_backend_dbus_resolve		(PkBackendDbus	*backend_dbus,
 							 PkFilterEnum	 filters,
-							 const gchar	*package);
+							 gchar		**packages);
 gboolean	 pk_backend_dbus_rollback		(PkBackendDbus	*backend_dbus,
 							 const gchar	*transaction_id);
 gboolean	 pk_backend_dbus_search_name		(PkBackendDbus	*backend_dbus,
@@ -87,18 +87,18 @@ gboolean	 pk_backend_dbus_get_packages		(PkBackendDbus	*backend_dbus,
 							 PkFilterEnum	 filters);
 gboolean	 pk_backend_dbus_get_depends		(PkBackendDbus	*backend_dbus,
 							 PkFilterEnum	 filters,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive);
 gboolean	 pk_backend_dbus_get_requires		(PkBackendDbus	*backend_dbus,
 							 PkFilterEnum	 filters,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive);
 gboolean	 pk_backend_dbus_get_update_detail	(PkBackendDbus	*backend_dbus,
-							 const gchar	*package_id);
+							 gchar		**package_ids);
 gboolean	 pk_backend_dbus_get_details		(PkBackendDbus	*backend_dbus,
-							 const gchar	*package_id);
+							 gchar		**package_ids);
 gboolean	 pk_backend_dbus_get_files		(PkBackendDbus	*backend_dbus,
-							 const gchar	*package_id);
+							 gchar		**package_ids);
 gboolean	 pk_backend_dbus_remove_packages	(PkBackendDbus	*backend_dbus,
 							 gchar		**package_ids,
 							 gboolean	 allow_deps,
