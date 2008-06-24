@@ -40,6 +40,7 @@ libpackagekit_include_HEADERS =					\
 	pk-package-ids.h					\
 	pk-package-item.h					\
 	pk-package-list.h					\
+	pk-update-detail.h					\
 	pk-enum.h						\
 	pk-common.h						\
 	pk-client.h						\
@@ -65,6 +66,8 @@ libpackagekit_la_SOURCES =					\
 	pk-package-item.h					\
 	pk-package-list.c					\
 	pk-package-list.h					\
+	pk-update-detail.c					\
+	pk-update-detail.h					\
 	pk-enum.h						\
 	pk-enum.c						\
 	pk-common.c						\

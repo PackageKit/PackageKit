@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -39,6 +39,7 @@ void libst_client (LibSelfTest *test);
 void libst_control (LibSelfTest *test);
 void libst_task_list (LibSelfTest *test);
 void libst_catalog (LibSelfTest *test);
+void libst_update_detail (LibSelfTest *test);
 
 int
 main (int argc, char **argv)
@@ -61,6 +62,7 @@ main (int argc, char **argv)
 	libst_catalog (&test);
 	libst_control (&test);
 	libst_task_list (&test);
+	libst_update_detail (&test);
 
 	return (libst_finish (&test));
 }
