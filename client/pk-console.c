@@ -38,6 +38,7 @@
 #include <pk-package-id.h>
 #include <pk-common.h>
 #include <pk-connection.h>
+#include <pk-update-detail.h>
 
 #define PROGRESS_BAR_SIZE 15
 
@@ -212,37 +213,33 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
  * pk_console_update_detail_cb:
  **/
 static void
-pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
-			     const gchar *updates, const gchar *obsoletes,
-			     const gchar *vendor_url, const gchar *bugzilla_url,
-			     const gchar *cve_url, PkRestartEnum restart,
-			     const gchar *update_text, gpointer data)
+pk_console_update_detail_cb (PkClient *client, PkUpdateDetail *detail, gpointer data)
 {
 	if (awaiting_space) {
 		g_print ("\n");
 	}
 	g_print ("%s\n", _("Update detail"));
-	g_print ("  package:    '%s'\n", package_id);
-	if (pk_strzero (updates) == FALSE) {
-		g_print ("  updates:    '%s'\n", updates);
+	g_print ("  package:    '%s'\n", detail->package_id);
+	if (pk_strzero (detail->updates) == FALSE) {
+		g_print ("  updates:    '%s'\n", detail->updates);
 	}
-	if (pk_strzero (obsoletes) == FALSE) {
-		g_print ("  obsoletes:  '%s'\n", obsoletes);
+	if (pk_strzero (detail->obsoletes) == FALSE) {
+		g_print ("  obsoletes:  '%s'\n", detail->obsoletes);
 	}
-	if (pk_strzero (vendor_url) == FALSE) {
-		g_print ("  vendor URL: '%s'\n", vendor_url);
+	if (pk_strzero (detail->vendor_url) == FALSE) {
+		g_print ("  vendor URL: '%s'\n", detail->vendor_url);
 	}
-	if (pk_strzero (bugzilla_url) == FALSE) {
-		g_print ("  bug URL:    '%s'\n", bugzilla_url);
+	if (pk_strzero (detail->bugzilla_url) == FALSE) {
+		g_print ("  bug URL:    '%s'\n", detail->bugzilla_url);
 	}
-	if (pk_strzero (cve_url) == FALSE) {
-		g_print ("  cve URL:    '%s'\n", cve_url);
+	if (pk_strzero (detail->cve_url) == FALSE) {
+		g_print ("  cve URL:    '%s'\n", detail->cve_url);
 	}
-	if (restart != PK_RESTART_ENUM_NONE) {
-		g_print ("  restart:    '%s'\n", pk_restart_enum_to_text (restart));
+	if (detail->restart != PK_RESTART_ENUM_NONE) {
+		g_print ("  restart:    '%s'\n", pk_restart_enum_to_text (detail->restart));
 	}
-	if (pk_strzero (update_text) == FALSE) {
-		g_print ("  update_text:'%s'\n", update_text);
+	if (pk_strzero (detail->update_text) == FALSE) {
+		g_print ("  update_text:'%s'\n", detail->update_text);
 	}
 }
 
@@ -999,22 +996,19 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
  * pk_console_details_cb:
  **/
 static void
-pk_console_details_cb (PkClient *client, const gchar *package_id,
-			   const gchar *license, PkGroupEnum group,
-			   const gchar *description, const gchar *url,
-			   gulong size, gpointer data)
+pk_console_details_cb (PkClient *client, PkDetails *details, gpointer data)
 {
 	/* if on console, clear the progress bar line */
 	if (awaiting_space) {
 		g_print ("\n");
 	}
 	g_print ("%s\n", _("Package description"));
-	g_print ("  package:     '%s'\n", package_id);
-	g_print ("  license:     '%s'\n", license);
-	g_print ("  group:       '%s'\n", pk_group_enum_to_text (group));
-	g_print ("  description: '%s'\n", description);
-	g_print ("  size:        '%ld' bytes\n", size);
-	g_print ("  url:         '%s'\n", url);
+	g_print ("  package:     '%s'\n", details->package_id);
+	g_print ("  license:     '%s'\n", details->license);
+	g_print ("  group:       '%s'\n", pk_group_enum_to_text (details->group));
+	g_print ("  description: '%s'\n", details->description);
+	g_print ("  size:        '%lu' bytes\n", (long unsigned int) details->size);
+	g_print ("  url:         '%s'\n", details->url);
 }
 
 /**

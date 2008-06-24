@@ -54,6 +54,7 @@
 #include "pk-backend.h"
 #include "pk-backend-internal.h"
 #include "pk-inhibit.h"
+#include "pk-update-detail-cache.h"
 #include "pk-cache.h"
 #include "pk-notify.h"
 #include "pk-security.h"
@@ -79,6 +80,7 @@ struct PkTransactionPrivate
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkCache			*cache;
+	PkUpdateDetailCache	*update_detail_cache;
 	PkNotify		*notify;
 	PkSecurity		*security;
 
@@ -358,8 +360,7 @@ pk_transaction_caller_active_changed_cb (LibGBus *libgbus, gboolean is_active, P
  **/
 static void
 pk_transaction_details_cb (PkBackend *backend, const gchar *package_id, const gchar *license, PkGroupEnum group,
-			       const gchar *detail, const gchar *url,
-			       guint64 size, PkTransaction *transaction)
+			   const gchar *detail, const gchar *url, guint64 size, PkTransaction *transaction)
 {
 	const gchar *group_text;
 
@@ -368,8 +369,8 @@ pk_transaction_details_cb (PkBackend *backend, const gchar *package_id, const gc
 
 	group_text = pk_group_enum_to_text (group);
 
-	pk_debug ("emitting details %s, %s, %s, %s, %s, %ld",
-		  package_id, license, group_text, detail, url, (long int) size);
+	pk_debug ("emitting details %s, %s, %i, %s, %s, %ld",
+		  package_id, license, group, detail, url, (long int) size);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_DETAILS], 0,
 		       package_id, license, group_text, detail, url, size);
 }
@@ -718,12 +719,21 @@ pk_transaction_update_detail_cb (PkBackend *backend, const gchar *package_id,
 				 const gchar *update_text, PkTransaction *transaction)
 {
 	const gchar *restart_text;
+	PkUpdateDetail *detail;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	/* are we already in the cache? */
+	detail = pk_update_detail_cache_get_item (transaction->priv->update_detail_cache, package_id);
+	if (detail == NULL) {
+		detail = pk_update_detail_new_from_data (package_id, updates, obsoletes, vendor_url,
+							 bugzilla_url, cve_url, restart, update_text);
+		pk_update_detail_cache_add_item (transaction->priv->update_detail_cache, detail);
+	}
+
 	restart_text = pk_restart_enum_to_text (restart);
-	pk_debug ("emitting package value=%s, %s, %s, %s, %s, %s, %s, %s",
+	pk_debug ("emitting UpdateDetail value=%s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
 		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
@@ -1687,6 +1697,11 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	gchar **package_ids_new;
+	PkUpdateDetail *detail;
+	GPtrArray *array;
+	guint i;
+	guint len;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1694,6 +1709,9 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 	pk_debug ("GetUpdateDetail method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
+
+	/* need to split the package_ids into new and cached */
+	array = g_ptr_array_new ();
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_update_detail == NULL) {
@@ -1723,6 +1741,40 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 
+	/* try and reuse cache */
+	len = g_strv_length (package_ids);
+	for (i=0; i<len; i++) {
+		detail = pk_update_detail_cache_get_item (transaction->priv->update_detail_cache, package_ids[i]);
+		if (detail != NULL) {
+			pk_warning ("got %s", package_ids[i]);
+			/* emulate the backend */
+			g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
+				       detail->package_id, detail->updates, detail->obsoletes,
+				       detail->vendor_url, detail->bugzilla_url, detail->cve_url,
+				       pk_restart_enum_to_text (detail->restart), detail->update_text);
+		} else {
+			pk_warning ("not got %s", package_ids[i]);
+			g_ptr_array_add (array, g_strdup (package_ids[i]));
+		}
+	}
+
+	/* if we have nothing to do, i.e. everything was in the cache */
+	if (array->len == 0) {
+		const gchar *exit_text;
+		exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
+		pk_debug ("emitting finished '%s' as no more to process", exit_text);
+		g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
+		goto out;
+	}
+
+	/* get the new list */
+	pk_debug ("%i more to process", array->len);
+	package_ids_new = pk_ptr_array_to_argv (array);
+
+	/* alter list */
+	g_strfreev (transaction->priv->cached_package_ids);
+	transaction->priv->cached_package_ids = g_strdupv (package_ids_new);
+
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
@@ -1733,6 +1785,8 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 		return;
 	}
 
+out:
+	g_ptr_array_free (array, TRUE);
 	dbus_g_method_return (context);
 }
 
@@ -1770,6 +1824,11 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	/* set the dbus name, so we can get the disconnect */
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
+	/* save so we can run later */
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->status = PK_STATUS_ENUM_WAIT;
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
+
 	/* try and reuse cache */
 	updates_cache = pk_cache_get_updates (transaction->priv->cache);
 	if (updates_cache != NULL) {
@@ -1783,7 +1842,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		pk_debug ("we have cached data (%i) we should use!", length);
 
 		/* emulate the backend */
-		pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
 		for (i=0; i<length; i++) {
 			package = pk_package_list_get_item (updates_cache, i);
 			info_text = pk_info_enum_to_text (package->info);
@@ -1799,11 +1857,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		dbus_g_method_return (context);
 		return;
 	}
-
-	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -2721,7 +2774,9 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("UpdatePackages method called: %s", package_ids[0]);
+	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	pk_debug ("UpdatePackages method called: %s", package_ids_temp);
+	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->update_packages == NULL) {
@@ -3029,6 +3084,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->backend = pk_backend_new ();
 	transaction->priv->security = pk_security_new ();
 	transaction->priv->cache = pk_cache_new ();
+	transaction->priv->update_detail_cache = pk_update_detail_cache_new ();
 	transaction->priv->notify = pk_notify_new ();
 	transaction->priv->inhibit = pk_inhibit_new ();
 	transaction->priv->package_list = pk_package_list_new ();
@@ -3071,6 +3127,7 @@ pk_transaction_finalize (GObject *object)
 	/* remove any inhibit, it's okay to call this function when it's not needed */
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
 	g_object_unref (transaction->priv->cache);
+	g_object_unref (transaction->priv->update_detail_cache);
 	g_object_unref (transaction->priv->inhibit);
 	g_object_unref (transaction->priv->backend);
 	g_object_unref (transaction->priv->libgbus);

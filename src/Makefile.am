@@ -45,6 +45,8 @@ shared_SOURCES =					\
 	pk-marshal.h					\
 	pk-transaction.c				\
 	pk-transaction.h				\
+	pk-update-detail-cache.c			\
+	pk-update-detail-cache.h			\
 	pk-backend.c					\
 	pk-backend.h					\
 	pk-backend-internal.h				\

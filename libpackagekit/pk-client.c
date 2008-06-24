@@ -56,6 +56,8 @@
 #include "pk-marshal.h"
 #include "pk-common.h"
 #include "pk-control.h"
+#include "pk-update-detail.h"
+#include "pk-details.h"
 
 static void     pk_client_class_init	(PkClientClass *klass);
 static void     pk_client_init		(PkClient      *client);
@@ -588,48 +590,45 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
  * pk_client_update_detail_cb:
  */
 static void
-pk_client_update_detail_cb (DBusGProxy  *proxy,
-			    const gchar *package_id,
-			    const gchar *updates,
-			    const gchar *obsoletes,
-			    const gchar *vendor_url,
-			    const gchar *bugzilla_url,
-			    const gchar *cve_url,
-			    const gchar *restart_text,
-			    const gchar *update_text,
-			    PkClient    *client)
+pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const gchar *updates,
+			    const gchar *obsoletes, const gchar *vendor_url, const gchar *bugzilla_url,
+			    const gchar *cve_url, const gchar *restart_text, const gchar *update_text, PkClient *client)
 {
 	PkRestartEnum restart;
+	PkUpdateDetail *detail;
+
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
 	restart = pk_restart_enum_from_text (restart_text);
-	g_signal_emit (client , signals [PK_CLIENT_UPDATE_DETAIL], 0,
-		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text);
+
+	detail = pk_update_detail_new_from_data (package_id, updates, obsoletes, vendor_url,
+						 bugzilla_url, cve_url, restart, update_text);
+	g_signal_emit (client, signals [PK_CLIENT_UPDATE_DETAIL], 0, detail);
+	pk_update_detail_free (detail);
 }
 
 /**
  * pk_client_details_cb:
  */
 static void
-pk_client_details_cb (DBusGProxy  *proxy,
-		      const gchar *package_id,
-		      const gchar *license,
-		      const gchar *group_text,
-		      const gchar *description,
-		      const gchar *url,
-		      guint64      size,
-		      PkClient    *client)
+pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *license,
+		      const gchar *group_text, const gchar *description, const gchar *url,
+		      guint64 size, PkClient *client)
 {
 	PkGroupEnum group;
+	PkDetails *details;
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	group = pk_group_enum_from_text (group_text);
+
 	pk_debug ("emit details %s, %s, %s, %s, %s, %ld",
 		  package_id, license, pk_group_enum_to_text (group), description, url, (long int) size);
-	g_signal_emit (client , signals [PK_CLIENT_DETAILS], 0,
-		       package_id, license, group, description, url, size);
+
+	details = pk_details_new_from_data (package_id, license, group, description, url, size);
+	g_signal_emit (client, signals [PK_CLIENT_DETAILS], 0, details);
+	pk_details_free (details);
 }
 
 /**
@@ -3241,10 +3240,8 @@ pk_client_class_init (PkClientClass *klass)
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, update_detail),
-			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	/**
 	 * PkClient::details:
 	 * @client: the #PkClient instance that emitted the signal
@@ -3261,9 +3258,8 @@ pk_client_class_init (PkClientClass *klass)
 		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, details),
-			      NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64,
-			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_UINT64);
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	/**
 	 * PkClient::files:
 	 * @package_id: the package_id of the package
