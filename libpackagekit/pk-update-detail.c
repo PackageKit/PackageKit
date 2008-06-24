@@ -20,10 +20,8 @@
  */
 
 /**
- * SECTION:pk-package-id
- * @short_description: Functionality to modify a PackageID
- *
- * PackageId's are difficult to read and create.
+ * SECTION:pk-update-detail
+ * @short_description: Functionality to create an update detail struct
  */
 
 #include "config.h"
@@ -86,6 +84,7 @@ pk_update_detail_new_from_data (const gchar *package_id, const gchar *updates, c
 	detail->cve_url = g_strdup (cve_url);
 	detail->restart = restart;
 	detail->update_text = g_strdup (update_text);
+
 	return detail;
 }
 
