@@ -85,7 +85,7 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
 					   _("The correct user is not launching the executable (usually root)"),
 					   _("The org.freedesktop.PackageKit.conf file is not "
 					     "installed in the system /etc/dbus-1/system.d directory"));
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED, message);
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED, "%s", message);
 		g_free (message);
 		return FALSE;
 	}
