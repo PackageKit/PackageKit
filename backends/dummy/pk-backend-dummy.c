@@ -29,7 +29,6 @@
 /* static bodges */
 static guint _progress_percentage = 0;
 static gulong _signal_timeout = 0;
-static const gchar *_package_id;
 static gchar **_package_ids;
 static guint _package_current = 0;
 static gboolean _has_service_pack = FALSE;
@@ -177,36 +176,43 @@ backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_
 static gboolean
 backend_get_update_detail_timeout (gpointer data)
 {
+	guint i;
+	guint len;
+	const gchar *package_id;
 	PkBackend *backend = (PkBackend *) data;
+
 	/* each one has a different detail for testing */
-	if (pk_strequal (_package_id, "powertop;1.8-1.fc8;i386;fedora")) {
-		pk_backend_update_detail (backend, "powertop;1.8-1.fc8;i386;available",
-					  "powertop;1.7-1.fc8;i386;installed", "",
-					  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
-					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
-					  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source");
-	} else if (pk_strequal (_package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
-		pk_backend_update_detail (backend, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;available",
-					  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed^"
-					  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
-					  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
-					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
-					  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
-					  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
-					  PK_RESTART_ENUM_SYSTEM, "Update to newest version");
-	} else if (pk_strequal (_package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
-		pk_backend_update_detail (backend, "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-					  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
-					  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
-					  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
-					  NULL,
-					  PK_RESTART_ENUM_SESSION,
-					  "Update to latest whizz bang version\n"
-					  "* support this new thing\n"
-					  "* something else\n"
-					  "- and that new thing");
-	} else {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON, "Got unexpected package_id '%s'", _package_id);
+	len = g_strv_length (_package_ids);
+	for (i=0; i<len; i++) {
+		package_id = _package_ids[i];
+		if (pk_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora")) {
+			pk_backend_update_detail (backend, package_id,
+						  "powertop;1.7-1.fc8;i386;installed", "",
+						  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
+						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
+						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source");
+		}
+		if (pk_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
+			pk_backend_update_detail (backend, package_id,
+						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed^"
+						  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
+						  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
+						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
+						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
+						  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
+						  PK_RESTART_ENUM_SYSTEM, "Update to newest version");
+		}
+		if (pk_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
+			pk_backend_update_detail (backend, package_id,
+						  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
+						  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
+						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
+						  NULL, PK_RESTART_ENUM_SESSION,
+						  "Update to latest whizz bang version\n"
+						  "* support this new thing\n"
+						  "* something else\n"
+						  "- and that new thing");
+		}
 	}
 	pk_backend_finished (backend);
 	_signal_timeout = 0;
@@ -220,7 +226,7 @@ static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	_package_id = package_ids[0];
+	_package_ids = package_ids;
 	_signal_timeout = g_timeout_add (500, backend_get_update_detail_timeout, backend);
 }
 
