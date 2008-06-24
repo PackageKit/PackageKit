@@ -40,6 +40,7 @@ void libst_control (LibSelfTest *test);
 void libst_task_list (LibSelfTest *test);
 void libst_catalog (LibSelfTest *test);
 void libst_update_detail (LibSelfTest *test);
+void libst_details (LibSelfTest *test);
 
 int
 main (int argc, char **argv)
@@ -63,6 +64,7 @@ main (int argc, char **argv)
 	libst_control (&test);
 	libst_task_list (&test);
 	libst_update_detail (&test);
+	libst_details (&test);
 
 	return (libst_finish (&test));
 }
