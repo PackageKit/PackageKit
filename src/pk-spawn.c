@@ -268,11 +268,20 @@ gboolean
 pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 {
 	gboolean ret;
+	guint i;
+	guint len;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 	g_return_val_if_fail (argv != NULL, FALSE);
 
-	pk_debug ("argv[0] '%s'", argv[0]);
+	len = g_strv_length (argv);
+	if (len > 5) {
+		pk_debug ("limiting debugging to 5 entries");
+		len = 5;
+	}
+	for (i=0; i<len; i++) {
+		pk_debug ("argv[%i] '%s'", i, argv[i]);
+	}
 	spawn->priv->finished = FALSE;
 
 	/* create spawned object for tracking */
