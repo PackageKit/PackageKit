@@ -565,7 +565,6 @@ pk_transaction_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *pac
 	/* add to package cache even if we already got a result */
 	info_text = pk_info_enum_to_text (info);
 	pk_package_list_add (transaction->priv->package_list, info, package_id, summary);
-	pk_debug ("caching package info=%s %s, %s", info_text, package_id, summary);
 
 	/* emit */
 	pk_debug ("emitting package info=%s %s, %s", info_text, package_id, summary);

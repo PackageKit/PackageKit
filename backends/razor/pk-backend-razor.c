@@ -55,6 +55,68 @@ backend_refresh_cache_thread (PkBackend *backend)
 }
 
 /**
+ * backend_get_files:
+ */
+static void
+backend_get_files (PkBackend *backend, gchar **package_ids)
+{
+	guint i;
+	guint length;
+	const gchar *package_id;
+	PkPackageId *ident;
+
+	length = g_strv_length (package_ids);
+	for (i=0; i<length; i++) {
+		package_id = package_ids[i];
+		ident = pk_package_id_new_from_string (package_id);
+		pk_debug ("look up: %s", ident->name);
+		pk_backend_files (backend, package_id, "/usr/bin/dave;/usr/share/brian");
+	}
+	pk_backend_finished (backend);
+}
+
+static const char *repo_filename = "/home/hughsie/Code/razor/src/system.repo";
+static const char *system_details = "/home/hughsie/Code/razor/src/system-details.repo";
+
+static gboolean
+backend_get_packages_thread (PkBackend *backend)
+{
+	struct razor_package_iterator *pi;
+	struct razor_set *set;
+	struct razor_package *package;
+	const gchar *name, *version, *arch, *summary;
+	gchar *package_id;
+
+	set = razor_set_open (repo_filename);
+	razor_set_open_details (set, system_details);
+	pi = razor_package_iterator_create (set);
+
+	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
+		package_id = pk_package_id_build (name, version, arch, "installed");
+		razor_package_get_details (set, package, &summary, NULL, NULL, NULL);
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, summary);
+		g_free (package_id);
+	}
+
+	razor_package_iterator_destroy (pi);
+	razor_set_destroy (set);
+
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_get_packages:
+ */
+static void
+backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_thread_create (backend, backend_get_packages_thread);
+}
+
+/**
  * backend_refresh_cache:
  */
 static void
@@ -232,8 +294,8 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	NULL,					/* get_depends */
 	backend_get_details,			/* get_details */
-	NULL,					/* get_files */
-	NULL,					/* get_packages */
+	backend_get_files,			/* get_files */
+	backend_get_packages,			/* get_packages */
 	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
