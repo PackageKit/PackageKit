@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -19,38 +19,30 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PK_DETAILS_H
-#define __PK_DETAILS_H
+#ifndef __PK_PACKAGE_OBJ_H
+#define __PK_PACKAGE_OBJ_H
 
 #include <glib-object.h>
 #include <pk-enum.h>
 
-G_BEGIN_DECLS
-
 /**
- * PkDetails:
+ * PkPackageObj:
  *
- * Cached object to represent details about the package.
- **/
-typedef struct
-{
-	gchar				*package_id;
-	gchar				*license;
-	PkGroupEnum			 group;
-	gchar				*description;
-	gchar				*url;
-	guint64				 size;
-} PkDetails;
+ * A cached store for the complete Package object
+ */
+typedef struct {
+	PkInfoEnum		 info;
+	gchar			*package_id;
+	gchar			*summary;
+} PkPackageObj;
 
-PkDetails	*pk_details_new				(void);
-PkDetails	*pk_details_new_from_data		(const gchar	*package_id,
-							 const gchar	*license,
-							 PkGroupEnum	 group,
-							 const gchar	*description,
-							 const gchar	*url,
-							 guint64	 size);
-gboolean	 pk_details_free			(PkDetails	*detail);
+PkPackageObj	*pk_package_obj_new			(PkInfoEnum		 info,
+							 const gchar		*package_id,
+							 const gchar		*summary);
+gboolean	 pk_package_obj_free			(PkPackageObj		*obj);
+PkPackageObj	*pk_package_obj_copy			(const PkPackageObj	*obj);
+gboolean	 pk_package_obj_equal			(const PkPackageObj	*obj1,
+							 const PkPackageObj	*obj2);
 
-G_END_DECLS
+#endif /* __PK_PACKAGE_OBJ_H */
 
-#endif /* __PK_DETAILS_H */

@@ -19,8 +19,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PK_UPDATE_DETAIL_H
-#define __PK_UPDATE_DETAIL_H
+#ifndef __PK_DETAILS_H
+#define __PK_DETAILS_H
 
 #include <glib-object.h>
 #include <pk-enum.h>
@@ -28,34 +28,29 @@
 G_BEGIN_DECLS
 
 /**
- * PkUpdateDetail:
+ * PkDetailsObj:
  *
- * Cached object to represent details about the update.
+ * Cached object to represent details about the package.
  **/
 typedef struct
 {
 	gchar				*package_id;
-	gchar				*updates;
-	gchar				*obsoletes;
-	gchar				*vendor_url;
-	gchar				*bugzilla_url;
-	gchar				*cve_url;
-	PkRestartEnum			 restart;
-	gchar				*update_text;
-} PkUpdateDetail;
+	gchar				*license;
+	PkGroupEnum			 group;
+	gchar				*description;
+	gchar				*url;
+	guint64				 size;
+} PkDetailsObj;
 
-PkUpdateDetail	*pk_update_detail_new			(void);
-PkUpdateDetail	*pk_update_detail_copy			(const PkUpdateDetail	*detail);
-PkUpdateDetail	*pk_update_detail_new_from_data		(const gchar	*package_id,
-							 const gchar	*updates,
-							 const gchar	*obsoletes,
-							 const gchar	*vendor_url,
-							 const gchar	*bugzilla_url,
-							 const gchar	*cve_url,
-							 PkRestartEnum	 restart,
-							 const gchar	*update_text);
-gboolean	 pk_update_detail_free			(PkUpdateDetail	*detail);
+PkDetailsObj	*pk_details_obj_new			(void);
+PkDetailsObj	*pk_details_obj_new_from_data		(const gchar	*package_id,
+							 const gchar	*license,
+							 PkGroupEnum	 group,
+							 const gchar	*description,
+							 const gchar	*url,
+							 guint64	 size);
+gboolean	 pk_details_obj_free			(PkDetailsObj	*detail);
 
 G_END_DECLS
 
-#endif /* __PK_UPDATE_DETAIL_H */
+#endif /* __PK_DETAILS_H */

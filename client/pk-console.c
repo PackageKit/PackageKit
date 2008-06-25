@@ -38,7 +38,7 @@
 #include <pk-package-id.h>
 #include <pk-common.h>
 #include <pk-connection.h>
-#include <pk-update-detail.h>
+#include <pk-update-detail-obj.h>
 
 #define PROGRESS_BAR_SIZE 15
 
@@ -213,7 +213,7 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
  * pk_console_update_detail_cb:
  **/
 static void
-pk_console_update_detail_cb (PkClient *client, const PkUpdateDetail *detail, gpointer data)
+pk_console_update_detail_cb (PkClient *client, const PkUpdateDetailObj *detail, gpointer data)
 {
 	if (awaiting_space) {
 		g_print ("\n");
@@ -483,7 +483,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	gboolean valid;
 	guint i;
 	guint length;
-	PkPackageItem *item;
+	const PkPackageObj *item;
 	PkPackageList *list;
 	gchar **packages;
 
@@ -537,7 +537,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* only found one, great! */
 	if (length == 1) {
-		item = pk_package_list_get_item (list, 0);
+		item = pk_package_list_get_obj (list, 0);
 		return g_strdup (item->package_id);
 	}
 
@@ -547,13 +547,13 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	}
 	g_print ("%s\n", _("There are multiple package matches"));
 	for (i=0; i<length; i++) {
-		item = pk_package_list_get_item (list, i);
+		item = pk_package_list_get_obj (list, i);
 		g_print ("%i. %s\n", i+1, item->package_id);
 	}
 
 	/* find out what package the user wants to use */
 	i = pk_console_get_number (_("Please enter the package number: "), length);
-	item = pk_package_list_get_item (list, i-1);
+	item = pk_package_list_get_obj (list, i-1);
 	pk_debug ("package_id = %s", item->package_id);
 	g_object_unref (list);
 
@@ -718,7 +718,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 {
 	gchar *package_id;
 	gboolean ret = TRUE;
-	PkPackageItem *item;
+	const PkPackageObj *item;
 	PkPackageId *ident;
 	guint i;
 	guint length;
@@ -797,7 +797,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	}
 	g_print ("%s:\n", _("The following packages have to be removed"));
 	for (i=0; i<length; i++) {
-		item = pk_package_list_get_item (list, i);
+		item = pk_package_list_get_obj (list, i);
 		ident = pk_package_id_new_from_string (item->package_id);
 		g_print ("%i\t%s-%s\n", i, ident->name, ident->version);
 		pk_package_id_free (ident);
@@ -996,7 +996,7 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
  * pk_console_details_cb:
  **/
 static void
-pk_console_details_cb (PkClient *client, const PkDetails *details, gpointer data)
+pk_console_details_cb (PkClient *client, const PkDetailsObj *details, gpointer data)
 {
 	/* if on console, clear the progress bar line */
 	if (awaiting_space) {

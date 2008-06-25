@@ -46,8 +46,8 @@
 #include <pk-enum.h>
 #include <pk-debug.h>
 #include <pk-package-list.h>
-#include <pk-update-detail.h>
-#include <pk-details.h>
+#include <pk-update-detail-obj.h>
+#include <pk-details-obj.h>
 
 #include "pk-transaction.h"
 #include "pk-transaction-list.h"
@@ -56,7 +56,7 @@
 #include "pk-backend.h"
 #include "pk-backend-internal.h"
 #include "pk-inhibit.h"
-#include "pk-update-detail-cache.h"
+#include "pk-update-detail-list.h"
 #include "pk-cache.h"
 #include "pk-notify.h"
 #include "pk-security.h"
@@ -82,7 +82,7 @@ struct PkTransactionPrivate
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkCache			*cache;
-	PkUpdateDetailCache	*update_detail_cache;
+	PkUpdateDetailList	*update_detail_list;
 	PkNotify		*notify;
 	PkSecurity		*security;
 
@@ -361,7 +361,7 @@ pk_transaction_caller_active_changed_cb (LibGBus *libgbus, gboolean is_active, P
  * pk_transaction_details_cb:
  **/
 static void
-pk_transaction_details_cb (PkBackend *backend, PkDetails *details, PkTransaction *transaction)
+pk_transaction_details_cb (PkBackend *backend, PkDetailsObj *details, PkTransaction *transaction)
 {
 	const gchar *group_text;
 
@@ -711,20 +711,15 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const
  * pk_transaction_update_detail_cb:
  **/
 static void
-pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetail *detail, PkTransaction *transaction)
+pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *detail, PkTransaction *transaction)
 {
 	const gchar *restart_text;
-	PkUpdateDetail *detail_new;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	/* are we already in the cache? */
-	detail_new = pk_update_detail_cache_get_item (transaction->priv->update_detail_cache, detail->package_id);
-	if (detail_new == NULL) {
-		detail_new = pk_update_detail_copy (detail);
-		pk_update_detail_cache_add_item (transaction->priv->update_detail_cache, detail_new);
-	}
+	/* add, if not already added? */
+	pk_update_detail_list_add_obj (transaction->priv->update_detail_list, detail);
 
 	restart_text = pk_restart_enum_to_text (detail->restart);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
@@ -1691,7 +1686,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	GError *error;
 	gchar *package_ids_temp;
 	gchar **package_ids_new;
-	PkUpdateDetail *detail;
+	const PkUpdateDetailObj *detail;
 	GPtrArray *array;
 	guint i;
 	guint len;
@@ -1737,7 +1732,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	/* try and reuse cache */
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
-		detail = pk_update_detail_cache_get_item (transaction->priv->update_detail_cache, package_ids[i]);
+		detail = pk_update_detail_list_get_obj (transaction->priv->update_detail_list, package_ids[i]);
 		if (detail != NULL) {
 			pk_warning ("got %s", package_ids[i]);
 			/* emulate the backend */
@@ -1825,7 +1820,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	/* try and reuse cache */
 	updates_cache = pk_cache_get_updates (transaction->priv->cache);
 	if (updates_cache != NULL) {
-		PkPackageItem *package;
+		const PkPackageObj *package;
 		const gchar *info_text;
 		const gchar *exit_text;
 		guint i;
@@ -1836,7 +1831,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 
 		/* emulate the backend */
 		for (i=0; i<length; i++) {
-			package = pk_package_list_get_item (updates_cache, i);
+			package = pk_package_list_get_obj (updates_cache, i);
 			info_text = pk_info_enum_to_text (package->info);
 			g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0,
 				       info_text, package->package_id, package->summary);
@@ -3077,7 +3072,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->backend = pk_backend_new ();
 	transaction->priv->security = pk_security_new ();
 	transaction->priv->cache = pk_cache_new ();
-	transaction->priv->update_detail_cache = pk_update_detail_cache_new ();
+	transaction->priv->update_detail_list = pk_update_detail_list_new ();
 	transaction->priv->notify = pk_notify_new ();
 	transaction->priv->inhibit = pk_inhibit_new ();
 	transaction->priv->package_list = pk_package_list_new ();
@@ -3120,7 +3115,7 @@ pk_transaction_finalize (GObject *object)
 	/* remove any inhibit, it's okay to call this function when it's not needed */
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
 	g_object_unref (transaction->priv->cache);
-	g_object_unref (transaction->priv->update_detail_cache);
+	g_object_unref (transaction->priv->update_detail_list);
 	g_object_unref (transaction->priv->inhibit);
 	g_object_unref (transaction->priv->backend);
 	g_object_unref (transaction->priv->libgbus);

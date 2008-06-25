@@ -29,7 +29,7 @@
 /* prototypes */
 void libst_package_id (LibSelfTest *test);
 void libst_package_ids (LibSelfTest *test);
-void libst_package_item (LibSelfTest *test);
+void libst_package_obj (LibSelfTest *test);
 void libst_package_list (LibSelfTest *test);
 void libst_enum (LibSelfTest *test);
 void libst_common (LibSelfTest *test);
@@ -55,7 +55,7 @@ main (int argc, char **argv)
 	libst_common (&test);
 	libst_package_id (&test);
 	libst_package_ids (&test);
-	libst_package_item (&test);
+	libst_package_obj (&test);
 	libst_package_list (&test);
 	libst_enum (&test);
 	libst_extra (&test);

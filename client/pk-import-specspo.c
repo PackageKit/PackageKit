@@ -55,7 +55,7 @@ pk_import_specspo_get_summary (const gchar *name)
 {
 	guint size;
 	gboolean ret;
-	PkPackageItem *item;
+	const PkPackageObj *item;
 	GError *error = NULL;
 	PkPackageList *list;
 	gchar **names;
@@ -87,7 +87,7 @@ pk_import_specspo_get_summary (const gchar *name)
 	}
 
 	/* get the item */
-	item = pk_package_list_get_item (list, 0);
+	item = pk_package_list_get_obj (list, 0);
 	if (item == NULL) {
 		pk_error ("cannot get item");
 		g_object_unref (list);

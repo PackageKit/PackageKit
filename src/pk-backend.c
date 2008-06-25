@@ -33,7 +33,7 @@
 #include <glib/gprintf.h>
 #include <pk-network.h>
 
-#include "pk-package-item.h"
+#include "pk-package-obj.h"
 #include "pk-debug.h"
 #include "pk-common.h"
 #include "pk-marshal.h"
@@ -41,8 +41,8 @@
 #include "pk-backend.h"
 #include "pk-time.h"
 #include "pk-file-monitor.h"
-#include "pk-update-detail.h"
-#include "pk-details.h"
+#include "pk-update-detail-obj.h"
+#include "pk-details-obj.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
@@ -88,7 +88,7 @@ struct _PkBackendPrivate
 	gboolean		 set_eula;
 	gboolean		 has_sent_package;
 	PkNetwork		*network;
-	PkPackageItem		*last_package;
+	PkPackageObj		*last_package;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
@@ -909,7 +909,7 @@ gboolean
 pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
 	gchar *summary_safe;
-	PkPackageItem *item;
+	PkPackageObj *item;
 	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -917,17 +917,17 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* check against the old one */
-	item = pk_package_item_new (info, package_id, summary);
-	ret = pk_package_item_equal (item, backend->priv->last_package);
+	item = pk_package_obj_new (info, package_id, summary);
+	ret = pk_package_obj_equal (item, backend->priv->last_package);
 	if (ret) {
-		pk_package_item_free (item);
+		pk_package_obj_free (item);
 		pk_debug ("skipping duplicate %s", package_id);
 		return FALSE;
 	}
 	/* update the 'last' package */
-	pk_package_item_free (backend->priv->last_package);
-	backend->priv->last_package = pk_package_item_copy (item);
-	pk_package_item_free (item);
+	pk_package_obj_free (backend->priv->last_package);
+	backend->priv->last_package = pk_package_obj_copy (item);
+	pk_package_obj_free (item);
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
@@ -973,7 +973,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *update_text)
 {
 	gchar *update_text_safe;
-	PkUpdateDetail *detail;
+	PkUpdateDetailObj *detail;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -988,11 +988,11 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
 
-	/* form PkUpdateDetail struct */
-	detail = pk_update_detail_new_from_data (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text_safe);
+	/* form PkUpdateDetailObj struct */
+	detail = pk_update_detail_obj_new_from_data (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text_safe);
 	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0, detail);
 
-	pk_update_detail_free (detail);
+	pk_update_detail_obj_free (detail);
 	g_free (update_text_safe);
 	return TRUE;
 }
@@ -1098,7 +1098,7 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 		    const gchar *description, const gchar *url, gulong size)
 {
 	gchar *description_safe;
-	PkDetails *details;
+	PkDetailsObj *details;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -1113,10 +1113,10 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
 
-	details = pk_details_new_from_data (package_id, license, group, description_safe, url, size);
+	details = pk_details_obj_new_from_data (package_id, license, group, description_safe, url, size);
 	g_signal_emit (backend, signals [PK_BACKEND_DETAILS], 0, details);
 
-	pk_details_free (details);
+	pk_details_obj_free (details);
 	g_free (description_safe);
 	return TRUE;
 }
@@ -1841,7 +1841,7 @@ pk_backend_reset (PkBackend *backend)
 
 	/* TODO: need to wait for Finished() if running */
 
-	pk_package_item_free (backend->priv->last_package);
+	pk_package_obj_free (backend->priv->last_package);
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
 	backend->priv->set_eula = FALSE;

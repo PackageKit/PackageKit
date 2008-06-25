@@ -56,8 +56,8 @@
 #include "pk-marshal.h"
 #include "pk-common.h"
 #include "pk-control.h"
-#include "pk-update-detail.h"
-#include "pk-details.h"
+#include "pk-update-detail-obj.h"
+#include "pk-details-obj.h"
 
 static void     pk_client_class_init	(PkClientClass *klass);
 static void     pk_client_init		(PkClient      *client);
@@ -459,7 +459,7 @@ pk_client_get_require_restart (PkClient *client)
  * We do not provide access to the internal package list (as it could be being
  * updated) so provide a way to get access to objects here.
  *
- * Return value: The #PkPackageItem or %NULL if not found or invalid
+ * Return value: The #PkPackageObj or %NULL if not found or invalid
  **/
 PkPackageList *
 pk_client_get_package_list (PkClient *client)
@@ -595,7 +595,7 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 			    const gchar *cve_url, const gchar *restart_text, const gchar *update_text, PkClient *client)
 {
 	PkRestartEnum restart;
-	PkUpdateDetail *detail;
+	PkUpdateDetailObj *detail;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
@@ -603,10 +603,10 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
 	restart = pk_restart_enum_from_text (restart_text);
 
-	detail = pk_update_detail_new_from_data (package_id, updates, obsoletes, vendor_url,
+	detail = pk_update_detail_obj_new_from_data (package_id, updates, obsoletes, vendor_url,
 						 bugzilla_url, cve_url, restart, update_text);
 	g_signal_emit (client, signals [PK_CLIENT_UPDATE_DETAIL], 0, detail);
-	pk_update_detail_free (detail);
+	pk_update_detail_obj_free (detail);
 }
 
 /**
@@ -618,7 +618,7 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 		      guint64 size, PkClient *client)
 {
 	PkGroupEnum group;
-	PkDetails *details;
+	PkDetailsObj *details;
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	group = pk_group_enum_from_text (group_text);
@@ -626,9 +626,9 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 	pk_debug ("emit details %s, %s, %s, %s, %s, %ld",
 		  package_id, license, pk_group_enum_to_text (group), description, url, (long int) size);
 
-	details = pk_details_new_from_data (package_id, license, group, description, url, size);
+	details = pk_details_obj_new_from_data (package_id, license, group, description, url, size);
 	g_signal_emit (client, signals [PK_CLIENT_DETAILS], 0, details);
-	pk_details_free (details);
+	pk_details_obj_free (details);
 }
 
 /**

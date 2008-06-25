@@ -38,10 +38,11 @@ libpackagekit_include_HEADERS =					\
 	pk-connection.h						\
 	pk-package-id.h						\
 	pk-package-ids.h					\
-	pk-package-item.h					\
+	pk-package-obj.h					\
 	pk-package-list.h					\
-	pk-update-detail.h					\
-	pk-details.h						\
+	pk-update-detail-obj.h					\
+	pk-update-detail-list.h					\
+	pk-details-obj.h					\
 	pk-enum.h						\
 	pk-common.h						\
 	pk-client.h						\
@@ -63,14 +64,16 @@ libpackagekit_la_SOURCES =					\
 	pk-package-id.h						\
 	pk-package-ids.c					\
 	pk-package-ids.h					\
-	pk-package-item.c					\
-	pk-package-item.h					\
+	pk-package-obj.c					\
+	pk-package-obj.h					\
 	pk-package-list.c					\
 	pk-package-list.h					\
-	pk-update-detail.c					\
-	pk-update-detail.h					\
-	pk-details.c						\
-	pk-details.h						\
+	pk-update-detail-obj.c					\
+	pk-update-detail-obj.h					\
+	pk-update-detail-list.c					\
+	pk-update-detail-list.h					\
+	pk-details-obj.c					\
+	pk-details-obj.h					\
 	pk-enum.h						\
 	pk-enum.c						\
 	pk-common.c						\

@@ -25,8 +25,8 @@
 #include <glib-object.h>
 #include "pk-enum.h"
 #include "pk-package-list.h"
-#include "pk-update-detail.h"
-#include "pk-details.h"
+#include "pk-update-detail-obj.h"
+#include "pk-details-obj.h"
 
 G_BEGIN_DECLS
 
@@ -99,9 +99,9 @@ struct _PkClientClass
 							 guint		 duration,
 							 const gchar	*data);
 	void		(* update_detail)		(PkClient	*client,
-							 PkUpdateDetail	*update_detail);
+							 PkUpdateDetailObj	*update_detail);
 	void		(* details)			(PkClient	*client,
-							 PkDetails	*package_detail);
+							 PkDetailsObj	*package_detail);
 	void		(* files)			(PkClient	*client,
 							 const gchar	*package_id,
 							 const gchar	*filelist);

@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-details
+ * SECTION:pk-details-obj
  * @short_description: Functionality to create a details struct
  */
 
@@ -35,20 +35,20 @@
 #include <pk-enum.h>
 #include "pk-debug.h"
 #include "pk-common.h"
-#include "pk-details.h"
+#include "pk-details-obj.h"
 
 /**
- * pk_details_new:
+ * pk_details_obj_new:
  *
- * Creates a new #PkDetails object with default values
+ * Creates a new #PkDetailsObj object with default values
  *
- * Return value: a new #PkDetails object
+ * Return value: a new #PkDetailsObj object
  **/
-PkDetails *
-pk_details_new (void)
+PkDetailsObj *
+pk_details_obj_new (void)
 {
-	PkDetails *detail;
-	detail = g_new0 (PkDetails, 1);
+	PkDetailsObj *detail;
+	detail = g_new0 (PkDetailsObj, 1);
 	detail->package_id = NULL;
 	detail->license = NULL;
 	detail->group = 0;
@@ -60,20 +60,20 @@ pk_details_new (void)
 }
 
 /**
- * pk_details_new_from_data:
+ * pk_details_obj_new_from_data:
  *
- * Creates a new #PkDetails object with values.
+ * Creates a new #PkDetailsObj object with values.
  *
- * Return value: a new #PkDetails object
+ * Return value: a new #PkDetailsObj object
  **/
-PkDetails *
-pk_details_new_from_data (const gchar *package_id, const gchar *license, PkGroupEnum group,
-			  const gchar *description, const gchar *url, guint64 size)
+PkDetailsObj *
+pk_details_obj_new_from_data (const gchar *package_id, const gchar *license, PkGroupEnum group,
+			      const gchar *description, const gchar *url, guint64 size)
 {
-	PkDetails *detail = NULL;
+	PkDetailsObj *detail = NULL;
 
 	/* create new object */
-	detail = pk_details_new ();
+	detail = pk_details_obj_new ();
 	detail->package_id = g_strdup (package_id);
 	detail->license = g_strdup (license);
 	detail->group = group;
@@ -85,13 +85,13 @@ pk_details_new_from_data (const gchar *package_id, const gchar *license, PkGroup
 }
 
 /**
- * pk_details_free:
- * @detail: the #PkDetails object
+ * pk_details_obj_free:
+ * @detail: the #PkDetailsObj object
  *
- * Return value: %TRUE if the #PkDetails object was freed.
+ * Return value: %TRUE if the #PkDetailsObj object was freed.
  **/
 gboolean
-pk_details_free (PkDetails *detail)
+pk_details_obj_free (PkDetailsObj *detail)
 {
 	if (detail == NULL) {
 		return FALSE;
@@ -114,15 +114,15 @@ void
 libst_details (LibSelfTest *test)
 {
 	gboolean ret;
-	PkDetails *detail;
+	PkDetailsObj *detail;
 
-	if (libst_start (test, "PkDetails", CLASS_AUTO) == FALSE) {
+	if (libst_start (test, "PkDetailsObj", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
 	/************************************************************/
 	libst_title (test, "get an details object");
-	detail = pk_details_new ();
+	detail = pk_details_obj_new ();
 	if (detail != NULL) {
 		libst_success (test, NULL);
 	} else {
@@ -131,14 +131,14 @@ libst_details (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test details");
-	ret = pk_details_free (detail);
+	ret = pk_details_obj_free (detail);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
 
-	pk_details_free (detail);
+	pk_details_obj_free (detail);
 
 	libst_end (test);
 }

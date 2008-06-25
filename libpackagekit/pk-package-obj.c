@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-package-item
+ * SECTION:pk-package-obj
  * @short_description: A cached Package structure
  *
  * These provide a way to query and store a single package.
@@ -44,65 +44,65 @@
 
 #include "pk-debug.h"
 #include "pk-common.h"
-#include "pk-package-item.h"
+#include "pk-package-obj.h"
 
 /**
- * pk_package_item_new:
+ * pk_package_obj_new:
  **/
-PkPackageItem *
-pk_package_item_new (PkInfoEnum info, const gchar *package_id, const gchar *summary)
+PkPackageObj *
+pk_package_obj_new (PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
-	PkPackageItem *item;
+	PkPackageObj *obj;
 
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	item = g_new0 (PkPackageItem, 1);
-	item->info = info;
-	item->package_id = g_strdup (package_id);
-	item->summary = g_strdup (summary);
-	return item;
+	obj = g_new0 (PkPackageObj, 1);
+	obj->info = info;
+	obj->package_id = g_strdup (package_id);
+	obj->summary = g_strdup (summary);
+	return obj;
 }
 
 /**
- * pk_package_item_free:
+ * pk_package_obj_free:
  **/
 gboolean
-pk_package_item_free (PkPackageItem *item)
+pk_package_obj_free (PkPackageObj *obj)
 {
-	if (item == NULL) {
+	if (obj == NULL) {
 		return FALSE;
 	}
-	g_free (item->package_id);
-	g_free (item->summary);
-	g_free (item);
+	g_free (obj->package_id);
+	g_free (obj->summary);
+	g_free (obj);
 	return TRUE;
 }
 
 /**
- * pk_package_item_equal:
+ * pk_package_obj_equal:
  *
  * Only compares the package_id's and the info enum
  **/
 gboolean
-pk_package_item_equal (PkPackageItem *item1, PkPackageItem *item2)
+pk_package_obj_equal (const PkPackageObj *obj1, const PkPackageObj *obj2)
 {
-	if (item1 == NULL || item2 == NULL) {
+	if (obj1 == NULL || obj2 == NULL) {
 		return FALSE;
 	}
-	return (item1->info == item2->info &&
-		pk_strequal (item1->package_id, item2->package_id));
+	return (obj1->info == obj2->info &&
+		pk_strequal (obj1->package_id, obj2->package_id));
 }
 
 /**
- * pk_package_item_copy:
+ * pk_package_obj_copy:
  *
- * Copy a PkPackageItem
+ * Copy a PkPackageObj
  **/
-PkPackageItem *
-pk_package_item_copy (PkPackageItem *item)
+PkPackageObj *
+pk_package_obj_copy (const PkPackageObj *obj)
 {
-	g_return_val_if_fail (item != NULL, NULL);
-	return pk_package_item_new (item->info, item->package_id, item->summary);
+	g_return_val_if_fail (obj != NULL, NULL);
+	return pk_package_obj_new (obj->info, obj->package_id, obj->summary);
 }
 
 /***************************************************************************
@@ -112,21 +112,21 @@ pk_package_item_copy (PkPackageItem *item)
 #include <libselftest.h>
 
 void
-libst_package_item (LibSelfTest *test)
+libst_package_obj (LibSelfTest *test)
 {
-	PkPackageItem *item1;
-	PkPackageItem *item2;
-	PkPackageItem *item3;
+	PkPackageObj *obj1;
+	PkPackageObj *obj2;
+	PkPackageObj *obj3;
 	gboolean ret;
 
-	if (libst_start (test, "PkPackageItem", CLASS_AUTO) == FALSE) {
+	if (libst_start (test, "PkPackageObj", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
 	/************************************************************/
 	libst_title (test, "add entry");
-	item1 = pk_package_item_new (PK_INFO_ENUM_INSTALLED, "gnome;1.23;i386;data", "GNOME!");
-	if (item1 != NULL) {
+	obj1 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, "gnome;1.23;i386;data", "GNOME!");
+	if (obj1 != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -134,8 +134,8 @@ libst_package_item (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add entry");
-	item2 = pk_package_item_new (PK_INFO_ENUM_INSTALLED, "gnome;1.23;i386;data", "GNOME foo!");
-	if (item2 != NULL) {
+	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, "gnome;1.23;i386;data", "GNOME foo!");
+	if (obj2 != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -143,8 +143,8 @@ libst_package_item (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "copy entry");
-	item3 = pk_package_item_copy (item2);
-	if (item3 != NULL) {
+	obj3 = pk_package_obj_copy (obj2);
+	if (obj3 != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -152,20 +152,20 @@ libst_package_item (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check equal");
-	ret = pk_package_item_equal (item1, item3);
+	ret = pk_package_obj_equal (obj1, obj3);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
 
-	pk_package_item_free (item2);
-	pk_package_item_free (item3);
+	pk_package_obj_free (obj2);
+	pk_package_obj_free (obj3);
 
 	/************************************************************/
 	libst_title (test, "add entry");
-	item2 = pk_package_item_new (PK_INFO_ENUM_INSTALLED, "gnome-do;1.23;i386;data", "GNOME doo!");
-	if (item2 != NULL) {
+	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, "gnome-do;1.23;i386;data", "GNOME doo!");
+	if (obj2 != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -173,15 +173,15 @@ libst_package_item (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check !equal");
-	ret = pk_package_item_equal (item1, item2);
+	ret = pk_package_obj_equal (obj1, obj2);
 	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
 
-	pk_package_item_free (item1);
-	pk_package_item_free (item2);
+	pk_package_obj_free (obj1);
+	pk_package_obj_free (obj2);
 
 	libst_end (test);
 }

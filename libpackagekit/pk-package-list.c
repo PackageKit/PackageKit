@@ -45,7 +45,7 @@
 #include "pk-debug.h"
 #include "pk-common.h"
 #include "pk-package-id.h"
-#include "pk-package-item.h"
+#include "pk-package-obj.h"
 #include "pk-package-list.h"
 
 static void     pk_package_list_class_init	(PkPackageListClass *klass);
@@ -72,39 +72,39 @@ G_DEFINE_TYPE (PkPackageList, pk_package_list, G_TYPE_OBJECT)
 gboolean
 pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
-	PkPackageItem *item;
+	PkPackageObj *obj;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	item = pk_package_item_new (info, package_id, summary);
-	g_ptr_array_add (plist->priv->array, item);
+	obj = pk_package_obj_new (info, package_id, summary);
+	g_ptr_array_add (plist->priv->array, obj);
 
 	return TRUE;
 }
 
 /**
- * pk_package_list_add_item:
+ * pk_package_list_add_obj:
  *
  * Makes a deep copy, and adds to the array
  **/
 gboolean
-pk_package_list_add_item (PkPackageList *plist, PkPackageItem *item)
+pk_package_list_add_obj (PkPackageList *plist, const PkPackageObj *obj)
 {
 	gboolean ret;
-	PkPackageItem *item_new;
+	PkPackageObj *obj_new;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_return_val_if_fail (item != NULL, FALSE);
+	g_return_val_if_fail (obj != NULL, FALSE);
 
-	ret = pk_package_list_contains_item (plist, item);
+	ret = pk_package_list_contains_obj (plist, obj);
 	if (ret) {
-		pk_debug ("already added item");
+		pk_debug ("already added obj");
 		return FALSE;
 	}
 
-	item_new = pk_package_item_copy (item);
-	g_ptr_array_add (plist->priv->array, item_new);
+	obj_new = pk_package_obj_copy (obj);
+	g_ptr_array_add (plist->priv->array, obj_new);
 
 	return TRUE;
 }
@@ -119,7 +119,7 @@ pk_package_list_add_list (PkPackageList *plist, PkPackageList *list)
 {
 	guint i;
 	guint len;
-	PkPackageItem *item;
+	const PkPackageObj *obj;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (list), FALSE);
@@ -127,8 +127,8 @@ pk_package_list_add_list (PkPackageList *plist, PkPackageList *list)
 	/* add list to plist */
 	len = pk_package_list_get_size (list);
 	for (i=0; i<len; i++) {
-		item = pk_package_list_get_item (list, i);
-		pk_package_list_add_item (plist, item);
+		obj = pk_package_list_get_obj (list, i);
+		pk_package_list_add_obj (plist, obj);
 	}
 	return TRUE;
 }
@@ -139,7 +139,7 @@ pk_package_list_add_list (PkPackageList *plist, PkPackageList *list)
 gchar *
 pk_package_list_to_string (PkPackageList *plist)
 {
-	PkPackageItem *item;
+	PkPackageObj *obj;
 	guint i;
 	guint length;
 	const gchar *info_text;
@@ -150,9 +150,9 @@ pk_package_list_to_string (PkPackageList *plist)
 	package_cache = g_string_new ("");
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
-		item = g_ptr_array_index (plist->priv->array, i);
-		info_text = pk_info_enum_to_text (item->info);
-		g_string_append_printf (package_cache, "%s\t%s\t%s\n", info_text, item->package_id, item->summary);
+		obj = g_ptr_array_index (plist->priv->array, i);
+		info_text = pk_info_enum_to_text (obj->info);
+		g_string_append_printf (package_cache, "%s\t%s\t%s\n", info_text, obj->package_id, obj->summary);
 	}
 
 	/* remove trailing newline */
@@ -169,7 +169,7 @@ pk_package_list_to_string (PkPackageList *plist)
 gchar **
 pk_package_list_to_argv (PkPackageList *plist)
 {
-	PkPackageItem *item;
+	PkPackageObj *obj;
 	GPtrArray *array;
 	gchar **package_ids;
 	guint length;
@@ -178,8 +178,8 @@ pk_package_list_to_argv (PkPackageList *plist)
 	array = g_ptr_array_new ();
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
-		item = g_ptr_array_index (plist->priv->array, i);
-		g_ptr_array_add (array, item->package_id);
+		obj = g_ptr_array_index (plist->priv->array, i);
+		g_ptr_array_add (array, obj->package_id);
 	}
 
 	/* convert to argv */
@@ -203,7 +203,7 @@ pk_package_list_get_size (PkPackageList *plist)
  * pk_package_list_sort_compare_package_id_func:
  **/
 static gint
-pk_package_list_sort_compare_package_id_func (PkPackageItem **a, PkPackageItem **b)
+pk_package_list_sort_compare_package_id_func (PkPackageObj **a, PkPackageObj **b)
 {
 	return strcmp ((*a)->package_id, (*b)->package_id);
 }
@@ -212,7 +212,7 @@ pk_package_list_sort_compare_package_id_func (PkPackageItem **a, PkPackageItem *
  * pk_package_list_sort_compare_summary_func:
  **/
 static gint
-pk_package_list_sort_compare_summary_func (PkPackageItem **a, PkPackageItem **b)
+pk_package_list_sort_compare_summary_func (PkPackageObj **a, PkPackageObj **b)
 {
 	if ((*a)->summary == NULL && (*b)->summary == NULL) {
 		return 0;
@@ -228,7 +228,7 @@ pk_package_list_sort_compare_summary_func (PkPackageItem **a, PkPackageItem **b)
  * pk_package_list_sort_compare_info_func:
  **/
 static gint
-pk_package_list_sort_compare_info_func (PkPackageItem **a, PkPackageItem **b)
+pk_package_list_sort_compare_info_func (PkPackageObj **a, PkPackageObj **b)
 {
 	if ((*a)->info == (*b)->info) {
 		return 0;
@@ -278,10 +278,10 @@ pk_package_list_sort_info (PkPackageList *plist)
 }
 
 /**
- * pk_package_list_get_item:
+ * pk_package_list_get_obj:
  **/
-PkPackageItem *
-pk_package_list_get_item (PkPackageList *plist, guint item)
+const PkPackageObj *
+pk_package_list_get_obj (PkPackageList *plist, guint item)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
 	if (item >= plist->priv->array->len) {
@@ -297,13 +297,13 @@ pk_package_list_get_item (PkPackageList *plist, guint item)
 gboolean
 pk_package_list_clear (PkPackageList *plist)
 {
-	PkPackageItem *item;
+	PkPackageObj *obj;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 
 	while (plist->priv->array->len > 0) {
-		item = g_ptr_array_index (plist->priv->array, 0);
-		pk_package_item_free (item);
+		obj = g_ptr_array_index (plist->priv->array, 0);
+		pk_package_obj_free (obj);
 		g_ptr_array_remove_index_fast (plist->priv->array, 0);
 	}
 	return TRUE;
@@ -315,7 +315,7 @@ pk_package_list_clear (PkPackageList *plist)
 gboolean
 pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
 {
-	PkPackageItem *item;
+	PkPackageObj *obj;
 	guint i;
 	guint length;
 	gboolean ret = FALSE;
@@ -325,8 +325,8 @@ pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
 
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
-		item = g_ptr_array_index (plist->priv->array, i);
-		ret = pk_package_id_equal (item->package_id, package_id);
+		obj = g_ptr_array_index (plist->priv->array, i);
+		ret = pk_package_id_equal (obj->package_id, package_id);
 		if (ret) {
 			break;
 		}
@@ -340,7 +340,7 @@ pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
 gboolean
 pk_package_list_remove (PkPackageList *plist, const gchar *package_id)
 {
-	PkPackageItem *item;
+	PkPackageObj *obj;
 	guint i;
 	guint length;
 	gboolean ret = FALSE;
@@ -350,10 +350,10 @@ pk_package_list_remove (PkPackageList *plist, const gchar *package_id)
 
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
-		item = g_ptr_array_index (plist->priv->array, i);
-		ret = pk_package_id_equal (item->package_id, package_id);
+		obj = g_ptr_array_index (plist->priv->array, i);
+		ret = pk_package_id_equal (obj->package_id, package_id);
 		if (ret) {
-			pk_package_item_free (item);
+			pk_package_obj_free (obj);
 			g_ptr_array_remove_index (plist->priv->array, i);
 			break;
 		}
@@ -362,23 +362,23 @@ pk_package_list_remove (PkPackageList *plist, const gchar *package_id)
 }
 
 /**
- * pk_package_list_contains_item:
+ * pk_package_list_contains_obj:
  **/
 gboolean
-pk_package_list_contains_item (PkPackageList *plist, PkPackageItem *item)
+pk_package_list_contains_obj (PkPackageList *plist, const PkPackageObj *obj)
 {
-	PkPackageItem *item_temp;
+	PkPackageObj *obj_temp;
 	guint i;
 	guint length;
 	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_return_val_if_fail (item != NULL, FALSE);
+	g_return_val_if_fail (obj != NULL, FALSE);
 
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
-		item_temp = g_ptr_array_index (plist->priv->array, i);
-		ret = pk_package_item_equal (item_temp, item);
+		obj_temp = g_ptr_array_index (plist->priv->array, i);
+		ret = pk_package_obj_equal (obj_temp, obj);
 		if (ret) {
 			break;
 		}
@@ -456,9 +456,9 @@ libst_package_list (LibSelfTest *test)
 	PkPackageList *plist;
 	gchar *text;
 	gboolean ret;
-	PkPackageItem *r0;
-	PkPackageItem *r1;
-	PkPackageItem *r2;
+	const PkPackageObj *r0;
+	const PkPackageObj *r1;
+	const PkPackageObj *r2;
 
 	if (libst_start (test, "PkPackageList", CLASS_AUTO) == FALSE) {
 		return;
@@ -550,9 +550,9 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "sort by package_id");
 	ret = pk_package_list_sort (plist);
-	r0 = pk_package_list_get_item (plist, 0);
-	r1 = pk_package_list_get_item (plist, 1);
-	r2 = pk_package_list_get_item (plist, 2);
+	r0 = pk_package_list_get_obj (plist, 0);
+	r1 = pk_package_list_get_obj (plist, 1);
+	r2 = pk_package_list_get_obj (plist, 2);
 	if (pk_strequal (r0->package_id, "abc;1.23;i386;data") &&
 	    pk_strequal (r1->package_id, "def;1.23;i386;data") &&
 	    pk_strequal (r2->package_id, "ghi;1.23;i386;data")) {
@@ -564,9 +564,9 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "sort by summary");
 	ret = pk_package_list_sort_summary (plist);
-	r0 = pk_package_list_get_item (plist, 0);
-	r1 = pk_package_list_get_item (plist, 1);
-	r2 = pk_package_list_get_item (plist, 2);
+	r0 = pk_package_list_get_obj (plist, 0);
+	r1 = pk_package_list_get_obj (plist, 1);
+	r2 = pk_package_list_get_obj (plist, 2);
 	if (pk_strequal (r0->summary, "aed") &&
 	    pk_strequal (r1->summary, "fed") &&
 	    pk_strequal (r2->summary, "zed")) {
@@ -578,9 +578,9 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "sort by severity");
 	ret = pk_package_list_sort_info (plist);
-	r0 = pk_package_list_get_item (plist, 0);
-	r1 = pk_package_list_get_item (plist, 1);
-	r2 = pk_package_list_get_item (plist, 2);
+	r0 = pk_package_list_get_obj (plist, 0);
+	r1 = pk_package_list_get_obj (plist, 1);
+	r2 = pk_package_list_get_obj (plist, 2);
 	if (r0->info == PK_INFO_ENUM_SECURITY &&
 	    r1->info == PK_INFO_ENUM_BUGFIX &&
 	    r2->info == PK_INFO_ENUM_ENHANCEMENT) {
@@ -601,9 +601,9 @@ libst_package_list (LibSelfTest *test)
 	libst_title (test, "sort by package_id then priority (should not mess up previous sort)");
 	pk_package_list_sort (plist);
 	pk_package_list_sort_info (plist);
-	r0 = pk_package_list_get_item (plist, 0);
-	r1 = pk_package_list_get_item (plist, 1);
-	r2 = pk_package_list_get_item (plist, 2);
+	r0 = pk_package_list_get_obj (plist, 0);
+	r1 = pk_package_list_get_obj (plist, 1);
+	r2 = pk_package_list_get_obj (plist, 2);
 	if (pk_strequal (r0->package_id, "abc;1.23;i386;data") &&
 	    pk_strequal (r1->package_id, "def;1.23;i386;data") &&
 	    pk_strequal (r2->package_id, "ghi;1.23;i386;data")) {

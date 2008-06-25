@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-update-detail
+ * SECTION:pk-update-detail-obj
  * @short_description: Functionality to create an update detail struct
  */
 
@@ -35,20 +35,20 @@
 #include <pk-enum.h>
 #include "pk-debug.h"
 #include "pk-common.h"
-#include "pk-update-detail.h"
+#include "pk-update-detail-obj.h"
 
 /**
- * pk_update_detail_new:
+ * pk_update_detail_obj_new:
  *
- * Creates a new #PkUpdateDetail object with default values
+ * Creates a new #PkUpdateDetailObj object with default values
  *
- * Return value: a new #PkUpdateDetail object
+ * Return value: a new #PkUpdateDetailObj object
  **/
-PkUpdateDetail *
-pk_update_detail_new (void)
+PkUpdateDetailObj *
+pk_update_detail_obj_new (void)
 {
-	PkUpdateDetail *detail;
-	detail = g_new0 (PkUpdateDetail, 1);
+	PkUpdateDetailObj *detail;
+	detail = g_new0 (PkUpdateDetailObj, 1);
 	detail->updates = NULL;
 	detail->obsoletes = NULL;
 	detail->vendor_url = NULL;
@@ -61,21 +61,21 @@ pk_update_detail_new (void)
 }
 
 /**
- * pk_update_detail_new_from_data:
+ * pk_update_detail_obj_new_from_data:
  *
- * Creates a new #PkUpdateDetail object with values.
+ * Creates a new #PkUpdateDetailObj object with values.
  *
- * Return value: a new #PkUpdateDetail object
+ * Return value: a new #PkUpdateDetailObj object
  **/
-PkUpdateDetail *
-pk_update_detail_new_from_data (const gchar *package_id, const gchar *updates, const gchar *obsoletes,
-				const gchar *vendor_url, const gchar *bugzilla_url, const gchar *cve_url,
-				PkRestartEnum restart, const gchar *update_text)
+PkUpdateDetailObj *
+pk_update_detail_obj_new_from_data (const gchar *package_id, const gchar *updates, const gchar *obsoletes,
+				    const gchar *vendor_url, const gchar *bugzilla_url, const gchar *cve_url,
+				    PkRestartEnum restart, const gchar *update_text)
 {
-	PkUpdateDetail *detail = NULL;
+	PkUpdateDetailObj *detail = NULL;
 
 	/* create new object */
-	detail = pk_update_detail_new ();
+	detail = pk_update_detail_obj_new ();
 	detail->package_id = g_strdup (package_id);
 	detail->updates = g_strdup (updates);
 	detail->obsoletes = g_strdup (obsoletes);
@@ -89,27 +89,27 @@ pk_update_detail_new_from_data (const gchar *package_id, const gchar *updates, c
 }
 
 /**
- * pk_update_detail_copy:
+ * pk_update_detail_obj_copy:
  *
- * Return value: a new #PkUpdateDetail object
+ * Return value: a new #PkUpdateDetailObj object
  **/
-PkUpdateDetail *
-pk_update_detail_copy (const PkUpdateDetail *detail)
+PkUpdateDetailObj *
+pk_update_detail_obj_copy (const PkUpdateDetailObj *detail)
 {
 	g_return_val_if_fail (detail != NULL, NULL);
-	return pk_update_detail_new_from_data (detail->package_id, detail->updates, detail->obsoletes,
-					       detail->vendor_url, detail->bugzilla_url, detail->cve_url,
-					       detail->restart, detail->update_text);
+	return pk_update_detail_obj_new_from_data (detail->package_id, detail->updates, detail->obsoletes,
+						   detail->vendor_url, detail->bugzilla_url, detail->cve_url,
+						   detail->restart, detail->update_text);
 }
 
 /**
- * pk_update_detail_free:
- * @detail: the #PkUpdateDetail object
+ * pk_update_detail_obj_free:
+ * @detail: the #PkUpdateDetailObj object
  *
- * Return value: %TRUE if the #PkUpdateDetail object was freed.
+ * Return value: %TRUE if the #PkUpdateDetailObj object was freed.
  **/
 gboolean
-pk_update_detail_free (PkUpdateDetail *detail)
+pk_update_detail_obj_free (PkUpdateDetailObj *detail)
 {
 	if (detail == NULL) {
 		return FALSE;
@@ -134,9 +134,9 @@ void
 libst_update_detail (LibSelfTest *test)
 {
 	gboolean ret;
-	PkUpdateDetail *detail;
+	PkUpdateDetailObj *detail;
 
-	if (libst_start (test, "PkUpdateDetail", CLASS_AUTO) == FALSE) {
+	if (libst_start (test, "PkUpdateDetailObj", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
@@ -146,7 +146,7 @@ libst_update_detail (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "get an detail object");
-	detail = pk_update_detail_new ();
+	detail = pk_update_detail_obj_new ();
 	if (detail != NULL) {
 		libst_success (test, NULL);
 	} else {
@@ -155,14 +155,14 @@ libst_update_detail (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test detail");
-	ret = pk_update_detail_free (detail);
+	ret = pk_update_detail_obj_free (detail);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
 
-	pk_update_detail_free (detail);
+	pk_update_detail_obj_free (detail);
 
 	libst_end (test);
 }

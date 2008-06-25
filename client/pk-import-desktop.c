@@ -45,7 +45,7 @@ pk_desktop_get_name_for_file (const gchar *filename)
 {
 	guint size;
 	gchar *name = NULL;
-	PkPackageItem *item;
+	const PkPackageObj *item;
 	PkPackageId *pid;
 	gboolean ret;
 	GError *error = NULL;
@@ -75,7 +75,7 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	}
 
 	/* get the item */
-	item = pk_package_list_get_item (list, 0);
+	item = pk_package_list_get_obj (list, 0);
 	if (item == NULL) {
 		pk_error ("cannot get item");
 		goto out;

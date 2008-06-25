@@ -73,9 +73,9 @@ Released: 2008-06-05
  - Updated Polish translation (Piotr Drąg)
 
 * New features:
- - Add pk_package_item_copy() and allow freeing a NULL PkPackageItem without going boom (Richard Hughes)
+ - Add pk_package_obj_copy() and allow freeing a NULL PkPackageObj without going boom (Richard Hughes)
  - Allow setting 101 for backends for sub-percentages (Richard Hughes)
- - Add pk_package_list_add_item() and pk_package_list_contains_item() (Richard Hughes)
+ - Add pk_package_list_add_obj() and pk_package_list_contains_obj() (Richard Hughes)
  - Allow passing environment parameters to pk_spawn_argv (Richard Hughes)
  - Add support for http and ftp proxy servers in the daemon (Richard Hughes)
  - Allow adding and removing multiple packages at one time with pkcon (Richard Hughes)
