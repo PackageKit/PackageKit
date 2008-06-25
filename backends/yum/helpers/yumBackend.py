@@ -630,7 +630,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         found[str(pkg)] = 1
 
     @handle_repo_error
-    def download_packages(self,packages,directory)
+    def download_packages(self,packages,directory):
 	'''
 	Implement the {backend}-download-packages functionality
 	'''
