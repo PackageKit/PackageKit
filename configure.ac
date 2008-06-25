@@ -234,6 +234,7 @@ AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),en
 AC_ARG_ENABLE(opkg, AS_HELP_STRING([--enable-opkg],[use the OPKG backend]),enable_opkg=$enableval,enable_opkg=no)
 AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enable_pisi=$enableval,enable_pisi=no)
 AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend]),enable_poldek=$enableval,enable_poldek=no)
+AC_ARG_ENABLE(razor, AS_HELP_STRING([--enable-razor],[use the razor backend]),enable_razor=$enableval,enable_razor=no)
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
@@ -249,6 +250,7 @@ AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes], [using dummy ba
 AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes], [using OPKG backend])
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes], [using PiSi backend])
 AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes], [using poldek backend])
+AM_CONDITIONAL(BACKEND_TYPE_RAZOR, [test x$enable_razor = xyes], [using Razor backend])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART backend])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes], [using URPMI backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
@@ -374,7 +376,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,box,conary,dummy,smart,urpmi,yum,pisi,zypp,opkg (dummy)]))
+                           alpm,apt,box,conary,dummy,razor,smart,urpmi,yum,pisi,zypp,opkg (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -391,6 +393,8 @@ if test x$with_default_backend = x; then
 		with_default_backend=smart
 	elif test -f /usr/bin/pisi ; then
 		with_default_backend=pisi
+	elif test -f /usr/bin/razor ; then
+		with_default_backend=razor
 	elif test -f /usr/bin/poldek ; then
 		with_default_backend=poldek
 	elif test -f /usr/bin/urpmq ; then
@@ -441,6 +445,12 @@ if test x$enable_zypp = xyes; then
 	AC_SUBST(ZYPP_LIBS)
 fi
 
+if test x$enable_razor = xyes; then
+	PKG_CHECK_MODULES(RAZOR, razor >= 0.1)
+	AC_SUBST(RAZOR_CFLAGS)
+	AC_SUBST(RAZOR_LIBS)
+fi
+
 AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
 AC_SUBST(PK_YUM_PLUGIN_DIR, "\$(prefix)/lib/yum-plugins")
 AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
@@ -481,6 +491,7 @@ backends/urpmi/Makefile
 backends/urpmi/helpers/Makefile
 backends/urpmi/helpers/perl_packagekit/Makefile
 backends/urpmi/helpers/urpmi_backend/Makefile
+backends/razor/Makefile
 backends/yum/Makefile
 backends/yum/helpers/Makefile
 backends/yum2/Makefile
@@ -532,6 +543,7 @@ echo "
         CONARY backend:            ${enable_conary}
         dummy backend:             ${enable_dummy}
         OPKG backend:              ${enable_opkg}
+        Razor backend:             ${enable_razor}
         PiSi backend:              ${enable_pisi}
         poldek backend:            ${enable_poldek}
         SMART backend:             ${enable_smart}

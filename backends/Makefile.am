@@ -24,6 +24,10 @@ if BACKEND_TYPE_OPKG
 SUBDIRS += opkg
 endif
 
+if BACKEND_TYPE_RAZOR
+SUBDIRS += razor
+endif
+
 if BACKEND_TYPE_SMART
 SUBDIRS += smart
 endif
