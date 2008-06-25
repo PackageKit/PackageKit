@@ -174,8 +174,11 @@ pk_package_ids_to_text (gchar **package_ids, const gchar *delimiter)
 		g_string_append (string, package_ids[i]);
 		g_string_append (string, delimiter);
 	}
-	/* remove trailing delimiter */
+
+	/* ITS4: ignore, we check this for validity */
 	size = strlen (delimiter);
+
+	/* remove trailing delimiter */
 	if (string->len > size) {
 		g_string_set_size (string, string->len-size);
 	}

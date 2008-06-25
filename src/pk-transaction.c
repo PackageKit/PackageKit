@@ -966,8 +966,8 @@ pk_transaction_search_check (const gchar *search, GError **error)
 	guint size;
 	gboolean ret;
 
-	/* ITS4: ignore, not used for allocation, and checked */
-	size = strlen (search);
+	/* limit to a 1k chunk */
+	size = pk_strlen (search, 1024);
 
 	if (search == NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
@@ -984,7 +984,7 @@ pk_transaction_search_check (const gchar *search, GError **error)
 				     "The search string length is too small");
 		return FALSE;
 	}
-	if (size > 1024) {
+	if (size == 1024) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "The search string length is too large");
 		return FALSE;

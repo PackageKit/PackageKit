@@ -280,11 +280,7 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 	extra->priv->locale_base = g_strdup (locale);
 
 	/* we only want the first section to compare */
-	len = strlen (locale);
-	if (len > 10) {
-		pk_warning ("locale really long (%i), truncating to 10", len);
-		len = 10;
-	}
+	len = pk_strlen (locale, 10);
 	for (i=0; i<len; i++) {
 		if (extra->priv->locale_base[i] == '_') {
 			extra->priv->locale_base[i] = '\0';

@@ -324,13 +324,14 @@ pk_strnumber (const gchar *text)
 		return FALSE;
 	}
 
-	/* ITS4: ignore, not used for allocation and checked for oversize */
-	length = strlen (text);
+	/* max length is 10 */
+	length = pk_strlen (text, 10);
+	if (length == 10) {
+		pk_debug ("input too long!");
+		return FALSE;
+	}
+
 	for (i=0; i<length; i++) {
-		if (i > 10) {
-			pk_debug ("input too long!");
-			return FALSE;
-		}
 		if (i == 0 && text[i] == '-') {
 			/* negative sign */
 		} else if (g_ascii_isdigit (text[i]) == FALSE) {
@@ -413,26 +414,30 @@ pk_strzero (const gchar *text)
 /**
  * pk_strlen:
  * @text: The text to check
- * @max_length: The maximum length of the string
+ * @len: The maximum length of the string
  *
  * This function is a much safer way of doing strlen as it checks for NULL and
  * a stupidly long string.
- * This also modifies the string in place if it is over-range by inserting
- * a NULL at the max_length.
  *
- * Return value: the length of the string, or max_length.
+ * Return value: the length of the string, or len if the string is too long.
  **/
 guint
-pk_strlen (gchar *text, guint max_length)
+pk_strlen (const gchar *text, guint len)
 {
-	guint length;
-	/* ITS4: ignore, not used for allocation and checked */
-	length = strlen (text);
-	if (length > max_length) {
-		text[max_length] = '\0';
-		return max_length;
+	guint i;
+
+	/* common case */
+	if (text == NULL || text[0] == '\0') {
+		return 0;
 	}
-	return length;
+
+	/* only count up to len */
+	for (i=1; i<len; i++) {
+		if (text[i] == '\0') {
+			break;
+		}
+	}
+	return i;
 }
 
 /**
@@ -449,13 +454,14 @@ pk_strvalidate (const gchar *text)
 	guint i;
 	guint length;
 
-	/* ITS4: ignore, not used for allocation and checked for oversize */
-	length = strlen (text);
+	/* maximum size is 1024 */
+	length = pk_strlen (text, 1024);
+	if (length > 1024) {
+		pk_debug ("input too long!");
+		return FALSE;
+	}
+
 	for (i=0; i<length; i++) {
-		if (i > 1024) {
-			pk_debug ("input too long!");
-			return FALSE;
-		}
 		if (pk_strvalidate_char (text[i]) == FALSE) {
 			pk_debug ("invalid char '%c' in text!", text[i]);
 			return FALSE;
@@ -492,9 +498,8 @@ pk_strsplit (const gchar *id, guint parts)
 		goto out;
 	}
 
-	/* ITS4: ignore, not used for allocation */
+	/* name has to be valid */
 	if (pk_strzero (sections[0])) {
-		/* name has to be valid */
 		pk_warning ("ident first section is empty");
 		goto out;
 	}
@@ -606,6 +611,7 @@ gchar *
 pk_strpad (const gchar *data, guint length)
 {
 	gint size;
+	guint data_len;
 	gchar *text;
 	gchar *padding;
 
@@ -614,7 +620,10 @@ pk_strpad (const gchar *data, guint length)
 	}
 
 	/* ITS4: ignore, only used for formatting */
-	size = (length - strlen(data));
+	data_len = strlen (data);
+
+	/* calculate */
+	size = (length - data_len);
 	if (size <= 0) {
 		return g_strdup (data);
 	}
@@ -1308,25 +1317,30 @@ libst_common (LibSelfTest *test)
 	 ****************          strlen          ******************
 	 ************************************************************/
 	libst_title (test, "strlen bigger");
-	text_safe = g_strdup ("123456789");
-	length = pk_strlen (text_safe, 20);
-	if (length == 9 && pk_strequal (text_safe, "123456789")) {
+	length = pk_strlen ("123456789", 20);
+	if (length == 9) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "failed the strlen %i,'%s'", length, text_safe);
+		libst_failed (test, "failed the strlen %i", length);
 	}
-	g_free (text_safe);
 
 	/************************************************************/
 	libst_title (test, "strlen smaller");
-	text_safe = g_strdup ("123456789");
-	length = pk_strlen (text_safe, 5);
-	if (length == 5 && pk_strequal (text_safe, "12345")) {
+	length = pk_strlen ("123456789", 5);
+	if (length == 5) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "failed the strlen %i,'%s'", length, text_safe);
+		libst_failed (test, "failed the strlen %i", length);
 	}
-	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "strlen correct");
+	length = pk_strlen ("123456789", 9);
+	if (length == 9) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the strlen %i", length);
+	}
 
 	/************************************************************
 	 ****************         Padding          ******************

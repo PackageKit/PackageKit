@@ -2560,6 +2560,7 @@ pk_resolve_local_path (const gchar *rel_path)
 		return NULL;
 	}
 
+	/* ITS4: ignore, glibc allocates us a buffer to try and fix some brain damage */
 	temp = realpath (rel_path, NULL);
 	if (temp != NULL) {
 		real = g_strdup (temp);

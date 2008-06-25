@@ -110,7 +110,7 @@ pk_import_get_locale (const gchar *buffer)
 		return NULL;
 	}
 	locale = g_strdup (result+1);
-	len = strlen (locale);
+	len = pk_strlen (locale, 20);
 	locale[len-1] = '\0';
 	return locale;
 }
@@ -230,7 +230,7 @@ pk_desktop_process_directory (const gchar *directory)
 	pattern = g_pattern_spec_new ("*.desktop");
 	name = g_dir_read_name (dir);
 	while (name != NULL) {
-		/* ITS4: ignore, not used for allocation */
+		/* ITS4: ignore, not used for allocation and has to be NULL terminated */
 		match = g_pattern_match (pattern, strlen (name), name, NULL);
 		if (match) {
 			filename = g_build_filename (directory, name, NULL);

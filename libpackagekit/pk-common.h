@@ -54,8 +54,8 @@ G_BEGIN_DECLS
  */
 #define	PK_DBUS_INTERFACE_TRANSACTION	"org.freedesktop.PackageKit.Transaction"
 
-guint		 pk_strlen				(gchar		*text,
-							 guint		 max_length)
+guint		 pk_strlen				(const gchar	*text,
+							 guint		 len)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_strzero				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
