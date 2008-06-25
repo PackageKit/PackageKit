@@ -110,6 +110,7 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_UPDATE_SYSTEM,		"update-system"},
 	{PK_ROLE_ENUM_WHAT_PROVIDES,		"what-provides"},
 	{PK_ROLE_ENUM_ACCEPT_EULA,		"accept-eula"},
+	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,	"download-packages"},
 	{0, NULL}
 };
 

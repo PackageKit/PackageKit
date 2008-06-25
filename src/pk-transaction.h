@@ -100,6 +100,10 @@ void		 pk_transaction_accept_eula		(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_cancel			(PkTransaction	*transaction,
 							 GError		**error);
+void		 pk_transaction_download_packages	(PkTransaction  *transaction,
+							 gchar		**package_ids,
+							 const gchar	*directory,
+							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_allow_cancel	(PkTransaction	*transaction,
 							 gboolean	*allow_cancel,
 							 GError		**error);

@@ -446,6 +446,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def download_packages(self,directory,packages):
+	'''
+	Implement the {backend}-download-packages functionality
+	Needed to be implemented in a sub class
+	'''
+	self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
     def customTracebackHandler(self,tb):
         '''
         Custom Traceback Handler

@@ -795,6 +795,20 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+			    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+	pk_backend_finished (backend);
+}
+
 PK_BACKEND_OPTIONS (
 	"Dummy",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
@@ -803,6 +817,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
+	backend_download_packages,		/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	backend_get_files,			/* get_files */

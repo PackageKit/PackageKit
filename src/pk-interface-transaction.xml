@@ -47,6 +47,36 @@
     </method>
 
     <!--*****************************************************************************************-->
+    <method name="DownloadPackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method downloads packages into a specified directory.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="as" name="package_ids" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of package IDs.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="directory" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The directory to install the packages into.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetAllowCancel">
       <doc:doc>
         <doc:description>

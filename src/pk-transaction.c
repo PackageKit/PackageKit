@@ -111,6 +111,7 @@ struct PkTransactionPrivate
 	gchar			*cached_key_id;
 	gchar			*cached_parameter;
 	gchar			*cached_value;
+	gchar			*cached_directory;
 	PkProvidesEnum		 cached_provides;
 
 	guint			 signal_allow_cancel;
@@ -830,6 +831,8 @@ pk_transaction_set_running (PkTransaction *transaction)
 		desc->resolve (priv->backend, priv->cached_filters, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
 		desc->rollback (priv->backend, priv->cached_transaction_id);
+	} else if (priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+		desc->download_packages (priv->backend, priv->cached_package_ids, priv->cached_directory);
 	} else if (priv->role == PK_ROLE_ENUM_GET_DETAILS) {
 		desc->get_details (priv->backend, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
@@ -1198,6 +1201,74 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 	/* actually run the method */
 	transaction->priv->backend->desc->cancel (transaction->priv->backend);
 	return TRUE;
+}
+
+/**
+ * pk_transaction_download_packages:
+ **/
+void
+pk_transaction_download_packages (PkTransaction *transaction, gchar **package_ids,
+				  const gchar *directory, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+	gchar *sender;
+	gchar *package_ids_temp;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	pk_debug ("DownloadPackages method called: %s, %s", package_ids[0], directory);
+
+	/* not implemented yet */
+	if (transaction->priv->backend->desc->download_packages == NULL) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+	                             "Operation not yet supported by backend");
+	        pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (ret == FALSE) {
+	        package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+	                             "The package id's '%s' are not valid", package_ids_temp);
+	        g_free (package_ids_temp);
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_DOWNLOAD_PACKAGES, &error);
+	g_free (sender);
+	if  (!ret) {
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+
+	/* save so we can run later */
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
+	transaction->priv->cached_directory = g_strdup (directory);
+	transaction->priv->status = PK_STATUS_ENUM_WAIT;
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+	                             "Could not commit to a transaction object");
+	        pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	dbus_g_method_return (context);
 }
 
 /**
@@ -3106,6 +3177,7 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->priv->cached_key_id);
 	g_strfreev (transaction->priv->cached_package_ids);
 	g_free (transaction->priv->cached_transaction_id);
+	g_free (transaction->priv->cached_directory);
 	g_free (transaction->priv->cached_search);
 	g_free (transaction->priv->cached_repo_id);
 	g_free (transaction->priv->cached_parameter);
