@@ -46,6 +46,8 @@
 #include <pk-enum.h>
 #include <pk-debug.h>
 #include <pk-package-list.h>
+#include <pk-update-detail.h>
+#include <pk-details.h>
 
 #include "pk-transaction.h"
 #include "pk-transaction-list.h"
@@ -359,20 +361,17 @@ pk_transaction_caller_active_changed_cb (LibGBus *libgbus, gboolean is_active, P
  * pk_transaction_details_cb:
  **/
 static void
-pk_transaction_details_cb (PkBackend *backend, const gchar *package_id, const gchar *license, PkGroupEnum group,
-			   const gchar *detail, const gchar *url, guint64 size, PkTransaction *transaction)
+pk_transaction_details_cb (PkBackend *backend, PkDetails *details, PkTransaction *transaction)
 {
 	const gchar *group_text;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	group_text = pk_group_enum_to_text (group);
-
-	pk_debug ("emitting details %s, %s, %i, %s, %s, %ld",
-		  package_id, license, group, detail, url, (long int) size);
+	group_text = pk_group_enum_to_text (details->group);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_DETAILS], 0,
-		       package_id, license, group_text, detail, url, size);
+		       details->package_id, details->license, group_text, details->description,
+		       details->url, details->size);
 }
 
 /**
@@ -712,31 +711,25 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const
  * pk_transaction_update_detail_cb:
  **/
 static void
-pk_transaction_update_detail_cb (PkBackend *backend, const gchar *package_id,
-				 const gchar *updates, const gchar *obsoletes,
-				 const gchar *vendor_url, const gchar *bugzilla_url,
-				 const gchar *cve_url, PkRestartEnum restart,
-				 const gchar *update_text, PkTransaction *transaction)
+pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetail *detail, PkTransaction *transaction)
 {
 	const gchar *restart_text;
-	PkUpdateDetail *detail;
+	PkUpdateDetail *detail_new;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	/* are we already in the cache? */
-	detail = pk_update_detail_cache_get_item (transaction->priv->update_detail_cache, package_id);
-	if (detail == NULL) {
-		detail = pk_update_detail_new_from_data (package_id, updates, obsoletes, vendor_url,
-							 bugzilla_url, cve_url, restart, update_text);
-		pk_update_detail_cache_add_item (transaction->priv->update_detail_cache, detail);
+	detail_new = pk_update_detail_cache_get_item (transaction->priv->update_detail_cache, detail->package_id);
+	if (detail_new == NULL) {
+		detail_new = pk_update_detail_copy (detail);
+		pk_update_detail_cache_add_item (transaction->priv->update_detail_cache, detail_new);
 	}
 
-	restart_text = pk_restart_enum_to_text (restart);
-	pk_debug ("emitting UpdateDetail value=%s, %s, %s, %s, %s, %s, %s, %s",
-		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
+	restart_text = pk_restart_enum_to_text (detail->restart);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
-		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
+		       detail->package_id, detail->updates, detail->obsoletes, detail->vendor_url,
+		       detail->bugzilla_url, detail->cve_url, restart_text, detail->update_text);
 }
 
 

@@ -89,6 +89,20 @@ pk_update_detail_new_from_data (const gchar *package_id, const gchar *updates, c
 }
 
 /**
+ * pk_update_detail_copy:
+ *
+ * Return value: a new #PkUpdateDetail object
+ **/
+PkUpdateDetail *
+pk_update_detail_copy (const PkUpdateDetail *detail)
+{
+	g_return_val_if_fail (detail != NULL, NULL);
+	return pk_update_detail_new_from_data (detail->package_id, detail->updates, detail->obsoletes,
+					       detail->vendor_url, detail->bugzilla_url, detail->cve_url,
+					       detail->restart, detail->update_text);
+}
+
+/**
  * pk_update_detail_free:
  * @detail: the #PkUpdateDetail object
  *

@@ -41,6 +41,8 @@
 #include "pk-backend.h"
 #include "pk-time.h"
 #include "pk-file-monitor.h"
+#include "pk-update-detail.h"
+#include "pk-details.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
@@ -971,6 +973,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *update_text)
 {
 	gchar *update_text_safe;
+	PkUpdateDetail *detail;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -985,10 +988,11 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
 
-	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %i, %s",
-		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text_safe);
-	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0,
-		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text_safe);
+	/* form PkUpdateDetail struct */
+	detail = pk_update_detail_new_from_data (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text_safe);
+	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0, detail);
+
+	pk_update_detail_free (detail);
 	g_free (update_text_safe);
 	return TRUE;
 }
@@ -1094,6 +1098,7 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 		    const gchar *description, const gchar *url, gulong size)
 {
 	gchar *description_safe;
+	PkDetails *details;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -1108,12 +1113,10 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
 
-	pk_debug ("emit details %s, %s, %i, %s, %s, %ld",
-		  package_id, license, group, description_safe, url,
-		  size);
-	g_signal_emit (backend, signals [PK_BACKEND_DETAILS], 0,
-		       package_id, license, group, description_safe, url,
-		       size);
+	details = pk_details_new_from_data (package_id, license, group, description_safe, url, size);
+	g_signal_emit (backend, signals [PK_BACKEND_DETAILS], 0, details);
+
+	pk_details_free (details);
 	g_free (description_safe);
 	return TRUE;
 }
@@ -1754,9 +1757,8 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT_STRING,
-			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals [PK_BACKEND_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1775,9 +1777,8 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_DETAILS] =
 		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64,
-			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_UINT64);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals [PK_BACKEND_FILES] =
 		g_signal_new ("files",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

@@ -45,6 +45,7 @@ typedef struct
 } PkUpdateDetail;
 
 PkUpdateDetail	*pk_update_detail_new			(void);
+PkUpdateDetail	*pk_update_detail_copy			(const PkUpdateDetail	*detail);
 PkUpdateDetail	*pk_update_detail_new_from_data		(const gchar	*package_id,
 							 const gchar	*updates,
 							 const gchar	*obsoletes,

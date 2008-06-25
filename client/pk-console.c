@@ -213,7 +213,7 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
  * pk_console_update_detail_cb:
  **/
 static void
-pk_console_update_detail_cb (PkClient *client, PkUpdateDetail *detail, gpointer data)
+pk_console_update_detail_cb (PkClient *client, const PkUpdateDetail *detail, gpointer data)
 {
 	if (awaiting_space) {
 		g_print ("\n");
@@ -996,7 +996,7 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
  * pk_console_details_cb:
  **/
 static void
-pk_console_details_cb (PkClient *client, PkDetails *details, gpointer data)
+pk_console_details_cb (PkClient *client, const PkDetails *details, gpointer data)
 {
 	/* if on console, clear the progress bar line */
 	if (awaiting_space) {
