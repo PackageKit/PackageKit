@@ -144,6 +144,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
 	backend_cancel,				/* cancel */
+	NULL,					/* download_packages */
 	NULL,					/* get_depends */
 	NULL,					/* get_details */
 	NULL,					/* get_files */

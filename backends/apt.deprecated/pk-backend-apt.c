@@ -240,6 +240,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
+	NULL,					/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_files */

@@ -334,22 +334,23 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,				/* cancel */
+	NULL,					/* cancel */
+	NULL,					/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
-	NULL,			/* get_repo_list */
+	NULL,					/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,			/* install_files */
+	NULL,					/* install_files */
 	backend_install_packages,		/* install_packages */
-	NULL,		/* install_signature */
+	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
-	NULL,			/* repo_enable */
-	NULL,			/* repo_set_data */
+	NULL,					/* repo_enable */
+	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
@@ -359,6 +360,6 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* service_pack */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	NULL			/* what_provides */
+	NULL					/* what_provides */
 );
 
