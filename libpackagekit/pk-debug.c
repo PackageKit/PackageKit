@@ -84,7 +84,7 @@ pk_set_console_mode (guint console_code)
 		return;
 	}
 	/* Command is the control command to the terminal */
-	sprintf (command, "%c[%dm", 0x1B, console_code);
+	g_snprintf (command, 13, "%c[%dm", 0x1B, console_code);
 	printf ("%s", command);
 }
 
@@ -98,12 +98,14 @@ pk_log_line (const gchar *buffer)
 	/* open a file */
 	if (fd == -1) {
 		mkdir (PK_LOG_DIR, 0777);
+		/* ITS4: ignore, /var/log/PackageKit is owned by root, and this is just debug text */
 		fd = open (PK_LOG_FILE, O_WRONLY|O_APPEND|O_CREAT, 0777);
 		if (fd == -1) {
 			g_error ("could not open log: '%s'", PK_LOG_FILE);
 		}
 	}
-	/* whole line */
+
+	/* ITS4: ignore, debug text always NULL terminated */
 	count = write (fd, buffer, strlen (buffer));
 	if (count == -1) {
 		g_warning ("could not write %s", buffer);

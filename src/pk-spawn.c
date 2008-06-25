@@ -106,7 +106,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 	gchar **lines;
 	guint bytes_processed;
 
-	/* ITS4: ignore, GString is always NULL terminated */
+	/* if nothing then don't emit */
 	if (pk_strzero (string->str)) {
 		return FALSE;
 	}

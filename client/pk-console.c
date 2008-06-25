@@ -685,7 +685,7 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 	}
 
 	do {
-		/* get one char */
+		/* ITS4: ignore, we are copying into the same variable, not a string */
 		answer = (gchar) getchar();
 
 		/* positive */
