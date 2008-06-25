@@ -104,7 +104,6 @@ gboolean	 pk_strcmp_sections			(const gchar	*id1,
 gchar		*pk_iso8601_present			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_iso8601_difference			(const gchar	*isodate);
-gboolean	 pk_delay_yield				(gfloat		 delay);
 gchar		*pk_get_distro_id			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
 

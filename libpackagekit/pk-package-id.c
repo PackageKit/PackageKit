@@ -144,7 +144,7 @@ pk_package_id_new_from_list (const gchar *name, const gchar *version, const gcha
  * Return value: returns a string representation of #PkPackageId.
  **/
 gchar *
-pk_package_id_to_string (PkPackageId *ident)
+pk_package_id_to_string (const PkPackageId *ident)
 {
 	return g_strdup_printf ("%s;%s;%s;%s",
 				ident->name, ident->version,

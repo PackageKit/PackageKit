@@ -51,7 +51,7 @@ gchar		*pk_package_id_build			(const gchar	*name,
 							 const gchar	*arch,
 							 const gchar	*data)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gchar		*pk_package_id_to_string		(PkPackageId	*ident)
+gchar		*pk_package_id_to_string		(const PkPackageId	*ident)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_package_id_free			(PkPackageId	*ident);
 gboolean	 pk_package_id_check			(const gchar	*package_id)
