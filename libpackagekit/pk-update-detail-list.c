@@ -49,6 +49,9 @@ static gpointer pk_update_detail_list_object = NULL;
 
 /**
  * pk_update_detail_list_clear:
+ * @list: a valid #PkUpdateDetailList instance
+ *
+ * Clears the package list
  **/
 gboolean
 pk_update_detail_list_clear (PkUpdateDetailList *list)
@@ -59,6 +62,10 @@ pk_update_detail_list_clear (PkUpdateDetailList *list)
 
 /**
  * pk_update_detail_list_add_obj:
+ * @list: a valid #PkUpdateDetailList instance
+ * @obj: a valid #PkUpdateDetailObj object
+ *
+ * Adds a copy of the object to the list
  **/
 gboolean
 pk_update_detail_list_add_obj (PkUpdateDetailList *list, const PkUpdateDetailObj *obj)
@@ -82,6 +89,10 @@ pk_update_detail_list_add_obj (PkUpdateDetailList *list, const PkUpdateDetailObj
 
 /**
  * pk_update_detail_list_get_obj:
+ * @list: a valid #PkUpdateDetailList instance
+ * @package_id: A %package_id such as "gnome-power-manager;0.0.1;i386;fedora"
+ *
+ * Gets an object from the list
  **/
 const PkUpdateDetailObj *
 pk_update_detail_list_get_obj (PkUpdateDetailList *list, const gchar *package_id)
@@ -106,6 +117,7 @@ pk_update_detail_list_get_obj (PkUpdateDetailList *list, const gchar *package_id
 
 /**
  * pk_update_detail_list_finalize:
+ * @object: a valid #PkUpdateDetailList instance
  **/
 static void
 pk_update_detail_list_finalize (GObject *object)
@@ -130,6 +142,7 @@ pk_update_detail_list_finalize (GObject *object)
 
 /**
  * pk_update_detail_list_class_init:
+ * @klass: a valid #PkUpdateDetailListClass instance
  **/
 static void
 pk_update_detail_list_class_init (PkUpdateDetailListClass *klass)
@@ -141,10 +154,9 @@ pk_update_detail_list_class_init (PkUpdateDetailListClass *klass)
 
 /**
  * pk_update_detail_list_init:
+ * @list: a valid #PkUpdateDetailList instance
  *
- * initializes the update_detail_list class. NOTE: We expect list objects
- * to *NOT* be removed or added during the session.
- * We only control the first list object if there are more than one.
+ * Initializes the update_detail_list class.
  **/
 static void
 pk_update_detail_list_init (PkUpdateDetailList *list)
@@ -155,6 +167,7 @@ pk_update_detail_list_init (PkUpdateDetailList *list)
 
 /**
  * pk_update_detail_list_new:
+ *
  * Return value: A new list class instance.
  **/
 PkUpdateDetailList *

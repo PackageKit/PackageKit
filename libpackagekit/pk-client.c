@@ -454,7 +454,6 @@ pk_client_get_require_restart (PkClient *client)
 /**
  * pk_client_get_package_list:
  * @client: a valid #PkClient instance
- * @item: the item in the package buffer
  *
  * We do not provide access to the internal package list (as it could be being
  * updated) so provide a way to get access to objects here.
@@ -1416,7 +1415,7 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
  * pk_client_get_depends:
  * @client: a valid #PkClient instance
  * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for depends
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1536,7 +1535,7 @@ pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
  * pk_client_get_requires:
  * @client: a valid #PkClient instance
  * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for requires
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1669,7 +1668,7 @@ pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum 
 /**
  * pk_client_get_update_detail:
  * @client: a valid #PkClient instance
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get details about the specific update, for instance any CVE urls and
@@ -1780,7 +1779,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
  * pk_client_resolve:
  * @client: a valid #PkClient instance
  * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @package: the package name to resolve, e.g. "gnome-system-tools"
+ * @packages: an array of package names to resolve, e.g. "gnome-system-tools"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Resolve a package name into a %package_id. This can return installed and
@@ -1836,7 +1835,7 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, gchar **packages, GEr
 /**
  * pk_client_get_details:
  * @client: a valid #PkClient instance
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get details of a package, so more information can be obtained for GUI
@@ -1897,7 +1896,7 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 /**
  * pk_client_get_files:
  * @client: a valid #PkClient instance
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get the file list (i.e. a list of files installed) for the specified package.
