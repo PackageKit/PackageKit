@@ -916,6 +916,13 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* check we are valid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		pk_warning ("package_id invalid and cannot be processed: %s", package_id);
+		return FALSE;
+	}
+
 	/* check against the old one */
 	item = pk_package_obj_new (info, package_id, summary);
 	ret = pk_package_obj_equal (item, backend->priv->last_package);

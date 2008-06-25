@@ -67,6 +67,13 @@ gboolean
 pk_package_id_check (const gchar *package_id)
 {
 	gchar **sections;
+	gboolean ret;
+
+	ret = g_utf8_validate (package_id, -1, NULL);
+	if (!ret) {
+		pk_warning ("invalid UTF8!");
+		return FALSE;
+	}
 	sections = pk_strsplit (package_id, 4);
 	if (sections != NULL) {
 		g_strfreev (sections);
