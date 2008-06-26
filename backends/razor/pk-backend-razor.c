@@ -27,8 +27,14 @@
 #include <pk-debug.h>
 #include <pk-package-ids.h>
 #include <pk-enum.h>
+#include <pk-common.h>
 
 #include <razor/razor.h>
+
+static struct razor_set *set = NULL;
+static const char *repo_filename = "/home/hughsie/Code/razor/src/system.repo";
+static const char *system_details = "/home/hughsie/Code/razor/src/system-details.repo";
+
 
 /**
  * backend_initialize:
@@ -36,6 +42,8 @@
 static void
 backend_initialize (PkBackend *backend)
 {
+	set = razor_set_open (repo_filename);
+	razor_set_open_details (set, system_details);
 }
 
 /**
@@ -44,14 +52,56 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
+	razor_set_destroy (set);
 }
-
 
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
 	pk_backend_finished (backend);
 	return TRUE;
+}
+
+static gboolean
+backend_resolve_thread (PkBackend *backend)
+{
+	guint i;
+	guint length;
+	struct razor_package_iterator *pi;
+	struct razor_package *package;
+	const gchar *name, *version, *arch, *summary;
+	gchar *package_id;
+	gchar **package_ids;
+
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	length = g_strv_length (package_ids);
+
+	pi = razor_package_iterator_create (set);
+	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
+		for (i=0; i<length; i++) {
+			if (pk_strequal (name, package_ids[i])) {
+				package_id = pk_package_id_build (name, version, arch, "installed");
+				razor_package_get_details (set, package, &summary, NULL, NULL, NULL);
+				pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, summary);
+				g_free (package_id);
+			}
+		}
+	}
+
+	razor_package_iterator_destroy (pi);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_resolve:
+ */
+static void
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_thread_create (backend, backend_resolve_thread);
 }
 
 /**
@@ -69,26 +119,22 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 	for (i=0; i<length; i++) {
 		package_id = package_ids[i];
 		ident = pk_package_id_new_from_string (package_id);
-		pk_debug ("look up: %s", ident->name);
+		/* TODO: we need to get this list! */
+		razor_set_list_package_files (set, ident->name);
 		pk_backend_files (backend, package_id, "/usr/bin/dave;/usr/share/brian");
+		pk_package_id_free (ident);
 	}
 	pk_backend_finished (backend);
 }
-
-static const char *repo_filename = "/home/hughsie/Code/razor/src/system.repo";
-static const char *system_details = "/home/hughsie/Code/razor/src/system-details.repo";
 
 static gboolean
 backend_get_packages_thread (PkBackend *backend)
 {
 	struct razor_package_iterator *pi;
-	struct razor_set *set;
 	struct razor_package *package;
 	const gchar *name, *version, *arch, *summary;
 	gchar *package_id;
 
-	set = razor_set_open (repo_filename);
-	razor_set_open_details (set, system_details);
 	pi = razor_package_iterator_create (set);
 
 	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
@@ -99,8 +145,6 @@ backend_get_packages_thread (PkBackend *backend)
 	}
 
 	razor_package_iterator_destroy (pi);
-	razor_set_destroy (set);
-
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -307,7 +351,7 @@ PK_BACKEND_OPTIONS (
 	backend_remove_packages,		/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
-	NULL,					/* resolve */
+	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_description,		/* search_details */
 	NULL,					/* search_file */
