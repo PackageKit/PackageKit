@@ -554,17 +554,23 @@ pk_client_package_cb (DBusGProxy   *proxy,
 		      PkClient     *client)
 {
 	PkInfoEnum info;
+	PkPackageId *id;
+	PkPackageObj *obj;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
 	info = pk_info_enum_from_text (info_text);
-	g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, info, package_id, summary);
+	id = pk_package_id_new_from_string (package_id);
+	obj = pk_package_obj_new (info, id, summary);
+
+	pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
+	g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, obj);
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous) {
-		pk_package_list_add (client->priv->package_list, info, package_id, summary);
+		pk_package_list_add_obj (client->priv->package_list, obj);
 	}
+	pk_package_obj_free (obj);
 }
 
 /**
@@ -3199,8 +3205,8 @@ pk_client_class_init (PkClientClass *klass)
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, package),
-			      NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	/**
 	 * PkClient::transaction:
 	 * @client: the #PkClient instance that emitted the signal
@@ -3752,7 +3758,7 @@ libst_client_copy_finished_cb (PkClient *client, PkExitEnum exit, guint runtime,
 }
 
 static void
-libst_client_copy_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_id, const gchar *summary, LibSelfTest *test)
+libst_client_copy_package_cb (PkClient *client, const PkPackageObj *obj, LibSelfTest *test)
 {
 	clone_packages++;
 }

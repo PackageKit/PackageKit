@@ -55,7 +55,7 @@ GType			 pk_package_list_get_type	(void) G_GNUC_CONST;
 PkPackageList		*pk_package_list_new		(void);
 gboolean		 pk_package_list_add		(PkPackageList		*plist,
 							 PkInfoEnum		 info,
-							 const gchar		*package_id,
+							 const PkPackageId	*ident,
 							 const gchar		*summary);
 gboolean		 pk_package_list_add_obj	(PkPackageList		*plist,
 							 const PkPackageObj	*obj);

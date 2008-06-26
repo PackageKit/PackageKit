@@ -50,15 +50,15 @@
  * pk_package_obj_new:
  **/
 PkPackageObj *
-pk_package_obj_new (PkInfoEnum info, const gchar *package_id, const gchar *summary)
+pk_package_obj_new (PkInfoEnum info, const PkPackageId *id, const gchar *summary)
 {
 	PkPackageObj *obj;
 
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (id != NULL, FALSE);
 
 	obj = g_new0 (PkPackageObj, 1);
 	obj->info = info;
-	obj->package_id = g_strdup (package_id);
+	obj->id = pk_package_id_copy (id);
 	obj->summary = g_strdup (summary);
 	return obj;
 }
@@ -72,7 +72,7 @@ pk_package_obj_free (PkPackageObj *obj)
 	if (obj == NULL) {
 		return FALSE;
 	}
-	g_free (obj->package_id);
+	pk_package_id_free (obj->id);
 	g_free (obj->summary);
 	g_free (obj);
 	return TRUE;
@@ -89,8 +89,7 @@ pk_package_obj_equal (const PkPackageObj *obj1, const PkPackageObj *obj2)
 	if (obj1 == NULL || obj2 == NULL) {
 		return FALSE;
 	}
-	return (obj1->info == obj2->info &&
-		pk_strequal (obj1->package_id, obj2->package_id));
+	return (obj1->info == obj2->info && pk_package_id_equal (obj1->id, obj2->id));
 }
 
 /**
@@ -102,7 +101,7 @@ PkPackageObj *
 pk_package_obj_copy (const PkPackageObj *obj)
 {
 	g_return_val_if_fail (obj != NULL, NULL);
-	return pk_package_obj_new (obj->info, obj->package_id, obj->summary);
+	return pk_package_obj_new (obj->info, obj->id, obj->summary);
 }
 
 /***************************************************************************
@@ -118,6 +117,7 @@ libst_package_obj (LibSelfTest *test)
 	PkPackageObj *obj2;
 	PkPackageObj *obj3;
 	gboolean ret;
+	PkPackageId *id;
 
 	if (libst_start (test, "PkPackageObj", CLASS_AUTO) == FALSE) {
 		return;
@@ -125,21 +125,25 @@ libst_package_obj (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add entry");
-	obj1 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, "gnome;1.23;i386;data", "GNOME!");
+	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
+	obj1 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, id, "GNOME!");
 	if (obj1 != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
+	pk_package_id_free (id);
 
 	/************************************************************/
 	libst_title (test, "add entry");
-	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, "gnome;1.23;i386;data", "GNOME foo!");
+	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
+	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, id, "GNOME foo!");
 	if (obj2 != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
+	pk_package_id_free (id);
 
 	/************************************************************/
 	libst_title (test, "copy entry");
@@ -164,12 +168,14 @@ libst_package_obj (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add entry");
-	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, "gnome-do;1.23;i386;data", "GNOME doo!");
+	id = pk_package_id_new_from_string ("gnome-do;1.23;i386;data");
+	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, id, "GNOME doo!");
 	if (obj2 != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
+	pk_package_id_free (id);
 
 	/************************************************************/
 	libst_title (test, "check !equal");

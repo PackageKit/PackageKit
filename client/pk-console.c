@@ -123,35 +123,27 @@ pk_console_start_bar (const gchar *text)
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_id, const gchar *summary, gpointer data)
+pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 {
-	PkPackageId *ident;
 	PkRoleEnum role;
 	gchar *package = NULL;
 	gchar *info_pad = NULL;
 	gchar *text = NULL;
 
-	/* split */
-	ident = pk_package_id_new_from_string (package_id);
-	if (ident == NULL) {
-		pk_warning ("Could not get valid ident from %s", package_id);
-		return;
-	}
-
-	/* make these all the same lenght */
-	info_pad = pk_strpad (pk_info_enum_to_text (info), 12);
+	/* make these all the same length */
+	info_pad = pk_strpad (pk_info_enum_to_text (obj->info), 12);
 
 	/* don't pretty print */
 	if (!is_console) {
-		g_print ("%s %s-%s.%s\n", info_pad, ident->name, ident->version, ident->arch);
+		g_print ("%s %s-%s.%s\n", info_pad, obj->id->name, obj->id->version, obj->id->arch);
 		goto out;
 	}
 
 	/* pad the name-version */
-	if (pk_strzero (ident->version)) {
-		package = g_strdup (ident->name);
+	if (pk_strzero (obj->id->version)) {
+		package = g_strdup (obj->id->name);
 	} else {
-		package = g_strdup_printf ("%s-%s", ident->name, ident->version);
+		package = g_strdup_printf ("%s-%s", obj->id->name, obj->id->version);
 	}
 
 	/* mark previous complete */
@@ -183,7 +175,6 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 
 out:
 	/* free all the data */
-	pk_package_id_free (ident);
 	g_free (package);
 	g_free (info_pad);
 }
@@ -483,7 +474,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	gboolean valid;
 	guint i;
 	guint length;
-	const PkPackageObj *item;
+	const PkPackageObj *obj;
 	PkPackageList *list;
 	gchar **packages;
 
@@ -537,8 +528,8 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* only found one, great! */
 	if (length == 1) {
-		item = pk_package_list_get_obj (list, 0);
-		return g_strdup (item->package_id);
+		obj = pk_package_list_get_obj (list, 0);
+		return pk_package_id_to_string (obj->id);
 	}
 
 	/* else list the options if multiple matches found */
@@ -547,17 +538,16 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	}
 	g_print ("%s\n", _("There are multiple package matches"));
 	for (i=0; i<length; i++) {
-		item = pk_package_list_get_obj (list, i);
-		g_print ("%i. %s\n", i+1, item->package_id);
+		obj = pk_package_list_get_obj (list, i);
+		g_print ("%i. %s-%s.%s\n", i+1, obj->id->name, obj->id->version, obj->id->arch);
 	}
 
 	/* find out what package the user wants to use */
 	i = pk_console_get_number (_("Please enter the package number: "), length);
-	item = pk_package_list_get_obj (list, i-1);
-	pk_debug ("package_id = %s", item->package_id);
+	obj = pk_package_list_get_obj (list, i-1);
 	g_object_unref (list);
 
-	return g_strdup (item->package_id);
+	return pk_package_id_to_string (obj->id);
 }
 
 /**
@@ -718,8 +708,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 {
 	gchar *package_id;
 	gboolean ret = TRUE;
-	const PkPackageObj *item;
-	PkPackageId *ident;
+	const PkPackageObj *obj;
 	guint i;
 	guint length;
 	gboolean remove;
@@ -797,10 +786,8 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	}
 	g_print ("%s:\n", _("The following packages have to be removed"));
 	for (i=0; i<length; i++) {
-		item = pk_package_list_get_obj (list, i);
-		ident = pk_package_id_new_from_string (item->package_id);
-		g_print ("%i\t%s-%s\n", i, ident->name, ident->version);
-		pk_package_id_free (ident);
+		obj = pk_package_list_get_obj (list, i);
+		g_print ("%i\t%s-%s.%s\n", i, obj->id->name, obj->id->version, obj->id->arch);
 	}
 
 	/* get user input */

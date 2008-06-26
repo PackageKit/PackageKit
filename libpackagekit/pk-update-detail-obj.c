@@ -162,8 +162,6 @@ libst_update_detail (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 
-	pk_update_detail_obj_free (detail);
-
 	libst_end (test);
 }
 #endif

@@ -276,7 +276,7 @@ libst_package_ids (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "first correct");
-	ret = pk_package_id_equal (package_ids[0], "foo;0.0.1;i386;fedora");
+	ret = pk_package_id_equal_strings (package_ids[0], "foo;0.0.1;i386;fedora");
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -285,7 +285,7 @@ libst_package_ids (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "second correct");
-	ret = pk_package_id_equal (package_ids[1], "bar;0.1.1;noarch;livna");
+	ret = pk_package_id_equal_strings (package_ids[1], "bar;0.1.1;noarch;livna");
 	if (ret) {
 		libst_success (test, NULL);
 	} else {

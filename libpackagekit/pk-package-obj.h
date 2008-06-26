@@ -24,6 +24,7 @@
 
 #include <glib-object.h>
 #include <pk-enum.h>
+#include <pk-package-id.h>
 
 /**
  * PkPackageObj:
@@ -32,12 +33,12 @@
  */
 typedef struct {
 	PkInfoEnum		 info;
-	gchar			*package_id;
+	PkPackageId		*id;
 	gchar			*summary;
 } PkPackageObj;
 
 PkPackageObj	*pk_package_obj_new			(PkInfoEnum		 info,
-							 const gchar		*package_id,
+							 const PkPackageId	*id,
 							 const gchar		*summary);
 gboolean	 pk_package_obj_free			(PkPackageObj		*obj);
 PkPackageObj	*pk_package_obj_copy			(const PkPackageObj	*obj);

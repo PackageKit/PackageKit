@@ -45,8 +45,7 @@ pk_desktop_get_name_for_file (const gchar *filename)
 {
 	guint size;
 	gchar *name = NULL;
-	const PkPackageObj *item;
-	PkPackageId *pid;
+	const PkPackageObj *obj;
 	gboolean ret;
 	GError *error = NULL;
 	PkPackageList *list = NULL;
@@ -74,23 +73,15 @@ pk_desktop_get_name_for_file (const gchar *filename)
 		goto out;
 	}
 
-	/* get the item */
-	item = pk_package_list_get_obj (list, 0);
-	if (item == NULL) {
-		pk_error ("cannot get item");
-		goto out;
-	}
-
-	/* get the package name */
-	pid = pk_package_id_new_from_string (item->package_id);
-	if (pid == NULL) {
-		pk_error ("cannot allocate package id");
+	/* get the obj */
+	obj = pk_package_list_get_obj (list, 0);
+	if (obj == NULL) {
+		pk_error ("cannot get obj");
 		goto out;
 	}
 
 	/* strip the name */
-	name = g_strdup (pid->name);
-	pk_package_id_free (pid);
+	name = g_strdup (obj->id->name);
 
 out:
 	if (list != NULL) {

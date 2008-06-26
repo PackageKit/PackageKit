@@ -70,14 +70,14 @@ G_DEFINE_TYPE (PkPackageList, pk_package_list, G_TYPE_OBJECT)
  * pk_package_list_add:
  **/
 gboolean
-pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package_id, const gchar *summary)
+pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const PkPackageId *ident, const gchar *summary)
 {
 	PkPackageObj *obj;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (ident != NULL, FALSE);
 
-	obj = pk_package_obj_new (info, package_id, summary);
+	obj = pk_package_obj_new (info, ident, summary);
 	g_ptr_array_add (plist->priv->array, obj);
 
 	return TRUE;
@@ -144,6 +144,7 @@ pk_package_list_to_string (PkPackageList *plist)
 	guint length;
 	const gchar *info_text;
 	GString *package_cache;
+	gchar *package_id;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
 
@@ -152,7 +153,9 @@ pk_package_list_to_string (PkPackageList *plist)
 	for (i=0; i<length; i++) {
 		obj = g_ptr_array_index (plist->priv->array, i);
 		info_text = pk_info_enum_to_text (obj->info);
-		g_string_append_printf (package_cache, "%s\t%s\t%s\n", info_text, obj->package_id, obj->summary);
+		package_id = pk_package_id_to_string (obj->id);
+		g_string_append_printf (package_cache, "%s\t%s\t%s\n", info_text, package_id, obj->summary);
+		g_free (package_id);
 	}
 
 	/* remove trailing newline */
@@ -172,6 +175,7 @@ pk_package_list_to_argv (PkPackageList *plist)
 	PkPackageObj *obj;
 	GPtrArray *array;
 	gchar **package_ids;
+	gchar *package_id;
 	guint length;
 	guint i;
 
@@ -179,7 +183,9 @@ pk_package_list_to_argv (PkPackageList *plist)
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
 		obj = g_ptr_array_index (plist->priv->array, i);
-		g_ptr_array_add (array, obj->package_id);
+		package_id = pk_package_id_to_string (obj->id);
+		g_ptr_array_add (array, package_id);
+		g_free (package_id);
 	}
 
 	/* convert to argv */
@@ -205,7 +211,13 @@ pk_package_list_get_size (PkPackageList *plist)
 static gint
 pk_package_list_sort_compare_package_id_func (PkPackageObj **a, PkPackageObj **b)
 {
-	return strcmp ((*a)->package_id, (*b)->package_id);
+	guint ret;
+	gchar *a_text = pk_package_id_to_string ((*a)->id);
+	gchar *b_text = pk_package_id_to_string ((*b)->id);
+	ret = strcmp (a_text, b_text);
+	g_free (a_text);
+	g_free (b_text);
+	return ret;
 }
 
 /**
@@ -319,6 +331,7 @@ pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
 	guint i;
 	guint length;
 	gboolean ret = FALSE;
+	gchar *package_id_temp;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -326,7 +339,9 @@ pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
 		obj = g_ptr_array_index (plist->priv->array, i);
-		ret = pk_package_id_equal (obj->package_id, package_id);
+		package_id_temp = pk_package_id_to_string (obj->id);
+		ret = pk_package_id_equal_strings (package_id_temp, package_id);
+		g_free (package_id_temp);
 		if (ret) {
 			break;
 		}
@@ -344,6 +359,7 @@ pk_package_list_remove (PkPackageList *plist, const gchar *package_id)
 	guint i;
 	guint length;
 	gboolean ret = FALSE;
+	gchar *package_id_temp;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -351,7 +367,9 @@ pk_package_list_remove (PkPackageList *plist, const gchar *package_id)
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
 		obj = g_ptr_array_index (plist->priv->array, i);
-		ret = pk_package_id_equal (obj->package_id, package_id);
+		package_id_temp = pk_package_id_to_string (obj->id);
+		ret = pk_package_id_equal_strings (package_id_temp, package_id);
+		g_free (package_id_temp);
 		if (ret) {
 			pk_package_obj_free (obj);
 			g_ptr_array_remove_index (plist->priv->array, i);
@@ -459,6 +477,10 @@ libst_package_list (LibSelfTest *test)
 	const PkPackageObj *r0;
 	const PkPackageObj *r1;
 	const PkPackageObj *r2;
+	gchar *r0_text;
+	gchar *r1_text;
+	gchar *r2_text;
+	PkPackageId *id;
 
 	if (libst_start (test, "PkPackageList", CLASS_AUTO) == FALSE) {
 		return;
@@ -475,7 +497,9 @@ libst_package_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add entry");
-	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, "gnome;1.23;i386;data", "GNOME!");
+	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, id, "GNOME!");
+	pk_package_id_free (id);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -484,6 +508,7 @@ libst_package_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check not exists");
+	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	ret = pk_package_list_contains (plist, "liferea;1.23;i386;data");
 	if (ret == FALSE) {
 		libst_success (test, NULL);
@@ -521,7 +546,9 @@ libst_package_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add entry with NULL summary");
-	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, "nosummary;1.23;i386;data", NULL);
+	id = pk_package_id_new_from_string ("nosummary;1.23;i386;data");
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, id, NULL);
+	pk_package_id_free (id);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -533,15 +560,21 @@ libst_package_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add entries");
-	ret = pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, "def;1.23;i386;data", "zed");
+	id = pk_package_id_new_from_string ("def;1.23;i386;data");
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, id, "zed");
+	pk_package_id_free (id);
 	if (!ret) {
 		libst_failed (test, NULL);
 	}
-	ret = pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, "abc;1.23;i386;data", "fed");
+	id = pk_package_id_new_from_string ("abc;1.23;i386;data");
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, id, "fed");
+	pk_package_id_free (id);
 	if (!ret) {
 		libst_failed (test, NULL);
 	}
-	ret = pk_package_list_add (plist, PK_INFO_ENUM_ENHANCEMENT, "ghi;1.23;i386;data", "aed");
+	id = pk_package_id_new_from_string ("ghi;1.23;i386;data");
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_ENHANCEMENT, id, "aed");
+	pk_package_id_free (id);
 	if (!ret) {
 		libst_failed (test, NULL);
 	}
@@ -553,12 +586,15 @@ libst_package_list (LibSelfTest *test)
 	r0 = pk_package_list_get_obj (plist, 0);
 	r1 = pk_package_list_get_obj (plist, 1);
 	r2 = pk_package_list_get_obj (plist, 2);
-	if (pk_strequal (r0->package_id, "abc;1.23;i386;data") &&
-	    pk_strequal (r1->package_id, "def;1.23;i386;data") &&
-	    pk_strequal (r2->package_id, "ghi;1.23;i386;data")) {
+	r0_text = pk_package_id_to_string (r0->id);
+	r1_text = pk_package_id_to_string (r1->id);
+	r2_text = pk_package_id_to_string (r2->id);
+	if (pk_strequal (r0_text, "abc;1.23;i386;data") &&
+	    pk_strequal (r1_text, "def;1.23;i386;data") &&
+	    pk_strequal (r2_text, "ghi;1.23;i386;data")) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "could not sort: %s,%s,%s", r0->package_id, r1->package_id, r2->package_id);
+		libst_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
 	}
 
 	/************************************************************/
@@ -592,10 +628,18 @@ libst_package_list (LibSelfTest *test)
 	g_object_unref (plist);
 
 	plist = pk_package_list_new ();
-	pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, "def;1.23;i386;data", "zed");
-	pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, "abc;1.23;i386;data", "fed");
-	pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, "ghi;1.23;i386;data", "aed");
-	pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, "jkl;1.23;i386;data", "med");
+	id = pk_package_id_new_from_string ("def;1.23;i386;data");
+	pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, id, "zed");
+	pk_package_id_free (id);
+	id = pk_package_id_new_from_string ("abc;1.23;i386;data");
+	pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, id, "fed");
+	pk_package_id_free (id);
+	id = pk_package_id_new_from_string ("ghi;1.23;i386;data");
+	pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, id, "aed");
+	pk_package_id_free (id);
+	id = pk_package_id_new_from_string ("jkl;1.23;i386;data");
+	pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, id, "med");
+	pk_package_id_free (id);
 
 	/************************************************************/
 	libst_title (test, "sort by package_id then priority (should not mess up previous sort)");
@@ -604,12 +648,15 @@ libst_package_list (LibSelfTest *test)
 	r0 = pk_package_list_get_obj (plist, 0);
 	r1 = pk_package_list_get_obj (plist, 1);
 	r2 = pk_package_list_get_obj (plist, 2);
-	if (pk_strequal (r0->package_id, "abc;1.23;i386;data") &&
-	    pk_strequal (r1->package_id, "def;1.23;i386;data") &&
-	    pk_strequal (r2->package_id, "ghi;1.23;i386;data")) {
+	r0_text = pk_package_id_to_string (r0->id);
+	r1_text = pk_package_id_to_string (r1->id);
+	r2_text = pk_package_id_to_string (r2->id);
+	if (pk_strequal (r0_text, "abc;1.23;i386;data") &&
+	    pk_strequal (r1_text, "def;1.23;i386;data") &&
+	    pk_strequal (r2_text, "ghi;1.23;i386;data")) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "could not sort: %s,%s,%s", r0->package_id, r1->package_id, r2->package_id);
+		libst_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
 	}
 
 	g_object_unref (plist);

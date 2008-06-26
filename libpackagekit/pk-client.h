@@ -88,9 +88,7 @@ struct _PkClientClass
 							 guint		 elapsed,
 							 guint		 remaining);
 	void		(* package)			(PkClient	*client,
-							 PkInfoEnum	 info,
-							 const gchar	*package_id,
-							 const gchar	*summary);
+							 PkPackageObj	*obj);
 	void		(* transaction)			(PkClient	*client,
 							 const gchar	*tid,
 							 const gchar	*timespec,

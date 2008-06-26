@@ -536,10 +536,10 @@ pk_transaction_message_cb (PkBackend *backend, PkMessageEnum message, const gcha
  * pk_transaction_package_cb:
  **/
 static void
-pk_transaction_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_id,
-			   const gchar *summary, PkTransaction *transaction)
+pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransaction *transaction)
 {
 	const gchar *info_text;
+	gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -554,7 +554,7 @@ pk_transaction_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *pac
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		if (info == PK_INFO_ENUM_INSTALLED) {
+		if (obj->info == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_DAEMON,
 					    "backend emitted 'installed' rather than 'installing' "
 					    "- you need to do the package *before* you do the action");
@@ -563,12 +563,13 @@ pk_transaction_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *pac
 	}
 
 	/* add to package cache even if we already got a result */
-	info_text = pk_info_enum_to_text (info);
-	pk_package_list_add (transaction->priv->package_list, info, package_id, summary);
+	info_text = pk_info_enum_to_text (obj->info);
+	pk_package_list_add_obj (transaction->priv->package_list, obj);
 
 	/* emit */
-	pk_debug ("emitting package info=%s %s, %s", info_text, package_id, summary);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0, info_text, package_id, summary);
+	package_id = pk_package_id_to_string (obj->id);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0, info_text, package_id, obj->summary);
+	g_free (package_id);
 }
 
 /**
@@ -1857,6 +1858,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	gboolean ret;
 	GError *error;
 	PkPackageList *updates_cache;
+	gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1890,7 +1892,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	/* try and reuse cache */
 	updates_cache = pk_cache_get_updates (transaction->priv->cache);
 	if (updates_cache != NULL) {
-		const PkPackageObj *package;
+		const PkPackageObj *obj;
 		const gchar *info_text;
 		const gchar *exit_text;
 		guint i;
@@ -1901,10 +1903,12 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 
 		/* emulate the backend */
 		for (i=0; i<length; i++) {
-			package = pk_package_list_get_obj (updates_cache, i);
-			info_text = pk_info_enum_to_text (package->info);
+			obj = pk_package_list_get_obj (updates_cache, i);
+			info_text = pk_info_enum_to_text (obj->info);
+			package_id = pk_package_id_to_string (obj->id);
 			g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0,
-				       info_text, package->package_id, package->summary);
+				       info_text, package_id, obj->summary);
+			g_free (package_id);
 		}
 
 		/* we are done */

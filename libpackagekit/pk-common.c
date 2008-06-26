@@ -188,59 +188,6 @@ pk_iso8601_difference (const gchar *isodate)
 }
 
 /**
- * pk_ptr_array_find_string:
- * @array: The GPtrArray to operate on
- * @string: The string to search for
- *
- * Return value: The array index, or -1 if not found
- **/
-gint
-pk_ptr_array_find_string (GPtrArray *array, const gchar *string)
-{
-	gint i;
-	gchar *item;
-
-	g_return_val_if_fail (array != NULL, FALSE);
-	g_return_val_if_fail (string != NULL, FALSE);
-
-	for (i=0; i<array->len; i++) {
-		item = (gchar *) g_ptr_array_index (array, i);
-		if (pk_strequal (string, item)) {
-			return i;
-		}
-	}
-	return -1;
-}
-
-/**
- * pk_ptr_array_remove_string:
- * @array: The GPtrArray to operate on
- * @string: The string to search for
- *
- * Return value: %TRUE if we removed any strings
- **/
-gboolean
-pk_ptr_array_remove_string (GPtrArray *array, const gchar *string)
-{
-	guint i;
-	gchar *item;
-	gboolean ret = FALSE;
-
-	g_return_val_if_fail (array != NULL, FALSE);
-	g_return_val_if_fail (string != NULL, FALSE);
-
-	for (i=0; i<array->len; i++) {
-		item = (gchar *) g_ptr_array_index (array, i);
-		if (pk_strequal (string, item)) {
-			g_free (item);
-			g_ptr_array_remove_index (array, i);
-			ret = TRUE;
-		}
-	}
-	return ret;
-}
-
-/**
  * pk_strvalidate_char:
  * @item: A single char to test
  *

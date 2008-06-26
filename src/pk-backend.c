@@ -909,7 +909,8 @@ gboolean
 pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
 	gchar *summary_safe;
-	PkPackageObj *item;
+	PkPackageObj *obj;
+	PkPackageId *id;
 	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -923,18 +924,21 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 		return FALSE;
 	}
 
+	/* replace unsafe chars */
+	summary_safe = pk_strsafe (summary);
+
 	/* check against the old one */
-	item = pk_package_obj_new (info, package_id, summary);
-	ret = pk_package_obj_equal (item, backend->priv->last_package);
+	id = pk_package_id_new_from_string (package_id);
+	obj = pk_package_obj_new (info, id, summary_safe);
+	ret = pk_package_obj_equal (obj, backend->priv->last_package);
 	if (ret) {
-		pk_package_obj_free (item);
+		pk_package_obj_free (obj);
 		pk_debug ("skipping duplicate %s", package_id);
 		return FALSE;
 	}
 	/* update the 'last' package */
 	pk_package_obj_free (backend->priv->last_package);
-	backend->priv->last_package = pk_package_obj_copy (item);
-	pk_package_obj_free (item);
+	backend->priv->last_package = pk_package_obj_copy (obj);
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
@@ -960,11 +964,11 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	/* we've sent a package for this transaction */
 	backend->priv->has_sent_package = TRUE;
 
-	/* replace unsafe chars */
-	summary_safe = pk_strsafe (summary);
-
 	pk_debug ("emit package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary_safe);
-	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package_id, summary_safe);
+	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, obj);
+
+	pk_package_id_free (id);
+	pk_package_obj_free (obj);
 	g_free (summary_safe);
 	return TRUE;
 }
@@ -1759,8 +1763,8 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals [PK_BACKEND_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

@@ -87,10 +87,6 @@ gchar		*pk_strbuild_va				(const gchar	*first_element,
 gchar		*pk_strreplace				(const gchar	*text,
 							 const gchar	*find,
 							 const gchar	*replace);
-gint		 pk_ptr_array_find_string		(GPtrArray	*array,
-							 const gchar	*string);
-gboolean	 pk_ptr_array_remove_string		(GPtrArray	*array,
-							 const gchar	*string);
 gchar		**pk_ptr_array_to_argv			(GPtrArray	*array)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		**pk_va_list_to_argv			(const gchar	*string_first,

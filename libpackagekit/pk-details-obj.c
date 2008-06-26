@@ -138,8 +138,6 @@ libst_details (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 
-	pk_details_obj_free (detail);
-
 	libst_end (test);
 }
 #endif

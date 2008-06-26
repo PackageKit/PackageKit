@@ -48,13 +48,13 @@
 PkPackageId *
 pk_package_id_new (void)
 {
-	PkPackageId *ident;
-	ident = g_new0 (PkPackageId, 1);
-	ident->name = NULL;
-	ident->version = NULL;
-	ident->arch = NULL;
-	ident->data = NULL;
-	return ident;
+	PkPackageId *id;
+	id = g_new0 (PkPackageId, 1);
+	id->name = NULL;
+	id->version = NULL;
+	id->arch = NULL;
+	id->data = NULL;
+	return id;
 }
 
 /**
@@ -94,7 +94,7 @@ PkPackageId *
 pk_package_id_new_from_string (const gchar *package_id)
 {
 	gchar **sections;
-	PkPackageId *ident = NULL;
+	PkPackageId *id = NULL;
 
 	sections = pk_strsplit (package_id, 4);
 	if (sections == NULL) {
@@ -102,21 +102,21 @@ pk_package_id_new_from_string (const gchar *package_id)
 	}
 
 	/* create new object */
-	ident = pk_package_id_new ();
+	id = pk_package_id_new ();
 	if (pk_strzero (sections[0]) == FALSE) {
-		ident->name = g_strdup (sections[0]);
+		id->name = g_strdup (sections[0]);
 	}
 	if (pk_strzero (sections[1]) == FALSE) {
-		ident->version = g_strdup (sections[1]);
+		id->version = g_strdup (sections[1]);
 	}
 	if (pk_strzero (sections[2]) == FALSE) {
-		ident->arch = g_strdup (sections[2]);
+		id->arch = g_strdup (sections[2]);
 	}
 	if (pk_strzero (sections[3]) == FALSE) {
-		ident->data = g_strdup (sections[3]);
+		id->data = g_strdup (sections[3]);
 	}
 	g_strfreev (sections);
-	return ident;
+	return id;
 }
 
 /**
@@ -133,29 +133,43 @@ pk_package_id_new_from_string (const gchar *package_id)
 PkPackageId *
 pk_package_id_new_from_list (const gchar *name, const gchar *version, const gchar *arch, const gchar *data)
 {
-	PkPackageId *ident = NULL;
+	PkPackageId *id = NULL;
 
 	/* create new object */
-	ident = pk_package_id_new ();
-	ident->name = g_strdup (name);
-	ident->version = g_strdup (version);
-	ident->arch = g_strdup (arch);
-	ident->data = g_strdup (data);
-	return ident;
+	id = pk_package_id_new ();
+	id->name = g_strdup (name);
+	id->version = g_strdup (version);
+	id->arch = g_strdup (arch);
+	id->data = g_strdup (data);
+	return id;
+}
+
+/**
+ * pk_package_id_copy:
+ * @id: the %PkPackageId structure to copy
+ *
+ * Copies into a new #PkPackageId object.
+ *
+ * Return value: a new #PkPackageId object
+ **/
+PkPackageId *
+pk_package_id_copy (const PkPackageId *id)
+{
+	return pk_package_id_new_from_list (id->name, id->version, id->arch, id->data);
 }
 
 /**
  * pk_package_id_to_string:
- * @ident: A #PkPackageId object
+ * @id: A #PkPackageId object
  *
  * Return value: returns a string representation of #PkPackageId.
  **/
 gchar *
-pk_package_id_to_string (const PkPackageId *ident)
+pk_package_id_to_string (const PkPackageId *id)
 {
 	return g_strdup_printf ("%s;%s;%s;%s",
-				ident->name, ident->version,
-				ident->arch, ident->data);
+				id->name, id->version,
+				id->arch, id->data);
 }
 
 /**
@@ -176,26 +190,45 @@ pk_package_id_build (const gchar *name, const gchar *version,
 
 /**
  * pk_package_id_free:
- * @ident: the #PkPackageId object
+ * @id: the #PkPackageId object
  *
  * Return value: %TRUE if the #PkPackageId object was freed.
  **/
 gboolean
-pk_package_id_free (PkPackageId *ident)
+pk_package_id_free (PkPackageId *id)
 {
-	if (ident == NULL) {
+	if (id == NULL) {
 		return FALSE;
 	}
-	g_free (ident->name);
-	g_free (ident->arch);
-	g_free (ident->version);
-	g_free (ident->data);
-	g_free (ident);
+	g_free (id->name);
+	g_free (id->arch);
+	g_free (id->version);
+	g_free (id->data);
+	g_free (id);
 	return TRUE;
 }
 
 /**
  * pk_package_id_equal:
+ * @id1: the first %PkPackageId
+ * @id2: the second %PkPackageId
+ *
+ * Only compare the name, version, and arch
+ *
+ * Return value: %TRUE if the ids can be considered equal.
+ **/
+gboolean
+pk_package_id_equal (const PkPackageId *id1, const PkPackageId *id2)
+{
+	if (pk_strequal (id1->name, id2->name) &&
+	    pk_strequal (id1->version, id2->version) &&
+	    pk_strequal (id1->arch, id2->arch))
+		return TRUE;
+	return FALSE;
+}
+
+/**
+ * pk_package_id_equal_strings:
  * @pid1: the first package_id
  * @pid2: the second package_id
  *
@@ -204,7 +237,7 @@ pk_package_id_free (PkPackageId *ident)
  * Return value: %TRUE if the package_id's can be considered equal.
  **/
 gboolean
-pk_package_id_equal (const gchar *pid1, const gchar *pid2)
+pk_package_id_equal_strings (const gchar *pid1, const gchar *pid2)
 {
 	return pk_strcmp_sections (pid1, pid2, 4, 3);
 }
@@ -221,18 +254,18 @@ libst_package_id (LibSelfTest *test)
 	gboolean ret;
 	gchar *text;
 	const gchar *temp;
-	PkPackageId *ident;
+	PkPackageId *id;
 
 	if (libst_start (test, "PkPackageId", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
 	/************************************************************
-	 ****************          IDENT           ******************
+	 ****************          id           ******************
 	 ************************************************************/
 
 	libst_title (test, "pid equal pass (same)");
-	ret = pk_package_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
+	ret = pk_package_id_equal_strings ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -241,7 +274,7 @@ libst_package_id (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "pid equal pass (different)");
-	ret = pk_package_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data");
+	ret = pk_package_id_equal_strings ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data");
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -249,17 +282,17 @@ libst_package_id (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "get an ident object");
-	ident = pk_package_id_new ();
-	if (ident != NULL) {
+	libst_title (test, "get an id object");
+	id = pk_package_id_new ();
+	if (id != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
 
 	/************************************************************/
-	libst_title (test, "test ident freeing early");
-	ret = pk_package_id_free (ident);
+	libst_title (test, "test id freeing early");
+	ret = pk_package_id_free (id);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -269,8 +302,8 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "parse incorrect package_id from string (null)");
 	temp = NULL;
-	ident = pk_package_id_new_from_string (temp);
-	if (ident == NULL) {
+	id = pk_package_id_new_from_string (temp);
+	if (id == NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "passed an invalid string '%s'", temp);
@@ -279,8 +312,8 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "parse incorrect package_id from string (empty)");
 	temp = "";
-	ident = pk_package_id_new_from_string (temp);
-	if (ident == NULL) {
+	id = pk_package_id_new_from_string (temp);
+	if (id == NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "passed an invalid string '%s'", temp);
@@ -289,8 +322,8 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "parse incorrect package_id from string (not enough)");
 	temp = "moo;0.0.1;i386";
-	ident = pk_package_id_new_from_string (temp);
-	if (ident == NULL) {
+	id = pk_package_id_new_from_string (temp);
+	if (id == NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "passed an invalid string '%s'", temp);
@@ -298,41 +331,41 @@ libst_package_id (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "parse package_id from string");
-	ident = pk_package_id_new_from_string ("moo;0.0.1;i386;fedora");
-	if (ident != NULL &&
-	    pk_strequal (ident->name, "moo") &&
-	    pk_strequal (ident->arch, "i386") &&
-	    pk_strequal (ident->data, "fedora") &&
-	    pk_strequal (ident->version, "0.0.1")) {
+	id = pk_package_id_new_from_string ("moo;0.0.1;i386;fedora");
+	if (id != NULL &&
+	    pk_strequal (id->name, "moo") &&
+	    pk_strequal (id->arch, "i386") &&
+	    pk_strequal (id->data, "fedora") &&
+	    pk_strequal (id->version, "0.0.1")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
 
 	/************************************************************/
-	libst_title (test, "test ident building with valid data");
-	text = pk_package_id_to_string (ident);
+	libst_title (test, "test id building with valid data");
+	text = pk_package_id_to_string (id);
 	if (pk_strequal (text, "moo;0.0.1;i386;fedora")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "package_id is '%s'", text);
 	}
 	g_free (text);
-	pk_package_id_free (ident);
+	pk_package_id_free (id);
 
 	/************************************************************/
 	libst_title (test, "parse short package_id from string");
-	ident = pk_package_id_new_from_string ("moo;0.0.1;;");
-	if (ident != NULL &&
-	    pk_strequal (ident->name, "moo") &&
-	    pk_strequal (ident->version, "0.0.1") &&
-	    ident->data == NULL &&
-	    ident->arch == NULL) {
+	id = pk_package_id_new_from_string ("moo;0.0.1;;");
+	if (id != NULL &&
+	    pk_strequal (id->name, "moo") &&
+	    pk_strequal (id->version, "0.0.1") &&
+	    id->data == NULL &&
+	    id->arch == NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
-	pk_package_id_free (ident);
+	pk_package_id_free (id);
 
 	libst_end (test);
 }
