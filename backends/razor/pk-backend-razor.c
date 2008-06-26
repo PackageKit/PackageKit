@@ -37,8 +37,7 @@ static const char *system_details = "/home/hughsie/Code/razor/src/system-details
 
 typedef enum {
 	PK_RAZOR_SEARCH_TYPE_NAME,
-	PK_RAZOR_SEARCH_TYPE_SUMMARY,
-	PK_RAZOR_SEARCH_TYPE_UNKNOWN
+	PK_RAZOR_SEARCH_TYPE_SUMMARY
 } PkRazorSearchType;
 
 /**
@@ -60,22 +59,48 @@ backend_destroy (PkBackend *backend)
 	razor_set_destroy (set);
 }
 
+/**
+ * pk_razor_filter_devel:
+ */
 static gboolean
-backend_refresh_cache_thread (PkBackend *backend)
+pk_razor_filter_devel (const gchar *name)
 {
-	pk_backend_finished (backend);
-	return TRUE;
+	if (g_str_has_suffix (name, "-debuginfo"))
+		return TRUE;
+	if (g_str_has_suffix (name, "-devel"))
+		return TRUE;
+	if (g_str_has_suffix (name, "-libs"))
+		return TRUE;
+	return FALSE;
 }
 
 /**
- * backend_refresh_cache:
+ * pk_razor_emit_package:
  */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
+static gboolean
+pk_razor_emit_package (PkBackend *backend, const gchar *name, const gchar *version, const gchar *arch, const gchar *summary)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_thread_create (backend, backend_refresh_cache_thread);
+	PkFilterEnum filters;
+	gchar *package_id;
+	gboolean ret;
+
+	filters = pk_backend_get_uint (backend, "filters");
+
+	if (pk_enums_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
+		ret = pk_razor_filter_devel (name);
+		if (!ret)
+			return FALSE;
+	}
+	if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+		ret = pk_razor_filter_devel (name);
+		if (ret)
+			return FALSE;
+	}
+
+	package_id = pk_package_id_build (name, version, arch, "installed");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, summary);
+	g_free (package_id);
+	return TRUE;
 }
 
 static gboolean
@@ -86,7 +111,6 @@ backend_resolve_thread (PkBackend *backend)
 	struct razor_package_iterator *pi;
 	struct razor_package *package;
 	const gchar *name, *version, *arch, *summary;
-	gchar *package_id;
 	gchar **package_ids;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -96,10 +120,8 @@ backend_resolve_thread (PkBackend *backend)
 	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
 		for (i=0; i<length; i++) {
 			if (pk_strequal (name, package_ids[i])) {
-				package_id = pk_package_id_build (name, version, arch, "installed");
 				razor_package_get_details (set, package, &summary, NULL, NULL, NULL);
-				pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, summary);
-				g_free (package_id);
+				pk_razor_emit_package (backend, name, version, arch, summary);
 			}
 		}
 	}
@@ -195,15 +217,11 @@ backend_get_packages_thread (PkBackend *backend)
 	struct razor_package_iterator *pi;
 	struct razor_package *package;
 	const gchar *name, *version, *arch, *summary;
-	gchar *package_id;
 
 	pi = razor_package_iterator_create (set);
-
 	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
-		package_id = pk_package_id_build (name, version, arch, "installed");
 		razor_package_get_details (set, package, &summary, NULL, NULL, NULL);
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, summary);
-		g_free (package_id);
+		pk_razor_emit_package (backend, name, version, arch, summary);
 	}
 
 	razor_package_iterator_destroy (pi);
@@ -260,7 +278,6 @@ backend_search_thread (PkBackend *backend)
 	struct razor_package_iterator *pi;
 	struct razor_package *package;
 	const gchar *name, *version, *arch, *summary, *description;
-	gchar *package_id;
 	PkRazorSearchType type;
 	gboolean found;
 	const gchar *search;
@@ -277,9 +294,7 @@ backend_search_thread (PkBackend *backend)
 		/* find in the name */
 		found = pk_str_case_contains (name, search);
 		if (found) {
-			package_id = pk_package_id_build (name, version, arch, "installed");
-			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, summary);
-			g_free (package_id);
+			pk_razor_emit_package (backend, name, version, arch, summary);
 
 		/* look in summary and description if we are searching by description */
 		} else if (type == PK_RAZOR_SEARCH_TYPE_SUMMARY) {
@@ -288,9 +303,7 @@ backend_search_thread (PkBackend *backend)
 				found = pk_str_case_contains (description, search);
 			}
 			if (found) {
-				package_id = pk_package_id_build (name, version, arch, "installed");
-				pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, summary);
-				g_free (package_id);
+				pk_razor_emit_package (backend, name, version, arch, summary);
 			}
 		}
 	}
@@ -324,93 +337,20 @@ backend_search_description (PkBackend *backend, PkFilterEnum filters, const gcha
 	pk_backend_thread_create (backend, backend_search_thread);
 }
 
-static void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_thread_create (backend, backend_search_thread);
-}
-
-
-static gboolean
-backend_install_packages_thread (PkBackend *backend)
-{
-	pk_backend_finished (backend);
-	return FALSE;
-}
-
-static void
-backend_install_packages (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-	pk_backend_thread_create (backend, backend_install_packages_thread);
-}
-
-static gboolean
-backend_remove_packages_thread (PkBackend *backend)
-{
-	pk_backend_finished (backend);
-	return FALSE;
-}
-
-static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_thread_create (backend, backend_remove_packages_thread);
-}
-
 /**
  * backend_get_filters:
  */
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	return (PK_FILTER_ENUM_INSTALLED |
-		PK_FILTER_ENUM_DEVELOPMENT |
-		PK_FILTER_ENUM_GUI);
-}
-
-
-static gboolean
-backend_update_system_thread (PkBackend *backend)
-{
-	pk_backend_finished (backend);
-	return FALSE;
-}
-
-static void
-backend_update_system (PkBackend *backend)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_thread_create (backend, backend_update_system_thread);
-}
-
-/**
- * backend_update_package:
- */
-static gboolean
-backend_update_package_thread (PkBackend *backend)
-{
-	pk_backend_finished (backend);
-	return FALSE;
-}
-
-static void
-backend_update_packages (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_thread_create (backend, backend_update_package_thread);
+	return (PK_FILTER_ENUM_DEVELOPMENT);
 }
 
 static gboolean
 backend_get_updates_thread (PkBackend *backend)
 {
+	PkFilterEnum filters;
+	filters = pk_backend_get_uint (backend, "filters");
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -423,27 +363,12 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 	pk_backend_thread_create (backend, backend_get_updates_thread);
 }
 
-/**
- * backend_get_groups:
- */
-static PkGroupEnum
-backend_get_groups (PkBackend *backend)
-{
-	return (PK_GROUP_ENUM_COMMUNICATION |
-		PK_GROUP_ENUM_PROGRAMMING |
-		PK_GROUP_ENUM_GAMES |
-		PK_GROUP_ENUM_OTHER |
-		PK_GROUP_ENUM_INTERNET |
-		PK_GROUP_ENUM_REPOS |
-		PK_GROUP_ENUM_MAPS);
-}
-
 PK_BACKEND_OPTIONS (
 	"razor",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
-	backend_get_groups,			/* get_groups */
+	NULL,					/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	NULL,					/* download_packages */
@@ -456,21 +381,21 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,					/* install_files */
-	backend_install_packages,		/* install_packages */
+	NULL,					/* install_packages */
 	NULL,					/* install_signature */
-	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_packages,		/* remove_packages */
+	NULL,					/* refresh_cache */
+	NULL,					/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_description,		/* search_details */
 	NULL,					/* search_file */
-	backend_search_group,			/* search_group */
+	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* service_pack */
-	backend_update_packages,		/* update_packages */
-	backend_update_system,			/* update_system */
+	NULL,					/* update_packages */
+	NULL,					/* update_system */
 	NULL					/* what_provides */
 );
 
