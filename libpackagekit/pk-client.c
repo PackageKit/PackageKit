@@ -458,7 +458,7 @@ pk_client_get_require_restart (PkClient *client)
  * We do not provide access to the internal package list (as it could be being
  * updated) so provide a way to get access to objects here.
  *
- * Return value: The #PkPackageObj or %NULL if not found or invalid
+ * Return value: The #PkPackageList or %NULL if not found or invalid
  **/
 PkPackageList *
 pk_client_get_package_list (PkClient *client)
