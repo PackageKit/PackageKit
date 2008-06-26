@@ -346,23 +346,6 @@ backend_get_filters (PkBackend *backend)
 	return (PK_FILTER_ENUM_DEVELOPMENT);
 }
 
-static gboolean
-backend_get_updates_thread (PkBackend *backend)
-{
-	PkFilterEnum filters;
-	filters = pk_backend_get_uint (backend, "filters");
-	pk_backend_finished (backend);
-	return TRUE;
-}
-
-static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_thread_create (backend, backend_get_updates_thread);
-}
-
 PK_BACKEND_OPTIONS (
 	"razor",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
@@ -379,7 +362,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
-	backend_get_updates,			/* get_updates */
+	NULL,					/* get_updates */
 	NULL,					/* install_files */
 	NULL,					/* install_packages */
 	NULL,					/* install_signature */
