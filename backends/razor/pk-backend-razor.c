@@ -35,6 +35,11 @@ static struct razor_set *set = NULL;
 static const char *repo_filename = "/home/hughsie/Code/razor/src/system.repo";
 static const char *system_details = "/home/hughsie/Code/razor/src/system-details.repo";
 
+typedef enum {
+	PK_RAZOR_SEARCH_TYPE_NAME,
+	PK_RAZOR_SEARCH_TYPE_SUMMARY,
+	PK_RAZOR_SEARCH_TYPE_UNKNOWN
+} PkRazorSearchType;
 
 /**
  * backend_initialize:
@@ -60,6 +65,17 @@ backend_refresh_cache_thread (PkBackend *backend)
 {
 	pk_backend_finished (backend);
 	return TRUE;
+}
+
+/**
+ * backend_refresh_cache:
+ */
+static void
+backend_refresh_cache (PkBackend *backend, gboolean force)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
 
 static gboolean
@@ -102,6 +118,52 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_thread_create (backend, backend_resolve_thread);
+}
+
+/**
+ * backend_get_details:
+ */
+static gboolean
+backend_get_details_thread (PkBackend *backend)
+{
+	guint i;
+	guint length;
+	struct razor_package_iterator *pi;
+	struct razor_package *package;
+	const gchar *name, *version, *arch, *summary, *description, *url, *license;
+	gchar *package_id;
+	gchar **package_ids;
+	PkPackageId *ident;
+
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	length = g_strv_length (package_ids);
+
+	pi = razor_package_iterator_create (set);
+	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
+		for (i=0; i<length; i++) {
+			/* TODO: we should cache this */
+			ident = pk_package_id_new_from_string (package_ids[i]);
+			if (pk_strequal (name, ident->name)) {
+				package_id = pk_package_id_build (name, version, arch, "installed");
+				razor_package_get_details (set, package, &summary, &description, &url, &license);
+				pk_backend_details (backend, package_ids[i], license, PK_GROUP_ENUM_UNKNOWN, description, url, 0);
+				g_free (package_id);
+			}
+			pk_package_id_free (ident);
+		}
+	}
+
+	razor_package_iterator_destroy (pi);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+static void
+backend_get_details (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
 /**
@@ -161,28 +223,92 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 }
 
 /**
- * backend_refresh_cache:
+ * pk_str_case_contains:
  */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_thread_create (backend, backend_refresh_cache_thread);
-}
-
 static gboolean
-backend_search_thread (PkBackend *backend)
+pk_str_case_contains (const gchar *haystack, const gchar *needle)
 {
-	pk_backend_finished (backend);
+	gint ret;
+	guint i;
+	guint haystack_length;
+	guint needle_length;
+
+	haystack_length = pk_strlen (haystack, 1024);
+	needle_length = pk_strlen (needle, 1024);
+
+	/* needle longer than haystack */
+	if (needle_length > haystack_length) {
+		return FALSE;
+	}
+
+	/* search case insensitive */
+	for (i=0; i<haystack_length - needle_length; i++) {
+		ret = g_strncasecmp (haystack+i, needle, needle_length);
+		if (ret == 0) {
+			return TRUE;
+		}
+	}
 	return FALSE;
 }
 
+/**
+ * backend_search_thread:
+ */
+static gboolean
+backend_search_thread (PkBackend *backend)
+{
+	struct razor_package_iterator *pi;
+	struct razor_package *package;
+	const gchar *name, *version, *arch, *summary, *description;
+	gchar *package_id;
+	PkRazorSearchType type;
+	gboolean found;
+	const gchar *search;
+
+	type = pk_backend_get_uint (backend, "search-type");
+	search = pk_backend_get_string (backend, "search");
+
+	pi = razor_package_iterator_create (set);
+	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
+
+		/* we need the summary just for ::Package */
+		razor_package_get_details (set, package, &summary, &description, NULL, NULL);
+
+		/* find in the name */
+		found = pk_str_case_contains (name, search);
+		if (found) {
+			package_id = pk_package_id_build (name, version, arch, "installed");
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, summary);
+			g_free (package_id);
+
+		/* look in summary and description if we are searching by description */
+		} else if (type == PK_RAZOR_SEARCH_TYPE_SUMMARY) {
+			found = pk_str_case_contains (summary, search);
+			if (!found) {
+				found = pk_str_case_contains (description, search);
+			}
+			if (found) {
+				package_id = pk_package_id_build (name, version, arch, "installed");
+				pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, summary);
+				g_free (package_id);
+			}
+		}
+	}
+
+	razor_package_iterator_destroy (pi);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_search_name:
+ */
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_set_uint (backend, "search-type", PK_RAZOR_SEARCH_TYPE_NAME);
 	pk_backend_thread_create (backend, backend_search_thread);
 }
 
@@ -192,7 +318,9 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_search_description (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_set_uint (backend, "search-type", PK_RAZOR_SEARCH_TYPE_SUMMARY);
 	pk_backend_thread_create (backend, backend_search_thread);
 }
 
@@ -308,23 +436,6 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_INTERNET |
 		PK_GROUP_ENUM_REPOS |
 		PK_GROUP_ENUM_MAPS);
-}
-
-/**
- * backend_get_details:
- */
-static gboolean
-backend_get_details_thread (PkBackend *backend)
-{
-	pk_backend_finished (backend);
-	return TRUE;
-}
-
-static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
 PK_BACKEND_OPTIONS (
