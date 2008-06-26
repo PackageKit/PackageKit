@@ -210,7 +210,7 @@ pk_console_update_detail_cb (PkClient *client, const PkUpdateDetailObj *detail, 
 		g_print ("\n");
 	}
 	g_print ("%s\n", _("Update detail"));
-	g_print ("  package:    '%s'\n", detail->package_id);
+	g_print ("  package:    '%s-%s.%s'\n", detail->id->name, detail->id->version, detail->id->arch);
 	if (pk_strzero (detail->updates) == FALSE) {
 		g_print ("  updates:    '%s'\n", detail->updates);
 	}
@@ -990,7 +990,7 @@ pk_console_details_cb (PkClient *client, const PkDetailsObj *details, gpointer d
 		g_print ("\n");
 	}
 	g_print ("%s\n", _("Package description"));
-	g_print ("  package:     '%s'\n", details->package_id);
+	g_print ("  package:     '%s-%s.%s'\n", details->id->name, details->id->version, details->id->arch);
 	g_print ("  license:     '%s'\n", details->license);
 	g_print ("  group:       '%s'\n", pk_group_enum_to_text (details->group));
 	g_print ("  description: '%s'\n", details->description);

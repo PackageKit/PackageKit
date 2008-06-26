@@ -24,6 +24,7 @@
 
 #include <glib-object.h>
 #include <pk-enum.h>
+#include <pk-package-id.h>
 
 G_BEGIN_DECLS
 
@@ -34,7 +35,7 @@ G_BEGIN_DECLS
  **/
 typedef struct
 {
-	gchar				*package_id;
+	PkPackageId			*id;
 	gchar				*updates;
 	gchar				*obsoletes;
 	gchar				*vendor_url;
@@ -45,8 +46,8 @@ typedef struct
 } PkUpdateDetailObj;
 
 PkUpdateDetailObj	*pk_update_detail_obj_new		(void);
-PkUpdateDetailObj	*pk_update_detail_obj_copy		(const PkUpdateDetailObj *detail);
-PkUpdateDetailObj	*pk_update_detail_obj_new_from_data	(const gchar		*package_id,
+PkUpdateDetailObj	*pk_update_detail_obj_copy		(const PkUpdateDetailObj *obj);
+PkUpdateDetailObj	*pk_update_detail_obj_new_from_data	(const PkPackageId	*id,
 								 const gchar		*updates,
 								 const gchar		*obsoletes,
 								 const gchar		*vendor_url,
@@ -54,7 +55,7 @@ PkUpdateDetailObj	*pk_update_detail_obj_new_from_data	(const gchar		*package_id,
 								 const gchar		*cve_url,
 								 PkRestartEnum		 restart,
 								 const gchar		*update_text);
-gboolean		 pk_update_detail_obj_free		(PkUpdateDetailObj	*detail);
+gboolean		 pk_update_detail_obj_free		(PkUpdateDetailObj	*obj);
 
 G_END_DECLS
 

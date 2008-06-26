@@ -985,6 +985,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 {
 	gchar *update_text_safe;
 	PkUpdateDetailObj *detail;
+	PkPackageId *id;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -1000,9 +1001,12 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	update_text_safe = pk_strsafe (update_text);
 
 	/* form PkUpdateDetailObj struct */
-	detail = pk_update_detail_obj_new_from_data (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text_safe);
+	id = pk_package_id_new_from_string (package_id);
+	detail = pk_update_detail_obj_new_from_data (id, updates, obsoletes, vendor_url,
+						     bugzilla_url, cve_url, restart, update_text_safe);
 	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0, detail);
 
+	pk_package_id_free (id);
 	pk_update_detail_obj_free (detail);
 	g_free (update_text_safe);
 	return TRUE;
@@ -1110,6 +1114,7 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 {
 	gchar *description_safe;
 	PkDetailsObj *details;
+	PkPackageId *id;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -1124,9 +1129,11 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
 
-	details = pk_details_obj_new_from_data (package_id, license, group, description_safe, url, size);
+	id = pk_package_id_new_from_string (package_id);
+	details = pk_details_obj_new_from_data (id, license, group, description_safe, url, size);
 	g_signal_emit (backend, signals [PK_BACKEND_DETAILS], 0, details);
 
+	pk_package_id_free (id);
 	pk_details_obj_free (details);
 	g_free (description_safe);
 	return TRUE;

@@ -54,7 +54,7 @@ gboolean		 pk_update_detail_list_clear		(PkUpdateDetailList	*list);
 gboolean		 pk_update_detail_list_add_obj 		(PkUpdateDetailList	*list,
 								 const PkUpdateDetailObj *obj);
 const PkUpdateDetailObj	*pk_update_detail_list_get_obj 		(PkUpdateDetailList	*list,
-								 const gchar		*package_id);
+								 const PkPackageId	*id);
 
 
 G_END_DECLS

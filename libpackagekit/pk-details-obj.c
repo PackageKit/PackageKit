@@ -47,16 +47,16 @@
 PkDetailsObj *
 pk_details_obj_new (void)
 {
-	PkDetailsObj *detail;
-	detail = g_new0 (PkDetailsObj, 1);
-	detail->package_id = NULL;
-	detail->license = NULL;
-	detail->group = 0;
-	detail->description = NULL;
-	detail->url = NULL;
-	detail->size = 0;
+	PkDetailsObj *obj;
+	obj = g_new0 (PkDetailsObj, 1);
+	obj->id = NULL;
+	obj->license = NULL;
+	obj->group = 0;
+	obj->description = NULL;
+	obj->url = NULL;
+	obj->size = 0;
 
-	return detail;
+	return obj;
 }
 
 /**
@@ -67,21 +67,34 @@ pk_details_obj_new (void)
  * Return value: a new #PkDetailsObj object
  **/
 PkDetailsObj *
-pk_details_obj_new_from_data (const gchar *package_id, const gchar *license, PkGroupEnum group,
+pk_details_obj_new_from_data (const PkPackageId *id, const gchar *license, PkGroupEnum group,
 			      const gchar *description, const gchar *url, guint64 size)
 {
-	PkDetailsObj *detail = NULL;
+	PkDetailsObj *obj = NULL;
 
 	/* create new object */
-	detail = pk_details_obj_new ();
-	detail->package_id = g_strdup (package_id);
-	detail->license = g_strdup (license);
-	detail->group = group;
-	detail->description = g_strdup (description);
-	detail->url = g_strdup (url);
-	detail->size = size;
+	obj = pk_details_obj_new ();
+	obj->id = pk_package_id_copy (id);
+	obj->license = g_strdup (license);
+	obj->group = group;
+	obj->description = g_strdup (description);
+	obj->url = g_strdup (url);
+	obj->size = size;
 
-	return detail;
+	return obj;
+}
+
+/**
+ * pk_details_obj_copy:
+ *
+ * Return value: a new #PkDetailsObj object
+ **/
+PkDetailsObj *
+pk_details_obj_copy (const PkDetailsObj *obj)
+{
+	g_return_val_if_fail (obj != NULL, NULL);
+	return pk_details_obj_new_from_data (obj->id, obj->license, obj->group,
+					     obj->description, obj->url, obj->size);
 }
 
 /**
@@ -91,16 +104,16 @@ pk_details_obj_new_from_data (const gchar *package_id, const gchar *license, PkG
  * Return value: %TRUE if the #PkDetailsObj object was freed.
  **/
 gboolean
-pk_details_obj_free (PkDetailsObj *detail)
+pk_details_obj_free (PkDetailsObj *obj)
 {
-	if (detail == NULL) {
+	if (obj == NULL) {
 		return FALSE;
 	}
-	g_free (detail->package_id);
-	g_free (detail->license);
-	g_free (detail->description);
-	g_free (detail->url);
-	g_free (detail);
+	pk_package_id_free (obj->id);
+	g_free (obj->license);
+	g_free (obj->description);
+	g_free (obj->url);
+	g_free (obj);
 	return TRUE;
 }
 
@@ -114,7 +127,7 @@ void
 libst_details (LibSelfTest *test)
 {
 	gboolean ret;
-	PkDetailsObj *detail;
+	PkDetailsObj *obj;
 
 	if (libst_start (test, "PkDetailsObj", CLASS_AUTO) == FALSE) {
 		return;
@@ -122,8 +135,8 @@ libst_details (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "get an details object");
-	detail = pk_details_obj_new ();
-	if (detail != NULL) {
+	obj = pk_details_obj_new ();
+	if (obj != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -131,7 +144,7 @@ libst_details (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test details");
-	ret = pk_details_obj_free (detail);
+	ret = pk_details_obj_free (obj);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {

@@ -601,16 +601,19 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 {
 	PkRestartEnum restart;
 	PkUpdateDetailObj *detail;
+	PkPackageId *id;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
+	id = pk_package_id_new_from_string (package_id);
 	restart = pk_restart_enum_from_text (restart_text);
 
-	detail = pk_update_detail_obj_new_from_data (package_id, updates, obsoletes, vendor_url,
-						 bugzilla_url, cve_url, restart, update_text);
+	detail = pk_update_detail_obj_new_from_data (id, updates, obsoletes, vendor_url,
+						     bugzilla_url, cve_url, restart, update_text);
 	g_signal_emit (client, signals [PK_CLIENT_UPDATE_DETAIL], 0, detail);
+	pk_package_id_free (id);
 	pk_update_detail_obj_free (detail);
 }
 
@@ -624,15 +627,19 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 {
 	PkGroupEnum group;
 	PkDetailsObj *details;
+	PkPackageId *id;
+
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	group = pk_group_enum_from_text (group_text);
+	id = pk_package_id_new_from_string (package_id);
 
 	pk_debug ("emit details %s, %s, %s, %s, %s, %ld",
-		  package_id, license, pk_group_enum_to_text (group), description, url, (long int) size);
+		  package_id, license, group_text, description, url, (long int) size);
 
-	details = pk_details_obj_new_from_data (package_id, license, group, description, url, size);
+	details = pk_details_obj_new_from_data (id, license, group, description, url, size);
 	g_signal_emit (client, signals [PK_CLIENT_DETAILS], 0, details);
+	pk_package_id_free (id);
 	pk_details_obj_free (details);
 }
 

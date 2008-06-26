@@ -76,9 +76,9 @@ pk_update_detail_list_add_obj (PkUpdateDetailList *list, const PkUpdateDetailObj
 	g_return_val_if_fail (obj != NULL, FALSE);
 
 	/* are we already in the cache? */
-	obj_found = pk_update_detail_list_get_obj (list, obj->package_id);
+	obj_found = pk_update_detail_list_get_obj (list, obj->id);
 	if (obj_found != NULL) {
-		pk_debug ("already in list: %s", obj->package_id);
+		pk_debug ("already in list: %s", obj->id->name);
 		return FALSE;
 	}
 
@@ -95,19 +95,19 @@ pk_update_detail_list_add_obj (PkUpdateDetailList *list, const PkUpdateDetailObj
  * Gets an object from the list
  **/
 const PkUpdateDetailObj *
-pk_update_detail_list_get_obj (PkUpdateDetailList *list, const gchar *package_id)
+pk_update_detail_list_get_obj (PkUpdateDetailList *list, const PkPackageId *id)
 {
 	guint i;
 	guint len;
 	PkUpdateDetailObj *obj;
 
 	g_return_val_if_fail (PK_IS_UPDATE_DETAIL_LIST (list), NULL);
-	g_return_val_if_fail (package_id != NULL, NULL);
+	g_return_val_if_fail (id != NULL, NULL);
 
 	len = list->priv->array->len;
 	for (i=0; i<len; i++) {
 		obj = (PkUpdateDetailObj *) g_ptr_array_index (list->priv->array, i);
-		if (pk_strequal (package_id, obj->package_id)) {
+		if (pk_package_id_equal (id, obj->id)) {
 			return obj;
 		}
 	}

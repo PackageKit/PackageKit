@@ -362,17 +362,19 @@ pk_transaction_caller_active_changed_cb (LibGBus *libgbus, gboolean is_active, P
  * pk_transaction_details_cb:
  **/
 static void
-pk_transaction_details_cb (PkBackend *backend, PkDetailsObj *details, PkTransaction *transaction)
+pk_transaction_details_cb (PkBackend *backend, PkDetailsObj *obj, PkTransaction *transaction)
 {
 	const gchar *group_text;
+	gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	group_text = pk_group_enum_to_text (details->group);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_DETAILS], 0,
-		       details->package_id, details->license, group_text, details->description,
-		       details->url, details->size);
+	group_text = pk_group_enum_to_text (obj->group);
+	package_id = pk_package_id_to_string (obj->id);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_DETAILS], 0, package_id,
+		       obj->license, group_text, obj->description, obj->url, obj->size);
+	g_free (package_id);
 }
 
 /**
@@ -715,6 +717,7 @@ static void
 pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *detail, PkTransaction *transaction)
 {
 	const gchar *restart_text;
+	gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -723,9 +726,11 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 	pk_update_detail_list_add_obj (transaction->priv->update_detail_list, detail);
 
 	restart_text = pk_restart_enum_to_text (detail->restart);
+	package_id = pk_package_id_to_string (detail->id);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
-		       detail->package_id, detail->updates, detail->obsoletes, detail->vendor_url,
+		       package_id, detail->updates, detail->obsoletes, detail->vendor_url,
 		       detail->bugzilla_url, detail->cve_url, restart_text, detail->update_text);
+	g_free (package_id);
 }
 
 
@@ -1756,8 +1761,10 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	gchar *package_id;
 	gchar **package_ids_new;
 	const PkUpdateDetailObj *detail;
+	PkPackageId *id;
 	GPtrArray *array;
 	guint i;
 	guint len;
@@ -1803,14 +1810,18 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	/* try and reuse cache */
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
-		detail = pk_update_detail_list_get_obj (transaction->priv->update_detail_list, package_ids[i]);
+		id = pk_package_id_new_from_string (package_ids[i]);
+		detail = pk_update_detail_list_get_obj (transaction->priv->update_detail_list, id);
+		pk_package_id_free (id);
 		if (detail != NULL) {
 			pk_warning ("got %s", package_ids[i]);
+			package_id = pk_package_id_to_string (detail->id);
 			/* emulate the backend */
 			g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
-				       detail->package_id, detail->updates, detail->obsoletes,
+				       package_id, detail->updates, detail->obsoletes,
 				       detail->vendor_url, detail->bugzilla_url, detail->cve_url,
 				       pk_restart_enum_to_text (detail->restart), detail->update_text);
+			g_free (package_id);
 		} else {
 			pk_warning ("not got %s", package_ids[i]);
 			g_ptr_array_add (array, g_strdup (package_ids[i]));
