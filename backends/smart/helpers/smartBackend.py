@@ -19,6 +19,7 @@
 import smart
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
+        INFO_SECURITY, INFO_BUGFIX, INFO_ENHANCEMENT, \
         ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED
 
 
@@ -139,7 +140,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         trans.run()
         for (package, op) in trans.getChangeSet().items():
             if op == smart.transaction.INSTALL:
-                self._show_package(package, status=INFO_NORMAL)
+                status = self._get_status(package)
+                self._show_package(package, status)
 
     @needs_cache
     def resolve(self, filters, packagename):
@@ -300,6 +302,17 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             info = loader.getInfo(package)
             self.package(self.get_package_id(package.name, version, arch,
                 channel.getAlias()), status, info.getSummary())
+
+    def _get_status(self, package):
+        flags = smart.pkgconf.testAllFlags(package)
+        for flag in flags:
+            if flag == 'security':
+                return INFO_SECURITY
+            elif flag == 'bugfix':
+                return INFO_BUGFIX
+            elif flag == 'enhancement':
+                return INFO_ENHANCEMENT
+        return INFO_NORMAL
 
     def _process_search_results(self, results):
         packages = []
