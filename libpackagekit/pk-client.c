@@ -96,6 +96,7 @@ struct _PkClientPrivate
 	gchar			*cached_full_path;
 	gchar			**cached_full_paths;
 	gchar			*cached_search;
+	gchar			*cached_directory;
 	PkProvidesEnum		 cached_provides;
 	PkFilterEnum		 cached_filters;
 };
@@ -1492,6 +1493,68 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, gchar **package_i
 	pk_client_error_fixup (error);
 	return ret;
 }
+
+/**
+ * pk_client_download_packages:
+ * @client: a valid #PkClient instance
+ * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @directory: the location where packages are to be downloaded
+ * @error: a %GError to put the error code and message in, or %NULL
+ * Get the packages that depend this one, i.e. child->parent.
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar *directory, GError **error)
+{
+        gboolean ret;
+        gchar *package_ids_temp;
+
+        g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+        g_return_val_if_fail (package_ids != NULL, FALSE);
+
+        /* check the PackageIDs here to avoid a round trip if invalid */
+        ret = pk_package_ids_check (package_ids);
+        if (!ret) {
+                package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+                pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+                                     "package_ids '%s' are not valid", package_ids_temp);
+                g_free (package_ids_temp);
+                return FALSE;
+        }
+
+        /* get and set a new ID */
+        ret = pk_client_allocate_transaction_id (client, error);
+        if (!ret) {
+                return FALSE;
+        }
+
+        /* save this so we can re-issue it */
+        client->priv->role = PK_ROLE_ENUM_DOWNLOAD_PACKAGES;
+        client->priv->cached_package_ids = g_strdupv (package_ids);
+        client->priv->cached_directory = g_strdup (directory);
+
+        /* check to see if we have a valid proxy */
+        if (client->priv->proxy == NULL) {
+                pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+                return FALSE;
+        }
+        ret = dbus_g_proxy_call (client->priv->proxy, "DownloadPackages", error,
+                                 G_TYPE_STRV, package_ids,
+                                 G_TYPE_STRING, directory,
+                                 G_TYPE_INVALID, G_TYPE_INVALID);
+        if (ret && !client->priv->is_finished) {
+                /* allow clients to respond in the status changed callback */
+                pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+                /* spin until finished */
+                if (client->priv->synchronous) {
+                        g_main_loop_run (client->priv->loop);
+                }
+        }
+        pk_client_error_fixup (error);
+        return ret;
+}
+
 
 /**
  * pk_client_get_packages:
@@ -3016,6 +3079,8 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_get_details (client, priv->cached_package_ids, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
 		ret = pk_client_get_files (client, priv->cached_package_ids, error);
+	} else if (priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+		ret = pk_client_download_packages (client, priv->cached_package_ids, priv->cached_directory, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
 		ret = pk_client_get_requires (client, priv->cached_filters, priv->cached_package_ids, priv->cached_force, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
@@ -3535,6 +3600,7 @@ pk_client_reset (PkClient *client, GError **error)
 	g_free (client->priv->cached_transaction_id);
 	g_free (client->priv->cached_full_path);
 	g_free (client->priv->cached_search);
+	g_free (client->priv->cached_directory);
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
 
@@ -3549,6 +3615,7 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->cached_full_paths = NULL;
 	client->priv->cached_search = NULL;
 	client->priv->cached_package_ids = NULL;
+	client->priv->cached_directory = NULL;
 	client->priv->cached_filters = PK_FILTER_ENUM_UNKNOWN;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -3583,6 +3650,7 @@ pk_client_init (PkClient *client)
 	client->priv->cached_full_path = NULL;
 	client->priv->cached_full_paths = NULL;
 	client->priv->cached_search = NULL;
+	client->priv->cached_directory = NULL;
 	client->priv->cached_provides = PK_PROVIDES_ENUM_UNKNOWN;
 	client->priv->cached_filters = PK_FILTER_ENUM_UNKNOWN;
 	client->priv->proxy = NULL;
@@ -3692,6 +3760,7 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->cached_full_path);
 	g_free (client->priv->cached_search);
 	g_free (client->priv->tid);
+	g_free (client->priv->directory);
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
 
