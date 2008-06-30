@@ -161,14 +161,13 @@ pk_task_list_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskLis
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 
 	tid = pk_client_get_tid (client);
-	pk_debug ("tid %s is now %s", tid, pk_status_enum_to_text (status));
 
 	/* get correct item */
 	item = pk_task_list_find_existing_tid (tlist, tid);
 	item->status = status;
 	g_free (tid);
 
-	pk_debug ("emit status-changed");
+	pk_debug ("emit status-changed(%s) for %s", pk_status_enum_to_text (status), tid);
 	g_signal_emit (tlist, signals [PK_TASK_LIST_STATUS_CHANGED], 0);
 }
 
@@ -273,7 +272,6 @@ pk_task_list_refresh (PkTaskList *tlist)
 	for (i=0; i<tlist->priv->task_list->len; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
 		if (!item->valid) {
-			pk_debug ("remove %s", item->tid);
 			g_object_unref (item->monitor);
 			g_ptr_array_remove (tlist->priv->task_list, item);
 			g_free (item->tid);
@@ -303,7 +301,7 @@ pk_task_list_get_item (PkTaskList *tlist, guint item)
 {
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), NULL);
 	if (item >= tlist->priv->task_list->len) {
-		pk_debug ("item too large!");
+		pk_warning ("item too large!");
 		return NULL;
 	}
 	return g_ptr_array_index (tlist->priv->task_list, item);
@@ -466,7 +464,6 @@ pk_task_list_finalize (GObject *object)
 	/* remove all watches */
 	for (i=0; i<tlist->priv->task_list->len; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		pk_debug ("remove %s", item->tid);
 		g_object_unref (item->monitor);
 		g_free (item->package_id);
 		g_ptr_array_remove (tlist->priv->task_list, item);

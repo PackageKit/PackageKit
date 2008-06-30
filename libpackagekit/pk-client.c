@@ -313,14 +313,14 @@ pk_client_error_auth_obtain (GError *error)
 	/* get PolKitAction */
 	ret = polkit_dbus_error_parse_from_strings ("org.freedesktop.PolicyKit.Error.NotAuthorized", error->message, &action, &result);
 	if (!ret) {
-		pk_debug ("Not a polkit auth failure: %s", error->message);
+		pk_warning ("Not a polkit auth failure: %s", error->message);
 		return FALSE;
 	}
 
 	/* get action_id from PolKitAction */
 	ret = polkit_action_get_action_id (action, &action_id);
 	if (!ret) {
-		pk_debug ("Unable to get an action ID");
+		pk_warning ("Unable to get an action ID");
 		return FALSE;
 	}
 

@@ -167,7 +167,6 @@ pk_spawn_check_child (PkSpawn *spawn)
 			spawn->priv->exit = PK_EXIT_ENUM_FAILED;
 		}
 	} else {
-		pk_debug ("Running fork successful");
 		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
 			spawn->priv->exit = PK_EXIT_ENUM_SUCCESS;
 		}

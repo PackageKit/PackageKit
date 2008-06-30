@@ -191,7 +191,6 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
-	pk_debug ("statement=%s", sql);
 	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
 	if (rc != SQLITE_OK) {
 		pk_warning ("SQL error: %s\n", error_msg);

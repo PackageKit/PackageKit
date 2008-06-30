@@ -476,7 +476,6 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	}
 
 	idle = (guint) g_timer_elapsed (engine->priv->timer, NULL);
-	pk_debug ("engine idle=%i", idle);
 	return idle;
 }
 
@@ -726,7 +725,6 @@ pk_engine_finalize (GObject *object)
 	engine = PK_ENGINE (object);
 
 	g_return_if_fail (engine->priv != NULL);
-	pk_debug ("engine finalise");
 
 	/* unlock if we locked this */
 	ret = pk_backend_unlock (engine->priv->backend);

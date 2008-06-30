@@ -82,7 +82,6 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 	} else {
 		key = g_strdup_printf ("%s(%s)", catalog->priv->type, distro_id_part);
 	}
-	pk_debug ("key=%s", key);
 	list = g_key_file_get_string_list (catalog->priv->file, PK_CATALOG_FILE_HEADER, key, NULL, NULL);
 	g_free (key);
 
@@ -94,7 +93,6 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 	/* add to array */
 	len = g_strv_length (list);
 	for (i=0; i<len; i++) {
-		pk_debug ("add to array %i=%s", i, list[i]);
 		g_ptr_array_add (array, g_strdup (list[i]));
 	}
 	g_strfreev (list);

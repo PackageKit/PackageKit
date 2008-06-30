@@ -297,7 +297,7 @@ pk_package_list_get_obj (PkPackageList *plist, guint item)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
 	if (item >= plist->priv->array->len) {
-		pk_debug ("item too large!");
+		pk_warning ("item too large!");
 		return NULL;
 	}
 	return g_ptr_array_index (plist->priv->array, item);

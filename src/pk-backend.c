@@ -1449,7 +1449,6 @@ pk_backend_finished_delay (gpointer data)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
 	}
 
-	pk_debug ("resetting hash tables to blank");
 	g_hash_table_remove_all (backend->priv->hash_pointer);
 	g_hash_table_remove_all (backend->priv->hash_string);
 	g_hash_table_remove_all (backend->priv->hash_strv);
@@ -1727,8 +1726,6 @@ pk_backend_finalize (GObject *object)
 	g_return_if_fail (PK_IS_BACKEND (object));
 	backend = PK_BACKEND (object);
 
-	pk_debug ("backend finalise");
-
 	pk_backend_reset (backend);
 	g_free (backend->priv->proxy_http);
 	g_free (backend->priv->proxy_ftp);
@@ -1930,7 +1927,6 @@ pk_backend_init (PkBackend *backend)
 PkBackend *
 pk_backend_new (void)
 {
-	pk_debug ("new object");
 	if (pk_backend_object != NULL) {
 		g_object_ref (pk_backend_object);
 	} else {

@@ -151,7 +151,6 @@ pk_iso8601_present (void)
 	/* get current time */
 	g_get_current_time (&timeval);
 	timespec = g_time_val_to_iso8601 (&timeval);
-	pk_debug ("timespec=%s", timespec);
 
 	return timespec;
 }
@@ -182,7 +181,6 @@ pk_iso8601_difference (const gchar *isodate)
 
 	/* work out difference */
 	time = timeval_now.tv_sec - timeval_then.tv_sec;
-	pk_debug ("difference=%i", time);
 
 	return time;
 }
@@ -274,7 +272,7 @@ pk_strnumber (const gchar *text)
 	/* max length is 10 */
 	length = pk_strlen (text, 10);
 	if (length == 10) {
-		pk_debug ("input too long!");
+		pk_warning ("input too long: %s", text);
 		return FALSE;
 	}
 
@@ -282,7 +280,7 @@ pk_strnumber (const gchar *text)
 		if (i == 0 && text[i] == '-') {
 			/* negative sign */
 		} else if (g_ascii_isdigit (text[i]) == FALSE) {
-			pk_debug ("not a number '%c' in text!", text[i]);
+			pk_warning ("not a number '%c' in text!", text[i]);
 			return FALSE;
 		}
 	}
@@ -404,13 +402,13 @@ pk_strvalidate (const gchar *text)
 	/* maximum size is 1024 */
 	length = pk_strlen (text, 1024);
 	if (length > 1024) {
-		pk_debug ("input too long!");
+		pk_warning ("input too long: %u", length);
 		return FALSE;
 	}
 
 	for (i=0; i<length; i++) {
 		if (pk_strvalidate_char (text[i]) == FALSE) {
-			pk_debug ("invalid char '%c' in text!", text[i]);
+			pk_warning ("invalid char '%c' in text!", text[i]);
 			return FALSE;
 		}
 	}
@@ -512,7 +510,6 @@ pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compa
 		return FALSE;
 	}
 	if (compare == parts) {
-		pk_debug ("optimize to strcmp");
 		return pk_strequal (id1, id2);
 	}
 
@@ -735,7 +732,6 @@ pk_va_list_to_argv (const gchar *string_first, va_list *args)
 		/* split the string up by spaces */
 		pk_va_list_to_argv_string (ptr_array, value_temp);
 	}
-	pk_debug ("number of strings=%i", i+1);
 
 	/* convert the array to a strv type */
 	array = pk_ptr_array_to_argv (ptr_array);

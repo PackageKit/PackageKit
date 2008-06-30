@@ -539,7 +539,7 @@ pk_control_transaction_list_refresh (PkControl *control)
 				 G_TYPE_STRV, &control->priv->array,
 				 G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_debug ("ERROR: %s", error->message);
+		pk_warning ("ERROR: %s", error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -584,7 +584,6 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **array, PkCont
 static void
 pk_control_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkControl *control)
 {
-	pk_debug ("connected=%i", connected);
 	/* force a refresh so we have valid data*/
 	if (connected) {
 		pk_control_transaction_list_refresh (control);
