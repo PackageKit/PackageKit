@@ -505,13 +505,12 @@ pk_control_transaction_list_print (PkControl *control)
 
 	length = g_strv_length (control->priv->array);
 	if (length == 0) {
-		g_print ("no jobs...\n");
 		return TRUE;
 	}
-	g_print ("jobs: ");
+	pk_debug ("jobs:");
 	for (i=0; i<length; i++) {
 		tid = control->priv->array[i];
-		g_print ("%s\n", tid);
+		pk_debug ("%s", tid);
 	}
 	return TRUE;
 }

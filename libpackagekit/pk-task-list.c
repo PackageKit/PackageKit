@@ -93,14 +93,14 @@ pk_task_list_print (PkTaskList *tlist)
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	length = tlist->priv->task_list->len;
-	g_print ("Tasks:\n");
+	pk_debug ("Tasks:");
 	if (length == 0) {
-		g_print ("[none]...\n");
+		pk_debug ("[none]...");
 		return TRUE;
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		g_print ("%s\t%s:%s %s\n", item->tid, pk_role_enum_to_text (item->role),
+		pk_debug ("%s\t%s:%s %s", item->tid, pk_role_enum_to_text (item->role),
 			 pk_status_enum_to_text (item->status), item->package_id);
 	}
 	return TRUE;

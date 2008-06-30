@@ -170,13 +170,6 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		}
 	}
 
-	g_print ("tid          : %s\n", item.tid);
-	g_print (" timespec    : %s\n", item.timespec);
-	g_print (" succeeded   : %i\n", item.succeeded);
-	g_print (" role        : %s\n", pk_role_enum_to_text (item.role));
-	g_print (" duration    : %i (seconds)\n", item.duration);
-	g_print (" data        : %s\n", item.data);
-
 	/* emit signal */
 	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
 		       item.tid, item.timespec, item.succeeded, item.role,
