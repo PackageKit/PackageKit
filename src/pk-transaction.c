@@ -945,6 +945,7 @@ pk_transaction_commit (PkTransaction *transaction)
 	/* commit, so it appears in the JobList */
 	ret = pk_transaction_list_commit (transaction->priv->transaction_list, transaction);
 	if (!ret) {
+		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		pk_warning ("failed to commit (job not run?)");
 		return FALSE;
 	}
@@ -1350,7 +1351,6 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1408,7 +1408,6 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1466,7 +1465,6 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1517,7 +1515,6 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1634,7 +1631,6 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1702,7 +1698,6 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1814,7 +1809,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 		detail = pk_update_detail_list_get_obj (transaction->priv->update_detail_list, id);
 		pk_package_id_free (id);
 		if (detail != NULL) {
-			pk_warning ("got %s", package_ids[i]);
 			package_id = pk_package_id_to_string (detail->id);
 			/* emulate the backend */
 			g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
@@ -1850,7 +1844,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1936,7 +1929,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2009,7 +2001,6 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2078,7 +2069,6 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2153,7 +2143,6 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2225,7 +2214,6 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2296,7 +2284,6 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2362,7 +2349,6 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2429,7 +2415,6 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2499,7 +2484,6 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2563,7 +2547,6 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2623,7 +2606,6 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2683,7 +2665,6 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2743,7 +2724,6 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2803,7 +2783,6 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2893,7 +2872,6 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2953,7 +2931,6 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -3016,7 +2993,6 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
