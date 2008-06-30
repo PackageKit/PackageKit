@@ -33,7 +33,7 @@ static gboolean is_cancelled = FALSE;
 static void
 backend_initialize (PkBackend *backend)
 {
-	pk_debug ("FILTER: initialize");
+	pk_debug ("backend: initialize");
 }
 
 /**
@@ -43,7 +43,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	pk_debug ("FILTER: destroy");
+	pk_debug ("backend: destroy");
 }
 
 /**
