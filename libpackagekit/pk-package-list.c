@@ -184,7 +184,7 @@ pk_package_list_to_argv (PkPackageList *plist)
 	for (i=0; i<length; i++) {
 		obj = g_ptr_array_index (plist->priv->array, i);
 		package_id = pk_package_id_to_string (obj->id);
-		g_ptr_array_add (array, package_id);
+		g_ptr_array_add (array, g_strdup (package_id));
 		g_free (package_id);
 	}
 
