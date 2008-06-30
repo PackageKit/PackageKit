@@ -141,9 +141,6 @@ pk_package_id_new_from_list (const gchar *name, const gchar *version, const gcha
 	PkPackageId *id = NULL;
 
 	g_return_val_if_fail (name != NULL, NULL);
-	g_return_val_if_fail (version != NULL, NULL);
-	g_return_val_if_fail (arch != NULL, NULL);
-	g_return_val_if_fail (data != NULL, NULL);
 
 	/* create new object */
 	id = pk_package_id_new ();

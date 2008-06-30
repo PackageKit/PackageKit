@@ -1817,7 +1817,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 				       pk_restart_enum_to_text (detail->restart), detail->update_text);
 			g_free (package_id);
 		} else {
-			pk_warning ("not got %s", package_ids[i]);
+			pk_debug ("not got %s", package_ids[i]);
 			g_ptr_array_add (array, g_strdup (package_ids[i]));
 		}
 	}
