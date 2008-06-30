@@ -102,11 +102,8 @@ pk_package_ids_check (gchar **package_ids)
 
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 
-	/* get size once */
-	size = g_strv_length (package_ids);
-	pk_debug ("size = %i", size);
-
 	/* check all */
+	size = g_strv_length (package_ids);
 	for (i=0; i<size; i++) {
 		package_id = package_ids[i];
 		ret = pk_package_id_check (package_id);
@@ -184,11 +181,8 @@ pk_package_ids_to_text (gchar **package_ids, const gchar *delimiter)
 
 	string = g_string_new ("");
 
-	/* get size once */
-	size = g_strv_length (package_ids);
-	pk_debug ("size = %i", size);
-
 	/* print all */
+	size = g_strv_length (package_ids);
 	for (i=0; i<size; i++) {
 		g_string_append (string, package_ids[i]);
 		g_string_append (string, delimiter);
