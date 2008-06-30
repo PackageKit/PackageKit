@@ -189,6 +189,11 @@ gboolean	 pk_client_get_package			(PkClient	*client,
 gboolean	 pk_client_cancel			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_download_packages			(PkClient	*client,
+							 gchar		**package_ids,
+							 const gchar	*directory,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;	
 gboolean	 pk_client_get_updates			(PkClient	*client,
 							 PkFilterEnum	 filters,
 							 GError		**error)

@@ -25,6 +25,7 @@ __pkcon_commandlist="
     get-filters
     get-groups
     get-packages
+    download-packages
     get-requires
     get-time
     get-transactions

@@ -85,6 +85,9 @@ gboolean	 pk_backend_dbus_search_file		(PkBackendDbus	*backend_dbus,
 							 const gchar	*search);
 gboolean	 pk_backend_dbus_get_packages		(PkBackendDbus	*backend_dbus,
 							 PkFilterEnum	 filters);
+gboolean	 pk_backend_dbus_download_packages	(PkBackendDbus	*backend_dbus,
+							 gchar		**package_ids,
+							 const gchar	*directory);
 gboolean	 pk_backend_dbus_get_depends		(PkBackendDbus	*backend_dbus,
 							 PkFilterEnum	 filters,
 							 gchar		**package_ids,
