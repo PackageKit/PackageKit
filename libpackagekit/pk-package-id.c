@@ -69,6 +69,9 @@ pk_package_id_check (const gchar *package_id)
 	gchar **sections;
 	gboolean ret;
 
+	if (package_id == NULL) {
+		return FALSE;
+	}
 	ret = g_utf8_validate (package_id, -1, NULL);
 	if (!ret) {
 		pk_warning ("invalid UTF8!");
@@ -95,6 +98,8 @@ pk_package_id_new_from_string (const gchar *package_id)
 {
 	gchar **sections;
 	PkPackageId *id = NULL;
+
+	g_return_val_if_fail (package_id != NULL, NULL);
 
 	sections = pk_strsplit (package_id, 4);
 	if (sections == NULL) {
@@ -134,6 +139,11 @@ PkPackageId *
 pk_package_id_new_from_list (const gchar *name, const gchar *version, const gchar *arch, const gchar *data)
 {
 	PkPackageId *id = NULL;
+
+	g_return_val_if_fail (name != NULL, NULL);
+	g_return_val_if_fail (version != NULL, NULL);
+	g_return_val_if_fail (arch != NULL, NULL);
+	g_return_val_if_fail (data != NULL, NULL);
 
 	/* create new object */
 	id = pk_package_id_new ();
@@ -185,6 +195,11 @@ gchar *
 pk_package_id_build (const gchar *name, const gchar *version,
 		     const gchar *arch, const gchar *data)
 {
+	g_return_val_if_fail (name != NULL, NULL);
+	g_return_val_if_fail (version != NULL, NULL);
+	g_return_val_if_fail (arch != NULL, NULL);
+	g_return_val_if_fail (data != NULL, NULL);
+
 	return g_strdup_printf ("%s;%s;%s;%s", name, version, arch, data);
 }
 
@@ -255,6 +270,7 @@ libst_package_id (LibSelfTest *test)
 	gchar *text;
 	const gchar *temp;
 	PkPackageId *id;
+	PkPackageId *id2;
 
 	if (libst_start (test, "PkPackageId", CLASS_AUTO) == FALSE) {
 		return;
@@ -263,6 +279,15 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************
 	 ****************          id           ******************
 	 ************************************************************/
+
+	libst_title (test, "id build");
+	text = pk_package_id_build ("moo", "0.0.1", "i386", "fedora");
+	if (pk_strequal (text, "moo;0.0.1;i386;fedora")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+	g_free (text);
 
 	libst_title (test, "pid equal pass (same)");
 	ret = pk_package_id_equal_strings ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
@@ -343,8 +368,17 @@ libst_package_id (LibSelfTest *test)
 	}
 
 	/************************************************************/
+	libst_title (test, "test copying");
+	id2 = pk_package_id_copy (id);
+	if (id2 != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
 	libst_title (test, "test id building with valid data");
-	text = pk_package_id_to_string (id);
+	text = pk_package_id_to_string (id2);
 	if (pk_strequal (text, "moo;0.0.1;i386;fedora")) {
 		libst_success (test, NULL);
 	} else {
@@ -352,6 +386,7 @@ libst_package_id (LibSelfTest *test)
 	}
 	g_free (text);
 	pk_package_id_free (id);
+	pk_package_id_free (id2);
 
 	/************************************************************/
 	libst_title (test, "parse short package_id from string");
