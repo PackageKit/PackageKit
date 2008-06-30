@@ -38,7 +38,7 @@ PkBackendSpawn *spawn;
 static void
 backend_initialize (PkBackend *backend)
 {
-	pk_debug ("FILTER: initialize");
+	pk_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "apt");
 	backend_init_search (backend);
@@ -51,7 +51,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	pk_debug ("FILTER: destroy");
+	pk_debug ("backend: destroy");
 	backend_finish_search (backend);
 	g_object_unref (spawn);
 }
