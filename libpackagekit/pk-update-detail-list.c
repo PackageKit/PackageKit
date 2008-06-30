@@ -90,7 +90,7 @@ pk_update_detail_list_add_obj (PkUpdateDetailList *list, const PkUpdateDetailObj
 /**
  * pk_update_detail_list_get_obj:
  * @list: a valid #PkUpdateDetailList instance
- * @package_id: A %package_id such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @id: A #PkPackageId of the item to match
  *
  * Gets an object from the list
  **/

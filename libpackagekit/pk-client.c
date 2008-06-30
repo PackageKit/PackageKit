@@ -3759,8 +3759,8 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->cached_transaction_id);
 	g_free (client->priv->cached_full_path);
 	g_free (client->priv->cached_search);
+	g_free (client->priv->cached_directory);
 	g_free (client->priv->tid);
-	g_free (client->priv->directory);
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
 

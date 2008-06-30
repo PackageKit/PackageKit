@@ -99,7 +99,7 @@ pk_details_obj_copy (const PkDetailsObj *obj)
 
 /**
  * pk_details_obj_free:
- * @detail: the #PkDetailsObj object
+ * @obj: the #PkDetailsObj object
  *
  * Return value: %TRUE if the #PkDetailsObj object was freed.
  **/

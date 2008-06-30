@@ -1066,11 +1066,11 @@ pk_backend_dbus_download_packages (PkBackendDbus *backend_dbus, gchar **package_
 
         g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
         g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	 g_return_val_if_fail (package_ids != NULL, FALSE)
+	 g_return_val_if_fail (package_ids != NULL, FALSE);
 
         /* new sync method call */
         pk_backend_dbus_time_reset (backend_dbus);
-        ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "DownloadPackages", &error
+        ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "DownloadPackages", &error,
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_STRING, directory,
  	                         G_TYPE_INVALID, G_TYPE_INVALID);
