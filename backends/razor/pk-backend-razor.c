@@ -117,10 +117,14 @@ backend_resolve_thread (PkBackend *backend)
 	length = g_strv_length (package_ids);
 
 	pi = razor_package_iterator_create (set);
-	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
+	while (razor_package_iterator_next (pi, &package,
+					    RAZOR_DETAIL_NAME, &name,
+					    RAZOR_DETAIL_VERSION, &version,
+					    RAZOR_DETAIL_ARCH, &arch,
+					    RAZOR_DETAIL_SUMMARY, &summary,
+					    RAZOR_DETAIL_LAST)) {
 		for (i=0; i<length; i++) {
 			if (pk_strequal (name, package_ids[i])) {
-				razor_package_get_details (set, package, &summary, NULL, NULL, NULL);
 				pk_razor_emit_package (backend, name, version, arch, summary);
 			}
 		}
@@ -161,13 +165,22 @@ backend_get_details_thread (PkBackend *backend)
 	length = g_strv_length (package_ids);
 
 	pi = razor_package_iterator_create (set);
-	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
+	while (razor_package_iterator_next (pi, &package,
+					    RAZOR_DETAIL_NAME, &name,
+					    RAZOR_DETAIL_VERSION, &version,
+					    RAZOR_DETAIL_ARCH, &arch,
+					    RAZOR_DETAIL_LAST)) {
 		for (i=0; i<length; i++) {
 			/* TODO: we should cache this */
 			ident = pk_package_id_new_from_string (package_ids[i]);
 			if (pk_strequal (name, ident->name)) {
 				package_id = pk_package_id_build (name, version, arch, "installed");
-				razor_package_get_details (set, package, &summary, &description, &url, &license);
+				razor_package_get_details (set, package,
+							   RAZOR_DETAIL_SUMMARY, &summary,
+							   RAZOR_DETAIL_DESCRIPTION, &description,
+							   RAZOR_DETAIL_URL, &url,
+							   RAZOR_DETAIL_LICENSE, &license,
+							   RAZOR_DETAIL_LAST);
 				pk_backend_details (backend, package_ids[i], license, PK_GROUP_ENUM_UNKNOWN, description, url, 0);
 				g_free (package_id);
 			}
@@ -219,8 +232,12 @@ backend_get_packages_thread (PkBackend *backend)
 	const gchar *name, *version, *arch, *summary;
 
 	pi = razor_package_iterator_create (set);
-	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
-		razor_package_get_details (set, package, &summary, NULL, NULL, NULL);
+	while (razor_package_iterator_next (pi, &package,
+					    RAZOR_DETAIL_NAME, &name,
+					    RAZOR_DETAIL_VERSION, &version,
+					    RAZOR_DETAIL_ARCH, &arch,
+					    RAZOR_DETAIL_SUMMARY, &summary,
+					    RAZOR_DETAIL_LAST)) {
 		pk_razor_emit_package (backend, name, version, arch, summary);
 	}
 
@@ -286,10 +303,13 @@ backend_search_thread (PkBackend *backend)
 	search = pk_backend_get_string (backend, "search");
 
 	pi = razor_package_iterator_create (set);
-	while (razor_package_iterator_next (pi, &package, &name, &version, &arch)) {
-
-		/* we need the summary just for ::Package */
-		razor_package_get_details (set, package, &summary, &description, NULL, NULL);
+	while (razor_package_iterator_next (pi, &package,
+					    RAZOR_DETAIL_NAME, &name,
+					    RAZOR_DETAIL_VERSION, &version,
+					    RAZOR_DETAIL_ARCH, &arch,
+					    RAZOR_DETAIL_SUMMARY, &summary,
+					    RAZOR_DETAIL_DESCRIPTION, &description,
+					    RAZOR_DETAIL_LAST)) {
 
 		/* find in the name */
 		found = pk_str_case_contains (name, search);
