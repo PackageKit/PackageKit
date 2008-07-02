@@ -129,7 +129,7 @@ pk_update_detail_list_finalize (GObject *object)
 	g_return_if_fail (PK_IS_UPDATE_DETAIL_LIST (object));
 	list = PK_UPDATE_DETAIL_LIST (object);
 
-	//TODO: FREE!
+	/* free the list */
 	len = list->priv->array->len;
 	for (i=0; i<len; i++) {
 		obj = (PkUpdateDetailObj *) g_ptr_array_index (list->priv->array, i);

@@ -718,7 +718,8 @@ pk_control_class_init (PkControlClass *klass)
 	 * PkControl::transaction-list-changed:
 	 * @control: the #PkControl instance that emitted the signal
 	 *
-	 * The ::transaction-list-changed signal is emitted when TODO
+	 * The ::transaction-list-changed signal is emitted when the list
+	 * of transactions handled by the daemon is changed.
 	 **/
 	signals [PK_CONTROL_LIST_CHANGED] =
 		g_signal_new ("transaction-list-changed",
@@ -730,7 +731,9 @@ pk_control_class_init (PkControlClass *klass)
 	 * PkControl::locked:
 	 * @control: the #PkControl instance that emitted the signal
 	 *
-	 * The ::locked signal is emitted when TODO
+	 * The ::locked signal is emitted when the backend instance has been
+	 * locked by PackageKit.
+	 * This may mean that other native package tools will not work.
 	 **/
 	signals [PK_CONTROL_LOCKED] =
 		g_signal_new ("locked",

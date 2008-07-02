@@ -383,9 +383,8 @@ pk_backend_dbus_startup (PkBackendDbus *backend_dbus)
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (!ret) {
 		pk_warning ("%s", error->message);
-		/* FIXME: might be insane... */
-		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
-		pk_backend_finished (backend_dbus->priv->backend);
+		/* cannot use ErrorCode as not in transaction */
+		pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON, error->message);
 		g_error_free (error);
 		goto out;
 	}
