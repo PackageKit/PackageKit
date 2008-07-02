@@ -1019,7 +1019,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 txmbr = self.yumbase.install(po=pkg)
                 txmbrs.extend(txmbr)
             if inst:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package %s is already installed", pkg.name)
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package %s is already installed" % pkg.name)
         if txmbrs:
             self._runYumTransaction()
         else:
