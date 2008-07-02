@@ -165,10 +165,10 @@ pk_task_list_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskLis
 	/* get correct item */
 	item = pk_task_list_find_existing_tid (tlist, tid);
 	item->status = status;
-	g_free (tid);
 
 	pk_debug ("emit status-changed(%s) for %s", pk_status_enum_to_text (status), tid);
 	g_signal_emit (tlist, signals [PK_TASK_LIST_STATUS_CHANGED], 0);
+	g_free (tid);
 }
 
 /**
