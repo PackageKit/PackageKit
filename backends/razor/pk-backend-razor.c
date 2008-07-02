@@ -159,7 +159,7 @@ backend_get_details_thread (PkBackend *backend)
 	const gchar *name, *version, *arch, *summary, *description, *url, *license;
 	gchar *package_id;
 	gchar **package_ids;
-	PkPackageId *ident;
+	PkPackageId *id;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	length = g_strv_length (package_ids);
@@ -172,8 +172,8 @@ backend_get_details_thread (PkBackend *backend)
 					    RAZOR_DETAIL_LAST)) {
 		for (i=0; i<length; i++) {
 			/* TODO: we should cache this */
-			ident = pk_package_id_new_from_string (package_ids[i]);
-			if (pk_strequal (name, ident->name)) {
+			id = pk_package_id_new_from_string (package_ids[i]);
+			if (pk_strequal (name, id->name)) {
 				package_id = pk_package_id_build (name, version, arch, "installed");
 				razor_package_get_details (set, package,
 							   RAZOR_DETAIL_SUMMARY, &summary,
@@ -184,7 +184,7 @@ backend_get_details_thread (PkBackend *backend)
 				pk_backend_details (backend, package_ids[i], license, PK_GROUP_ENUM_UNKNOWN, description, url, 0);
 				g_free (package_id);
 			}
-			pk_package_id_free (ident);
+			pk_package_id_free (id);
 		}
 	}
 
@@ -202,6 +202,32 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_resolve_package_id:
+ */
+static struct razor_package *
+backend_resolve_package_id (const PkPackageId *id)
+{
+	struct razor_package_iterator *pi;
+	struct razor_package *package;
+	struct razor_package *package_retval = NULL;
+	const gchar *name, *version, *arch;
+
+	pi = razor_package_iterator_create (set);
+	while (razor_package_iterator_next (pi, &package,
+					    RAZOR_DETAIL_NAME, &name,
+					    RAZOR_DETAIL_VERSION, &version,
+					    RAZOR_DETAIL_ARCH, &arch,
+					    RAZOR_DETAIL_LAST)) {
+		if (pk_strequal (name, id->name)) {
+			package_retval = package;
+			break;
+		}
+	}
+	razor_package_iterator_destroy (pi);
+	return package_retval;
+}
+
+/**
  * backend_get_files:
  */
 static void
@@ -210,16 +236,18 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 	guint i;
 	guint length;
 	const gchar *package_id;
-	PkPackageId *ident;
+	struct razor_package *package;
+	PkPackageId *id;
 
 	length = g_strv_length (package_ids);
 	for (i=0; i<length; i++) {
 		package_id = package_ids[i];
-		ident = pk_package_id_new_from_string (package_id);
+		id = pk_package_id_new_from_string (package_id);
 		/* TODO: we need to get this list! */
-		razor_set_list_package_files (set, ident->name);
+		package = backend_resolve_package_id (id);
+		razor_set_list_package_files (set, package);
 		pk_backend_files (backend, package_id, "/usr/bin/dave;/usr/share/brian");
-		pk_package_id_free (ident);
+		pk_package_id_free (id);
 	}
 	pk_backend_finished (backend);
 }
