@@ -3526,9 +3526,10 @@ pk_client_connect (PkClient *client)
 static void
 pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkClient *client)
 {
-	pk_debug ("connected=%i", connected);
-
-	/* TODO: if PK re-started mid-transaction then show a big fat warning */
+	/* if PK re-started mid-transaction then show a big fat warning */
+	if (!connected && client->priv->tid != NULL && !client->priv->is_finished) {
+		pk_warning ("daemon disconnected mid-transaction!");
+	}
 }
 
 /**

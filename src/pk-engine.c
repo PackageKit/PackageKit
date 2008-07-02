@@ -522,7 +522,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	sender = dbus_g_method_get_sender (context);
 
 	/* use security model to get auth */
-	ret = pk_security_action_is_allowed (engine->priv->security, sender, FALSE, PK__ROLE_ENUM_SET_PROXY, &error_detail);
+	ret = pk_security_action_is_allowed (engine->priv->security, sender, FALSE, PK_ROLE_ENUM_SET_PROXY_PRIVATE, &error_detail);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
 		dbus_g_method_return_error (context, error);

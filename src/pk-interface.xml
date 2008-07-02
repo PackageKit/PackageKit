@@ -186,7 +186,9 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The reason of the state change, FIXME
+              The reason of the state change. Valid reasons are <literal>resume</literal> or
+              <literal>posttrans</literal>.
+              Resume is given a lower priority than posttrans.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -219,7 +221,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The network state, e.g. FIXME
+              The network state, e.g. <literal>unknown</literal>,
+              <literal>offline</literal> or <literal>online</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -241,7 +244,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The HTTP proxy, e.g. FIXME
+              The HTTP proxy, e.g. <literal>username:password@server:port</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -250,7 +253,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The FTP proxy, e.g. FIXME
+              The FTP proxy, e.g. <literal>username:password@server:port</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>

@@ -1833,6 +1833,12 @@ pk_backend_reset (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* we can't reset when we are running */
+	if (backend->priv->status == PK_STATUS_ENUM_RUNNING) {
+		pk_warning ("cannot reset %s when running", backend->priv->c_tid);
+		return FALSE;
+	}
+
 	/* do finish now, as we might be unreffing quickly */
 	if (backend->priv->signal_finished != 0) {
 		g_source_remove (backend->priv->signal_finished);
@@ -1845,9 +1851,9 @@ pk_backend_reset (PkBackend *backend)
 		g_source_remove (backend->priv->signal_error_timeout);
 	}
 
-	/* TODO: need to wait for Finished() if running */
-
 	pk_package_item_free (backend->priv->last_package);
+	pk_package_obj_free (backend->priv->last_package);
+
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
 	backend->priv->set_eula = FALSE;
