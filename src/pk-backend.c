@@ -1852,7 +1852,6 @@ pk_backend_reset (PkBackend *backend)
 	}
 
 	pk_package_item_free (backend->priv->last_package);
-	pk_package_obj_free (backend->priv->last_package);
 
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
