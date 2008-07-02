@@ -1566,11 +1566,40 @@ show_rpm_progress (PkBackend *backend, gchar *message)
 	}
 }
 
+/* Returns NULL if not found */
+static gchar*
+get_filename_from_message (char *message)
+{
+	gchar *msg = NULL, *p;
+
+	if ((p = strchr (message, ':')) == NULL)
+		return NULL;
+
+	/* check if it's really rpm progress
+	 * example: ' 4:foo    ###'
+	 */
+	if (g_ascii_isdigit (*(p - 1))) {
+		p++;
+
+		msg = p;
+
+		while (p) {
+			if (*p == '#' || g_ascii_isspace (*p)) {
+				*p = '\0';
+				break;
+			}
+
+			p++;
+		}
+	}
+
+	return msg;
+}
+
 static void
 poldek_backend_log (void *data, int pri, char *message)
 {
 	PkBackend *backend = (PkBackend*)data;
-	gchar *p;
 
 	/* skip messages that we don't want to show */
 	if (g_str_has_prefix (message, "Nothing")) // 'Nothing to do'
@@ -1618,37 +1647,23 @@ poldek_backend_log (void *data, int pri, char *message)
 		pberror->rpmstate &= (~PB_RPM_STATE_ENUM_REPACKAGING);
 	}
 	if (pberror->rpmstate != PB_RPM_STATE_ENUM_NONE) {
-		p = g_strchug (message);
-		if (p && g_ascii_isdigit(*p)) {
-			gchar *n;
+		gchar *fn;
 
-			/* extract package name */
-			if ((n = strchr (p, ':') + 1) == NULL)
-				return;
+		if ((fn = get_filename_from_message (message)) == NULL)
+			return;
 
-			p = n;
+		if ((pberror->rpmstate & PB_RPM_STATE_ENUM_REPACKAGING) == FALSE) {
+			guint ts_type = pk_backend_get_uint (backend, "ts_type");
 
-			while (*p != '\0') {
-				if (g_ascii_isspace (*p)) {
-					*p = '\0';
-					break;
-				}
-				p++;
+			/* set proper status */
+			if (ts_type == TS_TYPE_ENUM_INSTALL) {
+				pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
+			} else if (ts_type == TS_TYPE_ENUM_UPDATE) {
+				pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 			}
-
-			if ((pberror->rpmstate & PB_RPM_STATE_ENUM_REPACKAGING) == FALSE) {
-				guint ts_type = pk_backend_get_uint (backend, "ts_type");
-
-				/* set proper status */
-				if (ts_type == TS_TYPE_ENUM_INSTALL) {
-					pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-				} else if (ts_type == TS_TYPE_ENUM_UPDATE) {
-					pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-				}
-			}
-
-			show_rpm_progress (backend, n);
 		}
+
+		show_rpm_progress (backend, fn);
 	}
 }
 
