@@ -352,7 +352,6 @@ pk_client_get_tid (PkClient *client)
 	if (client->priv->tid == NULL) {
 		return NULL;
 	}
-	pk_warning ("client->priv->tid=%s", client->priv->tid);
 	return g_strdup (client->priv->tid);
 }
 
