@@ -176,90 +176,93 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.saveSysConf()
 
     @needs_cache
-    def get_details(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
+    def get_details(self, packageids):
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
 
-        packages = self._process_search_results(results)
+            packages = self._process_search_results(results)
 
-        if len(packages) != 1:
-            return
+            if len(packages) != 1:
+                return
 
-        package = packages[0]
-        infos = []
-        for loader in package.loaders:
-            info = loader.getInfo(package)
-            infos.append(info)
+            package = packages[0]
+            infos = []
+            for loader in package.loaders:
+                info = loader.getInfo(package)
+                infos.append(info)
 
-        infos.sort()
-        info = infos[0]
+            infos.sort()
+            info = infos[0]
 
-        version, arch = package.version.split('@')
-        description = info.GetDetails()
-        description = description.replace("\n\n", ";")
-        description = description.replace("\n", " ")
-        urls = info.getReferenceURLs()
-        if urls:
-            url = urls[0]
-        else:
-            url = "unknown"
+            version, arch = package.version.split('@')
+            description = info.GetDetails()
+            description = description.replace("\n\n", ";")
+            description = description.replace("\n", " ")
+            urls = info.getReferenceURLs()
+            if urls:
+                url = urls[0]
+            else:
+                url = "unknown"
 
-        pkgsize = None
-        seen = {}
-        for loader in package.loaders:
-            info = loader.getInfo(package)
-            for pkgurl in info.getURLs():
-                size = info.getSize(pkgurl)
-                if size:
-                    pkgsize = size
+            pkgsize = None
+            seen = {}
+            for loader in package.loaders:
+                info = loader.getInfo(package)
+                for pkgurl in info.getURLs():
+                    size = info.getSize(pkgurl)
+                    if size:
+                        pkgsize = size
+                        break
+                if pkgsize:
                     break
-            if pkgsize:
-                break
-        if not pkgsize:
-            pkgsize = "unknown"
+            if not pkgsize:
+                pkgsize = "unknown"
 
-        self.details(packageid, "unknown", "unknown", description, url,
-                pkgsize)
+            self.details(packageid, "unknown", "unknown", description, url,
+                    pkgsize)
 
     @needs_cache
-    def get_files(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
+    def get_files(self, packageids):
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
 
-        packages = self._process_search_results(results)
+            packages = self._process_search_results(results)
 
-        if len(packages) != 1:
-            return
+            if len(packages) != 1:
+                return
 
-        package = packages[0]
-        # FIXME: Only installed packages have path lists.
-        paths = []
-        for loader in package.loaders:
-            info = loader.getInfo(package)
-            paths = info.getPathList()
-            if len(paths) > 0:
-                break
+            package = packages[0]
+            # FIXME: Only installed packages have path lists.
+            paths = []
+            for loader in package.loaders:
+                info = loader.getInfo(package)
+                paths = info.getPathList()
+                if len(paths) > 0:
+                    break
 
-        self.files(packageid, ";".join(paths))
+            self.files(packageid, ";".join(paths))
 
     @needs_cache
-    def get_depends(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
+    def get_depends(self, packageids):
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
 
-        packages = self._process_search_results(results)
+            packages = self._process_search_results(results)
 
-        if len(packages) != 1:
-            return
+            if len(packages) != 1:
+                return
 
-        package = packages[0]
+            package = packages[0]
 
-        providers = {}
-        for required in package.requires:
-            for provider in self.ctrl.getCache().getProvides(str(required)):
-                for package in provider.packages:
-                    if not providers.has_key(package):
-                        providers[package] = True
+            providers = {}
+            for required in package.requires:
+                for provider in self.ctrl.getCache().getProvides(str(required)):
+                    for package in provider.packages:
+                        if not providers.has_key(package):
+                            providers[package] = True
 
-        for package in providers.keys():
-            self._show_package(package)
+            for package in providers.keys():
+                self._show_package(package)
 
     def get_repo_list(self, filters):
         channels = smart.sysconf.get("channels", ())
