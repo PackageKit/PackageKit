@@ -108,7 +108,7 @@ pk_console_start_bar (const gchar *text)
 {
 	gchar *text_pad;
 
-	/* make these all the same lenght */
+	/* make these all the same length */
 	text_pad = pk_strpad (text, 50);
 	g_print ("%s", text_pad);
 	g_free (text_pad);
@@ -811,6 +811,64 @@ out:
 }
 
 /**
+ * pk_console_download_packages:
+ **/
+static gboolean
+pk_console_download_packages (PkClient *client, gchar **packages, const gchar *directory, GError **error)
+{
+	gboolean ret = TRUE;
+	gchar *package_id = NULL;
+	gchar **package_ids = NULL;
+	guint i;
+	guint length;
+	GPtrArray *array_packages;
+
+
+	array_packages = g_ptr_array_new ();
+	length = g_strv_length (packages);
+	for (i=2; i<length; i++) {
+			package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, packages[i], error);
+			if (package_id == NULL) {
+				g_print ("%s\n", _("Could not find a package to download"));
+				ret = FALSE;
+				break;
+			}
+			g_ptr_array_add (array_packages, package_id);
+		}
+	
+	/* one of the resolves failed */
+	if (!ret) {
+		pk_warning ("resolve failed");
+		goto out;
+	}
+
+
+	/* any to process? */
+	if (array_packages->len > 0) {
+		/* convert to strv */
+		package_ids = pk_ptr_array_to_argv (array_packages);
+
+		/* reset */
+		ret = pk_client_reset (client, error);
+		if (!ret) {
+			pk_warning ("failed to reset");
+			goto out;
+		}
+
+		ret = pk_client_download_packages (client, package_ids, directory, error);
+		if (!ret) {
+			pk_warning ("failed to download the packages");
+			goto out;
+		}
+	}
+
+out:
+	g_strfreev (package_ids);
+	g_ptr_array_free (array_packages, TRUE);
+	return ret;
+}
+
+/**
  * pk_console_update_package:
  **/
 static gboolean
@@ -1199,6 +1257,9 @@ pk_console_get_summary (PkRoleEnum roles)
 	    pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_FILES)) {
 		g_string_append_printf (string, "  %s\n", "install [packages|files]");
 	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
+		g_string_append_printf (string, "  %s\n", "download [packages] [directory]");
+	}
 	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
 		g_string_append_printf (string, "  %s\n", "install-sig [type] [key_id] [package_id]");
 	}
@@ -1276,6 +1337,7 @@ main (int argc, char *argv[])
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
+	const gchar *directory = "/tmp";
 	PkGroupEnum groups;
 	gchar *text;
 	ret = FALSE;
@@ -1461,7 +1523,12 @@ main (int argc, char *argv[])
 			goto out;
 		}
 		ret = pk_console_remove_packages (client, argv, &error);
-
+	} else if (strcmp (mode, "download") == 0) {
+		if (value == NULL || directory == NULL) {
+			g_print (_("You need to specify the package to download and the destination directory"));
+			goto out;
+		}
+		ret = pk_console_download_packages (client, argv, directory, &error);
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
 			g_print (_("You need to specify a eula-id"));
