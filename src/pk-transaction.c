@@ -1218,7 +1218,6 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -1242,15 +1241,6 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 	                             "The package id's '%s' are not valid", package_ids_temp);
 	        g_free (package_ids_temp);
-	        dbus_g_method_return_error (context, error);
-	        return;
-	}
-
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_DOWNLOAD_PACKAGES, &error);
-	g_free (sender);
-	if  (!ret) {
 	        dbus_g_method_return_error (context, error);
 	        return;
 	}
