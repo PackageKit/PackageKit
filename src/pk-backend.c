@@ -219,6 +219,9 @@ pk_backend_get_actions (PkBackend *backend)
 	if (desc->remove_packages != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGES);
 	}
+	if (desc->download_packages != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
+	}
 	if (desc->resolve != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_RESOLVE);
 	}
