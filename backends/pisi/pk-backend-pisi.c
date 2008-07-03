@@ -116,9 +116,12 @@ static void
 backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -127,7 +130,10 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_i
 static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_spawn_helper (spawn, "get-details.py", package_id, NULL);
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "get-details.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -136,7 +142,10 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_spawn_helper (spawn, "get-files.py", package_id, NULL);
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "get-files.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -146,9 +155,12 @@ static void
 backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-requires.py", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "get-requires.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -314,9 +326,12 @@ static void
 backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
 	gchar *filters_text;
+	gchar *package_ids_temp;
 	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_id, NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_ids_temp, NULL);
 	g_free (filters_text);
+	g_free (package_ids_temp);
 }
 
 /**

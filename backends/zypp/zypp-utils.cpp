@@ -640,15 +640,19 @@ zypp_get_patches ()
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
                 // check if patch is needed 
                 if((*it)->candidateObj ().isRelevant() && !((*it)->candidateObj ().isSatisfied())) {
-                        patches->insert ((*it)->candidateObj ());
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>((*it)->candidateObj ().resolvable ());
+			if (_updating_self) {
+				if (patch->restartSuggested ())
+					patches->insert ((*it)->candidateObj ());
+			}
+			else
+				patches->insert ((*it)->candidateObj ());
 
-			// check if the patch updates libzypp or packageKit and show only this one
-			if (patch->restartSuggested ()) {
+			// check if the patch updates libzypp or packageKit and show only these
+			if (!_updating_self && patch->restartSuggested ()) {
 				_updating_self = TRUE;
 				patches->clear ();
 				patches->insert ((*it)->candidateObj ());
-				break;
 			}
 		}
 
