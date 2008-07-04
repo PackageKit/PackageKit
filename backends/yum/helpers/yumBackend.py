@@ -630,7 +630,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         found[str(pkg)] = 1
 
     @handle_repo_error
-    def download_packages(self,packages,directory):
+    def download_packages(self,directory,packages):
 	'''
 	Implement the {backend}-download-packages functionality
 	'''
@@ -639,28 +639,27 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 	self.percentage(0)
 	self.status(STATUS_DOWNLOAD)
 	for package in packages:
-	    pkg,inst = self._findPackage(package)
-	    for pkg in packages:
-	        n,a,e,v,r = pkg.pkgtup
-	        packs = self.pkgSack.searchNevra(n,e,v,r,a)
-	        for download in packs:
-	            repo = self.repos.getRepo(download.repoid)
-	            remote = download.returnSimple('relativepath')
-	            local = os.path.basename(remote)
-	            if not os.path.exists(directory):
-	                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,"No destination directory exists")
-	            local = os.path.join(directory,local)
-	            if(os.path.exists(local) and os.path.getsize(local) == int(download.returnSimple('packagesize'))):
-	                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,"Package already exists")
-	                continue
-	            # Disable cache otherwise things won't download
-	            repo.cache = 0
-	            download.localpath = local #Hack:To set the localpath we want
-	            try:
-	                path = repo.getPackage(download)
-	            except IOError, e:
-	                self.error(ERROR_WRITE_ERROR,"Cannot write to file")
-	                continue
+	   pkg,inst = self._findPackage(package)
+	   n,a,e,v,r = pkg.pkgtup
+	   packs = self.yumbase.pkgSack.searchNevra(n,e,v,r,a)
+	   for download in packs:
+	      	repo = self.yumbase.repos.getRepo(download.repoid)
+	      	remote = download.returnSimple('relativepath')
+	      	local = os.path.basename(remote)
+	       	if not os.path.exists(directory):
+	              	self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,"No destination directory exists")
+            	local = os.path.join(directory,local)
+            	if(os.path.exists(local) and os.path.getsize(local) == int(download.returnSimple('packagesize'))):
+                	self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,"Package already exists")
+                	continue
+	        # Disable cache otherwise things won't download
+	        repo.cache = 0
+	        download.localpath = local #Hack:To set the localpath we want
+	        try:
+	           path = repo.getPackage(download)
+	        except IOError, e:
+	           self.error(ERROR_WRITE_ERROR,"Cannot write to file")
+	           continue
 
     def _getEVR(self,idver):
         '''
