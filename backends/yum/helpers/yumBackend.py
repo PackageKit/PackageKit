@@ -923,7 +923,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         break
 
     @handle_repo_error
-    def install_packages(self,packages):
+    def install_packages(self,package_ids):
         '''
         Implement the {backend}-install-packages functionality
         This will only work with yum 3.2.4 or higher
@@ -934,7 +934,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_RUNNING)
         txmbrs = []
         already_warned = False
-        for package in packages:
+        for package in package_ids:
             pkg,inst = self._findPackage(package)
             if pkg and not inst:
                 repo = self.yumbase.repos.getRepo(pkg.repoid)
@@ -944,7 +944,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 txmbr = self.yumbase.install(po=pkg)
                 txmbrs.extend(txmbr)
             if inst:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package %s is already installed", pkg.name)
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package %s is already installed" % pkg.name)
         if txmbrs:
             self._runYumTransaction()
         else:
@@ -1167,7 +1167,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     self.error(ERROR_TRANSACTION_ERROR,message)
 
-    def remove_packages(self,allowdep,package):
+    def remove_packages(self,allowdep,package_ids):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
@@ -1177,21 +1177,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        pkg,inst = self._findPackage(package)
-        if pkg and inst:
-            try:
+        txmbrs = []
+        for package in package_ids:
+            pkg,inst = self._findPackage(package)
+            if pkg and inst:
                 txmbr = self.yumbase.remove(po=pkg)
-            except yum.Errors.RepoError,e:
-                self.error(ERROR_REPO_NOT_AVAILABLE,str(e))
-            if txmbr:
-                if allowdep != 'yes':
-                    self._runYumTransaction(removedeps=False)
-                else:
-                    self._runYumTransaction(removedeps=True)
+                txmbrs.extend(txmbr)
+            if not inst:
+                self.error(ERROR_PACKAGE_NOT_INSTALLED,"The package %s is not installed" % pkg.name)
+        if txmbrs:
+            if allowdep != 'yes':
+                self._runYumTransaction(removedeps=False)
             else:
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package %s is not installed" % package)
+                self._runYumTransaction(removedeps=True)
         else:
-            self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package %s is not installed" % package)
+            self.error(ERROR_PACKAGE_NOT_INSTALLED,"The packages failed to be removed")
 
     def get_details(self,package):
         '''
