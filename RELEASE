@@ -3,7 +3,7 @@ PackageKit Release Notes
 1. Write NEWS entries for PackageKit and gnome-packagekit in the same
    format as usual. Ignore any trivial commits.
 
-$ git-shortlog GNOME_PACKAGEKIT_0_2_2.. | grep -v trivial > NEWS.new
+$ git-shortlog PACKAGEKIT_0_2_2.. | grep -v trivial | grep -v Merge > NEWS.new
 
 2. Add download date to docs/html/pk-download.html, save file.
 
