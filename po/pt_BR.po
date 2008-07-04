@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-18 21:33+0300\n"
-"PO-Revision-Date: 2008-04-23 23:58-0300\n"
+"POT-Creation-Date: 2008-06-10 17:51+0000\n"
+"PO-Revision-Date: 2008-07-03 21:49-0300\n"
 "Last-Translator: Igor Pires Soares <igor@projetofedora.org>\n"
 "Language-Team: Brazilian Portuguese <fedora-trans-pt_br@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -19,338 +19,246 @@ msgstr ""
 "X-Poedit-Language: Portuguese\n"
 "X-Poedit-Country: BRAZIL\n"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr "Aceitar a licença EULA"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr "É necessário autenticar para aceitar uma licença EULA"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr "É necessário autenticar para alterar os parâmetros das fontes de programas"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-msgid "Authentication is required to install a local file"
-msgstr "É necessário autenticar para instalar um arquivo local"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-msgid "Authentication is required to install a package"
-msgstr "É necessário autenticar para instalar um pacote"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-msgid "Authentication is required to install a security signature"
-msgstr "É necessário autenticar para instalar uma assinatura de segurança"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Authentication is required to refresh the package lists"
-msgstr "É necessário autenticar para recarregar a lista de pacotes"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr "É necessário autenticar para remover pacotes"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr "É necessário autenticar para retroceder uma transação"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid "Authentication is required to update all packages"
-msgstr "É necessário autenticar para atualizar todos os pacotes"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr "É necessário autenticar para atualizar os pacotes"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr "Altere parâmetros das fontes de programas"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr "Instalar um arquivo local"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install package"
-msgstr "Instalar um pacote"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Install security signature"
-msgstr "Instalar uma assinatura de segurança"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Refresh package lists"
-msgstr "Recarregar listas de pacotes"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Remove package"
-msgstr "Remover pacote"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Rollback to a previous transaction"
-msgstr "Retroceder para uma transação anterior"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Update all packages"
-msgstr "Atualizar todos os pacotes"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Update package"
-msgstr "Atualizar pacote"
-
-#: ../client/pk-console.c:208
+#: ../client/pk-console.c:223
 msgid "Update detail"
 msgstr "Detalhe da atualização"
 
-#: ../client/pk-console.c:400
+#: ../client/pk-console.c:424
 msgid "A system restart is required"
 msgstr "É necessário reiniciar o sistema"
 
-#: ../client/pk-console.c:402
+#: ../client/pk-console.c:426
 msgid "A logout and login is required"
 msgstr "É necessário sair da sessão e autenticar novamente"
 
-#: ../client/pk-console.c:404
+#: ../client/pk-console.c:428
 msgid "An application restart is required"
 msgstr "É necessário reiniciar a aplicação"
 
-#: ../client/pk-console.c:443
+#: ../client/pk-console.c:473
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Por favor, insira um número entre 1 e %i: "
 
-#: ../client/pk-console.c:493
+#: ../client/pk-console.c:533
 msgid "Could not find a package match"
 msgstr "Não foi possível encontrar um pacote correspondente"
 
-#: ../client/pk-console.c:507
+#: ../client/pk-console.c:547
 msgid "There are multiple package matches"
 msgstr "Há múltiplos pacotes correspondentes"
 
 #. find out what package the user wants to use
-#: ../client/pk-console.c:514
+#: ../client/pk-console.c:554
 msgid "Please enter the package number: "
 msgstr "Por favor, insira o número do pacote: "
 
-#: ../client/pk-console.c:530
+#: ../client/pk-console.c:589
 msgid "Could not find a package with that name to install, or package already installed"
 msgstr "Não foi possível encontrar um pacote com esse nome para instalar ou o pacote já está instalado"
 
-#: ../client/pk-console.c:612
-msgid "Could not find a package with that name to remove"
-msgstr "Não foi possível encontrar um pacote com esse nome para remover"
+#: ../client/pk-console.c:737
+msgid "Could not find a package to remove"
+msgstr "Não foi possível localizar um pacote a ser removido"
 
-#: ../client/pk-console.c:652
+#: ../client/pk-console.c:806
 msgid "The following packages have to be removed"
 msgstr "Os seguintes pacotes têm que ser removidos"
 
 #. get user input
-#: ../client/pk-console.c:661
+#: ../client/pk-console.c:815
 msgid "Okay to remove additional packages?"
 msgstr "Os pacotes adicionais podem ser removidos?"
 
-#: ../client/pk-console.c:665
+#: ../client/pk-console.c:819
 msgid "Cancelled!"
 msgstr "Cancelado!"
 
-#: ../client/pk-console.c:687
+#: ../client/pk-console.c:844
 msgid "Could not find a package with that name to update"
 msgstr "Não foi possível encontrar um pacote com esse nome para ser atualizado"
 
-#: ../client/pk-console.c:705
+#: ../client/pk-console.c:862
 msgid "Could not find what packages require this package"
 msgstr "Não foi possível encontrar quais pacotes necessitam desse pacote"
 
-#: ../client/pk-console.c:723
+#: ../client/pk-console.c:880
 msgid "Could not get dependencies for this package"
 msgstr "Não foi possível obter as dependências desse pacote"
 
-#: ../client/pk-console.c:741
-msgid "Could not find a description for this package"
-msgstr "Não foi possível encontrar uma descrição para esse pacote"
+#: ../client/pk-console.c:898
+msgid "Could not find details for this package"
+msgstr "Não foi possível localizar os detalhes deste pacote"
 
-#: ../client/pk-console.c:759
-#, c-format
+#: ../client/pk-console.c:916
 msgid "Could not find the files for this package"
 msgstr "Não foi possível encontrar os arquivos para este pacote"
 
-#: ../client/pk-console.c:819
+#: ../client/pk-console.c:996
 msgid "Package description"
 msgstr "Descrição do pacote"
 
-#: ../client/pk-console.c:842
+#: ../client/pk-console.c:1019
 msgid "Package files"
 msgstr "Arquivos do pacote"
 
-#: ../client/pk-console.c:850
+#: ../client/pk-console.c:1027
 msgid "No files"
 msgstr "Nenhum arquivo"
 
 #. get user input
-#: ../client/pk-console.c:882
+#: ../client/pk-console.c:1059
 msgid "Okay to import key?"
 msgstr "A chave pode ser importada?"
 
-#: ../client/pk-console.c:885
+#: ../client/pk-console.c:1062
 msgid "Did not import key"
 msgstr "Não importar a chave"
 
 #. get user input
-#: ../client/pk-console.c:925
+#: ../client/pk-console.c:1102
 msgid "Do you agree?"
 msgstr "Você concorda?"
 
-#: ../client/pk-console.c:928
+#: ../client/pk-console.c:1105
 msgid "Did not agree to licence, task will fail"
 msgstr "Se você não concordar com a licença a tarefa irá falhar"
 
-#: ../client/pk-console.c:957
+#: ../client/pk-console.c:1134
 msgid "The daemon crashed mid-transaction!"
 msgstr "O daemon travou no meio da transação!"
 
 #. header
-#: ../client/pk-console.c:1010
+#: ../client/pk-console.c:1187
 msgid "PackageKit Console Interface"
 msgstr "Interface em Console do PackageKit"
 
-#: ../client/pk-console.c:1010
+#: ../client/pk-console.c:1187
 msgid "Subcommands:"
 msgstr "Subcomandos:"
 
-#: ../client/pk-console.c:1114
-#: ../client/pk-monitor.c:100
+#: ../client/pk-console.c:1290
+#: ../client/pk-monitor.c:104
 #: ../src/pk-main.c:189
 msgid "Show extra debugging information"
 msgstr "Mostrar informações extras de depuração"
 
-#: ../client/pk-console.c:1116
-#: ../client/pk-monitor.c:102
+#: ../client/pk-console.c:1292
+#: ../client/pk-monitor.c:106
 msgid "Show the program version and exit"
 msgstr "Mostrar a versão do programa e sair"
 
-#: ../client/pk-console.c:1118
+#: ../client/pk-console.c:1294
 msgid "Set the filter, e.g. installed"
 msgstr "Definir o filtro, p. ex.: instalados"
 
-#: ../client/pk-console.c:1120
+#: ../client/pk-console.c:1296
 msgid "Exit without waiting for actions to complete"
 msgstr "Sair sem esperar pelo término das ações"
 
-#: ../client/pk-console.c:1143
+#: ../client/pk-console.c:1319
 msgid "Could not connect to system DBUS."
 msgstr "Não foi possível conectar ao DBUS do sistema."
 
-#: ../client/pk-console.c:1231
-#, c-format
+#: ../client/pk-console.c:1413
 msgid "You need to specify a search type"
 msgstr "Você precisa especificar um tipo de pesquisa"
 
-#: ../client/pk-console.c:1236
-#: ../client/pk-console.c:1243
-#: ../client/pk-console.c:1250
-#: ../client/pk-console.c:1257
-#: ../client/pk-console.c:1361
-#: ../client/pk-console.c:1368
-#: ../client/pk-console.c:1375
-#: ../client/pk-console.c:1382
-#, c-format
+#: ../client/pk-console.c:1418
+#: ../client/pk-console.c:1425
+#: ../client/pk-console.c:1432
+#: ../client/pk-console.c:1439
+#: ../client/pk-console.c:1538
+#: ../client/pk-console.c:1545
+#: ../client/pk-console.c:1552
+#: ../client/pk-console.c:1559
 msgid "You need to specify a search term"
 msgstr "Você precisa especificar um termo de pesquisa"
 
-#: ../client/pk-console.c:1262
-#, c-format
+#: ../client/pk-console.c:1444
 msgid "Invalid search type"
 msgstr "Tipo de pesquisa inválido"
 
-#: ../client/pk-console.c:1267
-#, c-format
+#: ../client/pk-console.c:1449
 msgid "You need to specify a package or file to install"
 msgstr "Você precisa especificar um pacote ou programa a ser instalado"
 
-#: ../client/pk-console.c:1280
-#, c-format
+#: ../client/pk-console.c:1456
 msgid "You need to specify a type, key_id and package_id"
 msgstr "Você precisa especificar um tipo, key_id e package_id"
 
-#: ../client/pk-console.c:1287
-#, c-format
+#: ../client/pk-console.c:1463
 msgid "You need to specify a package to remove"
 msgstr "Você precisa especificar um pacote a ser removido"
 
-#: ../client/pk-console.c:1294
-#, c-format
+#: ../client/pk-console.c:1470
 msgid "You need to specify a eula-id"
 msgstr "Você precisa especificar um eula-id"
 
-#: ../client/pk-console.c:1309
-#, c-format
+#: ../client/pk-console.c:1486
 msgid "You need to specify a package name to resolve"
 msgstr "Você precisa especificar um nome de pacote a ser analisado"
 
-#: ../client/pk-console.c:1316
-#: ../client/pk-console.c:1323
-#, c-format
+#: ../client/pk-console.c:1493
+#: ../client/pk-console.c:1500
 msgid "You need to specify a repo name"
 msgstr "Você precisa especificar um nome de repositório"
 
-#: ../client/pk-console.c:1330
-#, c-format
+#: ../client/pk-console.c:1507
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Você precisa especificar um nome/parâmetro de repositório e um valor"
 
-#: ../client/pk-console.c:1343
-#, c-format
+#: ../client/pk-console.c:1520
 msgid "You need to specify a time term"
 msgstr "Você precisa especificar um termo de horário"
 
-#: ../client/pk-console.c:1348
-#, c-format
+#: ../client/pk-console.c:1525
 msgid "You need to specify a correct role"
 msgstr "Você precisa especificar um papel correto"
 
-#: ../client/pk-console.c:1353
-#, c-format
+#: ../client/pk-console.c:1530
 msgid "Failed to get last time"
 msgstr "Falha ao obter o último horário"
 
-#: ../client/pk-console.c:1389
-#, c-format
-msgid "You need to specify a package to find the description for"
-msgstr "Você precisa especificar o pacote para o qual você deseja localizar a descrição"
+#: ../client/pk-console.c:1566
+msgid "You need to specify a package to find the details for"
+msgstr "Você precisa especificar o pacote para o qual você quer localizar os detalhes"
 
-#: ../client/pk-console.c:1396
-#, c-format
+#: ../client/pk-console.c:1573
 msgid "You need to specify a package to find the files for"
 msgstr "Você precisa especificar o pacote para o qual você quer localizar os arquivos"
 
-#: ../client/pk-console.c:1441
+#: ../client/pk-console.c:1622
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "A opção \"%s\" não é suportada"
 
-#: ../client/pk-console.c:1452
+#: ../client/pk-console.c:1633
 msgid "Command failed"
 msgstr "O comando falhou"
 
-#: ../client/pk-console.c:1456
+#: ../client/pk-console.c:1637
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Você não tem os privilégios necessários para esta operação"
 
-#: ../client/pk-monitor.c:113
-msgid "PackageKit Monitor"
-msgstr "Monitor do PackageKit"
-
-#: ../client/pk-import-desktop.c:283
-#: ../client/pk-import-specspo.c:169
+#: ../client/pk-import-desktop.c:298
+#: ../client/pk-import-specspo.c:173
 #, c-format
 msgid "Could not open database: %s"
 msgstr "Não foi possível abrir o banco de dados: %s"
 
-#: ../client/pk-import-desktop.c:284
-#: ../client/pk-import-specspo.c:170
+#: ../client/pk-import-desktop.c:299
+#: ../client/pk-import-specspo.c:174
 msgid "You probably need to run this program as the root user"
 msgstr "Você provavelmente precisa executar este programa como usuário root"
+
+#: ../client/pk-monitor.c:117
+msgid "PackageKit Monitor"
+msgstr "Monitor do PackageKit"
+
+#: ../data/packagekit-catalog.xml.in.h:1
+msgid "PackageKit Catalog"
+msgstr "Catálogo do PackageKit"
 
 #: ../src/pk-main.c:83
 msgid "Startup failed due to security policies on this machine."
@@ -404,4 +312,52 @@ msgstr "Não foi possível conectar ao barramento do sistema"
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Erro ao tentar iniciar: %s\n"
+
+#~ msgid "Accept EULA"
+#~ msgstr "Aceitar a licença EULA"
+#~ msgid "Authentication is required to accept a EULA"
+#~ msgstr "É necessário autenticar para aceitar uma licença EULA"
+#~ msgid "Authentication is required to change software source parameters"
+#~ msgstr ""
+#~ "É necessário autenticar para alterar os parâmetros das fontes de programas"
+#~ msgid "Authentication is required to install a local file"
+#~ msgstr "É necessário autenticar para instalar um arquivo local"
+#~ msgid "Authentication is required to install a package"
+#~ msgstr "É necessário autenticar para instalar um pacote"
+#~ msgid "Authentication is required to install a security signature"
+#~ msgstr "É necessário autenticar para instalar uma assinatura de segurança"
+#~ msgid "Authentication is required to refresh the package lists"
+#~ msgstr "É necessário autenticar para recarregar a lista de pacotes"
+#~ msgid "Authentication is required to remove packages"
+#~ msgstr "É necessário autenticar para remover pacotes"
+#~ msgid "Authentication is required to rollback a transaction"
+#~ msgstr "É necessário autenticar para retroceder uma transação"
+#~ msgid "Authentication is required to update all packages"
+#~ msgstr "É necessário autenticar para atualizar todos os pacotes"
+#~ msgid "Authentication is required to update packages"
+#~ msgstr "É necessário autenticar para atualizar os pacotes"
+#~ msgid "Change software source parameters"
+#~ msgstr "Altere parâmetros das fontes de programas"
+#~ msgid "Install local file"
+#~ msgstr "Instalar um arquivo local"
+#~ msgid "Install package"
+#~ msgstr "Instalar um pacote"
+#~ msgid "Install security signature"
+#~ msgstr "Instalar uma assinatura de segurança"
+#~ msgid "Refresh package lists"
+#~ msgstr "Recarregar listas de pacotes"
+#~ msgid "Remove package"
+#~ msgstr "Remover pacote"
+#~ msgid "Rollback to a previous transaction"
+#~ msgstr "Retroceder para uma transação anterior"
+#~ msgid "Update all packages"
+#~ msgstr "Atualizar todos os pacotes"
+#~ msgid "Update package"
+#~ msgstr "Atualizar pacote"
+#~ msgid "Could not find a description for this package"
+#~ msgstr "Não foi possível encontrar uma descrição para esse pacote"
+#~ msgid "You need to specify a package to find the description for"
+#~ msgstr ""
+#~ "Você precisa especificar o pacote para o qual você deseja localizar a "
+#~ "descrição"
 
