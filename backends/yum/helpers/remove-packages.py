@@ -15,10 +15,9 @@ import sys
 from yumBackend import PackageKitYumBackend
 
 allowdeps = sys.argv[1]
-package = sys.argv[2]
+packages = sys.argv[2:]
 
 backend = PackageKitYumBackend(sys.argv[1:])
-backend.remove_packages(allowdeps, package)
-backend.unLock()
-
+backend.remove_packages(allowdeps, packages)
 sys.exit(0)
+
