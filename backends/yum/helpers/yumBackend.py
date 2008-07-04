@@ -965,7 +965,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_UNKNOWN,str(e))
 
     @handle_repo_error
-    def resolve(self,filters,name):
+    def resolve(self,filters,packages):
         '''
         Implement the {backend}-resolve functionality
         '''
@@ -977,16 +977,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
 
         fltlist = filters.split(';')
-        for package in package_ids:
+        for package in packages:
             # Get installed packages
-            installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
+            installedByKey = self.yumbase.rpmdb.searchNevra(name=package)
             if FILTER_NOT_INSTALLED not in fltlist:
                 for pkg in installedByKey:
                     self._show_package(pkg,INFO_INSTALLED)
             # Get available packages
             if FILTER_INSTALLED not in fltlist:
                 for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
-                    if pkg.name == name:
+                    if pkg.name == package:
                         show = True
                         for instpo in installedByKey:
                             # Check if package have a smaller & equal EVR to a inst pkg
