@@ -14,18 +14,21 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-# Copyright (C) 2007
+# Copyright (C) 2007-2008
 #    Tim Lauridsen <timlau@fedoraproject.org>
 #    Seth Vidal <skvidal@fedoraproject.org>
 #    Luke Macken <lmacken@redhat.com>
 #    James Bowes <jbowes@dangerouslyinc.com>
 #    Robin Norwood <rnorwood@redhat.com>
+#    Richard Hughes <richard@hughsie.com>
 
 # imports
 
 import re
 
 from packagekit.backend import *
+from packagekit.progress import *
+from packagekit.package import *
 import yum
 from urlgrabber.progress import BaseMeter,format_time,format_number
 from yum.rpmtrans import RPMBaseCallback
@@ -41,153 +44,15 @@ import types
 import signal
 import time
 import os.path
-from packagekit.backend import PackagekitProgress
+
+from yumDirect import *
+from yumFilter import *
+from yumComps import *
 
 # Global vars
 yumbase = None
 progress = PackagekitProgress()  # Progress object to store the progress
-
-groupMap = {
-'desktops;gnome-desktop'                      : GROUP_DESKTOP_GNOME,
-'desktops;window-managers'                    : GROUP_DESKTOP_OTHER,
-'desktops;kde-desktop'                        : GROUP_DESKTOP_KDE,
-'desktops;xfce-desktop'                       : GROUP_DESKTOP_XFCE,
-'apps;authoring-and-publishing'               : GROUP_PUBLISHING,
-'apps;office'                                 : GROUP_OFFICE,
-'apps;sound-and-video'                        : GROUP_MULTIMEDIA,
-'apps;editors'                                : GROUP_OFFICE,
-'apps;engineering-and-scientific'             : GROUP_OTHER,
-'apps;games'                                  : GROUP_GAMES,
-'apps;graphics'                               : GROUP_GRAPHICS,
-'apps;text-internet'                          : GROUP_INTERNET,
-'apps;graphical-internet'                     : GROUP_INTERNET,
-'apps;education'                              : GROUP_EDUCATION,
-'development;kde-software-development'        : GROUP_PROGRAMMING,
-'development;gnome-software-development'      : GROUP_PROGRAMMING,
-'development;development-tools'               : GROUP_PROGRAMMING,
-'development;eclipse'                         : GROUP_PROGRAMMING,
-'development;development-libs'                : GROUP_PROGRAMMING,
-'development;x-software-development'          : GROUP_PROGRAMMING,
-'development;web-development'                 : GROUP_PROGRAMMING,
-'development;legacy-software-development'     : GROUP_PROGRAMMING,
-'development;ruby'                            : GROUP_PROGRAMMING,
-'development;java-development'                : GROUP_PROGRAMMING,
-'development;xfce-software-development'       : GROUP_PROGRAMMING,
-'servers;clustering'                          : GROUP_SERVERS,
-'servers;dns-server'                          : GROUP_SERVERS,
-'servers;server-cfg'                          : GROUP_SERVERS,
-'servers;news-server'                         : GROUP_SERVERS,
-'servers;web-server'                          : GROUP_SERVERS,
-'servers;smb-server'                          : GROUP_SERVERS,
-'servers;sql-server'                          : GROUP_SERVERS,
-'servers;ftp-server'                          : GROUP_SERVERS,
-'servers;printing'                            : GROUP_SERVERS,
-'servers;mysql'                               : GROUP_SERVERS,
-'servers;mail-server'                         : GROUP_SERVERS,
-'servers;network-server'                      : GROUP_SERVERS,
-'servers;legacy-network-server'               : GROUP_SERVERS,
-'base-system;java'                            : GROUP_SYSTEM,
-'base-system;base-x'                          : GROUP_SYSTEM,
-'base-system;system-tools'                    : GROUP_ADMIN_TOOLS,
-'base-system;fonts'                           : GROUP_FONTS,
-'base-system;hardware-support'                : GROUP_SYSTEM,
-'base-system;dial-up'                         : GROUP_SYSTEM,
-'base-system;admin-tools'                     : GROUP_ADMIN_TOOLS,
-'base-system;legacy-software-support'         : GROUP_LEGACY,
-'base-system;base'                            : GROUP_SYSTEM,
-'base-system;virtualization'                  : GROUP_VIRTUALIZATION,
-'base-system;legacy-fonts'                    : GROUP_FONTS,
-'language-support;khmer-support'              : GROUP_LOCALIZATION,
-'language-support;persian-support'            : GROUP_LOCALIZATION,
-'language-support;georgian-support'           : GROUP_LOCALIZATION,
-'language-support;malay-support'              : GROUP_LOCALIZATION,
-'language-support;tonga-support'              : GROUP_LOCALIZATION,
-'language-support;portuguese-support'         : GROUP_LOCALIZATION,
-'language-support;japanese-support'           : GROUP_LOCALIZATION,
-'language-support;hungarian-support'          : GROUP_LOCALIZATION,
-'language-support;somali-support'             : GROUP_LOCALIZATION,
-'language-support;punjabi-support'            : GROUP_LOCALIZATION,
-'language-support;bhutanese-support'          : GROUP_LOCALIZATION,
-'language-support;british-support'            : GROUP_LOCALIZATION,
-'language-support;korean-support'             : GROUP_LOCALIZATION,
-'language-support;lao-support'                : GROUP_LOCALIZATION,
-'language-support;inuktitut-support'          : GROUP_LOCALIZATION,
-'language-support;german-support'             : GROUP_LOCALIZATION,
-'language-support;hindi-support'              : GROUP_LOCALIZATION,
-'language-support;faeroese-support'           : GROUP_LOCALIZATION,
-'language-support;swedish-support'            : GROUP_LOCALIZATION,
-'language-support;tsonga-support'             : GROUP_LOCALIZATION,
-'language-support;russian-support'            : GROUP_LOCALIZATION,
-'language-support;serbian-support'            : GROUP_LOCALIZATION,
-'language-support;latvian-support'            : GROUP_LOCALIZATION,
-'language-support;samoan-support'             : GROUP_LOCALIZATION,
-'language-support;sinhala-support'            : GROUP_LOCALIZATION,
-'language-support;catalan-support'            : GROUP_LOCALIZATION,
-'language-support;lithuanian-support'         : GROUP_LOCALIZATION,
-'language-support;turkish-support'            : GROUP_LOCALIZATION,
-'language-support;arabic-support'             : GROUP_LOCALIZATION,
-'language-support;vietnamese-support'         : GROUP_LOCALIZATION,
-'language-support;mongolian-support'          : GROUP_LOCALIZATION,
-'language-support;tswana-support'             : GROUP_LOCALIZATION,
-'language-support;irish-support'              : GROUP_LOCALIZATION,
-'language-support;italian-support'            : GROUP_LOCALIZATION,
-'language-support;slovak-support'             : GROUP_LOCALIZATION,
-'language-support;slovenian-support'          : GROUP_LOCALIZATION,
-'language-support;belarusian-support'         : GROUP_LOCALIZATION,
-'language-support;northern-sotho-support'     : GROUP_LOCALIZATION,
-'language-support;kannada-support'            : GROUP_LOCALIZATION,
-'language-support;malayalam-support'          : GROUP_LOCALIZATION,
-'language-support;swati-support'              : GROUP_LOCALIZATION,
-'language-support;breton-support'             : GROUP_LOCALIZATION,
-'language-support;romanian-support'           : GROUP_LOCALIZATION,
-'language-support;greek-support'              : GROUP_LOCALIZATION,
-'language-support;tagalog-support'            : GROUP_LOCALIZATION,
-'language-support;zulu-support'               : GROUP_LOCALIZATION,
-'language-support;tibetan-support'            : GROUP_LOCALIZATION,
-'language-support;danish-support'             : GROUP_LOCALIZATION,
-'language-support;afrikaans-support'          : GROUP_LOCALIZATION,
-'language-support;southern-sotho-support'     : GROUP_LOCALIZATION,
-'language-support;bosnian-support'            : GROUP_LOCALIZATION,
-'language-support;brazilian-support'          : GROUP_LOCALIZATION,
-'language-support;basque-support'             : GROUP_LOCALIZATION,
-'language-support;welsh-support'              : GROUP_LOCALIZATION,
-'language-support;thai-support'               : GROUP_LOCALIZATION,
-'language-support;telugu-support'             : GROUP_LOCALIZATION,
-'language-support;low-saxon-support'          : GROUP_LOCALIZATION,
-'language-support;urdu-support'               : GROUP_LOCALIZATION,
-'language-support;tamil-support'              : GROUP_LOCALIZATION,
-'language-support;indonesian-support'         : GROUP_LOCALIZATION,
-'language-support;gujarati-support'           : GROUP_LOCALIZATION,
-'language-support;xhosa-support'              : GROUP_LOCALIZATION,
-'language-support;chinese-support'            : GROUP_LOCALIZATION,
-'language-support;czech-support'              : GROUP_LOCALIZATION,
-'language-support;venda-support'              : GROUP_LOCALIZATION,
-'language-support;bulgarian-support'          : GROUP_LOCALIZATION,
-'language-support;albanian-support'           : GROUP_LOCALIZATION,
-'language-support;galician-support'           : GROUP_LOCALIZATION,
-'language-support;armenian-support'           : GROUP_LOCALIZATION,
-'language-support;dutch-support'              : GROUP_LOCALIZATION,
-'language-support;oriya-support'              : GROUP_LOCALIZATION,
-'language-support;maori-support'              : GROUP_LOCALIZATION,
-'language-support;nepali-support'             : GROUP_LOCALIZATION,
-'language-support;icelandic-support'          : GROUP_LOCALIZATION,
-'language-support;ukrainian-support'          : GROUP_LOCALIZATION,
-'language-support;assamese-support'           : GROUP_LOCALIZATION,
-'language-support;bengali-support'            : GROUP_LOCALIZATION,
-'language-support;spanish-support'            : GROUP_LOCALIZATION,
-'language-support;hebrew-support'             : GROUP_LOCALIZATION,
-'language-support;estonian-support'           : GROUP_LOCALIZATION,
-'language-support;french-support'             : GROUP_LOCALIZATION,
-'language-support;croatian-support'           : GROUP_LOCALIZATION,
-'language-support;filipino-support'           : GROUP_LOCALIZATION,
-'language-support;finnish-support'            : GROUP_LOCALIZATION,
-'language-support;norwegian-support'          : GROUP_LOCALIZATION,
-'language-support;southern-ndebele-support'   : GROUP_LOCALIZATION,
-'language-support;polish-support'             : GROUP_LOCALIZATION,
-'language-support;gaelic-support'             : GROUP_LOCALIZATION,
-'language-support;marathi-support'            : GROUP_LOCALIZATION,
-'language-support;ethiopic-support'           : GROUP_LOCALIZATION
-}
+pkpackage = PackagekitPackage()
 
 MetaDataMap = {
     'repomd'        : STATUS_DOWNLOAD_REPOSITORY,
@@ -197,8 +62,6 @@ MetaDataMap = {
     'comps'         : STATUS_DOWNLOAD_GROUP,
     'updateinfo'    : STATUS_DOWNLOAD_UPDATEINFO
 }
-
-GUI_KEYS = re.compile(r'(qt)|(gtk)')
 
 class GPGKeyNotImported(exceptions.Exception):
     pass
@@ -238,6 +101,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         signal.signal(signal.SIGQUIT,sigquit)
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = PackageKitYumBase(self)
+
+        self.comps = yumComps(self.yumbase)
+        if not self.comps.connect():
+            self.refresh_cache()
+            if not self.comps.connect():
+                self.error(ERROR_GROUP_LIST_INVALID,'comps categories could not be loaded')
+
         yumbase = self.yumbase
         self._setup_yum()
         if lock:
@@ -316,116 +186,27 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         res = self.yumbase.searchGenerator(searchlist,[key])
         fltlist = filters.split(';')
-        seen_nevra = [] # yum returns packages as available even when installed
-        pkg_list = [] # only do the second iteration on not installed pkgs
+        pkgfilter = YumFilter(fltlist)
         package_list = [] #we can't do emitting as found if we are post-processing
+        installed = []
+        available = []
 
         for (pkg,values) in res:
             if pkg.repo.id == 'installed':
-                if self._do_extra_filtering(pkg,fltlist):
-                    package_list.append((pkg,INFO_INSTALLED))
-                    seen_nevra.append(self._get_nevra(pkg))
+                installed.append(pkg)
             else:
-                pkg_list.append(pkg)
-        for pkg in pkg_list:
-            nevra = self._get_nevra(pkg)
-            if nevra not in seen_nevra:
-                if self._do_extra_filtering(pkg,fltlist):
-                    package_list.append((pkg,INFO_AVAILABLE))
-                    seen_nevra.append(self._get_nevra(pkg))
+                available.append(pkg)
 
-        # basename filter if specified
-        if FILTER_BASENAME in fltlist:
-            package_list = self._basename_filter(package_list)
+        pkgfilter.add_installed(installed)
+        pkgfilter.add_available(available)
 
-        # newest filter
-        if FILTER_NEWEST in fltlist:
-            package_list = self._do_newest_filtering(package_list)
-
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
 
     def _show_package_list(self,lst):
         for (pkg,status) in lst:
             self._show_package(pkg,status)
-
-    def _do_newest_filtering(self,pkglist):
-        '''
-        Only return the newest package for each name.arch
-        '''
-        newest = {}
-        for pkg,state in pkglist:
-            key = (pkg.name, pkg.arch)
-            if key in newest and pkg <= newest[key][0]:
-                continue
-            newest[key] = (pkg,state)
-        return newest.values()
-
-
-
-    def _do_extra_filtering(self,pkg,filterList):
-        ''' do extra filtering (gui,devel etc) '''
-        for filter in filterList:
-            if filter in (FILTER_INSTALLED,FILTER_NOT_INSTALLED):
-                if not self._do_installed_filtering(filter,pkg):
-                    return False
-            elif filter in (FILTER_GUI,FILTER_NOT_GUI):
-                if not self._do_gui_filtering(filter,pkg):
-                    return False
-            elif filter in (FILTER_DEVELOPMENT,FILTER_NOT_DEVELOPMENT):
-                if not self._do_devel_filtering(filter,pkg):
-                    return False
-            elif filter in (FILTER_FREE,FILTER_NOT_FREE):
-                if not self._do_free_filtering(filter,pkg):
-                    return False
-        return True
-
-    def _do_installed_filtering(self,flt,pkg):
-        isInstalled = False
-        if flt == FILTER_INSTALLED:
-            wantInstalled = True
-        else:
-            wantInstalled = False
-        isInstalled = pkg.repo.id == 'installed'
-        return isInstalled == wantInstalled
-
-    def _do_gui_filtering(self,flt,pkg):
-        isGUI = False
-        if flt == FILTER_GUI:
-            wantGUI = True
-        else:
-            wantGUI = False
-        isGUI = self._check_for_gui(pkg)
-        return isGUI == wantGUI
-
-    def _check_for_gui(self,pkg):
-        '''  Check if the GUI_KEYS regex matches any package requirements'''
-        for req in pkg.requires:
-            reqname = req[0]
-            if GUI_KEYS.search(reqname):
-                return True
-        return False
-
-    def _do_devel_filtering(self,flt,pkg):
-        isDevel = False
-        if flt == FILTER_DEVELOPMENT:
-            wantDevel = True
-        else:
-            wantDevel = False
-        regex =  re.compile(r'(-devel)|(-dgb)|(-static)')
-        if regex.search(pkg.name):
-            isDevel = True
-        return isDevel == wantDevel
-
-    def _do_free_filtering(self,flt,pkg):
-        isFree = False
-        if flt == FILTER_FREE:
-            wantFree = True
-        else:
-            wantFree = False
-
-        isFree = self.check_license_field(pkg.license)
-
-        return isFree == wantFree
 
     def search_name(self,filters,key):
         '''
@@ -452,84 +233,48 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
         self._do_search(searchlist,filters,key)
 
-    def _buildGroupDict(self):
-        pkgGroups= {}
-        cats = self.yumbase.comps.categories
-        if len(cats) == 0:
-            self.error(ERROR_GROUP_LIST_INVALID,'comps categories could not be loaded')
-        for cat in cats:
-            grps = map(lambda x: self.yumbase.comps.return_group(x),
-               filter(lambda x: self.yumbase.comps.has_group(x),cat.groups))
-            grplist = []
-            for group in grps:
-                for pkg in group.mandatory_packages.keys():
-                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
-                for pkg in group.default_packages.keys():
-                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
-                for pkg in group.optional_packages.keys():
-                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
-                for pkg in group.conditional_packages.keys():
-                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
-        return pkgGroups
-
     @handle_repo_error
-    def search_group(self,filters,key):
+    def search_group(self,filters,group_key):
         '''
         Implement the {backend}-search-group functionality
         '''
         self._check_init(lazy_cache=True)
         self.allow_cancel(True)
-        self.percentage(None)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
         self.status(STATUS_QUERY)
         package_list = [] #we can't do emitting as found if we are post-processing
+        fltlist = filters.split(';')
 
-        try:
-            pkgGroupDict = self._buildGroupDict()
-            self.yumbase.conf.cache = 1 # Only look in cache.
-            fltlist = filters.split(';')
-            installed_nevra = [] # yum returns packages as available even when installed
+        # use direct access for speed
+        direct = YumDirectSQL(self.yumbase)
+        pkgfilter = YumFilter(fltlist)
 
-            if not FILTER_NOT_INSTALLED in fltlist:
-                # Check installed for group
-                for pkg in self.yumbase.rpmdb:
-                    group = GROUP_OTHER                    # Default Group
-                    if pkgGroupDict.has_key(pkg.name):     # check if pkg name exist in package / group dictinary
-                        cg = pkgGroupDict[pkg.name]
-                        if groupMap.has_key(cg):
-                            group = groupMap[cg]           # use the pk group name, instead of yum 'category/group'
-                    if group == key:
-                        if self._do_extra_filtering(pkg,fltlist):
-                            package_list.append((pkg,INFO_INSTALLED))
-                    installed_nevra.append(self._get_nevra(pkg))
+        # get the packagelist for this group
+        all_packages = self.comps.get_package_list(group_key)
 
-            if not FILTER_INSTALLED in fltlist:
-                # Check available for group
-                for pkg in self.yumbase.pkgSack:
-                    nevra = self._get_nevra(pkg)
-                    if nevra not in installed_nevra:
-                        group = GROUP_OTHER
-                        if pkgGroupDict.has_key(pkg.name):
-                            cg = pkgGroupDict[pkg.name]
-                            if groupMap.has_key(cg):
-                                group = groupMap[cg]
-                        if group == key:
-                            if self._do_extra_filtering(pkg,fltlist):
-                                package_list.append((pkg,INFO_AVAILABLE))
+        # get installed packages
+        self.percentage(10)
+        for package in all_packages:
+            pkgs = self.yumbase.rpmdb.searchNevra(name=package)
+            pkgfilter.add_installed(pkgs)
 
-        except yum.Errors.GroupsError,e:
-            self.error(ERROR_GROUP_NOT_FOUND,str(e))
+        # get available packages
+        self.percentage(20)
+        if FILTER_INSTALLED not in fltlist:
+            for package in all_packages:
+                pkgs = direct.resolve(package)
+                pkgfilter.add_available(pkgs)
 
-        # basename filter if specified
-        if FILTER_BASENAME in fltlist:
-            package_list = self._basename_filter(package_list)
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
 
-        # newest filter
-        if FILTER_NEWEST in fltlist:
-            package_list = self._do_newest_filtering(package_list)
-
+        self.percentage(90)
         self._show_package_list(package_list)
+
+        # close all the databases
+        direct.close()
+        self.percentage(100)
 
     @handle_repo_error
     def get_packages(self,filters):
@@ -544,29 +289,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
 
-        package_list = [] #we can't do emitting as found if we are post-processing
         fltlist = filters.split(';')
+        pkgfilter = YumFilter(fltlist)
+        package_list = [] #we can't do emitting as found if we are post-processing
 
         # Now show installed packages.
-        if FILTER_NOT_INSTALLED not in fltlist:
-            for pkg in self.yumbase.rpmdb:
-                if self._do_extra_filtering(pkg,fltlist):
-                    package_list.append((pkg,INFO_INSTALLED))
+        pkgs = self.yumbase.rpmdb
+        pkgfilter.add_installed(pkgs)
 
         # Now show available packages.
         if FILTER_INSTALLED not in fltlist:
-            for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
-                if self._do_extra_filtering(pkg,fltlist):
-                    package_list.append((pkg,INFO_AVAILABLE))
+            pkgs = self.yumbase.pkgSack.returnNewestByNameArch()
+            pkgfilter.add_available(pkgs)
 
-        # basename filter if specified
-        if FILTER_BASENAME in fltlist:
-            package_list = self._basename_filter(package_list)
-
-        # newest filter
-        if FILTER_NEWEST in fltlist:
-            package_list = self._do_newest_filtering(package_list)
-
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
 
     @handle_repo_error
@@ -581,24 +318,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         #self.yumbase.conf.cache = 1 # Only look in cache.
         fltlist = filters.split(';')
-        found = {}
-        if not FILTER_NOT_INSTALLED in fltlist:
-            # Check installed for file
-            matches = self.yumbase.rpmdb.searchFiles(key)
-            for pkg in matches:
-                if not found.has_key(str(pkg)):
-                    if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg,INFO_INSTALLED)
-                        found[str(pkg)] = 1
+        pkgfilter = YumFilter(fltlist)
+
+        # Check installed for file
+        pkgs = self.yumbase.rpmdb.searchFiles(key)
+        pkgfilter.add_installed(pkgs)
+
+        # Check available for file
         if not FILTER_INSTALLED in fltlist:
-            # Check available for file
             self.yumbase.repos.populateSack(mdtype='filelists')
-            matches = self.yumbase.pkgSack.searchFiles(key)
-            for pkg in matches:
-                if not found.has_key(str(pkg)):
-                    if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg,INFO_AVAILABLE)
-                        found[str(pkg)] = 1
+            pkgs = self.yumbase.pkgSack.searchFiles(key)
+            pkgfilter.add_available(pkgs)
+
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
 
     @handle_repo_error
     def what_provides(self,filters,provides_type,search):
@@ -611,23 +345,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
 
         fltlist = filters.split(';')
-        found = {}
-        if not FILTER_NOT_INSTALLED in fltlist:
-            # Check installed for file
-            matches = self.yumbase.rpmdb.searchProvides(search)
-            for pkg in matches:
-                if not found.has_key(str(pkg)):
-                    if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg,INFO_INSTALLED)
-                        found[str(pkg)] = 1
+        pkgfilter = YumFilter(fltlist)
+
+        # Check installed for file
+        pkgs = self.yumbase.rpmdb.searchProvides(search)
+        pkgfilter.add_installed(pkgs)
+
         if not FILTER_INSTALLED in fltlist:
             # Check available for file
-            matches = self.yumbase.pkgSack.searchProvides(search)
-            for pkg in matches:
-                if found.has_key(str(pkg)):
-                    if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg,INFO_AVAILABLE)
-                        found[str(pkg)] = 1
+            pkgs = self.yumbase.pkgSack.searchProvides(search)
+            pkgfilter.add_available(pkgs)
+
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
 
     @handle_repo_error
     def download_packages(self,directory,packages):
@@ -681,7 +412,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # is this an real id or just an name
         if len(id.split(';')) > 1:
             # Split up the id
-            (n,idver,a,d) = self.get_package_from_id(id)
+            (n,idver,a,d) = pkpackage.get_package_from_id(id)
             # get e,v,r from package id version
             e,v,r = self._getEVR(idver)
         else:
@@ -963,6 +694,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_REPO_CONFIGURATION_ERROR,str(e))
         except yum.Errors.YumBaseError,e:
             self.error(ERROR_UNKNOWN,str(e))
+
+        # update the comps groups too
+        self.comps.refresh()
 
     @handle_repo_error
     def resolve(self,filters,packages):
@@ -1271,7 +1005,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a detailed details for a given package
         '''
-        self._check_init()
+        self._check_init(lazy_cache=True)
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -1279,26 +1013,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         for package in package_ids:
             pkg,inst = self._findPackage(package)
             if pkg:
-                self._show_details(pkg)
+                self._show_details_pkg(pkg)
             else:
                 self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
 
-    def _show_details(self,pkg):
+    def _show_details_pkg(self,pkg):
+
         pkgver = self._get_package_ver(pkg)
-        id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
+        id = pkpackage.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
         desc = pkg.description
         desc = desc.replace('\n\n',';')
         desc = desc.replace('\n',' ')
-
-        # this takes oodles of time
-        pkgGroupDict = self._buildGroupDict()
-        group = GROUP_OTHER
-        if pkgGroupDict.has_key(pkg.name):
-            cg = pkgGroupDict[pkg.name]
-            if groupMap.has_key(cg):
-                # use PK group name
-                group = groupMap[cg]
-
+        group = self.comps.get_group(pkg.name)
         self.details(id,pkg.license,group,desc,pkg.url,pkg.size)
 
     def get_files(self,package_ids):
@@ -1321,7 +1047,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _pkg_to_id(self,pkg):
         pkgver = self._get_package_ver(pkg)
-        id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
+        id = pkpackage.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
         return id
 
     def _show_package(self,pkg,status):
@@ -1340,58 +1066,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return INFO_UNKNOWN
 
-    def _is_main_package(self,repo):
-        if repo.endswith('-debuginfo'):
-            return False
-        if repo.endswith('-devel'):
-            return False
-        if repo.endswith('-libs'):
-            return False
-        return True
-
-    def _basename_filter(self,package_list):
-        '''
-        Filter the list so that the number of packages are reduced.
-        This is done by only displaying gtk2 rather than gtk2-devel, gtk2-debuginfo, etc.
-        This imlementation is done by comparing the SRPM name, and if not falling back
-        to the first entry.
-        We have to fall back else we don't emit packages where the SRPM does not produce a
-        RPM with the same name, for instance, mono produces mono-core, mono-data and mono-winforms.
-        @package_list: a (pkg,status) list of packages
-        A new list is returned that has been filtered
-        '''
-        base_list = []
-        output_list = []
-        base_list_already_got = []
-
-        #find out the srpm name and add to a new array of compound data
-        for (pkg,status) in package_list:
-            if pkg.sourcerpm:
-                base = rpmUtils.miscutils.splitFilename(pkg.sourcerpm)[0]
-                base_list.append ((pkg,status,base,pkg.version));
-            else:
-                base_list.append ((pkg,status,'nosrpm',pkg.version));
-
-        #find all the packages that match thier basename name (done seporately so we get the "best" match)
-        for (pkg,status,base,version) in base_list:
-            if base == pkg.name and (base,version) not in base_list_already_got:
-                output_list.append((pkg,status))
-                base_list_already_got.append ((base,version))
-
-        #for all the ones not yet got, can we match against a non devel match?
-        for (pkg,status,base,version) in base_list:
-            if (base,version) not in base_list_already_got:
-                if self._is_main_package(pkg.name):
-                    output_list.append((pkg,status))
-                    base_list_already_got.append ((base,version))
-
-        #add the remainder of the packages, which should just be the single debuginfo's
-        for (pkg,status,base,version) in base_list:
-            if (base,version) not in base_list_already_got:
-                output_list.append((pkg,status))
-                base_list_already_got.append ((base,version))
-        return output_list
-
     def get_updates(self,filters):
         '''
         Implement the {backend}-get-updates functionality
@@ -1404,6 +1078,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         fltlist = filters.split(';')
         package_list = []
+        pkgfilter = YumFilter(fltlist)
 
         try:
             ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
@@ -1411,22 +1086,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_REPO_NOT_AVAILABLE,str(e))
         md = self.updateMetadata
         for pkg in ygl.updates:
-            if self._do_extra_filtering(pkg,fltlist):
+            if pkgfilter._do_extra_filtering(pkg,fltlist):
                 # Get info about package in updates info
                 notice = md.get_notice((pkg.name,pkg.version,pkg.release))
                 if notice:
                     status = self._get_status(notice)
-                    package_list.append((pkg,status))
+                    pkgfilter.add_custom(pkg,status)
                 else:
-                    package_list.append((pkg,INFO_NORMAL))
+                    pkgfilter.add_custom(pkg,INFO_NORMAL)
 
-        # basename filter if specified
-        if FILTER_BASENAME in fltlist:
-            for (pkg,status) in self._basename_filter(package_list):
-                self._show_package(pkg,status)
-        else:
-            for (pkg,status) in package_list:
-                self._show_package(pkg,status)
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
 
     def repo_enable(self,repoid,enable):
         '''
@@ -1827,7 +1497,7 @@ class ProcessTransPackageKitCallback:
 
 class DepSolveCallback(object):
 
-    # XXX takes a PackageKitBackend so we can call StatusChanged on it.
+    # takes a PackageKitBackend so we can call StatusChanged on it.
     # That's kind of hurky.
     def __init__(self,backend):
         self.started = False
