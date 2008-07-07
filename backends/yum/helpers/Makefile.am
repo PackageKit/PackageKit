@@ -27,6 +27,9 @@ dist_helper_DATA = 			\
 	what-provides.py		\
 	update-system.py		\
 	yumBackend.py			\
+	yumDirect.py			\
+	yumComps.py			\
+	yumFilter.py			\
 	$(NULL)
 
 install-data-hook:
