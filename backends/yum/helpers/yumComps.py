@@ -187,17 +187,18 @@ class yumComps:
     def __init__(self,yumbase):
         self.yumbase = yumbase
         self.cursor = None
+        self.connection = None
 
     def connect(self):
         ''' connect to database '''
         database = '/var/cache/yum/packagekit-groups.sqlite'
         try:
             # will be created if it does not exist
-            connection = sqlite.connect(database)
-            self.cursor = connection.cursor()
+            self.connection = sqlite.connect(database)
+            self.cursor = self.connection.cursor()
         except Exception, e:
-            print "cannot connect to database %s: %s" % (database,str(e))
-            return
+            print 'cannot connect to database %s: %s' % (database,str(e))
+            return False
 
         # test if we can get a group for a common package, create if fail
         try:
@@ -206,6 +207,8 @@ class yumComps:
             self.cursor.execute('CREATE TABLE groups (name TEXT,category TEXT,group_enum TEXT);')
             self.refresh()
 
+        return True
+
     def _add_db(self,name,category,group):
         self.cursor.execute('INSERT INTO groups values(?,?,?);',(name,category,group))
 
@@ -213,7 +216,7 @@ class yumComps:
         ''' get the data from yum (slow, REALLY SLOW) '''
 
         cats = self.yumbase.comps.categories
-        if len(cats) == 0:
+        if self.yumbase.comps.compscount == 0:
             return False
 
         # store to sqlite
@@ -241,6 +244,9 @@ class yumComps:
                     self._add_db(package,group_id,group_enum)
                 for package in group.optional_packages:
                     self._add_db(package,group_id,group_enum)
+
+        # write to disk
+        self.connection.commit()
         return True
 
     def get_package_list(self,group_key):
