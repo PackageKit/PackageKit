@@ -1445,10 +1445,10 @@ class PackageKitCallback(RPMBaseCallback):
 
     def _showName(self,status):
         if type(self.curpkg) in types.StringTypes:
-            id = self.base.get_package_id(self.curpkg,'','','')
+            id = pkpackage.get_package_id(self.curpkg,'','','')
         else:
             pkgver = self.base._get_package_ver(self.curpkg)
-            id = self.base.get_package_id(self.curpkg.name,pkgver,self.curpkg.arch,self.curpkg.repo)
+            id = pkpackage.get_package_id(self.curpkg.name,pkgver,self.curpkg.arch,self.curpkg.repo)
         self.base.package(id,status,"")
 
     def event(self,package,action,te_current,te_total,ts_current,ts_total):
