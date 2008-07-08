@@ -123,16 +123,6 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	gsize len;
 	gchar *locale_temp;
 	static GPtrArray *locale_array = NULL;
-	const gchar *icon_name;
-	const gchar *summary;
-
-	/* can we optimise for the common case? */
-	icon_name = pk_extra_get_icon_name (extra, package_name);
-	summary = pk_extra_get_summary (extra, package_name);
-	if (icon_name != NULL || summary != NULL) {
-		g_print ("PackageName:\t%s\t[skipping]\n", package_name);
-		return;
-	}
 
 	key = g_key_file_new ();
 	ret = g_key_file_load_from_file (key, filename, G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
