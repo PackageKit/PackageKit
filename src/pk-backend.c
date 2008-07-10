@@ -1552,8 +1552,7 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 
 	/* this function is only valid when we have a running transaction */
 	if (backend->priv->c_tid != NULL) {
-		pk_error ("only valid when we have a running transaction");
-		return FALSE;
+		pk_warning ("only valid when we have a running transaction");
 	}
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
 	/* don't wait, do this now */
