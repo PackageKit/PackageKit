@@ -1857,9 +1857,9 @@ backend_get_depends_thread (PkBackend *backend)
 
 	installed = poldek_get_installed_packages ();
 	available = poldek_get_avail_packages (ctx);
-	package_id = pk_backend_get_string (backend, "package_id");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
 
-	pkg = poldek_get_pkg_from_package_id (package_id);
+	pkg = poldek_get_pkg_from_package_id (package_ids[0]);
 
 	do_depends (installed, available, deppkgs, pkg, backend);
 
@@ -1900,11 +1900,11 @@ backend_get_details_thread (PkBackend *backend)
 	gchar **package_ids;
 	struct pkg	*pkg = NULL;
 
-	package_id = pk_backend_get_string (backend, "package_id");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	pb_load_packages (backend);
 
-	pkg = poldek_get_pkg_from_package_id (package_id);
+	pkg = poldek_get_pkg_from_package_id (package_ids[0]);
 
 	if (pkg) {
 		struct pkguinf	*pkgu = NULL;
@@ -1916,7 +1916,7 @@ backend_get_details_thread (PkBackend *backend)
 
 		if (pkgu) {
 			pk_backend_details (backend,
-						package_id,
+						package_ids[0],
 						pkguinf_get (pkgu, PKGUINF_LICENSE),
 						group,
 						pkguinf_get (pkgu, PKGUINF_DESCRIPTION),
@@ -1925,7 +1925,7 @@ backend_get_details_thread (PkBackend *backend)
 			pkguinf_free (pkgu);
 		} else {
 			pk_backend_details (backend,
-						package_id,
+						package_ids[0],
 						"",
 						group,
 						"",
@@ -1959,11 +1959,11 @@ backend_get_files_thread (PkBackend *backend)
 	gchar **package_ids;
 	struct pkg	*pkg;
 
-	package_id = pk_backend_get_string (backend, "package_id");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	pb_load_packages (backend);
 
-	pkg = poldek_get_pkg_from_package_id (package_id);
+	pkg = poldek_get_pkg_from_package_id (package_ids[0]);
 
 	if (pkg) {
 		struct pkgflist		*flist = pkg_get_flist (pkg);
@@ -2002,7 +2002,7 @@ backend_get_files_thread (PkBackend *backend)
 
 		result = g_string_free (filelist, FALSE);
 
-		pk_backend_files (backend, package_id, result);
+		pk_backend_files (backend, package_ids[0], result);
 
 		g_free (result);
 
@@ -2052,8 +2052,8 @@ backend_get_requires_thread (PkBackend *backend)
 
 	reqpkgs = n_array_new (2, NULL, NULL);
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	pkg = poldek_get_pkg_from_package_id (package_id);
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	pkg = poldek_get_pkg_from_package_id (package_ids[0]);
 	installed = poldek_get_installed_packages ();
 	available = poldek_get_avail_packages (ctx);
 
@@ -2134,11 +2134,11 @@ backend_get_update_detail_thread (PkBackend *backend)
 	struct poclidek_rcmd	*rcmd;
 	gchar		*command;
 
-	package_id = pk_backend_get_string (backend, "package_id");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	pb_load_packages (backend);
 
-	pi = pk_package_id_new_from_string (package_id);
+	pi = pk_package_id_new_from_string (package_ids[0]);
 
 	rcmd = poclidek_rcmd_new (cctx, NULL);
 
@@ -2159,7 +2159,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 
 			updates = package_id_from_pkg (pkg, "installed");
 
-			upkg = poldek_get_pkg_from_package_id (package_id);
+			upkg = poldek_get_pkg_from_package_id (package_ids[0]);
 
 			obsoletes = get_obsoletedby_pkg (upkg);
 
@@ -2184,7 +2184,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 			}
 
 			pk_backend_update_detail (backend,
-						  package_id,
+						  package_ids[0],
 						  updates,
 						  obsoletes ? obsoletes : "",
 						  "",
@@ -2203,7 +2203,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 		n_array_free (pkgs);
 	} else {
 		pk_backend_update_detail (backend,
-					  package_id,
+					  package_ids[0],
 					  "",
 					  "",
 					  "",
