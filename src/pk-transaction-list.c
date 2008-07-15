@@ -142,6 +142,7 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkTransaction *transaction
 {
 	gboolean ret;
 	PkTransactionItem *item;
+	const gchar *tid;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 	g_return_val_if_fail (transaction != NULL, FALSE);
@@ -152,7 +153,8 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkTransaction *transaction
 		return FALSE;
 	}
 	/* valid item */
-	pk_debug ("remove transaction %p, item %p", item->transaction, item);
+	tid = pk_transaction_get_tid (item->transaction);
+	pk_debug ("remove transaction %s, item %p", tid, item);
 	ret = g_ptr_array_remove (tlist->priv->array, item);
 	if (ret == FALSE) {
 		pk_warning ("could not remove %p as not present in list", item);
