@@ -134,14 +134,37 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 }
 
 /**
+ * pk_transaction_list_remove_internal:
+ **/
+gboolean
+pk_transaction_list_remove_internal (PkTransactionList *tlist, PkTransactionItem *item)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
+
+	/* valid item */
+	pk_debug ("remove transaction %s, item %p", item->tid, item);
+	ret = g_ptr_array_remove (tlist->priv->array, item);
+	if (ret == FALSE) {
+		pk_warning ("could not remove %p as not present in list", item);
+		return FALSE;
+	}
+	g_object_unref (item->transaction);
+	g_free (item->tid);
+	g_free (item);
+	return TRUE;
+}
+
+/**
  * pk_transaction_list_remove:
  **/
 gboolean
 pk_transaction_list_remove (PkTransactionList *tlist, PkTransaction *transaction)
 {
-	gboolean ret;
 	PkTransactionItem *item;
-	const gchar *tid;
+	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 	g_return_val_if_fail (transaction != NULL, FALSE);
@@ -151,19 +174,12 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkTransaction *transaction
 		pk_warning ("could not get item");
 		return FALSE;
 	}
-	/* valid item */
-	tid = pk_transaction_get_tid (item->transaction);
-	pk_debug ("remove transaction %s, item %p", tid, item);
-	ret = g_ptr_array_remove (tlist->priv->array, item);
-	if (ret == FALSE) {
-		pk_warning ("could not remove %p as not present in list", item);
+	if (item->finished) {
+		pk_warning ("already finished, so waiting to timeout");
 		return FALSE;
 	}
-	g_object_unref (item->transaction);
-	g_free (item->tid);
-	g_free (item);
-
-	return TRUE;
+	ret = pk_transaction_list_remove_internal (tlist, item);
+	return ret;
 }
 
 /* we need this for the finished data */
@@ -181,7 +197,7 @@ pk_transaction_list_remove_item_timeout (gpointer data)
 	PkTransactionFinished *finished = (PkTransactionFinished *) data;
 
 	pk_debug ("transaction %s completed, removing", finished->item->tid);
-	pk_transaction_list_remove (finished->tlist, finished->item->transaction);
+	pk_transaction_list_remove_internal (finished->tlist, finished->item);
 	g_free (finished);
 	return FALSE;
 }
