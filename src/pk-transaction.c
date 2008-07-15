@@ -1854,7 +1854,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 
 	/* alter list */
 	g_strfreev (transaction->priv->cached_package_ids);
-	transaction->priv->cached_package_ids = g_strdupv (package_ids_new);
+	transaction->priv->cached_package_ids = package_ids_new;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
