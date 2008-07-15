@@ -2204,7 +2204,7 @@ libst_backend (LibSelfTest *test)
 	if (text == NULL) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "invalid name %s", text);
+		libst_failed (test, "invalid name %s (test suite needs to unref backend?)", text);
 	}
 	g_free (text);
 
