@@ -53,7 +53,6 @@ static void     pk_transaction_list_finalize	(GObject        *object);
 struct PkTransactionListPrivate
 {
 	GPtrArray		*array;
-	gchar			*current_tid;
 };
 
 typedef struct {
