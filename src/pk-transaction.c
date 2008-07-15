@@ -1153,7 +1153,7 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	pk_debug ("Cancel method called");
+	pk_debug ("Cancel method called on %s", transaction->priv->tid);
 
 	/* if it's never been run, just remove this transaction from the list */
 	if (!transaction->priv->has_been_run) {
