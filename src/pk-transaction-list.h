@@ -56,9 +56,9 @@ PkTransactionList *pk_transaction_list_new		(void);
 gboolean	 pk_transaction_list_create		(PkTransactionList	*tlist,
 							 const gchar		*tid);
 gboolean	 pk_transaction_list_remove		(PkTransactionList	*tlist,
-							 PkTransaction		*transaction);
+							 const gchar		*tid);
 gboolean	 pk_transaction_list_commit		(PkTransactionList	*tlist,
-							 PkTransaction		*transaction)
+							 const gchar		*tid)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_transaction_list_role_present	(PkTransactionList	*tlist,
 							 PkRoleEnum		 role);

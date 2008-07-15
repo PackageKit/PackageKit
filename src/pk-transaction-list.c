@@ -74,14 +74,15 @@ G_DEFINE_TYPE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
 static gpointer pk_transaction_list_object = NULL;
 
 /**
- * pk_transaction_list_get_from_transaction:
+ * pk_transaction_list_get_from_tid:
  **/
 static PkTransactionItem *
-pk_transaction_list_get_from_transaction (PkTransactionList *tlist, PkTransaction *transaction)
+pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
 {
 	guint i;
 	guint length;
 	PkTransactionItem *item;
+	const gchar *tmptid;
 
 	g_return_val_if_fail (tlist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
@@ -90,7 +91,8 @@ pk_transaction_list_get_from_transaction (PkTransactionList *tlist, PkTransactio
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (item->transaction == transaction) {
+		tmptid = pk_transaction_get_tid (item->transaction);
+		if (pk_strequal (tmptid, tid)) {
 			return item;
 		}
 	}
@@ -134,26 +136,18 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 }
 
 /**
- * pk_transaction_list_remove:
+ * pk_transaction_list_remove_internal:
  **/
 gboolean
-pk_transaction_list_remove (PkTransactionList *tlist, PkTransaction *transaction)
+pk_transaction_list_remove_internal (PkTransactionList *tlist, PkTransactionItem *item)
 {
 	gboolean ret;
-	PkTransactionItem *item;
-	const gchar *tid;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
-	g_return_val_if_fail (transaction != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
-	item = pk_transaction_list_get_from_transaction (tlist, transaction);
-	if (item == NULL) {
-		pk_warning ("could not get item");
-		return FALSE;
-	}
 	/* valid item */
-	tid = pk_transaction_get_tid (item->transaction);
-	pk_debug ("remove transaction %s, item %p", tid, item);
+	pk_debug ("remove transaction %s, item %p", item->tid, item);
 	ret = g_ptr_array_remove (tlist->priv->array, item);
 	if (ret == FALSE) {
 		pk_warning ("could not remove %p as not present in list", item);
@@ -164,6 +158,31 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkTransaction *transaction
 	g_free (item);
 
 	return TRUE;
+}
+
+/**
+ * pk_transaction_list_remove:
+ **/
+gboolean
+pk_transaction_list_remove (PkTransactionList *tlist, const gchar *tid)
+{
+	PkTransactionItem *item;
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
+
+	item = pk_transaction_list_get_from_tid (tlist, tid);
+	if (item == NULL) {
+		pk_warning ("could not get item");
+		return FALSE;
+	}
+	if (item->finished) {
+		pk_warning ("already finished, so waiting to timeout");
+		return FALSE;
+	}
+	ret = pk_transaction_list_remove_internal (tlist, item);
+	return ret;
 }
 
 /* we need this for the finished data */
@@ -181,7 +200,7 @@ pk_transaction_list_remove_item_timeout (gpointer data)
 	PkTransactionFinished *finished = (PkTransactionFinished *) data;
 
 	pk_debug ("transaction %s completed, removing", finished->item->tid);
-	pk_transaction_list_remove (finished->tlist, finished->item->transaction);
+	pk_transaction_list_remove_internal (finished->tlist, finished->item);
 	g_free (finished);
 	return FALSE;
 }
@@ -197,10 +216,12 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 	gboolean ret;
 	PkTransactionItem *item;
 	PkTransactionFinished *finished;
+	const gchar *tid;
 
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
 
-	item = pk_transaction_list_get_from_transaction (tlist, transaction);
+	tid = pk_transaction_get_tid (transaction);
+	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item == NULL) {
 		pk_error ("no transaction list item found!");
 	}
@@ -253,6 +274,13 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
+
+	/* already added? */
+	item = pk_transaction_list_get_from_tid (tlist, tid);
+	if (item != NULL) {
+		pk_warning ("already added %s to list", tid);
+		return FALSE;
+	}
 
 	/* add to the array */
 	item = g_new0 (PkTransactionItem, 1);
@@ -310,17 +338,17 @@ pk_transaction_list_number_running (PkTransactionList *tlist)
  * pk_transaction_list_commit:
  **/
 gboolean
-pk_transaction_list_commit (PkTransactionList *tlist, PkTransaction *transaction)
+pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 {
 	gboolean ret;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
-	g_return_val_if_fail (transaction != NULL, FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
 
-	item = pk_transaction_list_get_from_transaction (tlist, transaction);
+	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item == NULL) {
-		pk_warning ("could not get transaction: %p", transaction);
+		pk_warning ("could not get transaction: %s", tid);
 		return FALSE;
 	}
 
@@ -461,18 +489,48 @@ pk_transaction_list_new (void)
  ***************************************************************************/
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
+#include "pk-backend-internal.h"
+
+/**
+ * libst_transaction_list_finished_cb:
+ **/
+static void
+libst_transaction_list_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time, LibSelfTest *test)
+{
+	libst_loopquit (test);
+}
+
+/**
+ * libst_transaction_list_delay_cb:
+ **/
+static void
+libst_transaction_list_delay_cb (LibSelfTest *test)
+{
+	libst_loopquit (test);
+}
 
 void
 libst_transaction_list (LibSelfTest *test)
 {
 	PkTransactionList *tlist;
+	gboolean ret;
 	gchar *tid;
+	guint size;
+	gchar **array;
+	PkTransactionItem *item;
 
 	if (libst_start (test, "PkTransactionList", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
+	/************************************************************/
+	libst_title (test, "get a transaction list object");
 	tlist = pk_transaction_list_new ();
+	if (tlist != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
 
 	/************************************************************/
 	libst_title (test, "make sure we get a valid tid");
@@ -482,9 +540,209 @@ libst_transaction_list (LibSelfTest *test)
 	} else {
 		libst_failed (test, "failed to get tid");
 	}
+
+	/************************************************************/
+	libst_title (test, "make sure we get a valid tid");
+	ret = pk_transaction_list_create (tlist, tid);
+	if (ret) {
+		libst_success (test, "created transaction %s", tid);
+	} else {
+		libst_failed (test, "failed to create transaction");
+	}
+
+	/************************************************************/
+	libst_title (test, "get from db");
+	item = pk_transaction_list_get_from_tid (tlist, tid);
+	if (item != NULL &&
+	    pk_strequal (item->tid, tid) &&
+	    item->transaction != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "could not find in db");
+	}
+
+	/************************************************************/
+	libst_title (test, "get size one we have in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "size %i", size);
+	}
+
+	/************************************************************/
+	libst_title (test, "get transactions in progress");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "size %i", size);
+	}
+
+	/************************************************************/
+	libst_title (test, "add again the same tid (should fail)");
+	ret = pk_transaction_list_create (tlist, tid);
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "added the same tid twice");
+	}
+
+	/************************************************************/
+	libst_title (test, "remove without ever committing");
+	ret = pk_transaction_list_remove (tlist, tid);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed to remove");
+	}
+
+	/************************************************************/
+	libst_title (test, "get size none we have in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "size %i", size);
+	}
+
+	/* get a new tid */
+	g_free (tid);
+	tid = pk_transaction_id_generate ();
+
+	/************************************************************/
+	libst_title (test, "create another item");
+	ret = pk_transaction_list_create (tlist, tid);
+	if (ret) {
+		libst_success (test, "created transaction %s", tid);
+	} else {
+		libst_failed (test, "failed to create transaction");
+	}
+
+	/************************************************************/
+	PkBackend *backend;
+	backend = pk_backend_new ();
+	libst_title (test, "try to load a valid backend");
+	ret = pk_backend_set_name (backend, "dummy");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "lock an valid backend");
+	ret = pk_backend_lock (backend);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed to lock");
+	}
+
+	/************************************************************/
+	libst_title (test, "get from db");
+	item = pk_transaction_list_get_from_tid (tlist, tid);
+	if (item != NULL &&
+	    pk_strequal (item->tid, tid) &&
+	    item->transaction != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "could not find in db");
+	}
+
+	g_signal_connect (item->transaction, "finished",
+				G_CALLBACK (libst_transaction_list_finished_cb), test);
+
+	pk_transaction_get_updates (item->transaction, "none", NULL);
+
+	/************************************************************/
+	libst_title (test, "get present role");
+	ret = pk_transaction_list_role_present (tlist, PK_ROLE_ENUM_GET_UPDATES);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not get role");
+	}
+
+	/************************************************************/
+	libst_title (test, "get non-present role");
+	ret = pk_transaction_list_role_present (tlist, PK_ROLE_ENUM_SEARCH_NAME);
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got missing role");
+	}
+
+	/************************************************************/
+	libst_title (test, "get size one we have in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "size %i", size);
+	}
+
+	/************************************************************/
+	libst_title (test, "get transactions in progress");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "size %i", size);
+	}
+
+	/* wait for Finished */
+	libst_loopwait (test, 2000);
+	libst_loopcheck (test);
+
+	/************************************************************/
+	libst_title (test, "get size one we have in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "size %i", size);
+	}
+
+	/************************************************************/
+	libst_title (test, "get transactions in progress (none)");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "size %i", size);
+	}
+
+	/************************************************************/
+	libst_title (test, "remove already removed");
+	ret = pk_transaction_list_remove (tlist, tid);
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "tried to remove");
+	}
+
+	/* wait for Cleanup */
+	g_timeout_add_seconds (5, (GSourceFunc) libst_transaction_list_delay_cb, test);
+	libst_loopwait (test, 6000);
+	libst_loopcheck (test);
+
+	/************************************************************/
+	libst_title (test, "make sure queue empty");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "size %i", size);
+	}
+
 	g_free (tid);
 
 	g_object_unref (tlist);
+	g_object_unref (backend);
 
 	libst_end (test);
 }
