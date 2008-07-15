@@ -677,6 +677,33 @@ pk_ptr_array_to_argv (GPtrArray *array)
 }
 
 /**
+ * pk_argv_to_ptr_array:
+ * @array: the gchar** array of strings
+ *
+ * Form a GPtrArray array of strings.
+ * The data in the array is copied.
+ *
+ * Return value: the string array, or %NULL if invalid
+ **/
+GPtrArray *
+pk_argv_to_ptr_array (gchar **array)
+{
+	guint i;
+	guint length;
+	GPtrArray *parray;
+
+	g_return_val_if_fail (array != NULL, NULL);
+
+	parray = g_ptr_array_new ();
+	length = g_strv_length (array);
+	for (i=0; i<length; i++) {
+		g_ptr_array_add (parray, g_strdup (array[i]));
+	}
+	return parray;
+}
+
+
+/**
  * pk_va_list_to_argv_string:
  **/
 static void

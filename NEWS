@@ -1,3 +1,55 @@
+Version 0.2.3
+~~~~~~~~~~~~~~
+Released: 2008-07-04
+
+* Backends
+ - alpm: fixed critical error in package_source_free (Valeriy Lyasotskiy)
+ - alpm: fixed install_packages (Valeriy Lyasotskiy)
+ - alpm: added download notification support for install_packages (Valeriy Lyasotskiy)
+ - alpm: fixes related to local/installed things change (Valeriy Lyasotskiy)
+ - alpm: added get_cancel (Valeriy Lyasotskiy)
+ - alpm: added get_depends (Valeriy Lyasotskiy)
+ - alpm: added get_updates, added get_update_detail (Valeriy Lyasotskiy)
+ - conary: updated the get_details call (Ken VanDine)
+ - poldek: install all suggested packages (Marcin Banasiak)
+ - poldek: implement percentage for installing / updating (Marcin Banasiak)
+ - poldek: now GetUpdateDetail returns obsoleted packages too (Marcin Banasiak)
+ - smart: use smart status flags, fixes fd#16525 (Anders F Bjorklund)
+ - urpmi: fix installation of more than one package (Aurelien Lefebvre)
+ - urpmi: in remove-packages.pl (Aurelien Lefebvre)
+ - urpmi: update-packages of the urpmi backend (Aurelien Lefebvre)
+ - urpmi: Added update-system implementation  (Aurelien Lefebvre)
+ - urpmi: get-updates now take care of update importance (Aurelien Lefebvre)
+ - yum: implemented the newest filter (Tim Lauridsen)
+ - yum: added newest support to group-search and get_packages (Tim Lauridsen)
+ - yum: use the proper package group when we do ::Details() (Richard Hughes)
+ - yum: limit the error text to 1024 chars. fixes rh#450594 (Richard Hughes)
+ - yum: allow more than one package to be removed in one transaction (Richard Hughes)
+ - yum: methods should have 'self' as the first argument, fixes rh#451458 (Robin Norwood)
+ - zypp: roll in zypp backend from openSUSE branch (Scott Reeves)
+ - zypp: change to return all restart_suggested patches not just the first one (Scott Reeves)
+
+* Translations
+ - Updated Catalan translation (Xavier Conde)
+ - Updated Polish translation (Piotr Drąg)
+
+* New features:
+ - Add PkCatalog for installing catalogs of applications. (Richard Hughes)
+ - Add a mime handler for .catalog files (Richard Hughes)
+
+* Bugfixes:
+ - Fix building with -Wformat-security, fixes fd#16431 (Martin Pitt)
+ - Make pk_client_get_package() actually work (Richard Hughes)
+ - Don't convert stdout from the C locale to UTF-8 (Richard Hughes)
+ - Add Catalan locale to LINGUAS -- fixes fd#451550 (Richard Hughes)
+ - Properly document the method and signal descriptions (Richard Hughes)
+ - Fix the permissions of the cron helper, fixes rh#451870 (Richard Hughes)
+ - Check all the internal and public functions with flawfinder (Richard Hughes)
+ - Check the package_id for utf8 validity (Richard Hughes)
+ - Don't use-after-free in pk_task_list_status_changed_cb (Richard Hughes)
+ - Audit the use of FIXME and TODO and fix up some of the issues (Richard Hughes)
+ - Update release with typo fixes, new step, and new version #s (Robin Norwood)
+
 Version 0.2.2
 ~~~~~~~~~~~~~
 Released: 2008-06-05

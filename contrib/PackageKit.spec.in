@@ -122,10 +122,10 @@ chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
 rm -rf $RPM_BUILD_ROOT
 
 %post
-update-mime-database %{_datadir}/mime
+update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %postun
-update-mime-database %{_datadir}/mime
+update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %post libs -p /sbin/ldconfig
 

@@ -220,7 +220,6 @@ class yumComps:
             return False
 
         # store to sqlite
-        print 'storing in db'
         for category in cats:
             grps = map(lambda x: self.yumbase.comps.return_group(x),
                filter(lambda x: self.yumbase.comps.has_group(x),category.groups))

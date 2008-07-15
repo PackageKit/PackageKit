@@ -17,6 +17,7 @@ INCLUDES =						\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
+	$(PYTHON_CFLAGS)				\
 	$(LIBNM_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DSBINDIR=\"$(sbindir)\"		 	\
@@ -123,6 +124,7 @@ packagekitd_LDADD =					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
+	$(PYTHON_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(SELFTEST_LIBS)				\
 	$(GIO_LIBS)					\
