@@ -571,6 +571,7 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	if (client->priv->use_buffer || client->priv->synchronous) {
 		pk_package_list_add_obj (client->priv->package_list, obj);
 	}
+	pk_package_id_free (id);
 	pk_package_obj_free (obj);
 }
 
