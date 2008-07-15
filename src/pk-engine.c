@@ -190,6 +190,8 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 	pk_debug ("emitting transaction-list-changed");
 	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION_LIST_CHANGED], 0, transaction_list);
 	pk_engine_reset_timer (engine);
+
+	g_strfreev (transaction_list);
 }
 
 /**
