@@ -37,7 +37,7 @@
 
 static gchar* poldek_pkg_evr (const struct pkg *pkg);
 static void poldek_backend_package (PkBackend *backend, struct pkg *pkg, PkInfoEnum infoenum, PkFilterEnum filters);
-static long do_get_bytes_to_download (const struct poldek_ts *ts, const gchar *mark);
+static long do_get_bytes_to_download (struct poldek_ts *ts, tn_array *pkgs);
 static gint do_get_files_to_download (const struct poldek_ts *ts, const gchar *mark);
 static void pb_load_packages (PkBackend *backend);
 static void poldek_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel, gboolean reset);
@@ -170,43 +170,54 @@ do_get_files_to_download (const struct poldek_ts *ts, const gchar *mark)
  * Returns: bytes to download
  */
 static long
-poldek_get_bytes_to_download (const struct poldek_ts *ts)
+poldek_get_bytes_to_download (struct poldek_ts *ts, tn_array *pkgs)
 {
-	long	bytes = 0;
+	return do_get_bytes_to_download (ts, pkgs);
+}
 
-	bytes += do_get_bytes_to_download (ts, "I");
-	bytes += do_get_bytes_to_download (ts, "D");
+static long
+poldek_get_bytes_to_download_from_ts (struct poldek_ts *ts)
+{
+	gchar mark[2][2] = {"I", "D"};
+	long bytes = 0;
+	gint i = 0;
+
+	while (mark[i]) {
+		tn_array *pkgs = poldek_ts_get_summary (ts, mark[i]);
+
+		if (pkgs) {
+			bytes += do_get_bytes_to_download (ts, pkgs);
+
+			n_array_free (pkgs);
+		}
+
+		i++;
+	}
 
 	return bytes;
 }
 
 static long
-do_get_bytes_to_download (const struct poldek_ts *ts, const gchar *mark)
+do_get_bytes_to_download (struct poldek_ts *ts, tn_array *pkgs)
 {
-	tn_array	*pkgs = NULL;
-	gint		i;
-	long		bytes = 0;
+	gint i;
+	long bytes = 0;
 
-	pkgs = poldek_ts_get_summary (ts, mark);
+	for (i = 0; i < n_array_size (pkgs); i++) {
+		struct pkg	*pkg = n_array_nth (pkgs, i);
+		gchar		path[1024];
 
-	if (pkgs) {
-		for (i = 0; i < n_array_size (pkgs); i++) {
-			struct pkg	*pkg = n_array_nth (pkgs, i);
-			gchar		path[1024];
-
-			if (pkg->pkgdir && (vf_url_type (pkg->pkgdir->path) & VFURL_REMOTE)) {
-				if (pkg_localpath (pkg, path, sizeof(path), ts->cachedir)) {
-					if (access(path, R_OK) != 0) {
+		if (pkg->pkgdir && (vf_url_type (pkg->pkgdir->path) & VFURL_REMOTE)) {
+			if (pkg_localpath (pkg, path, sizeof(path), ts->cachedir)) {
+				if (access(path, R_OK) != 0) {
+					bytes += pkg->fsize;
+				} else {
+					if (!pm_verify_signature(ts->pmctx, path, PKGVERIFY_MD)) {
 						bytes += pkg->fsize;
-					} else {
-						if (!pm_verify_signature(ts->pmctx, path, PKGVERIFY_MD)) {
-							bytes += pkg->fsize;
-						}
 					}
 				}
 			}
 		}
-		n_array_free (pkgs);
 	}
 
 	return bytes;
@@ -340,6 +351,8 @@ ts_confirm (void *data, struct poldek_ts *ts)
 	PkBackend	*backend = (PkBackend *)data;
 	gint		i = 0, result = 1;
 
+	pk_debug ("START\n");
+
 	ipkgs = poldek_ts_get_summary (ts, "I");
 	dpkgs = poldek_ts_get_summary (ts, "D");
 	rpkgs = poldek_ts_get_summary (ts, "R");
@@ -356,7 +369,7 @@ ts_confirm (void *data, struct poldek_ts *ts)
 		pd->step = 0;
 
 		pd->bytesget = 0;
-		pd->bytesdownload = poldek_get_bytes_to_download (ts);
+		pd->bytesdownload = poldek_get_bytes_to_download_from_ts (ts);
 
 		pd->filesget = 0;
 		pd->filesdownload = poldek_get_files_to_download (ts);
@@ -1200,9 +1213,11 @@ search_package_thread (PkBackend *backend)
 			search_cmd = g_strdup_printf ("search -qp mimetype(%s)", search);
 		}
 	} else if (mode == SEARCH_ENUM_RESOLVE) {
-		search = pk_backend_get_string (backend, "package_id");
+		gchar **package_ids;
 
-		search_cmd = g_strdup_printf ("ls -q %s", search);
+		package_ids = pk_backend_get_strv (backend, "package_ids");
+
+		search_cmd = g_strdup_printf ("ls -q %s", package_ids[0]);
 	}
 
 	if (cmd != NULL && search_cmd)
@@ -1791,6 +1806,67 @@ backend_destroy (PkBackend *backend)
 	g_string_free (pberror->tslog, TRUE);
 
 	g_free (pberror);
+}
+
+/**
+ * backend_download_packages:
+ */
+static gboolean
+backend_download_packages_thread (PkBackend *backend)
+{
+	PercentageData *pd = pk_backend_get_pointer (backend, "percentage_ptr");
+	struct poldek_ts *ts;
+	struct vf_progress vf_progress;
+	tn_array *pkgs;
+	gchar **package_ids;
+	const gchar *destdir;
+	gint i;
+
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	destdir = pk_backend_get_string (backend, "directory");
+
+	pkgs = n_array_new (10, (tn_fn_free)pkg_free, NULL);
+
+	ts = poldek_ts_new (ctx, 0);
+
+	setup_vf_progress (&vf_progress, backend);
+
+	pb_load_packages (backend);
+
+	for (i = 0; i < g_strv_length (package_ids); i++) {
+		struct pkg *pkg = poldek_get_pkg_from_package_id (package_ids[i]);
+
+		n_array_push (pkgs, pkg_link (pkg));
+
+		pkg_free (pkg);
+	}
+
+	pd->bytesget = 0;
+	pd->bytesdownload = poldek_get_bytes_to_download (ts, pkgs);
+
+	if (!packages_fetch (poldek_get_pmctx (ts->ctx), pkgs, destdir, 1)) {
+		/* something goes wrong */
+	}
+
+	poldek_ts_free (ts);
+
+	poldek_backend_percentage_data_destroy (backend);
+
+	pk_backend_finished (backend);
+
+	return TRUE;
+}
+
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids,
+			   const gchar *directory)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
+
+	poldek_backend_percentage_data_create (backend);
+	pk_backend_thread_create (backend, backend_download_packages_thread);
 }
 
 /**
@@ -2506,6 +2582,7 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+
 	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_RESOLVE);
 	pk_backend_thread_create (backend, search_package_thread);
 }
@@ -2658,7 +2735,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,				/* get_groups */
 	backend_get_filters,				/* get_filters */
 	backend_get_cancel,				/* cancel */
-	NULL,						/* download_packages */
+	backend_download_packages,			/* download_packages */
 	backend_get_depends,				/* get_depends */
 	backend_get_details,				/* get_details */
 	backend_get_files,				/* get_files */
