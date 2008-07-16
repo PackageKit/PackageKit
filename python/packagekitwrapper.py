@@ -150,7 +150,7 @@ class PackageKitClient:
         '''
         Returns the list of repositories used in the system
 
-        A correct filter, e.g. None or 'installed;~devel'
+        filter is a correct filter, e.g. None or 'installed;~devel'
 
         '''
         result = []
@@ -168,27 +168,20 @@ class PackageKitClient:
         self._wait()
         return result
 
-    def RepoEnable(self, filter=None):
+    def RepoEnable(self, repo_id, enabled):
         '''
-        Returns the list of repositories used in the system
+        Enables the repository specified.
 
-        A correct filter, e.g. None or 'installed;~devel'
+        repo_id is a repository identifier, e.g. fedora-development-debuginfo
+
+        enabled true if enabled, false if disabled
 
         '''
-        result = []
         pk_xn = self._get_xn()
         pk_xn.connect_to_signal('Finished', self._h_finished)
         pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.connect_to_signal('RepoDetail',
-                                lambda id, description, enabled:
-                                    result.append({'id' : str(id),
-                                                   'desc' : str(description),
-                                                   'enabled' : enabled}))
-        if (filter == None):
-            filter = 'none'
-        pk_xn.GetRepoList(filter)
+        pk_xn.RepoEnable(repo_id, enabled)
         self._wait()
-        return result
 
     #
     # Internal helper functions
