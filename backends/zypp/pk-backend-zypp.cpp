@@ -1349,7 +1349,8 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 	std::list <zypp::RepoInfo> repos;
 	try
 	{
-		repos = manager.knownRepositories();
+		//repos = manager.knownRepositories();
+		repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
 	}
 	catch ( const zypp::Exception &e)
 	{
