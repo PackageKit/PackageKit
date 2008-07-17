@@ -183,6 +183,27 @@ class PackageKitClient:
         pk_xn.RepoEnable(repo_id, enabled)
         self._wait()
 
+    def GetPackages(self, filter=None):
+        '''
+        This method returns all the packages without a search term.
+
+        filter is a correct filter, e.g. none or installed;~devel
+
+        '''
+        result = []
+        pk_xn = self._get_xn()
+        pk_xn.connect_to_signal('Finished', self._h_finished)
+        pk_xn.connect_to_signal('ErrorCode', self._h_error)
+        pk_xn.connect_to_signal('Package',
+            lambda i, id, summary: result.append({'id': str(id),
+                                                  'summary' : str(summary)}))
+        if (filter == None):
+            filter = "none"
+        pk_xn.GetPackages(filter)
+        self._wait()
+        return result
+
+
     #
     # Internal helper functions
     #
@@ -269,32 +290,6 @@ class PackageKitClient:
 
         return dbus.Interface(self.bus.get_object('org.freedesktop.PackageKit',
             tid, False), 'org.freedesktop.PackageKit.Transaction')
-
-    # Constants used around the place
-    # Filters
-    PK_FILTER_ENUM_NONE			= 0
-    PK_FILTER_ENUM_INSTALLED		= 1 << 0
-    PK_FILTER_ENUM_NOT_INSTALLED	= 1 << 1
-    PK_FILTER_ENUM_DEVELOPMENT		= 1 << 2
-    PK_FILTER_ENUM_NOT_DEVELOPMENT	= 1 << 3
-    PK_FILTER_ENUM_GUI			= 1 << 4
-    PK_FILTER_ENUM_NOT_                 = 1 << 5
-    PK_FILTER_ENUM_FREE			= 1 << 6
-    PK_FILTER_ENUM_NOT_FREE		= 1 << 7
-    PK_FILTER_ENUM_VISIBLE		= 1 << 8
-    PK_FILTER_ENUM_NOT_VISIBLE		= 1 << 9
-    PK_FILTER_ENUM_SUPPORTED		= 1 << 10
-    PK_FILTER_ENUM_NOT_SUPPORTED	= 1 << 11
-    PK_FILTER_ENUM_BASENAME		= 1 << 12
-    PK_FILTER_ENUM_NOT_BASENAME		= 1 << 13
-    PK_FILTER_ENUM_NEWEST		= 1 << 14
-    PK_FILTER_ENUM_NOT_NEWEST		= 1 << 15
-    PK_FILTER_ENUM_ARCH			= 1 << 16
-    PK_FILTER_ENUM_NOT_ARCH		= 1 << 17
-    PK_FILTER_ENUM_SOURCE		= 1 << 18
-    PK_FILTER_ENUM_NOT_SOURCE		= 1 << 19
-    PK_FILTER_ENUM_UNKNOWN		= 1 << 20
-
 
 
 #
