@@ -165,7 +165,8 @@ zypp_build_pool (gboolean include_local)
 	zypp::RepoManager manager;
 	std::list<zypp::RepoInfo> repos;
 	try {
-		repos = manager.knownRepositories ();
+		//repos = manager.knownRepositories ();
+		repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
 		for (std::list<zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end (); it++) {
 			zypp::RepoInfo repo (*it);
 
@@ -861,7 +862,8 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 	std::list <zypp::RepoInfo> repos;
 	try
 	{
-		repos = manager.knownRepositories();
+		//repos = manager.knownRepositories();
+		repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
 	}
 	catch ( const zypp::Exception &e)
 	{
