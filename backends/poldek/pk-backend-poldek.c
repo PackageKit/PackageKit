@@ -1023,7 +1023,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 }
 
 static gchar*
-package_id_from_pkg (struct pkg *pkg, const gchar *repo)
+package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkFilterEnum filters)
 {
 	gchar *evr, *package_id, *poldek_dir;
 
@@ -1034,7 +1034,10 @@ package_id_from_pkg (struct pkg *pkg, const gchar *repo)
 	if (repo) {
 		poldek_dir = g_strdup (repo);
 	} else {
-		if (pkg_is_installed (pkg)) {
+		/* when filters contain PK_FILTER_ENUM_NOT_INSTALLED package
+		 * can't be marked as installed */
+		if (!pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
+		    pkg_is_installed (pkg)) {
 			poldek_dir = g_strdup ("installed");
 		} else {
 			if (pkg->pkgdir && pkg->pkgdir->name) {
@@ -1079,7 +1082,7 @@ poldek_backend_package (PkBackend *backend, struct pkg *pkg, PkInfoEnum infoenum
 		}
 	}
 
-	package_id = package_id_from_pkg (pkg, NULL);
+	package_id = package_id_from_pkg (pkg, NULL, filters);
 
 	pkgu = pkg_uinf (pkg);
 
@@ -2184,7 +2187,7 @@ get_obsoletedby_pkg (struct pkg *pkg)
 		struct pkg *dbpkg = n_array_nth (dbpkgs, i);
 
 		if (pkg_caps_obsoletes_pkg_caps (pkg, dbpkg)) {
-			gchar *package_id = package_id_from_pkg (dbpkg, "installed");
+			gchar *package_id = package_id_from_pkg (dbpkg, "installed", 0);
 
 			if (obsoletes) {
 				obsoletes = g_string_append_c (obsoletes, '^');
@@ -2233,7 +2236,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 			gchar	*updates, *obsoletes, *cve_url = NULL;
 			tn_array *cves = NULL;
 
-			updates = package_id_from_pkg (pkg, "installed");
+			updates = package_id_from_pkg (pkg, "installed", 0);
 
 			upkg = poldek_get_pkg_from_package_id (package_ids[0]);
 
