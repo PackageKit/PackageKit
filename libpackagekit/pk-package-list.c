@@ -464,7 +464,9 @@ pk_package_list_add_file (PkPackageList *plist, const gchar *filename)
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
 		obj = pk_package_obj_from_string (split[i]);
-		pk_package_list_add_obj (plist, obj);
+		if (obj != NULL) {
+			pk_package_list_add_obj (plist, obj);
+		}
 		pk_package_obj_free (obj);
 	}
 
