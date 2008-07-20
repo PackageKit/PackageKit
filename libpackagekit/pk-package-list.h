@@ -78,6 +78,10 @@ gboolean		 pk_package_list_sort_summary	(PkPackageList		*plist);
 const PkPackageObj	*pk_package_list_get_obj	(PkPackageList		*plist,
 							 guint			 item);
 gboolean		 pk_package_list_clear		(PkPackageList		*plist);
+gboolean		 pk_package_list_to_file	(PkPackageList		*plist,
+							 const gchar		*filename);
+gboolean		 pk_package_list_add_file	(PkPackageList		*plist,
+							 const gchar		*filename);
 
 G_END_DECLS
 

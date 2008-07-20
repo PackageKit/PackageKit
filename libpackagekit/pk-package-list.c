@@ -398,6 +398,82 @@ pk_package_list_contains_obj (PkPackageList *plist, const PkPackageObj *obj)
 }
 
 /**
+ * pk_package_list_to_file:
+ **/
+gboolean
+pk_package_list_to_file (PkPackageList *plist, const gchar *filename)
+{
+	PkPackageObj *obj;
+	guint i;
+	guint length;
+	gboolean ret;
+	gchar *text;
+	GString *buffer;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
+
+	/* add each object */
+	buffer = g_string_new ("");
+	length = plist->priv->array->len;
+	for (i=0; i<length; i++) {
+		obj = g_ptr_array_index (plist->priv->array, i);
+		text = pk_package_obj_to_string (obj);
+		g_string_append_printf (buffer, "%s\n", text);
+		g_free (text);
+	}
+
+	/* write to disk */
+	text = g_string_free (buffer, FALSE);
+	ret = g_file_set_contents (filename, text, -1, &error);
+	if (!ret) {
+		pk_warning ("Failed to write to disk: %s", error->message);
+		g_error_free (error);
+	}
+	g_free (text);
+	return ret;
+}
+
+/**
+ * pk_package_list_add_file:
+ **/
+gboolean
+pk_package_list_add_file (PkPackageList *plist, const gchar *filename)
+{
+	PkPackageObj *obj;
+	guint i;
+	guint length;
+	gboolean ret;
+	gchar *text = NULL;
+	gchar **split;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
+
+	ret = g_file_get_contents (filename, &text, NULL, &error);
+	if (!ret) {
+		pk_warning ("Failed to read from disk: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* split into lines */
+	split = g_strsplit (text, "\n", 0);
+	length = g_strv_length (split);
+	for (i=0; i<length; i++) {
+		obj = pk_package_obj_from_string (split[i]);
+		pk_package_list_add_obj (plist, obj);
+		pk_package_obj_free (obj);
+	}
+
+	g_free (text);
+out:
+	return ret;
+}
+
+/**
  * pk_package_list_class_init:
  * @klass: The PkPackageListClass
  **/
