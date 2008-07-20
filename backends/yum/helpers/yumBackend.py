@@ -299,7 +299,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # Now show available packages.
         if FILTER_INSTALLED not in fltlist:
-            pkgs = self.yumbase.pkgSack.returnNewestByNameArch()
+            pkgs = self.yumbase.pkgSack
             pkgfilter.add_available(pkgs)
 
         # we couldn't do this when generating the list
