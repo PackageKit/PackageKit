@@ -228,6 +228,20 @@ class PackageKitClient:
         self._wait()
         return result
 
+    def UpdateSystem(self, filter=None):
+        '''
+        This method should return a list of packages that are installed and are upgradable.
+
+        It should only return the newest update for each installed package.
+        '''
+        result = []
+        pk_xn = self._get_xn()
+        pk_xn.connect_to_signal('Finished', self._h_finished)
+        pk_xn.connect_to_signal('ErrorCode', self._h_error)
+        pk_xn.UpdateSystem()
+        self._wait()
+        return result
+
 
     #
     # Internal helper functions
