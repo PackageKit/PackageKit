@@ -59,13 +59,15 @@ class PackageKitClient:
         filter and package are directly passed to the PackageKit transaction D-BUS
         method Resolve()
 
-        Return List of (installed, id, short_description) triples for all matches,
+        Return Dict with keys of (installed, id, short_description) for all matches,
         where installed is a boolean and id and short_description are strings.
         '''
         result = []
         pk_xn = self._get_xn()
         pk_xn.connect_to_signal('Package',
-            lambda i, p_id, summary: result.append((i == 'installed', str(p_id), str(summary))))
+            lambda i, id, summary: result.append({'installed' : (i == 'installed'),
+                                                  'id': (str(id)),
+                                                  'summary' :str(summary)}))
         pk_xn.connect_to_signal('Finished', self._h_finished)
         pk_xn.connect_to_signal('ErrorCode', self._h_error)
         pk_xn.Resolve(filter, package)
@@ -75,18 +77,25 @@ class PackageKitClient:
     def GetDetails(self, package_id):
         '''Get details about a PackageKit package_id.
 
-        Return tuple (license, group, description, upstream_url, size).
+        Return dict with keys (id, license, group, description, upstream_url, size).
         '''
         result = []
         pk_xn = self._get_xn()
-        pk_xn.connect_to_signal('Details', lambda *args: result.extend(args))
+        pk_xn.connect_to_signal('Details', lambda id, license, group, detail, url, size:
+                                    result.append({"id" : str(id),
+                                                   "license" : str(license),
+                                                   "group" : str(group),
+                                                   "detail" : str(detail),
+                                                   "url" : str(url),
+                                                   "size" : int(size)})
+                                )
         pk_xn.connect_to_signal('Finished', self._h_finished)
         pk_xn.connect_to_signal('ErrorCode', self._h_error)
         pk_xn.GetDetails(package_id)
         self._wait()
         if self._error_enum:
             raise PackageKitError(self._error_enum)
-        return (str(result[1]), str(result[2]), str(result[3]), str(result[4]), int(result[5]))
+        return result
 
     def SearchName(self, filter, name):
         '''Search a package by name.
