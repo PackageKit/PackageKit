@@ -210,11 +210,7 @@ class PackageKitClient:
 
     def _wait(self):
         '''Wait until an async PK operation finishes.'''
-
-        while self._finished_status is None:
-            self.main_loop.get_context().iteration(True)
-        while self.main_loop.get_context().pending():
-            self.main_loop.get_context().iteration()
+        self.main_loop.run()
 
     def _h_status(self, status):
         self._status = status
@@ -226,7 +222,7 @@ class PackageKitClient:
         self._error_enum = enum
 
     def _h_finished(self, status, code):
-        self._finished_status = status
+        self.main_loop.quit()
 
     def _h_progress(self, per, subper, el, rem):
         def _cancel(xn):
