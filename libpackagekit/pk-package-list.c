@@ -469,7 +469,7 @@ pk_package_list_add_file (PkPackageList *plist, const gchar *filename)
 		}
 		pk_package_obj_free (obj);
 	}
-
+	g_strfreev (split);
 	g_free (text);
 out:
 	return ret;
