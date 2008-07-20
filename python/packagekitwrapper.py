@@ -200,12 +200,11 @@ class PackageKitClient:
         pk_xn.RepoEnable(repo_id, enabled)
         self._wait()
 
-    def GetPackages(self, filter=None):
+    def GetUpdates(self, filter=None):
         '''
-        This method returns all the packages without a search term.
+        This method should return a list of packages that are installed and are upgradable.
 
-        filter is a correct filter, e.g. none or installed;~devel
-
+        It should only return the newest update for each installed package.
         '''
         result = []
         pk_xn = self._get_xn()
@@ -216,7 +215,7 @@ class PackageKitClient:
                                                   'summary' : str(summary)}))
         if (filter == None):
             filter = "none"
-        pk_xn.GetPackages(filter)
+        pk_xn.GetUpdates(filter)
         self._wait()
         return result
 
