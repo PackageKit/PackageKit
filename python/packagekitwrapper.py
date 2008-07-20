@@ -91,6 +91,7 @@ class PackageKitClient:
     def SearchName(self, filter, name):
         '''Search a package by name.
 
+        # FIXME AS incorrect return
         Return a list of (installed, package_id, short_description) triples,
         where installed is a boolean and package_id/short_description are
         strings.
@@ -98,10 +99,26 @@ class PackageKitClient:
         result = []
         pk_xn = self._get_xn()
         pk_xn.connect_to_signal('Package',
-            lambda i, id, summary: result.extend((str(id), str(summary))))
+            lambda i, id, summary: result.append({'id': (str(id)),
+                                                  'summary' :str(summary)}))
         pk_xn.connect_to_signal('Finished', self._h_finished)
         pk_xn.connect_to_signal('ErrorCode', self._h_error)
         pk_xn.SearchName(filter, name)
+        self._wait()
+        return result
+
+    def SearchDetails(self, filter, name):
+        '''Search a packages details.
+        #FIXME description
+        '''
+        result = []
+        pk_xn = self._get_xn()
+        pk_xn.connect_to_signal('Package',
+            lambda i, id, summary: result.append({'id': (str(id)),
+                                                  'summary' :str(summary)}))
+        pk_xn.connect_to_signal('Finished', self._h_finished)
+        pk_xn.connect_to_signal('ErrorCode', self._h_error)
+        pk_xn.SearchDetails(filter, name)
         self._wait()
         return result
 
