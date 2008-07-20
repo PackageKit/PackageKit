@@ -9,6 +9,7 @@ pk-update-icon
 pk-application
 pk-import-desktop
 pk-import-specspo
+pk-generate-package-list
 *.glade.bak
 *.gladep
 *.gladep.bak
