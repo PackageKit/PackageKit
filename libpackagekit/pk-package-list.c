@@ -91,17 +91,10 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const PkPackageId *i
 gboolean
 pk_package_list_add_obj (PkPackageList *plist, const PkPackageObj *obj)
 {
-	gboolean ret;
 	PkPackageObj *obj_new;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (obj != NULL, FALSE);
-
-	ret = pk_package_list_contains_obj (plist, obj);
-	if (ret) {
-		pk_debug ("already added obj");
-		return FALSE;
-	}
 
 	obj_new = pk_package_obj_copy (obj);
 	g_ptr_array_add (plist->priv->array, obj_new);
