@@ -1352,11 +1352,10 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error) {
+	if (backend->priv->set_error && allow_cancel) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
-
 
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
