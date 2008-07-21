@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+#include <execinfo.h>
 
 #include "pk-debug.h"
 
@@ -86,6 +87,29 @@ pk_set_console_mode (guint console_code)
 	/* Command is the control command to the terminal */
 	g_snprintf (command, 13, "%c[%dm", 0x1B, console_code);
 	printf ("%s", command);
+}
+
+/**
+ * pk_debug_backtrace:
+ **/
+void
+pk_debug_backtrace (void)
+{
+	void *call_stack[512];
+	int  call_stack_size;
+	char **symbols;
+	int i = 1;
+
+	call_stack_size = backtrace (call_stack, G_N_ELEMENTS (call_stack));
+	symbols = backtrace_symbols (call_stack, call_stack_size);
+	if (symbols != NULL) {
+		g_print ("Traceback:\n");
+		while (i < call_stack_size) {
+			g_print ("\t%s\n", symbols[i]);
+			i++;
+		}
+		free (symbols);
+	}
 }
 
 /**
@@ -204,6 +228,9 @@ pk_warning_real (const gchar *func, const gchar *file, const int line, const gch
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 
 	g_free(buffer);
+
+	/* we want to fix this! */
+	pk_debug_backtrace ();
 }
 
 /**
@@ -225,6 +252,9 @@ pk_error_real (const gchar *func, const gchar *file, const int line, const gchar
 	}
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 	g_free(buffer);
+
+	/* we want to fix this! */
+	pk_debug_backtrace ();
 
 	exit (1);
 }
