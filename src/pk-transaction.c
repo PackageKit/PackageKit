@@ -1173,7 +1173,7 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 
 	/* if it's finished, cancelling will have no action */
 	if (transaction->priv->finished) {
-		pk_warning ("No point trying to cancel a finished transaction, ignoring");
+		pk_debug ("No point trying to cancel a finished transaction, ignoring");
 		return TRUE;
 	}
 
