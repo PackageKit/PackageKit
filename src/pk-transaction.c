@@ -87,7 +87,7 @@ struct PkTransactionPrivate
 	PkSecurity		*security;
 
 	/* needed for gui coldplugging */
-	gchar			*last_package;
+	gchar			*last_package_id;
 	gchar			*dbus_name;
 	gchar			*tid;
 	PkPackageList		*package_list;
@@ -255,21 +255,29 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 /**
  * pk_transaction_get_text:
  **/
-const gchar *
+gchar *
 pk_transaction_get_text (PkTransaction *transaction)
 {
+	PkPackageId *id;
+	gchar *text = NULL;
+
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
 	g_return_val_if_fail (transaction->priv->tid != NULL, NULL);
 
 	if (transaction->priv->cached_package_id != NULL) {
-		return transaction->priv->cached_package_id;
+		id = pk_package_id_new_from_string (transaction->priv->cached_package_id);
+		text = g_strdup (id->name);
+		pk_package_id_free (id);
 	} else if (transaction->priv->cached_package_ids != NULL) {
-		return transaction->priv->cached_package_ids[0];
+		/* FIXME: join all with ';' */
+		id = pk_package_id_new_from_string (transaction->priv->cached_package_ids[0]);
+		text = g_strdup (id->name);
+		pk_package_id_free (id);
 	} else if (transaction->priv->cached_search != NULL) {
-		return transaction->priv->cached_search;
+		text = g_strdup (transaction->priv->cached_search);
 	}
 
-	return NULL;
+	return text;
 }
 
 /**
@@ -541,7 +549,6 @@ static void
 pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransaction *transaction)
 {
 	const gchar *info_text;
-	gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -569,9 +576,10 @@ pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransa
 	pk_package_list_add_obj (transaction->priv->package_list, obj);
 
 	/* emit */
-	package_id = pk_package_id_to_string (obj->id);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0, info_text, package_id, obj->summary);
-	g_free (package_id);
+	g_free (transaction->priv->last_package_id);
+	transaction->priv->last_package_id = pk_package_id_to_string (obj->id);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0, info_text,
+		       transaction->priv->last_package_id, obj->summary);
 }
 
 /**
@@ -1563,12 +1571,12 @@ pk_transaction_get_package_last (PkTransaction *transaction, gchar **package_id,
 
 	pk_debug ("GetPackageLast method called");
 
-	if (transaction->priv->last_package == NULL) {
+	if (transaction->priv->last_package_id == NULL) {
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE,
 			     "No package data available");
 		return FALSE;
 	}
-	*package_id = g_strdup (transaction->priv->last_package);
+	*package_id = g_strdup (transaction->priv->last_package_id);
 	return TRUE;
 }
 
@@ -1724,9 +1732,9 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
  **/
 gboolean
 pk_transaction_get_role (PkTransaction *transaction,
-			 const gchar **role, const gchar **package_id, GError **error)
+			 const gchar **role, const gchar **text, GError **error)
 {
-	const gchar *text;
+	gchar *text_temp;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 
@@ -1738,9 +1746,10 @@ pk_transaction_get_role (PkTransaction *transaction,
 		return FALSE;
 	}
 
-	text = pk_transaction_get_text (transaction);
+	text_temp = pk_transaction_get_text (transaction);
 	*role = g_strdup (pk_role_enum_to_text (transaction->priv->role));
-	*package_id = g_strdup (text);
+	*text = g_strdup (text_temp);
+	g_free (text_temp);
 	return TRUE;
 }
 
@@ -3207,7 +3216,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cached_repo_id = NULL;
 	transaction->priv->cached_parameter = NULL;
 	transaction->priv->cached_value = NULL;
-	transaction->priv->last_package = NULL;
+	transaction->priv->last_package_id = NULL;
 	transaction->priv->tid = NULL;
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 
@@ -3242,7 +3251,7 @@ pk_transaction_finalize (GObject *object)
 	transaction = PK_TRANSACTION (object);
 	g_return_if_fail (transaction->priv != NULL);
 
-	g_free (transaction->priv->last_package);
+	g_free (transaction->priv->last_package_id);
 	g_free (transaction->priv->dbus_name);
 	g_free (transaction->priv->cached_package_id);
 	g_free (transaction->priv->cached_key_id);

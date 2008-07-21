@@ -932,7 +932,7 @@ pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentag
  * pk_client_get_role:
  * @client: a valid #PkClient instance
  * @role: a PkRoleEnum value such as %PK_ROLE_ENUM_UPDATE_SYSTEM
- * @package_id: the primary %package_id or thing associated with the role
+ * @text: the primary search term or package name associated with the role
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * The role is the action of the transaction as does not change for the entire
@@ -941,11 +941,11 @@ pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentag
  * Return value: %TRUE if we found the status successfully
  **/
 gboolean
-pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id, GError **error)
+pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **text, GError **error)
 {
 	gboolean ret;
 	gchar *role_text;
-	gchar *package_id_temp;
+	gchar *text_temp;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (role != NULL, FALSE);
@@ -957,7 +957,7 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id, GErr
 	}
 
 	/* we can avoid a trip to the daemon */
-	if (package_id == NULL && client->priv->role != PK_ROLE_ENUM_UNKNOWN) {
+	if (text == NULL && client->priv->role != PK_ROLE_ENUM_UNKNOWN) {
 		*role = client->priv->role;
 		return TRUE;
 	}
@@ -965,15 +965,15 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id, GErr
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRole", error,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &role_text,
-				 G_TYPE_STRING, &package_id_temp,
+				 G_TYPE_STRING, &text_temp,
 				 G_TYPE_INVALID);
 	if (ret) {
 		*role = pk_role_enum_from_text (role_text);
 		g_free (role_text);
-		if (package_id != NULL) {
-			*package_id = package_id_temp;
+		if (text != NULL) {
+			*text = text_temp;
 		} else {
-			g_free (package_id_temp);
+			g_free (text_temp);
 		}
 	}
 	pk_client_error_fixup (error);

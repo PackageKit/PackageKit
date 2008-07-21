@@ -143,7 +143,7 @@ void		 pk_transaction_get_requires		(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_role		(PkTransaction	*transaction,
 							 const gchar	**role,
-							 const gchar	**package_id,
+							 const gchar	**text,
 							 GError		**error);
 gboolean	 pk_transaction_get_status		(PkTransaction	*transaction,
 							 const gchar	**status,

@@ -175,7 +175,7 @@ gboolean	 pk_client_get_status			(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_get_role			(PkClient	*client,
 							 PkRoleEnum	*role,
-							 gchar		**package_id,
+							 gchar		**text,
 							 GError		**error);
 gboolean	 pk_client_get_progress			(PkClient	*client,
 							 guint		*percentage,
