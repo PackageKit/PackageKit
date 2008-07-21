@@ -103,11 +103,13 @@ pk_debug_backtrace (void)
 	call_stack_size = backtrace (call_stack, G_N_ELEMENTS (call_stack));
 	symbols = backtrace_symbols (call_stack, call_stack_size);
 	if (symbols != NULL) {
+		pk_set_console_mode (CONSOLE_RED);
 		g_print ("Traceback:\n");
 		while (i < call_stack_size) {
 			g_print ("\t%s\n", symbols[i]);
 			i++;
 		}
+		pk_set_console_mode (CONSOLE_RESET);
 		free (symbols);
 	}
 }
