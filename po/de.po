@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-06-10 17:24+0000\n"
-"PO-Revision-Date: 2008-07-07 11:56+0100\n"
+"PO-Revision-Date: 2008-07-22 09:21+0100\n"
 "Last-Translator: Fabian Affolter <fab@fedoraproject.org>\n"
 "Language-Team: German <fedora-trans-de@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -58,7 +58,7 @@ msgstr "Es konnten weder installierte noch zu installierende Paket mit diesem Na
 
 #: ../client/pk-console.c:737
 msgid "Could not find a package to remove"
-msgstr "Es konnte kein Paket zum Deinstallieren finden"
+msgstr "Es konnte kein Paket zum Entfernen finden"
 
 #: ../client/pk-console.c:806
 msgid "The following packages have to be removed"
