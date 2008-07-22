@@ -1134,7 +1134,6 @@ pk_backend_set_locale (PkBackend *backend, const gchar *code)
 	g_free (backend->priv->locale);
 	backend->priv->locale = g_strdup (code);
 
-	pk_warning ("TODO: do something here!!");
 	return TRUE;
 }
 
