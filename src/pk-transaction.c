@@ -78,6 +78,7 @@ struct PkTransactionPrivate
 	gboolean		 allow_cancel;
 	gboolean		 emit_eula_required;
 	gboolean		 emit_signature_required;
+	gchar			*locale;
 	LibGBus			*libgbus;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
@@ -750,6 +751,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* assign */
 	pk_backend_set_current_tid (priv->backend, priv->tid);
+	pk_backend_set_locale (priv->backend, priv->locale);
 
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
@@ -2883,6 +2885,28 @@ pk_transaction_service_pack (PkTransaction *transaction, const gchar *location, 
 }
 
 /**
+ * pk_transaction_set_locale:
+ */
+gboolean
+pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, GError **error)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+
+	/* already set? */
+	if (transaction->priv->locale != NULL) {
+		pk_warning ("Already set locale");
+		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "Already set locale to %s", transaction->priv->locale);
+		return FALSE;
+	}
+
+	/* save so we can pass to the backend */
+	transaction->priv->locale = g_strdup (code);
+	return TRUE;
+}
+
+/**
  * pk_transaction_update_packages:
  **/
 void
@@ -3209,6 +3233,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cached_value = NULL;
 	transaction->priv->last_package = NULL;
 	transaction->priv->tid = NULL;
+	transaction->priv->locale = NULL;
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 
 	transaction->priv->backend = pk_backend_new ();
@@ -3244,6 +3269,7 @@ pk_transaction_finalize (GObject *object)
 
 	g_free (transaction->priv->last_package);
 	g_free (transaction->priv->dbus_name);
+	g_free (transaction->priv->locale);
 	g_free (transaction->priv->cached_package_id);
 	g_free (transaction->priv->cached_key_id);
 	g_strfreev (transaction->priv->cached_package_ids);

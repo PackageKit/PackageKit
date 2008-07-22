@@ -1609,6 +1609,38 @@ pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
 }
 
 /**
+ * pk_client_set_locale:
+ * @client: a valid #PkClient instance
+ * @code: a valid locale code, e.g. en_GB
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Set the locale for this transaction.
+ * You normally don't need to call this function as the locale is set
+ * automatically when the tid is requested.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (code != NULL, FALSE);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "SetLocale", error,
+				 G_TYPE_STRING, code,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_client_error_fixup (error);
+	return ret;
+}
+
+/**
  * pk_client_get_requires:
  * @client: a valid #PkClient instance
  * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
