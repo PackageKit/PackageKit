@@ -34,6 +34,7 @@ static guint _package_current = 0;
 static gboolean _has_service_pack = FALSE;
 static gboolean _repo_enabled_local = FALSE;
 static gboolean _repo_enabled_fedora = TRUE;
+static gboolean _repo_enabled_devel = TRUE;
 static gboolean _repo_enabled_livna = TRUE;
 static gboolean _updated_gtkhtml = FALSE;
 static gboolean _updated_kernel = FALSE;
@@ -525,10 +526,20 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 static gboolean
 backend_search_name_timeout (gpointer data)
 {
+	gchar *locale;
 	PkBackend *backend = (PkBackend *) data;
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "evince;0.9.3-5.fc8;i386;installed",
-			    "PDF Document viewer");
+	locale = pk_backend_get_locale (backend);
+
+	pk_debug ("locale is %s", locale);
+	if (!pk_strequal (locale, "en_GB.utf8")) {
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+				    "evince;0.9.3-5.fc8;i386;installed",
+				    "PDF Dokument Ƥrŏgrȃɱ");
+	} else {
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+				    "evince;0.9.3-5.fc8;i386;installed",
+				    "PDF Document viewer");
+	}
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "tetex;3.0-41.fc8;i386;fedora",
 			    "TeTeX is an implementation of TeX for Linux or UNIX systems.");
@@ -702,8 +713,12 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 		pk_backend_repo_detail (backend, "local",
 					"Local PackageKit volume", _repo_enabled_local);
 	}
-	pk_backend_repo_detail (backend, "development",
-				"Fedora - Development", _repo_enabled_fedora);
+	pk_backend_repo_detail (backend, "fedora",
+				"Fedora - 9", _repo_enabled_fedora);
+	if (!pk_enums_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+		pk_backend_repo_detail (backend, "development",
+					"Fedora - Development", _repo_enabled_devel);
+	}
 	pk_backend_repo_detail (backend, "livna-development",
 				"Livna for Fedora Core 8 - i386 - Development Tree", _repo_enabled_livna);
 	pk_backend_finished (backend);
@@ -721,6 +736,9 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 		pk_debug ("local repo: %i", enabled);
 		_repo_enabled_local = enabled;
 	} else if (pk_strequal (rid, "development")) {
+		pk_debug ("devel repo: %i", enabled);
+		_repo_enabled_devel = enabled;
+	} else if (pk_strequal (rid, "fedora")) {
 		pk_debug ("fedora repo: %i", enabled);
 		_repo_enabled_fedora = enabled;
 	} else if (pk_strequal (rid, "livna-development")) {
