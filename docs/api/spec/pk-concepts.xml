@@ -693,6 +693,22 @@
       This is done as three transactions, as other transactions may be queued and have a higher
       priority, and to make sure that the transaction object is not reused.
     </para>
+    <mediaobject id="pk-transactions-set-locale">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-set-locale.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      The PackageKit backend may support native localisation, which we should support if the
+      translations exist.
+      In the prior examples the <literal>SetLocale()</literal> method has been left out for brevity.
+      If you are using the raw DBUS methods to access PackageKit, you will also need to make
+      a call to <literal>SetLocale()</literal> so the daemon knows what locale to assign the
+      transaction.
+      If you are using libpackagekit to schedule transactions, then the locale will be set
+      automatically in the <literal>PkControl</literal> GObject, and you do not need to call
+      <literal>pk_client_set_locale()</literal> manually.
+    </para>
   </sect1>
 
   <sect1 id="introduction-ideas-transactionid">

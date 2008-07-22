@@ -186,6 +186,9 @@ gboolean	 pk_client_get_progress			(PkClient	*client,
 gboolean	 pk_client_get_package			(PkClient	*client,
 							 gchar		**package,
 							 GError		**error);
+gboolean	 pk_client_set_locale			(PkClient	*client,
+							 const gchar	*code,
+							 GError		**error);
 gboolean	 pk_client_cancel			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;

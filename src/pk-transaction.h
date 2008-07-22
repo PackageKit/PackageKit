@@ -209,6 +209,9 @@ void		 pk_transaction_search_name		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 const gchar	*search,
 							 DBusGMethodInvocation *context);
+gboolean	 pk_transaction_set_locale		(PkTransaction	*transaction,
+							 const gchar	*code,
+							 GError		**error);
 gboolean	 pk_transaction_service_pack		(PkTransaction	*transaction,
 							 const gchar	*location,
 							 gboolean	 enabled);
