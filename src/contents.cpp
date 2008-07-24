@@ -87,6 +87,7 @@ PkpContents::PkpContents(const char *displayName,
                          const char *packageNames,
                          const char *desktopNames) :
     mStatus(IN_PROGRESS),
+    mPlugin(0),
     mDisplayName(displayName),
     mPackageNames(splitString(packageNames)),
     mDesktopNames(splitString(desktopNames)),
@@ -319,7 +320,8 @@ PkpContents::ensureLayout(cairo_t              *cr,
 void
 PkpContents::refresh()
 {
-    mPlugin->refresh();
+    if (mPlugin != 0)
+        mPlugin->refresh();
 }
                                
 void
