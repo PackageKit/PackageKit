@@ -87,6 +87,22 @@ libpackagekit can receive asynchronous notifications from the PackageKit daemon.
 So, getting it to work in Konqueror is going to be hard unless Qt has been
 compiled to use the GLib main loop.
 
+Trying it out
+=============
+
+packagekit-plugin builds with the standard:
+
+ ./autogen.sh
+ ./configure
+ make
+
+Instead of doing 'make install', you can symlink .libs/packagekit-plugin into
+~/.mozilla/plugins. Then you can restart your browser and load the HTML page
+under tests/. 
+
+If you do this, you probably want to delete the symlink when you are
+done so that it doesn't interfere with a system install of the plugin.
+
 Using
 =====
 
