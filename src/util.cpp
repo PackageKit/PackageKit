@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is PackageKit plugin code.
+ * The Original Code is packagekit-plugin code.
  *
  * The Initial Developer of the Original Code is
  * Red Hat, Inc.

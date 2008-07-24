@@ -39,24 +39,16 @@
 #define __PLUGIN_H__
 
 #include <X11/Xlib.h>
-#include <pango/pango.h>
-#include <packagekit/pk-client.h>
-#include <cairo.h>
-#include <gtk/gtk.h>
 
-#include <string>
-#include <vector>
-
+#include "contents.h"
 #include "pluginbase.h"
 #include "util.h"
 
-enum PackageStatus { IN_PROGRESS, INSTALLED, AVAILABLE, UNAVAILABLE, INSTALLING };
-
-class nsPluginInstance : public nsPluginInstanceBase
+class PkpPluginInstance : public nsPluginInstanceBase
 {
 public:
-    nsPluginInstance(NPP aInstance, const char *displayName, const char *packageNames, const char *desktopNames);
-    virtual ~nsPluginInstance();
+    PkpPluginInstance(NPP aInstance, const char *displayName, const char *packageNames, const char *desktopNames);
+    virtual ~PkpPluginInstance();
 
     NPBool init(NPWindow* aWindow);
     void shut();
@@ -65,63 +57,19 @@ public:
     NPError SetWindow(NPWindow* aWindow);
     uint16 HandleEvent(void *event);
 
-    void setStatus(PackageStatus status);
-    PackageStatus getStatus() { return mStatus; }
-    void setAvailableVersion(const char *version);
-    void setAvailablePackageName(const char *name);
-    void setInstalledVersion(const char *version);
-
-private:
-    void recheck();
-    void findDesktopFile();
-    void runApplication();
-    void installPackage();
-    
-    void ensureLayout(cairo_t *cr,
-                      PangoFontDescription *font_desc,
-                      guint32 link_color);
-    void clearLayout();
     void refresh();
-    
-    void handleGraphicsExpose(XGraphicsExposeEvent *xev);
-    void handleButtonPress(XButtonEvent *xev);
-    void handleButtonRelease(XButtonEvent *xev);
-    void handleMotionNotify(XMotionEvent *xev);
-    void handleEnterNotify(XCrossingEvent *xev);
-    void handleLeaveNotify(XCrossingEvent *xev);
 
-    void removeClient(PkClient *client);
+    int getX() { return mX; }
+    int getY() { return mY; }
+    int getWidth() { return mWidth; }
+    int getHeight() { return mHeight; }
     
-    static void onClientPackage(PkClient 	   *client,
-                                PkInfoEnum	    info,
-                                const gchar	   *package_id,
-                                const gchar	   *summary,
-                                nsPluginInstance   *instance);
-    static void onClientErrorCode(PkClient	   *client,
-                                  PkErrorCodeEnum  code,
-                                  const gchar	   *details,
-                                  nsPluginInstance *instance);
-    static void onClientFinished(PkClient	  *client,
-                                 PkExitEnum	   exit,
-                                 guint		   runtime,
-                                 nsPluginInstance *instance);
-    static void onInstallFinished(GError        *error,
-                                  int            status,
-                                  const char    *output,
-                                  void          *callback_data);
-    
+private:
     NPP mInstance;
     NPBool mInitialized;
-    PackageStatus mStatus;
-    std::string mAvailableVersion;
-    std::string mAvailablePackageName;
-    std::string mInstalledVersion;
-    std::string mDesktopFile;
 
-    std::string mDisplayName;
-    std::vector<std::string> mPackageNames;
-    std::vector<std::string> mDesktopNames;
-    
+    PkpContents mContents;
+
     Window mWindow;
     Display *mDisplay;
     int mX, mY;
@@ -129,14 +77,6 @@ private:
     Visual* mVisual;
     Colormap mColormap;
     unsigned int mDepth;
-  
-    PangoLayout *mLayout;
-    int mLinkStart;
-    int mLinkEnd;
-
-    std::vector<PkClient *> mClients;
-
-    PkpExecuteCommandAsyncHandle *mInstallPackageHandle;
 };
 
 #endif // __PLUGIN_H__

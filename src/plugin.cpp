@@ -21,6 +21,8 @@
  *
  * Contributor(s):
  *
+ * Red Hat, Inc.
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -54,14 +56,10 @@
 
 #include "plugin.h"
 
-#define APPLICATION_DIR "/usr/share/applications"
-
 #define MIME_TYPES_HANDLED  "application/x-packagekit-plugin"
 #define PLUGIN_NAME         "Plugin for Installing Applications"
 #define MIME_TYPES_DESCRIPTION  MIME_TYPES_HANDLED":bsc:"PLUGIN_NAME
 #define PLUGIN_DESCRIPTION  PLUGIN_NAME
-
-#define MARGIN 5
 
 char* NPP_GetMIMEDescription(void)
 {
@@ -69,6 +67,10 @@ char* NPP_GetMIMEDescription(void)
 }
 
 static void *module_handle = 0;
+
+/////////////////////////////////////
+// general initialization and shutdown
+//
 
 /* If our dependent libraries like libpackagekit get unloaded, bad stuff
  * happens (they may have registered GLib types and so forth) so we need
@@ -99,9 +101,6 @@ make_module_resident()
     /* the module will never be closed */
 }
 
-/////////////////////////////////////
-// general initialization and shutdown
-//
 NPError NS_PluginInitialize()
 {
     if (module_handle != 0) /* Already initialized */
@@ -161,7 +160,7 @@ nsPluginInstanceBase * NS_NewPluginInstance(nsPluginCreateData * aCreateDataStru
             desktopNames = aCreateDataStruct->argv[i];
     }
       
-    nsPluginInstance * plugin = new nsPluginInstance(aCreateDataStruct->instance, displayName, packageNames, desktopNames);
+    PkpPluginInstance * plugin = new PkpPluginInstance(aCreateDataStruct->instance, displayName, packageNames, desktopNames);
   
     NPN_SetValue(aCreateDataStruct->instance,
                  NPPVpluginWindowBool, (void *)FALSE);
@@ -172,7 +171,7 @@ nsPluginInstanceBase * NS_NewPluginInstance(nsPluginCreateData * aCreateDataStru
 void NS_DestroyPluginInstance(nsPluginInstanceBase * aPlugin)
 {
     if(aPlugin)
-        delete (nsPluginInstance *)aPlugin;
+        delete (PkpPluginInstance *)aPlugin;
 }
 
 ////////////////////////////////////////
@@ -180,49 +179,24 @@ void NS_DestroyPluginInstance(nsPluginInstanceBase * aPlugin)
 // nsPluginInstance class implementation
 //
 
-static std::vector<std::string>
-splitString(const char *str)
-{
-    std::vector<std::string> v;
-
-    if (str) {
-        char **split = g_strsplit(str, " ", -1);
-        for (char **s = split; *s; s++) {
-            char *stripped = strdup(*s);
-            g_strstrip(stripped);
-            v.push_back(stripped);
-            g_free(stripped);
-        }
-
-        g_strfreev(split);
-    }
-
-    return v;
-}
-
-nsPluginInstance::nsPluginInstance(NPP         aInstance,
-                                   const char *displayName,
-                                   const char *packageNames,
-                                   const char *desktopNames) :
+PkpPluginInstance::PkpPluginInstance(NPP         aInstance,
+                                     const char *displayName,
+                                     const char *packageNames,
+                                     const char *desktopNames) :
     nsPluginInstanceBase(),
     mInstance(aInstance),
     mInitialized(FALSE),
-    mStatus(IN_PROGRESS),
-    mDisplayName(displayName),
-    mPackageNames(splitString(packageNames)),
-    mDesktopNames(splitString(desktopNames)),
-    mWindow(0),
-    mLayout(0),
-    mInstallPackageHandle(0)
+    mContents(displayName, packageNames, desktopNames),
+    mWindow(0)
 {
-    recheck();
+    mContents.setPlugin(this);
 }
 
-nsPluginInstance::~nsPluginInstance()
+PkpPluginInstance::~PkpPluginInstance()
 {
 }
 
-NPBool nsPluginInstance::init(NPWindow* aWindow)
+NPBool PkpPluginInstance::init(NPWindow* aWindow)
 {
     if(aWindow == NULL)
         return FALSE;
@@ -233,66 +207,12 @@ NPBool nsPluginInstance::init(NPWindow* aWindow)
     return mInitialized;
 }
 
-void nsPluginInstance::recheck()
+void PkpPluginInstance::shut()
 {
-    mStatus = IN_PROGRESS;
-    mAvailableVersion = "";
-    mAvailablePackageName = "";
-    
-    for (std::vector<std::string>::iterator i = mPackageNames.begin(); i != mPackageNames.end(); i++) {
-        GError *error = NULL;
-        PkClient *client = pk_client_new();
-        if (!pk_client_resolve(client, "none", i->c_str(), &error)) {
-            g_warning("%s", error->message);
-            g_clear_error(&error);
-            g_object_unref(client);
-        } else {
-            g_signal_connect(client, "package", G_CALLBACK(onClientPackage), this);
-            g_signal_connect(client, "error-code", G_CALLBACK(onClientErrorCode), this);
-            g_signal_connect(client, "finished", G_CALLBACK(onClientFinished), this);
-            mClients.push_back(client);
-        }
-    }
-
-    findDesktopFile();
-
-    if (mClients.empty() && getStatus() == IN_PROGRESS)
-        setStatus(UNAVAILABLE);
-}
-
-void nsPluginInstance::removeClient(PkClient *client)
-{
-    for (std::vector<PkClient *>::iterator i = mClients.begin(); i != mClients.end(); i++) {
-        if (*i == client) {
-            mClients.erase(i);
-            g_signal_handlers_disconnect_by_func(client, (void *)onClientPackage, this);
-            g_signal_handlers_disconnect_by_func(client, (void *)onClientErrorCode, this);
-            g_signal_handlers_disconnect_by_func(client, (void *)onClientFinished, this);
-            g_object_unref(client);
-            break;
-        }
-    }
-
-    if (mClients.empty()) {
-        if (getStatus() == IN_PROGRESS)
-            setStatus(UNAVAILABLE);
-    }
-}
-
-void nsPluginInstance::shut()
-{
-    clearLayout();
-
-    if (mInstallPackageHandle != 0)
-        pkp_execute_command_async_cancel(mInstallPackageHandle);
-
-    while (!mClients.empty())
-        removeClient(mClients.front());
-    
     mInitialized = FALSE;
 }
 
-NPError nsPluginInstance::GetValue(NPPVariable aVariable, void *aValue)
+NPError PkpPluginInstance::GetValue(NPPVariable aVariable, void *aValue)
 {
     NPError err = NPERR_NO_ERROR;
     switch (aVariable) {
@@ -308,11 +228,8 @@ NPError nsPluginInstance::GetValue(NPPVariable aVariable, void *aValue)
 
 }
 
-NPError nsPluginInstance::SetWindow(NPWindow* aWindow)
+NPError PkpPluginInstance::SetWindow(NPWindow* aWindow)
 {
-    if (aWindow == NULL || (Window)aWindow->window != mWindow)
-        clearLayout();
-    
     if (aWindow == NULL)
         return FALSE;
 
@@ -332,166 +249,7 @@ NPError nsPluginInstance::SetWindow(NPWindow* aWindow)
 }
 
 void
-nsPluginInstance::setStatus(PackageStatus status)
-{
-    if (mStatus != status) {
-        mStatus = status;
-        clearLayout();
-        refresh();
-    }
-}
-
-void
-nsPluginInstance::setAvailableVersion(const char *version)
-{
-    mAvailableVersion = version;
-    clearLayout();
-    refresh();
-}
-
-void
-nsPluginInstance::setAvailablePackageName(const char *name)
-{
-    mAvailablePackageName = name;
-}
-
-void
-nsPluginInstance::setInstalledVersion(const char *version)
-{
-    mInstalledVersion = version;
-    clearLayout();
-    refresh();
-}
-
-void
-nsPluginInstance::clearLayout()
-{
-    if (mLayout) {
-        g_object_unref(mLayout);
-        mLayout = 0;
-    }
-}
-
-static void
-append_markup(GString *str, const char *format, ...)
-{
-    va_list vap;
-    
-    va_start(vap, format);
-    char *tmp = g_markup_vprintf_escaped(format, vap);
-    va_end(vap);
-
-    g_string_append(str, tmp);
-    g_free(tmp);
-}
-
-static guint32
-rgba_from_gdk_color(GdkColor *color)
-{
-    return (((color->red   >> 8) << 24) |
-            ((color->green >> 8) << 16) |
-            ((color->blue  >> 8) << 8) |
-            0xff);
-}
-
-static void
-set_source_from_rgba(cairo_t *cr,
-                     guint32  rgba)
-{
-    cairo_set_source_rgba(cr,
-                          ((rgba & 0xff000000) >> 24) / 255.,
-                          ((rgba & 0x00ff0000) >> 16) / 255.,
-                          ((rgba & 0x0000ff00) >> 8) / 255.,
-                          (rgba & 0x000000ff) / 255.);
-                          
-}
-
-/* Retrieve the system colors and fonts.
- * This looks incredibly expensive .... to create a GtkWindow for
- * every expose ... but actually it's only moderately expensive;
- * Creating a GtkWindow is just normal GObject creation overhead --
- * the extra expense beyond that will come when we actually create
- * the window.
- */
-static void
-get_style(PangoFontDescription **font_desc,
-          guint32               *foreground,
-          guint32               *background,
-          guint32               *link)
-{
-    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-
-    gtk_widget_ensure_style(window);
-
-    *foreground = rgba_from_gdk_color(&window->style->text[GTK_STATE_NORMAL]);
-    *background = rgba_from_gdk_color(&window->style->base[GTK_STATE_NORMAL]);
-
-    GdkColor link_color = { 0, 0, 0, 0xeeee };
-    GdkColor *tmp = NULL;
-
-    gtk_widget_style_get (GTK_WIDGET (window),
-                          "link-color", &tmp, NULL);
-    if (tmp != NULL) {
-        link_color = *tmp;
-        gdk_color_free(tmp);
-    }
-
-    *link = rgba_from_gdk_color(&link_color);
-
-    *font_desc = pango_font_description_copy(window->style->font_desc);
-   
-    gtk_widget_destroy(window);
-}
-
-void
-nsPluginInstance::ensureLayout(cairo_t              *cr,
-                               PangoFontDescription *font_desc,
-                               guint32               link_color)
-{
-    GString *markup = g_string_new(NULL);
-    
-    if (mLayout)
-        return;
-    
-    mLayout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(mLayout, font_desc);
-
-    switch (mStatus) {
-    case IN_PROGRESS:
-        append_markup(markup, _("Getting package information..."));
-        break;
-    case INSTALLED:
-        if (!mDesktopFile.empty())
-            append_markup(markup, _("<span color='#%06x' underline='single' size='larger'>Run %s</span>"),
-                          link_color >> 8,
-                          mDisplayName.c_str());
-        else
-            append_markup(markup, _("<big>%s</big>"), mDisplayName.c_str());
-        if (!mInstalledVersion.empty())
-            append_markup(markup, _("\n<small>Installed version: %s</small>"), mInstalledVersion.c_str());
-        break;
-    case AVAILABLE:
-        append_markup(markup, _("<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"),
-                      link_color >> 8,
-                      mDisplayName.c_str());
-        append_markup(markup, _("\n<small>Version: %s</small>"), mAvailableVersion.c_str());
-        break;
-    case UNAVAILABLE:
-        append_markup(markup, _("<big>%s</big>"), mDisplayName.c_str());
-        append_markup(markup, _("\n<small>No packages found for your system</small>"));
-        break;
-    case INSTALLING:
-        append_markup(markup, _("<big>%s</big>"), mDisplayName.c_str());
-        append_markup(markup, _("\n<small>Installing...</small>"));
-        break;
-    }
-
-    pango_layout_set_markup(mLayout, markup->str, -1);
-    g_string_free(markup, TRUE);
-}
-
-void
-nsPluginInstance::refresh()
+PkpPluginInstance::refresh()
 {
     NPRect rect;
 
@@ -505,271 +263,60 @@ nsPluginInstance::refresh()
     NPN_InvalidateRect(mInstance, &rect);
 }
                                
-void
-nsPluginInstance::handleGraphicsExpose(XGraphicsExposeEvent *xev)
-{
-    cairo_surface_t *surface = cairo_xlib_surface_create (mDisplay, xev->drawable, mVisual, mX + mWidth, mY + mHeight);
-    cairo_t *cr = cairo_create(surface);
-    guint32 foreground, background, link;
-    PangoFontDescription *font_desc;
-
-    get_style(&font_desc, &foreground, &background, &link);
-
-    cairo_rectangle(cr,xev->x, xev->y, xev->width, xev->height);
-    cairo_clip(cr);
-
-    set_source_from_rgba(cr, background);
-    cairo_rectangle(cr, mX, mY, mWidth, mHeight);
-    cairo_fill(cr);
-
-    cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-    cairo_rectangle(cr, mX + 0.5, mY + 0.5, mWidth - 1, mHeight - 1);
-    cairo_set_line_width(cr, 1);
-    cairo_stroke(cr);
-
-    ensureLayout(cr, font_desc, link);
-    int width, height;
-    pango_layout_get_pixel_size(mLayout, &width, &height);
-
-    if (width < mWidth - MARGIN * 2 && height < mHeight - MARGIN * 2) {
-        cairo_move_to(cr, mX + MARGIN, mY + MARGIN);
-        set_source_from_rgba(cr, foreground);
-        pango_cairo_show_layout(cr, mLayout);
-    }
-    
-    cairo_surface_destroy(surface);
-}
-
-void
-nsPluginInstance::handleButtonPress(XButtonEvent *xev)
-{
-}
-
-void
-nsPluginInstance::handleButtonRelease(XButtonEvent *xev)
-{
-    if (!mDesktopFile.empty())
-        runApplication();
-    else if (!mAvailablePackageName.empty())
-        installPackage();
-}
-
-void
-nsPluginInstance::handleMotionNotify(XMotionEvent *xev)
-{
-}
-
-void
-nsPluginInstance::handleEnterNotify(XCrossingEvent *xev)
-{
-}
-
-void
-nsPluginInstance::handleLeaveNotify(XCrossingEvent *xev)
-{
-}
-
 uint16
-nsPluginInstance::HandleEvent(void *event)
+PkpPluginInstance::HandleEvent(void *event)
 {
     XEvent *xev = (XEvent *)event;
 
     switch (xev->xany.type) {
     case GraphicsExpose:
-        handleGraphicsExpose((XGraphicsExposeEvent *)event);
-        return 1;
+        {
+            XGraphicsExposeEvent *xge = (XGraphicsExposeEvent *)event;
+
+            cairo_surface_t *surface = cairo_xlib_surface_create (mDisplay, xge->drawable, mVisual, mX + mWidth, mY + mHeight);
+            cairo_t *cr = cairo_create(surface);
+
+            cairo_rectangle(cr, xge->x, xge->y, xge->width, xge->height);
+            cairo_clip(cr);
+
+            mContents.draw(cr);
+
+            cairo_destroy(cr);
+            cairo_surface_destroy(surface);
+            
+            return 1;
+        }
     case ButtonPress:
-        handleButtonPress((XButtonEvent *)event);
-        return 1;
+        {
+            XButtonEvent *xbe = (XButtonEvent *)event;
+            mContents.buttonPress(xbe->x, xbe->y, xbe->time);
+            return 1;
+        }
     case ButtonRelease:
-        handleButtonRelease((XButtonEvent *)event);
-        return 1;
+        {
+            XButtonEvent *xbe = (XButtonEvent *)event;
+            mContents.buttonRelease(xbe->x, xbe->y, xbe->time);
+            return 1;
+        }
     case MotionNotify:
-        handleMotionNotify((XMotionEvent *)event);
-        return 1;
+        {
+            XMotionEvent *xme = (XMotionEvent *)event;
+            mContents.motion(xme->x, xme->y);
+            return 1;
+        }
     case EnterNotify:
-        handleEnterNotify((XCrossingEvent *)event);
-        return 1;
+        {
+            XCrossingEvent *xce = (XCrossingEvent *)event;
+            mContents.enter(xce->x, xce->y);
+            return 1;
+        }
     case LeaveNotify:
-        handleLeaveNotify((XCrossingEvent *)event);
-        return 1;
+        {
+            XCrossingEvent *xce = (XCrossingEvent *)event;
+            mContents.leave(xce->x, xce->y);
+            return 1;
+        }
     }
 
     return 0;
-}
-
-static guint32
-get_server_timestamp()
-{
-    GtkWidget *invisible = gtk_invisible_new();
-    gtk_widget_realize(invisible);
-    return gdk_x11_get_server_time(invisible->window);
-    gtk_widget_destroy(invisible);
-}
-
-static gboolean
-validate_name(const char *name)
-{
-    const char *p;
-    
-    for (p = name; *p; p++) {
-        char c = *p;
-        
-        if (!((c >= 'A' && c <= 'Z') ||
-              (c >= 'a' && c <= 'z') ||
-              (c >= '0' && c <= '9') ||
-              (c == '.') ||
-              (c == '_') ||
-              (c == '-')))
-            return FALSE;
-    }
-
-    return TRUE;
-}
-
-void
-nsPluginInstance::findDesktopFile()
-{
-    for (std::vector<std::string>::iterator i = mDesktopNames.begin(); i != mDesktopNames.end(); i++) {
-        if (!validate_name(i->c_str())) {
-            g_warning("Bad desktop name: '%s'", i->c_str());
-            continue;
-        }
-        
-        char *filename = g_strconcat(i->c_str(), ".desktop", NULL);
-        char *path = g_build_filename(APPLICATION_DIR, filename, NULL);
-        g_free(filename);
-
-        if (g_file_test(path, G_FILE_TEST_EXISTS)) {
-            mDesktopFile = path;
-            break;
-        }
-
-        g_free(path);
-    }
-
-    if (!mDesktopFile.empty())
-        setStatus(INSTALLED);
-}
-                  
-void
-nsPluginInstance::runApplication (void)
-{
-    GError *error = NULL;
-    
-    /* This is idempotent and fairly cheap, so do it here to avoid initializing
-     * gnome-vfs on plugin startup
-     */
-    gnome_vfs_init();
-
-    if (mDesktopFile.c_str() == 0) {
-        g_warning("Didn't find application to launch");
-        return;
-    }
-
-    GnomeDesktopItem *item = gnome_desktop_item_new_from_file(mDesktopFile.c_str(), GNOME_DESKTOP_ITEM_LOAD_NO_TRANSLATIONS, &error);
-    if (!item) {
-        g_warning("%s\n", error->message);
-        g_clear_error(&error);
-        gnome_desktop_item_unref(item);
-        return;
-    }
-
-    guint32 launch_time = gtk_get_current_event_time();
-    if (launch_time == GDK_CURRENT_TIME)
-        launch_time = get_server_timestamp();
-
-    if (!gnome_desktop_item_launch(item, NULL, (GnomeDesktopItemLaunchFlags)0, &error)) {
-        g_warning("%s\n", error->message);
-        g_clear_error(&error);
-        gnome_desktop_item_unref(item);
-        return;
-    }
-}
-
-void
-nsPluginInstance::installPackage (void)
-{
-    if (mAvailablePackageName.empty()) {
-        g_warning("No available package to install");
-        return;
-    }
-
-    if (mInstallPackageHandle != 0) {
-        g_warning("Already installing package");
-        return;
-    }
-
-    char *argv[3];
-    argv[0] = (char *)"gpk-install-package";
-    argv[1] = (char *)mAvailablePackageName.c_str();
-    argv[2] = 0;
-
-    mInstallPackageHandle = pkp_execute_command_async(argv, onInstallFinished, this);
-    setStatus(INSTALLING);
-}
-
-void
-nsPluginInstance::onClientPackage(PkClient	  *client,
-                                  PkInfoEnum	   info,
-                                  const gchar	   *package_id,
-                                  const gchar	   *summary,
-                                  nsPluginInstance *instance)
-{
-    fprintf(stderr, "package: %d %s %s\n", info, package_id, summary);
-
-    PkPackageId *id = pk_package_id_new_from_string(package_id);
-    
-    if (info == PK_INFO_ENUM_AVAILABLE) {
-        if (instance->getStatus() != INSTALLED)
-            instance->setStatus(AVAILABLE);
-        instance->setAvailableVersion(id->version);
-        instance->setAvailablePackageName(id->name);
-    } else if (info == PK_INFO_ENUM_INSTALLED) {
-        instance->setStatus(INSTALLED);
-        instance->setInstalledVersion(id->version);
-    }
-    
-    pk_package_id_free(id);
-}
-
-void
-nsPluginInstance::onClientErrorCode(PkClient	     *client,
-                                    PkErrorCodeEnum   code,
-                                    const gchar	     *details,
-                                    nsPluginInstance *instance)
-{
-    fprintf(stderr, "error code: %d %s\n", code, details);
-    instance->removeClient(client);
-}
-
-void
-nsPluginInstance::onClientFinished(PkClient	    *client,
-                                   PkExitEnum	     exit,
-                                   guint	     runtime,
-                                   nsPluginInstance *instance)
-{
-    fprintf(stderr, "finished: %d\n", exit);
-    instance->removeClient(client);
-}
-    
-void
-nsPluginInstance::onInstallFinished(GError        *error,
-                                    int            status,
-                                    const char    *output,
-                                    void          *callback_data)
-{
-    nsPluginInstance *instance = (nsPluginInstance *)callback_data;
-
-    instance->mInstallPackageHandle = 0;
-    
-    if (error) {
-        g_warning("Error occurred during install: %s", error->message);
-    }
-
-    if (status != 0) {
-        g_warning("gpk-install-command exited with non-zero status %d", status);
-    }
-
-    instance->recheck();
 }

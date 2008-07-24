@@ -9,7 +9,7 @@ packagekit_plugin_la_CPPFLAGS =			\
 	-DLOCALEDIR=\"$(localedir)\"		\
 	-I $(top_srcdir)/sdk
 
-packagekit_plugin_la_LIBS = $(PLUGIN_LIBS)
+packagekit_plugin_la_LIBADD = $(PLUGIN_LIBS)
 
 packagekit_plugin_la_SOURCES = 	\
 	sdk/np_entry.cpp	\
@@ -18,6 +18,8 @@ packagekit_plugin_la_SOURCES = 	\
 	sdk/npplat.h		\
 	sdk/pluginbase.h	\
 				\
+	src/contents.cpp	\
+	src/contents.h		\
 	src/plugin.cpp		\
 	src/plugin.h		\
 	src/util.cpp		\
