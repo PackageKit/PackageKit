@@ -32,6 +32,10 @@ changequote([,])dnl
 
 PKG_CHECK_MODULES(PLUGIN, mozilla-plugin cairo pango gtk+-2.0 packagekit gnome-vfs-2.0 gnome-desktop-2.0)
 
+if $PKG_CONFIG --exists packagekit '>=' 0.2 ; then
+   AC_DEFINE(HAVE_PACKAGEKIT_0_2, 1, [define if you have PackageKit 0.2 or newer])
+fi
+
 AC_SUBST(PLUGIN_CFLAGS)
 AC_SUBST(PLUGIN_LIBS)
 
