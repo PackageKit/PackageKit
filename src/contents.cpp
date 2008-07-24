@@ -507,8 +507,6 @@ PkpContents::onClientPackage(PkClient	  *client,
                                   const gchar	   *summary,
                                   PkpContents *contents)
 {
-    fprintf(stderr, "package: %d %s %s\n", info, package_id, summary);
-
     PkPackageId *id = pk_package_id_new_from_string(package_id);
     
     if (info == PK_INFO_ENUM_AVAILABLE) {
@@ -525,12 +523,12 @@ PkpContents::onClientPackage(PkClient	  *client,
 }
 
 void
-PkpContents::onClientErrorCode(PkClient	     *client,
-                                    PkErrorCodeEnum   code,
-                                    const gchar	     *details,
-                                    PkpContents *contents)
+PkpContents::onClientErrorCode(PkClient	       *client,
+                               PkErrorCodeEnum  code,
+                               const gchar     *details,
+                               PkpContents     *contents)
 {
-    fprintf(stderr, "error code: %d %s\n", code, details);
+    g_warning("Error getting data from PackageKit: %s\n", details);
     contents->removeClient(client);
 }
 
@@ -541,7 +539,6 @@ PkpContents::onClientFinished(PkClient	    *client,
                               PkpContents   *contents)
     
 {
-    fprintf(stderr, "finished: %d\n", exit);
     contents->removeClient(client);
 }
     
