@@ -488,7 +488,11 @@ PkpContents::installPackage (void)
     }
 
     char *argv[3];
+#if HAVE_PACKAGEKIT_0_2
+    argv[0] = (char *)"gpk-install-package-name";
+#else    
     argv[0] = (char *)"gpk-install-package";
+#endif    
     argv[1] = (char *)mAvailablePackageName.c_str();
     argv[2] = 0;
 
