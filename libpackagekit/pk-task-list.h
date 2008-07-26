@@ -44,7 +44,7 @@ typedef struct
 	gchar			*tid;
 	PkStatusEnum		 status;
 	PkRoleEnum		 role;
-	gchar			*package_id;
+	gchar			*text;
 	PkClient		*monitor;
 	gboolean		 valid;
 } PkTaskListItem;

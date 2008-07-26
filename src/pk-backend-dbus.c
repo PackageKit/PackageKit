@@ -367,6 +367,30 @@ pk_backend_dbus_set_proxy (PkBackendDbus *backend_dbus, const gchar *proxy_http,
 }
 
 /**
+ * pk_backend_dbus_set_locale:
+ **/
+static gboolean
+pk_backend_dbus_set_locale (PkBackendDbus *backend_dbus, const gchar *locale)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
+	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SetLocale", &error,
+				 G_TYPE_STRING, locale,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
  * pk_backend_dbus_startup:
  **/
 gboolean
@@ -374,6 +398,7 @@ pk_backend_dbus_startup (PkBackendDbus *backend_dbus)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *locale;
 	gchar *proxy_http;
 	gchar *proxy_ftp;
 
@@ -395,6 +420,11 @@ pk_backend_dbus_startup (PkBackendDbus *backend_dbus)
 	pk_backend_dbus_set_proxy (backend_dbus, proxy_http, proxy_ftp);
 	g_free (proxy_http);
 	g_free (proxy_ftp);
+
+	/* set the language */
+	locale = pk_backend_get_locale (backend_dbus->priv->backend);
+	pk_backend_dbus_set_locale (backend_dbus, locale);
+	g_free (locale);
 
 	/* reset the time */
 	pk_backend_dbus_time_check (backend_dbus);

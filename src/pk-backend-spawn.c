@@ -460,6 +460,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		line = g_strdup_printf ("%s=%s", "http_proxy", value);
 		pk_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
+		g_free (line);
 	}
 	g_free (value);
 
@@ -469,6 +470,17 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		line = g_strdup_printf ("%s=%s", "ftp_proxy", value);
 		pk_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
+		g_free (line);
+	}
+	g_free (value);
+
+	/* ftp_proxy */
+	value = pk_backend_get_locale (backend_spawn->priv->backend);
+	if (!pk_strzero (value)) {
+		line = g_strdup_printf ("%s=%s", "LANG", value);
+		pk_debug ("setting evp '%s'", line);
+		g_ptr_array_add (array, line);
+		g_free (line);
 	}
 	g_free (value);
 

@@ -175,7 +175,7 @@ gboolean	 pk_client_get_status			(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_get_role			(PkClient	*client,
 							 PkRoleEnum	*role,
-							 gchar		**package_id,
+							 gchar		**text,
 							 GError		**error);
 gboolean	 pk_client_get_progress			(PkClient	*client,
 							 guint		*percentage,
@@ -185,6 +185,9 @@ gboolean	 pk_client_get_progress			(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_get_package			(PkClient	*client,
 							 gchar		**package,
+							 GError		**error);
+gboolean	 pk_client_set_locale			(PkClient	*client,
+							 const gchar	*code,
 							 GError		**error);
 gboolean	 pk_client_cancel			(PkClient	*client,
 							 GError		**error)

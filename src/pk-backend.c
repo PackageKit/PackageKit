@@ -82,6 +82,7 @@ struct _PkBackendPrivate
 	gchar			*c_tid;
 	gchar			*proxy_http;
 	gchar			*proxy_ftp;
+	gchar			*locale;
 	gboolean		 locked;
 	gboolean		 set_error;
 	gboolean		 set_signature;
@@ -1108,6 +1109,35 @@ pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 }
 
 /**
+ * pk_backend_get_locale:
+ *
+ * Return value: session locale, e.g. en_GB
+ **/
+gchar *
+pk_backend_get_locale (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->locale);
+}
+
+/**
+ * pk_backend_set_locale:
+ **/
+gboolean
+pk_backend_set_locale (PkBackend *backend, const gchar *code)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (code != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	pk_debug ("locale changed to %s", code);
+	g_free (backend->priv->locale);
+	backend->priv->locale = g_strdup (code);
+
+	return TRUE;
+}
+
+/**
  * pk_backend_details:
  **/
 gboolean
@@ -1352,11 +1382,10 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error) {
+	if (backend->priv->set_error && allow_cancel) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
-
 
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
@@ -1732,6 +1761,7 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->proxy_http);
 	g_free (backend->priv->proxy_ftp);
 	g_free (backend->priv->name);
+	g_free (backend->priv->locale);
 	g_free (backend->priv->c_tid);
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->network);
@@ -1900,6 +1930,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
+	backend->priv->locale = NULL;
 	backend->priv->c_tid = NULL;
 	backend->priv->proxy_http = NULL;
 	backend->priv->proxy_ftp = NULL;

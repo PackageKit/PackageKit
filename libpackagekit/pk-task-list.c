@@ -101,7 +101,7 @@ pk_task_list_print (PkTaskList *tlist)
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
 		pk_debug ("%s\t%s:%s %s", item->tid, pk_role_enum_to_text (item->role),
-			 pk_status_enum_to_text (item->status), item->package_id);
+			 pk_status_enum_to_text (item->status), item->text);
 	}
 	return TRUE;
 }
@@ -257,7 +257,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 				g_error_free (error);
 				break;
 			}
-			pk_client_get_role (item->monitor, &item->role, &item->package_id, NULL);
+			pk_client_get_role (item->monitor, &item->role, &item->text, NULL);
 			pk_client_get_status (item->monitor, &item->status, NULL);
 
 			/* add to watched array */
@@ -275,7 +275,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 			g_object_unref (item->monitor);
 			g_ptr_array_remove (tlist->priv->task_list, item);
 			g_free (item->tid);
-			g_free (item->package_id);
+			g_free (item->text);
 			g_free (item);
 		}
 	}
@@ -465,7 +465,7 @@ pk_task_list_finalize (GObject *object)
 	for (i=0; i<tlist->priv->task_list->len; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
 		g_object_unref (item->monitor);
-		g_free (item->package_id);
+		g_free (item->text);
 		g_ptr_array_remove (tlist->priv->task_list, item);
 		g_free (item);
 	}
