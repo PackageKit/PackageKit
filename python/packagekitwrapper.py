@@ -44,6 +44,67 @@ class PackageKitClient:
 
         self.bus = dbus.SystemBus()
 
+    def _wrapCall(self, pk_xn, method, callbacks):
+        '''
+        Wraps a call which emits Finished and ErrorCode on completion
+        '''
+        pk_xn.connect_to_signal('Finished', self._h_finished)
+        pk_xn.connect_to_signal('ErrorCode', self._h_error)
+        for cb in callbacks.keys():
+            pk_xn.connect_to_signal(cb, callbacks[cb])
+
+        method()
+        self._wait()
+        if self._error_enum:
+            raise PackageKitError(self._error_enum)
+
+
+    def _wrapBasicCall(self, pk_xn, method):
+        return self._wrapCall(pk_xn, method, {})
+
+    def _wrapPackageCall(self, pk_xn, method):
+        '''
+        Wraps a call which emits Finished, ErrorCode on completion and Package for information
+        returns a list of dicts with 'installed', 'id' and 'summary' keys
+        '''
+
+        result = []
+        package_cb = lambda i, id, summary: result.append({'installed' : (i == 'installed'),
+                                                           'id': (str(id)),
+                                                           'summary' :str(summary)}
+                                                          )
+        self._wrapCall(pk_xn, method, {'Package' : package_cb})
+        return result
+
+    def _wrapDetailsCall(self, pk_xn, method):
+        '''
+        Wraps a call which emits Finished, ErrorCode on completion and Details for information
+        returns a list of dicts with 'id', 'license', 'group', 'description', 'upstream_url', 'size'.keys
+        '''
+        result = []
+        details_cb = lambda id, license, group, detail, url, size: result.append({"id" : str(id),
+                                                                                  "license" : str(license),
+                                                                                  "group" : str(group),
+                                                                                  "detail" : str(detail),
+                                                                                  "url" : str(url),
+                                                                                  "size" : int(size)}
+                                                                                 )
+        self._wrapCall(pk_xn, method, {'Details' : details_cb})
+        return result
+
+    def _wrapReposCall(self, pk_xn, method):
+        '''
+        Wraps a call which emits Finished, ErrorCode and RepoDetail for information
+        returns a list of dicts with 'id', 'description', 'enabled' keys
+        '''
+        result = []
+        repo_cb = lambda id, description, enabled: result.append({'id' : str(id),
+                                                                  'desc' : str(description),
+                                                                  'enabled' : enabled})
+        self._wrapCall(pk_xn, method, {'RepoDetail' : repo_cb})
+        return result
+
+
     def SuggestDaemonQuit(self):
         '''Ask the PackageKit daemon to shutdown.'''
 
@@ -62,74 +123,32 @@ class PackageKitClient:
         Return Dict with keys of (installed, id, short_description) for all matches,
         where installed is a boolean and id and short_description are strings.
         '''
-        result = []
-        pk_xn = self._get_xn()
-        pk_xn.connect_to_signal('Package',
-            lambda i, id, summary: result.append({'installed' : (i == 'installed'),
-                                                  'id': (str(id)),
-                                                  'summary' :str(summary)}))
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.Resolve(filter, package)
-        self._wait()
-        return result
+        xn = self._get_xn()
+        return self._wrapPackageCall(xn, lambda : xn.Resolve(filter, package))
+
 
     def GetDetails(self, package_id):
         '''Get details about a PackageKit package_id.
 
         Return dict with keys (id, license, group, description, upstream_url, size).
         '''
-        result = []
-        pk_xn = self._get_xn()
-        pk_xn.connect_to_signal('Details', lambda id, license, group, detail, url, size:
-                                    result.append({"id" : str(id),
-                                                   "license" : str(license),
-                                                   "group" : str(group),
-                                                   "detail" : str(detail),
-                                                   "url" : str(url),
-                                                   "size" : int(size)})
-                                )
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.GetDetails(package_id)
-        self._wait()
-        if self._error_enum:
-            raise PackageKitError(self._error_enum)
-        return result
+        xn = self._get_xn()
+        return self._wrapDetailsCall(xn, lambda : xn.GetDetails(package_id))
 
     def SearchName(self, filter, name):
-        '''Search a package by name.
-
-        # FIXME AS incorrect return
-        Return a list of (installed, package_id, short_description) triples,
-        where installed is a boolean and package_id/short_description are
-        strings.
         '''
-        result = []
-        pk_xn = self._get_xn()
-        pk_xn.connect_to_signal('Package',
-            lambda i, id, summary: result.append({'id': (str(id)),
-                                                  'summary' :str(summary)}))
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.SearchName(filter, name)
-        self._wait()
-        return result
+        Search a package by name.
+        '''
+        xn = self._get_xn()
+        return self._wrapPackageCall(xn, lambda : xn.SearchName(filter, name))
 
     def SearchDetails(self, filter, name):
-        '''Search a packages details.
-        #FIXME description
         '''
-        result = []
-        pk_xn = self._get_xn()
-        pk_xn.connect_to_signal('Package',
-            lambda i, id, summary: result.append({'id': (str(id)),
-                                                  'summary' :str(summary)}))
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.SearchDetails(filter, name)
-        self._wait()
-        return result
+        Search a packages details.
+        '''
+        xn = self._get_xn()
+        return self._wrapPackageCall(xn, lambda : xn.SearchDetails(filter, name))
+
 
     def InstallPackages(self, package_ids, progress_cb=None):
         '''Install a list of package IDs.
@@ -166,11 +185,9 @@ class PackageKitClient:
         may take a few minutes and should be done when the session and
         system are idle.
         '''
-        pk_xn = self._get_xn()
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.RefreshCache(force)
-        self._wait()
+        xn = self._get_xn()
+        self._wrapBasicCall(xn, lambda : xn.RefreshCache(force))
+
 
     def GetRepoList(self, filter=None):
         '''
@@ -179,20 +196,11 @@ class PackageKitClient:
         filter is a correct filter, e.g. None or 'installed;~devel'
 
         '''
-        result = []
-        pk_xn = self._get_xn()
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.connect_to_signal('RepoDetail',
-                                lambda id, description, enabled:
-                                    result.append({'id' : str(id),
-                                                   'desc' : str(description),
-                                                   'enabled' : enabled}))
         if (filter == None):
             filter = 'none'
-        pk_xn.GetRepoList(filter)
-        self._wait()
-        return result
+        xn = self._get_xn()
+        return self._wrapReposCall(xn, lambda : xn.GetRepoList(filter))
+
 
     def RepoEnable(self, repo_id, enabled):
         '''
@@ -203,11 +211,8 @@ class PackageKitClient:
         enabled true if enabled, false if disabled
 
         '''
-        pk_xn = self._get_xn()
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.RepoEnable(repo_id, enabled)
-        self._wait()
+        xn = self._get_xn()
+        self._wrapBasicCall(xn, lambda : xn.RepoEnable(repo_id, enabled))
 
     def GetUpdates(self, filter=None):
         '''
@@ -215,18 +220,8 @@ class PackageKitClient:
 
         It should only return the newest update for each installed package.
         '''
-        result = []
-        pk_xn = self._get_xn()
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.connect_to_signal('Package',
-            lambda i, id, summary: result.append({'id': str(id),
-                                                  'summary' : str(summary)}))
-        if (filter == None):
-            filter = "none"
-        pk_xn.GetUpdates(filter)
-        self._wait()
-        return result
+        xn = self._get_xn()
+        self._wrapPackageCall(xn, lambda : xn.GetUpdates(filter))
 
     def UpdateSystem(self, filter=None):
         '''
@@ -234,13 +229,8 @@ class PackageKitClient:
 
         It should only return the newest update for each installed package.
         '''
-        result = []
-        pk_xn = self._get_xn()
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.UpdateSystem()
-        self._wait()
-        return result
+        xn = self._get_xn()
+        self._wrapPackageCall(xn, lambda : xn.UpdateSystem())
 
 
     #
@@ -340,14 +330,15 @@ if __name__ == '__main__':
     print pk.RefreshCache()
 
     print '---- Resolve() -----'
-    print pk.Resolve('none', 'pmount')
+    pmount = pk.Resolve('none', 'pmount')
+    print pmount
     print pk.Resolve('none', 'quilt')
     print pk.Resolve('none', 'foobar')
     print pk.Resolve('installed', 'coreutils')
     print pk.Resolve('installed', 'pmount')
 
     print '---- GetDetails() -----'
-    print pk.GetDetails('installation-guide-powerpc;20080520ubuntu1;all;Ubuntu')
+    print pk.GetDetails(pmount[0]['id'])
 
     print '---- SearchName() -----'
     print pk.SearchName('available', 'coreutils')
