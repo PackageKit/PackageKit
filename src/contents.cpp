@@ -502,18 +502,18 @@ PkpContents::buttonRelease(int x, int y, Time time)
         break;
     case INSTALLED:
         if (!mDesktopFile.empty())
-            runApplication();
+            runApplication(time);
         break;
     case UPGRADABLE:
         if (!mDesktopFile.empty() && index == 0)
-            runApplication();
+            runApplication(time);
         else {
-            installPackage();
+            installPackage(time);
         }
         break;
     case AVAILABLE:
         if (!mAvailablePackageName.empty())
-            installPackage();
+            installPackage(time);
         break;
     }
 }
@@ -588,7 +588,7 @@ PkpContents::findDesktopFile()
 }
                   
 void
-PkpContents::runApplication (void)
+PkpContents::runApplication (Time time)
 {
     GError *error = NULL;
     
@@ -610,10 +610,10 @@ PkpContents::runApplication (void)
         return;
     }
 
-    guint32 launch_time = gtk_get_current_event_time();
-    if (launch_time == GDK_CURRENT_TIME)
-        launch_time = get_server_timestamp();
+    if (time == CurrentTime)
+        time = get_server_timestamp();
 
+    gnome_desktop_item_set_launch_time(item, time);
     if (!gnome_desktop_item_launch(item, NULL, (GnomeDesktopItemLaunchFlags)0, &error)) {
         g_warning("%s\n", error->message);
         g_clear_error(&error);
@@ -623,7 +623,7 @@ PkpContents::runApplication (void)
 }
 
 void
-PkpContents::installPackage (void)
+PkpContents::installPackage (Time time)
 {
     if (mAvailablePackageName.empty()) {
         g_warning("No available package to install");

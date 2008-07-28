@@ -78,8 +78,8 @@ public:
 private:
     void recheck();
     void findDesktopFile();
-    void runApplication();
-    void installPackage();
+    void runApplication(Time time);
+    void installPackage(Time time);
 
     int getLinkIndex(int x, int y);
     
