@@ -235,8 +235,13 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		/* convert back all the ;'s to newlines */
 		text = g_strdup (sections[2]);
+
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
+
+		/* convert % else we try to format them */
+		g_strdelimit (text, "%", '$');
+
 		pk_backend_error_code (backend_spawn->priv->backend, error_enum, text);
 		g_free (text);
 	} else if (pk_strequal (command, "requirerestart")) {
