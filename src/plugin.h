@@ -42,7 +42,6 @@
 
 #include "contents.h"
 #include "pluginbase.h"
-#include "util.h"
 
 class PkpPluginInstance : public nsPluginInstanceBase
 {

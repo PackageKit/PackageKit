@@ -92,7 +92,8 @@ PkpContents::PkpContents(const char *displayName,
     mPackageNames(splitString(packageNames)),
     mDesktopNames(splitString(desktopNames)),
     mLayout(0),
-    mInstallPackageHandle(0)
+    mInstallPackageProxy(0),
+    mInstallPackageCall(0)
 {
     recheck();
 }
@@ -101,8 +102,12 @@ PkpContents::~PkpContents()
 {
     clearLayout();
 
-    if (mInstallPackageHandle != 0)
-        pkp_execute_command_async_cancel(mInstallPackageHandle);
+    if (mInstallPackageCall != 0) {
+        dbus_g_proxy_cancel_call(mInstallPackageProxy, mInstallPackageCall);
+        g_object_unref(mInstallPackageProxy);
+        mInstallPackageProxy = 0;
+        mInstallPackageCall = 0;
+    }
 
     while (!mClients.empty())
         removeClient(mClients.front());
@@ -482,22 +487,29 @@ PkpContents::installPackage (void)
         return;
     }
 
-    if (mInstallPackageHandle != 0) {
+    if (mInstallPackageCall != 0) {
         g_warning("Already installing package");
         return;
     }
 
-    char *argv[3];
-#if HAVE_PACKAGEKIT_0_2
-    argv[0] = (char *)"gpk-install-package-name";
-#else    
-    argv[0] = (char *)"gpk-install-package";
-#endif    
-    argv[1] = (char *)mAvailablePackageName.c_str();
-    argv[2] = 0;
+    /* Get a proxy to the *session* PackageKit service */
+    DBusGConnection *connection = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
+    mInstallPackageProxy = dbus_g_proxy_new_for_name(connection,
+                                                     "org.freedesktop.PackageKit",
+                                                     "/org/freedesktop/PackageKit",
+                                                     "org.freedesktop.PackageKit");
 
-    mInstallPackageHandle = pkp_execute_command_async(argv, onInstallFinished, this);
-    setStatus(INSTALLING);
+    mInstallPackageCall = dbus_g_proxy_begin_call_with_timeout(mInstallPackageProxy,
+                                                               "InstallPackageName",
+                                                               onInstallPackageFinished,
+                                                               this,
+                                                               (GDestroyNotify)0,
+                                                               24 * 60 * 1000 * 1000, /* one day */
+                                                               G_TYPE_STRING, mAvailablePackageName.c_str(),
+                                                               G_TYPE_INVALID,
+                                                               G_TYPE_INVALID);
+    
+     setStatus(INSTALLING);
 }
 
 void
@@ -543,22 +555,23 @@ PkpContents::onClientFinished(PkClient	    *client,
 }
     
 void
-PkpContents::onInstallFinished(GError        *error,
-                               int            status,
-                               const char    *output,
-                               void          *callback_data)
+PkpContents::onInstallPackageFinished (DBusGProxy       *proxy,
+                                       DBusGProxyCall   *call,
+                                       void             *user_data)
 {
-    PkpContents *contents = (PkpContents *)callback_data;
-
-    contents->mInstallPackageHandle = 0;
+    PkpContents *contents = (PkpContents *)user_data;
     
-    if (error) {
+    GError *error = NULL;
+    if (!dbus_g_proxy_end_call(proxy, call, &error, 
+                               G_TYPE_INVALID)) {
         g_warning("Error occurred during install: %s", error->message);
+        g_clear_error(&error);
+        
     }
 
-    if (status != 0) {
-        g_warning("gpk-install-command exited with non-zero status %d", status);
-    }
-
+    g_object_unref(contents->mInstallPackageProxy);
+    contents->mInstallPackageProxy = 0;
+    contents->mInstallPackageCall = 0;
+    
     contents->recheck();
 }

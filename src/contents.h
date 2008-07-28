@@ -43,12 +43,11 @@
 #include <pango/pango.h>
 #include <packagekit/pk-client.h>
 #include <cairo.h>
+#include <dbus/dbus-glib.h>
 #include <gtk/gtk.h>
 
 #include <string>
 #include <vector>
-
-#include "util.h"
 
 class PkpPluginInstance;
 
@@ -102,10 +101,10 @@ private:
                                  PkExitEnum	   exit,
                                  guint		   runtime,
                                  PkpContents      *contents);
-    static void onInstallFinished(GError        *error,
-                                  int            status,
-                                  const char    *output,
-                                  void          *callback_data);
+    
+    static void onInstallPackageFinished(DBusGProxy     *proxy,
+                                         DBusGProxyCall *call,
+                                         void           *user_data);
 
     PkpPluginInstance *mPlugin;
     PackageStatus mStatus;
@@ -124,7 +123,8 @@ private:
 
     std::vector<PkClient *> mClients;
 
-    PkpExecuteCommandAsyncHandle *mInstallPackageHandle;
+    DBusGProxy *mInstallPackageProxy;
+    DBusGProxyCall *mInstallPackageCall;
 };
 
 #endif // __CONTENTS_H__

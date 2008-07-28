@@ -21,9 +21,7 @@ packagekit_plugin_la_SOURCES = 	\
 	src/contents.cpp	\
 	src/contents.h		\
 	src/plugin.cpp		\
-	src/plugin.h		\
-	src/util.cpp		\
-	src/util.h
+	src/plugin.h
 
 DISTCLEANFILES =				\
 	intltool-extract			\
