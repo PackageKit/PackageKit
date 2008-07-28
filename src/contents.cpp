@@ -122,11 +122,7 @@ void PkpContents::recheck()
     for (std::vector<std::string>::iterator i = mPackageNames.begin(); i != mPackageNames.end(); i++) {
         GError *error = NULL;
         PkClient *client = pk_client_new();
-#ifdef HAVE_PACKAGEKIT_0_2        
         if (!pk_client_resolve(client, PK_FILTER_ENUM_NONE, i->c_str(), &error)) {
-#else
-        if (!pk_client_resolve(client, "none", i->c_str(), &error)) {
-#endif            
             g_warning("%s", error->message);
             g_clear_error(&error);
             g_object_unref(client);
