@@ -80,7 +80,7 @@ main (int argc, char *argv[])
 	list = pk_client_get_package_list (client);
 	ret = pk_package_list_to_file (list, PK_PACKAGE_LIST_LOCATION);
 	if (!ret) {
-		g_print ("Failed to write to disk: %s\n", error->message);
+		g_print ("Failed to write to disk\n");
 		g_error_free (error);
 		goto out;
 	}
