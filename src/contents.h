@@ -51,7 +51,14 @@
 
 class PkpPluginInstance;
 
-enum PackageStatus { IN_PROGRESS, INSTALLED, AVAILABLE, UNAVAILABLE, INSTALLING };
+enum PackageStatus {
+    IN_PROGRESS, /* Looking up package information */
+    INSTALLED,   /* Package installed */
+    UPGRADABLE,  /* Package installed, newer version available */
+    AVAILABLE,   /* Package not installed, version available */
+    UNAVAILABLE, /* Package not installed or available */
+    INSTALLING   /* Currently installing a new version */
+};
 
 class PkpContents
 {
@@ -73,6 +80,8 @@ private:
     void findDesktopFile();
     void runApplication();
     void installPackage();
+
+    int getLinkIndex(int x, int y);
     
     void setStatus(PackageStatus status);
     PackageStatus getStatus() { return mStatus; }
@@ -118,8 +127,6 @@ private:
     std::vector<std::string> mDesktopNames;
     
     PangoLayout *mLayout;
-    int mLinkStart;
-    int mLinkEnd;
 
     std::vector<PkClient *> mClients;
 

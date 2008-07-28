@@ -273,8 +273,8 @@ get_style(PangoFontDescription **font_desc,
 
 void
 PkpContents::ensureLayout(cairo_t              *cr,
-                               PangoFontDescription *font_desc,
-                               guint32               link_color)
+                          PangoFontDescription *font_desc,
+                          guint32               link_color)
 {
     GString *markup = g_string_new(NULL);
     
@@ -284,6 +284,9 @@ PkpContents::ensureLayout(cairo_t              *cr,
     mLayout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(mLayout, font_desc);
 
+    /* WARNING: Any changes to what links are created here will require corresponding
+     * changes to the buttonRelease() method
+     */
     switch (mStatus) {
     case IN_PROGRESS:
         append_markup(markup, _("Getting package information..."));
@@ -297,6 +300,23 @@ PkpContents::ensureLayout(cairo_t              *cr,
             append_markup(markup, _("<big>%s</big>"), mDisplayName.c_str());
         if (!mInstalledVersion.empty())
             append_markup(markup, _("\n<small>Installed version: %s</small>"), mInstalledVersion.c_str());
+        break;
+    case UPGRADABLE:
+        append_markup(markup, _("<big>%s</big>"), mDisplayName.c_str());
+        if (!mDesktopFile.empty()) {
+            if (!mInstalledVersion.empty())
+                append_markup(markup, _("\n<span color='#%06x' underline='single'>Run version %s now</span>"),
+                              link_color >> 8,
+                              mInstalledVersion.c_str());
+            else
+                append_markup(markup,
+                              _("\n<span color='#%06x' underline='single'>Run now</span>"),
+                              link_color >> 8);
+        }
+        
+        append_markup(markup, _("\n<span color='#%06x' underline='single'>Upgrade to version %s</span>"),
+                      link_color >> 8,
+                      mAvailableVersion.c_str());
         break;
     case AVAILABLE:
         append_markup(markup, _("<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"),
@@ -357,6 +377,112 @@ PkpContents::draw(cairo_t *cr)
     pango_cairo_show_layout(cr, mLayout);
 }
 
+/* Cut and paste from pango-layout.c; determines if a layout iter is on 
+ * a line terminated by a real line break (rather than a line break from
+ * wrapping). We use this to determine whether the empty run at the end
+ * of a display line should be counted as a break between links or not.
+ *
+ * (Code in pango-layout.c is by me, Copyright Red Hat, and hereby relicensed
+ * to the license of this file)
+ */
+static gboolean
+line_is_terminated (PangoLayoutIter *iter)
+{
+    /* There is a real terminator at the end of each paragraph other
+     * than the last.
+     */
+    PangoLayoutLine *line = pango_layout_iter_get_line(iter);
+    GSList *lines = pango_layout_get_lines(pango_layout_iter_get_layout(iter));
+    GSList *link = g_slist_find(lines, line);
+    if (!link) {
+        g_warning("Can't find line in layout line list\n");
+        return FALSE;
+    }
+
+    if (link->next) {
+        PangoLayoutLine *next_line = (PangoLayoutLine *)link->next->data;
+        if (next_line->is_paragraph_start)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+/* This function takes an X,Y position and determines whether it is over one
+ * of the underlined portions of the layout (a link). It works by iterating
+ * through the runs of the layout (a run is a segment with a consistent
+ * font and display attributes, more or less), and counting the underlined
+ * segments that we see. A segment that is underlined could be broken up
+ * into multiple runs if it is drawn with multiple fonts due to fonts
+ * substitution, so we actually count non-underlined => underlined
+ * transitions.
+ */
+int
+PkpContents::getLinkIndex(int x, int y)
+{
+    /* Coordinates are relative to origin of plugin (different from drawing) */
+    
+    if (!mLayout)
+        return -1;
+
+    x -= MARGIN;
+    y -= MARGIN;
+
+    int index;
+    int trailing;
+    if (!pango_layout_xy_to_index(mLayout,
+                                  x * PANGO_SCALE, y * PANGO_SCALE,
+                                  &index, &trailing))
+        return - 1;
+
+    PangoLayoutIter *iter = pango_layout_get_iter(mLayout);
+    int seen_links = 0;
+    bool in_link = false;
+    int result = -1;
+    
+    while (TRUE) {
+        PangoLayoutRun *run = pango_layout_iter_get_run(iter);
+        if (run) {
+            PangoItem *item = run->item;
+            PangoUnderline uline = PANGO_UNDERLINE_NONE;
+            
+            for (GSList *l = item->analysis.extra_attrs; l; l = l->next) {
+                PangoAttribute *attr = (PangoAttribute *)l->data;
+                if (attr->klass->type == PANGO_ATTR_UNDERLINE) {
+                    uline = (PangoUnderline)((PangoAttrInt *)attr)->value;
+                }
+            }
+
+            if (uline == PANGO_UNDERLINE_NONE)
+                in_link = FALSE;
+            else if (!in_link) {
+                in_link = TRUE;
+                seen_links++;
+            }
+
+            if (item->offset <= index && index < item->offset + item->length) {
+                if (in_link)
+                    result = seen_links - 1;
+
+                break;
+            }
+        } else {
+            /* We have an empty run at the end of each line. A line break doesn't
+             * terminate the link, but a real newline does.
+             */
+            if (line_is_terminated(iter))
+                in_link = FALSE;
+        }
+        
+        if (!pango_layout_iter_next_run (iter))
+            break;
+    }
+    
+    pango_layout_iter_free(iter);
+
+    return result;
+}
+
 void
 PkpContents::buttonPress(int x, int y, Time time)
 {
@@ -365,10 +491,31 @@ PkpContents::buttonPress(int x, int y, Time time)
 void
 PkpContents::buttonRelease(int x, int y, Time time)
 {
-    if (!mDesktopFile.empty())
-        runApplication();
-    else if (!mAvailablePackageName.empty())
-        installPackage();
+    int index = getLinkIndex(x, y);
+    if (index < 0)
+        return;
+    
+    switch (mStatus) {
+    case IN_PROGRESS:
+    case INSTALLING:
+    case UNAVAILABLE:
+        break;
+    case INSTALLED:
+        if (!mDesktopFile.empty())
+            runApplication();
+        break;
+    case UPGRADABLE:
+        if (!mDesktopFile.empty() && index == 0)
+            runApplication();
+        else {
+            installPackage();
+        }
+        break;
+    case AVAILABLE:
+        if (!mAvailablePackageName.empty())
+            installPackage();
+        break;
+    }
 }
 
 void
@@ -518,12 +665,17 @@ PkpContents::onClientPackage(PkClient	  *client,
     PkPackageId *id = pk_package_id_new_from_string(package_id);
     
     if (info == PK_INFO_ENUM_AVAILABLE) {
-        if (contents->getStatus() != INSTALLED)
+        if (contents->getStatus() == IN_PROGRESS)
             contents->setStatus(AVAILABLE);
+        else if (contents->getStatus() == INSTALLED)
+            contents->setStatus(UPGRADABLE);
         contents->setAvailableVersion(id->version);
         contents->setAvailablePackageName(id->name);
     } else if (info == PK_INFO_ENUM_INSTALLED) {
-        contents->setStatus(INSTALLED);
+        if (contents->getStatus() == IN_PROGRESS)
+            contents->setStatus(INSTALLED);
+        else if (contents->getStatus() == AVAILABLE)
+            contents->setStatus(UPGRADABLE);
         contents->setInstalledVersion(id->version);
     }
     
