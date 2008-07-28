@@ -2007,7 +2007,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
 		if (!ret) {
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-					     "No such file '%s'", full_paths[i]);
+					     "No such file %s", full_paths[i]);
 			dbus_g_method_return_error (context, error);
 			return;
 		}
