@@ -261,19 +261,32 @@ pk_transaction_get_text (PkTransaction *transaction)
 {
 	PkPackageId *id;
 	gchar *text = NULL;
+	const gchar *data;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
 	g_return_val_if_fail (transaction->priv->tid != NULL, NULL);
 
 	if (transaction->priv->cached_package_id != NULL) {
-		id = pk_package_id_new_from_string (transaction->priv->cached_package_id);
-		text = g_strdup (id->name);
-		pk_package_id_free (id);
+		data = transaction->priv->cached_package_id;
+		/* is a package id? */
+		if (pk_package_id_check (data)) {
+			id = pk_package_id_new_from_string (data);
+			text = g_strdup (id->name);
+			pk_package_id_free (id);
+		} else {
+			text = g_strdup (data);
+		}
 	} else if (transaction->priv->cached_package_ids != NULL) {
-		/* FIXME: join all with ';' */
-		id = pk_package_id_new_from_string (transaction->priv->cached_package_ids[0]);
-		text = g_strdup (id->name);
-		pk_package_id_free (id);
+		data = transaction->priv->cached_package_ids[0];
+		/* is a package id? */
+		if (pk_package_id_check (data)) {
+			/* FIXME: join all with ';' */
+			id = pk_package_id_new_from_string (data);
+			text = g_strdup (id->name);
+			pk_package_id_free (id);
+		} else {
+			text = g_strdup (data);
+		}
 	} else if (transaction->priv->cached_search != NULL) {
 		text = g_strdup (transaction->priv->cached_search);
 	}
