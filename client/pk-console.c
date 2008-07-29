@@ -895,7 +895,7 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
  * pk_console_get_requires:
  **/
 static gboolean
-pk_console_get_requires (PkClient *client, const gchar *package, GError **error)
+pk_console_get_requires (PkClient *client, PkFilterEnum filters, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
@@ -906,7 +906,7 @@ pk_console_get_requires (PkClient *client, const gchar *package, GError **error)
 		return FALSE;
 	}
 	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_requires (client, PK_FILTER_ENUM_NONE, package_ids, TRUE, error);
+	ret = pk_client_get_requires (client, filters, package_ids, TRUE, error);
 	g_strfreev (package_ids);
 	g_free (package_id);
 	return ret;
@@ -916,7 +916,7 @@ pk_console_get_requires (PkClient *client, const gchar *package, GError **error)
  * pk_console_get_depends:
  **/
 static gboolean
-pk_console_get_depends (PkClient *client, const gchar *package, GError **error)
+pk_console_get_depends (PkClient *client, PkFilterEnum filters, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
@@ -927,7 +927,7 @@ pk_console_get_depends (PkClient *client, const gchar *package, GError **error)
 		return FALSE;
 	}
 	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_depends (client, PK_FILTER_ENUM_NONE, package_ids, FALSE, error);
+	ret = pk_client_get_depends (client, filters, package_ids, FALSE, error);
 	g_strfreev (package_ids);
 	g_free (package_id);
 	return ret;
@@ -1604,7 +1604,7 @@ main (int argc, char *argv[])
 			g_print (_("You need to specify a search term"));
 			goto out;
 		}
-		ret = pk_console_get_depends (client, value, &error);
+		ret = pk_console_get_depends (client, filters, value, &error);
 
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {
@@ -1618,7 +1618,7 @@ main (int argc, char *argv[])
 			g_print (_("You need to specify a search term"));
 			goto out;
 		}
-		ret = pk_console_get_requires (client, value, &error);
+		ret = pk_console_get_requires (client, filters, value, &error);
 
 	} else if (strcmp (mode, "what-provides") == 0) {
 		if (value == NULL) {
