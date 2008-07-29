@@ -127,6 +127,7 @@ pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 {
 	PkRoleEnum role;
 	gchar *package = NULL;
+	gchar *package_pad = NULL;
 	gchar *info_pad = NULL;
 	gchar *text = NULL;
 
@@ -145,6 +146,7 @@ pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 	} else {
 		package = g_strdup_printf ("%s-%s", obj->id->name, obj->id->version);
 	}
+	package_pad = pk_strpad (package, 40);
 
 	/* mark previous complete */
 	if (has_output_bar) {
@@ -165,17 +167,18 @@ pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 	    role == PK_ROLE_ENUM_GET_REQUIRES ||
 	    role == PK_ROLE_ENUM_GET_UPDATES) {
 		/* don't do the bar */
-		g_print ("%s %s\n", info_pad, package);
+		g_print ("%s\t%s\t%s\n", info_pad, package_pad, obj->summary);
 		goto out;
 	}
 
-	text = g_strdup_printf ("%s %s", info_pad, package);
+	text = g_strdup_printf ("%s\t%s\t%s", info_pad, package_pad, obj->summary);
 	pk_console_start_bar (text);
 	g_free (text);
 
 out:
 	/* free all the data */
 	g_free (package);
+	g_free (package_pad);
 	g_free (info_pad);
 }
 
