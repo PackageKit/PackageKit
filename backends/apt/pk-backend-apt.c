@@ -137,7 +137,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_dbus_get_details (dbus, package_id);
+	pk_backend_dbus_get_details (dbus, package_ids);
 }
 
 /**
@@ -173,7 +173,7 @@ backend_cancel (PkBackend *backend)
 static void
 backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
-	        pk_backend_dbus_resolve (dbus, filters, package_id);
+	        pk_backend_dbus_resolve (dbus, filters, package_ids);
 }
 
 /**
