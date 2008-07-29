@@ -432,20 +432,17 @@ pk_strsplit (const gchar *id, guint parts)
 	gchar **sections = NULL;
 
 	if (id == NULL) {
-		pk_warning ("ident is null!");
 		goto out;
 	}
 
 	/* split by delimeter ';' */
 	sections = g_strsplit (id, ";", 0);
 	if (g_strv_length (sections) != parts) {
-		pk_warning ("ident '%s' is invalid (sections=%d)", id, g_strv_length (sections));
 		goto out;
 	}
 
 	/* name has to be valid */
 	if (pk_strzero (sections[0])) {
-		pk_warning ("ident first section is empty");
 		goto out;
 	}
 
