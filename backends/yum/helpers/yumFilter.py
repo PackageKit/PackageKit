@@ -40,7 +40,7 @@ class YumFilter(object):
     def add_installed(self,pkgs):
         ''' add a list of packages that are already installed '''
         for pkg in pkgs:
-            if self._do_extra_filtering(pkg,self.fltlist):
+            if self._do_extra_filtering(pkg):
                 self.package_list.append((pkg,INFO_INSTALLED))
             self.installed_nevra.append(self._get_nevra(pkg))
 
@@ -49,14 +49,14 @@ class YumFilter(object):
         for pkg in pkgs:
             nevra = self._get_nevra(pkg)
             if nevra not in self.installed_nevra:
-                if self._do_extra_filtering(pkg,self.fltlist):
+                if self._do_extra_filtering(pkg):
                     self.package_list.append((pkg,INFO_AVAILABLE))
 
     def add_custom(self,pkg,info):
         ''' add a custom packages indervidually '''
         nevra = self._get_nevra(pkg)
         if nevra not in self.installed_nevra:
-            if self._do_extra_filtering(pkg,self.fltlist):
+            if self._do_extra_filtering(pkg):
                 self.package_list.append((pkg,info))
 
     def post_process(self):
@@ -138,9 +138,9 @@ class YumFilter(object):
             newest[key] = (pkg,state)
         return newest.values()
 
-    def _do_extra_filtering(self,pkg,filterList):
+    def _do_extra_filtering(self,pkg):
         ''' do extra filtering (gui,devel etc) '''
-        for filter in filterList:
+        for filter in self.fltlist:
             if filter in (FILTER_INSTALLED,FILTER_NOT_INSTALLED):
                 if not self._do_installed_filtering(filter,pkg):
                     return False
