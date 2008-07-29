@@ -262,6 +262,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # get available packages
         self.percentage(20)
         if FILTER_INSTALLED not in fltlist:
+            # ideally we want to use pkgSack.searchNames, but it's broken with
+            # 'too many SQL variables' when you pass it lots of packages
+            #pkgs = self.yumbase.pkgSack.searchNames(names=all_packages)
+            #pkgfilter.add_available(pkgs)
             for package in all_packages:
                 pkgs = direct.resolve(package)
                 pkgfilter.add_available(pkgs)
