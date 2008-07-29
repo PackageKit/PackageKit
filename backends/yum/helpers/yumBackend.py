@@ -450,7 +450,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return reqlist
 
-    def get_requires(self,filters,package_ids,recursive):
+    def _text_to_boolean(self,text):
+        '''
+        Parses true and false
+        '''
+        if text == 'true':
+            return True
+        if text == 'TRUE':
+            return True
+        if text == 'yes':
+            return True
+        if text == 'YES':
+            return True
+        return False
+
+    def get_requires(self,filters,package_ids,recursive_text):
         '''
         Print a list of requires for a given package
         '''
@@ -463,6 +477,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         bump = 100 / len(package_ids)
         deps_list = []
         resolve_list = []
+        recursive = self._text_to_boolean(recursive_text)
 
         for package in package_ids:
             self.percentage(percentage)
@@ -557,32 +572,73 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         return False
 
-    def _get_best_dependencies(self,po):
-        ''' find the most recent packages that provides the dependencies for a package
-        @param po: yum package object to find deps for
+    def _get_best_pkg_from_list(self,pkglist):
+        '''
+        Gets best dep package from a list
+        '''
+        best = None
+
+        # first try and find the highest EVR package that is already installed
+        for pkgi in pkglist:
+            n,a,e,v,r = pkgi.pkgtup
+            pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,arch=a)
+            for pkg in pkgs:
+                if best:
+                    if pkg.EVR > best.EVR:
+                        best=pkg
+                else:
+                    best=pkg
+
+        # then give up and see if there's one available
+        if not best:
+            for pkg in pkglist:
+                if best:
+                    if pkg.EVR > best.EVR:
+                        best=pkg
+                else:
+                    best=pkg
+        return best
+
+    def _get_best_depends(self,pkgs,recursive):
+        ''' Gets the best deps for a package
+        @param pkgs: a list of package objects
+        @param recursive: if we recurse
         @return: a list for yum package object providing the dependencies
         '''
-        results = self.yumbase.findDeps([po])
-        pkg = results.keys()[0]
-        bestdeps=[]
-        if len(results[pkg].keys()) == 0: # No dependencies for this package ?
-            return bestdeps
-        for req in results[pkg].keys():
-            reqlist = results[pkg][req]
-            if not reqlist: #  Unsatisfied dependency
-                self.error(ERROR_DEP_RESOLUTION_FAILED,"the (%s) requirement could not be resolved" % prco_tuple_to_string(req),exit=False)
-                continue
-            best = None
-            for po in reqlist:
-                if best:
-                    if po.EVR > best.EVR:
-                        best=po
-                else:
-                    best= po
-            bestdeps.append(best)
-        return unique(bestdeps)
+        deps_list = []
 
-    def get_depends(self,filters,package_ids,recursive):
+        # get the dep list
+        results = self.yumbase.findDeps(pkgs)
+        require_list = []
+        recursive_list = []
+
+        # get the list of deps for each package
+        for pkg in results.keys():
+            for req in results[pkg].keys():
+                reqlist = results[pkg][req]
+                if not reqlist: #  Unsatisfied dependency
+                    self.error(ERROR_DEP_RESOLUTION_FAILED,"the (%s) requirement could not be resolved" % prco_tuple_to_string(req),exit=False)
+                    break
+                require_list.append(reqlist)
+
+        # for each list, find the best backage using a metric
+        for reqlist in require_list:
+            pkg = self._get_best_pkg_from_list(reqlist)
+            if pkg not in pkgs:
+                deps_list.append(pkg)
+                if recursive and not self._is_inst(pkg):
+                    recursive_list.append(pkg)
+
+        # if the package is to be downloaded, also find its deps
+        if len(recursive_list) > 0:
+            pkgsdeps = self._get_best_depends(recursive_list,True)
+            for pkg in pkgsdeps:
+                if pkg not in pkgs:
+                    deps_list.append(pkg)
+
+        return deps_list
+
+    def get_depends(self,filters,package_ids,recursive_text):
         '''
         Print a list of depends for a given package
         '''
@@ -592,43 +648,42 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
 
         fltlist = filters.split(';')
+        pkgfilter = YumFilter(fltlist)
+        recursive = self._text_to_boolean(recursive_text)
 
         percentage = 0;
         bump = 100 / len(package_ids)
         deps_list = []
         resolve_list = []
 
+        # resolve each package_id to a pkg object
         for package in package_ids:
             self.percentage(percentage)
             name = package.split(';')[0]
             pkg,inst = self._findPackage(package)
-            results = {}
             if pkg:
                 resolve_list.append(pkg)
-                deps = self._get_best_dependencies(pkg)
-                # if not present, add
-                for pkg in deps:
-                    if pkg not in deps_list:
-                        deps_list.append(pkg)
             else:
                 self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
                 break
             percentage += bump
 
-        # remove any of the original names
-        for pkg in resolve_list:
-            if pkg in deps_list:
-                deps_list.remove(pkg)
+        # get the best deps
+        deps_list = self._get_best_depends(resolve_list,recursive)
 
-        # each unique name, emit
+        # make unique list
+        deps_list = unique(deps_list)
+
+        # add to correct lists
         for pkg in deps_list:
-            id = self._pkg_to_id(pkg)
-
-            if self._is_inst_arch(pkg) and FILTER_NOT_INSTALLED not in fltlist:
-                self.package(id,INFO_INSTALLED,pkg.summary)
+            if self._is_inst(pkg):
+                pkgfilter.add_installed([pkg])
             else:
-                if self._installable(pkg) and FILTER_INSTALLED not in fltlist:
-                    self.package(id,INFO_AVAILABLE,pkg.summary)
+                pkgfilter.add_available([pkg])
+
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
         self.percentage(100)
 
     def update_system(self):
