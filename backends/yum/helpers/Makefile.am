@@ -26,6 +26,7 @@ dist_helper_DATA = 			\
 	refresh-cache.py		\
 	what-provides.py		\
 	update-system.py		\
+	download-packages.py		\
 	yumBackend.py			\
 	yumDirect.py			\
 	yumComps.py			\
