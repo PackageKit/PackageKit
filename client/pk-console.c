@@ -502,7 +502,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	list = pk_client_get_package_list (client_task);
 	length = pk_package_list_get_size (list);
 	if (length == 0) {
-		pk_warning (_("Could not find a package match"));
+		pk_debug ("Could not find a package match");
 		return NULL;
 	}
 
