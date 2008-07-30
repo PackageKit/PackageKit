@@ -293,9 +293,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
 
+        package_list = [] #we can't do emitting as found if we are post-processing
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
-        package_list = [] #we can't do emitting as found if we are post-processing
 
         # Now show installed packages.
         pkgs = self.yumbase.rpmdb
@@ -330,6 +330,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # Check available for file
         if not FILTER_INSTALLED in fltlist:
+            # Check available for file
             self.yumbase.repos.populateSack(mdtype='filelists')
             pkgs = self.yumbase.pkgSack.searchFiles(key)
             pkgfilter.add_available(pkgs)
