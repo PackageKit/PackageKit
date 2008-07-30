@@ -40,6 +40,8 @@
 #include <pk-connection.h>
 #include <pk-update-detail-obj.h>
 
+#include "pk-tools-common.h"
+
 #define PROGRESS_BAR_SIZE 15
 
 static GMainLoop *loop = NULL;
@@ -443,31 +445,6 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 }
 
 /**
- * pk_console_get_number:
- **/
-static guint
-pk_console_get_number (const gchar *question, guint maxnum)
-{
-	gint answer = 0;
-	gint retval;
-
-	/* pretty print */
-	g_print ("%s", question);
-
-	do {
-		/* get a number */
-		retval = scanf("%u", &answer);
-
-		/* positive */
-		if (retval == 1 && answer > 0 && answer <= maxnum) {
-			break;
-		}
-		g_print (_("Please enter a number from 1 to %i: "), maxnum);
-	} while (TRUE);
-	return answer;
-}
-
-/**
  * pk_console_perhaps_resolve:
  **/
 static gchar *
@@ -659,48 +636,6 @@ pk_console_remove_only (PkClient *client, gchar **package_ids, gboolean force, G
 		return ret;
 	}
 	return pk_client_remove_packages (client, package_ids, force, FALSE, error);
-}
-
-/**
- * pk_console_get_prompt:
- **/
-static gboolean
-pk_console_get_prompt (const gchar *question, gboolean defaultyes)
-{
-	gchar answer = '\0';
-
-	/* pretty print */
-	g_print ("%s", question);
-	if (defaultyes) {
-		g_print (" [Y/n] ");
-	} else {
-		g_print (" [N/y] ");
-	}
-
-	do {
-		/* ITS4: ignore, we are copying into the same variable, not a string */
-		answer = (gchar) getchar();
-
-		/* positive */
-		if (answer == 'y' || answer == 'Y') {
-			return TRUE;
-		}
-		/* negative */
-		if (answer == 'n' || answer == 'N') {
-			return FALSE;
-		}
-
-		/* default choice */
-		if (answer == '\n' && defaultyes) {
-			return TRUE;
-		}
-		if (answer == '\n' && defaultyes == FALSE) {
-			return FALSE;
-		}
-	} while (TRUE);
-
-	/* keep GCC happy */
-	return FALSE;
 }
 
 /**

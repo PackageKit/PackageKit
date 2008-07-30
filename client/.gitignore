@@ -5,6 +5,7 @@ pk-marshal.h
 pk-marshal.c
 pkcon
 pkmon
+pkgenpack
 pk-update-icon
 pk-application
 pk-import-desktop

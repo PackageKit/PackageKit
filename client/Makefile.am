@@ -39,6 +39,8 @@ libexec_PROGRAMS =					\
 
 pkcon_SOURCES =						\
 	pk-console.c					\
+	pk-tools-common.c				\
+	pk-tools-common.h				\
 	$(NULL)
 
 pkcon_LDADD =						\
