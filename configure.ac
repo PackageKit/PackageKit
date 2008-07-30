@@ -103,6 +103,10 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
+AC_CHECK_HEADERS([libtar.h])
+TAR_LIBS=-ltar
+AC_SUBST(TAR_LIBS)
+
 dnl ---------------------------------------------------------------------------
 dnl - xsltproc
 dnl ---------------------------------------------------------------------------
