@@ -465,6 +465,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		line = g_strdup_printf ("%s=%s", "http_proxy", value);
 		pk_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
+		g_free (line);
 	}
 	g_free (value);
 
@@ -474,6 +475,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		line = g_strdup_printf ("%s=%s", "ftp_proxy", value);
 		pk_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
+		g_free (line);
 	}
 	g_free (value);
 
