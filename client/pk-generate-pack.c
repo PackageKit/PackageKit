@@ -44,6 +44,7 @@
 
 #include "pk-tools-common.h"
 
+//FIXME: This should be generated using g_get_tmp_dir and random chars
 #define PK_GENPACK_TEMP_DIR "/tmp/pack"
 
 /**
