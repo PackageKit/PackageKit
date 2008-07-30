@@ -127,7 +127,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_spawn_helper (spawn, "get-details.pl", package_id, NULL);
+	pk_backend_spawn_helper (spawn, "get-details.pl", package_ids[0], NULL);
 }
 
 /**
@@ -136,7 +136,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_spawn_helper (spawn, "get-files.pl", package_id, NULL);
+	pk_backend_spawn_helper (spawn, "get-files.pl", package_ids[0], NULL);
 }
 
 /**
@@ -147,7 +147,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_i
 {
 	gchar *filters_text;
 	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-depends.pl", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "get-depends.pl", filters_text, package_ids[0], pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 }
 
@@ -169,7 +169,7 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_spawn_helper (spawn, "get-update-detail.pl", package_id, NULL);
+	pk_backend_spawn_helper (spawn, "get-update-detail.pl", package_ids[0], NULL);
 }
 
 /**
@@ -255,7 +255,7 @@ backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_
 {
 	gchar *filters_text;
 	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-requires.pl", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "get-requires.pl", filters_text, package_ids[0], pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 }
 
@@ -291,7 +291,7 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "resolve.pl", filters_text, package_id, NULL);
+	pk_backend_spawn_helper (spawn, "resolve.pl", filters_text, package_ids[0], NULL);
 	g_free (filters_text);
 }
 
