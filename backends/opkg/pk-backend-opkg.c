@@ -559,7 +559,7 @@ backend_update_package_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	gint err = 0;
-	gchar **package_ids;
+	const gchar *package_id;
 
 	package_id = pk_backend_get_string (backend, "pkgid");
 	pi = pk_package_id_new_from_string (package_id);
@@ -665,8 +665,8 @@ backend_get_details_thread (PkBackend *backend)
 	opkg_package_t *pkg;
 	gchar *newid;
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	pi = pk_package_id_new_from_string (package_id);
+	package_ids = pk_backend_get_string (backend, "package_ids");
+	pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL)
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
