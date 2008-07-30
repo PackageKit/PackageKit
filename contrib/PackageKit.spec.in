@@ -1,4 +1,4 @@
-%define glib2_version           2.6.0
+%define glib2_version           2.16.1
 %define dbus_version            0.90
 %define dbus_glib_version       0.70
 %define policykit_version       0.7
@@ -38,6 +38,7 @@ BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
 BuildRequires: python-devel
 BuildRequires: perl(XML::Parser)
+BuildRequires: intltool
 BuildRequires: gettext
 
 %description 
@@ -122,10 +123,10 @@ chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
 rm -rf $RPM_BUILD_ROOT
 
 %post
-update-mime-database %{_datadir}/mime
+update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %postun
-update-mime-database %{_datadir}/mime
+update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %post libs -p /sbin/ldconfig
 
@@ -141,6 +142,7 @@ update-mime-database %{_datadir}/mime
 %dir %{python_sitelib}/packagekit
 %dir %{_localstatedir}/run/PackageKit
 %{python_sitelib}/packagekit/*py*
+%dir %{_sysconfdir}/bash_completion.d
 %config %{_sysconfdir}/bash_completion.d/pk-completion.bash
 %config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
 %config %{_sysconfdir}/dbus-1/system.d/*
@@ -153,8 +155,7 @@ update-mime-database %{_datadir}/mime
 %{_bindir}/pkmon
 %{_bindir}/pkcon
 %{_bindir}/packagekit-bugreport.sh
-%{_libexecdir}/pk-import-desktop
-%{_libexecdir}/pk-import-specspo
+%{_libexecdir}/pk-import-*
 %exclude %{_libdir}/libpackagekit*.so.*
 %exclude %{_libdir}/packagekit-backend/*.so
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
