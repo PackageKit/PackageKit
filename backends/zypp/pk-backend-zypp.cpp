@@ -127,8 +127,8 @@ backend_get_requires_thread (PkBackend *backend)
 	PkPackageId *pi;
 	gchar **package_ids;
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	pi = pk_package_id_new_from_string (package_id);
+	package_ids = pk_backend_get_string (backend, "package_ids");
+	pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_package_id_free (pi);
@@ -302,8 +302,8 @@ backend_get_depends_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	PkPackageId *pi = pk_package_id_new_from_string (package_id);
+	package_ids = pk_backend_get_string (backend, "package_ids");
+	PkPackageId *pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
@@ -462,8 +462,8 @@ backend_get_details_thread (PkBackend *backend)
 	gchar **package_ids;
 	PkPackageId *pi;
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	pi = pk_package_id_new_from_string (package_id);
+	package_ids = pk_backend_get_string (backend, "package_ids");
+	pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_package_id_free (pi);
@@ -805,8 +805,8 @@ backend_get_update_detail_thread (PkBackend *backend)
 	PkPackageId *pi;
 	gchar **package_ids;
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	pi = pk_package_id_new_from_string (package_id);
+	package_ids = pk_backend_get_string (backend, "package_ids");
+	pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_package_id_free (pi);
@@ -1161,7 +1161,8 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 static gboolean
 backend_resolve_thread (PkBackend *backend)
 {
-	gchar **package_ids = pk_backend_get_string (backend, "package_id");
+	gchar **package_ids = pk_backend_get_string (backend, "package_ids");
+	const gchar *package = package_ids[0];
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1409,8 +1410,8 @@ backend_get_files_thread (PkBackend *backend)
 	PkPackageId *pi;
 	gchar **package_ids;
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	pi = pk_package_id_new_from_string (package_id);
+	package_ids = pk_backend_get_string (backend, "package_ids");
+	pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_package_id_free (pi);
