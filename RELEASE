@@ -12,16 +12,16 @@ $ git-shortlog PACKAGEKIT_0_2_3.. | grep -v trivial | grep -v Merge > NEWS.new
 4. Commit changes in PackageKit git:
 
 $ git commit -a -m "Release version 0.2.4"
-$ git tag -a -f -m "Release 0.2.4" PACKAGEKIT_0_2_3
+$ git tag -a -f -m "Release 0.2.4" PACKAGEKIT_0_2_4
 $ git push --tags
 $ git push
-$ git push git+ssh://username@git.freedesktop.org/git/packagekit
-$ git push --tags git+ssh://username@git.freedesktop.org/git/packagekit
+$ git push git+ssh://hughsient@git.freedesktop.org/git/packagekit
+$ git push --tags git+ssh://hughsient@git.freedesktop.org/git/packagekit
 
 5. Commit changes in gnome-packagekit git:
 
 $ git commit -a -m "Release version 0.2.4"
-$ git tag -a -f -m "Release 0.2.4" GNOME_PACKAGEKIT_0_2_3
+$ git tag -a -f -m "Release 0.2.4" GNOME_PACKAGEKIT_0_2_4
 $ git push --tags
 $ git push
 

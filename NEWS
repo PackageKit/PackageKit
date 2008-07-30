@@ -1,3 +1,22 @@
+Version 0.2.4
+~~~~~~~~~~~~~~
+Released: 2008-07-30
+
+* Backends
+ - opkg: fix some memory leak issue (I-Fan, Chen)
+ - zypp: match the libzypp updates for listing repos (Scott Reeves)
+
+* Bugfixes:
+ - Bump the soname as we changed ABI some time ago (Richard Hughes)
+ - Don't optimise for the common case in pk-import-desktop as we really
+   want to regenerate the cache even if it's slow (Richard Hughes)
+ - Fix doing pk_transaction_list_remove() on a transaction waiting to timeout,
+   to avoid walking on freed memory (Richard Hughes)
+ - Don't print the '%' chars on the console from python exceptions, else we can
+   crash the daemon when running in verbose mode (Richard Hughes)
+ - Backport a small memory leak in the daemon from master (Richard Hughes)
+ - AllowCancel(FALSE) is allowed when we are finished, but not TRUE (Richard Hughes)
+
 Version 0.2.3
 ~~~~~~~~~~~~~~
 Released: 2008-07-04
