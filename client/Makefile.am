@@ -29,6 +29,7 @@ PK_LIBS =						\
 bin_PROGRAMS =						\
 	pkcon						\
 	pkmon						\
+	pkgenpack					\
 	$(NULL)
 
 libexec_PROGRAMS =					\
@@ -55,6 +56,20 @@ pkmon_SOURCES =						\
 	$(NULL)
 
 pkmon_LDADD =						\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(PK_LIBS)					\
+	$(SELFTEST_LIBS)				\
+	$(NULL)
+
+pkgenpack_SOURCES =					\
+	pk-generate-pack.c				\
+	pk-tools-common.c				\
+	pk-tools-common.h				\
+	$(NULL)
+
+pkgenpack_LDADD = 					\
+	$(TAR_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
