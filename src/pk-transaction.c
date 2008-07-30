@@ -1011,16 +1011,6 @@ pk_transaction_search_check (const gchar *search, GError **error)
 				     "Search string zero length");
 		return FALSE;
 	}
-	if (size < 2) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
-				     "The search string length is too small");
-		return FALSE;
-	}
-	if (size == 1024) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
-				     "The search string length is too large");
-		return FALSE;
-	}
 	if (strstr (search, "*") != NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Invalid search containing '*'");
@@ -1029,6 +1019,16 @@ pk_transaction_search_check (const gchar *search, GError **error)
 	if (strstr (search, "?") != NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Invalid search containing '?'");
+		return FALSE;
+	}
+	if (size < 2) {
+		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+				     "The search string length is too small");
+		return FALSE;
+	}
+	if (size == 1024) {
+		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+				     "The search string length is too large");
 		return FALSE;
 	}
 	ret = pk_strvalidate (search);
@@ -3083,6 +3083,13 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		pk_debug ("Not implemented yet: WhatProvides");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check the search term */
+	ret = pk_transaction_search_check (search, &error);
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
