@@ -45,6 +45,10 @@ import signal
 import time
 import os.path
 
+import tarfile
+import tempfile
+import shutil
+
 from yumDirect import *
 from yumFilter import *
 from yumComps import *
@@ -825,7 +829,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if newest.EVR > po.EVR:
                 self.message(MESSAGE_WARNING,"A newer version of %s is available online." % po.name)
 
-    def install_files (self,trusted,inst_files):
+    def install_files(self,trusted,inst_files):
         '''
         Implement the {backend}-install-files functionality
         Install the package containing the inst_file file
@@ -835,16 +839,41 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if inst_file.endswith('.src.rpm'):
                 self.error(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE,'Backend will not install a src rpm file')
                 return
-        for inst_file in inst_files:
-            if not inst_file.endswith('.rpm'):
-                self.error(ERROR_INVALID_PACKAGE_FILE,'Only rpm packages are supported')
-                return
+
         self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        pkgs_to_inst = []
+        # process these first
+        inst_packs = []
+
+        for inst_file in inst_files:
+            if inst_file.endswith('.rpm'):
+                continue
+            elif inst_file.endswith('.pack'):
+                inst_packs.append(inst_file)
+                inst_files.remove(inst_file)
+            else:
+                self.error(ERROR_INVALID_PACKAGE_FILE,'Only rpm files and packs are supported')
+                return
+
+        # decompress and add the contents of any .pack files
+        for inst_pack in inst_packs:
+            pack = tarfile.TarFile(name = inst_pack,mode = "r")
+            members = pack.getnames()
+            tempdir = tempfile.mkdtemp()
+            for mem in members:
+                pack.extract(mem,path = tempdir)
+            files = os.listdir(tempdir)
+            for file in files:
+                inst_files.append(os.path.join(tempdir, file))
+
+        # remove files of packages that alrady exist
+        for inst_file in inst_files:
+            pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+            if self._is_inst(pkg):
+                inst_files.remove(inst_file)
 
         # If trusted is true, it means that we will only install trusted files
         if trusted == 'yes':
