@@ -119,7 +119,6 @@ pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, g
 	/* check we are not already added */
 	obj = g_hash_table_lookup (extra->priv->hash_package, package);
 	if (obj != NULL) {
-		pk_debug ("not adding duplicate %s, %s", package, icon_name);
 		g_free (exec);
 		g_free (package);
 		g_free (icon_name);
@@ -170,7 +169,6 @@ pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gc
 	/* check we are not already added */
 	obj = g_hash_table_lookup (extra->priv->hash_locale, package);
 	if (obj != NULL) {
-		pk_debug ("not adding duplicate %s, %s", package, summary);
 		g_free (package);
 		g_free (summary);
 		goto out;
@@ -437,7 +435,6 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 	}
 
 	/* add to cache */
-	pk_debug ("adding summary:%s", package);
 	obj = g_new (PkExtraLocaleObj, 1);
 	obj->summary = g_strdup (summary);
 	g_hash_table_insert (extra->priv->hash_locale, g_strdup (package), (gpointer) obj);

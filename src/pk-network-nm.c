@@ -142,7 +142,6 @@ pk_network_nm_init (PkNetworkNm *network_nm)
 		libnm_glib_register_callback (network_nm->priv->ctx,
 					      pk_network_nm_nm_changed_cb,
 					      network_nm, context);
-	pk_debug ("ctx=%p, id=%i", network_nm->priv->ctx, network_nm->priv->callback_id);
 }
 
 /**
@@ -159,7 +158,6 @@ pk_network_nm_finalize (GObject *object)
 
 	g_return_if_fail (network_nm->priv != NULL);
 
-	pk_debug ("ctx=%p, id=%i", network_nm->priv->ctx, network_nm->priv->callback_id);
 	libnm_glib_unregister_callback (network_nm->priv->ctx, network_nm->priv->callback_id);
 	libnm_glib_shutdown (network_nm->priv->ctx);
 

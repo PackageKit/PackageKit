@@ -151,7 +151,6 @@ pk_iso8601_present (void)
 	/* get current time */
 	g_get_current_time (&timeval);
 	timespec = g_time_val_to_iso8601 (&timeval);
-	pk_debug ("timespec=%s", timespec);
 
 	return timespec;
 }
@@ -182,7 +181,6 @@ pk_iso8601_difference (const gchar *isodate)
 
 	/* work out difference */
 	time = timeval_now.tv_sec - timeval_then.tv_sec;
-	pk_debug ("difference=%i", time);
 
 	return time;
 }

@@ -167,7 +167,6 @@ pk_spawn_check_child (PkSpawn *spawn)
 			spawn->priv->exit = PK_EXIT_ENUM_FAILED;
 		}
 	} else {
-		pk_debug ("Running fork successful");
 		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
 			spawn->priv->exit = PK_EXIT_ENUM_SUCCESS;
 		}
@@ -205,7 +204,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	/* we won't overwrite this if not unknown */
 	spawn->priv->exit = PK_EXIT_ENUM_KILLED;
 
-	pk_warning ("sending SIGKILL %i", spawn->priv->child_pid);
+	pk_debug ("sending SIGKILL %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGKILL);
 	if (retval == EINVAL) {
 		pk_warning ("The signum argument is an invalid or unsupported number");

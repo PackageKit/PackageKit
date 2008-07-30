@@ -1340,7 +1340,6 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 		return FALSE;
 	}
 
-
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
 		backend->priv->allow_cancel = allow_cancel;
@@ -1435,7 +1434,6 @@ pk_backend_finished_delay (gpointer data)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
 	}
 
-	pk_debug ("resetting hash tables to blank");
 	g_hash_table_remove_all (backend->priv->hash_pointer);
 	g_hash_table_remove_all (backend->priv->hash_string);
 	g_hash_table_remove_all (backend->priv->hash_strv);
@@ -1536,8 +1534,7 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 
 	/* this function is only valid when we have a running transaction */
 	if (backend->priv->c_tid != NULL) {
-		pk_error ("only valid when we have a running transaction");
-		return FALSE;
+		pk_warning ("only valid when we have a running transaction");
 	}
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
 	/* don't wait, do this now */
@@ -1712,8 +1709,6 @@ pk_backend_finalize (GObject *object)
 	PkBackend *backend;
 	g_return_if_fail (PK_IS_BACKEND (object));
 	backend = PK_BACKEND (object);
-
-	pk_debug ("backend finalise");
 
 	pk_backend_reset (backend);
 	g_free (backend->priv->proxy_http);
@@ -1923,7 +1918,6 @@ pk_backend_init (PkBackend *backend)
 PkBackend *
 pk_backend_new (void)
 {
-	pk_debug ("new object");
 	if (pk_backend_object != NULL) {
 		g_object_ref (pk_backend_object);
 	} else {

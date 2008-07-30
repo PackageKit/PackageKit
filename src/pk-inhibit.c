@@ -81,7 +81,6 @@ pk_inhibit_lock (PkInhibit *inhibit)
 
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
-	pk_debug ("Trying to AcquireInterfaceLock");
 	if (inhibit->priv->proxy == NULL) {
 		pk_warning ("not connected to HAL");
 		return FALSE;
@@ -121,7 +120,6 @@ pk_inhibit_unlock (PkInhibit *inhibit)
 
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
-	pk_debug ("Trying to ReleaseInterfaceLock");
 	if (inhibit->priv->proxy == NULL) {
 		pk_warning ("not connected to HAL");
 		return FALSE;

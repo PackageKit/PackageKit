@@ -505,13 +505,12 @@ pk_control_transaction_list_print (PkControl *control)
 
 	length = g_strv_length (control->priv->array);
 	if (length == 0) {
-		g_print ("no jobs...\n");
 		return TRUE;
 	}
-	g_print ("jobs: ");
+	pk_debug ("jobs:");
 	for (i=0; i<length; i++) {
 		tid = control->priv->array[i];
-		g_print ("%s\n", tid);
+		pk_debug ("%s", tid);
 	}
 	return TRUE;
 }
@@ -540,7 +539,7 @@ pk_control_transaction_list_refresh (PkControl *control)
 				 G_TYPE_STRV, &control->priv->array,
 				 G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_debug ("ERROR: %s", error->message);
+		pk_warning ("ERROR: %s", error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -585,7 +584,6 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **array, PkCont
 static void
 pk_control_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkControl *control)
 {
-	pk_debug ("connected=%i", connected);
 	/* force a refresh so we have valid data*/
 	if (connected) {
 		pk_control_transaction_list_refresh (control);

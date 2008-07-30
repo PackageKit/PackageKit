@@ -452,12 +452,11 @@ pk_client_get_require_restart (PkClient *client)
 /**
  * pk_client_get_package_list:
  * @client: a valid #PkClient instance
- * @item: the item in the package buffer
  *
  * We do not provide access to the internal package list (as it could be being
  * updated) so provide a way to get access to objects here.
  *
- * Return value: The #PkPackageItem or %NULL if not found or invalid
+ * Return value: The #PkPackageList or %NULL if not found or invalid
  **/
 PkPackageList *
 pk_client_get_package_list (PkClient *client)
