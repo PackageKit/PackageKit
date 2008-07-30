@@ -65,6 +65,8 @@ gboolean		 pk_package_list_contains	(PkPackageList		*plist,
 							 const gchar		*package_id);
 gboolean		 pk_package_list_remove		(PkPackageList		*plist,
 							 const gchar		*package_id);
+gboolean		 pk_package_list_remove_obj	(PkPackageList		*plist,
+							 const PkPackageObj	*obj);
 gboolean		 pk_package_list_contains_obj	(PkPackageList		*plist,
 							 const PkPackageObj	*obj);
 gchar			*pk_package_list_to_string	(PkPackageList		*plist)
