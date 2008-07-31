@@ -1175,7 +1175,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_REPO_NOT_AVAILABLE,str(e))
         md = self.updateMetadata
         for pkg in ygl.updates:
-            if pkgfilter._do_extra_filtering(pkg,fltlist):
+            if pkgfilter._do_extra_filtering(pkg):
                 # Get info about package in updates info
                 notice = md.get_notice((pkg.name,pkg.version,pkg.release))
                 if notice:
