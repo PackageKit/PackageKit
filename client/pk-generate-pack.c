@@ -158,7 +158,7 @@ out:
  * pk_generate_pack_exclude_packages:
  **/
 static gboolean
-pk_generate_pack_exclude_packages (PkPackageList *list)
+pk_generate_pack_exclude_packages (PkPackageList *list, const gchar *package_list)
 {
 	guint i;
 	guint length;
@@ -170,7 +170,7 @@ pk_generate_pack_exclude_packages (PkPackageList *list)
 	list_packages = pk_package_list_new ();
 
 	/* load a list of packages already found on the users system */
-	ret = pk_package_list_add_file (list_packages, "/var/lib/PackageKit/package-list.txt");
+	ret = pk_package_list_add_file (list_packages, package_list);
 	if (!ret)
 		goto out;
 
@@ -272,7 +272,7 @@ pk_generate_pack_scan_dir (const gchar *directory)
  * pk_generate_pack_main:
  **/
 static gboolean
-pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const gchar *package, GError **error)
+pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const gchar *package, const gchar *package_list, GError **error)
 {
 
 	gchar *package_id;
@@ -330,7 +330,7 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	list = pk_client_get_package_list (client);
 
 	/* remove some deps */
-	ret = pk_generate_pack_exclude_packages (list);
+	ret = pk_generate_pack_exclude_packages (list, package_list);
 	if (!ret) {
 		pk_warning ("failed to exclude packages");
 		goto out;
@@ -398,6 +398,7 @@ main (int argc, char *argv[])
 {
 	GError *error = NULL;
 	gboolean verbose = FALSE;
+	gchar *with_package_list = NULL;
 	GOptionContext *context;
 	gchar *options_help;
 	gboolean ret;
@@ -407,10 +408,13 @@ main (int argc, char *argv[])
 	gchar *packname = NULL;
 	PkControl *control = NULL;
 	PkRoleEnum roles;
+	const gchar *package_list = NULL;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 			_("Show extra debugging information"), NULL },
+		{ "with-package-list", '\0', 0, G_OPTION_ARG_STRING, &with_package_list,
+			_("Set the path of the file with the list of packages/dependencies to be excluded"), NULL},
 		{ NULL}
 	};
 
@@ -427,6 +431,12 @@ main (int argc, char *argv[])
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
 	pk_debug_init (verbose);
+
+	if (with_package_list != NULL) {
+		package_list = with_package_list;
+	} else {
+		package_list = "/var/lib/PackageKit/package-list.txt";
+	}
 
 	if (argc < 2) {
 		g_print ("%s", options_help);
@@ -470,7 +480,7 @@ main (int argc, char *argv[])
 	}
 
 	/* generate the pack */
-	ret = pk_generate_pack_main (pack_filename, PK_GENPACK_TEMP_DIR, package, &error);
+	ret = pk_generate_pack_main (pack_filename, PK_GENPACK_TEMP_DIR, package, package_list, &error);
 	if (!ret) {
 		g_print ("%s: %s\n", _("Failed to create pack"), error->message);
 		g_error_free (error);
@@ -482,6 +492,7 @@ out:
 	g_rmdir (PK_GENPACK_TEMP_DIR);
 
 	g_free (packname);
+	g_free (with_package_list);
 	g_free (options_help);
 	g_object_unref (control);
 	return 0;
