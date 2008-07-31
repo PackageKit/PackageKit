@@ -219,6 +219,9 @@ class yumComps:
         if self.yumbase.comps.compscount == 0:
             return False
 
+	# delete old data else we get multiple entries
+	self.cursor.execute('DELETE FROM groups;')
+
         # store to sqlite
         for category in cats:
             grps = map(lambda x: self.yumbase.comps.return_group(x),
