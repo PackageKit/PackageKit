@@ -198,13 +198,14 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	gboolean ret = TRUE;
 	guint retval;
 	TAR *t;
+	FILE *file;
 	guint i;
 	const gchar *src;
 	gchar *dest;
 
 	/* FIXME: do we have to close this? */
 	/* FIXME: check if file exists before we overwrite it */
-	g_fopen (tarfilename, "a+");
+	file = g_fopen (tarfilename, "a+");
 	retval = tar_open (&t, (gchar *)tarfilename, NULL, O_WRONLY, 0, TAR_GNU);
 	if (retval != 0) {
 		*error = g_error_new (1, 0, "failed to open tar file: %s", tarfilename);
