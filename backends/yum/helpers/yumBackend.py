@@ -370,36 +370,52 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._show_package_list(package_list)
 
     @handle_repo_error
-    def download_packages(self,directory,packages):
-	'''
-	Implement the {backend}-download-packages functionality
-	'''
-	self._check_init()
-	self.allow_cancel(True)
-	self.percentage(0)
-	self.status(STATUS_DOWNLOAD)
-	for package in packages:
-	   pkg,inst = self._findPackage(package)
-	   n,a,e,v,r = pkg.pkgtup
-	   packs = self.yumbase.pkgSack.searchNevra(n,e,v,r,a)
-	   for download in packs:
-	      	repo = self.yumbase.repos.getRepo(download.repoid)
-	      	remote = download.returnSimple('relativepath')
-	      	local = os.path.basename(remote)
-	       	if not os.path.exists(directory):
-	              	self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,"No destination directory exists")
-            	local = os.path.join(directory,local)
-            	if(os.path.exists(local) and os.path.getsize(local) == int(download.returnSimple('packagesize'))):
-                	self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,"Package already exists")
-                	continue
-	        # Disable cache otherwise things won't download
-	        repo.cache = 0
-	        download.localpath = local #Hack:To set the localpath we want
-	        try:
-	           path = repo.getPackage(download)
-	        except IOError, e:
-	           self.error(ERROR_WRITE_ERROR,"Cannot write to file")
-	           continue
+    def download_packages(self,directory,package_ids):
+        '''
+        Implement the {backend}-download-packages functionality
+        '''
+        self._check_init()
+        self.allow_cancel(True)
+        self.status(STATUS_DOWNLOAD)
+        percentage = 0;
+        bump = 100 / len(package_ids)
+
+        # download each package
+        for package in package_ids:
+            self.percentage(percentage)
+            pkg,inst = self._findPackage(package)
+            n,a,e,v,r = pkg.pkgtup
+            packs = self.yumbase.pkgSack.searchNevra(n,e,v,r,a)
+
+            # if we couldn't map package_id -> pkg
+            if len(packs) == 0:
+                self.message(MESSAGE_WARNING,"Could not find a match for package %s" % package)
+                continue
+
+            # should have only one...
+            for pkg_download in packs:
+                self._show_package(pkg_download,INFO_DOWNLOADING)
+                repo = self.yumbase.repos.getRepo(pkg_download.repoid)
+                remote = pkg_download.returnSimple('relativepath')
+                local = os.path.basename(remote)
+                if not os.path.exists(directory):
+                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,"No destination directory exists")
+                local = os.path.join(directory,local)
+                if (os.path.exists(local) and os.path.getsize(local) == int(pkg_download.returnSimple('packagesize'))):
+                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,"Package already exists")
+                    continue
+                # Disable cache otherwise things won't download
+                repo.cache = 0
+                pkg_download.localpath = local #Hack:To set the localpath we want
+                try:
+                    path = repo.getPackage(pkg_download)
+                except IOError, e:
+                    self.error(ERROR_WRITE_ERROR,"Cannot write to file")
+                    continue
+            percentage += bump
+
+        # in case we don't sum to 100
+        self.percentage(100)
 
     def _getEVR(self,idver):
         '''
