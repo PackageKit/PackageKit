@@ -1320,6 +1320,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         else:
                             urls['vendor'].append("%s;%s" % (href,title))
 
+            # add link to bohdi if available
+            if notice['update_id']:
+                href = "https://admin.fedoraproject.org/updates/%s" % notice['update_id']
+                title = "%s Update %s" % (notice['release'],notice['update_id'])
+                urls['vendor'].append("%s;%s" % (href,title))
+
+            # other interesting data:
+            # notice['issued'] = '2008-07-30 18:09:08'
+            # notice['updated'] = presume date and time, not used
+            # notice['status'] = 'stable'
+
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
                 reboot = 'system'
