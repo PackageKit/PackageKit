@@ -154,6 +154,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_sbindir}/packagekitd
 %{_bindir}/pkmon
 %{_bindir}/pkcon
+%{_bindir}/pkgenpack
 %{_bindir}/packagekit-bugreport.sh
 %{_libexecdir}/pk-import-*
 %{_libexecdir}/pk-generate-*
