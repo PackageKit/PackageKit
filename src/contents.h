@@ -40,6 +40,7 @@
 #define __CONTENTS_H__
 
 #include <X11/Xlib.h>
+#include <gio/gio.h>
 #include <pango/pango.h>
 #include <packagekit/pk-client.h>
 #include <cairo.h>
@@ -77,7 +78,7 @@ public:
 
 private:
     void recheck();
-    void findDesktopFile();
+    void findAppInfo();
     void runApplication(Time time);
     void installPackage(Time time);
 
@@ -120,7 +121,7 @@ private:
     std::string mAvailableVersion;
     std::string mAvailablePackageName;
     std::string mInstalledVersion;
-    std::string mDesktopFile;
+    GAppInfo *mAppInfo;
 
     std::string mDisplayName;
     std::vector<std::string> mPackageNames;

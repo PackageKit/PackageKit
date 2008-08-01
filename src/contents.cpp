@@ -49,12 +49,9 @@
 #include <packagekit/pk-package-id.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
-#include <libgnome/gnome-desktop-item.h>
-#include <libgnomevfs/gnome-vfs.h>
+#include <gio/gdesktopappinfo.h>
 
 #include "plugin.h"
-
-#define APPLICATION_DIR "/usr/share/applications"
 
 #define MARGIN 5
 
@@ -91,6 +88,7 @@ PkpContents::PkpContents(const char *displayName,
     mDisplayName(displayName),
     mPackageNames(splitString(packageNames)),
     mDesktopNames(splitString(desktopNames)),
+    mAppInfo(0),
     mLayout(0),
     mInstallPackageProxy(0),
     mInstallPackageCall(0)
@@ -101,6 +99,11 @@ PkpContents::PkpContents(const char *displayName,
 PkpContents::~PkpContents()
 {
     clearLayout();
+
+    if (mAppInfo != 0) {
+        g_object_unref(mAppInfo);
+        mAppInfo = 0;
+    }
 
     if (mInstallPackageCall != 0) {
         dbus_g_proxy_cancel_call(mInstallPackageProxy, mInstallPackageCall);
@@ -134,7 +137,7 @@ void PkpContents::recheck()
         }
     }
 
-    findDesktopFile();
+    findAppInfo();
 
     if (mClients.empty() && getStatus() == IN_PROGRESS)
         setStatus(UNAVAILABLE);
@@ -292,7 +295,7 @@ PkpContents::ensureLayout(cairo_t              *cr,
         append_markup(markup, _("Getting package information..."));
         break;
     case INSTALLED:
-        if (!mDesktopFile.empty())
+        if (mAppInfo != 0)
             append_markup(markup, _("<span color='#%06x' underline='single' size='larger'>Run %s</span>"),
                           link_color >> 8,
                           mDisplayName.c_str());
@@ -303,7 +306,7 @@ PkpContents::ensureLayout(cairo_t              *cr,
         break;
     case UPGRADABLE:
         append_markup(markup, _("<big>%s</big>"), mDisplayName.c_str());
-        if (!mDesktopFile.empty()) {
+        if (mAppInfo != 0) {
             if (!mInstalledVersion.empty())
                 append_markup(markup, _("\n<span color='#%06x' underline='single'>Run version %s now</span>"),
                               link_color >> 8,
@@ -501,11 +504,11 @@ PkpContents::buttonRelease(int x, int y, Time time)
     case UNAVAILABLE:
         break;
     case INSTALLED:
-        if (!mDesktopFile.empty())
+        if (mAppInfo != 0)
             runApplication(time);
         break;
     case UPGRADABLE:
-        if (!mDesktopFile.empty() && index == 0)
+        if (mAppInfo != 0 && index == 0)
             runApplication(time);
         else {
             installPackage(time);
@@ -563,27 +566,26 @@ validate_name(const char *name)
 }
 
 void
-PkpContents::findDesktopFile()
+PkpContents::findAppInfo()
 {
     for (std::vector<std::string>::iterator i = mDesktopNames.begin(); i != mDesktopNames.end(); i++) {
         if (!validate_name(i->c_str())) {
             g_warning("Bad desktop name: '%s'", i->c_str());
             continue;
         }
-        
-        char *filename = g_strconcat(i->c_str(), ".desktop", NULL);
-        char *path = g_build_filename(APPLICATION_DIR, filename, NULL);
-        g_free(filename);
 
-        if (g_file_test(path, G_FILE_TEST_EXISTS)) {
-            mDesktopFile = path;
+        /* The "id" taken be g_desktop_app_info_new() is weirdly 'foo.desktop' not 'foo' */
+        char *id = g_strconcat(i->c_str(), ".desktop", NULL);
+        GDesktopAppInfo *desktopAppInfo = g_desktop_app_info_new(id);
+        g_free(id);
+        
+        if (desktopAppInfo) {
+            mAppInfo = G_APP_INFO(desktopAppInfo);
             break;
         }
-
-        g_free(path);
     }
 
-    if (!mDesktopFile.empty())
+    if (mAppInfo != 0)
         setStatus(INSTALLED);
 }
                   
@@ -592,34 +594,25 @@ PkpContents::runApplication (Time time)
 {
     GError *error = NULL;
     
-    /* This is idempotent and fairly cheap, so do it here to avoid initializing
-     * gnome-vfs on plugin startup
-     */
-    gnome_vfs_init();
-
-    if (mDesktopFile.c_str() == 0) {
+    if (mAppInfo == 0) {
         g_warning("Didn't find application to launch");
         return;
     }
 
-    GnomeDesktopItem *item = gnome_desktop_item_new_from_file(mDesktopFile.c_str(), GNOME_DESKTOP_ITEM_LOAD_NO_TRANSLATIONS, &error);
-    if (!item) {
+    GAppLaunchContext *context;
+#ifdef HAVE_GDK_APP_LAUNCH_CONTEXT_NEW
+    context = gdk_app_launch_context_new();
+    gdk_app_launch_context_set_timestamp(time);
+#endif    
+
+    if (!g_app_info_launch(mAppInfo, NULL, context, &error)) {
         g_warning("%s\n", error->message);
         g_clear_error(&error);
-        gnome_desktop_item_unref(item);
         return;
     }
 
-    if (time == CurrentTime)
-        time = get_server_timestamp();
-
-    gnome_desktop_item_set_launch_time(item, time);
-    if (!gnome_desktop_item_launch(item, NULL, (GnomeDesktopItemLaunchFlags)0, &error)) {
-        g_warning("%s\n", error->message);
-        g_clear_error(&error);
-        gnome_desktop_item_unref(item);
-        return;
-    }
+    if (context != 0)
+        g_object_unref(context);
 }
 
 void

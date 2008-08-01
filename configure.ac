@@ -30,7 +30,18 @@ if test "x$GCC" = "xyes"; then
 fi
 changequote([,])dnl
 
-PKG_CHECK_MODULES(PLUGIN, mozilla-plugin cairo pango gtk+-2.0 packagekit >= 0.2 dbus-glib-1 gnome-vfs-2.0 gnome-desktop-2.0)
+PKG_CHECK_MODULES(PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 packagekit >= 0.2 dbus-glib-1)
+
+packagekit_save_CPPFLAGS="$CPPFLAGS"
+packagekit_save_LDFLAGS="$LDFLAGS"
+
+CPPFLAGS="$CPPFLAGS $PLUGIN_CFLAGS"
+LDFLAGS="$CPPFLAGS $PLUGIN_LIBS"
+
+AC_CHECK_FUNCS(gdk_app_launch_context_new)
+
+CPPFLAGS="$packagekit_save_CPPFLAGS"
+LDFLAGS="$packagekit_save_LDFLAGS"
 
 AC_SUBST(PLUGIN_CFLAGS)
 AC_SUBST(PLUGIN_LIBS)

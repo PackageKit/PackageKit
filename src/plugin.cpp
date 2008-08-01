@@ -47,12 +47,7 @@
 
 #include <cairo-xlib.h>
 #include <dlfcn.h>
-#include <pango/pangocairo.h>
 #include <packagekit/pk-package-id.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkx.h>
-#include <libgnome/gnome-desktop-item.h>
-#include <libgnomevfs/gnome-vfs.h>
 
 #include "plugin.h"
 
@@ -78,7 +73,7 @@ static void *module_handle = 0;
  * but isn't so much, since it only refers to a specific library and not
  * its dependent libraries, so we'd have to identify specifically each
  * of our dependencies that is not safe to unload and that is most of
- * the GTK+/GNOME stack.
+ * the GTK+ stack.
  */
 static void
 make_module_resident()
