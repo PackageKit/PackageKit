@@ -150,7 +150,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_datadir}/man/man1/*.1.gz
 %{_datadir}/gtk-doc/html/PackageKit
 %{_datadir}/PolicyKit/policy/*.policy
-%{_datadir}/mime/packages/packagekit-catalog.xml
+%{_datadir}/mime/packages/packagekit-*.xml
 %{_sbindir}/packagekitd
 %{_bindir}/pkmon
 %{_bindir}/pkcon
