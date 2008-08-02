@@ -71,7 +71,8 @@ class PackageKitClient:
         result = []
         package_cb = lambda i, id, summary: result.append({'installed' : (i == 'installed'),
                                                            'id': (str(id)),
-                                                           'summary' :str(summary)}
+                                                           'summary' : str(summary)
+                                                           }
                                                           )
         self._wrapCall(pk_xn, method, {'Package' : package_cb})
         return result
@@ -221,9 +222,11 @@ class PackageKitClient:
         It should only return the newest update for each installed package.
         '''
         xn = self._get_xn()
-        self._wrapPackageCall(xn, lambda : xn.GetUpdates(filter))
+        if (filter == None):
+            filter = 'none'
+        return self._wrapPackageCall(xn, lambda : xn.GetUpdates(filter))
 
-    def UpdateSystem(self, filter=None):
+    def UpdateSystem(self):
         '''
         This method should return a list of packages that are installed and are upgradable.
 
@@ -337,6 +340,9 @@ if __name__ == '__main__':
     print pk.Resolve('installed', 'coreutils')
     print pk.Resolve('installed', 'pmount')
 
+    print '---- GetUpdates() ----'
+    print pk.GetUpdates('none')
+
     print '---- GetDetails() -----'
     print pk.GetDetails(pmount[0]['id'])
 
@@ -350,6 +356,9 @@ if __name__ == '__main__':
         print 'install pkg: %s, %i%%, cancel allowed: %s' % (status, pc, str(c))
         return True
         #return pc < 12
+
+    print '---- UpdateSystem() ----'
+    print pk.UpdateSystem()
 
     print '---- InstallPackages() -----'
     pk.InstallPackages(['pmount;0.9.17-2;i386;Ubuntu', 'quilt;0.46-6;all;Ubuntu'], cb)
