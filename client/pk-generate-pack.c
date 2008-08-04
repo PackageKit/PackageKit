@@ -44,8 +44,6 @@
 
 #include "pk-tools-common.h"
 
-//FIXME: This should be generated using g_get_tmp_dir and random chars
-#define PK_GENPACK_TEMP_DIR "/tmp/pack"
 
 /**
  * pk_generate_pack_perhaps_resolve:
@@ -203,8 +201,6 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	const gchar *src;
 	gchar *dest;
 
-	/* FIXME: do we have to close this? */
-	/* FIXME: check if file exists before we overwrite it */
 	file = g_fopen (tarfilename, "a+");
 	retval = tar_open (&t, (gchar *)tarfilename, NULL, O_WRONLY, 0, TAR_GNU);
 	if (retval != 0) {
@@ -238,7 +234,7 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	}
 	tar_append_eof (t);
 	tar_close (t);
-
+	fclose (file);
 out:
 	return ret;
 }
@@ -249,22 +245,26 @@ out:
 static GPtrArray *
 pk_generate_pack_scan_dir (const gchar *directory)
 {
-	guint i;
-	guint n;
 	gchar *src;
-	GPtrArray *file_array;
-	struct dirent **namelist;
+	GPtrArray *file_array = NULL;
+	GDir *dir;
+	const gchar *filename;
 
-	/* FIXME: this has to be converted to GDir */
-	n = scandir ("/tmp/pack", &namelist, 0, alphasort);
+	/* try and open the directory */
+	dir = g_dir_open (directory, 0, NULL);
+	if (dir == NULL) {
+		pk_warning ("failed to get directory for %s", directory);
+		goto out;
+	}
 
+	/* add each file to an array */
 	file_array = g_ptr_array_new ();
-	/* add each of the files */
-	for (i=2; i<n; i++) {
-		src = g_strjoin (G_DIR_SEPARATOR_S, directory, namelist[i]->d_name, NULL);
+	while ((filename = g_dir_read_name (dir))) {
+		src = g_build_filename (directory, filename, NULL);
 		g_ptr_array_add (file_array, src);
 	}
-	free (namelist);
+	g_dir_close (dir);
+out:
 	return file_array;
 }
 
@@ -359,19 +359,20 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 
 		/* convert to list of package_ids */
 		package_ids = pk_package_list_to_argv (list);
-
 		ret = pk_generate_pack_download_only (client, package_ids, directory);
 		g_strfreev (package_ids);
-		if (!ret) {
-			pk_warning ("failed to download deps of package: %s", package_id);
-			goto out;
-		}
+	}
+
+	/* failed to get deps */
+	if (!ret) {
+		pk_warning ("failed to download deps of package: %s", package_id);
+		goto out;
 	}
 
 	/* find packages that were downloaded */
 	file_array = pk_generate_pack_scan_dir (directory);
-	if (!ret) {
-		pk_warning ("failed to download packages");
+	if (file_array == NULL) {
+		pk_warning ("failed to scan directory: %s", directory);
 		goto out;
 	}
 
@@ -409,6 +410,9 @@ main (int argc, char *argv[])
 	PkControl *control = NULL;
 	PkRoleEnum roles;
 	const gchar *package_list = NULL;
+	const gchar *tempdir = NULL;
+	gboolean exists;
+	gboolean overwrite;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -469,18 +473,33 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+	/* download packages to a temporary directory */
+	tempdir = g_strconcat (g_get_tmp_dir (), "/pack", NULL);
+
+	/* check if file exists before we overwrite it */
+	exists = g_file_test (pack_filename, G_FILE_TEST_EXISTS);
+
+	/*ask user input*/
+	if (exists) {
+		overwrite = pk_console_get_prompt (_("A pack with the same name already exists, do you want to overwrite it?"), FALSE);
+		if (!overwrite) {
+			g_print ("%s\n", _("Cancelled!"));
+			goto out;
+		}
+	}
+
 	/* get rid of temp directory if it already exists */
-	g_rmdir (PK_GENPACK_TEMP_DIR);
+	g_rmdir (tempdir);
 
 	/* make the temporary directory */
-	retval = g_mkdir_with_parents (PK_GENPACK_TEMP_DIR, 0777);
+	retval = g_mkdir_with_parents (tempdir, 0777);
 	if (retval != 0) {
-		g_print ("%s: %s\n", _("Failed to create directory"), PK_GENPACK_TEMP_DIR);
+		g_print ("%s: %s\n", _("Failed to create directory"), tempdir);
 		goto out;
 	}
 
 	/* generate the pack */
-	ret = pk_generate_pack_main (pack_filename, PK_GENPACK_TEMP_DIR, package, package_list, &error);
+	ret = pk_generate_pack_main (pack_filename, tempdir, package, package_list, &error);
 	if (!ret) {
 		g_print ("%s: %s\n", _("Failed to create pack"), error->message);
 		g_error_free (error);
@@ -489,8 +508,7 @@ main (int argc, char *argv[])
 
 out:
 	/* get rid of temp directory */
-	g_rmdir (PK_GENPACK_TEMP_DIR);
-
+	g_rmdir (tempdir);
 	g_free (packname);
 	g_free (with_package_list);
 	g_free (options_help);
