@@ -91,7 +91,7 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.systems-sources-configure">
+  <action id="org.freedesktop.packagekit.system-sources-configure">
     <_description>Change software source parameters</_description>
     <_message>Authentication is required to change software source parameters</_message>
     <icon_name>pk-package-info</icon_name>

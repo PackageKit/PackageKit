@@ -114,7 +114,7 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 		policy = "org.freedesktop.packagekit.system-rollback";
 	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
 		   role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		policy = "org.freedesktop.packagekit.systems-sources-configure";
+		policy = "org.freedesktop.packagekit.system-sources-configure";
 	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		policy = "org.freedesktop.packagekit.system-sources-refresh";
 	} else if (role == PK_ROLE_ENUM_SET_PROXY_PRIVATE) {
