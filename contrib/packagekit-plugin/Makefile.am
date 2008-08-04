@@ -1,15 +1,16 @@
-SUBDIRS=po .
-
 plugindir=$(libdir)/mozilla/plugins
 plugin_LTLIBRARIES = packagekit-plugin.la
 
 packagekit_plugin_la_LDFLAGS = -rpath $(plugindir) -module -avoid-version -no-undefined
 packagekit_plugin_la_CPPFLAGS =			\
-	$(PLUGIN_CFLAGS)			\
-	-DLOCALEDIR=\"$(localedir)\"		\
-	-I $(top_srcdir)/sdk
+	$(PK_BROWSER_PLUGIN_CFLAGS)		\
+	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"	\
+	-I $(top_srcdir)/libpackagekit		\
+	-I $(srcdir)/sdk
 
-packagekit_plugin_la_LIBADD = $(PLUGIN_LIBS)
+packagekit_plugin_la_LIBADD =				\
+	$(PK_BROWSER_PLUGIN_LIBS)			\
+	$(top_builddir)/libpackagekit/libpackagekit.la
 
 packagekit_plugin_la_SOURCES = 	\
 	sdk/np_entry.cpp	\
@@ -23,13 +24,5 @@ packagekit_plugin_la_SOURCES = 	\
 	src/plugin.cpp		\
 	src/plugin.h
 
-DISTCLEANFILES =				\
-	intltool-extract			\
-	intltool-merge				\
-	intltool-update
-
 EXTRA_DIST =					\
-	intltool-extract.in 			\
-	intltool-merge.in 			\
-	intltool-update.in			\
-	test.html
+	tests/test.html

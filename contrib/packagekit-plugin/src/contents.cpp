@@ -41,15 +41,16 @@
 
 #include <string.h>
 
-#include <glib/gi18n.h>
+#include <glib/gi18n-lib.h>
 
 #include <cairo-xlib.h>
 #include <dlfcn.h>
 #include <pango/pangocairo.h>
-#include <packagekit/pk-package-id.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include <gio/gdesktopappinfo.h>
+
+#include "pk-package-id.h"
 
 #include "plugin.h"
 
@@ -83,12 +84,12 @@ splitString(const char *str)
 PkpContents::PkpContents(const char *displayName,
                          const char *packageNames,
                          const char *desktopNames) :
-    mStatus(IN_PROGRESS),
     mPlugin(0),
+    mStatus(IN_PROGRESS),
+    mAppInfo(0),
     mDisplayName(displayName),
     mPackageNames(splitString(packageNames)),
     mDesktopNames(splitString(desktopNames)),
-    mAppInfo(0),
     mLayout(0),
     mInstallPackageProxy(0),
     mInstallPackageCall(0)
@@ -599,7 +600,10 @@ PkpContents::runApplication (Time time)
         return;
     }
 
-    GAppLaunchContext *context;
+    if (time == 0)
+        time = get_server_timestamp();
+
+    GAppLaunchContext *context = 0;
 #ifdef HAVE_GDK_APP_LAUNCH_CONTEXT_NEW
     context = gdk_app_launch_context_new();
     gdk_app_launch_context_set_timestamp(time);

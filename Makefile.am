@@ -7,7 +7,6 @@ SUBDIRS = 						\
 	policy						\
 	etc						\
 	man						\
-	contrib						\
 	data						\
 	libselftest					\
 	libgbus						\
@@ -15,6 +14,7 @@ SUBDIRS = 						\
 	src						\
 	client						\
 	backends					\
+	contrib						\
 	python						\
 	docs						\
 	$(NULL)

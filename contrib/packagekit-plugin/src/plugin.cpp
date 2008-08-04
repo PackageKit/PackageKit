@@ -43,11 +43,10 @@
 
 #include <string.h>
 
-#include <glib/gi18n.h>
+#include <glib/gi18n-lib.h>
 
 #include <cairo-xlib.h>
 #include <dlfcn.h>
-#include <packagekit/pk-package-id.h>
 
 #include "plugin.h"
 
@@ -104,7 +103,7 @@ NPError NS_PluginInitialize()
     make_module_resident();
     
 #ifdef ENABLE_NLS
-    bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+    bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif
     
