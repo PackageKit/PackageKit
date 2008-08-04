@@ -887,9 +887,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # remove files of packages that alrady exist
         for inst_file in inst_files:
-            pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
-            if self._is_inst(pkg):
-                inst_files.remove(inst_file)
+            try:
+                pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+                if self._is_inst(pkg):
+                    inst_files.remove(inst_file)
+            except yum.Errors.YumBaseError,e:
+                self.error(ERROR_INVALID_PACKAGE_FILE,'Package could not be decompressed')
+            except:
+                self.error(ERROR_UNKNOWN,"Failed to open local file -- please report")
 
         # If trusted is true, it means that we will only install trusted files
         if trusted == 'yes':
