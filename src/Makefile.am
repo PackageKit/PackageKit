@@ -17,6 +17,8 @@ INCLUDES =						\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
+	$(PYTHON_CFLAGS)				\
+	$(LIBNM_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DSBINDIR=\"$(sbindir)\"		 	\
 	-DDATADIR=\"$(datadir)\"			\
@@ -37,7 +39,6 @@ pkbackendincludedir=$(includedir)/packagekit-backend
 pkbackendinclude_HEADERS =				\
 	pk-backend.h					\
 	pk-backend-spawn.h				\
-	pk-backend-thread.h				\
 	$(NULL)
 
 shared_SOURCES =					\
@@ -49,6 +50,11 @@ shared_SOURCES =					\
 	pk-backend.h					\
 	pk-backend-internal.h				\
 	pk-security.h					\
+	pk-network.c					\
+	pk-network.h					\
+	pk-network-nm.h					\
+	pk-network-unix.c				\
+	pk-network-unix.h				\
 	pk-time.h					\
 	pk-time.c					\
 	pk-conf.c					\
@@ -64,12 +70,8 @@ shared_SOURCES =					\
 	pk-engine.c					\
 	pk-inhibit.h					\
 	pk-inhibit.c					\
-	pk-thread-list.h				\
-	pk-thread-list.c				\
 	pk-backend-spawn.h				\
 	pk-backend-spawn.c				\
-	pk-backend-thread.h				\
-	pk-backend-thread.c				\
 	pk-backend-dbus.h				\
 	pk-backend-dbus.c				\
 	pk-transaction-db.h				\
@@ -79,6 +81,14 @@ shared_SOURCES =					\
 	pk-transaction-list.c				\
 	pk-transaction-list.h				\
 	$(NULL)
+
+if PK_BUILD_NETWORKMANAGER
+shared_SOURCES +=					\
+	pk-network-nm.c
+else
+shared_SOURCES +=					\
+	pk-network-nm-dummy.c
+endif
 
 if PK_BUILD_GIO
 shared_SOURCES +=					\
@@ -110,9 +120,11 @@ packagekitd_SOURCES =					\
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(GMODULE_LIBS)					\
+	$(LIBNM_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
+	$(PYTHON_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(SELFTEST_LIBS)				\
 	$(GIO_LIBS)					\

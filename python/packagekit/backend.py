@@ -127,9 +127,9 @@ class PackageKitBaseBackend:
         print "data\t%s" % (data)
         sys.stdout.flush()
 
-    def description(self,id,license,group,desc,url,bytes):
+    def details(self,id,license,group,desc,url,bytes):
         '''
-        Send 'description' signal
+        Send 'details' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param license: The license of the package
         @param group: The enumerated group
@@ -137,15 +137,15 @@ class PackageKitBaseBackend:
         @param url: The upstream project homepage
         @param bytes: The size of the package, in bytes
         '''
-        print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld" % (id,license,group,desc,url,bytes)
+        print >> sys.stdout,"details\t%s\t%s\t%s\t%s\t%s\t%ld" % (id,license,group,desc,url,bytes)
         sys.stdout.flush()
 
-    def files(self, id, file_list):
+    def files(self,id,file_list):
         '''
         Send 'files' signal
         @param file_list: List of the files in the package, separated by ';'
         '''
-        print >> sys.stdout,"files\t%s\t%s" % (id, file_list)
+        print >> sys.stdout,"files\t%s\t%s" % (id,file_list)
         sys.stdout.flush()
 
     def update_detail(self,id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text):
@@ -201,77 +201,6 @@ class PackageKitBaseBackend:
             )
         sys.stdout.flush()
 
-    def get_package_id(self,name,version,arch,data):
-        return "%s;%s;%s;%s" % (name,version,arch,data)
-
-    def get_package_from_id(self,id):
-        ''' split up a package id name;ver;arch;data into a tuple
-            containing (name,ver,arch,data)
-        '''
-        return tuple(id.split(';', 4))
-
-    def check_license_field(self,license_field):
-        '''
-        Check the string license_field for free licenses, indicated by
-        their short names as documented at
-        http://fedoraproject.org/wiki/Licensing
-
-        Licenses can be grouped by " or " to indicate that the package
-        can be redistributed under any of the licenses in the group.
-        For instance: GPLv2+ or Artistic or FooLicense.
-
-        Also, if a license ends with "+", the "+" is removed before
-        comparing it to the list of valid licenses.  So if license
-        "FooLicense" is free, then "FooLicense+" is considered free.
-
-        Groups of licenses can be grouped with " and " to indicate
-        that parts of the package are distributed under one group of
-        licenses, while other parts of the package are distributed
-        under another group.  Groups may be wrapped in parenthesis.
-        For instance:
-          (GPLv2+ or Artistic) and (GPL+ or Artistic) and FooLicense.
-
-        At least one license in each group must be free for the
-        package to be considered Free Software.  If the license_field
-        is empty, the package is considered non-free.
-        '''
-
-        groups = license_field.split(" and ")
-
-        if len(groups) == 0:
-            return False
-
-        one_free_group = False
-
-        for group in groups:
-            group = group.replace("(","")
-            group = group.replace(")","")
-            licenses = group.split(" or ")
-
-            group_is_free = False
-
-            for license in licenses:
-                license = license.strip()
-
-                if len(license) < 1:
-                    continue
-
-                if license[-1] == "+":
-                    license = license[0:-1]
-
-                if license in PackageKitEnum.free_licenses:
-                    one_free_group = True
-                    group_is_free = True
-                    break
-
-            if group_is_free == False:
-                return False
-
-        if one_free_group == False:
-            return False
-
-        return True
-
 #
 # Backend Action Methods
 #
@@ -304,14 +233,14 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_update_detail(self,package):
+    def get_update_detail(self,package_ids_ids):
         '''
         Implement the {backend}-get-update-detail functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_depends(self,filters,package,recursive):
+    def get_depends(self,filters,package_ids,recursive):
         '''
         Implement the {backend}-get-depends functionality
         Needed to be implemented in a sub class
@@ -325,7 +254,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_requires(self,filters,package,recursive):
+    def get_requires(self,filters,package_ids,recursive):
         '''
         Implement the {backend}-get-requires functionality
         Needed to be implemented in a sub class
@@ -353,22 +282,22 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def install(self, package):
+    def install_packages(self,package_ids):
         '''
         Implement the {backend}-install functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def install_file (self, trusted, inst_file):
+    def install_files (self,trusted,inst_files):
         '''
-        Implement the {backend}-install_file functionality
+        Implement the {backend}-install_files functionality
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def service_pack (self, location):
+    def service_pack (self,location):
         '''
         Implement the {backend}-service-pack functionality
         Update the computer from a service pack in location
@@ -376,40 +305,40 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def resolve(self, name):
+    def resolve(self,name):
         '''
         Implement the {backend}-resolve functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def remove(self, allowdep, package):
+    def remove_packages(self,allowdep,package_ids):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def update(self, package):
+    def update_packages(self,package):
         '''
         Implement the {backend}-update functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_description(self, package):
+    def get_details(self,package):
         '''
-        Implement the {backend}-get-description functionality
+        Implement the {backend}-get-details functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_files(self, package):
+    def get_files(self,package):
         '''
         Implement the {backend}-get-files functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def get_updates(self,filter):
         '''
@@ -418,21 +347,21 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def repo_enable(self, repoid, enable):
+    def repo_enable(self,repoid,enable):
         '''
         Implement the {backend}-repo-enable functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def repo_set_data(self, repoid, parameter, value):
+    def repo_set_data(self,repoid,parameter,value):
         '''
         Implement the {backend}-repo-set-data functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_repo_list(self, filters):
+    def get_repo_list(self,filters):
         '''
         Implement the {backend}-get-repo-list functionality
         Needed to be implemented in a sub class
@@ -446,6 +375,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def download_packages(self,directory,packages):
+	'''
+	Implement the {backend}-download-packages functionality
+	Needed to be implemented in a sub class
+	'''
+	self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
     def customTracebackHandler(self,tb):
         '''
         Custom Traceback Handler
@@ -457,90 +393,7 @@ class PackageKitBaseBackend:
         '''
         return False
 
-class PackagekitProgress:
-    '''
-    Progress class there controls the total progress of a transaction
-    the transaction is divided in n milestones. the class contains a subpercentage
-    of the current step (milestone n -> n+1) and the percentage of the whole transaction
-
-    Usage:
-
-    from packagekit.backend import PackagekitProgress
-
-    steps = [10,30,50,70] # Milestones in %
-    progress = PackagekitProgress()
-    progress.set_steps(steps)
-    for milestone in range(len(steps)):
-        # do the action is this step
-        for i in range(100):
-            # do some action
-            progress.set_subpercent(i+1)
-            print "progress : %s " % progress.percent
-        progress.step() # step to next milestone
-
-    '''
-
-    #TODO: Add support for elapsed/remaining time
-
-    def __init__(self):
-        self.percent = 0
-        self.steps = []
-        self.current_step = 0
-        self.subpercent = 0
-
-    def set_steps(self,steps):
-        '''
-        Set the steps for the whole transaction
-        @param steps: list of int representing the percentage of each step in the transaction
-        '''
-        self.reset()
-        self.steps = steps
-        self.current_step = 0
-
-    def reset(self):
-        self.percent = 0
-        self.steps = []
-        self.current_step = 0
-        self.subpercent = 0
-
-    def step(self):
-        '''
-        Step to the next step in the transaction
-        '''
-        if self.current_step < len(self.steps)-1:
-            self.current_step += 1
-            self.percent = self.steps[self.current_step]
-            self.subpercent = 0
-        else:
-            self.percent = 100
-            self.subpercent = 0
-
-    def set_subpercent(self,pct):
-        '''
-        Set subpercentage and update percentage
-        '''
-        self.subpercent = pct
-        self._update_percent()
-
-    def _update_percent(self):
-        '''
-        Increment percentage based on current step and subpercentage
-        '''
-        if self.current_step == 0:
-            startpct = 0
-        else:
-            startpct = self.steps[self.current_step-1]
-        if self.current_step < len(self.steps)-1:
-            endpct = self.steps[self.current_step+1]
-        else:
-            endpct = 100
-        deltapct = endpct -startpct
-        f = float(self.subpercent)/100.0
-        incr = int(f*deltapct)
-        self.percent = startpct + incr
-
-
-def exceptionHandler(typ, value, tb, base):
+def exceptionHandler(typ,value,tb,base):
     # Restore original exception handler
     sys.excepthook = sys.__excepthook__
     # Call backend custom Traceback handler
@@ -549,13 +402,13 @@ def exceptionHandler(typ, value, tb, base):
         errmsg = 'Error Type: %s;' % str(typ)
         errmsg += 'Error Value: %s;' % str(value)
         for tub in etb:
-            f,l,m,c = tub # file,lineno, function, codeline
-            errmsg += '  File : %s , line %s, in %s;' % (f,str(l),m)
+            f,l,m,c = tub # file,lineno,function,codeline
+            errmsg += '  File : %s, line %s, in %s;' % (f,str(l),m)
             errmsg += '    %s;' % c
         # send the traceback to PackageKit
         base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
 
 
 def installExceptionHandler(base):
-    sys.excepthook = lambda typ, value, tb: exceptionHandler(typ, value, tb,base)
+    sys.excepthook = lambda typ,value,tb: exceptionHandler(typ,value,tb,base)
 

@@ -46,7 +46,12 @@ static void     pk_transaction_db_init		(PkTransactionDb      *tdb);
 static void     pk_transaction_db_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_DB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_DB, PkTransactionDbPrivate))
+
+#if PK_BUILD_LOCAL
+#define PK_TRANSACTION_DB_FILE		"./transactions.db"
+#else
 #define PK_TRANSACTION_DB_FILE		PK_DB_DIR "/transactions.db"
+#endif
 
 struct PkTransactionDbPrivate
 {
@@ -165,13 +170,6 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		}
 	}
 
-	g_print ("tid          : %s\n", item.tid);
-	g_print (" timespec    : %s\n", item.timespec);
-	g_print (" succeeded   : %i\n", item.succeeded);
-	g_print (" role        : %s\n", pk_role_enum_to_text (item.role));
-	g_print (" duration    : %i (seconds)\n", item.duration);
-	g_print (" data        : %s\n", item.data);
-
 	/* emit signal */
 	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
 		       item.tid, item.timespec, item.succeeded, item.role,
@@ -193,7 +191,6 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
-	pk_debug ("statement=%s", sql);
 	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
 	if (rc != SQLITE_OK) {
 		pk_warning ("SQL error: %s\n", error_msg);

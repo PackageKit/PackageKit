@@ -1,13 +1,13 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.2.0)
+AC_INIT(PackageKit, 0.3.0)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 
 # Should we enable extra stuff automatically?
 # set no for release builds, yes for development builds
-DEVELOPMENT_RELEASE=yes
+DEVELOPMENT_RELEASE=no
 
 # libtool versioning - this applies to libpackagekit
 #
@@ -18,7 +18,7 @@ DEVELOPMENT_RELEASE=yes
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-LT_CURRENT=3
+LT_CURRENT=4
 LT_REVISION=0
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
@@ -45,11 +45,6 @@ GTK_DOC_CHECK(1.9)
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
-AM_PATH_PYTHON
-PYTHON_PACKAGE_DIR=${pythondir}/packagekit
-AC_SUBST(PYTHON_PACKAGE_DIR)
-
-
 dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
@@ -74,10 +69,10 @@ dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.14.0
 GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
-DBUS_GLIB_REQUIRED=0.73
+DBUS_GLIB_REQUIRED=0.74
 LIBNM_GLIB_REQUIRED=0.6.4
-POLKIT_DBUS_REQUIRED=0.7
-POLKIT_GRANT_REQUIRED=0.7
+POLKIT_DBUS_REQUIRED=0.8
+POLKIT_GRANT_REQUIRED=0.8
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -107,6 +102,15 @@ PKG_CHECK_MODULES(DBUS, \
  gthread-2.0)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
+
+AC_CHECK_HEADERS([libtar.h])
+TAR_LIBS=-ltar
+AC_SUBST(TAR_LIBS)
+
+dnl ---------------------------------------------------------------------------
+dnl - xsltproc
+dnl ---------------------------------------------------------------------------
+AC_PATH_PROG([XSLTPROC], [xsltproc])
 
 dnl ---------------------------------------------------------------------------
 dnl - Is GIO available?
@@ -148,6 +152,33 @@ if test "$DOCBOOK2MAN" = "no" ; then
 	AC_MSG_WARN([docbook2man not found, will not be able to build man documentation])
 	fi
 AM_CONDITIONAL(HAVE_DOCBOOK2MAN, [test "$DOCBOOK2MAN" != "no"])
+
+AM_PATH_PYTHON([2.3],[],[have_python=no])
+if test "x$PYTHON" = "x:"; then
+	have_python=no
+fi
+
+PY_PREFIX=`$PYTHON -c 'import sys ; print sys.prefix'`
+PY_EXEC_PREFIX=`$PYTHON -c 'import sys ; print sys.exec_prefix'`
+PYTHON_LIBS="-lpython$PYTHON_VERSION"
+if test -d $PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION ; then
+	PYTHON_LIB_LOC="-L$PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION/config"
+	PYTHON_MAKEFILE="$PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION/config/Makefile"
+else
+	PYTHON_LIB_LOC="-L$PY_EXEC_PREFIX/lib/python$PYTHON_VERSION/config"
+	PYTHON_MAKEFILE="$PY_EXEC_PREFIX/lib/python$PYTHON_VERSION/config/Makefile"
+fi
+PYTHON_CFLAGS="-I$PY_PREFIX/include/python$PYTHON_VERSION"
+PYTHON_LOCALMODLIBS=`sed -n -e 's/^LOCALMODLIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
+PYTHON_BASEMODLIBS=`sed -n -e 's/^BASEMODLIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
+PYTHON_OTHER_LIBS=`sed -n -e 's/^LIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
+PYTHON_EXTRA_LIBS="$PYTHON_LOCALMODLIBS $PYTHON_BASEMODLIBS $PYTHON_OTHER_LIBS"
+PYTHON_PACKAGE_DIR=${pythondir}/packagekit
+AC_SUBST([PYTHON_LIBS])
+AC_SUBST([PYTHON_LIB_LOC])
+AC_SUBST([PYTHON_CFLAGS])
+AC_SUBST([PYTHON_EXTRA_LIBS])
+AC_SUBST(PYTHON_PACKAGE_DIR)
 
 dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
@@ -223,14 +254,15 @@ AC_ARG_ENABLE(gprof, AS_HELP_STRING([--enable-gprof],[compile with gprof support
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
 AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
-AC_ARG_ENABLE(apt2, AS_HELP_STRING([--enable-apt2],[use the DBus based APT backend]),enable_apt2=$enableval,enable_apt2=no)
 AC_ARG_ENABLE(box, AS_HELP_STRING([--enable-box],[use the BOX backend]),enable_box=$enableval,enable_box=no)
 AC_ARG_ENABLE(conary, AS_HELP_STRING([--enable-conary],[use the CONARY backend]),enable_conary=$enableval,enable_conary=no)
 AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
 AC_ARG_ENABLE(opkg, AS_HELP_STRING([--enable-opkg],[use the OPKG backend]),enable_opkg=$enableval,enable_opkg=no)
 AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enable_pisi=$enableval,enable_pisi=no)
 AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend]),enable_poldek=$enableval,enable_poldek=no)
+AC_ARG_ENABLE(razor, AS_HELP_STRING([--enable-razor],[use the razor backend]),enable_razor=$enableval,enable_razor=no)
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
+AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
 AC_ARG_ENABLE(yum2, AS_HELP_STRING([--enable-yum2],[use the YUM DBUS backend]),enable_yum2=$enableval,enable_yum2=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
@@ -238,14 +270,15 @@ AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enabl
 # export to Makefile.am's
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes], [using ALPM backend])
 AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$enable_apt = xyes], [using APT backend])
-AM_CONDITIONAL(BACKEND_TYPE_APT_DBUS, [test x$enable_apt2 = xyes], [using DBus based APT backend])
 AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$enable_box = xyes], [using BOX backend])
 AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$enable_conary = xyes], [using CONARY backend])
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes], [using dummy backend])
 AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes], [using OPKG backend])
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes], [using PiSi backend])
 AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes], [using poldek backend])
+AM_CONDITIONAL(BACKEND_TYPE_RAZOR, [test x$enable_razor = xyes], [using Razor backend])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART backend])
+AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes], [using URPMI backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM2, [test x$enable_yum2 = xyes], [using YUM DBUS backend])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes], [using Zypp backend])
@@ -369,7 +402,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,apt2,box,conary,dummy,smart,yum,pisi,zypp,opkg (dummy)]))
+                           alpm,apt,box,conary,dummy,razor,smart,urpmi,yum,pisi,zypp,opkg (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -386,8 +419,12 @@ if test x$with_default_backend = x; then
 		with_default_backend=smart
 	elif test -f /usr/bin/pisi ; then
 		with_default_backend=pisi
+	elif test -f /usr/bin/razor ; then
+		with_default_backend=razor
 	elif test -f /usr/bin/poldek ; then
 		with_default_backend=poldek
+	elif test -f /usr/bin/urpmq ; then
+		with_default_backend=urpmi
 	elif test -f /usr/bin/zypper ; then
 		with_default_backend=zypp
 	else
@@ -398,133 +435,7 @@ fi
 AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
-AC_DEFUN([APT_BACKEND],
-[
-  if test "$APT_PKG_TYPE" == "" ; then
-	   AC_LANG_PUSH(C++)
-		_libaptpkg_save_cppflags=$CPPFLAGS
-	   CPPFLAGS="$APT_CFLAGS $CPPFLAGS"
-	   _APT_save_libs=$LIBS
-	   LIBS="$APT_LIBS $LIBS"
-
-	   AC_MSG_CHECKING([for apt support for $1 packages])
-		AC_RUN_IFELSE(AC_LANG_PROGRAM([
-		#include <apt-pkg/configuration.h>
-		#include <apt-pkg/pkgsystem.h>
-		#include <apt-pkg/init.h>
-		#include <stdio.h>
-	   ],[
-		if (pkgInitConfig(*_config) == false)
-		{
-			fprintf(stderr,"pkginitconfig was false");
-			return -1;
-		}
-		if (pkgInitSystem(*_config, _system) == false)
-		{
-			fprintf(stderr,"pkginitsystem was false");
-			return -1;
-		}
-		if (_system->ArchiveSupported("$1"))
-			return 0;
-		else
-			return 1;
-		]),[
-			APT_PKG_TYPE=$1
-			AC_MSG_RESULT([yes])
-			AC_DEFINE(APT_PKG_$2,1,[apt-pkg support files of type $1])
-		],)
-		AC_LANG_POP(C++)
-	   CPPFLAGS=$_libaptpkg_save_cppflags
-	   LIBS=$_libaptpkg_save_libs
-	   unset _libaptpkg_save_cppflags
-	   unset _libaptpkg_save_libs
- 	fi
-])
-
 if test x$enable_apt = xyes; then
-	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
-
-	AC_ARG_WITH([apt_search],
-	    AS_HELP_STRING([--with-apt-search=<option>],
-			   [Apt search type to use - plain,sqlite (plain)]))
-
-	if test x$with_apt_search = x; then
-		with_apt_search=plain
-	fi
-    AC_MSG_NOTICE([using $with_apt_search for apt searching])
-	AC_DEFINE_UNQUOTED(APT_SEARCH, "$with_apt_search", [apt search type])
-	AC_SUBST(APT_SEARCH, $with_apt_search)
-	AM_CONDITIONAL(APT_SEARCH_PLAIN, [test x$with_apt_search = xplain], [using plain apt search])
-	AM_CONDITIONAL(APT_SEARCH_SQLITE, [test x$with_apt_search = xsqlite], [using sqlite apt search])
-
-   AC_ARG_WITH(libapt-pkg-lib,
-	 AC_HELP_STRING([--with-libapt-pkg-lib=DIR],[look for the libapt-pkg library in DIR]),
-	 [_libaptpkg_with_lib=$withval],[_libaptpkg_with_lib=no])
-  	if test "$_libaptpkg_with_lib" == "no" ; then
-		APT_LIBS="-lapt-pkg"
-	else
-		APT_LIBS="-L$withval -lapt-pkg"
-	fi
-
-   AC_ARG_WITH(libapt-pkg-includes,
-	 AC_HELP_STRING([--with-libapt-pkg-includes=DIR],[look for the libapt-pkg includes in DIR]),
-	 [_libaptpkg_with_inc=$withval],[_libaptpkg_with_inc=no])
-  	if test "$_libaptpkg_with_inc" == "no" ; then
-		APT_CFLAGS="-I/usr/include/apt-pkg"
-	else
-		APT_CFLAGS="-I$withval"
-	fi
-
-	AC_CACHE_CHECK([whether libapt-pkg is usable],
-	   [libaptpkg_usable],
-	   [
-	   _libaptpkg_save_cppflags=$CPPFLAGS
-	   CPPFLAGS="$APT_CFLAGS $CPPFLAGS"
-	   _APT_save_libs=$LIBS
-	   LIBS="$APT_LIBS $LIBS"
-
-	   AC_LANG_PUSH(C++)
-	   AC_LINK_IFELSE(AC_LANG_PROGRAM([
-		#include <apt-pkg/configuration.h>
-	   	#include <apt-pkg/pkgsystem.h>
-	   	#include <apt-pkg/init.h>
-		#include <stdio.h>
-	   ],[
-		if (pkgInitConfig(*_config) == false)
-		{
-			fprintf(stderr,"pkginitconfig was false");
-			return -1;
-		}
-		if (pkgInitSystem(*_config, _system) == false)
-		{
-			fprintf(stderr,"pkginitsystem was false");
-			return -1;
-		}
-		return 0;
-]),libaptpkg_usable=yes,AC_MSG_ERROR([libapt-pkg not found]))
-
-	   CPPFLAGS=$_libaptpkg_save_cppflags
-	   LIBS=$_libaptpkg_save_libs
-	   unset _libaptpkg_save_cppflags
-	   unset _libaptpkg_save_libs
-	   ])
-	AC_LANG_POP(C++)
-
-	APT_BACKEND(deb,DEB)
-	APT_BACKEND(rpm,RPM)
-  	if test "$APT_PKG_TYPE" == "" ; then
-		AC_MSG_ERROR([Couldn't find support for any type of packages that we know about for Apt!])
-	fi
-
-	AC_SUBST(APT_CFLAGS)
-	AC_SUBST(APT_LIBS)
-	AC_SUBST(APT_PKG_TYPE)
-else
-	AM_CONDITIONAL(APT_SEARCH_PLAIN, [false])
-	AM_CONDITIONAL(APT_SEARCH_SQLITE, [false])
-fi
-
-if test x$enable_apt2 = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 fi
 
@@ -535,14 +446,13 @@ if test x$enable_box = xyes; then
 fi
 
 if test x$enable_opkg = xyes; then
-	PKG_CHECK_MODULES(OPKG, libopkg)
+	PKG_CHECK_MODULES(OPKG, libopkg = 0.1.5)
 	AC_SUBST(OPKG_CFLAGS)
 	AC_SUBST(OPKG_LIBS)
 fi
 
 if test x$enable_alpm = xyes; then
 	with_default_backend=dummy
-	AC_MSG_WARN([The alpm backend doesn't work at all!])
 	AC_CHECK_HEADER([alpm.h],
 			[with_default_backend=alpm],
 			[AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
@@ -556,9 +466,15 @@ if test x$enable_poldek = xyes; then
 fi
 
 if test x$enable_zypp = xyes; then
-	PKG_CHECK_MODULES(ZYPP, libzypp >= 4.14.0)
+	PKG_CHECK_MODULES(ZYPP, libzypp >= 4.25.0)
 	AC_SUBST(ZYPP_CFLAGS)
 	AC_SUBST(ZYPP_LIBS)
+fi
+
+if test x$enable_razor = xyes; then
+	PKG_CHECK_MODULES(RAZOR, razor >= 0.1)
+	AC_SUBST(RAZOR_CFLAGS)
+	AC_SUBST(RAZOR_LIBS)
 fi
 
 AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
@@ -568,11 +484,6 @@ AC_SUBST(PK_LOG_DIR, "\$(localstatedir)/log")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
-
-if test x$with_default_backend = xapt; then
-	# now we've done the conditionals, rename for searching backend
-	with_default_backend="apt (with $with_apt_search searching)"
-fi
 
 dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
@@ -584,8 +495,8 @@ man/Makefile
 docs/Makefile
 docs/html/Makefile
 docs/html/img/Makefile
-docs/spec/Makefile
 docs/api/Makefile
+docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
 contrib/udev/Makefile
@@ -593,8 +504,6 @@ contrib/yum-packagekit/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile
-backends/apt/helpers/Makefile
-backends/apt2/Makefile
 backends/box/Makefile
 backends/conary/Makefile
 backends/conary/helpers/Makefile
@@ -604,6 +513,11 @@ backends/smart/Makefile
 backends/smart/helpers/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
+backends/urpmi/Makefile
+backends/urpmi/helpers/Makefile
+backends/urpmi/helpers/perl_packagekit/Makefile
+backends/urpmi/helpers/urpmi_backend/Makefile
+backends/razor/Makefile
 backends/yum/Makefile
 backends/yum/helpers/Makefile
 backends/yum2/Makefile
@@ -651,14 +565,15 @@ echo "
         Backends:
         ALPM backend:              ${enable_alpm}
         APT backend:               ${enable_apt}
-        APT DBus backend:          ${enable_apt2}
         BOX backend:               ${enable_box}
         CONARY backend:            ${enable_conary}
         dummy backend:             ${enable_dummy}
         OPKG backend:              ${enable_opkg}
+        Razor backend:             ${enable_razor}
         PiSi backend:              ${enable_pisi}
         poldek backend:            ${enable_poldek}
         SMART backend:             ${enable_smart}
+        URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
         YUM2 backend:              ${enable_yum2}
         Zypp backend:              ${enable_zypp}

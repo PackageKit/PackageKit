@@ -77,6 +77,7 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_DOWNLOAD_CHANGELOG,	"download-changelog"},
 	{PK_STATUS_ENUM_DOWNLOAD_GROUP,		"download-group"},
 	{PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO,	"download-updateinfo"},
+	{PK_STATUS_ENUM_REPACKAGING,		"repackaging"},
 	{0, NULL}
 };
 
@@ -84,18 +85,18 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ROLE_ENUM_CANCEL,			"cancel"},
 	{PK_ROLE_ENUM_GET_DEPENDS,		"get-depends"},
-	{PK_ROLE_ENUM_GET_DESCRIPTION,		"get-description"},
+	{PK_ROLE_ENUM_GET_DETAILS,		"get-details"},
 	{PK_ROLE_ENUM_GET_FILES,		"get-files"},
 	{PK_ROLE_ENUM_GET_PACKAGES,		"get-packages"},
 	{PK_ROLE_ENUM_GET_REPO_LIST,		"get-repo-list"},
 	{PK_ROLE_ENUM_GET_REQUIRES,		"get-requires"},
 	{PK_ROLE_ENUM_GET_UPDATE_DETAIL,	"get-update-detail"},
 	{PK_ROLE_ENUM_GET_UPDATES,		"get-updates"},
-	{PK_ROLE_ENUM_INSTALL_FILE,		"install-file"},
-	{PK_ROLE_ENUM_INSTALL_PACKAGE,		"install-package"},
+	{PK_ROLE_ENUM_INSTALL_FILES,		"install-files"},
+	{PK_ROLE_ENUM_INSTALL_PACKAGES,		"install-packages"},
 	{PK_ROLE_ENUM_INSTALL_SIGNATURE,	"install-signature"},
 	{PK_ROLE_ENUM_REFRESH_CACHE,		"refresh-cache"},
-	{PK_ROLE_ENUM_REMOVE_PACKAGE,		"remove-package"},
+	{PK_ROLE_ENUM_REMOVE_PACKAGES,		"remove-packages"},
 	{PK_ROLE_ENUM_REPO_ENABLE,		"repo-enable"},
 	{PK_ROLE_ENUM_REPO_SET_DATA,		"repo-set-data"},
 	{PK_ROLE_ENUM_RESOLVE,			"resolve"},
@@ -109,6 +110,7 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_UPDATE_SYSTEM,		"update-system"},
 	{PK_ROLE_ENUM_WHAT_PROVIDES,		"what-provides"},
 	{PK_ROLE_ENUM_ACCEPT_EULA,		"accept-eula"},
+	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,	"download-packages"},
 	{0, NULL}
 };
 
@@ -129,6 +131,7 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
 	{PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,	"package-download-failed"},
 	{PK_ERROR_ENUM_GROUP_NOT_FOUND,		"group-not-found"},
+	{PK_ERROR_ENUM_GROUP_LIST_INVALID,	"group-list-invalid"},
 	{PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,	"dep-resolution-failed"},
 	{PK_ERROR_ENUM_CREATE_THREAD_FAILED,	"create-thread-failed"},
 	{PK_ERROR_ENUM_REPO_NOT_FOUND,		"repo-not-found"},
@@ -151,6 +154,7 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_REPO_NOT_AVAILABLE,	"repo-not-available"},
 	{PK_ERROR_ENUM_INVALID_PACKAGE_FILE,    "invalid-package-file"},
 	{PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED, "package-install-blocked"},
+	{PK_ERROR_ENUM_PACKAGE_CORRUPT,         "package-corrupt"},
 	{0, NULL}
 };
 
@@ -192,6 +196,8 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_NEWEST,		"~newest"},
 	{PK_FILTER_ENUM_ARCH,			"arch"},
 	{PK_FILTER_ENUM_NOT_ARCH,		"~arch"},
+	{PK_FILTER_ENUM_SOURCE,			"source"},
+	{PK_FILTER_ENUM_NOT_SOURCE,		"~source"},
 	{0, NULL}
 };
 
@@ -276,6 +282,17 @@ static PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_ANY,			"any"},
 	{PK_PROVIDES_ENUM_MODALIAS,		"modalias"},
 	{PK_PROVIDES_ENUM_CODEC,		"codec"},
+	{PK_PROVIDES_ENUM_MIMETYPE,		"mimetype"},
+	{PK_PROVIDES_ENUM_FONT,			"font"},
+	{0, NULL}
+};
+
+static PkEnumMatch enum_network[] = {
+	{PK_NETWORK_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_NETWORK_ENUM_OFFLINE,		"offline"},
+	{PK_NETWORK_ENUM_ONLINE,		"online"},
+	{PK_NETWORK_ENUM_SLOW,			"slow"},
+	{PK_NETWORK_ENUM_FAST,			"fast"},
 	{0, NULL}
 };
 
@@ -403,6 +420,9 @@ static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_STIX,			"STIX"},
 	{PK_LICENSE_ENUM_XANO,			"XANO"},
 	{PK_LICENSE_ENUM_VOSTROM,		"VOSTROM"},
+	{PK_LICENSE_ENUM_XEROX,                 "Xerox License"},
+	{PK_LICENSE_ENUM_RICEBSD,               "RiceBSD"},
+	{PK_LICENSE_ENUM_QHULL,                 "Qhull"},
 	{0, NULL}
 };
 
@@ -618,6 +638,34 @@ const gchar *
 pk_exit_enum_to_text (PkExitEnum exit)
 {
 	return pk_enum_find_string (enum_exit, exit);
+}
+
+/**
+ * pk_network_enum_from_text:
+ * @network: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
+ */
+PkNetworkEnum
+pk_network_enum_from_text (const gchar *network)
+{
+	return pk_enum_find_value (enum_network, network);
+}
+
+/**
+ * pk_network_enum_to_text:
+ * @network: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
+ **/
+const gchar *
+pk_network_enum_to_text (PkNetworkEnum network)
+{
+	return pk_enum_find_string (enum_network, network);
 }
 
 /**

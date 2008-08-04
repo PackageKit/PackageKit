@@ -15,5 +15,5 @@ import sys
 from smartBackend import PackageKitSmartBackend
 package = sys.argv[1]
 backend = PackageKitSmartBackend(sys.argv[1:])
-backend.get_depends(package)
+backend.get_depends(package.split('|'))
 sys.exit(0)

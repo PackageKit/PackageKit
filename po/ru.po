@@ -284,12 +284,12 @@ msgstr "Укажите имя пакета для показа"
 #: ../client/pk-console.c:1316 ../client/pk-console.c:1323
 #, c-format
 msgid "You need to specify a repo name"
-msgstr "Укажите имя репозитария"
+msgstr "Укажите имя репозитория"
 
 #: ../client/pk-console.c:1330
 #, c-format
 msgid "You need to specify a repo name/parameter and value"
-msgstr "Укажите имя/параметр и значение репозитария"
+msgstr "Укажите имя/параметр и значение репозитория"
 
 #: ../client/pk-console.c:1343
 #, c-format

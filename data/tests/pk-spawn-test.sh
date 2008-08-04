@@ -18,7 +18,7 @@ sleep ${time}
 echo -e "percentage\t40"
 sleep ${time}
 echo -e "package\tavailable\tpolkit;0.0.1;i386;data\tPolicyKit daemon"
-echo -e "package\tinstalled\tpolkit-gnome;0.0.1;i386;data\tPolicyKit helper for GNOME"
+echo -e "package\tinstalled\tpolkit-gnome;0.0.1;i386;data\tPolicyKit helper (•) for GNOME"
 sleep ${time}
 echo -e -n "package\tavailable\tConsoleKit"
 sleep ${time}

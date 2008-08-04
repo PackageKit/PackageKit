@@ -6,21 +6,21 @@ NULL =
 dist_helper_DATA = 			\
 	get-depends.py			\
 	get-files.py			\
-	get-description.py		\
+	get-details.py			\
 	get-repo-list.py 		\
 	get-requires.py			\
 	get-updates.py			\
-	install-file.py			\
-	install.py			\
+	install-files.py		\
+	install-packages.py		\
 	refresh-cache.py 		\
-	remove.py			\
+	remove-packages.py		\
 	resolve.py			\
 	repo-set-data.py		\
 	search-details.py		\
 	search-file.py			\
 	search-group.py			\
 	search-name.py			\
-	update.py			\
+	update-packages.py		\
 	update-system.py		\
 	pisiBackend.py			\
 	$(NULL)

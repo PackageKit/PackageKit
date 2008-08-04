@@ -1,6 +1,6 @@
 EXTRA_DIST =				\
-	pkcon.sgml			\
-	pkmon.sgml
+	pkcon.xml			\
+	pkmon.xml
 
 if HAVE_DOCBOOK2MAN
 man_MANS =				\
@@ -9,11 +9,11 @@ man_MANS =				\
 endif
 
 if HAVE_DOCBOOK2MAN
-pkcon.1: pkcon.sgml
-	docbook2man $? > /dev/null
+pkcon.1: pkcon.xml
+	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
 
-pkmon.1: pkmon.sgml
-	docbook2man $? > /dev/null
+pkmon.1: pkmon.xml
+	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
 endif
 
 clean-local :

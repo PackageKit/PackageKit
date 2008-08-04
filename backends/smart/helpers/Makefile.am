@@ -5,20 +5,20 @@ NULL =
 
 dist_helper_DATA = 			\
 	get-depends.py			\
-	get-description.py		\
+	get-details.py			\
 	get-files.py			\
 	get-repo-list.py		\
 	get-updates.py			\
-	install-file.py			\
-	install.py			\
+	install-files.py		\
+	install-packages.py		\
 	refresh-cache.py		\
-	remove.py			\
+	remove-packages.py		\
 	repo-enable.py			\
 	resolve.py			\
 	search-name.py			\
 	search-details.py		\
 	smartBackend.py			\
-	update.py			\
+	update-packages.py		\
 	update-system.py		\
 	$(NULL)
 

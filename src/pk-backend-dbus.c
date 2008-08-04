@@ -54,7 +54,6 @@
 #include "pk-enum.h"
 #include "pk-time.h"
 #include "pk-inhibit.h"
-#include "pk-thread-list.h"
 
 #define PK_BACKEND_DBUS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_DBUS, PkBackendDbusPrivate))
 
@@ -76,6 +75,7 @@ struct PkBackendDbusPrivate
 	GTimer			*timer;
 	gchar			*service;
 	gulong			 signal_finished;
+	LibGBus			*gbus;
 };
 
 G_DEFINE_TYPE (PkBackendDbus, pk_backend_dbus, G_TYPE_OBJECT)
@@ -124,16 +124,6 @@ pk_backend_dbus_sub_percentage_changed_cb (DBusGProxy *proxy, guint sub_percenta
 }
 
 /**
- * pk_backend_dbus_no_percentage_updates_cb:
- **/
-static void
-pk_backend_dbus_no_percentage_updates_cb (DBusGProxy *proxy, PkBackendDbus *backend_dbus)
-{
-	pk_debug ("got signal");
-	pk_backend_no_percentage_updates (backend_dbus->priv->backend);
-}
-
-/**
  * pk_backend_dbus_package_cb:
  **/
 static void
@@ -145,16 +135,16 @@ pk_backend_dbus_package_cb (DBusGProxy *proxy, const gchar *info_text, const gch
 }
 
 /**
- * pk_backend_dbus_description_cb:
+ * pk_backend_dbus_details_cb:
  **/
 static void
-pk_backend_dbus_description_cb (DBusGProxy *proxy, const gchar *package_id,
+pk_backend_dbus_details_cb (DBusGProxy *proxy, const gchar *package_id,
 				const gchar *license, const gchar *group_text,
 				const gchar *detail, const gchar *url,
 				guint64 size, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("got signal");
-	pk_backend_description (backend_dbus->priv->backend, package_id,
+	pk_backend_details (backend_dbus->priv->backend, package_id,
 				license, pk_group_enum_from_text (group_text), detail, url, size);
 }
 
@@ -326,12 +316,10 @@ pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
 					G_CALLBACK (pk_backend_dbus_percentage_changed_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "SubPercentageChanged",
 					G_CALLBACK (pk_backend_dbus_sub_percentage_changed_cb), backend_dbus);
-	dbus_g_proxy_disconnect_signal (proxy, "NoPercentageChanged",
-					G_CALLBACK (pk_backend_dbus_no_percentage_updates_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "Package",
 					G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus);
-	dbus_g_proxy_disconnect_signal (proxy, "Description",
-					G_CALLBACK (pk_backend_dbus_description_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Details",
+					G_CALLBACK (pk_backend_dbus_details_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "Files",
 					G_CALLBACK (pk_backend_dbus_files_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "UpdateDetail",
@@ -354,6 +342,97 @@ pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
 }
 
 /**
+ * pk_backend_dbus_set_proxy:
+ **/
+static gboolean
+pk_backend_dbus_set_proxy (PkBackendDbus *backend_dbus, const gchar *proxy_http, const gchar *proxy_ftp)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
+	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SetProxy", &error,
+				 G_TYPE_STRING, proxy_http,
+				 G_TYPE_STRING, proxy_ftp,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_set_locale:
+ **/
+static gboolean
+pk_backend_dbus_set_locale (PkBackendDbus *backend_dbus, const gchar *locale)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
+	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SetLocale", &error,
+				 G_TYPE_STRING, locale,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_startup:
+ **/
+gboolean
+pk_backend_dbus_startup (PkBackendDbus *backend_dbus)
+{
+	gboolean ret;
+	GError *error = NULL;
+	gchar *locale;
+	gchar *proxy_http;
+	gchar *proxy_ftp;
+
+	/* manually init the backend, which should get things spawned for us */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Init", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (!ret) {
+		pk_warning ("%s", error->message);
+		/* cannot use ErrorCode as not in transaction */
+		pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON, error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* set the proxy */
+	proxy_http = pk_backend_get_proxy_http (backend_dbus->priv->backend);
+	proxy_ftp = pk_backend_get_proxy_http (backend_dbus->priv->backend);
+	pk_backend_dbus_set_proxy (backend_dbus, proxy_http, proxy_ftp);
+	g_free (proxy_http);
+	g_free (proxy_ftp);
+
+	/* set the language */
+	locale = pk_backend_get_locale (backend_dbus->priv->backend);
+	pk_backend_dbus_set_locale (backend_dbus, locale);
+	g_free (locale);
+
+	/* reset the time */
+	pk_backend_dbus_time_check (backend_dbus);
+out:
+	return ret;
+}
+
+/**
  * pk_backend_dbus_set_name:
  **/
 gboolean
@@ -361,7 +440,6 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 {
 	DBusGProxy *proxy;
 	gboolean ret;
-	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->connection != NULL, FALSE);
@@ -372,6 +450,9 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 		pk_backend_dbus_remove_callbacks (backend_dbus);
 		g_object_unref (backend_dbus->priv->proxy);
 	}
+
+	/* watch */
+	libgbus_assign (backend_dbus->priv->gbus, LIBGBUS_SYSTEM, service);
 
 	/* grab this */
 	pk_debug ("trying to activate %s", service);
@@ -386,10 +467,9 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				 G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "SubPercentageChanged",
 				 G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "NoPercentageChanged", G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Package",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Description",
+	dbus_g_proxy_add_signal (proxy, "Details",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Files",
@@ -425,12 +505,10 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				     G_CALLBACK (pk_backend_dbus_percentage_changed_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "SubPercentageChanged",
 				     G_CALLBACK (pk_backend_dbus_sub_percentage_changed_cb), backend_dbus, NULL);
-	dbus_g_proxy_connect_signal (proxy, "NoPercentageChanged",
-				     G_CALLBACK (pk_backend_dbus_no_percentage_updates_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Description",
-				     G_CALLBACK (pk_backend_dbus_description_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Details",
+				     G_CALLBACK (pk_backend_dbus_details_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Files",
 				     G_CALLBACK (pk_backend_dbus_files_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
@@ -456,19 +534,9 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	g_free (backend_dbus->priv->service);
 	backend_dbus->priv->service = g_strdup (service);
 
-	/* manually init the backend, which should get things spawned for us */
-	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Init", &error,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (error != NULL) {
-		pk_warning ("%s", error->message);
-		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
-		pk_backend_finished (backend_dbus->priv->backend);
-		g_error_free (error);
-	}
-	if (ret) {
-		pk_backend_dbus_time_check (backend_dbus);
-	}
+	/* Init() */
+	ret = pk_backend_dbus_startup (backend_dbus);
+
 	return ret;
 }
 
@@ -718,7 +786,7 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
  * pk_backend_dbus_resolve:
  **/
 gboolean
-pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *package)
+pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkFilterEnum filters, gchar **packages)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -726,14 +794,14 @@ pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkFilterEnum filters, cons
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package != NULL, FALSE);
+	g_return_val_if_fail (packages != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Resolve", &error,
 				 G_TYPE_STRING, filters_text,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRV, packages,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -918,7 +986,7 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
  * pk_backend_dbus_get_depends:
  **/
 gboolean
-pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -926,14 +994,14 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDepends", &error,
 				 G_TYPE_STRING, filters_text,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -953,7 +1021,7 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
  * pk_backend_dbus_get_requires:
  **/
 gboolean
-pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -961,14 +1029,14 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkFilterEnum filters,
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRequires", &error,
 				 G_TYPE_STRING, filters_text,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -1017,22 +1085,54 @@ pk_backend_dbus_get_packages (PkBackendDbus *backend_dbus, PkFilterEnum filters)
 }
 
 /**
+ * pk_backend_dbus_download_packages:
+ **/
+gboolean
+pk_backend_dbus_download_packages (PkBackendDbus *backend_dbus, gchar **package_ids, const gchar *directory)
+{
+        gboolean ret;
+        GError *error = NULL;
+
+        g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
+        g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+	 g_return_val_if_fail (package_ids != NULL, FALSE);
+
+        /* new sync method call */
+        pk_backend_dbus_time_reset (backend_dbus);
+        ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "DownloadPackages", &error,
+				 G_TYPE_STRV, package_ids,
+				 G_TYPE_STRING, directory,
+ 	                         G_TYPE_INVALID, G_TYPE_INVALID);
+        if (error != NULL) {
+                pk_warning ("%s", error->message);
+                pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+                pk_backend_finished (backend_dbus->priv->backend);
+                g_error_free (error);
+        }
+        if (ret) {
+                pk_backend_dbus_time_check (backend_dbus);
+        }
+        return ret;
+}
+
+
+/**
  * pk_backend_dbus_get_update_detail:
  **/
 gboolean
-pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, gchar **package_ids)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetUpdateDetail", &error,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1047,22 +1147,22 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *pac
 }
 
 /**
- * pk_backend_dbus_get_description:
+ * pk_backend_dbus_get_details:
  **/
 gboolean
-pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_get_details (PkBackendDbus *backend_dbus, gchar **package_ids)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDescription", &error,
-				 G_TYPE_STRING, package_id,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDetails", &error,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1080,19 +1180,19 @@ pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *packa
  * pk_backend_dbus_get_files:
  **/
 gboolean
-pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, gchar **package_ids)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetFiles", &error,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1107,22 +1207,22 @@ pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
 }
 
 /**
- * pk_backend_dbus_remove_package:
+ * pk_backend_dbus_remove_packages:
  **/
 gboolean
-pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+pk_backend_dbus_remove_packages (PkBackendDbus *backend_dbus, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RemovePackage", &error,
-				 G_TYPE_STRING, package_id,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RemovePackages", &error,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, allow_deps,
 				 G_TYPE_BOOLEAN, autoremove,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1139,22 +1239,22 @@ pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *packag
 }
 
 /**
- * pk_backend_dbus_install_package:
+ * pk_backend_dbus_install_packages:
  **/
 gboolean
-pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_install_packages (PkBackendDbus *backend_dbus, gchar **package_ids)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallPackage", &error,
-				 G_TYPE_STRING, package_id,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallPackages", &error,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1199,23 +1299,23 @@ pk_backend_dbus_update_packages (PkBackendDbus *backend_dbus, gchar **package_id
 }
 
 /**
- * pk_backend_dbus_install_file:
+ * pk_backend_dbus_install_files:
  **/
 gboolean
-pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, gboolean trusted, const gchar *full_path)
+pk_backend_dbus_install_files (PkBackendDbus *backend_dbus, gboolean trusted, gchar **full_paths)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (full_path != NULL, FALSE);
+	g_return_val_if_fail (full_paths != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallFile", &error,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallFiles", &error,
 				 G_TYPE_BOOLEAN, trusted,
-				 G_TYPE_STRING, full_path,
+				 G_TYPE_STRV, full_paths,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1300,6 +1400,26 @@ pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkFilterEnum filters
 }
 
 /**
+ * pk_backend_dbus_gbus_changed_cb:
+ **/
+static void
+pk_backend_dbus_gbus_changed_cb (LibGBus *libgbus, gboolean is_active, PkBackendDbus *backend_dbus)
+{
+	gboolean ret;
+	g_return_if_fail (PK_IS_BACKEND_DBUS (backend_dbus));
+
+	if (!is_active) {
+		pk_warning ("DBUS backend disconnected");
+		pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON, "DBUS backend has exited");
+		/* Init() */
+		ret = pk_backend_dbus_startup (backend_dbus);
+		if (!ret) {
+			pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON, "DBUS backend will not start");
+		}
+	}
+}
+
+/**
  * pk_backend_dbus_finalize:
  **/
 static void
@@ -1320,6 +1440,7 @@ pk_backend_dbus_finalize (GObject *object)
 	}
 	g_timer_destroy (backend_dbus->priv->timer);
 	g_object_unref (backend_dbus->priv->backend);
+	g_object_unref (backend_dbus->priv->gbus);
 
 	G_OBJECT_CLASS (pk_backend_dbus_parent_class)->finalize (object);
 }
@@ -1355,6 +1476,11 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 		pk_error ("unable to get system connection %s", error->message);
 	}
 
+	/* babysit the backend and do Init() again it when it crashes */
+	backend_dbus->priv->gbus = libgbus_new ();
+	g_signal_connect (backend_dbus->priv->gbus, "connection-changed",
+			  G_CALLBACK (pk_backend_dbus_gbus_changed_cb), backend_dbus);
+
 	/* ProgressChanged */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_UINT_UINT,
 					   G_TYPE_NONE, G_TYPE_UINT,
@@ -1371,7 +1497,7 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
-	/* Description */
+	/* Details */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT64,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,

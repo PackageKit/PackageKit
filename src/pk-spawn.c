@@ -99,15 +99,14 @@ pk_spawn_read_fd_into_buffer (gint fd, GString *string)
  * pk_spawn_emit_whole_lines:
  **/
 static gboolean
-pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
+pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 {
 	guint i;
 	guint size;
 	gchar **lines;
-	gchar *message;
 	guint bytes_processed;
 
-	/* ITS4: ignore, GString is always NULL terminated */
+	/* if nothing then don't emit */
 	if (pk_strzero (string->str)) {
 		return FALSE;
 	}
@@ -124,14 +123,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 	bytes_processed = 0;
 	/* we only emit n-1 strings */
 	for (i=0; i<(size-1); i++) {
-		message = g_locale_to_utf8 (lines[i], -1, NULL, NULL, NULL);
-		if (message == NULL) {
-			pk_warning ("cannot covert line to UTF8: %s", lines[i]);
-		} else if (is_stdout) {
-			pk_debug ("emitting stdout %s", message);
-			g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, message);
-		}
-		g_free (message);
+		g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, lines[i]);
 		/* ITS4: ignore, g_strsplit always NULL terminates */
 		bytes_processed += strlen (lines[i]) + 1;
 	}
@@ -157,7 +149,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	}
 
 	pk_spawn_read_fd_into_buffer (spawn->priv->stdout_fd, spawn->priv->stdout_buf);
-	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf, TRUE);
+	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf);
 
 	/* check if the child exited */
 	if (waitpid (spawn->priv->child_pid, &status, WNOHANG) != spawn->priv->child_pid)
@@ -175,7 +167,6 @@ pk_spawn_check_child (PkSpawn *spawn)
 			spawn->priv->exit = PK_EXIT_ENUM_FAILED;
 		}
 	} else {
-		pk_debug ("Running fork successful");
 		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
 			spawn->priv->exit = PK_EXIT_ENUM_SUCCESS;
 		}
@@ -213,7 +204,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	/* we won't overwrite this if not unknown */
 	spawn->priv->exit = PK_EXIT_ENUM_KILLED;
 
-	pk_warning ("sending SIGKILL %i", spawn->priv->child_pid);
+	pk_debug ("sending SIGKILL %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGKILL);
 	if (retval == EINVAL) {
 		pk_warning ("The signum argument is an invalid or unsupported number");
@@ -273,18 +264,27 @@ pk_spawn_kill (PkSpawn *spawn)
  *
  **/
 gboolean
-pk_spawn_argv (PkSpawn *spawn, gchar **argv)
+pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 {
 	gboolean ret;
+	guint i;
+	guint len;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 	g_return_val_if_fail (argv != NULL, FALSE);
 
-	pk_debug ("argv[0] '%s'", argv[0]);
+	len = g_strv_length (argv);
+	if (len > 5) {
+		pk_debug ("limiting debugging to 5 entries");
+		len = 5;
+	}
+	for (i=0; i<len; i++) {
+		pk_debug ("argv[%i] '%s'", i, argv[i]);
+	}
 	spawn->priv->finished = FALSE;
 
 	/* create spawned object for tracking */
-	ret = g_spawn_async_with_pipes (NULL, argv, NULL,
+	ret = g_spawn_async_with_pipes (NULL, argv, envp,
 				 G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
 				 NULL, NULL, &spawn->priv->child_pid,
 				 NULL, /* stdin */
@@ -408,33 +408,6 @@ guint stdout_count = 0;
 guint finished_count = 0;
 
 /**
- * pk_test_get_data:
- **/
-static gchar *
-pk_test_get_data (const gchar *filename)
-{
-	gboolean ret;
-	gchar *full;
-
-	/* check to see if we are being run in the build root */
-	full = g_build_filename ("..", "data", "tests", filename, NULL);
-	ret = g_file_test (full, G_FILE_TEST_EXISTS);
-	if (ret) {
-		return full;
-	}
-	g_free (full);
-
-	/* check to see if we are being run in make check */
-	full = g_build_filename ("..", "..", "data", "tests", filename, NULL);
-	ret = g_file_test (full, G_FILE_TEST_EXISTS);
-	if (ret) {
-		return full;
-	}
-	g_free (full);
-	return NULL;
-}
-
-/**
  * pk_test_finished_cb:
  **/
 static void
@@ -484,6 +457,7 @@ libst_spawn (LibSelfTest *test)
 	gboolean ret;
 	gchar *path;
 	gchar **argv;
+	gchar **envp;
 
 	if (libst_start (test, "PkSpawn", CLASS_AUTO) == FALSE) {
 		return;
@@ -496,7 +470,7 @@ libst_spawn (LibSelfTest *test)
 	libst_title (test, "make sure return error for missing file");
 	mexit = BAD_EXIT;
 	argv = g_strsplit ("pk-spawn-test-xxx.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv);
+	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_strfreev (argv);
 	if (ret == FALSE) {
 		libst_success (test, "failed to run invalid file");
@@ -515,9 +489,9 @@ libst_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "make sure run correct helper");
 	mexit = -1;
-	path = pk_test_get_data ("pk-spawn-test.sh");
+	path = libst_get_data_file ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv);
+	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret) {
@@ -558,11 +532,34 @@ libst_spawn (LibSelfTest *test)
 	new_spawn_object (test, &spawn);
 
 	/************************************************************/
+	libst_title (test, "make sure we set the proxy");
+	mexit = -1;
+	path = libst_get_data_file ("pk-spawn-proxy.sh");
+	argv = g_strsplit (path, " ", 0);
+	envp = g_strsplit ("http_proxy=username:password@server:port "
+			   "ftp_proxy=username:password@server:port", " ", 0);
+	ret = pk_spawn_argv (spawn, argv, envp);
+	g_free (path);
+	g_strfreev (argv);
+	if (ret) {
+		libst_success (test, "ran correct file");
+	} else {
+		libst_failed (test, "did not run helper");
+	}
+
+	/* wait for finished */
+	libst_loopwait (test, 10000);
+	libst_loopcheck (test);
+
+	/* get new object */
+	new_spawn_object (test, &spawn);
+
+	/************************************************************/
 	libst_title (test, "make sure run correct helper, and kill it");
 	mexit = BAD_EXIT;
-	path = pk_test_get_data ("pk-spawn-test.sh");
+	path = libst_get_data_file ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv);
+	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret) {
@@ -590,9 +587,9 @@ libst_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "make sure run correct helper, and quit it");
 	mexit = BAD_EXIT;
-	path = pk_test_get_data ("pk-spawn-test-sigquit.sh");
+	path = libst_get_data_file ("pk-spawn-test-sigquit.sh");
 	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv);
+	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret) {
@@ -616,9 +613,9 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "run lots of data for profiling");
-	path = pk_test_get_data ("pk-spawn-test-profiling.sh");
+	path = libst_get_data_file ("pk-spawn-test-profiling.sh");
 	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv);
+	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret) {

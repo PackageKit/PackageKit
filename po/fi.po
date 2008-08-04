@@ -7,241 +7,241 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-23 01:36+0000\n"
-"PO-Revision-Date: 2008-04-23 12:53+0300\n"
+"POT-Creation-Date: 2008-05-03 01:34+0000\n"
+"PO-Revision-Date: 2008-05-06 00:39+0300\n"
 "Last-Translator: Ville-Pekka Vainio <vpivaini@cs.helsinki.fi>\n"
 "Language-Team: Finnish <laatu@lokalisointi.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../client/pk-console.c:208
+#: ../client/pk-console.c:224
 msgid "Update detail"
 msgstr "Päivityksen tiedot"
 
-#: ../client/pk-console.c:400
+#: ../client/pk-console.c:425
 msgid "A system restart is required"
 msgstr "Järjestelmä on käynnistettävä uudelleen"
 
-#: ../client/pk-console.c:402
+#: ../client/pk-console.c:427
 msgid "A logout and login is required"
 msgstr "On kirjauduttava ulos ja takaisin sisään"
 
-#: ../client/pk-console.c:404
+#: ../client/pk-console.c:429
 msgid "An application restart is required"
 msgstr "Sovellus on käynnistettävä uudelleen"
 
-#: ../client/pk-console.c:443
+#: ../client/pk-console.c:474
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Anna numero väliltä 1-%i: "
 
-#: ../client/pk-console.c:493
+#: ../client/pk-console.c:524
 msgid "Could not find a package match"
 msgstr "Vastaavaa pakettia ei löytynyt"
 
-#: ../client/pk-console.c:507
+#: ../client/pk-console.c:538
 msgid "There are multiple package matches"
 msgstr "Useita vastaavia paketteja saatavilla"
 
 #. find out what package the user wants to use
-#: ../client/pk-console.c:514
+#: ../client/pk-console.c:545
 msgid "Please enter the package number: "
 msgstr "Anna paketin numero:"
 
-#: ../client/pk-console.c:530
+#: ../client/pk-console.c:561
 msgid ""
 "Could not find a package with that name to install, or package already "
 "installed"
 msgstr ""
 "Nimellä ei löytynyt pakettia asennettavaksi tai paketti on jo asennettu"
 
-#: ../client/pk-console.c:612
+#: ../client/pk-console.c:643
 msgid "Could not find a package with that name to remove"
 msgstr "Nimellä ei löytynyt pakettia poistettavaksi"
 
-#: ../client/pk-console.c:652
+#: ../client/pk-console.c:683
 msgid "The following packages have to be removed"
 msgstr "Seuraavat paketit on poistettava"
 
 #. get user input
-#: ../client/pk-console.c:661
+#: ../client/pk-console.c:692
 msgid "Okay to remove additional packages?"
 msgstr "Poistetaanko lisäpaketteja?"
 
-#: ../client/pk-console.c:665
+#: ../client/pk-console.c:696
 msgid "Cancelled!"
 msgstr "Peruttu!"
 
-#: ../client/pk-console.c:687
+#: ../client/pk-console.c:718
 msgid "Could not find a package with that name to update"
 msgstr "Nimellä ei löytynyt pakettia päivitettäväksi"
 
-#: ../client/pk-console.c:705
+#: ../client/pk-console.c:736
 msgid "Could not find what packages require this package"
 msgstr "Ei löydetty, mitkä paketti vaativat tämän paketit"
 
-#: ../client/pk-console.c:723
+#: ../client/pk-console.c:754
 msgid "Could not get dependencies for this package"
 msgstr "Ei voitu hakea riippuvuuksia tälle paketille"
 
-#: ../client/pk-console.c:741
-msgid "Could not find a description for this package"
-msgstr "Tälle paketille ei löydetty kuvausta"
+#: ../client/pk-console.c:772
+msgid "Could not find details for this package"
+msgstr "Tämän paketin tietoja ei löydetty"
 
-#: ../client/pk-console.c:759
+#: ../client/pk-console.c:790
 msgid "Could not find the files for this package"
 msgstr "Tämän paketin tiedostoja ei löydetty"
 
-#: ../client/pk-console.c:819
+#: ../client/pk-console.c:870
 msgid "Package description"
 msgstr "Paketin kuvaus"
 
-#: ../client/pk-console.c:842
+#: ../client/pk-console.c:893
 msgid "Package files"
 msgstr "Paketin tiedostot"
 
-#: ../client/pk-console.c:850
+#: ../client/pk-console.c:901
 msgid "No files"
 msgstr "Ei tiedostoja"
 
 #. get user input
-#: ../client/pk-console.c:882
+#: ../client/pk-console.c:933
 msgid "Okay to import key?"
 msgstr "Tuodaanko avain?"
 
-#: ../client/pk-console.c:885
+#: ../client/pk-console.c:936
 msgid "Did not import key"
 msgstr "Avainta ei tuotu"
 
 #. get user input
-#: ../client/pk-console.c:925
+#: ../client/pk-console.c:976
 msgid "Do you agree?"
 msgstr "Hyväksytkö?"
 
-#: ../client/pk-console.c:928
+#: ../client/pk-console.c:979
 msgid "Did not agree to licence, task will fail"
 msgstr "Käyttöoikeussopimusta ei hyväksytty, tehtävä epäonnistuu"
 
-#: ../client/pk-console.c:957
+#: ../client/pk-console.c:1008
 msgid "The daemon crashed mid-transaction!"
 msgstr "Taustaprosessi kaatui kesken toimenpiteen"
 
 #. header
-#: ../client/pk-console.c:1010
+#: ../client/pk-console.c:1061
 msgid "PackageKit Console Interface"
 msgstr "PackageKitin konsolikäyttöliittymä"
 
-#: ../client/pk-console.c:1010
+#: ../client/pk-console.c:1061
 msgid "Subcommands:"
 msgstr "Alikomennot:"
 
-#: ../client/pk-console.c:1114 ../client/pk-monitor.c:100 ../src/pk-main.c:189
+#: ../client/pk-console.c:1165 ../client/pk-monitor.c:104 ../src/pk-main.c:189
 msgid "Show extra debugging information"
 msgstr "Näytä ylimääräisiä virheenjäljitystietoja"
 
-#: ../client/pk-console.c:1116 ../client/pk-monitor.c:102
+#: ../client/pk-console.c:1167 ../client/pk-monitor.c:106
 msgid "Show the program version and exit"
 msgstr "Näytä ohjelman versio ja lopeta"
 
-#: ../client/pk-console.c:1118
+#: ../client/pk-console.c:1169
 msgid "Set the filter, e.g. installed"
 msgstr "Aseta suodin, esim. asennettu"
 
-#: ../client/pk-console.c:1120
+#: ../client/pk-console.c:1171
 msgid "Exit without waiting for actions to complete"
 msgstr "Lopeta odottamatta toimintojen valmistumista"
 
-#: ../client/pk-console.c:1143
+#: ../client/pk-console.c:1194
 msgid "Could not connect to system DBUS."
 msgstr "Järjestelmän DBUSiin yhdistäminen ei onnistunut."
 
-#: ../client/pk-console.c:1231
+#: ../client/pk-console.c:1288
 msgid "You need to specify a search type"
 msgstr "Haun tyyppi on annettava"
 
-#: ../client/pk-console.c:1236 ../client/pk-console.c:1243
-#: ../client/pk-console.c:1250 ../client/pk-console.c:1257
-#: ../client/pk-console.c:1361 ../client/pk-console.c:1368
-#: ../client/pk-console.c:1375 ../client/pk-console.c:1382
+#: ../client/pk-console.c:1293 ../client/pk-console.c:1300
+#: ../client/pk-console.c:1307 ../client/pk-console.c:1314
+#: ../client/pk-console.c:1421 ../client/pk-console.c:1428
+#: ../client/pk-console.c:1435 ../client/pk-console.c:1442
 msgid "You need to specify a search term"
 msgstr "Hakutermi on annettava"
 
-#: ../client/pk-console.c:1262
+#: ../client/pk-console.c:1319
 msgid "Invalid search type"
 msgstr "Virheellinen haun tyyppi"
 
-#: ../client/pk-console.c:1267
+#: ../client/pk-console.c:1324
 msgid "You need to specify a package or file to install"
 msgstr "Asennettava paketti tai tiedosto on annettava"
 
-#: ../client/pk-console.c:1280
+#: ../client/pk-console.c:1339
 msgid "You need to specify a type, key_id and package_id"
 msgstr "Tyyppi, key_id ja package_id on annettava"
 
-#: ../client/pk-console.c:1287
+#: ../client/pk-console.c:1346
 msgid "You need to specify a package to remove"
 msgstr "Poistettava paketti on annettava"
 
-#: ../client/pk-console.c:1294
+#: ../client/pk-console.c:1353
 msgid "You need to specify a eula-id"
 msgstr "Eula-id on annettava"
 
-#: ../client/pk-console.c:1309
+#: ../client/pk-console.c:1369
 msgid "You need to specify a package name to resolve"
 msgstr "Ratkaistavan paketin nimi on annettava"
 
-#: ../client/pk-console.c:1316 ../client/pk-console.c:1323
+#: ../client/pk-console.c:1376 ../client/pk-console.c:1383
 msgid "You need to specify a repo name"
 msgstr "Asennuslähteen nimi on annettava"
 
-#: ../client/pk-console.c:1330
+#: ../client/pk-console.c:1390
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Asennuslähteen nimi/parametri ja arvo on annettava"
 
-#: ../client/pk-console.c:1343
+#: ../client/pk-console.c:1403
 msgid "You need to specify a time term"
 msgstr "Aika on annettava"
 
-#: ../client/pk-console.c:1348
+#: ../client/pk-console.c:1408
 msgid "You need to specify a correct role"
 msgstr "Sopiva rooli on annettava"
 
-#: ../client/pk-console.c:1353
+#: ../client/pk-console.c:1413
 msgid "Failed to get last time"
 msgstr "Edellistä aikaa ei saatu"
 
-#: ../client/pk-console.c:1389
-msgid "You need to specify a package to find the description for"
-msgstr "On annettava paketti, jonka kuvausta etsitään"
+#: ../client/pk-console.c:1449
+msgid "You need to specify a package to find the details for"
+msgstr "On annettava paketti, jonka tietoja etsitään"
 
-#: ../client/pk-console.c:1396
+#: ../client/pk-console.c:1456
 msgid "You need to specify a package to find the files for"
 msgstr "On annettava paketti, jonka tiedostoja etsitään"
 
-#: ../client/pk-console.c:1441
+#: ../client/pk-console.c:1503
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "valitsin ”%s” ei ole tuettu"
 
-#: ../client/pk-console.c:1452
+#: ../client/pk-console.c:1514
 msgid "Command failed"
 msgstr "Komento epäonnistui"
 
-#: ../client/pk-console.c:1456
+#: ../client/pk-console.c:1518
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Sinulla ei ole tähän toimintoon tarvittavia oikeuksia"
 
-#: ../client/pk-monitor.c:113
+#: ../client/pk-monitor.c:117
 msgid "PackageKit Monitor"
 msgstr "PackageKit-tarkkailija"
 
-#: ../client/pk-import-desktop.c:283 ../client/pk-import-specspo.c:169
+#: ../client/pk-import-desktop.c:293 ../client/pk-import-specspo.c:169
 #, c-format
 msgid "Could not open database: %s"
 msgstr "Ei voitu avata tietokantaa: %s"
 
-#: ../client/pk-import-desktop.c:284 ../client/pk-import-specspo.c:170
+#: ../client/pk-import-desktop.c:294 ../client/pk-import-specspo.c:170
 msgid "You probably need to run this program as the root user"
 msgstr "Tämä ohjelma on luultavasti suoritettava root-käyttäjänä"
 
@@ -302,3 +302,9 @@ msgstr "Ei voida yhdistää järjestelmäväylään"
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Virhe yritettäessä käynnistää: %s\n"
+
+#~ msgid "Could not find a description for this package"
+#~ msgstr "Tälle paketille ei löydetty kuvausta"
+
+#~ msgid "You need to specify a package to find the description for"
+#~ msgstr "On annettava paketti, jonka kuvausta etsitään"

@@ -11,13 +11,21 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = packagekit.pc
 
 cronfiledir = ${SYSCONFDIR}/cron.daily
-cronfile_DATA = packagekit-background.cron
+cronfile_SCRIPTS = packagekit-background.cron
 
 crondatadir = ${SYSCONFDIR}/sysconfig
-crondata_DATA = packagekit-background
+crondata_SCRIPTS = packagekit-background
 
 pmutilsdir = $(libdir)/pm-utils/sleep.d
 pmutils_DATA = 95packagekit
+
+@INTLTOOL_XML_RULE@
+mimedir = $(datadir)/mime/packages
+mime_in_files = 					\
+	packagekit-catalog.xml.in			\
+	packagekit-pack.xml.in				\
+	$(NULL)						
+mime_DATA = $(mime_in_files:.xml.in=.xml)
 
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = 					\
@@ -74,6 +82,7 @@ EXTRA_DIST =						\
 	$(serviceyum_in_files)				\
 	$(servicetest_in_files)				\
 	$(serviceapt_in_files)				\
+	$(mime_in_files)				\
 	$(localcache_DATA)				\
 	$(database_DATA)				\
 	$(NULL)
@@ -85,6 +94,7 @@ install-data-hook:
 	chmod a+x $(DESTDIR)$(libdir)/pm-utils/sleep.d/95packagekit;
 
 DISTCLEANFILES =					\
+	$(mime_DATA)					\
 	org.freedesktop.PackageKit.service		\
 	org.freedesktop.PackageKitTestBackend.service	\
 	org.freedesktop.PackageKitYumBackend.service	\

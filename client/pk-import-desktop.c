@@ -44,53 +44,49 @@ static gchar *
 pk_desktop_get_name_for_file (const gchar *filename)
 {
 	guint size;
-	gchar *name;
-	PkPackageItem *item;
-	PkPackageId *pid;
+	gchar *name = NULL;
+	const PkPackageObj *obj;
 	gboolean ret;
 	GError *error = NULL;
+	PkPackageList *list = NULL;
 
 	/* use PK to find the correct package */
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
 		pk_warning ("failed to reset client: %s", error->message);
 		g_error_free (error);
-		return NULL;
+		goto out;
 	}
 
 	ret = pk_client_search_file (client, PK_FILTER_ENUM_INSTALLED, filename, &error);
 	if (!ret) {
 		pk_warning ("failed to search file: %s", error->message);
 		g_error_free (error);
-		return NULL;
+		goto out;
 	}
 
 	/* check that we only matched one package */
-	size = pk_client_package_buffer_get_size (client);
+	list = pk_client_get_package_list (client);
+	size = pk_package_list_get_size (list);
 	if (size != 1) {
 		pk_warning ("not correct size, %i", size);
-		return NULL;
+		goto out;
 	}
 
-	/* get the item */
-	item = pk_client_package_buffer_get_item (client, 0);
-	if (item == NULL) {
-		pk_error ("cannot get item");
-		return NULL;
-	}
-
-	/* get the package name */
-	pid = pk_package_id_new_from_string (item->package_id);
-	if (pid == NULL) {
-		pk_error ("cannot allocate package id");
-		return NULL;
+	/* get the obj */
+	obj = pk_package_list_get_obj (list, 0);
+	if (obj == NULL) {
+		pk_error ("cannot get obj");
+		goto out;
 	}
 
 	/* strip the name */
-	name = g_strdup (pid->name);
-	pk_package_id_free (pid);
+	name = g_strdup (obj->id->name);
 
-	/* return a copy */
+out:
+	if (list != NULL) {
+		g_object_unref (list);
+	}
 	return name;
 }
 
@@ -105,7 +101,7 @@ pk_import_get_locale (const gchar *buffer)
 		return NULL;
 	}
 	locale = g_strdup (result+1);
-	len = strlen (locale);
+	len = pk_strlen (locale, 20);
 	locale[len-1] = '\0';
 	return locale;
 }
@@ -172,11 +168,11 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 
 			/* save in order of priority */
 			if (comment != NULL) {
-				pk_extra_set_localised_detail (extra, package_name, comment);
+				pk_extra_set_data_locale (extra, package_name, comment);
 			} else if (genericname != NULL) {
-				pk_extra_set_localised_detail (extra, package_name, genericname);
+				pk_extra_set_data_locale (extra, package_name, genericname);
 			} else {
-				pk_extra_set_localised_detail (extra, package_name, name);
+				pk_extra_set_data_locale (extra, package_name, name);
 			}
 			g_free (comment);
 			g_free (genericname);
@@ -190,7 +186,7 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	exec = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", NULL);
 	icon = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", NULL);
 	pk_debug ("PackageName=%s, Exec=%s, Icon=%s", package_name, exec, icon);
-	pk_extra_set_package_detail (extra, package_name, icon, exec);
+	pk_extra_set_data_package (extra, package_name, icon, exec);
 	g_free (icon);
 	g_free (exec);
 
@@ -215,7 +211,7 @@ pk_desktop_process_directory (const gchar *directory)
 	pattern = g_pattern_spec_new ("*.desktop");
 	name = g_dir_read_name (dir);
 	while (name != NULL) {
-		/* ITS4: ignore, not used for allocation */
+		/* ITS4: ignore, not used for allocation and has to be NULL terminated */
 		match = g_pattern_match (pattern, strlen (name), name, NULL);
 		if (match) {
 			filename = g_build_filename (directory, name, NULL);

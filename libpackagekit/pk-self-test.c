@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -29,6 +29,7 @@
 /* prototypes */
 void libst_package_id (LibSelfTest *test);
 void libst_package_ids (LibSelfTest *test);
+void libst_package_obj (LibSelfTest *test);
 void libst_package_list (LibSelfTest *test);
 void libst_enum (LibSelfTest *test);
 void libst_common (LibSelfTest *test);
@@ -37,6 +38,9 @@ void libst_extra (LibSelfTest *test);
 void libst_client (LibSelfTest *test);
 void libst_control (LibSelfTest *test);
 void libst_task_list (LibSelfTest *test);
+void libst_catalog (LibSelfTest *test);
+void libst_update_detail (LibSelfTest *test);
+void libst_details (LibSelfTest *test);
 
 int
 main (int argc, char **argv)
@@ -51,12 +55,16 @@ main (int argc, char **argv)
 	libst_common (&test);
 	libst_package_id (&test);
 	libst_package_ids (&test);
+	libst_package_obj (&test);
 	libst_package_list (&test);
 	libst_enum (&test);
 	libst_extra (&test);
 	libst_client (&test);
+	libst_catalog (&test);
 	libst_control (&test);
 	libst_task_list (&test);
+	libst_update_detail (&test);
+	libst_details (&test);
 
 	return (libst_finish (&test));
 }

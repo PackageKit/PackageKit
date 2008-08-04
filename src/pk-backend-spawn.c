@@ -54,7 +54,6 @@
 #include "pk-spawn.h"
 #include "pk-time.h"
 #include "pk-inhibit.h"
-#include "pk-thread-list.h"
 
 #define PK_BACKEND_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnPrivate))
 #define PK_BACKEND_SPAWN_PERCENTAGE_INVALID	101
@@ -127,7 +126,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			goto out;
 		}
 		pk_backend_package (backend_spawn->priv->backend, info, sections[2], sections[3]);
-	} else if (pk_strequal (command, "description")) {
+	} else if (pk_strequal (command, "details")) {
 		if (size != 7) {
 			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -145,7 +144,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		text = g_strdup (sections[4]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_description (backend_spawn->priv->backend, sections[1], sections[2],
+		pk_backend_details (backend_spawn->priv->backend, sections[1], sections[2],
 					group, text, sections[5], package_size);
 		g_free (text);
 	} else if (pk_strequal (command, "files")) {
@@ -236,8 +235,13 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		/* convert back all the ;'s to newlines */
 		text = g_strdup (sections[2]);
+
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
+
+		/* convert % else we try to format them */
+		g_strdelimit (text, "%", '$');
+
 		pk_backend_error_code (backend_spawn->priv->backend, error_enum, text);
 		g_free (text);
 	} else if (pk_strequal (command, "requirerestart")) {
@@ -314,11 +318,11 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_no_percentage_updates (backend_spawn->priv->backend);
+		pk_backend_set_percentage (backend_spawn->priv->backend, PK_BACKEND_PERCENTAGE_INVALID);
 	} else if (pk_strequal (command, "repo-signature-required")) {
 
-		if (size != 9+99) {
-			pk_error ("invalid command '%s'", command);
+		if (size != 9) {
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -441,6 +445,56 @@ pk_backend_spawn_helper_new (PkBackendSpawn *backend_spawn)
 }
 
 /**
+ * pk_backend_spawn_get_envp:
+ *
+ * Return all the environment variables the script will need
+ **/
+static gchar **
+pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
+{
+	gchar **envp;
+	gchar *value;
+	gchar *line;
+	GPtrArray *array;
+
+	array = g_ptr_array_new ();
+
+	/* http_proxy */
+	value = pk_backend_get_proxy_http (backend_spawn->priv->backend);
+	if (!pk_strzero (value)) {
+		line = g_strdup_printf ("%s=%s", "http_proxy", value);
+		pk_debug ("setting evp '%s'", line);
+		g_ptr_array_add (array, line);
+		g_free (line);
+	}
+	g_free (value);
+
+	/* ftp_proxy */
+	value = pk_backend_get_proxy_ftp (backend_spawn->priv->backend);
+	if (!pk_strzero (value)) {
+		line = g_strdup_printf ("%s=%s", "ftp_proxy", value);
+		pk_debug ("setting evp '%s'", line);
+		g_ptr_array_add (array, line);
+		g_free (line);
+	}
+	g_free (value);
+
+	/* ftp_proxy */
+	value = pk_backend_get_locale (backend_spawn->priv->backend);
+	if (!pk_strzero (value)) {
+		line = g_strdup_printf ("%s=%s", "LANG", value);
+		pk_debug ("setting evp '%s'", line);
+		g_ptr_array_add (array, line);
+		g_free (line);
+	}
+	g_free (value);
+
+	envp = pk_ptr_array_to_argv (array);
+	g_ptr_array_free (array, TRUE);
+	return envp;
+}
+
+/**
  * pk_backend_spawn_helper_va_list:
  **/
 static gboolean
@@ -449,6 +503,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	gboolean ret;
 	gchar *filename;
 	gchar **argv;
+	gchar **envp;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
@@ -477,7 +532,8 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	argv[0] = g_strdup (filename);
 
 	pk_backend_spawn_helper_new (backend_spawn);
-	ret = pk_spawn_argv (backend_spawn->priv->spawn, argv);
+	envp = pk_backend_spawn_get_envp (backend_spawn);
+	ret = pk_spawn_argv (backend_spawn->priv->spawn, argv, envp);
 	if (!ret) {
 		pk_backend_spawn_helper_delete (backend_spawn);
 		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,

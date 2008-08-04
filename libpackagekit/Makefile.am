@@ -4,7 +4,7 @@ NULL =
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
 	$(DBUS_CFLAGS)						\
-	$(LIBNM_CFLAGS)						\
+	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/libpackagekit				\
 	-I$(top_srcdir)/libgbus					\
@@ -36,16 +36,19 @@ libpackagekit_include_HEADERS =					\
 	pk-debug.h						\
 	pk-extra.h						\
 	pk-connection.h						\
-	pk-network.h						\
 	pk-package-id.h						\
 	pk-package-ids.h					\
+	pk-package-obj.h					\
 	pk-package-list.h					\
+	pk-update-detail-obj.h					\
+	pk-update-detail-list.h					\
+	pk-details-obj.h					\
 	pk-enum.h						\
 	pk-common.h						\
 	pk-client.h						\
+	pk-catalog.h						\
 	pk-control.h						\
 	pk-task-list.h						\
-	pk-polkit-client.h					\
 	$(NULL)
 
 libpackagekit_la_SOURCES =					\
@@ -57,42 +60,39 @@ libpackagekit_la_SOURCES =					\
 	pk-extra.h						\
 	pk-connection.c						\
 	pk-connection.h						\
-	pk-network.h						\
 	pk-package-id.c						\
 	pk-package-id.h						\
 	pk-package-ids.c					\
 	pk-package-ids.h					\
+	pk-package-obj.c					\
+	pk-package-obj.h					\
 	pk-package-list.c					\
 	pk-package-list.h					\
+	pk-update-detail-obj.c					\
+	pk-update-detail-obj.h					\
+	pk-update-detail-list.c					\
+	pk-update-detail-list.h					\
+	pk-details-obj.c					\
+	pk-details-obj.h					\
 	pk-enum.h						\
 	pk-enum.c						\
 	pk-common.c						\
 	pk-common.h						\
 	pk-client.c						\
 	pk-client.h						\
+	pk-catalog.c						\
+	pk-catalog.h						\
 	pk-control.c						\
 	pk-control.h						\
 	pk-task-list.c						\
 	pk-task-list.h						\
-	pk-polkit-client.c					\
-	pk-polkit-client.h					\
 	$(NULL)
-
-if PK_BUILD_NETWORKMANAGER
-libpackagekit_la_SOURCES +=					\
-	pk-network-nm.c						\
-	$(NULL)
-else
-libpackagekit_la_SOURCES +=					\
-	pk-network-dummy.c					\
-	$(NULL)
-endif
 
 libpackagekit_la_LIBADD =					\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(GBUS_LIBS)						\
-	$(LIBNM_LIBS)						\
+	$(POLKIT_LIBS)						\
 	$(SQLITE_LIBS)						\
 	$(NULL)
 

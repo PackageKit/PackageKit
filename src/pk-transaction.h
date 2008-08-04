@@ -100,19 +100,23 @@ void		 pk_transaction_accept_eula		(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_cancel			(PkTransaction	*transaction,
 							 GError		**error);
+void		 pk_transaction_download_packages	(PkTransaction  *transaction,
+							 gchar		**package_ids,
+							 const gchar	*directory,
+							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_allow_cancel	(PkTransaction	*transaction,
 							 gboolean	*allow_cancel,
 							 GError		**error);
 void		 pk_transaction_get_depends		(PkTransaction	*transaction,
 							 const gchar	*filter,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 DBusGMethodInvocation *context);
-void		 pk_transaction_get_description		(PkTransaction	*transaction,
-							 const gchar	*package_id,
+void		 pk_transaction_get_details		(PkTransaction	*transaction,
+							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_files		(PkTransaction	*transaction,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_old_transactions	(PkTransaction	*transaction,
 							 guint		 number,
@@ -134,28 +138,28 @@ void		 pk_transaction_get_repo_list		(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_requires		(PkTransaction	*transaction,
 							 const gchar	*filter,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_role		(PkTransaction	*transaction,
 							 const gchar	**role,
-							 const gchar	**package_id,
+							 const gchar	**text,
 							 GError		**error);
 gboolean	 pk_transaction_get_status		(PkTransaction	*transaction,
 							 const gchar	**status,
 							 GError		**error);
 void		 pk_transaction_get_update_detail	(PkTransaction	*transaction,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_updates		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 DBusGMethodInvocation *context);
-void		 pk_transaction_install_file		(PkTransaction	*transaction,
+void		 pk_transaction_install_files		(PkTransaction	*transaction,
 							 gboolean	 trusted,
-							 const gchar	*full_path,
+							 gchar		**full_paths,
 							 DBusGMethodInvocation *context);
-void		 pk_transaction_install_package		(PkTransaction	*transaction,
-							 const gchar	*package_id,
+void		 pk_transaction_install_packages	(PkTransaction	*transaction,
+							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_install_signature	(PkTransaction	*transaction,
 							 const gchar	*sig_type,
@@ -168,8 +172,8 @@ gboolean	 pk_transaction_is_caller_active	(PkTransaction	*transaction,
 void		 pk_transaction_refresh_cache		(PkTransaction	*transaction,
 							 gboolean	 force,
 							 DBusGMethodInvocation *context);
-void		 pk_transaction_remove_package		(PkTransaction	*transaction,
-							 const gchar	*package_id,
+void		 pk_transaction_remove_packages		(PkTransaction	*transaction,
+							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove,
 							 DBusGMethodInvocation *context);
@@ -184,7 +188,7 @@ void		 pk_transaction_repo_set_data		(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_resolve			(PkTransaction	*transaction,
 							 const gchar	*filter,
-							 const gchar	*package,
+							 gchar		**packages,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_rollback		(PkTransaction	*transaction,
 							 const gchar	*transaction_id,
@@ -205,6 +209,9 @@ void		 pk_transaction_search_name		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 const gchar	*search,
 							 DBusGMethodInvocation *context);
+gboolean	 pk_transaction_set_locale		(PkTransaction	*transaction,
+							 const gchar	*code,
+							 GError		**error);
 gboolean	 pk_transaction_service_pack		(PkTransaction	*transaction,
 							 const gchar	*location,
 							 gboolean	 enabled);

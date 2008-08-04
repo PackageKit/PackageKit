@@ -93,15 +93,15 @@ pk_task_list_print (PkTaskList *tlist)
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	length = tlist->priv->task_list->len;
-	g_print ("Tasks:\n");
+	pk_debug ("Tasks:");
 	if (length == 0) {
-		g_print ("[none]...\n");
+		pk_debug ("[none]...");
 		return TRUE;
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		g_print ("%s\t%s:%s %s\n", item->tid, pk_role_enum_to_text (item->role),
-			 pk_status_enum_to_text (item->status), item->package_id);
+		pk_debug ("%s\t%s:%s %s", item->tid, pk_role_enum_to_text (item->role),
+			 pk_status_enum_to_text (item->status), item->text);
 	}
 	return TRUE;
 }
@@ -161,15 +161,14 @@ pk_task_list_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskLis
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 
 	tid = pk_client_get_tid (client);
-	pk_debug ("tid %s is now %i", tid, status);
 
 	/* get correct item */
 	item = pk_task_list_find_existing_tid (tlist, tid);
 	item->status = status;
-	g_free (tid);
 
-	pk_debug ("emit status-changed");
+	pk_debug ("emit status-changed(%s) for %s", pk_status_enum_to_text (status), tid);
 	g_signal_emit (tlist, signals [PK_TASK_LIST_STATUS_CHANGED], 0);
+	g_free (tid);
 }
 
 /**
@@ -258,7 +257,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 				g_error_free (error);
 				break;
 			}
-			pk_client_get_role (item->monitor, &item->role, &item->package_id, NULL);
+			pk_client_get_role (item->monitor, &item->role, &item->text, NULL);
 			pk_client_get_status (item->monitor, &item->status, NULL);
 
 			/* add to watched array */
@@ -273,11 +272,10 @@ pk_task_list_refresh (PkTaskList *tlist)
 	for (i=0; i<tlist->priv->task_list->len; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
 		if (!item->valid) {
-			pk_debug ("remove %s", item->tid);
 			g_object_unref (item->monitor);
 			g_ptr_array_remove (tlist->priv->task_list, item);
 			g_free (item->tid);
-			g_free (item->package_id);
+			g_free (item->text);
 			g_free (item);
 		}
 	}
@@ -303,7 +301,7 @@ pk_task_list_get_item (PkTaskList *tlist, guint item)
 {
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), NULL);
 	if (item >= tlist->priv->task_list->len) {
-		pk_debug ("item too large!");
+		pk_warning ("item too large!");
 		return NULL;
 	}
 	return g_ptr_array_index (tlist->priv->task_list, item);
@@ -466,9 +464,8 @@ pk_task_list_finalize (GObject *object)
 	/* remove all watches */
 	for (i=0; i<tlist->priv->task_list->len; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		pk_debug ("remove %s", item->tid);
 		g_object_unref (item->monitor);
-		g_free (item->package_id);
+		g_free (item->text);
 		g_ptr_array_remove (tlist->priv->task_list, item);
 		g_free (item);
 	}

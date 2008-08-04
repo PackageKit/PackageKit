@@ -29,12 +29,12 @@
 /* static bodges */
 static guint _progress_percentage = 0;
 static gulong _signal_timeout = 0;
-static const gchar *_package_id;
 static gchar **_package_ids;
 static guint _package_current = 0;
 static gboolean _has_service_pack = FALSE;
 static gboolean _repo_enabled_local = FALSE;
 static gboolean _repo_enabled_fedora = TRUE;
+static gboolean _repo_enabled_devel = TRUE;
 static gboolean _repo_enabled_livna = TRUE;
 static gboolean _updated_gtkhtml = FALSE;
 static gboolean _updated_kernel = FALSE;
@@ -47,7 +47,6 @@ static gboolean _has_signature = FALSE;
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	_progress_percentage = 0;
 }
 
@@ -57,7 +56,6 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 }
 
 /**
@@ -66,7 +64,6 @@ backend_destroy (PkBackend *backend)
 static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
 	return (PK_GROUP_ENUM_ACCESSIBILITY |
 		PK_GROUP_ENUM_GAMES |
 		PK_GROUP_ENUM_SYSTEM);
@@ -78,7 +75,6 @@ backend_get_groups (PkBackend *backend)
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PK_FILTER_ENUM_GUI |
 		PK_FILTER_ENUM_INSTALLED |
 		PK_FILTER_ENUM_DEVELOPMENT);
@@ -108,7 +104,6 @@ backend_cancel_timeout (gpointer data)
 static void
 backend_cancel (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	/* cancel the timeout */
 	if (_signal_timeout != 0) {
 		g_source_remove (_signal_timeout);
@@ -122,9 +117,8 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
@@ -134,14 +128,13 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_description (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
+	pk_backend_details (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 "Scribus is an desktop open source page layöut program with "
 "the aim of producing commercial grade output in PDF and "
 "Postscript, primarily, though not exclusively for Linux.\n"
@@ -157,9 +150,8 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
  * backend_get_files:
  */
 static void
-backend_get_files (PkBackend *backend, const gchar *package_id)
+backend_get_files (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_files (backend, "gnome-power-manager;2.6.19;i386;fedora",
 			  "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
@@ -169,9 +161,8 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
@@ -186,31 +177,43 @@ backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *pac
 static gboolean
 backend_get_update_detail_timeout (gpointer data)
 {
+	guint i;
+	guint len;
+	const gchar *package_id;
 	PkBackend *backend = (PkBackend *) data;
+
 	/* each one has a different detail for testing */
-	if (pk_strequal (_package_id, "powertop;1.8-1.fc8;i386;fedora")) {
-		pk_backend_update_detail (backend, "powertop;1.8-1.fc8;i386;available",
-					  "powertop;1.7-1.fc8;i386;installed", "",
-					  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
-					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
-					  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source");
-	} else if (pk_strequal (_package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
-		pk_backend_update_detail (backend, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;available",
-					  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
-					  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
-					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
-					  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
-					  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
-					  PK_RESTART_ENUM_SYSTEM, "Update to newest version");
-	} else if (pk_strequal (_package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
-		pk_backend_update_detail (backend, "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-					  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
-					  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
-					  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
-					  NULL,
-					  PK_RESTART_ENUM_SESSION, "Update to latest whizz bang version");
-	} else {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON, "Got unexpected package_id '%s'", _package_id);
+	len = g_strv_length (_package_ids);
+	for (i=0; i<len; i++) {
+		package_id = _package_ids[i];
+		if (pk_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora")) {
+			pk_backend_update_detail (backend, package_id,
+						  "powertop;1.7-1.fc8;i386;installed", "",
+						  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
+						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
+						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source");
+		}
+		if (pk_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
+			pk_backend_update_detail (backend, package_id,
+						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed^"
+						  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
+						  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
+						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
+						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
+						  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
+						  PK_RESTART_ENUM_SYSTEM, "Update to newest version");
+		}
+		if (pk_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
+			pk_backend_update_detail (backend, package_id,
+						  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
+						  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
+						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
+						  NULL, PK_RESTART_ENUM_SESSION,
+						  "Update to latest whizz bang version\n"
+						  "* support this new thing\n"
+						  "* something else\n"
+						  "- and that new thing");
+		}
 	}
 	pk_backend_finished (backend);
 	_signal_timeout = 0;
@@ -221,11 +224,10 @@ backend_get_update_detail_timeout (gpointer data)
  * backend_get_update_detail:
  */
 static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	_package_id = package_id;
+	_package_ids = package_ids;
 	_signal_timeout = g_timeout_add (500, backend_get_update_detail_timeout, backend);
 }
 
@@ -263,10 +265,14 @@ backend_get_updates_timeout (gpointer data)
 static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	/* check network state */
+	if (!pk_backend_is_online (backend)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
+		pk_backend_finished (backend);
+		return;
+	}
 	_signal_timeout = g_timeout_add (1000, backend_get_updates_timeout, backend);
 }
 
@@ -274,6 +280,8 @@ static gboolean
 backend_install_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
+	guint sub_percent;
+
 	if (_progress_percentage == 100) {
 		pk_backend_finished (backend);
 		return FALSE;
@@ -289,27 +297,35 @@ backend_install_timeout (gpointer data)
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
 				    "Devel files for gtkhtml");
+		/* this duplicate package should be ignored */
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora", NULL);
 		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	}
-	_progress_percentage += 10;
+	if (_progress_percentage > 30 && _progress_percentage < 50) {
+		sub_percent = ((gfloat) (_progress_percentage - 30.0f) / 20.0f) * 100.0f;
+		pk_backend_set_sub_percentage (backend, sub_percent);
+	} else {
+		pk_backend_set_sub_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	}
+	_progress_percentage += 1;
 	pk_backend_set_percentage (backend, _progress_percentage);
 	return TRUE;
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	const gchar *license_agreement;
 	const gchar *eula_id;
 	gboolean has_eula;
 
-	if (pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva")) {
+	if (pk_strequal (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva")) {
 		if (!_has_signature) {
-			pk_backend_repo_signature_required (backend, package_id, "updates",
+			pk_backend_repo_signature_required (backend, package_ids[0], "updates",
 							    "http://example.com/gpgkey",
 							    "Test Key (Fedora) fedora@example.com",
 							    "BB7576AC",
@@ -341,7 +357,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 					    "Captain: You know what you doing.\n"
 					    "Captain: Move 'ZIG'.\n"
 					    "Captain: For great justice.\n";
-			pk_backend_eula_required (backend, eula_id, package_id,
+			pk_backend_eula_required (backend, eula_id, package_ids[0],
 						  "CATS Inc.", license_agreement);
 			pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
 					       "licence not installed so cannot install");
@@ -355,7 +371,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
-	_signal_timeout = g_timeout_add (1000, backend_install_timeout, backend);
+	_signal_timeout = g_timeout_add (100, backend_install_timeout, backend);
 }
 
 /**
@@ -365,7 +381,6 @@ static void
 backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 			   const gchar *key_id, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	if (type == PK_SIGTYPE_ENUM_GPG &&
 	    pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
@@ -381,12 +396,11 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 }
 
 /**
- * backend_install_file:
+ * backend_install_files:
  */
 static void
-backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -412,7 +426,6 @@ backend_refresh_cache_timeout (gpointer data)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	g_return_if_fail (backend != NULL);
 	_progress_percentage = 0;
 
 	/* reset */
@@ -428,15 +441,14 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	if (pk_strequal (package, "vips-doc")) {
+	if (pk_strequal (packages[0], "vips-doc")) {
 		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 				    "vips-doc;7.12.4-2.fc8;noarch;linva",
 				    "The vips documentation package.");
-	} else if (pk_strequal (package, "glib2")) {
+	} else if (pk_strequal (packages[0], "glib2")) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 				    "glib2;2.14.0;i386;fedora", "The GLib library");
 	}
@@ -449,17 +461,15 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
 static void
 backend_rollback (PkBackend *backend, const gchar *transaction_id)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
 /**
- * backend_remove_package:
+ * backend_remove_packages:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
 	pk_backend_finished (backend);
@@ -471,7 +481,6 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 static void
 backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
@@ -486,7 +495,6 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
 static void
 backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
@@ -501,7 +509,6 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
@@ -519,10 +526,20 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 static gboolean
 backend_search_name_timeout (gpointer data)
 {
+	gchar *locale;
 	PkBackend *backend = (PkBackend *) data;
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "evince;0.9.3-5.fc8;i386;installed",
-			    "PDF Document viewer");
+	locale = pk_backend_get_locale (backend);
+
+	pk_debug ("locale is %s", locale);
+	if (!pk_strequal (locale, "en_GB.utf8")) {
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+				    "evince;0.9.3-5.fc8;i386;installed",
+				    "PDF Dokument Ƥrŏgrȃɱ");
+	} else {
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+				    "evince;0.9.3-5.fc8;i386;installed",
+				    "PDF Document viewer");
+	}
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "tetex;3.0-41.fc8;i386;fedora",
 			    "TeTeX is an implementation of TeX for Linux or UNIX systems.");
@@ -542,8 +559,7 @@ backend_search_name_timeout (gpointer data)
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	_signal_timeout = g_timeout_add (2000, backend_search_name_timeout, backend);
@@ -618,7 +634,6 @@ backend_update_packages_download_timeout (gpointer data)
 static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	_package_ids = package_ids;
 	_package_current = 0;
 	pk_backend_set_percentage (backend, 0);
@@ -680,7 +695,6 @@ backend_update_system_timeout (gpointer data)
 static void
 backend_update_system (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	_progress_percentage = 0;
@@ -694,14 +708,17 @@ backend_update_system (PkBackend *backend)
 static void
 backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	if (_has_service_pack) {
 		pk_backend_repo_detail (backend, "local",
 					"Local PackageKit volume", _repo_enabled_local);
 	}
-	pk_backend_repo_detail (backend, "development",
-				"Fedora - Development", _repo_enabled_fedora);
+	pk_backend_repo_detail (backend, "fedora",
+				"Fedora - 9", _repo_enabled_fedora);
+	if (!pk_enums_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+		pk_backend_repo_detail (backend, "development",
+					"Fedora - Development", _repo_enabled_devel);
+	}
 	pk_backend_repo_detail (backend, "livna-development",
 				"Livna for Fedora Core 8 - i386 - Development Tree", _repo_enabled_livna);
 	pk_backend_finished (backend);
@@ -713,13 +730,15 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 
 	if (pk_strequal (rid, "local")) {
 		pk_debug ("local repo: %i", enabled);
 		_repo_enabled_local = enabled;
 	} else if (pk_strequal (rid, "development")) {
+		pk_debug ("devel repo: %i", enabled);
+		_repo_enabled_devel = enabled;
+	} else if (pk_strequal (rid, "fedora")) {
 		pk_debug ("fedora repo: %i", enabled);
 		_repo_enabled_fedora = enabled;
 	} else if (pk_strequal (rid, "livna-development")) {
@@ -737,7 +756,6 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
 	pk_backend_finished (backend);
@@ -749,7 +767,6 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 static void
 backend_service_pack (PkBackend *backend, const gchar *location, gboolean enabled)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_RUNNING);
 	pk_warning ("service pack %i on %s device", enabled, location);
 
@@ -773,11 +790,13 @@ backend_service_pack (PkBackend *backend, const gchar *location, gboolean enable
 static void
 backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provides, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "update1;2.19.1-4.fc8;i386;fedora",
-			    "The first update");
+			    "evince;0.9.3-5.fc8;i386;installed",
+			    "PDF Document viewer");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+			    "scribus;1.3.4-1.fc8;i386;fedora",
+			    "Scribus is an desktop open source page layout program");
 	pk_backend_finished (backend);
 }
 
@@ -787,11 +806,24 @@ backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum 
 static void
 backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "update1;2.19.1-4.fc8;i386;fedora",
 			    "The first update");
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+			    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	pk_backend_finished (backend);
 }
 
@@ -803,19 +835,20 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
+	backend_download_packages,		/* download_packages */
 	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
+	backend_get_details,			/* get_details */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_file,			/* install_file */
-	backend_install_package,		/* install_package */
+	backend_install_files,			/* install_files */
+	backend_install_packages,		/* install_packages */
 	backend_install_signature,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */

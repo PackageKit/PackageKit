@@ -35,6 +35,7 @@
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-package-id.h>
+#include <pk-package-ids.h>
 #include <pk-extra.h>
 
 #include "pk-import-common.h"
@@ -54,8 +55,10 @@ pk_import_specspo_get_summary (const gchar *name)
 {
 	guint size;
 	gboolean ret;
-	PkPackageItem *item;
+	const PkPackageObj *item;
 	GError *error = NULL;
+	PkPackageList *list;
+	gchar **names;
 
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
@@ -66,7 +69,9 @@ pk_import_specspo_get_summary (const gchar *name)
 
 	pk_client_set_use_buffer (client, TRUE, NULL);
 	pk_client_set_synchronous (client, TRUE, NULL);
-	ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, name, &error);
+	names = pk_package_ids_from_id (name);
+	ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, names, &error);
+	g_strfreev (names);
 	if (!ret) {
 		pk_warning ("failed to resolve: %s", error->message);
 		g_error_free (error);
@@ -74,18 +79,21 @@ pk_import_specspo_get_summary (const gchar *name)
 	}
 
 	/* check that we only matched one package */
-	size = pk_client_package_buffer_get_size (client);
+	list = pk_client_get_package_list (client);
+	size = pk_package_list_get_size (list);
 	if (size != 1) {
 		pk_warning ("not correct size, %i", size);
 		return NULL;
 	}
 
 	/* get the item */
-	item = pk_client_package_buffer_get_item (client, 0);
+	item = pk_package_list_get_obj (list, 0);
 	if (item == NULL) {
 		pk_error ("cannot get item");
+		g_object_unref (list);
 		return NULL;
 	}
+	g_object_unref (list);
 
 	return item->summary;
 }
@@ -122,7 +130,7 @@ pk_import_specspo_do_package (const gchar *package_name)
 				g_print (" %s", locale);
 //				g_print (" %s", trans);
 				pk_extra_set_locale (extra, locale);
-				pk_extra_set_localised_detail (extra, package_name, trans);
+				pk_extra_set_data_locale (extra, package_name, trans);
 			}
 		}
 	}

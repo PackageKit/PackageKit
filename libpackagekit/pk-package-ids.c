@@ -40,6 +40,21 @@
 #include "pk-package-ids.h"
 
 /**
+ * pk_package_ids_from_id:
+ * @package_id: A single package_id
+ *
+ * Form a composite string array of package_id's from
+ * a single package_id
+ *
+ * Return value: the string array, or %NULL if invalid, free with g_strfreev()
+ **/
+gchar **
+pk_package_ids_from_id (const gchar *package_id)
+{
+	return g_strsplit (package_id, "|", 1);
+}
+
+/**
  * pk_package_ids_from_array:
  * @array: the GPtrArray of package_id's
  *
@@ -87,11 +102,8 @@ pk_package_ids_check (gchar **package_ids)
 
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 
-	/* get size once */
-	size = g_strv_length (package_ids);
-	pk_debug ("size = %i", size);
-
 	/* check all */
+	size = g_strv_length (package_ids);
 	for (i=0; i<size; i++) {
 		package_id = package_ids[i];
 		ret = pk_package_id_check (package_id);
@@ -118,11 +130,8 @@ pk_package_ids_print (gchar **package_ids)
 
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 
-	/* get size once */
-	size = g_strv_length (package_ids);
-	pk_debug ("size = %i", size);
-
 	/* print all */
+	size = g_strv_length (package_ids);
 	for (i=0; i<size; i++) {
 		pk_debug ("package_id[%i] = %s", i, package_ids[i]);
 	}
@@ -160,28 +169,31 @@ pk_package_ids_to_text (gchar **package_ids, const gchar *delimiter)
 	GString *string;
 	gchar *string_ret;
 
-	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (delimiter != NULL, NULL);
+
+	/* special case as this is allowed */
+	if (package_ids == NULL) {
+		return g_strdup ("(null)");
+	}
 
 	string = g_string_new ("");
 
-	/* get size once */
-	size = g_strv_length (package_ids);
-	pk_debug ("size = %i", size);
-
 	/* print all */
+	size = g_strv_length (package_ids);
 	for (i=0; i<size; i++) {
 		g_string_append (string, package_ids[i]);
 		g_string_append (string, delimiter);
 	}
-	/* remove trailing delimiter */
+
+	/* ITS4: ignore, we check this for validity */
 	size = strlen (delimiter);
+
+	/* remove trailing delimiter */
 	if (string->len > size) {
 		g_string_set_size (string, string->len-size);
 	}
 
 	string_ret = g_string_free (string, FALSE);
-	pk_debug ("package_ids = %s", string_ret);
 
 	return string_ret;
 }
@@ -254,7 +266,7 @@ libst_package_ids (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "first correct");
-	ret = pk_package_id_equal (package_ids[0], "foo;0.0.1;i386;fedora");
+	ret = pk_package_id_equal_strings (package_ids[0], "foo;0.0.1;i386;fedora");
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -263,7 +275,7 @@ libst_package_ids (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "second correct");
-	ret = pk_package_id_equal (package_ids[1], "bar;0.1.1;noarch;livna");
+	ret = pk_package_id_equal_strings (package_ids[1], "bar;0.1.1;noarch;livna");
 	if (ret) {
 		libst_success (test, NULL);
 	} else {

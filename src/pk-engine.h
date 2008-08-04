@@ -57,8 +57,11 @@ typedef enum
 {
 	PK_ENGINE_ERROR_DENIED,
 	PK_ENGINE_ERROR_INVALID_STATE,
+	PK_ENGINE_ERROR_REFUSED_BY_POLICY,
+	PK_ENGINE_ERROR_CANNOT_SET_PROXY,
 	PK_ENGINE_ERROR_LAST
 } PkEngineError;
+
 
 GQuark		 pk_engine_error_quark			(void);
 GType		 pk_engine_error_get_type		(void) G_GNUC_CONST;
@@ -85,6 +88,9 @@ gboolean	 pk_engine_get_groups			(PkEngine	*engine,
 gboolean	 pk_engine_get_tid			(PkEngine	*engine,
 							 gchar		**tid,
 							 GError		**error);
+gboolean	 pk_engine_get_network_state		(PkEngine	*engine,
+							 gchar		**state,
+							 GError		**error);
 gboolean	 pk_engine_get_time_since_action	(PkEngine	*engine,
 							 const gchar	*role_text,
 							 guint		*seconds,
@@ -93,7 +99,14 @@ gboolean	 pk_engine_get_transaction_list		(PkEngine	*engine,
 							 gchar		***transaction_list,
 							 GError		**error);
 gboolean	 pk_engine_state_has_changed		(PkEngine	*engine,
+							 const gchar	*reason,
 							 GError		**error);
+gboolean	 pk_engine_suggest_daemon_quit		(PkEngine	*engine,
+							 GError		**error);
+void		 pk_engine_set_proxy			(PkEngine	*engine,
+							 const gchar	*proxy_http,
+							 const gchar	*proxy_ftp,
+							 DBusGMethodInvocation *context);
 
 G_END_DECLS
 

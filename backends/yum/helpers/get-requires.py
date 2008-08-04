@@ -17,5 +17,5 @@ package = sys.argv[2]
 recursive = sys.argv[3]
 
 backend = PackageKitYumBackend(sys.argv[1:])
-backend.get_requires(filters, package, recursive)
+backend.get_requires(filters, package.split('|'), recursive)
 sys.exit(0)

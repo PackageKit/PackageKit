@@ -35,9 +35,8 @@ static PkBackendDbus *dbus;
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_allow_cancel (backend, TRUE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_dbus_search_name (dbus, filters, search);
 }
 
@@ -47,8 +46,6 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_cancel (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (dbus != NULL);
 	pk_backend_dbus_cancel (dbus);
 }
 
@@ -59,8 +56,7 @@ backend_cancel (PkBackend *backend)
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_debug ("FILTER: initialize");
+	pk_debug ("backend: initialize");
 	dbus = pk_backend_dbus_new ();
 	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_TEST);
 }
@@ -72,8 +68,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_debug ("FILTER: destroy");
+	pk_debug ("backend: destroy");
 	pk_backend_dbus_kill (dbus);
 	g_object_unref (dbus);
 }
@@ -86,19 +81,20 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
 	backend_cancel,				/* cancel */
+	NULL,					/* download_packages */
 	NULL,					/* get_depends */
-	NULL,					/* get_description */
+	NULL,					/* get_details */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
-	NULL,					/* install_file */
-	NULL,					/* install_package */
+	NULL,					/* install_files */
+	NULL,					/* install_packages */
 	NULL,					/* install_signature */
 	NULL,					/* refresh_cache */
-	NULL,					/* remove_package */
+	NULL,					/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	NULL,					/* resolve */

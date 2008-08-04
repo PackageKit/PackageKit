@@ -23,9 +23,8 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
-#include <pk-backend-thread.h>
 
-static PkBackendThread *thread;
+static gboolean is_cancelled = FALSE;
 
 /**
  * backend_initialize:
@@ -34,11 +33,7 @@ static PkBackendThread *thread;
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_debug ("FILTER: initialize");
-
-	/* we use the thread helper */
-	thread = pk_backend_thread_new ();
+	pk_debug ("backend: initialize");
 }
 
 /**
@@ -48,21 +43,15 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_debug ("FILTER: destroy");
-	g_object_unref (thread);
+	pk_debug ("backend: destroy");
 }
 
 /**
  * backend_search_group_thread:
  */
 static gboolean
-backend_search_group_thread (PkBackendThread *thread, gpointer data)
+backend_search_group_thread (PkBackend *backend)
 {
-	PkBackend *backend;
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	/* emit */
@@ -80,38 +69,45 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 static void
 backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_thread_create (thread, backend_search_group_thread, NULL);
+	pk_backend_thread_create (backend, backend_search_group_thread);
 }
 
 /**
  * backend_search_name_thread:
  */
 static gboolean
-backend_search_name_thread (PkBackendThread *thread, gpointer data)
+backend_search_name_thread (PkBackend *backend)
 {
 	GTimer *timer;
-	gdouble elapsed;
 	guint percentage;
-	PkBackend *backend;
+	PkFilterEnum filters;
+	gchar *filters_text;
+	const gchar *search;
 
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
+	filters = pk_backend_get_uint (backend, "filters");
+	search = pk_backend_get_string (backend, "search");
 
-	pk_debug ("started task (%p,%p)", backend, data);
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_debug ("started task (%p) search=%s filters=%s", backend, search, filters_text);
+	g_free (filters_text);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	timer = g_timer_new ();
 	percentage = 0;
 	do {
+		/* now is a good time to see if we should cancel the thread */
+		if (is_cancelled) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+					       "The thread was stopped successfully");
+			pk_backend_finished (backend);
+			return TRUE;
+		}
 		pk_backend_set_percentage (backend, percentage);
-		percentage += 1;
+		percentage += 10;
 		g_usleep (1000*100);
-		elapsed = g_timer_elapsed (timer, NULL);
-		pk_debug ("elapsed task (%p,%p) = %f", backend, data, elapsed);
-	} while (elapsed < 10.0);
+	} while (percentage < 100);
 	g_timer_destroy (timer);
 	pk_backend_set_percentage (backend, 100);
-	pk_debug ("exited task (%p,%p)", backend, data);
+	pk_debug ("exited task (%p)", backend);
 
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
@@ -127,8 +123,17 @@ backend_search_name_thread (PkBackendThread *thread, gpointer data)
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_thread_create (thread, backend_search_name_thread, NULL);
+	pk_backend_thread_create (backend, backend_search_name_thread);
+}
+
+/**
+ * backend_cancel:
+ */
+static void
+backend_cancel (PkBackend *backend)
+{
+	pk_debug ("cancelling %p", backend);
+	is_cancelled = TRUE;
 }
 
 PK_BACKEND_OPTIONS (
@@ -138,20 +143,21 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
-	NULL,					/* cancel */
+	backend_cancel,				/* cancel */
+	NULL,					/* download_packages */
 	NULL,					/* get_depends */
-	NULL,					/* get_description */
+	NULL,					/* get_details */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
-	NULL,					/* install_file */
-	NULL,					/* install_package */
+	NULL,					/* install_files */
+	NULL,					/* install_packages */
 	NULL,					/* install_signature */
 	NULL,					/* refresh_cache */
-	NULL,					/* remove_package */
+	NULL,					/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	NULL,					/* resolve */

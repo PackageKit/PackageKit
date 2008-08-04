@@ -9,9 +9,9 @@
 
 <table align="center" class="title">
 <tr>
- <td><img src="img/packagekit.png" alt="[img]"/></td>
+ <td><img src="img/packagekit.png" alt=""/></td>
  <td width="95%" valign="middle"><p class="title">Where can I download it?</p></td>
- <td><img src="img/packagekit.png" alt="[img]"/></td>
+ <td><img src="img/packagekit.png" alt=""/></td>
 </tr>
 </table>
 
@@ -44,7 +44,7 @@ easier to install.
 <h2>Released Versions</h2>
 <p>
 Released versions are found on
-<a href="http://people.freedesktop.org/~hughsient/releases/">people.freedesktop.org</a>.
+<a href="http://www.packagekit.org/releases/">http://www.packagekit.org/releases/</a>.
 </p>
 <table>
 <tr><td><b>Version</b></td><td>&nbsp;&nbsp;</td><td><b>Date</b></td></tr>
@@ -60,6 +60,11 @@ Released versions are found on
 <tr><td>0.1.9</td><td></td><td>2008-03-04</td></tr>
 <tr><td>0.1.10</td><td></td><td>2008-03-28</td></tr>
 <tr><td>0.1.11</td><td></td><td>2008-04-05</td></tr>
+<tr><td>0.2.0</td><td></td><td>2008-05-06</td></tr>
+<tr><td>0.2.1</td><td></td><td>2008-05-09</td></tr>
+<tr><td>0.2.2</td><td></td><td>2008-06-05</td></tr>
+<tr><td>0.2.3</td><td></td><td>2008-07-04</td></tr>
+<tr><td>0.2.4</td><td></td><td>2008-07-30</td></tr>
 </table>
 
 <h2>Dependencies</h2>
@@ -86,8 +91,8 @@ You can get the latest PackageKit daemon, and QT or GNOME frontends from the
 public git repositories on freedesktop.
 </p>
 <pre>
-git clone git://anongit.freedesktop.org/git/packagekit
-git clone git://people.freedesktop.org/~hughsient/QPackageKit
+git clone git://anongit.freedesktop.org/git/packagekit/PackageKit
+git clone git://anongit.freedesktop.org/git/packagekit/PackageKit-Qt
 git clone git://people.freedesktop.org/~hughsient/gnome-packagekit
 </pre>
 <p>
@@ -106,7 +111,7 @@ specific are the backends.<br/>
 To make PackageKit work on a new distribution, you have to write a
 "backend" which is basically a shim layer from the distro tool to
 packagekitd. A backend can have one or more threads and also spawn other processes.<br/>
-See the developer information <a href="pk-reference.html">here</a> for loads more
+See the developer information <a href="gtk-doc/index.html">here</a> for loads more
 information.
 </p>
 

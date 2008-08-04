@@ -151,7 +151,6 @@ pk_iso8601_present (void)
 	/* get current time */
 	g_get_current_time (&timeval);
 	timespec = g_time_val_to_iso8601 (&timeval);
-	pk_debug ("timespec=%s", timespec);
 
 	return timespec;
 }
@@ -182,11 +181,9 @@ pk_iso8601_difference (const gchar *isodate)
 
 	/* work out difference */
 	time = timeval_now.tv_sec - timeval_then.tv_sec;
-	pk_debug ("difference=%i", time);
 
 	return time;
 }
-
 
 /**
  * pk_strvalidate_char:
@@ -246,7 +243,7 @@ pk_strsafe (const gchar *text)
 	}
 
 	/* rip out any insane characters */
-	delimiters = "\\\f\n\r\t\"'";
+	delimiters = "\\\f\r\t\"'";
 	text_safe = g_strdup (text);
 	g_strdelimit (text_safe, delimiters, ' ');
 	return text_safe;
@@ -272,17 +269,18 @@ pk_strnumber (const gchar *text)
 		return FALSE;
 	}
 
-	/* ITS4: ignore, not used for allocation and checked for oversize */
-	length = strlen (text);
+	/* max length is 10 */
+	length = pk_strlen (text, 10);
+	if (length == 10) {
+		pk_warning ("input too long: %s", text);
+		return FALSE;
+	}
+
 	for (i=0; i<length; i++) {
-		if (i > 10) {
-			pk_debug ("input too long!");
-			return FALSE;
-		}
 		if (i == 0 && text[i] == '-') {
 			/* negative sign */
 		} else if (g_ascii_isdigit (text[i]) == FALSE) {
-			pk_debug ("not a number '%c' in text!", text[i]);
+			pk_warning ("not a number '%c' in text!", text[i]);
 			return FALSE;
 		}
 	}
@@ -361,26 +359,30 @@ pk_strzero (const gchar *text)
 /**
  * pk_strlen:
  * @text: The text to check
- * @max_length: The maximum length of the string
+ * @len: The maximum length of the string
  *
  * This function is a much safer way of doing strlen as it checks for NULL and
  * a stupidly long string.
- * This also modifies the string in place if it is over-range by inserting
- * a NULL at the max_length.
  *
- * Return value: the length of the string, or max_length.
+ * Return value: the length of the string, or len if the string is too long.
  **/
 guint
-pk_strlen (gchar *text, guint max_length)
+pk_strlen (const gchar *text, guint len)
 {
-	guint length;
-	/* ITS4: ignore, not used for allocation and checked */
-	length = strlen (text);
-	if (length > max_length) {
-		text[max_length] = '\0';
-		return max_length;
+	guint i;
+
+	/* common case */
+	if (text == NULL || text[0] == '\0') {
+		return 0;
 	}
-	return length;
+
+	/* only count up to len */
+	for (i=1; i<len; i++) {
+		if (text[i] == '\0') {
+			break;
+		}
+	}
+	return i;
 }
 
 /**
@@ -397,15 +399,16 @@ pk_strvalidate (const gchar *text)
 	guint i;
 	guint length;
 
-	/* ITS4: ignore, not used for allocation and checked for oversize */
-	length = strlen (text);
+	/* maximum size is 1024 */
+	length = pk_strlen (text, 1024);
+	if (length > 1024) {
+		pk_warning ("input too long: %u", length);
+		return FALSE;
+	}
+
 	for (i=0; i<length; i++) {
-		if (i > 1024) {
-			pk_debug ("input too long!");
-			return FALSE;
-		}
 		if (pk_strvalidate_char (text[i]) == FALSE) {
-			pk_debug ("invalid char '%c' in text!", text[i]);
+			pk_warning ("invalid char '%c' in text!", text[i]);
 			return FALSE;
 		}
 	}
@@ -429,21 +432,17 @@ pk_strsplit (const gchar *id, guint parts)
 	gchar **sections = NULL;
 
 	if (id == NULL) {
-		pk_warning ("ident is null!");
 		goto out;
 	}
 
 	/* split by delimeter ';' */
 	sections = g_strsplit (id, ";", 0);
 	if (g_strv_length (sections) != parts) {
-		pk_warning ("ident '%s' is invalid (sections=%d)", id, g_strv_length (sections));
 		goto out;
 	}
 
-	/* ITS4: ignore, not used for allocation */
+	/* name has to be valid */
 	if (pk_strzero (sections[0])) {
-		/* name has to be valid */
-		pk_warning ("ident first section is empty");
 		goto out;
 	}
 
@@ -508,7 +507,6 @@ pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compa
 		return FALSE;
 	}
 	if (compare == parts) {
-		pk_debug ("optimize to strcmp");
 		return pk_strequal (id1, id2);
 	}
 
@@ -554,6 +552,7 @@ gchar *
 pk_strpad (const gchar *data, guint length)
 {
 	gint size;
+	guint data_len;
 	gchar *text;
 	gchar *padding;
 
@@ -562,7 +561,10 @@ pk_strpad (const gchar *data, guint length)
 	}
 
 	/* ITS4: ignore, only used for formatting */
-	size = (length - strlen(data));
+	data_len = strlen (data);
+
+	/* calculate */
+	size = (length - data_len);
 	if (size <= 0) {
 		return g_strdup (data);
 	}
@@ -613,30 +615,32 @@ pk_strpad_extra (const gchar *data, guint length, guint *extra)
 }
 
 /**
- * pk_delay_yield:
- * @delay: the desired delay in seconds
+ * pk_strreplace:
+ * @text: The input text to make safe
+ * @find: What to search for
+ * @replace: What to replace with
  *
- * Return value: success
+ * Replaces chars in the text with a replacement.
+ * The %find and %replace variables to not have to be of the same length
+ *
+ * Return value: the new string (copied)
  **/
-gboolean
-pk_delay_yield (gfloat delay)
+gchar *
+pk_strreplace (const gchar *text, const gchar *find, const gchar *replace)
 {
-	GTimer *timer;
-	gdouble elapsed;
-	guint count = 0;
+	gchar **array;
+	gchar *retval;
 
-	pk_debug ("started task");
-	timer = g_timer_new ();
-	do {
-		g_usleep (10);
-		g_thread_yield ();
-		elapsed = g_timer_elapsed (timer, NULL);
-		if (++count % 10000 == 0) {
-			pk_debug ("elapsed %.2f", elapsed);
-		}
-	} while (elapsed < delay);
-	g_timer_destroy (timer);
-	return TRUE;
+	/* common case, not found */
+	if (strstr (text, find) == NULL) {
+		return g_strdup (text);
+	}
+
+	/* split apart and rejoin with new delimiter */
+	array = g_strsplit (text, find, 0);
+	retval = g_strjoinv (replace, array);
+	g_strfreev (array);
+	return retval;
 }
 
 /**
@@ -670,6 +674,33 @@ pk_ptr_array_to_argv (GPtrArray *array)
 }
 
 /**
+ * pk_argv_to_ptr_array:
+ * @array: the gchar** array of strings
+ *
+ * Form a GPtrArray array of strings.
+ * The data in the array is copied.
+ *
+ * Return value: the string array, or %NULL if invalid
+ **/
+GPtrArray *
+pk_argv_to_ptr_array (gchar **array)
+{
+	guint i;
+	guint length;
+	GPtrArray *parray;
+
+	g_return_val_if_fail (array != NULL, NULL);
+
+	parray = g_ptr_array_new ();
+	length = g_strv_length (array);
+	for (i=0; i<length; i++) {
+		g_ptr_array_add (parray, g_strdup (array[i]));
+	}
+	return parray;
+}
+
+
+/**
  * pk_va_list_to_argv_string:
  **/
 static void
@@ -680,7 +711,7 @@ pk_va_list_to_argv_string (GPtrArray *ptr_array, const gchar *string)
 	guint i;
 
 	/* split the string up by spaces */
-	array = g_strsplit (string, " ", 0);
+	array = g_strsplit (string, "|", 0);
 
 	/* for each */
 	length = g_strv_length (array);
@@ -696,7 +727,7 @@ pk_va_list_to_argv_string (GPtrArray *ptr_array, const gchar *string)
  * @args: any subsequant string's
  *
  * Form a composite string array of string, with a special twist;
- * if the entry contains a space, then it is split as seporate parts
+ * if the entry contains a '|', then it is split as seporate parts
  * of the array.
  *
  * Return value: the string array, or %NULL if invalid
@@ -725,7 +756,6 @@ pk_va_list_to_argv (const gchar *string_first, va_list *args)
 		/* split the string up by spaces */
 		pk_va_list_to_argv_string (ptr_array, value_temp);
 	}
-	pk_debug ("number of strings=%i", i+1);
 
 	/* convert the array to a strv type */
 	array = pk_ptr_array_to_argv (ptr_array);
@@ -835,9 +865,6 @@ libst_common (LibSelfTest *test)
 		return;
 	}
 
-	pk_delay_yield (2.0);
-
-
 	/************************************************************
 	 ****************        test distro-id        **************
 	 ************************************************************/
@@ -849,6 +876,23 @@ libst_common (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pk_strequal same argument");
+	temp = "dave";
+	if (pk_strequal (temp, temp)) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect ret when both same");
+	}
+
+	/************************************************************/
+	libst_title (test, "pk_strequal both const");
+	if (pk_strequal ("dave", "dave")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect ret when both same");
+	}
 
 	/************************************************************
 	 ****************        build var args        **************
@@ -938,7 +982,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "va_list_to_argv triple with space first");
-	array = pk_va_list_to_argv_test ("richard phillip", "hughes", NULL);
+	array = pk_va_list_to_argv_test ("richard|phillip", "hughes", NULL);
 	if (pk_strequal (array[0], "richard") &&
 	    pk_strequal (array[1], "phillip") &&
 	    pk_strequal (array[2], "hughes") &&
@@ -951,7 +995,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "va_list_to_argv triple with space second");
-	array = pk_va_list_to_argv_test ("richard", "phillip hughes", NULL);
+	array = pk_va_list_to_argv_test ("richard", "phillip|hughes", NULL);
 	if (pk_strequal (array[0], "richard") &&
 	    pk_strequal (array[1], "phillip") &&
 	    pk_strequal (array[2], "hughes") &&
@@ -1210,25 +1254,30 @@ libst_common (LibSelfTest *test)
 	 ****************          strlen          ******************
 	 ************************************************************/
 	libst_title (test, "strlen bigger");
-	text_safe = g_strdup ("123456789");
-	length = pk_strlen (text_safe, 20);
-	if (length == 9 && pk_strequal (text_safe, "123456789")) {
+	length = pk_strlen ("123456789", 20);
+	if (length == 9) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "failed the strlen %i,'%s'", length, text_safe);
+		libst_failed (test, "failed the strlen %i", length);
 	}
-	g_free (text_safe);
 
 	/************************************************************/
 	libst_title (test, "strlen smaller");
-	text_safe = g_strdup ("123456789");
-	length = pk_strlen (text_safe, 5);
-	if (length == 5 && pk_strequal (text_safe, "12345")) {
+	length = pk_strlen ("123456789", 5);
+	if (length == 5) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "failed the strlen %i,'%s'", length, text_safe);
+		libst_failed (test, "failed the strlen %i", length);
 	}
-	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "strlen correct");
+	length = pk_strlen ("123456789", 9);
+	if (length == 9) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the strlen %i", length);
+	}
 
 	/************************************************************
 	 ****************         Padding          ******************
@@ -1279,6 +1328,48 @@ libst_common (LibSelfTest *test)
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************
+	 ****************         Replace          ******************
+	 ************************************************************/
+	libst_title (test, "replace start");
+	text_safe = pk_strreplace ("richard\nhughes", "r", "e");
+	if (pk_strequal (text_safe, "eichaed\nhughes")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "replace none");
+	text_safe = pk_strreplace ("richard\nhughes", "dave", "e");
+	if (pk_strequal (text_safe, "richard\nhughes")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "replace end");
+	text_safe = pk_strreplace ("richard\nhughes", "s", "e");
+	if (pk_strequal (text_safe, "richard\nhughee")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "replace unicode");
+	text_safe = pk_strreplace ("richard\n- hughes", "\n- ", "\n• ");
+	if (pk_strequal (text_safe, "richard\n• hughes")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace '%s'", text_safe);
 	}
 	g_free (text_safe);
 

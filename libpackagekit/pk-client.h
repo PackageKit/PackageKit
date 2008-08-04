@@ -25,6 +25,8 @@
 #include <glib-object.h>
 #include "pk-enum.h"
 #include "pk-package-list.h"
+#include "pk-update-detail-obj.h"
+#include "pk-details-obj.h"
 
 G_BEGIN_DECLS
 
@@ -57,6 +59,7 @@ G_BEGIN_DECLS
 typedef enum
 {
 	PK_CLIENT_ERROR_FAILED,
+	PK_CLIENT_ERROR_FAILED_AUTH,
 	PK_CLIENT_ERROR_NO_TID,
 	PK_CLIENT_ERROR_ALREADY_TID,
 	PK_CLIENT_ERROR_ROLE_UNKNOWN,
@@ -85,9 +88,7 @@ struct _PkClientClass
 							 guint		 elapsed,
 							 guint		 remaining);
 	void		(* package)			(PkClient	*client,
-							 PkInfoEnum	 info,
-							 const gchar	*package_id,
-							 const gchar	*summary);
+							 PkPackageObj	*obj);
 	void		(* transaction)			(PkClient	*client,
 							 const gchar	*tid,
 							 const gchar	*timespec,
@@ -96,21 +97,9 @@ struct _PkClientClass
 							 guint		 duration,
 							 const gchar	*data);
 	void		(* update_detail)		(PkClient	*client,
-							 const gchar	*package_id,
-							 const gchar	*updates,
-							 const gchar	*obsoletes,
-							 const gchar	*vendor_url,
-							 const gchar	*bugzilla_url,
-							 const gchar	*cve_url,
-							 PkRestartEnum	 restart,
-							 const gchar	*update_text);
-	void		(* description)			(PkClient	*client,
-							 const gchar	*package_id,
-							 const gchar	*license,
-							 PkGroupEnum	 group,
-							 const gchar	*description,
-							 const gchar	*url,
-							 gulong		 size);
+							 PkUpdateDetailObj	*update_detail);
+	void		(* details)			(PkClient	*client,
+							 PkDetailsObj	*package_detail);
 	void		(* files)			(PkClient	*client,
 							 const gchar	*package_id,
 							 const gchar	*filelist);
@@ -186,7 +175,7 @@ gboolean	 pk_client_get_status			(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_get_role			(PkClient	*client,
 							 PkRoleEnum	*role,
-							 gchar		**package_id,
+							 gchar		**text,
 							 GError		**error);
 gboolean	 pk_client_get_progress			(PkClient	*client,
 							 guint		*percentage,
@@ -197,9 +186,17 @@ gboolean	 pk_client_get_progress			(PkClient	*client,
 gboolean	 pk_client_get_package			(PkClient	*client,
 							 gchar		**package,
 							 GError		**error);
+gboolean	 pk_client_set_locale			(PkClient	*client,
+							 const gchar	*code,
+							 GError		**error);
 gboolean	 pk_client_cancel			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_client_download_packages		(PkClient	*client,
+							 gchar		**package_ids,
+							 const gchar	*directory,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;	
 gboolean	 pk_client_get_updates			(PkClient	*client,
 							 PkFilterEnum	 filters,
 							 GError		**error)
@@ -228,7 +225,7 @@ gboolean	 pk_client_search_file			(PkClient	*client,
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_depends			(PkClient	*client,
 							 PkFilterEnum	 filters,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -237,12 +234,12 @@ gboolean	 pk_client_get_packages			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_update_detail		(PkClient	*client,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_requires			(PkClient	*client,
 							 PkFilterEnum	 filters,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -252,15 +249,15 @@ gboolean	 pk_client_what_provides		(PkClient	*client,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_get_description		(PkClient	*client,
-							 const gchar	*package_id,
+gboolean	 pk_client_get_details			(PkClient	*client,
+							 gchar		**package_ids,
 							 GError		**error);
 gboolean	 pk_client_get_files			(PkClient	*client,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_remove_package		(PkClient	*client,
-							 const gchar	*package_id,
+gboolean	 pk_client_remove_packages		(PkClient	*client,
+							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove,
 							 GError		**error)
@@ -269,8 +266,8 @@ gboolean	 pk_client_refresh_cache		(PkClient	*client,
 							 gboolean	 force,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_install_package		(PkClient	*client,
-							 const gchar	*package_id,
+gboolean	 pk_client_install_packages		(PkClient	*client,
+							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_signature		(PkClient	*client,
@@ -279,16 +276,13 @@ gboolean	 pk_client_install_signature		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_update_package		(PkClient	*client,
-							 const gchar	*package_id,
+gboolean	 pk_client_update_packages		(PkClient	*client,
+							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_update_packages		(PkClient	*client,
-							 GError		**error,
-							 const gchar	*package_id, ...)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_update_packages_strv		(PkClient	*client,
-							 gchar		**package_ids,
+gboolean	 pk_client_install_files		(PkClient	*client,
+							 gboolean	 trusted,
+							 gchar		**files_rel,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_file			(PkClient	*client,
@@ -298,7 +292,7 @@ gboolean	 pk_client_install_file			(PkClient	*client,
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_resolve			(PkClient	*client,
 							 PkFilterEnum	 filters,
-							 const gchar	*package,
+							 gchar		**packages,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_rollback			(PkClient	*client,
@@ -334,9 +328,7 @@ gboolean	 pk_client_repo_set_data		(PkClient	*client,
 							 G_GNUC_WARN_UNUSED_RESULT;
 
 /* cached stuff */
-guint		 pk_client_package_buffer_get_size	(PkClient	*client);
-PkPackageItem	*pk_client_package_buffer_get_item	(PkClient	*client,
-							 guint		 item);
+PkPackageList	*pk_client_get_package_list		(PkClient	*client);
 PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
 
 /* not job specific */

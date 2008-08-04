@@ -20,11 +20,12 @@ __pkcon_commandlist="
     accept-eula
     get-actions
     get-depends
-    get-description
+    get-details
     get-files
     get-filters
     get-groups
     get-packages
+    download-packages
     get-requires
     get-time
     get-transactions

@@ -31,19 +31,20 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
 	NULL,					/* cancel */
+	NULL,					/* download_packages */
 	NULL,					/* get_depends */
-	NULL,					/* get_description */
+	NULL,					/* get_details */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
-	NULL,					/* install_file */
-	NULL,					/* install_package */
+	NULL,					/* install_files */
+	NULL,					/* install_packages */
 	NULL,					/* install_signature */
 	NULL,					/* refresh_cache */
-	NULL,					/* remove_package */
+	NULL,					/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	NULL,					/* resolve */

@@ -1,3 +1,27 @@
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ *
+ * Copyright (c) 2007 Novell, Inc.
+ * Copyright (c) 2007 Boyd Timothy <btimothy@gmail.com>
+ * Copyright (c) 2007-2008 Stefan Haas <shaas@suse.de>
+ * Copyright (c) 2007-2008 Scott Reeves <sreeves@novell.com>
+ *
+ * Licensed under the GNU General Public License Version 2
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
 #ifndef _ZYPP_EVENTS_H_
 #define _ZYPP_EVENTS_H_
 
@@ -274,10 +298,13 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 		clear_package_id ();
 		_package_id = build_package_id_from_url (&file);
 
-		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::start(): %s\n", _package_id == NULL ? "unknown" : _package_id);
+		//pk_debug ("DownloadProgressReportReceiver::start():%s --%s\n",
+		//		g_strdup (file.asString().c_str()),	g_strdup (localfile.asString().c_str()) );
 		if (_package_id != NULL) {
+			gchar* summary = g_strdup (file.asString().c_str());
 			pk_backend_set_status (_backend, PK_STATUS_ENUM_DOWNLOAD);
-			pk_backend_package (_backend, PK_INFO_ENUM_DOWNLOADING, _package_id, "TODO: Put the package summary here if possible");
+			pk_backend_package (_backend, PK_INFO_ENUM_DOWNLOADING, _package_id, summary);
+			g_free (summary);
 			reset_sub_percentage ();
 		}
 	}

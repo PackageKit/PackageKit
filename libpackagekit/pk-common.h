@@ -54,8 +54,8 @@ G_BEGIN_DECLS
  */
 #define	PK_DBUS_INTERFACE_TRANSACTION	"org.freedesktop.PackageKit.Transaction"
 
-guint		 pk_strlen				(gchar		*text,
-							 guint		 max_length)
+guint		 pk_strlen				(const gchar	*text,
+							 guint		 len)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_strzero				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -84,7 +84,12 @@ gchar		**pk_strsplit				(const gchar	*id,
 gchar		*pk_strbuild_va				(const gchar	*first_element,
 							 va_list	*args)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		*pk_strreplace				(const gchar	*text,
+							 const gchar	*find,
+							 const gchar	*replace);
 gchar		**pk_ptr_array_to_argv			(GPtrArray	*array)
+							 G_GNUC_WARN_UNUSED_RESULT;
+GPtrArray	*pk_argv_to_ptr_array			(gchar		**array)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		**pk_va_list_to_argv			(const gchar	*string_first,
 							 va_list	*args)
@@ -97,7 +102,6 @@ gboolean	 pk_strcmp_sections			(const gchar	*id1,
 gchar		*pk_iso8601_present			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_iso8601_difference			(const gchar	*isodate);
-gboolean	 pk_delay_yield				(gfloat		 delay);
 gchar		*pk_get_distro_id			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
 

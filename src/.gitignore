@@ -12,4 +12,5 @@ debug.log
 *.gcno
 *.txt
 *.out
+*.db
 

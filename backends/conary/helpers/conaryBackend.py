@@ -403,6 +403,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     'Package already installed')
 
             self.status(STATUS_INSTALL)
+            self._get_package_update(name, version, flavor)
             self._do_package_update(name, version, flavor)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
@@ -424,6 +425,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             self.status(STATUS_REMOVE)
             name = '-%s' % name
+            self._get_package_update(name, version, flavor)
             self._do_package_update(name, version, flavor)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
@@ -472,7 +474,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         notice = self._get_metadata(id, 'notice') or " "
         urls = {'jira':[], 'cve' : [], 'vendor': []}
         if notice:
-            # Update Description
+            # Update Details
             desc = notice['description']
             # Update References (Jira,CVE ...)
             refs = notice['references']
@@ -522,7 +524,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.update_detail(id,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
 
     @ExceptionHandler
-    def get_description(self, id):
+    def get_details(self, id):
         '''
         Print a detailed description for a given package
         '''
@@ -539,7 +541,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             categories = self._get_metadata(id, 'categories') or "unknown"
 
             # Package size goes here, but I don't know how to find that for conary packages.
-            self.description(shortDesc, id, categories, longDesc, url, 0)
+            self.details(id, None,  categories, longDesc, url, 0)
         else:
             self.error(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
 

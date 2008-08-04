@@ -19,13 +19,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <pk-network.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 #include <pk-package-ids.h>
 
 static PkBackendSpawn *spawn;
-static PkNetwork *network;
 
 /**
  * backend_initialize:
@@ -34,9 +32,7 @@ static PkNetwork *network;
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_debug ("FILTER: initialize");
-	network = pk_network_new ();
+	pk_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "yum");
 }
@@ -48,10 +44,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_debug ("FILTER: destroy");
-	g_object_unref (network);
+	pk_debug ("backend: destroy");
 	g_object_unref (spawn);
 }
 
@@ -61,7 +54,6 @@ backend_destroy (PkBackend *backend)
 static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
 	return (PK_GROUP_ENUM_ADMIN_TOOLS |
 		PK_GROUP_ENUM_DESKTOP_GNOME |
 		PK_GROUP_ENUM_DESKTOP_KDE |
@@ -90,12 +82,12 @@ backend_get_groups (PkBackend *backend)
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PK_FILTER_ENUM_GUI |
 		PK_FILTER_ENUM_INSTALLED |
 		PK_FILTER_ENUM_DEVELOPMENT |
 		PK_FILTER_ENUM_BASENAME |
-		PK_FILTER_ENUM_FREE);
+		PK_FILTER_ENUM_FREE |
+		PK_FILTER_ENUM_NEWEST);
 }
 
 /**
@@ -116,60 +108,76 @@ pk_backend_bool_to_text (gboolean value)
 static void
 backend_cancel (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	/* this feels bad... */
 	pk_backend_spawn_kill (spawn);
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "download-packages.py", directory, package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
+	g_free (package_ids_temp);
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-description.py", package_id, NULL);
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "get-details.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
  * backend_get_files:
  */
 static void
-backend_get_files (PkBackend *backend, const gchar *package_id)
+backend_get_files (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-files.py", package_id, NULL);
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "get-files.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-requires.py", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "get-requires.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -179,8 +187,6 @@ static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
 	g_free (filters_text);
@@ -193,8 +199,6 @@ static void
 backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-packages.py", filters_text, NULL);
 	g_free (filters_text);
@@ -204,41 +208,47 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
  * backend_get_update_detail:
  */
 static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-update-detail.py", package_id, NULL);
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "get-update-detail.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
+	gchar *package_ids_temp;
 
 	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "install.py", package_id, NULL);
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
- * backend_install_file:
+ * backend_install_files:
  */
 static void
-backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "install-file.py", pk_backend_bool_to_text (trusted), full_path, NULL);
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (full_paths, "|");
+	pk_backend_spawn_helper (spawn, "install-files.py", pk_backend_bool_to_text (trusted), package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -249,8 +259,6 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 			   const gchar *key_id, const gchar *package_id)
 {
 	const gchar *type_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 
 	type_text = pk_sig_type_enum_to_text (type);
 	pk_backend_spawn_helper (spawn, "install-signature.py", type_text, key_id, package_id, NULL);
@@ -262,11 +270,8 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-
 	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
 		return;
@@ -276,14 +281,17 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * pk_backend_remove_package:
+ * pk_backend_remove_packages:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "remove.py", pk_backend_bool_to_text (allow_deps), package_id, NULL);
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "remove-packages.py", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -293,8 +301,6 @@ static void
 backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-details.py", filters_text, search, NULL);
 	g_free (filters_text);
@@ -307,8 +313,6 @@ static void
 backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-file.py", filters_text, search, NULL);
 	g_free (filters_text);
@@ -321,8 +325,6 @@ static void
 backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-group.py", filters_text, search, NULL);
 	g_free (filters_text);
@@ -335,8 +337,6 @@ static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-name.py", filters_text, search, NULL);
 	g_free (filters_text);
@@ -350,19 +350,16 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-
 	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, " ");
-	pk_backend_spawn_helper (spawn, "update.py", package_ids_temp, NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "update-packages.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -372,8 +369,6 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_update_system (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "update-system.py", NULL);
 }
 
@@ -381,14 +376,15 @@ backend_update_system (PkBackend *backend)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
+	gchar *package_ids_temp;
 	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_id, NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_ids_temp, NULL);
 	g_free (filters_text);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -398,8 +394,6 @@ static void
 backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-repo-list.py", filters_text, NULL);
 	g_free (filters_text);
@@ -411,8 +405,6 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	if (enabled == TRUE) {
 		pk_backend_spawn_helper (spawn, "repo-enable.py", rid, "true", NULL);
 	} else {
@@ -426,8 +418,6 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "repo-set-data.py", rid, parameter, value, NULL);
 }
 
@@ -439,8 +429,6 @@ backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum 
 {
 	gchar *filters_text;
 	const gchar *provides_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
 	provides_text = pk_provides_enum_to_text (provides);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "what-provides.py", filters_text, provides_text, search, NULL);
@@ -455,19 +443,20 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
+	backend_download_packages,		/* download_packages */
 	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
+	backend_get_details,			/* get_details */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_file,			/* install_file */
-	backend_install_package,		/* install_package */
+	backend_install_files,			/* install_files */
+	backend_install_packages,		/* install_packages */
 	backend_install_signature,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */

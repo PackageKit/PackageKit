@@ -47,6 +47,7 @@
 #include <pk-enum.h>
 
 #include "pk-cache.h"
+#include "pk-update-detail-list.h"
 #include "pk-backend.h"
 #include "pk-backend-internal.h"
 #include "pk-engine.h"
@@ -68,16 +69,26 @@ static void     pk_engine_finalize	(GObject       *object);
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
 
 /**
- * PK_ENGINE_STATE_CHANGED_TIMEOUT:
+ * PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT:
  *
  * The timeout in seconds to wait when we get the StateHasChanged method.
- * We don't want to queue these transactions if one is already in progress.
+ * We don't queue these transactions if one is already in progress.
  *
- * We probably also need to wait for NetworkManager to come back up if we are
- * resuming, and we probably don't want to be doing this at a busy time after
- * a yum transaction.
+ * This should be used when a native tool has been used, and the update UI should
+ * be updated to reflect reality.
  */
-#define PK_ENGINE_STATE_CHANGED_TIMEOUT		10 /* seconds */
+#define PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT		5 /* seconds */
+
+/**
+ * PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT:
+ *
+ * The timeout in seconds to wait when we get the StateHasChanged method (for selected reasons).
+ * We don't queue these transactions if one is already in progress.
+ *
+ * We probably don't want to be doing an update check at the busy time after a resume, or for
+ * other non-critical reasons.
+ */
+#define PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT		10*60 /* seconds */
 
 struct PkEnginePrivate
 {
@@ -86,22 +97,26 @@ struct PkEnginePrivate
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
 	PkCache			*cache;
+	PkUpdateDetailList	*update_detail_cache;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkNetwork		*network;
 	PkSecurity		*security;
 	PkNotify		*notify;
+	PkConf			*conf;
 	PkFileMonitor		*file_monitor;
 	PkRoleEnum		 actions;
 	PkGroupEnum		 groups;
 	PkFilterEnum		 filters;
-	gboolean		 signal_state_timeout; /* don't queue StateHasChanged */
+	guint			 signal_state_priority_timeout;
+	guint			 signal_state_normal_timeout;
 };
 
 enum {
 	PK_ENGINE_LOCKED,
 	PK_ENGINE_TRANSACTION_LIST_CHANGED,
 	PK_ENGINE_REPO_LIST_CHANGED,
+	PK_ENGINE_NETWORK_STATE_CHANGED,
 	PK_ENGINE_RESTART_SCHEDULE,
 	PK_ENGINE_UPDATES_CHANGED,
 	PK_ENGINE_LAST_SIGNAL
@@ -141,6 +156,8 @@ pk_engine_error_get_type (void)
 		static const GEnumValue values[] =
 		{
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_SET_PROXY, "CannotSetProxy"),
 			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -173,6 +190,8 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 	pk_debug ("emitting transaction-list-changed");
 	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION_LIST_CHANGED], 0, transaction_list);
 	pk_engine_reset_timer (engine);
+
+	g_strfreev (transaction_list);
 }
 
 /**
@@ -257,6 +276,20 @@ pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
 }
 
 /**
+ * pk_engine_get_network_state:
+ **/
+gboolean
+pk_engine_get_network_state (PkEngine *engine, gchar **state, GError **error)
+{
+	PkNetworkEnum network;
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	/* get the network state */
+	network = pk_network_get_network_state (engine->priv->network);
+	*state = g_strdup (pk_network_enum_to_text (network));
+	return TRUE;
+}
+
+/**
  * pk_engine_get_transaction_list:
  **/
 gboolean
@@ -279,15 +312,15 @@ pk_engine_get_transaction_list (PkEngine *engine, gchar ***transaction_list, GEr
 static gboolean
 pk_engine_state_changed_cb (gpointer data)
 {
-	gboolean ret;
+	PkNetworkEnum state;
 	PkEngine *engine = PK_ENGINE (data);
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* if NetworkManager is not up, then just reschedule */
-	ret = pk_network_is_online (engine->priv->network);
-	if (!ret) {
-		/* wait another timeout of PK_ENGINE_STATE_CHANGED_TIMEOUT */
+	/* if network is not up, then just reschedule */
+	state = pk_network_get_network_state (engine->priv->network);
+	if (state == PK_NETWORK_ENUM_OFFLINE) {
+		/* wait another timeout of PK_ENGINE_STATE_CHANGED_x_TIMEOUT */
 		return TRUE;
 	}
 
@@ -297,7 +330,8 @@ pk_engine_state_changed_cb (gpointer data)
 	pk_notify_updates_changed (engine->priv->notify);
 
 	/* reset, now valid */
-	engine->priv->signal_state_timeout = 0;
+	engine->priv->signal_state_priority_timeout = 0;
+	engine->priv->signal_state_normal_timeout = 0;
 
 	return FALSE;
 }
@@ -309,21 +343,47 @@ pk_engine_state_changed_cb (gpointer data)
  * have finished their transaction, and the update cache may not be valid.
  **/
 gboolean
-pk_engine_state_has_changed (PkEngine *engine, GError **error)
+pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **error)
 {
+	gboolean is_priority = TRUE;
+
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	if (engine->priv->signal_state_timeout != 0) {
+	/* have we already scheduled priority? */
+	if (engine->priv->signal_state_priority_timeout != 0) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
-			     "Already asked to refresh state less than %i seconds ago",
-			     PK_ENGINE_STATE_CHANGED_TIMEOUT);
+			     "Already asked to refresh priority state less than %i seconds ago",
+			     PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT);
 		return FALSE;
 	}
 
-	/* wait a little delay in case we get multiple requests */
-	engine->priv->signal_state_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_TIMEOUT,
-								    pk_engine_state_changed_cb, engine);
+	/* don't bombard the user 10 seconds after resuming */
+	if (pk_strequal (reason, "resume")) {
+		is_priority = FALSE;
+	}
 
+	/* are we normal, and already scheduled normal? */
+	if (!is_priority && engine->priv->signal_state_normal_timeout != 0) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+			     "Already asked to refresh normal state less than %i seconds ago",
+			     PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT);
+		return FALSE;
+	}
+
+	/* are we priority, and already scheduled normal? */
+	if (is_priority && engine->priv->signal_state_normal_timeout != 0) {
+		/* clear normal, as we are about to schedule a priority */
+		g_source_remove (engine->priv->signal_state_normal_timeout);
+		engine->priv->signal_state_normal_timeout = 0;	}
+
+	/* wait a little delay in case we get multiple requests */
+	if (is_priority) {
+		engine->priv->signal_state_priority_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT,
+										     pk_engine_state_changed_cb, engine);
+	} else {
+		engine->priv->signal_state_normal_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT,
+										   pk_engine_state_changed_cb, engine);
+	}
 	return TRUE;
 }
 
@@ -418,8 +478,73 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	}
 
 	idle = (guint) g_timer_elapsed (engine->priv->timer, NULL);
-	pk_debug ("engine idle=%i", idle);
 	return idle;
+}
+
+/**
+ * pk_engine_suggest_daemon_quit:
+ **/
+gboolean
+pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
+{
+	guint size;
+
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* can we exit straight away */
+	size = pk_transaction_list_get_size (engine->priv->transaction_list);
+	if (size == 0) {
+		pk_warning ("exit!!");
+		exit (0);
+		return TRUE;
+	}
+
+	/* This will wait from 0..10 seconds, depending on the status of
+	 * pk_main_timeout_check_cb() - usually it should be a few seconds
+	 * after the last transaction */
+	engine->priv->restart_schedule = TRUE;
+	return TRUE;
+}
+
+/**
+ * pk_engine_set_proxy:
+ **/
+void
+pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *proxy_ftp, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+	gchar *sender = NULL;
+	gchar *error_detail = NULL;
+
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	pk_debug ("SetProxy method called: %s, %s", proxy_http, proxy_ftp);
+
+	/* check if the action is allowed from this client - if not, set an error */
+	sender = dbus_g_method_get_sender (context);
+
+	/* use security model to get auth */
+	ret = pk_security_action_is_allowed (engine->priv->security, sender, FALSE, PK_ROLE_ENUM_SET_PROXY_PRIVATE, &error_detail);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
+		dbus_g_method_return_error (context, error);
+		goto out;
+	}
+
+	/* try to set the new proxy */
+	ret = pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "setting the proxy failed");
+		dbus_g_method_return_error (context, error);
+		goto out;
+	}
+
+	/* all okay */
+	dbus_g_method_return (context);
+out:
+	g_free (sender);
+	g_free (error_detail);
 }
 
 /**
@@ -454,6 +579,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
+	signals [PK_ENGINE_NETWORK_STATE_CHANGED] =
+		g_signal_new ("network-state-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals [PK_ENGINE_UPDATES_CHANGED] =
 		g_signal_new ("updates-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -475,6 +605,19 @@ pk_engine_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine
 }
 
 /**
+ * pk_engine_network_state_changed_cb:
+ **/
+static void
+pk_engine_network_state_changed_cb (PkNetwork *file_monitor, PkNetworkEnum state, PkEngine *engine)
+{
+	const gchar *state_text;
+	g_return_if_fail (PK_IS_ENGINE (engine));
+	state_text = pk_network_enum_to_text (state);
+	pk_debug ("emitting network-state-changed: %s", state_text);
+	g_signal_emit (engine, signals [PK_ENGINE_NETWORK_STATE_CHANGED], 0, state_text);
+}
+
+/**
  * pk_engine_init:
  **/
 static void
@@ -483,9 +626,14 @@ pk_engine_init (PkEngine *engine)
 	DBusGConnection *connection;
 	gboolean ret;
 	gchar *filename;
+	gchar *proxy_http;
+	gchar *proxy_ftp;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->restart_schedule = FALSE;
+
+	/* use the config file */
+	engine->priv->conf = pk_conf_new ();
 
 	/* setup the backend backend */
 	engine->priv->backend = pk_backend_new ();
@@ -499,8 +647,12 @@ pk_engine_init (PkEngine *engine)
 	}
 
 	/* we dont need this, just don't keep creating and destroying it */
-	engine->priv->network = pk_network_new ();
 	engine->priv->security = pk_security_new ();
+
+	/* proxy the network state */
+	engine->priv->network = pk_network_new ();
+	g_signal_connect (engine->priv->network, "state-changed",
+			  G_CALLBACK (pk_engine_network_state_changed_cb), engine);
 
 	/* create a new backend so we can get the static stuff */
 	engine->priv->actions = pk_backend_get_actions (engine->priv->backend);
@@ -511,9 +663,11 @@ pk_engine_init (PkEngine *engine)
 
 	/* we save a cache of the latest update lists sowe can do cached responses */
 	engine->priv->cache = pk_cache_new ();
+	engine->priv->update_detail_cache = pk_update_detail_list_new ();
 
 	/* we need to be able to clear this */
-	engine->priv->signal_state_timeout = 0;
+	engine->priv->signal_state_priority_timeout = 0;
+	engine->priv->signal_state_normal_timeout = 0;
 
 	/* get another connection */
 	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
@@ -537,6 +691,13 @@ pk_engine_init (PkEngine *engine)
 	g_signal_connect (engine->priv->file_monitor, "file-changed",
 			  G_CALLBACK (pk_engine_file_monitor_changed_cb), engine);
 	g_free (filename);
+
+	/* set the proxy */
+	proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
+	proxy_ftp = pk_conf_get_string (engine->priv->conf, "ProxyFTP");
+	pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
+	g_free (proxy_http);
+	g_free (proxy_ftp);
 
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",
@@ -566,7 +727,6 @@ pk_engine_finalize (GObject *object)
 	engine = PK_ENGINE (object);
 
 	g_return_if_fail (engine->priv != NULL);
-	pk_debug ("engine finalise");
 
 	/* unlock if we locked this */
 	ret = pk_backend_unlock (engine->priv->backend);
@@ -575,9 +735,13 @@ pk_engine_finalize (GObject *object)
 	}
 
 	/* if we set an state changed notifier, clear */
-	if (engine->priv->signal_state_timeout != 0) {
-		g_source_remove (engine->priv->signal_state_timeout);
-		engine->priv->signal_state_timeout = 0;
+	if (engine->priv->signal_state_priority_timeout != 0) {
+		g_source_remove (engine->priv->signal_state_priority_timeout);
+		engine->priv->signal_state_priority_timeout = 0;
+	}
+	if (engine->priv->signal_state_normal_timeout != 0) {
+		g_source_remove (engine->priv->signal_state_normal_timeout);
+		engine->priv->signal_state_normal_timeout = 0;
 	}
 
 	/* compulsory gobjects */
@@ -591,6 +755,8 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
 	g_object_unref (engine->priv->cache);
+	g_object_unref (engine->priv->update_detail_cache);
+	g_object_unref (engine->priv->conf);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }

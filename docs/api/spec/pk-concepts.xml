@@ -1,0 +1,836 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+
+<chapter id="concepts">
+  <title>Important Concepts</title>
+  <para>
+    The following sections explain key concepts used internally in PackageKit.
+  </para>
+  <sect1 id="introduction-ideas-packageid">
+    <title>Package ID</title>
+    <para>
+      One important idea is the <literal>package_id</literal>.
+      This is the <literal>name;version;arch;data</literal> in
+      a single string and is meant to represent a single package.
+      This is important when multiple versions of a package are installed and
+      only the correct one is removed.
+    </para>
+    <para>
+      The <literal>package_id</literal> is parsed and checked carefully in
+      the helper code.
+      The package arch and data is optional, but 3 <literal>;</literal>'s must
+      be present.
+      For instance, <literal>gnome-keyring-manager;2.18.0;;</literal> is
+      valid but <literal>gnome-keyring-manager;2.18.0</literal> is not.
+      The data field can be used for the repository name or any other purpose.
+      It is designed to make the life of a backend writer a little bit easier.
+    </para>
+    <para>
+      The data field for an installed package must be
+      <literal>installed</literal> as this is used to identify which packages
+      are installable or installed in the client tools.
+    </para>
+    <para>
+      The data field for an non-installed local package must be
+      <literal>local</literal> as this signifies a repository name is not available
+      and that package resides locally on the client system.
+    </para>
+    <para>
+      For example:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          <literal>csup;20060318-5;x86_64;local</literal>: for locally available package file.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>csup;20060318-5;x86_64;fedora-devel</literal>: for package that is not installed
+          and can be downladed from the Fedora development repostory.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>csup;20060318-5;x86_64;installed</literal>: for locally installed package
+        </para>
+      </listitem>
+    </itemizedlist>
+    <informaltable>
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>Situation</entry>
+            <entry>Value</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>Searching</entry>
+            <entry><literal>installed</literal></entry>
+            <entry>If installed</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>available</literal></entry>
+            <entry>If available to install</entry>
+          </row>
+          <row>
+            <entry>Getting Updates</entry>
+            <entry><literal>low</literal></entry>
+            <entry>If update is of low severity</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>normal</literal></entry>
+            <entry>If update is of normal severity</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>important</literal></entry>
+            <entry>If update is very important</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>security</literal></entry>
+            <entry>If the update is security sensitive</entry>
+          </row>
+          <row>
+            <entry>Installing/Updating/Removing</entry>
+            <entry><literal>downloading</literal></entry>
+            <entry>If we are downloading this package</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>updating</literal></entry>
+            <entry>If we are updating this package</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>installing</literal></entry>
+            <entry>If we are installing this package</entry>
+          </row>
+          <row>
+            <entry></entry>
+            <entry><literal>removing</literal></entry>
+            <entry>If we are removing this package</entry>
+          </row>
+          <row>
+            <entry>Otherwise</entry>
+            <entry><literal>unknown</literal></entry>
+            <entry>If we cannot use any other option</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      The backend must ensure that the package_id only matches on one
+      single package.
+      A single package_id must be enough to uniquely identify a single object
+      in any repository used on the system.
+    </para>
+  </sect1>
+
+  <sect1 id="introduction-ideas-filters">
+    <title>Filters</title>
+    <para>
+      Search filtering on the name is done in the backend for efficiency reasons.
+      This can be added into the compiled backend if this is not possible
+      in any new backend design.
+    </para>
+    <para>
+      Filter options are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>installed</literal> or <literal>~installed</literal></entry>
+            <entry>If the package is installed on the system</entry>
+          </row>
+          <row>
+            <entry><literal>devel</literal> or <literal>~devel</literal></entry>
+            <entry>Development packages typically end -devel, -dgb and -static.</entry>
+          </row>
+          <row>
+            <entry><literal>gui</literal> or <literal>~gui</literal></entry>
+            <entry>GUI programs typically depend on gtk, libkde or libxfce.</entry>
+          </row>
+          <row>
+            <entry><literal>free</literal> or <literal>~free</literal></entry>
+            <entry>
+              Free software. The package contains only software and
+              other content that is available under a free license.
+              See http://fedoraproject.org/wiki/Licensing for a list
+              of licenses that are considered free. If a license
+              cannot be determined from the package metadata, or the
+              status of the license is not known, the package will
+              be marked as 'non-free'.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>visible</literal> or <literal>~visible</literal></entry>
+            <entry>
+              Repositories may want to specify if a package should be visible
+              in an application chooser.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>supported</literal> or <literal>~supported</literal></entry>
+            <entry>
+              If the package is supported or is a third party addon.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>basename</literal> or <literal>~basename</literal></entry>
+            <entry>
+              The basename filter will only return results according to the
+              package basename.
+              This is useful if you are searching for pm-utils and you only
+              want to show the main pm-utils package, not any of the
+              <literal>-devel</literal> or <literal>-debuginfo</literal> or
+              <literal>-common</literal> suffixes in the UI.
+              The basename is normally the original name of the source package.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>newest</literal> or <literal>~newest</literal></entry>
+            <entry>
+              The newest filter will only return the newest package available.
+              This is useful if you are searching for <literal>gimp</literal>
+              and only <literal>gimp-2.4.5-1.fc9.i386</literal> would be returned,
+              not <literal>gimp-2.4.5-1.fc9.i386</literal>,
+              <literal>gimp-2.4.4-1.fc9.i386</literal> and
+              <literal>gimp-2.4.3-1.fc9.i386</literal>.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>arch</literal> or <literal>~arch</literal></entry>
+            <entry>
+              The arch filter will only return the packages that match the exact architecture
+              of the system, for instance only showing x86_64 packages on a AMD Turion 64.
+              This would mean that x86_64 packages could be filtered from non-native 32-bit
+              packages.
+              This allows the used to choose non-native packages if a multi-lib policy is allowed.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>source</literal> or <literal>~source</literal></entry>
+            <entry>
+              The source filter will only return source packages.
+              These are typically useful when rebuilding other packages.
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      So valid options would be:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>none</literal></entry>
+            <entry>All packages installed or available with no filtering</entry>
+          </row>
+          <row>
+            <entry><literal>devel;~installed</literal></entry>
+            <entry>All non-installed development packages</entry>
+          </row>
+          <row>
+            <entry><literal>installed;~devel</literal></entry>
+            <entry>All installed non-development packages</entry>
+          </row>
+          <row>
+            <entry><literal>gui;~installed;~devel</literal></entry>
+            <entry>All non-installed, non-devel gui programs</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect1>
+
+  <sect1 id="introduction-errors">
+    <title>Error Enums</title>
+    <para>
+      If you have to handle an error, try to use <literal>internal-error</literal>
+      as little as possible.
+      Just ask on the mailing list, and we can add some more error enums to
+      cover the type of error in an abstract way as possible.
+    </para>
+    <para>
+      Every error should have an enumerated type
+      (e.g. <literal>out-of-memory</literal>) and also an error description.
+      The error description is not translated and not converted into the users
+      locale.
+      The error description should be descriptive, as it's for power users
+      and people trying to debug the problem.
+      For instance, "Out of memory" is not helpful as an error description
+      that is reported in a bugzilla, but "Could not create database index" is.
+      For the description use <literal>;</literal> to separate the lines if
+      required.
+    </para>
+    <para>
+      The following error enumerated types are available for use in all
+      backends:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Error</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>out-of-memory</literal></entry>
+            <entry>There is an out of memory condition</entry>
+          </row>
+          <row>
+            <entry><literal>no-network</literal></entry>
+            <entry>There is no network connection that can be used</entry>
+          </row>
+          <row>
+            <entry><literal>not-supported</literal></entry>
+            <entry>
+              Not supported by the backend.
+              NOTE: You shouldn't be setting non-NULL in the compiled
+              backend symbol table if you find yourself using this.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>internal-error</literal></entry>
+            <entry>
+              There was an unspecified internal error.
+              NOTE: Please try and be more specific.
+              If you are using this then we should probably add a new type.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>no-cache</literal></entry>
+            <entry>
+              The operation is trying to read from the cache, but the cache
+              is not present or invalid
+            </entry>
+          </row>
+          <row>
+            <entry><literal>gpg-failure</literal></entry>
+            <entry>There was a GPG failure in the transaction</entry>
+          </row>
+          <row>
+            <entry><literal>package-id-invalid</literal></entry>
+            <entry>The package ID is not valid for this transaction</entry>
+          </row>
+          <row>
+            <entry><literal>package-not-installed</literal></entry>
+            <entry>
+              The package that is trying to be removed or updated is not
+              installed
+            </entry>
+          </row>
+          <row>
+            <entry><literal>package-not-found</literal></entry>
+            <entry>
+              The package that is trying to be removed or updated is not
+              installed
+            </entry>
+          </row>
+          <row>
+            <entry><literal>package-already-installed</literal></entry>
+            <entry>
+              The package that is trying to be installed or updated is already
+              installed
+            </entry>
+          </row>
+          <row>
+            <entry><literal>package-download-failed</literal></entry>
+            <entry>A package failed to download correctly</entry>
+          </row>
+          <row>
+            <entry><literal>invalid-package-file</literal></entry>
+            <entry>
+	      The file that is supposed to contain a package to
+              install is corrupt, or is not a valid package file
+	    </entry>
+          </row>
+          <row>
+            <entry><literal>package-install-blocked</literal></entry>
+            <entry>
+	      The backend's configuration or policy prevents the
+              install or updating of a package
+	    </entry>
+          </row>
+          <row>
+            <entry><literal>dep-resolution-failed</literal></entry>
+            <entry>Dependency resolution failed</entry>
+          </row>
+          <row>
+            <entry><literal>filter-invalid</literal></entry>
+            <entry>
+              The filter was invalid.
+              NOTE: syntax checking is done in the backend loader, so you
+              should only use this if the filter is not supported by the
+              backend.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>group-not-found</literal></entry>
+            <entry>
+	      The specified software group was not found.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>create-thread-failed</literal></entry>
+            <entry>Failed to create a thread</entry>
+          </row>
+          <row>
+            <entry><literal>transaction-error</literal></entry>
+            <entry>
+              There was a generic transaction error, but please give more
+              details in the description
+            </entry>
+          </row>
+          <row>
+            <entry><literal>transaction-cancelled</literal></entry>
+            <entry>
+              The transaction was cancelled as the result of a call
+              to Cancel()
+            </entry>
+          </row>
+          <row>
+            <entry><literal>repo-not-found</literal></entry>
+            <entry>The repository name could not be found</entry>
+          </row>
+          <row>
+            <entry><literal>repo-configuration-error</literal></entry>
+            <entry>One of the enabled repositories has invalid configuration</entry>
+          </row>
+	  <row>
+	    <entry><literal>repo-not-available</literal></entry>
+	    <entry>
+	      There was a (possibly transient) problem connecting to a
+	      repository
+	    </entry>
+	  </row>
+          <row>
+            <entry><literal>cannot-remove-system-package</literal></entry>
+            <entry>
+              Could not remove a protected system package that is needed for
+              stable operation of the system
+            </entry>
+          </row>
+          <row>
+            <entry><literal>process-quit</literal></entry>
+            <entry>
+              The process was asked to quit, probably because it was cancelled
+            </entry>
+          </row>
+          <row>
+            <entry><literal>process-kill</literal></entry>
+            <entry>
+              The process was forcibly killed, probably because ignored the
+              quit request. This is probably due to it being cancelled
+            </entry>
+          </row>
+          <row>
+            <entry><literal>failed-config-parsing</literal></entry>
+            <entry>
+	      Configuration files could not be read or parsed.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>cannot-cancel</literal></entry>
+            <entry>
+	      The Cancel() method was called, but it is too late to
+	      cancel the current transaction.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>cannot-get-lock</literal></entry>
+            <entry>
+	      The backend could not acquire a lock on the underlying
+	      package management system.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>no-packages-to-update</literal></entry>
+            <entry>
+	      UpdateSystem() was called, but there are no packages to update.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>cannot-write-repo-config</literal></entry>
+            <entry>
+	      RepoEnable() or RepoSetData() was called, but the
+	      repository configuration file could not be written to.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>local-install-failed</literal></entry>
+            <entry>
+	      A local file could not be installed.  The file might not
+	      be readable, or it might not contain a valid package.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>bad-gpg-signature</literal></entry>
+            <entry>
+	      The package is signed with a GPG signature, but that
+	      signature is not valid in some way.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>package-corrupt</literal></entry>
+            <entry>
+	      The downloaded package is corrupt.
+            </entry>
+          </row>
+
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </sect1>
+
+  <sect1 id="introduction-group-type">
+    <title>Group type</title>
+    <para>
+      Groups are enumerated for localisation.
+      Backends should try to put packages in different groups if possible,
+      else just don't advertise SearchGroup and the options should not be
+      shown in the UI.
+    </para>
+    <para>
+      The following group enumerated types are available, but please check
+      <literal>libpackagekit/pk-enum.h</literal> for the latest list.
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Group</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>accessibility</literal></entry>
+            <entry>Accessibility</entry>
+          </row>
+          <row>
+            <entry><literal>accessories</literal></entry>
+            <entry>Accessories</entry>
+          </row>
+          <row>
+            <entry><literal>education</literal></entry>
+            <entry>Education</entry>
+          </row>
+          <row>
+            <entry><literal>games</literal></entry>
+            <entry>Games</entry>
+          </row>
+          <row>
+            <entry><literal>graphics</literal></entry>
+            <entry>Graphics</entry>
+          </row>
+          <row>
+            <entry><literal>internet</literal></entry>
+            <entry>Internet</entry>
+          </row>
+          <row>
+            <entry><literal>office</literal></entry>
+            <entry>Office</entry>
+          </row>
+          <row>
+            <entry><literal>other</literal></entry>
+            <entry>Other</entry>
+          </row>
+          <row>
+            <entry><literal>programming</literal></entry>
+            <entry>Programming</entry>
+          </row>
+          <row>
+            <entry><literal>multimedia</literal></entry>
+            <entry>Multimedia</entry>
+          </row>
+          <row>
+            <entry><literal>system</literal></entry>
+            <entry>System</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </sect1>
+
+  <sect1 id="introduction-cancellation">
+    <title>Cancellation</title>
+    <para>
+      If you have a multipart transaction that can be aborted in one phase but
+      not another then the AllowCancel signal can be sent.
+      This allows for example the yum download to be cancelled, but not the
+      install transaction.
+      By cancelling a job all subtransactions are killed.
+    </para>
+    <para>
+      By default actions cannot be cancelled unless enabled in the backend.
+      Use <literal>AllowCancel(true)</literal> to enable cancellation
+      and <literal>AllowCancel(false)</literal> to disable it.
+      This can be done for any job type.
+    </para>
+    <para>
+      For compiled backends that are threaded, the
+      <literal>cancel()</literal> method can be used to terminate
+      the thread.
+    </para>
+    <para>
+      For spawned backends, there are two staggered signals send to allow
+      locks to be released or for the backend to clean up after itself:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>Send the process <literal>SIGQUIT</literal>.</para>
+      </listitem>
+      <listitem>
+        <para>Wait 500ms</para>
+      </listitem>
+      <listitem>
+        <para>
+          If the process has not already quit, send the process
+          <literal>SIGKILL</literal> to terminate it.
+        </para>
+      </listitem>
+    </itemizedlist>
+  </sect1>
+
+  <sect1 id="introduction-ideas-transactions">
+    <title>Transactions</title>
+    <para>
+      PackageKit does not ask the user questions when the transaction is running.
+      It also supports a fire-and-forget method invocation, which means that transactions will
+      have one calling method, and have many signals going back to the caller.
+    </para>
+    <para>
+      Each transaction is a new path on the <literal>org.freedesktop.PackageKit</literal>
+      service, and to create a path you have to call <literal>GetTid</literal> on the base
+      interface which creates the new DBUS path, and returns the new path for you to connect to.
+      In the libpackagekit binding, <literal>PkControl</literal> handles the base interface,
+      whilst <literal>PkClient</literal> handles all the transaction interface stuff.
+      The <literal>org.freedesktop.PackageKit.Transaction</literal> interface can be used
+      on the newly created path, but only used once.
+      New methods require a new transaction path (i.e. another call to <literal>GetTid</literal>)
+      which is synchronous and thus very fast.
+    </para>
+    <para>
+      A typical successful transaction can be seen below.
+    </para>
+    <mediaobject id="pk-transactions-success">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-success.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      A typical simple transaction failure case can be seen below.
+      The user is not given the change to requeue the transaction as it is a fatal error.
+    </para>
+    <mediaobject id="pk-transactions-failure">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-failure.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      In this non-trivial example, a local file install is being attempted.
+      First the <literal>InstallFile</literal> is called with the <literal>trusted</literal>
+      flag set.
+      This will fail if the package does not have a valid GPG key, and ordinarily the transaction
+      would fail. What the client can do, e.g. using <literal>gnome-packagekit</literal>, is
+      to re-request the <literal>InstallFile</literal> with <literal>non-trusted</literal>.
+      This will use a different PolicyKit authentication, and allow the file to succeed.
+    </para>
+    <para>
+      So why do we bother calling <literal>trusted</literal> in the first place?
+      Well, the trusted PolicyKit role can be saved in the gnome-keyring, or could be
+      set to the users password as the GPG key is already trusted by the user.
+      The <literal>non-trusted</literal> action would likely ask for the administrator password,
+      and not allowed to be saved. This gives the user the benifit of installing trusted local
+      files without a password (common case) but requiring something stronger for untrusted or
+      unsigned files.
+    </para>
+    <mediaobject id="pk-transactions-trusted">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-trusted.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      If the package is signed, and a valid GPG signature is available, then we need to ask the
+      user to import the key, and re-run the transaction.
+      This is done as three transactions, as other transactions may be queued and have a higher
+      priority, and to make sure that the transaction object is not reused.
+    </para>
+    <mediaobject id="pk-transactions-sig-install">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-sig-install.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      If the package is signed, and a valid GPG signature is available, then we need to ask the
+      user to import the key, and re-run the transaction.
+      This is done as three transactions, as other transactions may be queued and have a higher
+      priority, and to make sure that the transaction object is not reused.
+    </para>
+    <mediaobject id="pk-transactions-set-locale">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-set-locale.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      The PackageKit backend may support native localisation, which we should support if the
+      translations exist.
+      In the prior examples the <literal>SetLocale()</literal> method has been left out for brevity.
+      If you are using the raw DBUS methods to access PackageKit, you will also need to make
+      a call to <literal>SetLocale()</literal> so the daemon knows what locale to assign the
+      transaction.
+      If you are using libpackagekit to schedule transactions, then the locale will be set
+      automatically in the <literal>PkControl</literal> GObject, and you do not need to call
+      <literal>pk_client_set_locale()</literal> manually.
+    </para>
+  </sect1>
+
+  <sect1 id="introduction-ideas-transactionid">
+    <title>Transaction IDs</title>
+    <para>
+      A <literal>transaction_id</literal> is a unique identifier that
+      identifies the present or past transaction.
+      A transaction is made up of one or more sub-transactions.
+      A transaction has one <literal>role</literal> for the entire lifetime,
+      but the transaction can different values of <literal>status</literal>
+      as the transaction is processed.
+    </para>
+    <para>
+      For example, if the user "Installed OpenOffice" and the backend has to:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          update libxml2 as a dependency
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          install java as dependency
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          install openoffice-bin
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          install openoffice-clipart
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      This is one single transaction with the role <literal>install</literal>,
+      with 4 different sub-transactions.
+      This allows the user to rollback transactions with selected backends,
+      rather than select sub-transactions which may need complex conflict
+      resolution.
+    </para>
+    <para>
+      The <literal>transaction_id</literal> must be of the format
+      <literal>/job_identifier_data</literal> where the daemon controls
+      all parameters.
+      <literal>job</literal> is a monotonically updating number and is
+      retained over reboots.
+      <literal>identifier</literal> is random data used by the daemon to
+      ensure jobs started in parallel cannot race, and also to make a
+      malicious client program harder to write.
+      <literal>data</literal> can be used for ref-counting in the backend or
+      for any other purpose.
+      It is designed to make the life of a backend writer a little bit easier.
+      An example <literal>transaction_id</literal> would be
+      <literal>/45_dafeca_checkpoint32</literal>
+    </para>
+  </sect1>
+
+  <sect1 id="introduction-ideas-status">
+    <title>Status Values</title>
+    <para>
+      A transaction will have different status values as it it queued, prepared
+      and executed.
+      The <literal>::StatusChanged</literal> signal from PkClient allow you
+      to design user interfaces that tell the user what is happening with the
+      transaction.
+    </para>
+    <para>
+      A typical transaction will have the following states:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          Queued in the active queue (<literal>PK_STATUS_ENUM_WAIT</literal>)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Transaction started, and is being prepared (<literal>PK_STATUS_ENUM_SETUP</literal>)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          The transaction is running (<literal>PK_STATUS_ENUM_RUNNING</literal>)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          (optional) Data is downloading (<literal>PK_STATUS_ENUM_DOWNLOADING</literal>)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          (optional) Data is installing (<literal>PK_STATUS_ENUM_INSTALLING</literal>)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          The transaction is finished (<literal>PK_STATUS_ENUM_FINISHED</literal>)
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      If the transaction is waiting for other jobs to finish (in the active queue)
+      then the status will be stuck at <literal>PK_STATUS_ENUM_WAIT</literal>
+      and the UI should show a message to this effect.
+    </para>
+    <para>
+      If the transaction is waiting for a package lock (when a legacy tool like
+      <literal>pirut</literal> is loaded and has the <literal>yum</literal> lock)
+      then the transaction will be stuck at <literal>PK_STATUS_ENUM_SETUP</literal>.
+    </para>
+    <para>
+      As a backend writer, you do not have to set <literal>PK_STATUS_ENUM_RUNNING</literal>
+      manually, as this will be set for you if you set any other value such as
+      <literal>PK_STATUS_ENUM_DOWNLOADING</literal> or <literal>PK_STATUS_ENUM_INFO</literal>.
+      However, you will need to avoid setting any status values until a package
+      lock is available and the transaction has started.
+    </para>
+  </sect1>
+</chapter>
+

@@ -19,6 +19,7 @@
 import smart
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
+        INFO_SECURITY, INFO_BUGFIX, INFO_ENHANCEMENT, \
         ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED
 
 
@@ -63,7 +64,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def install_file(self, trusted, path):
+    def install_files(self, trusted, paths):
         self.ctrl.addFileChannel(path)
         self.ctrl.reloadChannels()
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
@@ -139,7 +140,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         trans.run()
         for (package, op) in trans.getChangeSet().items():
             if op == smart.transaction.INSTALL:
-                self._show_package(package, status=INFO_NORMAL)
+                status = self._get_status(package)
+                self._show_package(package, status)
 
     @needs_cache
     def resolve(self, filters, packagename):
@@ -165,7 +167,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             if self._passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
-                if searchstring in info.getDescription():
+                if searchstring in info.GetDetails():
                     self._show_package(package)
 
     def refresh_cache(self):
@@ -174,90 +176,93 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.saveSysConf()
 
     @needs_cache
-    def get_description(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
+    def get_details(self, packageids):
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
 
-        packages = self._process_search_results(results)
+            packages = self._process_search_results(results)
 
-        if len(packages) != 1:
-            return
+            if len(packages) != 1:
+                return
 
-        package = packages[0]
-        infos = []
-        for loader in package.loaders:
-            info = loader.getInfo(package)
-            infos.append(info)
+            package = packages[0]
+            infos = []
+            for loader in package.loaders:
+                info = loader.getInfo(package)
+                infos.append(info)
 
-        infos.sort()
-        info = infos[0]
+            infos.sort()
+            info = infos[0]
 
-        version, arch = package.version.split('@')
-        description = info.getDescription()
-        description = description.replace("\n\n", ";")
-        description = description.replace("\n", " ")
-        urls = info.getReferenceURLs()
-        if urls:
-            url = urls[0]
-        else:
-            url = "unknown"
+            version, arch = package.version.split('@')
+            description = info.GetDetails()
+            description = description.replace("\n\n", ";")
+            description = description.replace("\n", " ")
+            urls = info.getReferenceURLs()
+            if urls:
+                url = urls[0]
+            else:
+                url = "unknown"
 
-        pkgsize = None
-        seen = {}
-        for loader in package.loaders:
-            info = loader.getInfo(package)
-            for pkgurl in info.getURLs():
-                size = info.getSize(pkgurl)
-                if size:
-                    pkgsize = size
+            pkgsize = None
+            seen = {}
+            for loader in package.loaders:
+                info = loader.getInfo(package)
+                for pkgurl in info.getURLs():
+                    size = info.getSize(pkgurl)
+                    if size:
+                        pkgsize = size
+                        break
+                if pkgsize:
                     break
-            if pkgsize:
-                break
-        if not pkgsize:
-            pkgsize = "unknown"
+            if not pkgsize:
+                pkgsize = "unknown"
 
-        self.description(packageid, "unknown", "unknown", description, url,
-                pkgsize)
+            self.details(packageid, "unknown", "unknown", description, url,
+                    pkgsize)
 
     @needs_cache
-    def get_files(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
+    def get_files(self, packageids):
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
 
-        packages = self._process_search_results(results)
+            packages = self._process_search_results(results)
 
-        if len(packages) != 1:
-            return
+            if len(packages) != 1:
+                return
 
-        package = packages[0]
-        # FIXME: Only installed packages have path lists.
-        paths = []
-        for loader in package.loaders:
-            info = loader.getInfo(package)
-            paths = info.getPathList()
-            if len(paths) > 0:
-                break
+            package = packages[0]
+            # FIXME: Only installed packages have path lists.
+            paths = []
+            for loader in package.loaders:
+                info = loader.getInfo(package)
+                paths = info.getPathList()
+                if len(paths) > 0:
+                    break
 
-        self.files(packageid, ";".join(paths))
+            self.files(packageid, ";".join(paths))
 
     @needs_cache
-    def get_depends(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
+    def get_depends(self, packageids):
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
 
-        packages = self._process_search_results(results)
+            packages = self._process_search_results(results)
 
-        if len(packages) != 1:
-            return
+            if len(packages) != 1:
+                return
 
-        package = packages[0]
+            package = packages[0]
 
-        providers = {}
-        for required in package.requires:
-            for provider in self.ctrl.getCache().getProvides(str(required)):
-                for package in provider.packages:
-                    if not providers.has_key(package):
-                        providers[package] = True
+            providers = {}
+            for required in package.requires:
+                for provider in self.ctrl.getCache().getProvides(str(required)):
+                    for package in provider.packages:
+                        if not providers.has_key(package):
+                            providers[package] = True
 
-        for package in providers.keys():
-            self._show_package(package)
+            for package in providers.keys():
+                self._show_package(package)
 
     def get_repo_list(self, filters):
         channels = smart.sysconf.get("channels", ())
@@ -300,6 +305,17 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             info = loader.getInfo(package)
             self.package(self.get_package_id(package.name, version, arch,
                 channel.getAlias()), status, info.getSummary())
+
+    def _get_status(self, package):
+        flags = smart.pkgconf.testAllFlags(package)
+        for flag in flags:
+            if flag == 'security':
+                return INFO_SECURITY
+            elif flag == 'bugfix':
+                return INFO_BUGFIX
+            elif flag == 'enhancement':
+                return INFO_ENHANCEMENT
+        return INFO_NORMAL
 
     def _process_search_results(self, results):
         packages = []

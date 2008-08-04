@@ -1,4 +1,4 @@
-%define glib2_version           2.6.0
+%define glib2_version           2.16.1
 %define dbus_version            0.90
 %define dbus_glib_version       0.70
 %define policykit_version       0.7
@@ -10,6 +10,7 @@ Summary:   System daemon that is a DBUS abstraction layer for packages
 Name:      PackageKit
 Version:   #VERSION#
 Release:   0.#BUILD#%{?alphatag}%{?dist}
+Epoch:     1
 License:   GPLv2+
 Group:     System Environment/Libraries
 URL:       http://packagekit.freedesktop.org
@@ -17,9 +18,10 @@ Source0:   http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires: dbus >= %{dbus_version}
-Requires: PackageKit-libs = %{version}-%{release}
-Requires: yum-packagekit = %{version}-%{release}
+Requires: PackageKit-libs = %{epoch}:%{version}-%{release}
+Requires: yum-packagekit = %{epoch}:%{version}-%{release}
 Requires: yum >= 3.2.6
+Requires: shared-mime-info
 
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: dbus-devel  >= %{dbus_version}
@@ -36,6 +38,7 @@ BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
 BuildRequires: python-devel
 BuildRequires: perl(XML::Parser)
+BuildRequires: intltool
 BuildRequires: gettext
 
 %description 
@@ -69,7 +72,7 @@ will almost instantly update itself to reflect this.
 Summary: Libraries for accessing PackageKit
 Group: Development/Libraries
 Requires: dbus >= %{dbus_version}
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 
 %description libs
 Libraries for accessing PackageKit.
@@ -78,7 +81,7 @@ Libraries for accessing PackageKit.
 Summary: Cron job and related utilities for PackageKit
 Group: System Environment/Base
 Requires: cronie
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 
 %description cron
 Crontab and utilities for running PackageKit as a cron job.
@@ -86,7 +89,7 @@ Crontab and utilities for running PackageKit as a cron job.
 %package devel
 Summary: Libraries and headers for PackageKit
 Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
 Requires: pkgconfig
 Requires: sqlite-devel
@@ -111,8 +114,6 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.a
 
-install -m644 docs/spec/pk-structure.png $RPM_BUILD_ROOT%{_datadir}/doc/packagekit/
-
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/yumDBUSBackend.py
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
 
@@ -121,6 +122,12 @@ chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post
+update-mime-database %{_datadir}/mime &> /dev/null || :
+
+%postun
+update-mime-database %{_datadir}/mime &> /dev/null || :
+
 %post libs -p /sbin/ldconfig
 
 %postun libs -p /sbin/ldconfig
@@ -128,10 +135,6 @@ rm -rf $RPM_BUILD_ROOT
 %files -f %{name}.lang
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING 
-%dir %{_datadir}/doc/packagekit
-%doc %{_datadir}/doc/packagekit/pk-reference.html
-%doc %{_datadir}/doc/packagekit/pk-structure.png
-
 %dir %{_datadir}/PackageKit
 %dir %{_datadir}/PackageKit/helpers
 %dir %{_sysconfdir}/PackageKit
@@ -139,6 +142,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{python_sitelib}/packagekit
 %dir %{_localstatedir}/run/PackageKit
 %{python_sitelib}/packagekit/*py*
+%dir %{_sysconfdir}/bash_completion.d
 %config %{_sysconfdir}/bash_completion.d/pk-completion.bash
 %config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
 %config %{_sysconfdir}/dbus-1/system.d/*
@@ -146,12 +150,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/man/man1/*.1.gz
 %{_datadir}/gtk-doc/html/PackageKit
 %{_datadir}/PolicyKit/policy/*.policy
+%{_datadir}/mime/packages/packagekit-*.xml
 %{_sbindir}/packagekitd
 %{_bindir}/pkmon
 %{_bindir}/pkcon
+%{_bindir}/pkgenpack
 %{_bindir}/packagekit-bugreport.sh
-%{_libexecdir}/pk-import-desktop
-%{_libexecdir}/pk-import-specspo
+%{_libexecdir}/pk-import-*
+%{_libexecdir}/pk-generate-*
 %exclude %{_libdir}/libpackagekit*.so.*
 %exclude %{_libdir}/packagekit-backend/*.so
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db

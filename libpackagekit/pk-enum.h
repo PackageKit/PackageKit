@@ -53,18 +53,18 @@ typedef struct {
 typedef enum {
 	PK_ROLE_ENUM_CANCEL			= 1 << 0,
 	PK_ROLE_ENUM_GET_DEPENDS		= 1 << 1,
-	PK_ROLE_ENUM_GET_DESCRIPTION		= 1 << 2,
+	PK_ROLE_ENUM_GET_DETAILS		= 1 << 2,
 	PK_ROLE_ENUM_GET_FILES			= 1 << 3,
 	PK_ROLE_ENUM_GET_PACKAGES		= 1 << 4,
 	PK_ROLE_ENUM_GET_REPO_LIST		= 1 << 5,
 	PK_ROLE_ENUM_GET_REQUIRES		= 1 << 6,
 	PK_ROLE_ENUM_GET_UPDATE_DETAIL		= 1 << 7,
 	PK_ROLE_ENUM_GET_UPDATES		= 1 << 8,
-	PK_ROLE_ENUM_INSTALL_FILE		= 1 << 9,
-	PK_ROLE_ENUM_INSTALL_PACKAGE		= 1 << 10,
+	PK_ROLE_ENUM_INSTALL_FILES		= 1 << 9,
+	PK_ROLE_ENUM_INSTALL_PACKAGES		= 1 << 10,
 	PK_ROLE_ENUM_INSTALL_SIGNATURE		= 1 << 11,
 	PK_ROLE_ENUM_REFRESH_CACHE		= 1 << 12,
-	PK_ROLE_ENUM_REMOVE_PACKAGE		= 1 << 13,
+	PK_ROLE_ENUM_REMOVE_PACKAGES		= 1 << 13,
 	PK_ROLE_ENUM_REPO_ENABLE		= 1 << 14,
 	PK_ROLE_ENUM_REPO_SET_DATA		= 1 << 15,
 	PK_ROLE_ENUM_RESOLVE			= 1 << 16,
@@ -78,7 +78,8 @@ typedef enum {
 	PK_ROLE_ENUM_UPDATE_SYSTEM		= 1 << 24,
 	PK_ROLE_ENUM_WHAT_PROVIDES		= 1 << 25,
 	PK_ROLE_ENUM_ACCEPT_EULA		= 1 << 26,
-	PK_ROLE_ENUM_UNKNOWN			= 1 << 27
+	PK_ROLE_ENUM_DOWNLOAD_PACKAGES		= 1 << 27,
+	PK_ROLE_ENUM_UNKNOWN			= 1 << 28
 } PkRoleEnum;
 
 /**
@@ -128,7 +129,8 @@ typedef enum {
 	PK_STATUS_ENUM_DOWNLOAD_CHANGELOG	= 1 << 23,
 	PK_STATUS_ENUM_DOWNLOAD_GROUP		= 1 << 24,
 	PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO	= 1 << 25,
-	PK_STATUS_ENUM_UNKNOWN			= 1 << 26
+	PK_STATUS_ENUM_REPACKAGING		= 1 << 26,
+	PK_STATUS_ENUM_UNKNOWN			= 1 << 27
 } PkStatusEnum;
 
 /**
@@ -145,6 +147,17 @@ typedef enum {
 	PK_EXIT_ENUM_KILLED, /* when we forced the cancel, but had to SIGKILL */
 	PK_EXIT_ENUM_UNKNOWN
 } PkExitEnum;
+
+/**
+ * PkNetworkEnum:
+ **/
+typedef enum {					     /* fso */
+	PK_NETWORK_ENUM_OFFLINE			= 0, /* 000 */
+	PK_NETWORK_ENUM_ONLINE			= 1, /* 001 */
+	PK_NETWORK_ENUM_SLOW			= 3, /* 011 */
+	PK_NETWORK_ENUM_FAST			= 5, /* 101 */
+	PK_NETWORK_ENUM_UNKNOWN			= 7  /* 111 */
+} PkNetworkEnum;
 
 /**
  * PkFilterEnum:
@@ -171,7 +184,9 @@ typedef enum {
 	PK_FILTER_ENUM_NOT_NEWEST		= 1 << 15,
 	PK_FILTER_ENUM_ARCH			= 1 << 16,
 	PK_FILTER_ENUM_NOT_ARCH			= 1 << 17,
-	PK_FILTER_ENUM_UNKNOWN			= 1 << 18
+	PK_FILTER_ENUM_SOURCE			= 1 << 18,
+	PK_FILTER_ENUM_NOT_SOURCE		= 1 << 19,
+	PK_FILTER_ENUM_UNKNOWN			= 1 << 20
 } PkFilterEnum;
 
 /**
@@ -216,6 +231,7 @@ typedef enum {
 	PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
 	PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
 	PK_ERROR_ENUM_GROUP_NOT_FOUND,
+	PK_ERROR_ENUM_GROUP_LIST_INVALID,
 	PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
 	PK_ERROR_ENUM_FILTER_INVALID,
 	PK_ERROR_ENUM_CREATE_THREAD_FAILED,
@@ -242,6 +258,7 @@ typedef enum {
 	PK_ERROR_ENUM_REPO_NOT_AVAILABLE,
 	PK_ERROR_ENUM_INVALID_PACKAGE_FILE,
 	PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED,
+	PK_ERROR_ENUM_PACKAGE_CORRUPT,
 	PK_ERROR_ENUM_UNKNOWN
 } PkErrorCodeEnum;
 
@@ -317,11 +334,11 @@ typedef enum {
 	PK_INFO_ENUM_INSTALLED			= 1 << 0,
 	PK_INFO_ENUM_AVAILABLE			= 1 << 1,
 	PK_INFO_ENUM_LOW			= 1 << 2,
-	PK_INFO_ENUM_NORMAL			= 1 << 3,
-	PK_INFO_ENUM_IMPORTANT			= 1 << 4,
-	PK_INFO_ENUM_SECURITY			= 1 << 5,
-	PK_INFO_ENUM_BUGFIX			= 1 << 6,
-	PK_INFO_ENUM_ENHANCEMENT		= 1 << 7,
+	PK_INFO_ENUM_ENHANCEMENT		= 1 << 3,
+	PK_INFO_ENUM_NORMAL			= 1 << 4,
+	PK_INFO_ENUM_BUGFIX			= 1 << 5,
+	PK_INFO_ENUM_IMPORTANT			= 1 << 6,
+	PK_INFO_ENUM_SECURITY			= 1 << 7,
 	PK_INFO_ENUM_BLOCKED			= 1 << 8,
 	PK_INFO_ENUM_DOWNLOADING		= 1 << 9,
 	PK_INFO_ENUM_UPDATING			= 1 << 10,
@@ -351,6 +368,8 @@ typedef enum {
 	PK_PROVIDES_ENUM_ANY,
 	PK_PROVIDES_ENUM_MODALIAS,
 	PK_PROVIDES_ENUM_CODEC,
+	PK_PROVIDES_ENUM_MIMETYPE,
+	PK_PROVIDES_ENUM_FONT,
 	PK_PROVIDES_ENUM_UNKNOWN
 } PkProvidesEnum;
 
@@ -477,6 +496,9 @@ typedef enum {
 	PK_LICENSE_ENUM_STIX,
 	PK_LICENSE_ENUM_XANO,
 	PK_LICENSE_ENUM_VOSTROM,
+	PK_LICENSE_ENUM_XEROX,
+	PK_LICENSE_ENUM_RICEBSD,
+	PK_LICENSE_ENUM_QHULL,
 	PK_LICENSE_ENUM_UNKNOWN
 } PkLicenseEnum;
 
@@ -504,6 +526,9 @@ const gchar	*pk_freq_enum_to_text			(PkFreqEnum	 freq);
 
 PkExitEnum	 pk_exit_enum_from_text			(const gchar	*exit);
 const gchar	*pk_exit_enum_to_text			(PkExitEnum	 exit);
+
+PkNetworkEnum	 pk_network_enum_from_text		(const gchar	*network);
+const gchar	*pk_network_enum_to_text		(PkNetworkEnum	 network);
 
 PkStatusEnum	 pk_status_enum_from_text		(const gchar	*status);
 const gchar	*pk_status_enum_to_text			(PkStatusEnum	 status);

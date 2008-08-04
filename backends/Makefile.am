@@ -8,10 +8,6 @@ if BACKEND_TYPE_APT
 SUBDIRS += apt
 endif
 
-if BACKEND_TYPE_APT_DBUS
-SUBDIRS += apt2
-endif
-
 if BACKEND_TYPE_BOX
 SUBDIRS += box
 endif
@@ -28,8 +24,16 @@ if BACKEND_TYPE_OPKG
 SUBDIRS += opkg
 endif
 
+if BACKEND_TYPE_RAZOR
+SUBDIRS += razor
+endif
+
 if BACKEND_TYPE_SMART
 SUBDIRS += smart
+endif
+
+if BACKEND_TYPE_URPMI
+SUBDIRS += urpmi
 endif
 
 if BACKEND_TYPE_YUM

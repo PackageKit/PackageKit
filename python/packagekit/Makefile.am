@@ -14,6 +14,8 @@ packagekitpython_PYTHON =				\
 	daemonBackend.py				\
 	pkexceptions.py					\
 	pkdbus.py					\
+	progress.py					\
+	package.py					\
 	$(NULL)
 
 clean-local :

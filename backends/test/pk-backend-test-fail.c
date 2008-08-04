@@ -30,7 +30,6 @@
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 			       "Failed to initialize package manager");
 }
@@ -41,7 +40,6 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 			       "Failed to release control");
 }
@@ -52,7 +50,6 @@ backend_destroy (PkBackend *backend)
 static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
 	return (PK_GROUP_ENUM_ACCESSIBILITY |
 		PK_GROUP_ENUM_GAMES |
 		PK_GROUP_ENUM_SYSTEM);
@@ -64,7 +61,6 @@ backend_get_groups (PkBackend *backend)
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PK_FILTER_ENUM_GUI |
 		PK_FILTER_ENUM_INSTALLED |
 		PK_FILTER_ENUM_DEVELOPMENT);
@@ -76,7 +72,6 @@ backend_get_filters (PkBackend *backend)
 static void
 backend_cancel (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -84,19 +79,17 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -104,9 +97,8 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
  * backend_get_files:
  */
 static void
-backend_get_files (PkBackend *backend, const gchar *package_id)
+backend_get_files (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -114,9 +106,8 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -124,9 +115,8 @@ backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *pac
  * backend_get_update_detail:
  */
 static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -136,27 +126,24 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_id)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
 /**
- * backend_install_file:
+ * backend_install_files:
  */
 static void
-backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -166,17 +153,15 @@ backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_pa
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
 /**
- * backend_remove_package:
+ * backend_remove_packages:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -184,9 +169,8 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -194,9 +178,8 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_
  * backend_rollback:
  */
 static void
-backend_rollback (PkBackend *backend, const gchar *package_id)
+backend_rollback (PkBackend *backend, const gchar *transaction_id)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -206,7 +189,6 @@ backend_rollback (PkBackend *backend, const gchar *package_id)
 static void
 backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -216,7 +198,6 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
 static void
 backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 			       "Error number 1");
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
@@ -230,7 +211,6 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -240,7 +220,6 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 			       "Error number 1");
 	pk_backend_finished (backend);
@@ -252,7 +231,6 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -262,7 +240,6 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_update_system (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -274,19 +251,20 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
+	NULL,					/* download_packages */
 	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
+	backend_get_details,			/* get_details */
 	backend_get_files,			/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_file,			/* install_file */
-	backend_install_package,		/* install_package */
+	backend_install_files,			/* install_files */
+	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */

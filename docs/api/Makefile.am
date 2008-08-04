@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
+SUBDIRS = dbus
+
 NULL =
 
 # We require automake 1.6 at least.
@@ -42,10 +44,24 @@ IGNORE_HFILES =						\
 	$(NULL)
 
 # Images to copy into HTML directory.
-HTML_IMAGES=
+HTML_IMAGES =						\
+	spec/pk-structure.png				\
+	spec/pk-structure.svg				\
+	spec/pk-faq-error-code.png			\
+	spec/pk-faq-status.png				\
+	spec/pk-transactions.svg			\
+	spec/pk-transactions-set-locale.png		\
+	spec/pk-transactions-failure.png		\
+	spec/pk-transactions-sig-install.png		\
+	spec/pk-transactions-success.png		\
+	spec/pk-transactions-trusted.png
 
 # Extra SGML files that are included by $(DOC_MAIN_SGML_FILE).
-content_files = version.xml
+content_files =						\
+	version.xml					\
+	dbus/pk-interface.ref.xml			\
+	dbus/pk-interface-transaction.ref.xml		\
+	$(NULL)
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
 # These files must be listed here *and* in content_files

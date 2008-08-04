@@ -161,7 +161,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             # Internal FIXME: PiSi API has really inconsistent for return types and arguments!
             self.__get_package(pkg.package)
 
-    def get_description(self, package_id):
+    def get_details(self, package_id):
         """ Prints a detailed description for a given package """
         self.allow_cancel(True)
         self.percentage(None)
@@ -176,7 +176,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             else:
                 group = GROUP_UNKNOWN
 
-            self.description("%s-%s" % (pkg.name, self.__get_package_version(pkg)),
+            self.details("%s-%s" % (pkg.name, self.__get_package_version(pkg)),
                             pkg.license,
                             group,
                             pkg.description,
@@ -243,7 +243,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             else:
                 self.package(id, INFO_NORMAL, pkg.summary)
 
-    def install_file(self, trusted, file):
+    def install_files(self, trusted, files):
         """ Installs given package into system"""
         # FIXME: install progress
         self.allow_cancel(False);

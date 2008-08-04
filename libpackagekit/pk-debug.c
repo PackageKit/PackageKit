@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+#include <execinfo.h>
 
 #include "pk-debug.h"
 
@@ -84,8 +85,33 @@ pk_set_console_mode (guint console_code)
 		return;
 	}
 	/* Command is the control command to the terminal */
-	sprintf (command, "%c[%dm", 0x1B, console_code);
+	g_snprintf (command, 13, "%c[%dm", 0x1B, console_code);
 	printf ("%s", command);
+}
+
+/**
+ * pk_debug_backtrace:
+ **/
+void
+pk_debug_backtrace (void)
+{
+	void *call_stack[512];
+	int  call_stack_size;
+	char **symbols;
+	int i = 1;
+
+	call_stack_size = backtrace (call_stack, G_N_ELEMENTS (call_stack));
+	symbols = backtrace_symbols (call_stack, call_stack_size);
+	if (symbols != NULL) {
+		pk_set_console_mode (CONSOLE_RED);
+		g_print ("Traceback:\n");
+		while (i < call_stack_size) {
+			g_print ("\t%s\n", symbols[i]);
+			i++;
+		}
+		pk_set_console_mode (CONSOLE_RESET);
+		free (symbols);
+	}
 }
 
 /**
@@ -98,12 +124,14 @@ pk_log_line (const gchar *buffer)
 	/* open a file */
 	if (fd == -1) {
 		mkdir (PK_LOG_DIR, 0777);
+		/* ITS4: ignore, /var/log/PackageKit is owned by root, and this is just debug text */
 		fd = open (PK_LOG_FILE, O_WRONLY|O_APPEND|O_CREAT, 0777);
 		if (fd == -1) {
 			g_error ("could not open log: '%s'", PK_LOG_FILE);
 		}
 	}
-	/* whole line */
+
+	/* ITS4: ignore, debug text always NULL terminated */
 	count = write (fd, buffer, strlen (buffer));
 	if (count == -1) {
 		g_warning ("could not write %s", buffer);
@@ -202,6 +230,9 @@ pk_warning_real (const gchar *func, const gchar *file, const int line, const gch
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 
 	g_free(buffer);
+
+	/* we want to fix this! */
+	pk_debug_backtrace ();
 }
 
 /**
@@ -223,6 +254,9 @@ pk_error_real (const gchar *func, const gchar *file, const int line, const gchar
 	}
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 	g_free(buffer);
+
+	/* we want to fix this! */
+	pk_debug_backtrace ();
 
 	exit (1);
 }

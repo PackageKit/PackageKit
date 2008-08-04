@@ -20,17 +20,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <gmodule.h>
-#include <glib.h>
-#include <string.h>
-#include <pk-network.h>
 #include <pk-backend.h>
-#include <pk-backend-spawn.h>
-#include "pk-apt-search.h"
-#include "config.h"
+#include <pk-backend-dbus.h>
 
-PkBackendSpawn *spawn;
-static PkNetwork *network;
+static PkBackendDbus *dbus;
+
+#define PK_DBUS_BACKEND_SERVICE_APT   "org.freedesktop.PackageKitAptBackend"
 
 /**
  * backend_initialize:
@@ -39,12 +34,9 @@ static PkNetwork *network;
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_debug ("FILTER: initialize");
-	network = pk_network_new ();
-	spawn = pk_backend_spawn_new ();
-	pk_backend_spawn_set_name (spawn, "apt");
-	backend_init_search (backend);
+	pk_debug ("backend: initialize");
+	dbus = pk_backend_dbus_new ();
+	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_APT);
 }
 
 /**
@@ -54,12 +46,9 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_debug ("FILTER: destroy");
-	backend_finish_search (backend);
-	g_object_unref (network);
-	g_object_unref (spawn);
+	pk_debug ("backend: destroy");
+	pk_backend_dbus_kill (dbus);
+	g_object_unref (dbus);
 }
 
 /**
@@ -68,7 +57,6 @@ backend_destroy (PkBackend *backend)
 static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
 	return (PK_GROUP_ENUM_ACCESSORIES |
 		PK_GROUP_ENUM_GAMES |
 		PK_GROUP_ENUM_GRAPHICS |
@@ -86,36 +74,9 @@ backend_get_groups (PkBackend *backend)
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PK_FILTER_ENUM_GUI |
 		PK_FILTER_ENUM_INSTALLED |
 		PK_FILTER_ENUM_DEVELOPMENT);
-}
-
-/**
- * pk_backend_bool_to_text:
- */
-static const gchar *
-pk_backend_bool_to_text (gboolean value)
-{
-	if (value == TRUE) {
-		return "yes";
-	}
-	return "no";
-}
-
-/**
- * backend_get_depends:
- */
-static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
-{
-	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
-	g_free (filters_text);
 }
 
 /**
@@ -124,163 +85,140 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
-	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
-	g_free (filters_text);
-}
-
-/**
- * backend_get_update_detail:
- */
-static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-update-detail.py", package_id, NULL);
-}
-
-/**
- * backend_install_package:
- */
-static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-
-	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-
-	pk_backend_spawn_helper (spawn, "install.py", package_id, NULL);
+	pk_backend_dbus_get_updates (dbus, filters);
 }
 
 /**
  * backend_refresh_cache:
- */
+ * */
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-
-	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
+	// check network state
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "refresh-cache.py", NULL);
-}
-
-/**
- * pk_backend_remove_package:
- * 
-static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "remove.py", pk_backend_bool_to_text (allow_deps), package_id, NULL);
-} */
-
-/**
- * pk_backend_update_package:
- */
-static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-
-	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-
-	pk_backend_spawn_helper (spawn, "update.py", package_id, NULL);
+	pk_backend_dbus_refresh_cache(dbus, force);
 }
 
 /**
  * pk_backend_update_system:
- */
+ * */
 static void
 backend_update_system (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "update-system.py", NULL);
+	pk_backend_dbus_update_system (dbus);
 }
 
 /**
- * pk_backend_resolve:
- */
+ * backend_install_packages
+ *  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
-	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_id, NULL);
-	g_free (filters_text);
+	pk_backend_dbus_install_packages (dbus, package_ids);
 }
 
 /**
- * pk_backend_get_repo_list:
- */
+ * backend_remove_packages
+ *  */
 static void
-backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	filters_text = pk_filter_enums_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-repo-list.py", filters_text, NULL);
-	g_free (filters_text);
+	pk_backend_dbus_remove_packages (dbus, package_ids, allow_deps, autoremove);
 }
+
+/**
+ * backend_get_details:
+ *  */
+static void
+backend_get_details (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_dbus_get_details (dbus, package_ids);
+}
+
+/**
+ *  * pk_backend_search_details:
+ *   */
+static void
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+{
+	pk_backend_dbus_search_details (dbus, filters, search);
+}
+
+/**
+ *  * pk_backend_search_name:
+ *   */
+static void
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+{
+	pk_backend_dbus_search_name (dbus, filters, search);
+}
+
+/**
+ *  * pk_backend_cancel:
+ *   */
+static void
+backend_cancel (PkBackend *backend)
+{
+	pk_backend_dbus_cancel (dbus);
+}
+
+/**
+ *  * pk_backend_resolve:
+ *   */
+static void
+backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
+{
+	        pk_backend_dbus_resolve (dbus, filters, package_ids);
+}
+
+/**
+ *  * pk_backend_get_packages:
+ *   */
+static void
+backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+{
+	        pk_backend_dbus_get_packages (dbus, filters);
+}
+
+
 
 PK_BACKEND_OPTIONS (
-	"Apt (with " APT_SEARCH " searching)",				/* description */
-	"Ali Sabil <ali.sabil@gmail.com>; Tom Parker <palfrey@tevp.net>",	/* author */
+	"Apt",					/* description */
+	"Ali Sabil <ali.sabil@gmail.com>; Tom Parker <palfrey@tevp.net>; Sebastian Heinlein <glatzor@ubuntu.com>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* cancel */
-	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
+	backend_cancel,				/* cancel */
+	NULL,					/* download_packages */
+	NULL,					/* get_depends */
+	backend_get_details,			/* get_details */
 	NULL,					/* get_files */
-	NULL,					/* get_packages */
-	backend_get_repo_list,			/* get_repo_list */
+	backend_get_packages,			/* get_packages */
+	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
-	backend_get_update_detail,		/* get_update_detail */
+	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,					/* install_file */
-	backend_install_package,		/* install_package */
+	NULL,					/* install_files */
+	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	NULL,					/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
-	backend_search_group,			/* search_group */
+	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* service_pack */
-	backend_update_package,			/* update_package */
+	NULL,					/* update_packages */
 	backend_update_system,			/* update_system */
 	NULL					/* what_provides */
 );

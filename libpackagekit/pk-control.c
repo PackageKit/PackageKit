@@ -42,6 +42,7 @@
 
 #include "pk-debug.h"
 #include "pk-control.h"
+#include "pk-client.h"
 #include "pk-marshal.h"
 #include "pk-connection.h"
 #include "pk-common.h"
@@ -72,6 +73,7 @@ enum {
 	PK_CONTROL_RESTART_SCHEDULE,
 	PK_CONTROL_UPDATES_CHANGED,
 	PK_CONTROL_REPO_LIST_CHANGED,
+	PK_CONTROL_NETWORK_STATE_CHANGED,
 	PK_CONTROL_LAST_SIGNAL
 };
 
@@ -197,6 +199,43 @@ out:
 }
 
 /**
+ * pk_control_set_proxy:
+ * @control: a valid #PkControl instance
+ * @proxy_http: a HTTP proxy string such as "username:password@server.lan:8080"
+ * @proxy_ftp: a FTP proxy string such as "server.lan:8080"
+ *
+ * Set a proxy on the PK daemon
+ *
+ * Return value: if we set the proxy successfully
+ **/
+gboolean
+pk_control_set_proxy (PkControl *control, const gchar *proxy_http, const gchar *proxy_ftp)
+{
+	gboolean ret = FALSE;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), PK_GROUP_ENUM_UNKNOWN);
+
+	/* check to see if we have a valid proxy */
+	if (control->priv->proxy == NULL) {
+		pk_warning ("No proxy for manager");
+		goto out;
+	}
+	ret = dbus_g_proxy_call (control->priv->proxy, "SetProxy", &error,
+				 G_TYPE_STRING, proxy_http,
+				 G_TYPE_STRING, proxy_ftp,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		/* abort as the DBUS method failed */
+		pk_warning ("SetProxy failed :%s", error->message);
+		g_error_free (error);
+	}
+out:
+	return ret;
+}
+
+/**
  * pk_control_get_groups:
  * @control: a valid #PkControl instance
  *
@@ -237,6 +276,45 @@ pk_control_get_groups (PkControl *control)
 	g_free (groups);
 out:
 	return groups_enum;
+}
+
+/**
+ * pk_control_get_network_state:
+ * @control: a valid #PkControl instance
+ *
+ * Return value: an enumerated network state
+ **/
+PkNetworkEnum
+pk_control_get_network_state (PkControl *control)
+{
+	gboolean ret;
+	GError *error = NULL;
+	gchar *network_state;
+	PkGroupEnum network_state_enum = PK_NETWORK_ENUM_UNKNOWN;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), PK_NETWORK_ENUM_UNKNOWN);
+
+	/* check to see if we have a valid proxy */
+	if (control->priv->proxy == NULL) {
+		pk_warning ("No proxy for manager");
+		goto out;
+	}
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetNetworkState", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &network_state,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetNetworkState failed :%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* convert to enumerated types */
+	network_state_enum = pk_network_enum_from_text (network_state);
+	g_free (network_state);
+out:
+	return network_state_enum;
 }
 
 /**
@@ -368,6 +446,35 @@ pk_control_get_time_since_action (PkControl *control, PkRoleEnum role, guint *se
 }
 
 /**
+ * pk_control_set_locale:
+ **/
+static gboolean
+pk_control_set_locale (PkControl *control, const gchar *tid, GError **error)
+{
+	PkClient *client;
+	gboolean ret;
+	gchar *locale; /* does not need to be freed */
+
+	client = pk_client_new ();
+	ret = pk_client_set_tid (client, tid, error);
+	if (!ret) {
+		pk_warning ("failed to set the tid: %s", (*error)->message);
+		goto out;
+	}
+
+	/* get the session locale and set th transaction to be in this locale */
+	locale = setlocale (LC_ALL, NULL);
+	ret = pk_client_set_locale (client, locale, error);
+	if (!ret) {
+		pk_warning ("failed to set the locale: %s", (*error)->message);
+		goto out;
+	}
+out:
+	g_object_unref (client);
+	return ret;
+}
+
+/**
  * pk_control_allocate_transaction_id:
  * @control: a valid #PkControl instance
  * @error: a %GError to put the error code and message in, or %NULL
@@ -381,6 +488,7 @@ gboolean
 pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **error)
 {
 	gboolean ret;
+	gchar *tid_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 
@@ -391,13 +499,32 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 	}
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetTid", error,
 				 G_TYPE_INVALID,
-				 G_TYPE_STRING, tid,
+				 G_TYPE_STRING, &tid_local,
 				 G_TYPE_INVALID);
 	if (!ret) {
 		pk_control_error_fixup (error);
-		return FALSE;
+		goto out;
 	}
-	pk_debug ("Got tid: '%s'", *tid);
+
+	/* check we are not running new client tools with an old server */
+	if (g_strrstr (tid_local, ";") != NULL) {
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, "Incorrect path with ';' returned!");
+		ret = FALSE;
+		goto out;
+	}
+
+	/* automatically set the locale */
+	ret = pk_control_set_locale (control, tid_local, error);
+	if (!ret) {
+		pk_control_error_fixup (error);
+		goto out;
+	}
+
+	/* copy */
+	*tid = g_strdup (tid_local);
+	pk_debug ("Got tid: '%s'", tid_local);
+out:
+	g_free (tid_local);
 	return ret;
 }
 
@@ -415,13 +542,12 @@ pk_control_transaction_list_print (PkControl *control)
 
 	length = g_strv_length (control->priv->array);
 	if (length == 0) {
-		g_print ("no jobs...\n");
 		return TRUE;
 	}
-	g_print ("jobs: ");
+	pk_debug ("jobs:");
 	for (i=0; i<length; i++) {
 		tid = control->priv->array[i];
-		g_print ("%s\n", tid);
+		pk_debug ("%s", tid);
 	}
 	return TRUE;
 }
@@ -450,7 +576,7 @@ pk_control_transaction_list_refresh (PkControl *control)
 				 G_TYPE_STRV, &control->priv->array,
 				 G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_debug ("ERROR: %s", error->message);
+		pk_warning ("ERROR: %s", error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -495,7 +621,6 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **array, PkCont
 static void
 pk_control_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkControl *control)
 {
-	pk_debug ("connected=%i", connected);
 	/* force a refresh so we have valid data*/
 	if (connected) {
 		pk_control_transaction_list_refresh (control);
@@ -538,6 +663,20 @@ pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
 
 	pk_debug ("emitting repo-list-changed");
 	g_signal_emit (control, signals [PK_CONTROL_REPO_LIST_CHANGED], 0);
+}
+
+/**
+ * pk_control_network_state_changed_cb:
+ */
+static void
+pk_control_network_state_changed_cb (DBusGProxy *proxy, const gchar *network_text, PkControl *control)
+{
+	PkNetworkEnum network;
+	g_return_if_fail (PK_IS_CONTROL (control));
+
+	network = pk_network_enum_from_text (network_text);
+	pk_debug ("emitting network-state-changed: %s", network_text);
+	g_signal_emit (control, signals [PK_CONTROL_NETWORK_STATE_CHANGED], 0, network);
 }
 
 /**
@@ -587,6 +726,19 @@ pk_control_class_init (PkControlClass *klass)
 			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
 	/**
+	 * PkControl::network-state-changed:
+	 * @control: the #PkControl instance that emitted the signal
+	 *
+	 * The ::network-state-changed signal is emitted when the network has changed speed or
+	 * connections state.
+	 **/
+	signals [PK_CONTROL_NETWORK_STATE_CHANGED] =
+		g_signal_new ("network-state-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkControlClass, network_state_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	/**
 	 * PkControl::restart_schedule:
 	 * @control: the #PkControl instance that emitted the signal
 	 *
@@ -603,7 +755,8 @@ pk_control_class_init (PkControlClass *klass)
 	 * PkControl::transaction-list-changed:
 	 * @control: the #PkControl instance that emitted the signal
 	 *
-	 * The ::transaction-list-changed signal is emitted when TODO
+	 * The ::transaction-list-changed signal is emitted when the list
+	 * of transactions handled by the daemon is changed.
 	 **/
 	signals [PK_CONTROL_LIST_CHANGED] =
 		g_signal_new ("transaction-list-changed",
@@ -615,7 +768,9 @@ pk_control_class_init (PkControlClass *klass)
 	 * PkControl::locked:
 	 * @control: the #PkControl instance that emitted the signal
 	 *
-	 * The ::locked signal is emitted when TODO
+	 * The ::locked signal is emitted when the backend instance has been
+	 * locked by PackageKit.
+	 * This may mean that other native package tools will not work.
 	 **/
 	signals [PK_CONTROL_LOCKED] =
 		g_signal_new ("locked",
@@ -669,10 +824,14 @@ pk_control_init (PkControl *control)
 	dbus_g_proxy_connect_signal (control->priv->proxy, "UpdatesChanged",
 				     G_CALLBACK (pk_control_updates_changed_cb), control, NULL);
 
-	dbus_g_proxy_add_signal (control->priv->proxy, "RepoListChanged",
-				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (control->priv->proxy, "RepoListChanged", G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (control->priv->proxy, "RepoListChanged",
 				     G_CALLBACK (pk_control_repo_list_changed_cb), control, NULL);
+
+	dbus_g_proxy_add_signal (control->priv->proxy, "NetworkStateChanged",
+				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (control->priv->proxy, "NetworkStateChanged",
+				     G_CALLBACK (pk_control_network_state_changed_cb), control, NULL);
 
 	dbus_g_proxy_add_signal (control->priv->proxy, "RestartSchedule", G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (control->priv->proxy, "RestartSchedule",
@@ -711,11 +870,14 @@ pk_control_finalize (GObject *object)
 				        G_CALLBACK (pk_control_updates_changed_cb), control);
 	dbus_g_proxy_disconnect_signal (control->priv->proxy, "RepoListChanged",
 				        G_CALLBACK (pk_control_repo_list_changed_cb), control);
+	dbus_g_proxy_disconnect_signal (control->priv->proxy, "NetworkStateChanged",
+				        G_CALLBACK (pk_control_network_state_changed_cb), control);
 	dbus_g_proxy_disconnect_signal (control->priv->proxy, "RestartSchedule",
 				        G_CALLBACK (pk_control_restart_schedule_cb), control);
 
 	/* free the proxy */
 	g_object_unref (G_OBJECT (control->priv->proxy));
+	g_strfreev (control->priv->array);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);
 }
