@@ -34,6 +34,10 @@ INCLUDES =						\
 	-I$(top_srcdir)/libgbus				\
 	$(NULL)
 
+GBUS_LIBS =						\
+	$(top_builddir)/libgbus/libgbus.la		\
+	$(NULL)
+
 pkbackendincludedir=$(includedir)/packagekit-backend
 
 pkbackendinclude_HEADERS =				\
@@ -127,6 +131,7 @@ packagekitd_LDADD =					\
 	$(PYTHON_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(SELFTEST_LIBS)				\
+	$(GBUS_LIBS)					\
 	$(GIO_LIBS)					\
 	$(NULL)
 
