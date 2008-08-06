@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-07-23 01:22+0000\n"
-"PO-Revision-Date: 2008-07-25 16:49-0300\n"
+"POT-Creation-Date: 2008-08-05 01:21+0000\n"
+"PO-Revision-Date: 2008-08-06 15:19-0300\n"
 "Last-Translator: Igor Pires Soares <igor@projetofedora.org>\n"
 "Language-Team: Brazilian Portuguese <fedora-trans-pt_br@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -19,235 +19,234 @@ msgstr ""
 "X-Poedit-Language: Portuguese\n"
 "X-Poedit-Country: BRAZIL\n"
 
-#: ../client/pk-console.c:212
+#: ../client/pk-console.c:217
 msgid "Update detail"
 msgstr "Detalhe da atualização"
 
-#: ../client/pk-console.c:413
+#: ../client/pk-console.c:418
 msgid "A system restart is required"
 msgstr "É necessário reiniciar o sistema"
 
-#: ../client/pk-console.c:415
+#: ../client/pk-console.c:420
 msgid "A logout and login is required"
 msgstr "É necessário sair da sessão e autenticar novamente"
 
-#: ../client/pk-console.c:417
+#: ../client/pk-console.c:422
 msgid "An application restart is required"
 msgstr "É necessário reiniciar a aplicação"
 
-#: ../client/pk-console.c:462
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Por favor, insira um número entre 1 e %i: "
-
-#: ../client/pk-console.c:525
-msgid "Could not find a package match"
-msgstr "Não foi possível encontrar um pacote correspondente"
-
-#: ../client/pk-console.c:539
+#: ../client/pk-console.c:515
 msgid "There are multiple package matches"
 msgstr "Há múltiplos pacotes correspondentes"
 
 #. find out what package the user wants to use
-#: ../client/pk-console.c:546
+#: ../client/pk-console.c:522
 msgid "Please enter the package number: "
 msgstr "Por favor, insira o número do pacote: "
 
-#: ../client/pk-console.c:580
-msgid "Could not find a package with that name to install, or package already installed"
-msgstr "Não foi possível encontrar um pacote com esse nome para instalar ou o pacote já está instalado"
+#: ../client/pk-console.c:556
+msgid "Could not find package to install"
+msgstr "Não foi possível localizar o pacote a ser instalado"
 
-#: ../client/pk-console.c:726
-msgid "Could not find a package to remove"
-msgstr "Não foi possível localizar um pacote a ser removido"
+#: ../client/pk-console.c:660
+msgid "Could not find package to remove"
+msgstr "Não foi possível localizar o pacote a ser removido"
 
-#: ../client/pk-console.c:787
+#: ../client/pk-console.c:721
 msgid "The following packages have to be removed"
 msgstr "Os seguintes pacotes têm que ser removidos"
 
 #. get user input
-#: ../client/pk-console.c:794
+#: ../client/pk-console.c:728
 msgid "Okay to remove additional packages?"
 msgstr "Os pacotes adicionais podem ser removidos?"
 
-#: ../client/pk-console.c:798
+#: ../client/pk-console.c:732
 msgid "Cancelled!"
 msgstr "Cancelado!"
 
-#: ../client/pk-console.c:832
-msgid "Could not find a package to download"
-msgstr "Não foi possível localizar um pacote a ser baixado"
+#: ../client/pk-console.c:766
+msgid "Could not find package to download:"
+msgstr "Não foi possível localizar o pacote a ser baixado:"
 
-#: ../client/pk-console.c:883
-msgid "Could not find a package with that name to update"
-msgstr "Não foi possível encontrar um pacote com esse nome para ser atualizado"
+#: ../client/pk-console.c:817
+msgid "Could not find package to update"
+msgstr "Não foi possível localizar o pacote a ser atualizado"
 
-#: ../client/pk-console.c:905
-msgid "Could not find what packages require this package"
-msgstr "Não foi possível encontrar quais pacotes necessitam desse pacote"
+#: ../client/pk-console.c:839
+msgid "Could not find what packages require"
+msgstr "Não foi possível localizar quais pacotes necessitam desse pacote"
 
-#: ../client/pk-console.c:926
-msgid "Could not get dependencies for this package"
-msgstr "Não foi possível obter as dependências desse pacote"
+#: ../client/pk-console.c:860
+msgid "Could not get dependencies for"
+msgstr "Não foi possível obter as dependências para"
 
-#: ../client/pk-console.c:947
-msgid "Could not find details for this package"
-msgstr "Não foi possível localizar os detalhes deste pacote"
+#: ../client/pk-console.c:881
+msgid "Could not find details for"
+msgstr "Não foi possível localizar os detalhes para"
 
-#: ../client/pk-console.c:968
+#: ../client/pk-console.c:904
 msgid "Could not find the files for this package"
 msgstr "Não foi possível encontrar os arquivos para este pacote"
 
-#: ../client/pk-console.c:1050
+#: ../client/pk-console.c:911
+msgid "Could not get the file list"
+msgstr "Não foi possível obter a lista de arquivos"
+
+#: ../client/pk-console.c:930
+msgid "Could not find the update details for"
+msgstr "Não foi possível localizar os detalhes de atualização para"
+
+#: ../client/pk-console.c:991
 msgid "Package description"
 msgstr "Descrição do pacote"
 
-#: ../client/pk-console.c:1073
+#: ../client/pk-console.c:1014
 msgid "Package files"
 msgstr "Arquivos do pacote"
 
-#: ../client/pk-console.c:1081
+#: ../client/pk-console.c:1022
 msgid "No files"
 msgstr "Nenhum arquivo"
 
 #. get user input
-#: ../client/pk-console.c:1113
+#: ../client/pk-console.c:1054
 msgid "Okay to import key?"
 msgstr "A chave pode ser importada?"
 
-#: ../client/pk-console.c:1116
+#: ../client/pk-console.c:1057
 msgid "Did not import key"
 msgstr "Não importar a chave"
 
 #. get user input
-#: ../client/pk-console.c:1156
+#: ../client/pk-console.c:1097
 msgid "Do you agree?"
 msgstr "Você concorda?"
 
-#: ../client/pk-console.c:1159
+#: ../client/pk-console.c:1100
 msgid "Did not agree to licence, task will fail"
 msgstr "Se você não concordar com a licença a tarefa irá falhar"
 
-#: ../client/pk-console.c:1188
+#: ../client/pk-console.c:1129
 msgid "The daemon crashed mid-transaction!"
 msgstr "O daemon travou no meio da transação!"
 
 #. header
-#: ../client/pk-console.c:1241
+#: ../client/pk-console.c:1182
 msgid "PackageKit Console Interface"
 msgstr "Interface em Console do PackageKit"
 
-#: ../client/pk-console.c:1241
+#: ../client/pk-console.c:1182
 msgid "Subcommands:"
 msgstr "Subcomandos:"
 
-#: ../client/pk-console.c:1349
+#: ../client/pk-console.c:1290
 #: ../client/pk-monitor.c:104
 #: ../src/pk-main.c:189
 msgid "Show extra debugging information"
 msgstr "Mostrar informações extras de depuração"
 
-#: ../client/pk-console.c:1351
+#: ../client/pk-console.c:1292
 #: ../client/pk-monitor.c:106
 msgid "Show the program version and exit"
 msgstr "Mostrar a versão do programa e sair"
 
-#: ../client/pk-console.c:1353
+#: ../client/pk-console.c:1294
 msgid "Set the filter, e.g. installed"
 msgstr "Definir o filtro, p. ex.: instalados"
 
-#: ../client/pk-console.c:1355
+#: ../client/pk-console.c:1296
 msgid "Exit without waiting for actions to complete"
 msgstr "Sair sem esperar pelo término das ações"
 
-#: ../client/pk-console.c:1378
+#: ../client/pk-console.c:1319
 msgid "Could not connect to system DBUS."
 msgstr "Não foi possível conectar ao DBUS do sistema."
 
-#: ../client/pk-console.c:1472
-msgid "You need to specify a search type"
-msgstr "Você precisa especificar um tipo de pesquisa"
+#: ../client/pk-console.c:1413
+msgid "You need to specify a search type, e.g. name"
+msgstr "Você precisa especificar um tipo de pesquisa, p. ex. nome"
 
-#: ../client/pk-console.c:1477
-#: ../client/pk-console.c:1484
-#: ../client/pk-console.c:1491
-#: ../client/pk-console.c:1498
-#: ../client/pk-console.c:1604
-#: ../client/pk-console.c:1611
-#: ../client/pk-console.c:1618
-#: ../client/pk-console.c:1625
+#: ../client/pk-console.c:1418
+#: ../client/pk-console.c:1425
+#: ../client/pk-console.c:1432
+#: ../client/pk-console.c:1439
+#: ../client/pk-console.c:1545
+#: ../client/pk-console.c:1552
+#: ../client/pk-console.c:1559
+#: ../client/pk-console.c:1566
 msgid "You need to specify a search term"
 msgstr "Você precisa especificar um termo de pesquisa"
 
-#: ../client/pk-console.c:1503
+#: ../client/pk-console.c:1444
 msgid "Invalid search type"
 msgstr "Tipo de pesquisa inválido"
 
-#: ../client/pk-console.c:1508
+#: ../client/pk-console.c:1449
 msgid "You need to specify a package or file to install"
 msgstr "Você precisa especificar um pacote ou programa a ser instalado"
 
-#: ../client/pk-console.c:1515
+#: ../client/pk-console.c:1456
 msgid "You need to specify a type, key_id and package_id"
 msgstr "Você precisa especificar um tipo, key_id e package_id"
 
-#: ../client/pk-console.c:1522
+#: ../client/pk-console.c:1463
 msgid "You need to specify a package to remove"
 msgstr "Você precisa especificar um pacote a ser removido"
 
-#: ../client/pk-console.c:1528
+#: ../client/pk-console.c:1469
 msgid "You need to specify the package to download and the destination directory"
 msgstr "Você precisa especificar o pacote a ser baixado e o diretório de destino"
 
-#: ../client/pk-console.c:1534
+#: ../client/pk-console.c:1475
 msgid "You need to specify a eula-id"
 msgstr "Você precisa especificar um eula-id"
 
-#: ../client/pk-console.c:1550
+#: ../client/pk-console.c:1491
 msgid "You need to specify a package name to resolve"
 msgstr "Você precisa especificar um nome de pacote a ser analisado"
 
-#: ../client/pk-console.c:1559
-#: ../client/pk-console.c:1566
+#: ../client/pk-console.c:1500
+#: ../client/pk-console.c:1507
 msgid "You need to specify a repo name"
 msgstr "Você precisa especificar um nome de repositório"
 
-#: ../client/pk-console.c:1573
+#: ../client/pk-console.c:1514
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Você precisa especificar um nome/parâmetro de repositório e um valor"
 
-#: ../client/pk-console.c:1586
+#: ../client/pk-console.c:1527
 msgid "You need to specify a time term"
 msgstr "Você precisa especificar um termo de horário"
 
-#: ../client/pk-console.c:1591
+#: ../client/pk-console.c:1532
 msgid "You need to specify a correct role"
 msgstr "Você precisa especificar um papel correto"
 
-#: ../client/pk-console.c:1596
+#: ../client/pk-console.c:1537
 msgid "Failed to get last time"
 msgstr "Falha ao obter o último horário"
 
-#: ../client/pk-console.c:1632
+#: ../client/pk-console.c:1573
 msgid "You need to specify a package to find the details for"
 msgstr "Você precisa especificar o pacote para o qual você quer localizar os detalhes"
 
-#: ../client/pk-console.c:1639
+#: ../client/pk-console.c:1580
 msgid "You need to specify a package to find the files for"
 msgstr "Você precisa especificar o pacote para o qual você quer localizar os arquivos"
 
-#: ../client/pk-console.c:1688
+#: ../client/pk-console.c:1629
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "A opção \"%s\" não é suportada"
 
-#: ../client/pk-console.c:1699
-msgid "Command failed"
-msgstr "O comando falhou"
-
-#: ../client/pk-console.c:1703
+#: ../client/pk-console.c:1642
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Você não tem os privilégios necessários para esta operação"
+
+#: ../client/pk-console.c:1644
+msgid "Command failed"
+msgstr "O comando falhou"
 
 #: ../client/pk-import-desktop.c:279
 #: ../client/pk-import-specspo.c:177
@@ -321,6 +320,19 @@ msgstr "Não foi possível conectar ao barramento do sistema"
 msgid "Error trying to start: %s\n"
 msgstr "Erro ao tentar iniciar: %s\n"
 
+#~ msgid "Please enter a number from 1 to %i: "
+#~ msgstr "Por favor, insira um número entre 1 e %i: "
+#~ msgid "Could not find a package match"
+#~ msgstr "Não foi possível encontrar um pacote correspondente"
+#~ msgid ""
+#~ "Could not find a package with that name to install, or package already "
+#~ "installed"
+#~ msgstr ""
+#~ "Não foi possível encontrar um pacote com esse nome para instalar ou o "
+#~ "pacote já está instalado"
+#~ msgid "Could not find a package with that name to update"
+#~ msgstr ""
+#~ "Não foi possível encontrar um pacote com esse nome para ser atualizado"
 #~ msgid "Accept EULA"
 #~ msgstr "Aceitar a licença EULA"
 #~ msgid "Authentication is required to accept a EULA"
