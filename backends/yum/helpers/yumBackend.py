@@ -1065,7 +1065,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     self.error(ERROR_BAD_GPG_SIGNATURE,
                                "GPG key not imported, and no GPG information was found.")
                 id = self._pkg_to_id(keyData['po'])
-                fingerprint = keyData['fingerprint']
+                fingerprint = keyData['fingerprint']()
                 hex_fingerprint = "%02x" * len(fingerprint) % tuple(map(ord, fingerprint))
                 # Borrowed from http://mail.python.org/pipermail/python-list/2000-September/053490.html
 
