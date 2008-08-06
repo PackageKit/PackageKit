@@ -528,8 +528,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
 
         #FIXME: Support candidates
-        if self._cache.has_key(name) and self.is_package_visible(pkg, filters):
-            self._emit_package(name)
+        pkg = None
+        if self._cache.has_key(name):
+            pkg = self._cache[name]
+            if not self._is_package_visible(pkg, filters):
+                pkg = None
+        if pkg:
+            self._emit_package(pkg)
             self.Finished(EXIT_SUCCESS)
         else:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
