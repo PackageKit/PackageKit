@@ -18,4 +18,5 @@ pk-generate-package-list
 *.gcda
 *.gcno
 *.out
+*.pack
 
