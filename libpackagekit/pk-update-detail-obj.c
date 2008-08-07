@@ -56,6 +56,10 @@ pk_update_detail_obj_new (void)
 	obj->cve_url = NULL;
 	obj->restart = 0;
 	obj->update_text = NULL;
+	obj->changelog = NULL;
+	obj->state = PK_UPDATE_STATE_ENUM_UNKNOWN;
+	obj->issued = NULL;
+	obj->updated = NULL;
 
 	return obj;
 }
@@ -70,7 +74,8 @@ pk_update_detail_obj_new (void)
 PkUpdateDetailObj *
 pk_update_detail_obj_new_from_data (const PkPackageId *id, const gchar *updates, const gchar *obsoletes,
 				    const gchar *vendor_url, const gchar *bugzilla_url, const gchar *cve_url,
-				    PkRestartEnum restart, const gchar *update_text)
+				    PkRestartEnum restart, const gchar *update_text,
+				    const gchar *changelog, PkUpdateStateEnum state, GDate *issued, GDate *updated)
 {
 	PkUpdateDetailObj *obj = NULL;
 
@@ -84,6 +89,12 @@ pk_update_detail_obj_new_from_data (const PkPackageId *id, const gchar *updates,
 	obj->cve_url = g_strdup (cve_url);
 	obj->restart = restart;
 	obj->update_text = g_strdup (update_text);
+	obj->changelog = g_strdup (changelog);
+	obj->state = state;
+	if (issued != NULL)
+		obj->issued = g_date_new_dmy (issued->day, issued->month, issued->year);
+	if (updated != NULL)
+		obj->updated = g_date_new_dmy (updated->day, updated->month, updated->year);
 
 	return obj;
 }
@@ -99,7 +110,8 @@ pk_update_detail_obj_copy (const PkUpdateDetailObj *obj)
 	g_return_val_if_fail (obj != NULL, NULL);
 	return pk_update_detail_obj_new_from_data (obj->id, obj->updates, obj->obsoletes,
 						   obj->vendor_url, obj->bugzilla_url, obj->cve_url,
-						   obj->restart, obj->update_text);
+						   obj->restart, obj->update_text,
+						   obj->changelog, obj->state, obj->issued, obj->updated);
 }
 
 /**
@@ -121,6 +133,11 @@ pk_update_detail_obj_free (PkUpdateDetailObj *obj)
 	g_free (obj->bugzilla_url);
 	g_free (obj->cve_url);
 	g_free (obj->update_text);
+	g_free (obj->changelog);
+	if (obj->issued)
+		g_date_free (obj->issued);
+	if (obj->updated)
+		g_date_free (obj->updated);
 	g_free (obj);
 	return TRUE;
 }

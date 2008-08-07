@@ -2270,7 +2270,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 						  "",
 						  cve_url ? cve_url : "",
 						  PK_RESTART_ENUM_NONE,
-						  "");
+						  "", NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
 
 			g_free (updates);
 			g_free (obsoletes);

@@ -167,12 +167,17 @@ pk_backend_dbus_update_detail_cb (DBusGProxy *proxy, const gchar *package_id,
 				  const gchar *updates, const gchar *obsoletes,
 				  const gchar *vendor_url, const gchar *bugzilla_url,
 				  const gchar *cve_url, const gchar *restart_text,
-				  const gchar *update_text, PkBackendDbus *backend_dbus)
+				  const gchar *update_text, const gchar	*changelog,
+				  const gchar *state, const gchar *issued,
+				  const gchar *updated, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("got signal");
 	pk_backend_update_detail (backend_dbus->priv->backend, package_id, updates,
 				  obsoletes, vendor_url, bugzilla_url, cve_url,
-				  pk_restart_enum_from_text (restart_text), update_text);
+				  pk_restart_enum_from_text (restart_text),
+				  update_text, changelog,
+				  pk_update_state_enum_from_text (state),
+				  issued, updated);
 }
 
 /**
@@ -477,6 +482,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_STRING, G_TYPE_INVALID);
@@ -1528,8 +1534,9 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
 	/* UpdateDetail */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	/* Transaction */

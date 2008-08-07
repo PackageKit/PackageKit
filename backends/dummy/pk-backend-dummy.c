@@ -191,7 +191,8 @@ backend_get_update_detail_timeout (gpointer data)
 						  "powertop;1.7-1.fc8;i386;installed", "",
 						  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
-						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source");
+						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source",
+						  "", PK_UPDATE_STATE_ENUM_STABLE, "2008-07-31", NULL);
 		}
 		if (pk_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
 			pk_backend_update_detail (backend, package_id,
@@ -201,7 +202,8 @@ backend_get_update_detail_timeout (gpointer data)
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
 						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
 						  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
-						  PK_RESTART_ENUM_SYSTEM, "Update to newest version");
+						  PK_RESTART_ENUM_SYSTEM, "Update to newest version",
+						  "", PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
 		}
 		if (pk_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
 			pk_backend_update_detail (backend, package_id,
@@ -212,7 +214,8 @@ backend_get_update_detail_timeout (gpointer data)
 						  "Update to latest whizz bang version\n"
 						  "* support this new thing\n"
 						  "* something else\n"
-						  "- and that new thing");
+						  "- and that new thing",
+						  "", PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
 		}
 	}
 	pk_backend_finished (backend);

@@ -277,9 +277,9 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssssssss')
-    def UpdateDetail(self,package_id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update):
-        pklog.info("UpdateDetail (%s,%s,%s,%s,%s,%s,%s,%s)" % (package_id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update))
+                         signature='ssssssssssss')
+    def UpdateDetail(self,package_id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update,changelog,state,issued,updated):
+        pklog.info("UpdateDetail (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (package_id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update,changelog,state,issued,updated))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,

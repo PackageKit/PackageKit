@@ -92,6 +92,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	PkMessageEnum message_enum;
 	PkRestartEnum restart_enum;
 	PkSigTypeEnum sig_type;
+	PkUpdateStateEnum update_state_enum;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
@@ -169,7 +170,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			goto out;
 		}
 	} else if (pk_strequal (command, "updatedetail")) {
-		if (size != 9) {
+		if (size != 13) {
 			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
@@ -181,13 +182,15 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-
+		update_state_enum = pk_update_state_enum_from_text (sections[10]);
 		text = g_strdup (sections[8]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_update_detail (backend_spawn->priv->backend, sections[1], sections[2],
-					  sections[3], sections[4], sections[5],
-					  sections[6], restart, text);
+		pk_backend_update_detail (backend_spawn->priv->backend, sections[1],
+					  sections[2], sections[3], sections[4],
+					  sections[5], sections[6], restart, text,
+					  sections[9], update_state_enum,
+					  sections[11], sections[12]);
 		g_free (text);
 	} else if (pk_strequal (command, "percentage")) {
 		if (size != 2) {

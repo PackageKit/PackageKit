@@ -211,32 +211,51 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
 static void
 pk_console_update_detail_cb (PkClient *client, const PkUpdateDetailObj *detail, gpointer data)
 {
+	gchar *issued;
+	gchar *updated;
+
 	if (awaiting_space) {
 		g_print ("\n");
 	}
 	g_print ("%s\n", _("Update detail"));
 	g_print ("  package:    '%s-%s.%s'\n", detail->id->name, detail->id->version, detail->id->arch);
-	if (pk_strzero (detail->updates) == FALSE) {
+	if (!pk_strzero (detail->updates)) {
 		g_print ("  updates:    '%s'\n", detail->updates);
 	}
-	if (pk_strzero (detail->obsoletes) == FALSE) {
+	if (!pk_strzero (detail->obsoletes)) {
 		g_print ("  obsoletes:  '%s'\n", detail->obsoletes);
 	}
-	if (pk_strzero (detail->vendor_url) == FALSE) {
+	if (!pk_strzero (detail->vendor_url)) {
 		g_print ("  vendor URL: '%s'\n", detail->vendor_url);
 	}
-	if (pk_strzero (detail->bugzilla_url) == FALSE) {
+	if (!pk_strzero (detail->bugzilla_url)) {
 		g_print ("  bug URL:    '%s'\n", detail->bugzilla_url);
 	}
-	if (pk_strzero (detail->cve_url) == FALSE) {
+	if (!pk_strzero (detail->cve_url)) {
 		g_print ("  cve URL:    '%s'\n", detail->cve_url);
 	}
 	if (detail->restart != PK_RESTART_ENUM_NONE) {
 		g_print ("  restart:    '%s'\n", pk_restart_enum_to_text (detail->restart));
 	}
-	if (pk_strzero (detail->update_text) == FALSE) {
+	if (!pk_strzero (detail->update_text)) {
 		g_print ("  update_text:'%s'\n", detail->update_text);
 	}
+	if (!pk_strzero (detail->changelog)) {
+		g_print ("  changelog:  '%s'\n", detail->changelog);
+	}
+	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
+		g_print ("  state:      '%s'\n", pk_update_state_enum_to_text (detail->state));
+	}
+	issued = pk_iso8601_from_date (detail->issued);
+	if (!pk_strzero (issued)) {
+		g_print ("  issued:     '%s'\n", issued);
+	}
+	updated = pk_iso8601_from_date (detail->updated);
+	if (!pk_strzero (updated)) {
+		g_print ("  updated:    '%s'\n", updated);
+	}
+	g_free (issued);
+	g_free (updated);
 }
 
 /**

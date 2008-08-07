@@ -739,7 +739,10 @@ static void
 pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *detail, PkTransaction *transaction)
 {
 	const gchar *restart_text;
+	const gchar *state_text;
 	gchar *package_id;
+	gchar *issued;
+	gchar *updated;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -749,9 +752,17 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 
 	restart_text = pk_restart_enum_to_text (detail->restart);
 	package_id = pk_package_id_to_string (detail->id);
+	state_text = pk_update_state_enum_to_text (detail->state);
+	issued = pk_iso8601_from_date (detail->issued);
+	updated = pk_iso8601_from_date (detail->updated);
+
 	g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
 		       package_id, detail->updates, detail->obsoletes, detail->vendor_url,
-		       detail->bugzilla_url, detail->cve_url, restart_text, detail->update_text);
+		       detail->bugzilla_url, detail->cve_url, restart_text, detail->update_text,
+		       detail->changelog, state_text, issued, updated);
+
+	g_free (issued);
+	g_free (updated);
 	g_free (package_id);
 }
 
@@ -1850,12 +1861,22 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 		detail = pk_update_detail_list_get_obj (transaction->priv->update_detail_list, id);
 		pk_package_id_free (id);
 		if (detail != NULL) {
+			gchar *issued;
+			gchar *updated;
+			const gchar *state_text;
 			package_id = pk_package_id_to_string (detail->id);
+			issued = pk_iso8601_from_date (detail->issued);
+			updated = pk_iso8601_from_date (detail->updated);
+			state_text = pk_update_state_enum_to_text (detail->state);
+
 			/* emulate the backend */
 			g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
 				       package_id, detail->updates, detail->obsoletes,
 				       detail->vendor_url, detail->bugzilla_url, detail->cve_url,
-				       pk_restart_enum_to_text (detail->restart), detail->update_text);
+				       pk_restart_enum_to_text (detail->restart), detail->update_text,
+				       detail->changelog, state_text, issued, updated);
+			g_free (issued);
+			g_free (updated);
 			g_free (package_id);
 		} else {
 			pk_debug ("not got %s", package_ids[i]);
@@ -3226,8 +3247,9 @@ pk_transaction_class_init (PkTransactionClass *klass)
 	signals [PK_TRANSACTION_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 12, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
 	g_type_class_add_private (klass, sizeof (PkTransactionPrivate));

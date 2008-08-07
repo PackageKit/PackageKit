@@ -674,7 +674,7 @@ backend_get_updates_thread (PkBackend *backend)
 	delete (candidates);
 	//delete (candidates2);
 
- 	pk_backend_set_percentage (backend, 100);
+	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -875,13 +875,14 @@ backend_get_update_detail_thread (PkBackend *backend)
 
 		pk_backend_update_detail (backend,
 					  package_ids[i],
-					  updates, 	// updates
-					  obsoletes, 	// CURRENTLY CAUSES SEGFAULT obsoletes,
-					  "", 		// CURRENTLY CAUSES SEGFAULT solvable.vendor ().c_str (),
-					  bugzilla, 	// bugzilla
-					  cve, 		// cve
+					  updates,	// updates
+					  obsoletes,	// CURRENTLY CAUSES SEGFAULT obsoletes,
+					  "",		// CURRENTLY CAUSES SEGFAULT solvable.vendor ().c_str (),
+					  bugzilla,	// bugzilla
+					  cve,		// cve
 					  restart,
-					  solvable.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
+					  solvable.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (),
+					  NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
 
 		g_free (bugzilla);
 		g_free (cve);
@@ -1739,11 +1740,11 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
-	backend_search_group,    		/* search_group */
+	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	NULL,				   	/* service_pack */
+	NULL,					/* service_pack */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	backend_what_provides		   	/* what_provides */
+	backend_what_provides			/* what_provides */
 );
 

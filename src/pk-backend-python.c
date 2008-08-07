@@ -238,15 +238,23 @@ pk_backend_python_update_detail_cb (PyObject *self, PyObject *args)
 	const gchar *cve_url;
 	const gchar *restart_text;
 	const gchar *update_text;
+	const gchar *changelog;
+	const gchar *state;
+	const gchar *issued;
+	const gchar *updated;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
 	pk_debug ("got signal");
-	PyArg_ParseTuple (args, "ssssssss", &package_id, &updates, &obsoletes,
-			  &vendor_url, &bugzilla_url, &cve_url, &restart_text, &update_text);
+	PyArg_ParseTuple (args, "ssssssssssss", &package_id, &updates, &obsoletes,
+			  &vendor_url, &bugzilla_url, &cve_url, &restart_text,
+			  &update_text, &changelog, &state, &issued, &updated);
 
 	pk_backend_update_detail (python->priv->backend, package_id, updates,
 				  obsoletes, vendor_url, bugzilla_url, cve_url,
-				  pk_restart_enum_from_text (restart_text), update_text);
+				  pk_restart_enum_from_text (restart_text),
+				  update_text, changelog,
+				  pk_update_state_enum_from_text (state),
+				  issued, updated);
 	return Py_BuildValue("");
 }
 

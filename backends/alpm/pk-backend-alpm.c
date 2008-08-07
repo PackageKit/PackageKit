@@ -1111,7 +1111,8 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 
 		gchar *installed_package_id = installed_pkg ? pkg_to_package_id_str (installed_pkg, ALPM_LOCAL_DB_ALIAS) : NULL;
 		pk_backend_update_detail (backend, package_ids[iterator], installed_package_id, "", "", "", "", PK_RESTART_ENUM_NONE,
-			installed_pkg ? "Update to latest available version" : "Install as a dependency for another update");
+			installed_pkg ? "Update to latest available version" : "Install as a dependency for another update",
+			NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
 		g_free (installed_package_id);
 	}
 

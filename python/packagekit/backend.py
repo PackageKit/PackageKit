@@ -148,7 +148,7 @@ class PackageKitBaseBackend:
         print >> sys.stdout,"files\t%s\t%s" % (id,file_list)
         sys.stdout.flush()
 
-    def update_detail(self,id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text):
+    def update_detail(self,id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text,changelog,state,issued,updated):
         '''
         Send 'updatedetail' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -159,8 +159,12 @@ class PackageKitBaseBackend:
         @param cve_url:
         @param restart:
         @param update_text:
+        @param changelog:
+        @param state:
+        @param issued:
+        @param updated:
         '''
-        print >> sys.stdout,"updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text)
+        print >> sys.stdout,"updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text,changelog,state,issued,updated)
         sys.stdout.flush()
 
     def require_restart(self,restart_type,details):

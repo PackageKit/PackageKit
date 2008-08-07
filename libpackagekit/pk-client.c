@@ -599,22 +599,40 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 static void
 pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const gchar *updates,
 			    const gchar *obsoletes, const gchar *vendor_url, const gchar *bugzilla_url,
-			    const gchar *cve_url, const gchar *restart_text, const gchar *update_text, PkClient *client)
+			    const gchar *cve_url, const gchar *restart_text, const gchar *update_text,
+			    const gchar *changelog, const gchar *state_text, const gchar *issued_text,
+			    const gchar *updated_text, PkClient *client)
 {
 	PkRestartEnum restart;
 	PkUpdateDetailObj *detail;
 	PkPackageId *id;
+	GDate *issued;
+	GDate *updated;
+	PkUpdateStateEnum state;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s",
-		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
+	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
+		  package_id, updates, obsoletes, vendor_url, bugzilla_url,
+		  cve_url, restart_text, update_text, changelog,
+		  state_text, issued_text, updated_text);
+
 	id = pk_package_id_new_from_string (package_id);
 	restart = pk_restart_enum_from_text (restart_text);
+	state = pk_update_state_enum_from_text (state_text);
+	issued = pk_iso8601_to_date (issued_text);
+	updated = pk_iso8601_to_date (updated_text);
 
 	detail = pk_update_detail_obj_new_from_data (id, updates, obsoletes, vendor_url,
-						     bugzilla_url, cve_url, restart, update_text);
+						     bugzilla_url, cve_url, restart,
+						     update_text, changelog, state,
+						     issued, updated);
 	g_signal_emit (client, signals [PK_CLIENT_UPDATE_DETAIL], 0, detail);
+
+	if (issued != NULL)
+		g_date_free (issued);
+	if (updated != NULL)
+		g_date_free (updated);
 	pk_package_id_free (id);
 	pk_update_detail_obj_free (detail);
 }
@@ -3198,6 +3216,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Details",
 				 G_TYPE_STRING, G_TYPE_STRING,
@@ -3766,8 +3785,9 @@ pk_client_init (PkClient *client)
 					   G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
 	/* UpdateDetail */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	/* Transaction */
