@@ -280,7 +280,7 @@ pk_console_pulse_bar (PulseState *pulse_state)
 		} else {
 			pulse_state->position++;
 		}
-	} else if (pulse_state->move_forward == FALSE) {
+	} else if (!pulse_state->move_forward) {
 		if (pulse_state->position == 1) {
 			pulse_state->move_forward = TRUE;
 		} else {
@@ -728,7 +728,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	remove = pk_console_get_prompt (_("Okay to remove additional packages?"), FALSE);
 
 	/* we chickened out */
-	if (remove == FALSE) {
+	if (!remove) {
 		g_print ("%s\n", _("Cancelled!"));
 		ret = FALSE;
 		goto out;
@@ -1125,7 +1125,7 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointe
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	if (connected == FALSE) {
+	if (!connected) {
 		g_print ("%s\n", _("The daemon crashed mid-transaction!"));
 		exit (2);
 	}
