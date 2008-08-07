@@ -36,7 +36,7 @@
 #include <fcntl.h>
 
 #include <glib/gi18n.h>
-#include <libgbus.h>
+#include <pk-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
@@ -79,7 +79,7 @@ struct PkTransactionPrivate
 	gboolean		 emit_eula_required;
 	gboolean		 emit_signature_required;
 	gchar			*locale;
-	LibGBus			*libgbus;
+	PkDbusMonitor		*monitor;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkCache			*cache;
@@ -234,7 +234,7 @@ pk_transaction_set_dbus_name (PkTransaction *transaction, const gchar *dbus_name
 	}
 	transaction->priv->dbus_name = g_strdup (dbus_name);
 	pk_debug ("assigning %s to %p", dbus_name, transaction);
-	libgbus_assign (transaction->priv->libgbus, LIBGBUS_SYSTEM, dbus_name);
+	pk_dbus_monitor_assign (transaction->priv->monitor, PK_DBUS_MONITOR_SYSTEM, dbus_name);
 	return TRUE;
 }
 
@@ -369,7 +369,7 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
  * pk_transaction_caller_active_changed_cb:
  **/
 static void
-pk_transaction_caller_active_changed_cb (LibGBus *libgbus, gboolean is_active, PkTransaction *transaction)
+pk_transaction_caller_active_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolean is_active, PkTransaction *transaction)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2220,7 +2220,7 @@ pk_transaction_is_caller_active (PkTransaction *transaction, gboolean *is_active
 
 	pk_debug ("is caller active");
 
-	*is_active = libgbus_is_connected (transaction->priv->libgbus);
+	*is_active = pk_dbus_monitor_is_connected (transaction->priv->monitor);
 	return TRUE;
 }
 
@@ -3277,8 +3277,8 @@ pk_transaction_init (PkTransaction *transaction)
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
 			  G_CALLBACK (pk_transaction_transaction_cb), transaction);
 
-	transaction->priv->libgbus = libgbus_new ();
-	g_signal_connect (transaction->priv->libgbus, "connection-changed",
+	transaction->priv->monitor = pk_dbus_monitor_new ();
+	g_signal_connect (transaction->priv->monitor, "connection-changed",
 			  G_CALLBACK (pk_transaction_caller_active_changed_cb), transaction);
 }
 
@@ -3316,7 +3316,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->update_detail_list);
 	g_object_unref (transaction->priv->inhibit);
 	g_object_unref (transaction->priv->backend);
-	g_object_unref (transaction->priv->libgbus);
+	g_object_unref (transaction->priv->monitor);
 	g_object_unref (transaction->priv->package_list);
 	g_object_unref (transaction->priv->transaction_list);
 	g_object_unref (transaction->priv->transaction_db);

@@ -10,7 +10,6 @@ SUBDIRS = 						\
 	contrib						\
 	data						\
 	libselftest					\
-	libgbus						\
 	libpackagekit					\
 	src						\
 	client						\

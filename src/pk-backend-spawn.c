@@ -39,7 +39,6 @@
 #include <glib/gprintf.h>
 
 #include <gmodule.h>
-#include <libgbus.h>
 
 #include <pk-common.h>
 #include <pk-package-id.h>

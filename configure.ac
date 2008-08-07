@@ -534,7 +534,6 @@ data/org.freedesktop.PackageKitYumBackend.conf
 data/org.freedesktop.PackageKitAptBackend.conf
 data/tests/Makefile
 libselftest/Makefile
-libgbus/Makefile
 libpackagekit/Makefile
 policy/Makefile
 src/Makefile

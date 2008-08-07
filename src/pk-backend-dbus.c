@@ -39,7 +39,7 @@
 #include <glib/gprintf.h>
 
 #include <gmodule.h>
-#include <libgbus.h>
+#include <pk-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
 
 #include <pk-common.h>
@@ -75,7 +75,7 @@ struct PkBackendDbusPrivate
 	GTimer			*timer;
 	gchar			*service;
 	gulong			 signal_finished;
-	LibGBus			*gbus;
+	PkDbusMonitor		*monitor;
 };
 
 G_DEFINE_TYPE (PkBackendDbus, pk_backend_dbus, G_TYPE_OBJECT)
@@ -452,7 +452,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	}
 
 	/* watch */
-	libgbus_assign (backend_dbus->priv->gbus, LIBGBUS_SYSTEM, service);
+	pk_dbus_monitor_assign (backend_dbus->priv->monitor, PK_DBUS_MONITOR_SYSTEM, service);
 
 	/* grab this */
 	pk_debug ("trying to activate %s", service);
@@ -1400,10 +1400,10 @@ pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkFilterEnum filters
 }
 
 /**
- * pk_backend_dbus_gbus_changed_cb:
+ * pk_backend_dbus_monitor_changed_cb:
  **/
 static void
-pk_backend_dbus_gbus_changed_cb (LibGBus *libgbus, gboolean is_active, PkBackendDbus *backend_dbus)
+pk_backend_dbus_monitor_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolean is_active, PkBackendDbus *backend_dbus)
 {
 	gboolean ret;
 	g_return_if_fail (PK_IS_BACKEND_DBUS (backend_dbus));
@@ -1440,7 +1440,7 @@ pk_backend_dbus_finalize (GObject *object)
 	}
 	g_timer_destroy (backend_dbus->priv->timer);
 	g_object_unref (backend_dbus->priv->backend);
-	g_object_unref (backend_dbus->priv->gbus);
+	g_object_unref (backend_dbus->priv->monitor);
 
 	G_OBJECT_CLASS (pk_backend_dbus_parent_class)->finalize (object);
 }
@@ -1477,9 +1477,9 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	}
 
 	/* babysit the backend and do Init() again it when it crashes */
-	backend_dbus->priv->gbus = libgbus_new ();
-	g_signal_connect (backend_dbus->priv->gbus, "connection-changed",
-			  G_CALLBACK (pk_backend_dbus_gbus_changed_cb), backend_dbus);
+	backend_dbus->priv->monitor = pk_dbus_monitor_new ();
+	g_signal_connect (backend_dbus->priv->monitor, "connection-changed",
+			  G_CALLBACK (pk_backend_dbus_monitor_changed_cb), backend_dbus);
 
 	/* ProgressChanged */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_UINT_UINT,
