@@ -325,6 +325,18 @@ typedef enum {
 } PkUpdateEnum;
 
 /**
+ * PkUpdateStateEnum:
+ *
+ * What state the update is in
+ **/
+typedef enum {
+	PK_UPDATE_STATE_ENUM_STABLE,
+	PK_UPDATE_STATE_ENUM_UNSTABLE,
+	PK_UPDATE_STATE_ENUM_TESTING,
+	PK_UPDATE_STATE_ENUM_UNKNOWN
+} PkUpdateStateEnum;
+
+/**
  * PkInfoEnum:
  *
  * The enumerated types used in Package() - these have to refer to a specific
@@ -520,6 +532,9 @@ const gchar	*pk_info_enum_to_text			(PkInfoEnum	 info);
 
 PkUpdateEnum	 pk_update_enum_from_text		(const gchar	*update);
 const gchar	*pk_update_enum_to_text			(PkUpdateEnum	 update);
+
+PkUpdateStateEnum  pk_update_state_enum_from_text	(const gchar	*update_state);
+const gchar	*pk_update_state_enum_to_text		(PkUpdateStateEnum update_state);
 
 PkFreqEnum	 pk_freq_enum_from_text			(const gchar	*freq);
 const gchar	*pk_freq_enum_to_text			(PkFreqEnum	 freq);
