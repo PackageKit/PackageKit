@@ -430,21 +430,21 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-			 in_signature='ss',out_signature='')
-    def DownloadPackages(self,package_ids,directory)
-	'''
-	Implement the (backend)-download-packages functionality
-	'''
-	pklog.info("DownloadPackages(%s%s)" % (packages,directory))
-	self.doDownloadPackages(packages,directory)
+                         in_signature='ss',out_signature='')
+    def DownloadPackages(self,package_ids,directory):
+        '''
+        Implement the (backend)-download-packages functionality
+        '''
+        pklog.info("DownloadPackages(%s%s)" % (packages,directory))
+        self.doDownloadPackages(packages,directory)
 
-    def doDownloadPackages(self,package_ids,directory)
-	'''
-	Should be replaced in the corresponding backend sub class
-	'''
-	self.ErrorCode(ERROR_NOT_SUPPORTED,
-			"This function is not implemented in this backend")
-	self.Finished(EXIT_FAILED)
+    def doDownloadPackages(self,package_ids,directory):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss',out_signature='')
