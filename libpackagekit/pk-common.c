@@ -186,14 +186,19 @@ pk_iso8601_difference (const gchar *isodate)
 }
 
 /**
- * pk_date_to_iso8601:
+ * pk_iso8601_from_date:
+ * @isodate: a %GDate to convert
+ *
+ * Return value: If valid then a new ISO8601 date, else NULL
  **/
 gchar *
-pk_date_to_iso8601 (const GDate *date)
+pk_iso8601_from_date (const GDate *date)
 {
 	gsize retval;
 	gchar iso_date[128];
 
+	if (date == NULL)
+		return NULL;
 	retval = g_date_strftime (iso_date, 128, "%F", date);
 	if (retval == 0)
 		return NULL;
@@ -201,33 +206,40 @@ pk_date_to_iso8601 (const GDate *date)
 }
 
 /**
- * pk_date_set_iso8601:
- **/
-gboolean
-pk_date_set_iso8601 (GDate *date, const gchar *iso_date)
-{
-	gboolean ret;
-	g_date_set_parse (date, iso_date);
-	ret = g_date_valid (date);
-	return ret;
-}
-
-/**
- * pk_date_from_iso8601:
+ * pk_iso8601_to_date:
+ * @isodate: The ISO8601 date to convert
+ *
+ * Return value: If valid then a new %GDate, else NULL
  **/
 GDate *
-pk_date_from_iso8601 (const gchar *iso_date)
+pk_iso8601_to_date (const gchar *iso_date)
 {
 	gboolean ret;
+	guint retval;
+	guint d, m, y;
 	GTimeVal time;
 	GDate *date = NULL;
 
-	ret = g_time_val_from_iso8601 (iso_date, &time);
-	if (!ret)
+	if (pk_strzero (iso_date))
 		goto out;
 
-	date = g_date_new ();
-	g_date_set_parse (date, iso_date);
+	/* try to parse complete ISO8601 date */
+	ret = g_time_val_from_iso8601 (iso_date, &time);
+	if (ret) {
+		date = g_date_new ();
+		g_date_set_time_val (date, &time);
+		goto out;
+	}
+
+	/* g_time_val_from_iso8601() blows goats and won't
+	 * accept a valid ISO8601 formatted date without a
+	 * time value - try and parse this case */
+	retval = sscanf (iso_date, "%i-%i-%i", &y, &m, &d);
+	if (retval == 3) {
+		date = g_date_new_dmy (d, m, y);
+		goto out;
+	}
+	pk_warning ("could not parse '%s'", iso_date);
 out:
 	return date;
 }

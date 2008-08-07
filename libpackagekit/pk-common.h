@@ -102,12 +102,10 @@ gboolean	 pk_strcmp_sections			(const gchar	*id1,
 gchar		*pk_iso8601_present			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_iso8601_difference			(const gchar	*isodate);
+gchar		*pk_iso8601_from_date			(const GDate	*date);
+GDate		*pk_iso8601_to_date			(const gchar	*iso_date);
 gchar		*pk_get_distro_id			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gchar		*pk_date_to_iso8601			(const GDate	*date);
-gboolean	 pk_date_set_iso8601			(GDate		*date,
-							 const gchar	*iso_date);
-GDate		*pk_date_from_iso8601			(const gchar	*iso_date);
 
 G_END_DECLS
 
