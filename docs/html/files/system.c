@@ -1,10 +1,6 @@
-//#include <pk-package-ids.h>
 #include <pk-enum.h>
 #include <pk-client.h>
 #include <pk-control.h>
-//#include <pk-package-id.h>
-//#include <pk-common.h>
-//#include <pk-connection.h>
 
 /**
  * main:
