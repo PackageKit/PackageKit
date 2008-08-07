@@ -150,6 +150,12 @@ pk_network_unix_get_network_state (PkNetworkUnix *network_unix)
 			continue;
 		}
 
+		/* is destination zero (default route)? */
+		if (pk_strequal (sections[1], "00000000")) {
+			pk_debug ("destination %s is valid", sections[0]);
+			online = TRUE;
+		}
+
 		/* is gateway nonzero? */
 		if (!pk_strequal (sections[2], "00000000")) {
 			pk_debug ("interface %s is valid", sections[0]);
