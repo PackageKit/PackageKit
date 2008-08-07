@@ -11,6 +11,7 @@ main (int argc, char *argv[])
 	GError *error = NULL;
 	gboolean ret;
 
+	g_type_init ();
 	connection = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
 	proxy = dbus_g_proxy_new_for_name (connection,
 					   "org.freedesktop.PackageKit",
