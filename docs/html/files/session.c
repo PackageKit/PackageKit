@@ -11,8 +11,13 @@ main (int argc, char *argv[])
 	GError *error = NULL;
 	gboolean ret;
 
+	/* init the types system */
 	g_type_init ();
+
+	/* get a session bus connection */
 	connection = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
+
+	/* connect to PackageKit */
 	proxy = dbus_g_proxy_new_for_name (connection,
 					   "org.freedesktop.PackageKit",
 					   "/org/freedesktop/PackageKit",
