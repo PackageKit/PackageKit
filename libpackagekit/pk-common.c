@@ -186,6 +186,53 @@ pk_iso8601_difference (const gchar *isodate)
 }
 
 /**
+ * pk_date_to_iso8601:
+ **/
+gchar *
+pk_date_to_iso8601 (const GDate *date)
+{
+	gsize retval;
+	gchar iso_date[128];
+
+	retval = g_date_strftime (iso_date, 128, "%F", date);
+	if (retval == 0)
+		return NULL;
+	return g_strdup (iso_date);
+}
+
+/**
+ * pk_date_set_iso8601:
+ **/
+gboolean
+pk_date_set_iso8601 (GDate *date, const gchar *iso_date)
+{
+	gboolean ret;
+	g_date_set_parse (date, iso_date);
+	ret = g_date_valid (date);
+	return ret;
+}
+
+/**
+ * pk_date_from_iso8601:
+ **/
+GDate *
+pk_date_from_iso8601 (const gchar *iso_date)
+{
+	gboolean ret;
+	GTimeVal time;
+	GDate *date = NULL;
+
+	ret = g_time_val_from_iso8601 (iso_date, &time);
+	if (!ret)
+		goto out;
+
+	date = g_date_new ();
+	g_date_set_parse (date, iso_date);
+out:
+	return date;
+}
+
+/**
  * pk_strvalidate_char:
  * @item: A single char to test
  *
