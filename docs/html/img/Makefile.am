@@ -26,6 +26,7 @@ IMAGE_FILES =					\
 	gpk-progress.png			\
 	gpk-repo-auth.png			\
 	gpk-repo.png				\
+	gpk-repo-more.png			\
 	gpk-require-restart.png			\
 	gpk-log.png				\
 	gpk-updates.png				\

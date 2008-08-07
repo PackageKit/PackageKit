@@ -82,6 +82,7 @@ struct _PkBackendPrivate
 	gchar			*c_tid;
 	gchar			*proxy_http;
 	gchar			*proxy_ftp;
+	gchar			*locale;
 	gboolean		 locked;
 	gboolean		 set_error;
 	gboolean		 set_signature;
@@ -984,11 +985,15 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *updates, const gchar *obsoletes,
 			  const gchar *vendor_url, const gchar *bugzilla_url,
 			  const gchar *cve_url, PkRestartEnum restart,
-			  const gchar *update_text)
+			  const gchar *update_text, const gchar	*changelog,
+			  PkUpdateStateEnum state, const gchar *issued_text,
+			  const gchar *updated_text)
 {
 	gchar *update_text_safe;
 	PkUpdateDetailObj *detail;
 	PkPackageId *id;
+	GDate *issued;
+	GDate *updated;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -1000,18 +1005,28 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 		return FALSE;
 	}
 
+	/* convert dates */
+	issued = pk_iso8601_to_date (issued_text);
+	updated = pk_iso8601_to_date (updated_text);
+
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
 
 	/* form PkUpdateDetailObj struct */
 	id = pk_package_id_new_from_string (package_id);
 	detail = pk_update_detail_obj_new_from_data (id, updates, obsoletes, vendor_url,
-						     bugzilla_url, cve_url, restart, update_text_safe);
+						     bugzilla_url, cve_url, restart,
+						     update_text_safe, changelog,
+						     state, issued, updated);
 	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0, detail);
 
 	pk_package_id_free (id);
 	pk_update_detail_obj_free (detail);
 	g_free (update_text_safe);
+	if (issued != NULL)
+		g_date_free (issued);
+	if (updated != NULL)
+		g_date_free (updated);
 	return TRUE;
 }
 
@@ -1104,6 +1119,35 @@ pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 
 	pk_debug ("emit change-transaction-data %s", data);
 	g_signal_emit (backend, signals [PK_BACKEND_CHANGE_TRANSACTION_DATA], 0, data);
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_locale:
+ *
+ * Return value: session locale, e.g. en_GB
+ **/
+gchar *
+pk_backend_get_locale (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->locale);
+}
+
+/**
+ * pk_backend_set_locale:
+ **/
+gboolean
+pk_backend_set_locale (PkBackend *backend, const gchar *code)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (code != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	pk_debug ("locale changed to %s", code);
+	g_free (backend->priv->locale);
+	backend->priv->locale = g_strdup (code);
+
 	return TRUE;
 }
 
@@ -1352,11 +1396,10 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error) {
+	if (backend->priv->set_error && allow_cancel) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
-
 
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
@@ -1552,8 +1595,7 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 
 	/* this function is only valid when we have a running transaction */
 	if (backend->priv->c_tid != NULL) {
-		pk_error ("only valid when we have a running transaction");
-		return FALSE;
+		pk_warning ("only valid when we have a running transaction");
 	}
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
 	/* don't wait, do this now */
@@ -1733,6 +1775,7 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->proxy_http);
 	g_free (backend->priv->proxy_ftp);
 	g_free (backend->priv->name);
+	g_free (backend->priv->locale);
 	g_free (backend->priv->c_tid);
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->network);
@@ -1901,6 +1944,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
+	backend->priv->locale = NULL;
 	backend->priv->c_tid = NULL;
 	backend->priv->proxy_http = NULL;
 	backend->priv->proxy_ftp = NULL;
@@ -2214,7 +2258,7 @@ libst_backend (LibSelfTest *test)
 	if (text == NULL) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "invalid name %s", text);
+		libst_failed (test, "invalid name %s (test suite needs to unref backend?)", text);
 	}
 	g_free (text);
 

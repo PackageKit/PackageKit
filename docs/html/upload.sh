@@ -11,6 +11,7 @@ USER="hughsie"
 SERVER="packagekit.org"
 LOCATION="/srv/www/html"
 
+scp files/*.c $USER@$SERVER:/$LOCATION/files/
 scp img/*.png $USER@$SERVER:/$LOCATION/img/
 scp *.html $USER@$SERVER:/$LOCATION/
 scp *.css $USER@$SERVER:/$LOCATION/

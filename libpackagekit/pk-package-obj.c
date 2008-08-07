@@ -104,6 +104,65 @@ pk_package_obj_copy (const PkPackageObj *obj)
 	return pk_package_obj_new (obj->info, obj->id, obj->summary);
 }
 
+/**
+ * pk_package_obj_to_string:
+ *
+ * Convert a PkPackageObj to a string
+ **/
+gchar *
+pk_package_obj_to_string (const PkPackageObj *obj)
+{
+	gchar *text;
+	gchar *package_id;
+
+	g_return_val_if_fail (obj != NULL, NULL);
+
+	package_id = pk_package_id_to_string (obj->id);
+	text = g_strdup_printf ("%s\t%s\t%s",
+				pk_info_enum_to_text (obj->info),
+				package_id, obj->summary);
+	g_free (package_id);
+	return text;
+}
+
+/**
+ * pk_package_obj_from_string:
+ *
+ * Convert a PkPackageObj from a string
+ **/
+PkPackageObj *
+pk_package_obj_from_string (const gchar *text)
+{
+	gchar **sections;
+	PkPackageObj *obj = NULL;
+	PkPackageId *id = NULL;
+	PkInfoEnum info;
+
+	g_return_val_if_fail (text != NULL, NULL);
+
+	sections = g_strsplit (text, "\t", 3);
+	if (sections == NULL) {
+		pk_warning ("invalid input: %s", text);
+		goto out;
+	}
+
+	info = pk_info_enum_from_text (sections[0]);
+	if (info == PK_INFO_ENUM_UNKNOWN) {
+		pk_warning ("invalid info for string %s", text);
+		goto out;
+	}
+	id = pk_package_id_new_from_string (sections[1]);
+	if (id == NULL) {
+		pk_warning ("invalid package_id for string %s", text);
+		goto out;
+	}
+	obj = pk_package_obj_new (info, id, sections[2]);
+out:
+	pk_package_id_free (id);
+	g_strfreev (sections);
+	return obj;
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -118,6 +177,7 @@ libst_package_obj (LibSelfTest *test)
 	PkPackageObj *obj3;
 	gboolean ret;
 	PkPackageId *id;
+	gchar *text;
 
 	if (libst_start (test, "PkPackageObj", CLASS_AUTO) == FALSE) {
 		return;
@@ -175,7 +235,6 @@ libst_package_obj (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
-	pk_package_id_free (id);
 
 	/************************************************************/
 	libst_title (test, "check !equal");
@@ -186,8 +245,33 @@ libst_package_obj (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 
+	/************************************************************/
+	libst_title (test, "check to string");
+	text = pk_package_obj_to_string (obj1);
+	if (pk_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s", text);
+	}
+
+	/************************************************************/
+	libst_title (test, "check from string");
+	obj3 = pk_package_obj_from_string (text);
+	if (obj3->info == PK_INFO_ENUM_INSTALLED &&
+	    pk_package_id_equal (obj3->id, obj1->id) &&
+	    pk_strequal (obj3->summary, "GNOME!")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got incorrect data %s,%s,%s",
+			      pk_info_enum_to_text (obj3->info),
+			      pk_package_id_to_string (obj3->id),
+			      obj3->summary);
+	}
+
+	pk_package_id_free (id);
 	pk_package_obj_free (obj1);
 	pk_package_obj_free (obj2);
+	g_free (text);
 
 	libst_end (test);
 }

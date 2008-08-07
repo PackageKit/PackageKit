@@ -143,7 +143,7 @@ void		 pk_transaction_get_requires		(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_role		(PkTransaction	*transaction,
 							 const gchar	**role,
-							 const gchar	**package_id,
+							 const gchar	**text,
 							 GError		**error);
 gboolean	 pk_transaction_get_status		(PkTransaction	*transaction,
 							 const gchar	**status,
@@ -209,6 +209,9 @@ void		 pk_transaction_search_name		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 const gchar	*search,
 							 DBusGMethodInvocation *context);
+gboolean	 pk_transaction_set_locale		(PkTransaction	*transaction,
+							 const gchar	*code,
+							 GError		**error);
 gboolean	 pk_transaction_service_pack		(PkTransaction	*transaction,
 							 const gchar	*location,
 							 gboolean	 enabled);

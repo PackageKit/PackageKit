@@ -18,7 +18,7 @@ DEVELOPMENT_RELEASE=no
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-LT_CURRENT=3
+LT_CURRENT=4
 LT_REVISION=0
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
@@ -45,11 +45,6 @@ GTK_DOC_CHECK(1.9)
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
-AM_PATH_PYTHON
-PYTHON_PACKAGE_DIR=${pythondir}/packagekit
-AC_SUBST(PYTHON_PACKAGE_DIR)
-
-
 dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
@@ -74,7 +69,7 @@ dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.14.0
 GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
-DBUS_GLIB_REQUIRED=0.73
+DBUS_GLIB_REQUIRED=0.74
 LIBNM_GLIB_REQUIRED=0.6.4
 POLKIT_DBUS_REQUIRED=0.8
 POLKIT_GRANT_REQUIRED=0.8
@@ -107,6 +102,10 @@ PKG_CHECK_MODULES(DBUS, \
  gthread-2.0)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
+
+AC_CHECK_HEADERS([libtar.h])
+TAR_LIBS=-ltar
+AC_SUBST(TAR_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - xsltproc
@@ -153,6 +152,33 @@ if test "$DOCBOOK2MAN" = "no" ; then
 	AC_MSG_WARN([docbook2man not found, will not be able to build man documentation])
 	fi
 AM_CONDITIONAL(HAVE_DOCBOOK2MAN, [test "$DOCBOOK2MAN" != "no"])
+
+AM_PATH_PYTHON([2.3],[],[have_python=no])
+if test "x$PYTHON" = "x:"; then
+	have_python=no
+fi
+
+PY_PREFIX=`$PYTHON -c 'import sys ; print sys.prefix'`
+PY_EXEC_PREFIX=`$PYTHON -c 'import sys ; print sys.exec_prefix'`
+PYTHON_LIBS="-lpython$PYTHON_VERSION"
+if test -d $PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION ; then
+	PYTHON_LIB_LOC="-L$PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION/config"
+	PYTHON_MAKEFILE="$PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION/config/Makefile"
+else
+	PYTHON_LIB_LOC="-L$PY_EXEC_PREFIX/lib/python$PYTHON_VERSION/config"
+	PYTHON_MAKEFILE="$PY_EXEC_PREFIX/lib/python$PYTHON_VERSION/config/Makefile"
+fi
+PYTHON_CFLAGS="-I$PY_PREFIX/include/python$PYTHON_VERSION"
+PYTHON_LOCALMODLIBS=`sed -n -e 's/^LOCALMODLIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
+PYTHON_BASEMODLIBS=`sed -n -e 's/^BASEMODLIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
+PYTHON_OTHER_LIBS=`sed -n -e 's/^LIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
+PYTHON_EXTRA_LIBS="$PYTHON_LOCALMODLIBS $PYTHON_BASEMODLIBS $PYTHON_OTHER_LIBS"
+PYTHON_PACKAGE_DIR=${pythondir}/packagekit
+AC_SUBST([PYTHON_LIBS])
+AC_SUBST([PYTHON_LIB_LOC])
+AC_SUBST([PYTHON_CFLAGS])
+AC_SUBST([PYTHON_EXTRA_LIBS])
+AC_SUBST(PYTHON_PACKAGE_DIR)
 
 dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
@@ -215,6 +241,33 @@ AC_ARG_ENABLE(local, AS_HELP_STRING([--enable-local],[enable running in local ch
 AM_CONDITIONAL(PK_BUILD_LOCAL, test x$enable_local = xyes)
 if test x$enable_local = xyes; then
 	AC_DEFINE(PK_BUILD_LOCAL,1,[Build local code])
+fi
+
+dnl ---------------------------------------------------------------------------
+dnl - Checks for contrib/packagekit-plugin
+dnl ---------------------------------------------------------------------------
+
+PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
+                  build_browser_plugin=yes, build_browser_plugin=no)
+
+AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
+		 
+AC_SUBST(PK_PLUGIN_CFLAGS)
+AC_SUBST(PK_PLUGIN_LIBS)
+
+if test $build_browser_plugin = "yes"; then
+	# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
+
+	packagekit_save_CPPFLAGS="$CPPFLAGS"
+	packagekit_save_LDFLAGS="$LDFLAGS"
+
+	CPPFLAGS="$CPPFLAGS $PLUGIN_CFLAGS"
+	LDFLAGS="$CPPFLAGS $PLUGIN_LIBS"
+
+	AC_CHECK_FUNCS(gdk_app_launch_context_new)
+
+	CPPFLAGS="$packagekit_save_CPPFLAGS"
+	LDFLAGS="$packagekit_save_LDFLAGS"
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -473,6 +526,7 @@ docs/api/Makefile
 docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
+contrib/packagekit-plugin/Makefile
 contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
@@ -508,7 +562,6 @@ data/org.freedesktop.PackageKitYumBackend.conf
 data/org.freedesktop.PackageKitAptBackend.conf
 data/tests/Makefile
 libselftest/Makefile
-libgbus/Makefile
 libpackagekit/Makefile
 policy/Makefile
 src/Makefile
@@ -535,6 +588,7 @@ echo "
         Security framework:        ${with_security_framework}
         Networking stack:          ${with_networking_stack}
         GIO support:               ${with_gio}
+        Browser Plugin: 	   ${build_browser_plugin}
 
         Backends:
         ALPM backend:              ${enable_alpm}

@@ -139,6 +139,9 @@ sub perform_installation {
         if($mode eq "progress") {
           pk_print_status(PK_STATUS_ENUM_DOWNLOAD);
         }
+        elsif($mode eq "error") {
+          pk_print_error(PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, "Please refresh your package list");
+        }
         print "Install current mode = ", $mode, "\n";
       },
       bad_signature => sub {

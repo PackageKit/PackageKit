@@ -39,7 +39,6 @@
 #include <glib/gprintf.h>
 
 #include <gmodule.h>
-#include <libgbus.h>
 
 #include <pk-common.h>
 #include <pk-package-id.h>
@@ -93,6 +92,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	PkMessageEnum message_enum;
 	PkRestartEnum restart_enum;
 	PkSigTypeEnum sig_type;
+	PkUpdateStateEnum update_state_enum;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
@@ -170,7 +170,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			goto out;
 		}
 	} else if (pk_strequal (command, "updatedetail")) {
-		if (size != 9) {
+		if (size != 13) {
 			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
@@ -182,13 +182,15 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-
+		update_state_enum = pk_update_state_enum_from_text (sections[10]);
 		text = g_strdup (sections[8]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_update_detail (backend_spawn->priv->backend, sections[1], sections[2],
-					  sections[3], sections[4], sections[5],
-					  sections[6], restart, text);
+		pk_backend_update_detail (backend_spawn->priv->backend, sections[1],
+					  sections[2], sections[3], sections[4],
+					  sections[5], sections[6], restart, text,
+					  sections[9], update_state_enum,
+					  sections[11], sections[12]);
 		g_free (text);
 	} else if (pk_strequal (command, "percentage")) {
 		if (size != 2) {
@@ -235,8 +237,13 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		/* convert back all the ;'s to newlines */
 		text = g_strdup (sections[2]);
+
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
+
+		/* convert % else we try to format them */
+		g_strdelimit (text, "%", '$');
+
 		pk_backend_error_code (backend_spawn->priv->backend, error_enum, text);
 		g_free (text);
 	} else if (pk_strequal (command, "requirerestart")) {
@@ -460,6 +467,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		line = g_strdup_printf ("%s=%s", "http_proxy", value);
 		pk_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
+		g_free (line);
 	}
 	g_free (value);
 
@@ -469,6 +477,17 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		line = g_strdup_printf ("%s=%s", "ftp_proxy", value);
 		pk_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
+		g_free (line);
+	}
+	g_free (value);
+
+	/* ftp_proxy */
+	value = pk_backend_get_locale (backend_spawn->priv->backend);
+	if (!pk_strzero (value)) {
+		line = g_strdup_printf ("%s=%s", "LANG", value);
+		pk_debug ("setting evp '%s'", line);
+		g_ptr_array_add (array, line);
+		g_free (line);
 	}
 	g_free (value);
 

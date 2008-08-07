@@ -17,6 +17,7 @@ INCLUDES =						\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
+	$(PYTHON_CFLAGS)				\
 	$(LIBNM_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DSBINDIR=\"$(sbindir)\"		 	\
@@ -30,7 +31,6 @@ INCLUDES =						\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
 	-I$(top_srcdir)/libpackagekit			\
 	-I$(top_srcdir)/libselftest			\
-	-I$(top_srcdir)/libgbus				\
 	$(NULL)
 
 pkbackendincludedir=$(includedir)/packagekit-backend
@@ -123,6 +123,7 @@ packagekitd_LDADD =					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
+	$(PYTHON_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(SELFTEST_LIBS)				\
 	$(GIO_LIBS)					\

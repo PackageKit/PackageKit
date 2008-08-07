@@ -50,6 +50,7 @@ HTML_IMAGES =						\
 	spec/pk-faq-error-code.png			\
 	spec/pk-faq-status.png				\
 	spec/pk-transactions.svg			\
+	spec/pk-transactions-set-locale.png		\
 	spec/pk-transactions-failure.png		\
 	spec/pk-transactions-sig-install.png		\
 	spec/pk-transactions-success.png		\
@@ -76,7 +77,6 @@ INCLUDES =						\
 	-I$(top_builddir)/libpackagekit			\
 	-I$(top_srcdir)/libpackagekit			\
 	-I$(top_srcdir)/libselftest			\
-	-I$(top_srcdir)/libgbus				\
 	$(NULL)
 
 PK_LIBS = $(top_builddir)/libpackagekit/libpackagekit.la

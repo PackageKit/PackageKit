@@ -42,6 +42,7 @@
 
 #include "pk-debug.h"
 #include "pk-control.h"
+#include "pk-client.h"
 #include "pk-marshal.h"
 #include "pk-connection.h"
 #include "pk-common.h"
@@ -445,6 +446,35 @@ pk_control_get_time_since_action (PkControl *control, PkRoleEnum role, guint *se
 }
 
 /**
+ * pk_control_set_locale:
+ **/
+static gboolean
+pk_control_set_locale (PkControl *control, const gchar *tid, GError **error)
+{
+	PkClient *client;
+	gboolean ret;
+	gchar *locale; /* does not need to be freed */
+
+	client = pk_client_new ();
+	ret = pk_client_set_tid (client, tid, error);
+	if (!ret) {
+		pk_warning ("failed to set the tid: %s", (*error)->message);
+		goto out;
+	}
+
+	/* get the session locale and set th transaction to be in this locale */
+	locale = setlocale (LC_ALL, NULL);
+	ret = pk_client_set_locale (client, locale, error);
+	if (!ret) {
+		pk_warning ("failed to set the locale: %s", (*error)->message);
+		goto out;
+	}
+out:
+	g_object_unref (client);
+	return ret;
+}
+
+/**
  * pk_control_allocate_transaction_id:
  * @control: a valid #PkControl instance
  * @error: a %GError to put the error code and message in, or %NULL
@@ -480,6 +510,13 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 	if (g_strrstr (tid_local, ";") != NULL) {
 		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, "Incorrect path with ';' returned!");
 		ret = FALSE;
+		goto out;
+	}
+
+	/* automatically set the locale */
+	ret = pk_control_set_locale (control, tid_local, error);
+	if (!ret) {
+		pk_control_error_fixup (error);
 		goto out;
 	}
 

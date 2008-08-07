@@ -5,10 +5,12 @@ pk-marshal.h
 pk-marshal.c
 pkcon
 pkmon
+pkgenpack
 pk-update-icon
 pk-application
 pk-import-desktop
 pk-import-specspo
+pk-generate-package-list
 *.glade.bak
 *.gladep
 *.gladep.bak
@@ -16,4 +18,5 @@ pk-import-specspo
 *.gcda
 *.gcno
 *.out
+*.pack
 

@@ -29,15 +29,19 @@ PK_LIBS =						\
 bin_PROGRAMS =						\
 	pkcon						\
 	pkmon						\
+	pkgenpack					\
 	$(NULL)
 
 libexec_PROGRAMS =					\
 	pk-import-desktop				\
 	pk-import-specspo				\
+	pk-generate-package-list			\
 	$(NULL)
 
 pkcon_SOURCES =						\
 	pk-console.c					\
+	pk-tools-common.c				\
+	pk-tools-common.h				\
 	$(NULL)
 
 pkcon_LDADD =						\
@@ -56,6 +60,29 @@ pkmon_LDADD =						\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
 	$(SELFTEST_LIBS)				\
+	$(NULL)
+
+pkgenpack_SOURCES =					\
+	pk-generate-pack.c				\
+	pk-tools-common.c				\
+	pk-tools-common.h				\
+	$(NULL)
+
+pkgenpack_LDADD = 					\
+	$(TAR_LIBS)					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(PK_LIBS)					\
+	$(SELFTEST_LIBS)				\
+	$(NULL)
+
+pk_generate_package_list_SOURCES =			\
+	pk-generate-package-list.c			\
+	$(NULL)
+
+pk_generate_package_list_LDADD =			\
+	$(GLIB_LIBS)					\
+	$(PK_LIBS)					\
 	$(NULL)
 
 pk_import_desktop_SOURCES =				\

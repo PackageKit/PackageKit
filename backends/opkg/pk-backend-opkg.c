@@ -308,19 +308,22 @@ pk_opkg_package_list_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
 	/* check filters */
 
 	if ((filters & PK_FILTER_ENUM_DEVELOPMENT) && !opkg_is_devel_pkg (pkg))
-		return;
+		goto end_handle;
 	if ((filters & PK_FILTER_ENUM_NOT_DEVELOPMENT) && opkg_is_devel_pkg (pkg))
-		return;
+		goto end_handle;
 	if ((filters & PK_FILTER_ENUM_GUI) && !opkg_is_gui_pkg (pkg))
-		return;
+		goto end_handle;
 	if ((filters & PK_FILTER_ENUM_NOT_GUI) && opkg_is_gui_pkg (pkg))
-		return;
+		goto end_handle;
 	if ((filters & PK_FILTER_ENUM_INSTALLED) && (!pkg->installed))
-		return;
+		goto end_handle;
 	if ((filters & PK_FILTER_ENUM_NOT_INSTALLED) && (pkg->installed))
-		return;
+		goto end_handle;
 
 	pk_backend_package (params->backend, status, uid, pkg->description);
+
+end_handle:
+	g_free(uid);
 
 }
 
@@ -556,7 +559,7 @@ backend_update_package_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	gint err = 0;
-	gchar **package_ids;
+	const gchar *package_id;
 
 	package_id = pk_backend_get_string (backend, "pkgid");
 	pi = pk_package_id_new_from_string (package_id);
@@ -614,6 +617,7 @@ pk_opkg_list_upgradable_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
 		pkg->name, pkg->version, pkg->architecture);
 
 	pk_backend_package (backend, status, uid, pkg->description);
+	g_free(uid);
 }
 
 static gboolean
@@ -661,8 +665,8 @@ backend_get_details_thread (PkBackend *backend)
 	opkg_package_t *pkg;
 	gchar *newid;
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	pi = pk_package_id_new_from_string (package_id);
+	package_ids = pk_backend_get_string (backend, "package_ids");
+	pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL)
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
@@ -694,6 +698,7 @@ backend_get_details_thread (PkBackend *backend)
 
 	pk_backend_details (backend, newid, NULL, group, pkg->description, pkg->url, pkg->size);
 	g_free (newid);
+	opkg_package_free(pkg);
 	pk_backend_finished (backend);
 	return TRUE;
 }

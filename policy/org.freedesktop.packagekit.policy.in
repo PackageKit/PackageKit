@@ -13,9 +13,9 @@
   <vendor_url>http://www.packagekit.org/</vendor_url>
   <icon_name>package-x-generic</icon_name>
 
-  <action id="org.freedesktop.packagekit.install">
-    <_description>Install package</_description>
-    <_message>Authentication is required to install a package</_message>
+  <action id="org.freedesktop.packagekit.package-install">
+    <_description>Install local file</_description>
+    <_message>Authentication is required to install a signed package</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-package</vendor_url>
     <defaults>
@@ -24,9 +24,9 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.localinstall-untrusted">
+  <action id="org.freedesktop.packagekit.package-install-untrusted">
     <_description>Install untrusted local file</_description>
-    <_message>Further authentication is required to install an untrusted local file</_message>
+    <_message>Authentication is required to install an untrusted package</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-file</vendor_url>
     <defaults>
@@ -35,20 +35,10 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.localinstall-trusted">
-    <_description>Install local file</_description>
-    <_message>Authentication is required to install a local file</_message>
-    <icon_name>pk-package-add</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-file</vendor_url>
-    <defaults>
-      <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep_always</allow_active>
-    </defaults>
-  </action>
 
-  <action id="org.freedesktop.packagekit.install-signature">
-    <_description>Install security signature</_description>
-    <_message>Authentication is required to install a security signature</_message>
+  <action id="org.freedesktop.packagekit.system-trust-signing-key">
+    <_description>Trust a key used for signing packages</_description>
+    <_message>Authentication is required to consider a key used for signing packages as trusted</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-signature</vendor_url>
     <defaults>
@@ -57,29 +47,18 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.accept-eula">
+  <action id="org.freedesktop.packagekit.package-eula-accept">
     <_description>Accept EULA</_description>
     <_message>Authentication is required to accept a EULA</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-accept-eula</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep_always</allow_active>
+      <allow_active>yes</allow_active>
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.update-package">
-    <_description>Update package</_description>
-    <_message>Authentication is required to update packages</_message>
-    <icon_name>pk-package-update</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-update</vendor_url>
-    <defaults>
-      <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep_always</allow_active>
-    </defaults>
-  </action>
-
-  <action id="org.freedesktop.packagekit.remove">
+  <action id="org.freedesktop.packagekit.package-remove">
     <_description>Remove package</_description>
     <_message>Authentication is required to remove packages</_message>
     <icon_name>pk-package-delete</icon_name>
@@ -90,9 +69,9 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.update-system">
-    <_description>Update all packages</_description>
-    <_message>Authentication is required to update all packages</_message>
+  <action id="org.freedesktop.packagekit.system-update">
+    <_description>Update packages</_description>
+    <_message>Authentication is required to update packages</_message>
     <icon_name>pk-package-update</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-update-system</vendor_url>
     <defaults>
@@ -101,7 +80,7 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.rollback">
+  <action id="org.freedesktop.packagekit.system-rollback">
     <_description>Rollback to a previous transaction</_description>
     <_message>Authentication is required to rollback a transaction</_message>
     <icon_name>pk-rollback</icon_name>
@@ -112,7 +91,7 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.repo-change">
+  <action id="org.freedesktop.packagekit.system-sources-configure">
     <_description>Change software source parameters</_description>
     <_message>Authentication is required to change software source parameters</_message>
     <icon_name>pk-package-info</icon_name>
@@ -123,9 +102,9 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.refresh-cache">
-    <_description>Refresh package lists</_description>
-    <_message>Authentication is required to refresh the package lists</_message>
+  <action id="org.freedesktop.packagekit.system-sources-refresh">
+    <_description>Refresh system sources</_description>
+    <_message>Authentication is required to refresh the system sources</_message>
     <icon_name>pk-refresh-cache</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-refresh-cache</vendor_url>
     <defaults>
@@ -134,7 +113,7 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.set-proxy">
+  <action id="org.freedesktop.packagekit.system-network-proxy-configure">
     <_description>Set network proxy</_description>
     <_message>Authentication is required to set the network proxy used for downloading packages</_message>
     <icon_name>applications-internet</icon_name>

@@ -21,7 +21,10 @@ pmutils_DATA = 95packagekit
 
 @INTLTOOL_XML_RULE@
 mimedir = $(datadir)/mime/packages
-mime_in_files = packagekit-catalog.xml.in
+mime_in_files = 					\
+	packagekit-catalog.xml.in			\
+	packagekit-pack.xml.in				\
+	$(NULL)						
 mime_DATA = $(mime_in_files:.xml.in=.xml)
 
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d

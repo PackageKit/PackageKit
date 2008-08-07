@@ -322,16 +322,6 @@ libst_package_id (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "parse incorrect package_id from string (null)");
-	temp = NULL;
-	id = pk_package_id_new_from_string (temp);
-	if (id == NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "passed an invalid string '%s'", temp);
-	}
-
-	/************************************************************/
 	libst_title (test, "parse incorrect package_id from string (empty)");
 	temp = "";
 	id = pk_package_id_new_from_string (temp);

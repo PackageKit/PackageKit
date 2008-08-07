@@ -14,7 +14,10 @@
    sodipodi:version="0.32"
    inkscape:version="0.46"
    sodipodi:docname="pk-transactions.svg"
-   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions.png"
+   inkscape:export-xdpi="89.970497"
+   inkscape:export-ydpi="89.970497">
   <defs
      id="defs4">
     <marker
@@ -1271,5 +1274,196 @@
          x="-958.495"
          y="60"
          style="font-size:20px;text-align:center;text-anchor:middle">Manager</tspan></text>
-  </g>
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.41040158;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2590"
+       width="475.0896"
+       height="154.92587"
+       x="29.932425"
+       y="1057.3746"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996" />
+    <rect
+       style="opacity:0.76146785;fill:#ff8080;fill-opacity:1"
+       id="rect2592"
+       width="35"
+       height="144.94287"
+       x="249.92029"
+       y="1062.4193"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996" />
+    <rect
+       style="opacity:0.76146785;fill:#5fd38d;fill-opacity:1"
+       id="rect2594"
+       width="35"
+       height="144.94287"
+       x="34.920288"
+       y="1062.4193"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans;-inkscape-font-specification:Sans"
+       x="-1148.481"
+       y="274.5025"
+       id="text2596"
+       transform="matrix(0,-1,1,0,0,0)"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996"><tspan
+         sodipodi:role="line"
+         id="tspan2598"
+         x="-1148.481"
+         y="274.5025"
+         style="font-size:20px;text-align:center;text-anchor:middle">Client</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.7523787;stroke-linecap:butt;stroke-linejoin:miter;marker-start:url(#Arrow2Mstart);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 459.86334,1152.4194 L 284.92028,1152.4194"
+       id="path2606"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.75172305;stroke-linecap:butt;stroke-linejoin:miter;marker-start:url(#Arrow2Mstart);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 75.059877,1082.3903 L 249.93173,1082.3903"
+       id="path2610"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans;-inkscape-font-specification:Sans"
+       x="164.3997"
+       y="1077.3903"
+       id="text2612"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996"><tspan
+         sodipodi:role="line"
+         id="tspan2614"
+         x="164.3997"
+         y="1077.3903"
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;font-family:Sans;-inkscape-font-specification:Sans">GetTid()</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.39060569;stroke-linecap:butt;stroke-linejoin:miter;marker-start:url(#Arrow2Mstart);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 245.03003,1092.3972 L 119.6421,1092.3972 L 110,1082.3622"
+       id="path2616"
+       sodipodi:nodetypes="ccc"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans;-inkscape-font-specification:Sans"
+       x="370.26013"
+       y="1147.4194"
+       id="text2618"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996"><tspan
+         sodipodi:role="line"
+         id="tspan2620"
+         x="370.26013"
+         y="1147.4194"
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;font-family:Sans;-inkscape-font-specification:Sans">InstallPackage(p)</tspan></text>
+    <rect
+       style="opacity:0.76146785;fill:#8d5fd3;fill-opacity:1"
+       id="rect2628"
+       width="35"
+       height="69.970947"
+       x="464.86035"
+       y="1137.3912"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans;-inkscape-font-specification:Sans"
+       x="-1171.0731"
+       y="490"
+       id="text2630"
+       transform="matrix(0,-1,1,0,0,0)"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996"><tspan
+         sodipodi:role="line"
+         id="tspan2632"
+         x="-1171.0731"
+         y="490"
+         style="font-size:20px;text-align:center;text-anchor:middle">Tran</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.7523787;stroke-linecap:butt;stroke-linejoin:miter;marker-start:url(#Arrow2Mstart);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 290,1192.3622 L 464.94306,1192.3622"
+       id="path2634"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans;-inkscape-font-specification:Sans"
+       x="381.12277"
+       y="1187.3621"
+       id="text2636"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996"><tspan
+         sodipodi:role="line"
+         id="tspan2638"
+         x="381.12277"
+         y="1187.3621"
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;font-family:Sans;-inkscape-font-specification:Sans">::Finished(failed)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans;-inkscape-font-specification:Sans"
+       x="-1133.495"
+       y="60"
+       id="text2640"
+       transform="matrix(0,-1,1,0,0,0)"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996"><tspan
+         sodipodi:role="line"
+         id="tspan2642"
+         x="-1133.495"
+         y="60"
+         style="font-size:20px;text-align:center;text-anchor:middle">Manager</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.75172305;stroke-linecap:butt;stroke-linejoin:miter;marker-start:url(#Arrow2Mstart);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 75.12815,1127.3622 L 250,1127.3622"
+       id="path2644"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans;-inkscape-font-specification:Sans"
+       x="164.46797"
+       y="1122.3621"
+       id="text2646"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/html/pk-transactions-set-locale.png"
+       inkscape:export-xdpi="90.089996"
+       inkscape:export-ydpi="90.089996"><tspan
+         sodipodi:role="line"
+         id="tspan2648"
+         x="164.46797"
+         y="1122.3621"
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;font-family:Sans;-inkscape-font-specification:Sans">SetLocale()</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot2650"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:40px;-inkscape-font-specification:Sans;font-stretch:normal;font-variant:normal"><flowRegion
+         id="flowRegion2652"><rect
+           id="rect2654"
+           width="268.70059"
+           height="42.426407"
+           x="-0.50507629"
+           y="1106.4054" /></flowRegion><flowPara
+         id="flowPara2656"></flowPara></flowRoot>  </g>
 </svg>

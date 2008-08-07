@@ -105,32 +105,30 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 	g_return_val_if_fail (security != NULL, NULL);
 	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
 
-	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		policy = "org.freedesktop.packagekit.update-package";
-	} else if (role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		policy = "org.freedesktop.packagekit.update-system";
-	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-		policy = "org.freedesktop.packagekit.remove";
-	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
-		policy = "org.freedesktop.packagekit.install";
-	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && trusted) {
-		policy = "org.freedesktop.packagekit.localinstall-trusted";
-	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && !trusted) {
-		policy = "org.freedesktop.packagekit.localinstall-untrusted";
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		policy = "org.freedesktop.packagekit.system-update";
 	} else if (role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
-		policy = "org.freedesktop.packagekit.install-signature";
-	} else if (role == PK_ROLE_ENUM_ACCEPT_EULA) {
-		policy = "org.freedesktop.packagekit.accept-eula";
+		policy = "org.freedesktop.packagekit.system-trust-signing-key";
 	} else if (role == PK_ROLE_ENUM_ROLLBACK) {
-		policy = "org.freedesktop.packagekit.rollback";
+		policy = "org.freedesktop.packagekit.system-rollback";
 	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
 		   role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		policy = "org.freedesktop.packagekit.repo-change";
+		policy = "org.freedesktop.packagekit.system-sources-configure";
 	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		policy = "org.freedesktop.packagekit.refresh-cache";
-	/* PRIVATE: not actually roles */
+		policy = "org.freedesktop.packagekit.system-sources-refresh";
 	} else if (role == PK_ROLE_ENUM_SET_PROXY_PRIVATE) {
-		policy = "org.freedesktop.packagekit.refresh-cache";
+		policy = "org.freedesktop.packagekit.system-network-proxy-configure";
+	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		policy = "org.freedesktop.packagekit.package-remove";
+	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+		policy = "org.freedesktop.packagekit.package-install";
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && trusted) {
+		policy = "org.freedesktop.packagekit.package-install";
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && !trusted) {
+		policy = "org.freedesktop.packagekit.package-install-untrusted";
+	} else if (role == PK_ROLE_ENUM_ACCEPT_EULA) {
+		policy = "org.freedesktop.packagekit.package-eula-accept";
 	}
 	return policy;
 }

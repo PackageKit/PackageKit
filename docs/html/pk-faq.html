@@ -204,6 +204,17 @@ custom dialogs</a> without running the extra session process, then use libpackag
 If you don't care, and just want things to <i>work</i> then
 <a href="http://www.packagekit.org/pk-faq.html#session-methods">use the session interface</a>.
 </p>
+<p>
+If you want a demo, you can download <a href="files/session.c">session.c</a> for a
+session example and <a href="files/system.c">system.c</a> as a system example.
+</p>
+<p>
+Compile with:
+</p>
+<pre>
+gcc -o session -Wall session.c `pkg-config --cflags --libs dbus-glib-1`
+gcc -o system -Wall system.c `pkg-config --cflags --libs packagekit`
+</pre>
 
 <hr>
 <h3><a name="session-methods">How do I use PackageKit in my application?</a></h3>

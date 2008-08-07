@@ -44,6 +44,8 @@ gboolean	 pk_package_obj_free			(PkPackageObj		*obj);
 PkPackageObj	*pk_package_obj_copy			(const PkPackageObj	*obj);
 gboolean	 pk_package_obj_equal			(const PkPackageObj	*obj1,
 							 const PkPackageObj	*obj2);
+gchar		*pk_package_obj_to_string		(const PkPackageObj	*obj);
+PkPackageObj	*pk_package_obj_from_string		(const gchar		*text);
 
 #endif /* __PK_PACKAGE_OBJ_H */
 

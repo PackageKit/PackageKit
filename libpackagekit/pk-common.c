@@ -186,6 +186,65 @@ pk_iso8601_difference (const gchar *isodate)
 }
 
 /**
+ * pk_iso8601_from_date:
+ * @isodate: a %GDate to convert
+ *
+ * Return value: If valid then a new ISO8601 date, else NULL
+ **/
+gchar *
+pk_iso8601_from_date (const GDate *date)
+{
+	gsize retval;
+	gchar iso_date[128];
+
+	if (date == NULL)
+		return NULL;
+	retval = g_date_strftime (iso_date, 128, "%F", date);
+	if (retval == 0)
+		return NULL;
+	return g_strdup (iso_date);
+}
+
+/**
+ * pk_iso8601_to_date:
+ * @isodate: The ISO8601 date to convert
+ *
+ * Return value: If valid then a new %GDate, else NULL
+ **/
+GDate *
+pk_iso8601_to_date (const gchar *iso_date)
+{
+	gboolean ret;
+	guint retval;
+	guint d, m, y;
+	GTimeVal time;
+	GDate *date = NULL;
+
+	if (pk_strzero (iso_date))
+		goto out;
+
+	/* try to parse complete ISO8601 date */
+	ret = g_time_val_from_iso8601 (iso_date, &time);
+	if (ret) {
+		date = g_date_new ();
+		g_date_set_time_val (date, &time);
+		goto out;
+	}
+
+	/* g_time_val_from_iso8601() blows goats and won't
+	 * accept a valid ISO8601 formatted date without a
+	 * time value - try and parse this case */
+	retval = sscanf (iso_date, "%i-%i-%i", &y, &m, &d);
+	if (retval == 3) {
+		date = g_date_new_dmy (d, m, y);
+		goto out;
+	}
+	pk_warning ("could not parse '%s'", iso_date);
+out:
+	return date;
+}
+
+/**
  * pk_strvalidate_char:
  * @item: A single char to test
  *
@@ -432,20 +491,17 @@ pk_strsplit (const gchar *id, guint parts)
 	gchar **sections = NULL;
 
 	if (id == NULL) {
-		pk_warning ("ident is null!");
 		goto out;
 	}
 
 	/* split by delimeter ';' */
 	sections = g_strsplit (id, ";", 0);
 	if (g_strv_length (sections) != parts) {
-		pk_warning ("ident '%s' is invalid (sections=%d)", id, g_strv_length (sections));
 		goto out;
 	}
 
 	/* name has to be valid */
 	if (pk_strzero (sections[0])) {
-		pk_warning ("ident first section is empty");
 		goto out;
 	}
 
@@ -675,6 +731,33 @@ pk_ptr_array_to_argv (GPtrArray *array)
 
 	return strv_array;
 }
+
+/**
+ * pk_argv_to_ptr_array:
+ * @array: the gchar** array of strings
+ *
+ * Form a GPtrArray array of strings.
+ * The data in the array is copied.
+ *
+ * Return value: the string array, or %NULL if invalid
+ **/
+GPtrArray *
+pk_argv_to_ptr_array (gchar **array)
+{
+	guint i;
+	guint length;
+	GPtrArray *parray;
+
+	g_return_val_if_fail (array != NULL, NULL);
+
+	parray = g_ptr_array_new ();
+	length = g_strv_length (array);
+	for (i=0; i<length; i++) {
+		g_ptr_array_add (parray, g_strdup (array[i]));
+	}
+	return parray;
+}
+
 
 /**
  * pk_va_list_to_argv_string:

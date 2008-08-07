@@ -8,10 +8,32 @@
     <doc:doc>
       <doc:description>
         <doc:para>
-          The transaction interface is used for interacting with indervidual transactions.
+          The transaction interface is used for interacting with individual transactions.
         </doc:para>
       </doc:description>
     </doc:doc>
+
+    <!--*****************************************************************************************-->
+    <method name="SetLocale">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method allows the calling session to set a system locale for
+            the package manager so that summaries and descriptions can be
+            correctly localised.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="code" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The locale code, for example <literal>en_GB</literal>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
 
     <!--*****************************************************************************************-->
     <method name="AcceptEula">
@@ -320,7 +342,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The estimated remamining time of the transaction, or 0 if not known.
+              The estimated remaining time of the transaction, or 0 if not known.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -425,11 +447,12 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="package_id" direction="out">
+      <arg type="s" name="text" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The original package_id that was used to start the transaction.
+              The original search terms or package names that are used to start the transaction.
+              Multiple entries are split using <literal>;</literal>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1845,7 +1868,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The timespec of the old transaction.
+              The timespec of the old transaction in ISO8601 format.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1923,7 +1946,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A list of package_id's that are to be obsoleted, seporated by <literal>^</literal>
+              A list of package_id's that are to be obsoleted, separated by <literal>^</literal>
               This will change in 0.3.x where <literal>obsoletes</literal> will be a proper string
               array field.
             </doc:para>
@@ -1976,6 +1999,43 @@
             <doc:para>
               The update text describing the update in a non-localised way.
               Newlines should be converted to <literal>;</literal> before printed.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="changelog" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The ChangeLog text describing the changes since the last version.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="state" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The state of the update, e.g. <literal>stable</literal> or
+              <literal>testing</literal>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="issued" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The ISO8601 encoded date that the update was issued.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="updated" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The ISO8601 encoded date that the update was updated.
             </doc:para>
           </doc:summary>
         </doc:doc>

@@ -43,6 +43,10 @@ typedef struct
 	gchar				*cve_url;
 	PkRestartEnum			 restart;
 	gchar				*update_text;
+	gchar				*changelog;
+	PkUpdateStateEnum		 state;
+	GDate				*issued;
+	GDate				*updated;
 } PkUpdateDetailObj;
 
 PkUpdateDetailObj	*pk_update_detail_obj_new		(void);
@@ -54,7 +58,11 @@ PkUpdateDetailObj	*pk_update_detail_obj_new_from_data	(const PkPackageId	*id,
 								 const gchar		*bugzilla_url,
 								 const gchar		*cve_url,
 								 PkRestartEnum		 restart,
-								 const gchar		*update_text);
+								 const gchar		*update_text,
+								 const gchar		*changelog,
+								 PkUpdateStateEnum	 state,
+								 GDate			*issued,
+								 GDate			*updated);
 gboolean		 pk_update_detail_obj_free		(PkUpdateDetailObj	*obj);
 
 G_END_DECLS

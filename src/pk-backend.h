@@ -60,6 +60,8 @@ gboolean	 pk_backend_set_exit_code		(PkBackend	*backend,
 							 PkExitEnum	 exit);
 gboolean	 pk_backend_set_transaction_data	(PkBackend	*backend,
 							 const gchar	*data);
+gboolean	 pk_backend_set_locale			(PkBackend	*backend,
+							 const gchar	*code);
 
 /* get the state */
 const gchar	*pk_backend_get_current_tid		(PkBackend	*backend);
@@ -74,6 +76,7 @@ gboolean	 pk_backend_get_progress		(PkBackend	*backend,
 guint		 pk_backend_get_runtime			(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_ftp		(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);
+gchar		*pk_backend_get_locale			(PkBackend	*backend);
 
 /* signal helpers */
 gboolean	 pk_backend_finished			(PkBackend	*backend);
@@ -93,7 +96,11 @@ gboolean	 pk_backend_update_detail		(PkBackend	*backend,
 							 const gchar	*bugzilla_url,
 							 const gchar	*cve_url,
 							 PkRestartEnum	 restart,
-							 const gchar	*update_text);
+							 const gchar	*update_text,
+							 const gchar	*changelog,
+							 PkUpdateStateEnum state,
+							 const gchar	*issued,
+							 const gchar	*updated);
 gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 							 PkRestartEnum	 restart,
 							 const gchar	*details);
