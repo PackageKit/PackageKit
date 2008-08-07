@@ -7,13 +7,13 @@ SUBDIRS = 						\
 	policy						\
 	etc						\
 	man						\
-	contrib						\
 	data						\
 	libselftest					\
 	libpackagekit					\
 	src						\
 	client						\
 	backends					\
+	contrib						\
 	python						\
 	docs						\
 	$(NULL)

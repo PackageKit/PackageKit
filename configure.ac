@@ -244,6 +244,33 @@ if test x$enable_local = xyes; then
 fi
 
 dnl ---------------------------------------------------------------------------
+dnl - Checks for contrib/packagekit-plugin
+dnl ---------------------------------------------------------------------------
+
+PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
+                  build_browser_plugin=yes, build_browser_plugin=no)
+
+AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
+		 
+AC_SUBST(PK_PLUGIN_CFLAGS)
+AC_SUBST(PK_PLUGIN_LIBS)
+
+if test $build_browser_plugin = "yes"; then
+	# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
+
+	packagekit_save_CPPFLAGS="$CPPFLAGS"
+	packagekit_save_LDFLAGS="$LDFLAGS"
+
+	CPPFLAGS="$CPPFLAGS $PLUGIN_CFLAGS"
+	LDFLAGS="$CPPFLAGS $PLUGIN_LIBS"
+
+	AC_CHECK_FUNCS(gdk_app_launch_context_new)
+
+	CPPFLAGS="$packagekit_save_CPPFLAGS"
+	LDFLAGS="$packagekit_save_LDFLAGS"
+fi
+
+dnl ---------------------------------------------------------------------------
 dnl - Other tests
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(gcov, AS_HELP_STRING([--enable-gcov],[compile with coverage profiling instrumentation (gcc only)]),
@@ -499,6 +526,7 @@ docs/api/Makefile
 docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
+contrib/packagekit-plugin/Makefile
 contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
@@ -560,6 +588,7 @@ echo "
         Security framework:        ${with_security_framework}
         Networking stack:          ${with_networking_stack}
         GIO support:               ${with_gio}
+        Browser Plugin: 	   ${build_browser_plugin}
 
         Backends:
         ALPM backend:              ${enable_alpm}

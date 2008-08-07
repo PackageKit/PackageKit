@@ -7,8 +7,8 @@ client/pk-import-desktop.c
 client/pk-import-specspo.c
 client/pk-monitor.c
 client/pk-tools-common.c
+contrib/packagekit-plugin/src/contents.cpp
 data/packagekit-catalog.xml.in
 data/packagekit-pack.xml.in
 policy/org.freedesktop.packagekit.policy.in
 src/pk-main.c
-
