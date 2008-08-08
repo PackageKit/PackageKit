@@ -302,13 +302,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         for pkg_id in pkg_ids:
             if self._is_canceled(): return
-            name, version, arch, data = self.get_package_from_id(pkg_id)
-            if not self._cache.has_key(name):
+            pkg = self._find_package_by_id(pkg_id)
+            if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                                "Package %s isn't available" % name)
                 self.Finished(EXIT_FAILED)
                 return
-            pkg = self._cache[name]
             #FIXME: should perhaps go to python-apt since we need this in
             #       several applications
             desc = pkg.description
