@@ -302,8 +302,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         for pkg_id in pkg_ids:
             if self._is_canceled(): return
-            import pdb
-            pdb.set_trace()
             name, version, arch, data = self.get_package_from_id(pkg_id)
             if not self._cache.has_key(name):
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
