@@ -23,6 +23,7 @@ dist_helper_DATA = 			\
 	resolve.py			\
 	update-packages.py		\
 	install-files.py		\
+	install-signature.py		\
 	refresh-cache.py		\
 	what-provides.py		\
 	update-system.py		\
