@@ -291,42 +291,46 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    def GetDetails(self, pkg_id):
+    def doGetDetails(self, pkg_ids):
         '''
         Implement the {backend}-get-details functionality
         '''
-        pklog.info("Get details of %s" % pkg_id)
+        pklog.info("Get details of %s" % pkg_ids)
         self.StatusChanged(STATUS_INFO)
         self.NoPercentageUpdates()
-        self.AllowCancel(False)
+        self.AllowCancel(True)
         self._check_init(progress=False)
-        name, version, arch, data = self.get_package_from_id(pkg_id)
-        if not self._cache.has_key(name):
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s isn't available" % name)
-            self.Finished(EXIT_FAILED)
-            return
-        pkg = self._cache[name]
-        #FIXME: should perhaps go to python-apt since we need this in
-        #       several applications
-        desc = pkg.description
-        # Skip the first line - it's a duplicate of the summary
-        i = desc.find('\n')
-        desc = desc[i+1:]
-        # do some regular expression magic on the description
-        # Add a newline before each bullet
-        p = re.compile(r'^(\s|\t)*(\*|0|-)',re.MULTILINE)
-        desc = p.sub(ur'\n\u2022', desc)
-        # replace all newlines by spaces
-        p = re.compile(r'\n', re.MULTILINE)
-        desc = p.sub(" ", desc)
-        # replace all multiple spaces by newlines
-        p = re.compile(r'\s\s+', re.MULTILINE)
-        desc = p.sub('\n', desc)
-        #FIXME: group and licence information missing
-        self.Details(pkg_id, 'unknown', 'unknown', desc,
+        for pkg_id in pkg_ids:
+            if self._is_canceled(): return
+            import pdb
+            pdb.set_trace()
+            name, version, arch, data = self.get_package_from_id(pkg_id)
+            if not self._cache.has_key(name):
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package %s isn't available" % name)
+                self.Finished(EXIT_FAILED)
+                return
+            pkg = self._cache[name]
+            #FIXME: should perhaps go to python-apt since we need this in
+            #       several applications
+            desc = pkg.description
+            # Skip the first line - it's a duplicate of the summary
+            i = desc.find('\n')
+            desc = desc[i+1:]
+            # do some regular expression magic on the description
+            # Add a newline before each bullet
+            p = re.compile(r'^(\s|\t)*(\*|0|-)',re.MULTILINE)
+            desc = p.sub(ur'\n\u2022', desc)
+            # replace all newlines by spaces
+            p = re.compile(r'\n', re.MULTILINE)
+            desc = p.sub(" ", desc)
+            # replace all multiple spaces by newlines
+            p = re.compile(r'\s\s+', re.MULTILINE)
+            desc = p.sub('\n', desc)
+            #FIXME: group and licence information missing
+            self.Details(pkg_id, 'unknown', 'unknown', desc,
                          pkg.homepage, pkg.packageSize)
-        self.Finished(EXIT_SUCCESS)
+            self.Finished(EXIT_SUCCESS)
 
     @threaded
     @async
@@ -571,6 +575,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.debug("Locking cache")
         self._locked.acquire()
 
+    def _is_canceled(self):
+        '''
+        Check if the current action was canceled. If so send the corresponding
+        error code.
+        '''
+        if self._canceled.isSet():
+            self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
+                           "The search was canceled")
+            self.Finished(EXIT_KILL)
+            self._canceled.clear()
+            return True
+        else:
+            return False
+ 
     def _unlock_cache(self):
         '''
         Unlock the cache
