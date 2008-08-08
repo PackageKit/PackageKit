@@ -503,7 +503,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Print a list of requires for a given package
         '''
-        pklog.info("GetRequires(%s,%s,%s)" % (filters,package,recursive))
+        pklog.info("GetRequires(%s,%s,%s)" % (filters,package_ids,recursive))
         self.doGetRequires(filters,package,recursive)
 
     def doGetRequires(self,filters,package,recursive):
@@ -605,8 +605,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-install functionality
         '''
-        pklog.info("InstallPackages(%s)" % ",".join(packages))
-        self.doInstallPackages(packages)
+        pklog.info("InstallPackages(%s)" % package_ids)
+        self.doInstallPackages(package_ids)
 
     def doInstallPackages(self,package_ids):
         '''
@@ -657,8 +657,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-update-packages functionality
         '''
-        pklog.info("UpdatePackages(%s)" % ",".join(packages))
-        self.doUpdatePackages(packages)
+        pklog.info("UpdatePackages(%s)" % package_ids)
+        self.doUpdatePackages(package_ids)
 
     def doUpdatePackages(self,package_ids):
         '''
@@ -674,9 +674,9 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-remove functionality
         '''
-        pklog.info("RemovePackages(%s,%s,%s)" % (packages,allowdep,
-                                                   autoremove))
-        self.doRemovePackages(packages,allowdep,autoremove)
+        pklog.info("RemovePackages(%s,%s,%s)" % (package_ids,allowdep,
+                                                 autoremove))
+        self.doRemovePackages(package_ids,allowdep,autoremove)
 
     def doRemovePackages(self,package_ids,allowdep,autoremove):
         '''
@@ -692,7 +692,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Print a detailed details for a given package
         '''
-        pklog.info("GetDetails(%s)" % package)
+        pklog.info("GetDetails(%s)" % package_ids)
         self.doGetDetails(package)
 
     def doGetDetails(self,package_ids):
@@ -709,8 +709,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the get-files method
         '''
-        pklog.info("GetFiles(%s)" % package)
-        self.doGetFiles( package)
+        pklog.info("GetFiles(%s)" % package_ids)
+        self.doGetFiles(package_ids)
 
     def doGetFiles(self,package_ids):
         '''
@@ -777,8 +777,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
-        pklog.info("GetUpdateDetail(%s)" % package)
-        self.doGetUpdateDetail(package)
+        pklog.info("GetUpdateDetail(%s)" % package_ids)
+        self.doGetUpdateDetail(package_ids)
 
     def doGetUpdateDetail(self,package_ids):
         '''
