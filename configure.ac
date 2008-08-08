@@ -103,7 +103,7 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
-AC_CHECK_HEADERS([libtar.h])
+AC_CHECK_HEADERS(libtar.h, [AC_DEFINE(HAVE_LIBTAR_H)], [AC_MSG_ERROR([Can't find libtar.h. Please install libtar.])])
 TAR_LIBS=-ltar
 AC_SUBST(TAR_LIBS)
 
