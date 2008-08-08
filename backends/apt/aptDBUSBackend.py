@@ -121,19 +121,23 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         #FIXME: use the Message method to notify the user
         self._backend.error(ERROR_UNKNOWN,
                             "Medium change needed")
-
 class PackageKitInstallProgress(apt.progress.InstallProgress):
     '''
     Handle the installation and removal process. Bits taken from
     DistUpgradeViewNonInteractive.
     '''
+
+    # a insanly long timeout to be able to kill hanging maintainer
+    # scripts
+    TIMEOUT = 10*60
+
     def __init__(self, backend, prange=(0,100)):
         apt.progress.InstallProgress.__init__(self)
         self._backend = backend
-        self.timeout = 900
         self.pstart = prange[0]
         self.pend = prange[1]
         self.pprev = None
+        self.conffile_prompts = set()
 
     def statusChange(self, pkg, percent, status):
         progress = self.pstart + percent/100 * (self.pend - self.pstart)
@@ -146,12 +150,33 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         self._backend.StatusChanged(STATUS_INSTALL)
         self.last_activity = time.time()
 
+    def fork(self):
+        pklog.debug("fork()")
+        (pid, self.master_fd) = pty.fork()
+        return pid
+
     def updateInterface(self):
-        pklog.debug("Updating interface")
+        #pklog.debug("Updating interface")
         apt.progress.InstallProgress.updateInterface(self)
+        try:
+            pklog.debug("%s" % os.read(self.master_fd, 512))
+        except Exception, e:
+            pklog.debug("ioerror: %s" % e)
+        # we timed out, send ctrl-c
+        if self.last_activity + self.TIMEOUT < time.time():
+            pklog.critical("no activity for %s time sending ctrl-c" % self.TIMEOUT)
+            os.write(self.master_fd, 3)
 
     def conffile(self, current, new):
-        pklog.critical("Config file prompt: '%s'" % current)
+        pklog.warning("Config file prompt: '%s' (sending no)" % current)
+        i = os.write(self.master_fd, "n\n")
+        pklog.debug("wrote n, send %i bytes" % i)
+        self.conffile_prompts.add(new)
+    
+    def finishUpdate(self):
+        pklog.debug("finishUpdate()")
+        if self.conffile_prompts:
+            self._backend.Message(MESSAGE_NOTICE, "The following conffile prompts were found and need investiagtion: %s" % "\n".join(self.conffile_prompts))
 
 def sigquit(signum, frame):
     pklog.error("Was killed")
@@ -413,6 +438,59 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    def doUpdatePackages(self, ids):
+        '''
+        Implement the {backend}-update functionality
+        '''
+        pklog.info("Updating package with id %s" % ids)
+        self.StatusChanged(STATUS_INSTALL)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        self.StatusChanged(STATUS_RUNNING)
+        pkgs=[]
+        for id in ids:
+            pkg = self._find_package_by_id(id)
+            if pkg == None:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package %s isn't available" % id)
+                self.Finished(EXIT_FAILED)
+                return
+            if not pkg.isUpgradable:
+                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,
+                               "Package %s is already installed" % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
+            pkgs.append(pkg.name[:])
+            try:
+                pkg.markUpgrade()
+            except:
+                self._open_cache(prange=(90,100))
+                self.ErrorCode(ERROR_UNKNOWN, "%s could not be queued for "
+                                              "installation" % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
+        try:
+            self._cache.commit(PackageKitFetchProgress(self, prange=(10,50)),
+                               PackageKitInstallProgress(self, prange=(50,90)))
+        except Exception, e:
+            pklog.warning("exception %s during commit()" % e)
+            self._open_cache(prange=(90,100))
+            self.ErrorCode(ERROR_UNKNOWN, "Installation failed")
+            self.Finished(EXIT_FAILED)
+            return
+        self._open_cache(prange=(90,100))
+        self.PercentageChanged(100)
+        pklog.debug("Checking success of operation")
+        for p in pkgs:
+            if not self._cache.has_key(p) or not self._cache[p].isInstalled:
+                self.ErrorCode(ERROR_UNKNOWN, "%s was not installed" % p)
+                self.Finished(EXIT_FAILED)
+                return
+        pklog.debug("Sending success signal")
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
     def doInstallPackages(self, ids):
         '''
         Implement the {backend}-install functionality
@@ -447,7 +525,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             self._cache.commit(PackageKitFetchProgress(self, prange=(10,50)),
                                PackageKitInstallProgress(self, prange=(50,90)))
-        except:
+        except Exception, e:
+            pklog.warning("exception %s during commit()" % e)
             self._open_cache(prange=(90,100))
             self.ErrorCode(ERROR_UNKNOWN, "Installation failed")
             self.Finished(EXIT_FAILED)
