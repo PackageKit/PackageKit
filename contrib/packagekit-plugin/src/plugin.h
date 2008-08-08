@@ -62,7 +62,7 @@ public:
     int getY() { return mY; }
     int getWidth() { return mWidth; }
     int getHeight() { return mHeight; }
-    
+
 private:
     NPP mInstance;
     NPBool mInitialized;

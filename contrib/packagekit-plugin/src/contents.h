@@ -68,7 +68,7 @@ public:
     virtual ~PkpContents();
 
     void setPlugin(PkpPluginInstance *plugin);
-    
+
     void draw(cairo_t *cr);
     void buttonPress(int x, int y, Time time);
     void buttonRelease(int x, int y, Time time);
@@ -83,7 +83,7 @@ private:
     void installPackage(Time time);
 
     int getLinkIndex(int x, int y);
-    
+
     void setStatus(PackageStatus status);
     PackageStatus getStatus() { return mStatus; }
     void setAvailableVersion(const char *version);
@@ -95,13 +95,11 @@ private:
                       guint32 link_color);
     void clearLayout();
     void refresh();
-    
+
     void removeClient(PkClient *client);
-    
-    static void onClientPackage(PkClient 	   *client,
-                                PkInfoEnum	    info,
-                                const gchar	   *package_id,
-                                const gchar	   *summary,
+
+    static void onClientPackage(PkClient           *client,
+                                const PkPackageObj *obj,
                                 PkpContents        *contents);
     static void onClientErrorCode(PkClient	   *client,
                                   PkErrorCodeEnum  code,
@@ -111,7 +109,7 @@ private:
                                  PkExitEnum	   exit,
                                  guint		   runtime,
                                  PkpContents      *contents);
-    
+
     static void onInstallPackageFinished(DBusGProxy     *proxy,
                                          DBusGProxyCall *call,
                                          void           *user_data);
@@ -126,7 +124,7 @@ private:
     std::string mDisplayName;
     std::vector<std::string> mPackageNames;
     std::vector<std::string> mDesktopNames;
-    
+
     PangoLayout *mLayout;
 
     std::vector<PkClient *> mClients;

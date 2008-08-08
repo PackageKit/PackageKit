@@ -123,7 +123,7 @@ void PkpContents::recheck()
     mStatus = IN_PROGRESS;
     mAvailableVersion = "";
     mAvailablePackageName = "";
-    
+
     for (std::vector<std::string>::iterator i = mPackageNames.begin(); i != mPackageNames.end(); i++) {
         GError *error = NULL;
         PkClient *client = pk_client_new();
@@ -212,7 +212,7 @@ static void
 append_markup(GString *str, const char *format, ...)
 {
     va_list vap;
-    
+
     va_start(vap, format);
     char *tmp = g_markup_vprintf_escaped(format, vap);
     va_end(vap);
@@ -239,7 +239,7 @@ set_source_from_rgba(cairo_t *cr,
                           ((rgba & 0x00ff0000) >> 16) / 255.,
                           ((rgba & 0x0000ff00) >> 8) / 255.,
                           (rgba & 0x000000ff) / 255.);
-                          
+
 }
 
 /* Retrieve the system colors and fonts.
@@ -275,7 +275,7 @@ get_style(PangoFontDescription **font_desc,
     *link = rgba_from_gdk_color(&link_color);
 
     *font_desc = pango_font_description_copy(window->style->font_desc);
-   
+
     gtk_widget_destroy(window);
 }
 
@@ -285,10 +285,10 @@ PkpContents::ensureLayout(cairo_t              *cr,
                           guint32               link_color)
 {
     GString *markup = g_string_new(NULL);
-    
+
     if (mLayout)
         return;
-    
+
     mLayout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(mLayout, font_desc);
 
@@ -321,7 +321,7 @@ PkpContents::ensureLayout(cairo_t              *cr,
                               _("\n<span color='#%06x' underline='single'>Run now</span>"),
                               link_color >> 8);
         }
-        
+
         append_markup(markup, _("\n<span color='#%06x' underline='single'>Upgrade to version %s</span>"),
                       link_color >> 8,
                       mAvailableVersion.c_str());
@@ -352,7 +352,7 @@ PkpContents::refresh()
     if (mPlugin != 0)
         mPlugin->refresh();
 }
-                               
+
 void
 PkpContents::setPlugin(PkpPluginInstance *plugin)
 {
@@ -364,7 +364,7 @@ PkpContents::draw(cairo_t *cr)
 {
     guint32 foreground, background, link;
     PangoFontDescription *font_desc;
-    
+
     get_style(&font_desc, &foreground, &background, &link);
 
     set_source_from_rgba(cr, background);
@@ -385,7 +385,7 @@ PkpContents::draw(cairo_t *cr)
     pango_cairo_show_layout(cr, mLayout);
 }
 
-/* Cut and paste from pango-layout.c; determines if a layout iter is on 
+/* Cut and paste from pango-layout.c; determines if a layout iter is on
  * a line terminated by a real line break (rather than a line break from
  * wrapping). We use this to determine whether the empty run at the end
  * of a display line should be counted as a break between links or not.
@@ -429,7 +429,7 @@ int
 PkpContents::getLinkIndex(int x, int y)
 {
     /* Coordinates are relative to origin of plugin (different from drawing) */
-    
+
     if (!mLayout)
         return -1;
 
@@ -447,13 +447,13 @@ PkpContents::getLinkIndex(int x, int y)
     int seen_links = 0;
     bool in_link = false;
     int result = -1;
-    
+
     while (TRUE) {
         PangoLayoutRun *run = pango_layout_iter_get_run(iter);
         if (run) {
             PangoItem *item = run->item;
             PangoUnderline uline = PANGO_UNDERLINE_NONE;
-            
+
             for (GSList *l = item->analysis.extra_attrs; l; l = l->next) {
                 PangoAttribute *attr = (PangoAttribute *)l->data;
                 if (attr->klass->type == PANGO_ATTR_UNDERLINE) {
@@ -481,11 +481,11 @@ PkpContents::getLinkIndex(int x, int y)
             if (line_is_terminated(iter))
                 in_link = FALSE;
         }
-        
+
         if (!pango_layout_iter_next_run (iter))
             break;
     }
-    
+
     pango_layout_iter_free(iter);
 
     return result;
@@ -502,7 +502,7 @@ PkpContents::buttonRelease(int x, int y, Time time)
     int index = getLinkIndex(x, y);
     if (index < 0)
         return;
-    
+
     switch (mStatus) {
     case IN_PROGRESS:
     case INSTALLING:
@@ -554,10 +554,10 @@ static gboolean
 validate_name(const char *name)
 {
     const char *p;
-    
+
     for (p = name; *p; p++) {
         char c = *p;
-        
+
         if (!((c >= 'A' && c <= 'Z') ||
               (c >= 'a' && c <= 'z') ||
               (c >= '0' && c <= '9') ||
@@ -583,7 +583,7 @@ PkpContents::findAppInfo()
         char *id = g_strconcat(i->c_str(), ".desktop", NULL);
         GDesktopAppInfo *desktopAppInfo = g_desktop_app_info_new(id);
         g_free(id);
-        
+
         if (desktopAppInfo) {
             mAppInfo = G_APP_INFO(desktopAppInfo);
             break;
@@ -593,12 +593,12 @@ PkpContents::findAppInfo()
     if (mAppInfo != 0)
         setStatus(INSTALLED);
 }
-                  
+
 void
 PkpContents::runApplication (Time time)
 {
     GError *error = NULL;
-    
+
     if (mAppInfo == 0) {
         g_warning("Didn't find application to launch");
         return;
@@ -611,7 +611,7 @@ PkpContents::runApplication (Time time)
 #ifdef HAVE_GDK_APP_LAUNCH_CONTEXT_NEW
     context = gdk_app_launch_context_new();
     gdk_app_launch_context_set_timestamp(time);
-#endif    
+#endif
 
     if (!g_app_info_launch(mAppInfo, NULL, context, &error)) {
         g_warning("%s\n", error->message);
@@ -652,35 +652,34 @@ PkpContents::installPackage (Time time)
                                                                G_TYPE_STRING, mAvailablePackageName.c_str(),
                                                                G_TYPE_INVALID,
                                                                G_TYPE_INVALID);
-    
+
      setStatus(INSTALLING);
 }
 
 void
-PkpContents::onClientPackage(PkClient	  *client,
-                                  PkInfoEnum	   info,
-                                  const gchar	   *package_id,
-                                  const gchar	   *summary,
-                                  PkpContents *contents)
+PkpContents::onClientPackage(PkClient	        *client,
+                             const PkPackageObj *obj,
+                             PkpContents        *contents)
 {
-    PkPackageId *id = pk_package_id_new_from_string(package_id);
-    
-    if (info == PK_INFO_ENUM_AVAILABLE) {
+    /* if we didn't use displayname, use the summary */
+    if (contents->mDisplayName.size() == 0)
+        contents->mDisplayName = obj->summary;
+
+    /* parse the data */
+    if (obj->info == PK_INFO_ENUM_AVAILABLE) {
         if (contents->getStatus() == IN_PROGRESS)
             contents->setStatus(AVAILABLE);
         else if (contents->getStatus() == INSTALLED)
             contents->setStatus(UPGRADABLE);
-        contents->setAvailableVersion(id->version);
-        contents->setAvailablePackageName(id->name);
-    } else if (info == PK_INFO_ENUM_INSTALLED) {
+        contents->setAvailableVersion(obj->id->version);
+        contents->setAvailablePackageName(obj->id->name);
+    } else if (obj->info == PK_INFO_ENUM_INSTALLED) {
         if (contents->getStatus() == IN_PROGRESS)
             contents->setStatus(INSTALLED);
         else if (contents->getStatus() == AVAILABLE)
             contents->setStatus(UPGRADABLE);
-        contents->setInstalledVersion(id->version);
+        contents->setInstalledVersion(obj->id->version);
     }
-    
-    pk_package_id_free(id);
 }
 
 void
@@ -698,29 +697,28 @@ PkpContents::onClientFinished(PkClient	    *client,
                               PkExitEnum     exit,
                               guint	     runtime,
                               PkpContents   *contents)
-    
+
 {
     contents->removeClient(client);
 }
-    
+
 void
 PkpContents::onInstallPackageFinished (DBusGProxy       *proxy,
                                        DBusGProxyCall   *call,
                                        void             *user_data)
 {
     PkpContents *contents = (PkpContents *)user_data;
-    
+
     GError *error = NULL;
-    if (!dbus_g_proxy_end_call(proxy, call, &error, 
+    if (!dbus_g_proxy_end_call(proxy, call, &error,
                                G_TYPE_INVALID)) {
         g_warning("Error occurred during install: %s", error->message);
         g_clear_error(&error);
-        
     }
 
     g_object_unref(contents->mInstallPackageProxy);
     contents->mInstallPackageProxy = 0;
     contents->mInstallPackageCall = 0;
-    
+
     contents->recheck();
 }
