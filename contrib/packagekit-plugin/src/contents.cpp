@@ -51,6 +51,7 @@
 #include <gio/gdesktopappinfo.h>
 
 #include "pk-package-id.h"
+#include "pk-package-ids.h"
 
 #include "plugin.h"
 
@@ -126,7 +127,9 @@ void PkpContents::recheck()
     for (std::vector<std::string>::iterator i = mPackageNames.begin(); i != mPackageNames.end(); i++) {
         GError *error = NULL;
         PkClient *client = pk_client_new();
-        if (!pk_client_resolve(client, PK_FILTER_ENUM_NONE, i->c_str(), &error)) {
+        gchar **package_ids;
+        package_ids = pk_package_ids_from_id (i->c_str());
+        if (!pk_client_resolve(client, PK_FILTER_ENUM_NONE, package_ids, &error)) {
             g_warning("%s", error->message);
             g_clear_error(&error);
             g_object_unref(client);
@@ -136,6 +139,7 @@ void PkpContents::recheck()
             g_signal_connect(client, "finished", G_CALLBACK(onClientFinished), this);
             mClients.push_back(client);
         }
+        g_strfreev (package_ids);
     }
 
     findAppInfo();
