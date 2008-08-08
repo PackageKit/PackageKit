@@ -291,6 +291,41 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    def doGetUpdateDetails(self, pkg_ids):
+        '''
+        Implement the {backend}-get-update-details functionality
+        '''
+        pklog.info("Get update details of %s" % pkg_ids)
+        self.StatusChanged(STATUS_INFO)
+        self.NoPercentageUpdates()
+        self.AllowCancel(True)
+        self._check_init(progress=False)
+        for pkg_id in pkg_ids:
+            if self._is_canceled(): return
+            pkg = self._find_package_by_id(pkg_id)
+            if pkg == None:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package %s isn't available" % name)
+                self.Finished(EXIT_FAILED)
+                return
+            # FIXME add some real data
+            updates = pkg_id
+            obsoletes = ""
+            vendor_url = ""
+            bugzilla_url = ""
+            cvs_url = ""
+            restart = ""
+            update_text = ""
+            changelog = ""
+            state = ""
+            issued = ""
+            updated = ""
+            self.UpdateDetail(pkg_id, updates, obsoletes, vendor_url,
+                              bugzilla_url, cvs_url, restart, update_text,
+                              changelog, state, issued, updated)
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
     def doGetDetails(self, pkg_ids):
         '''
         Implement the {backend}-get-details functionality

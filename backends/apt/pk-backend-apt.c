@@ -141,6 +141,15 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_get_update_detail:
+ *  */
+static void
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_dbus_get_update_detail (dbus, package_ids);
+}
+
+/**
  *  * pk_backend_search_details:
  *   */
 static void
@@ -202,7 +211,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_packages,			/* get_packages */
 	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
+	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,					/* install_files */
 	backend_install_packages,		/* install_packages */
