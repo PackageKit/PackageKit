@@ -533,14 +533,14 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ssb',out_signature='')
-    def GetDepends(self,filters,package,recursive):
+    def GetDepends(self,filters,package_ids,recursive):
         '''
         Print a list of depends for a given package
         '''
-        pklog.info("GetDepends(%s,%s,%s)" % (filters,package,recursive))
-        self.doGetDepends(package,recursive)
+        pklog.info("GetDepends(%s,%s,%s)" % (filters,package_ids,recursive))
+        self.doGetDepends(package_ids,recursive)
 
-    def doGetDepends(self,package,recursive):
+    def doGetDepends(self,package_ids,recursive):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -693,7 +693,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Print a detailed details for a given package
         '''
         pklog.info("GetDetails(%s)" % package_ids)
-        self.doGetDetails(package)
+        self.doGetDetails(package_ids)
 
     def doGetDetails(self,package_ids):
         '''
