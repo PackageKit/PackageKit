@@ -64,44 +64,50 @@ class PackageKitClient:
 
     def _wrapPackageCall(self, pk_xn, method):
         '''
-        Wraps a call which emits Finished, ErrorCode on completion and Package for information
-        returns a list of dicts with 'installed', 'id' and 'summary' keys
+        Wraps a call which emits Finished, ErrorCode on completion and
+        Package for information returns a list of dicts with
+        'installed', 'id' and 'summary' keys
         '''
 
         result = []
-        package_cb = lambda i, id, summary: result.append({'installed' : (i == 'installed'),
-                                                           'id': (str(id)),
-                                                           'summary' : str(summary)
-                                                           }
-                                                          )
+        package_cb = lambda i, id, summary: result.append(
+            {'installed' : (i == 'installed'),
+             'id': (str(id)),
+             'summary' : str(summary)
+             })
         self._wrapCall(pk_xn, method, {'Package' : package_cb})
         return result
 
     def _wrapDetailsCall(self, pk_xn, method):
         '''
-        Wraps a call which emits Finished, ErrorCode on completion and Details for information
-        returns a list of dicts with 'id', 'license', 'group', 'description', 'upstream_url', 'size'.keys
+        Wraps a call which emits Finished, ErrorCode on completion and
+        Details for information returns a list of dicts with 'id',
+        'license', 'group', 'description', 'upstream_url', 'size'.keys
         '''
         result = []
-        details_cb = lambda id, license, group, detail, url, size: result.append({"id" : str(id),
-                                                                                  "license" : str(license),
-                                                                                  "group" : str(group),
-                                                                                  "detail" : str(detail),
-                                                                                  "url" : str(url),
-                                                                                  "size" : int(size)}
-                                                                                 )
+        details_cb = lambda id, license, group, detail, url, size: result.append
+        ({"id" : str(id),
+          "license" : str(license),
+          "group" : str(group),
+          "detail" : str(detail),
+          "url" : str(url),
+          "size" : int(size)
+          })
+
         self._wrapCall(pk_xn, method, {'Details' : details_cb})
         return result
 
     def _wrapReposCall(self, pk_xn, method):
         '''
-        Wraps a call which emits Finished, ErrorCode and RepoDetail for information
-        returns a list of dicts with 'id', 'description', 'enabled' keys
+        Wraps a call which emits Finished, ErrorCode and RepoDetail
+        for information returns a list of dicts with 'id',
+        'description', 'enabled' keys
         '''
         result = []
-        repo_cb = lambda id, description, enabled: result.append({'id' : str(id),
-                                                                  'desc' : str(description),
-                                                                  'enabled' : enabled})
+        repo_cb = lambda id, description, enabled: result.append
+        ({'id' : str(id),
+          'desc' : str(description),
+          'enabled' : enabled})
         self._wrapCall(pk_xn, method, {'RepoDetail' : repo_cb})
         return result
 
@@ -116,22 +122,25 @@ class PackageKitClient:
             pass
 
     def Resolve(self, filter, package):
-        '''Resolve a package name to a PackageKit package_id.
+        '''
+        Resolve a package name to a PackageKit package_id filter and
+        package are directly passed to the PackageKit transaction
+        D-BUS method Resolve()
 
-        filter and package are directly passed to the PackageKit transaction D-BUS
-        method Resolve()
-
-        Return Dict with keys of (installed, id, short_description) for all matches,
-        where installed is a boolean and id and short_description are strings.
+        Return Dict with keys of (installed, id, short_description)
+        for all matches, where installed is a boolean and id and
+        short_description are strings.
         '''
         xn = self._get_xn()
         return self._wrapPackageCall(xn, lambda : xn.Resolve(filter, package))
 
 
     def GetDetails(self, package_id):
-        '''Get details about a PackageKit package_id.
+        '''
+        Get details about a PackageKit package_id.
 
-        Return dict with keys (id, license, group, description, upstream_url, size).
+        Return dict with keys (id, license, group, description,
+        upstream_url, size).
         '''
         xn = self._get_xn()
         return self._wrapDetailsCall(xn, lambda : xn.GetDetails(package_id))
@@ -148,7 +157,8 @@ class PackageKitClient:
         Search a packages details.
         '''
         xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.SearchDetails(filter, name))
+        return self._wrapPackageCall(xn,
+                                     lambda : xn.SearchDetails(filter, name))
 
 
     def InstallPackages(self, package_ids, progress_cb=None):
@@ -161,6 +171,7 @@ class PackageKitClient:
 
         On failure this throws a PackageKitError or a DBusException.
         '''
+        self._auth()
         self._InstRemovePackages(package_ids, progress_cb, True, None, None)
 
     def RemovePackages(self, package_ids, progress_cb=None, allow_deps=False,
@@ -217,7 +228,8 @@ class PackageKitClient:
 
     def GetUpdates(self, filter=None):
         '''
-        This method should return a list of packages that are installed and are upgradable.
+        This method should return a list of packages that are installed and
+        are upgradable.
 
         It should only return the newest update for each installed package.
         '''
@@ -228,11 +240,13 @@ class PackageKitClient:
 
     def UpdateSystem(self):
         '''
-        This method should return a list of packages that are installed and are upgradable.
+        This method should return a list of packages that are
+        installed and are upgradable.
 
         It should only return the newest update for each installed package.
         '''
         xn = self._get_xn()
+        self._auth()
         self._wrapPackageCall(xn, lambda : xn.UpdateSystem())
 
 
@@ -273,6 +287,16 @@ class PackageKitClient:
             # directly, so delay it a bit
             gobject.timeout_add(10, _cancel, pk_xn)
 
+    def _auth(self):
+        policykit = self.bus.get_object(
+            'org.freedesktop.PolicyKit.AuthenticationAgent', '/',
+            'org.freedesktop.PolicyKit.AuthenticationAgent')
+        if(policykit == None):
+           print("Error: Could not get PolicyKit D-Bus Interface\n")
+        granted = policykit.ObtainAuthorization("org.freedesktop.packagekit.update-system",
+                                                (dbus.UInt32)(xid),
+                                                (dbus.UInt32)(os.getpid()))
+
     def _InstRemovePackages(self, package_ids, progress_cb, install,
         allow_deps, auto_remove):
         '''Shared implementation of InstallPackages and RemovePackages.'''
@@ -310,7 +334,8 @@ class PackageKitClient:
                 e._dbus_error_name == 'org.freedesktop.DBus.Error.ServiceUnknown'):
                 # first initialization (lazy) or timeout
                 self.pk_control = dbus.Interface(self.bus.get_object(
-                    'org.freedesktop.PackageKit', '/org/freedesktop/PackageKit',
+                        'org.freedesktop.PackageKit',
+                        '/org/freedesktop/PackageKit',
                     False), 'org.freedesktop.PackageKit')
                 tid = self.pk_control.GetTid()
             else:
