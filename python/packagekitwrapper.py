@@ -53,7 +53,7 @@ class PackageKitClient:
         for cb in callbacks.keys():
             pk_xn.connect_to_signal(cb, callbacks[cb])
 
-        method()
+        polkit_auth_wrapper(method)
         self._wait()
         if self._error_enum:
             raise PackageKitError(self._error_enum)
@@ -171,7 +171,6 @@ class PackageKitClient:
 
         On failure this throws a PackageKitError or a DBusException.
         '''
-        self._auth()
         self._InstRemovePackages(package_ids, progress_cb, True, None, None)
 
     def RemovePackages(self, package_ids, progress_cb=None, allow_deps=False,
@@ -246,7 +245,6 @@ class PackageKitClient:
         It should only return the newest update for each installed package.
         '''
         xn = self._get_xn()
-        self._auth()
         self._wrapPackageCall(xn, lambda : xn.UpdateSystem())
 
 
@@ -344,6 +342,36 @@ class PackageKitClient:
         return dbus.Interface(self.bus.get_object('org.freedesktop.PackageKit',
             tid, False), 'org.freedesktop.PackageKit.Transaction')
 
+#### PolicyKit authentication borrowed wrapper ##
+class PermissionDeniedByPolicy(dbus.DBusException):
+    _dbus_error_name = 'org.freedesktop.PackageKit.PermissionDeniedByPolicy'
+
+
+def polkit_auth_wrapper(fn, *args, **kwargs):
+    '''Function call wrapper for PolicyKit authentication.
+
+    Call fn(*args, **kwargs). If it fails with a PermissionDeniedByPolicy
+    and the caller can authenticate to get the missing privilege, the PolicyKit
+    authentication agent is called, and the function call is attempted again.
+    '''
+    try:
+        return fn(*args, **kwargs)
+    except dbus.DBusException, e:
+        if e._dbus_error_name == PermissionDeniedByPolicy._dbus_error_name:
+            # last words in message are privilege and auth result
+            (priv, auth_result) = e.message.split()[-2:]
+            if auth_result.startswith('auth_'):
+                pk_auth = dbus.Interface(dbus.SessionBus().get_object(
+                    'org.freedesktop.PolicyKit.AuthenticationAgent', '/', False),
+                    'org.freedesktop.PolicyKit.AuthenticationAgent')
+                # TODO: provide xid
+                res = pk_auth.ObtainAuthorization(priv, dbus.UInt32(0),
+                    dbus.UInt32(os.getpid()), timeout=300)
+                if res:
+                    return fn(*args, **kwargs)
+            raise PermissionDeniedByPolicy(priv + ' ' + auth_result)
+        else:
+            raise
 
 #
 # Test code
