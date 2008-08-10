@@ -632,7 +632,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    def doResolve(self, filters, name):
+    def doResolve(self, filters, names):
         '''
         Implement the apt2-resolve functionality
         '''
@@ -643,18 +643,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
 
         #FIXME: Support candidates
-        pkg = None
-        if self._cache.has_key(name):
-            pkg = self._cache[name]
-            if not self._is_package_visible(pkg, filters):
-                pkg = None
-        if pkg:
-            self._emit_package(pkg)
-            self.Finished(EXIT_SUCCESS)
-        else:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                           "Package name %s could not be resolved" % name)
-            self.Finished(EXIT_FAILED)
+        for name in names:
+            pkg = None
+            if self._cache.has_key(name):
+                pkg = self._cache[name]
+                if not self._is_package_visible(pkg, filters):
+                    pkg = None
+            if pkg:
+                self._emit_package(pkg)
+                self.Finished(EXIT_SUCCESS)
+            else:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package name %s could not be resolved" % name)
+                self.Finished(EXIT_FAILED)
 
     @threaded
     def doGetDepends(self, filters, pkg_ids, recursive=False):
