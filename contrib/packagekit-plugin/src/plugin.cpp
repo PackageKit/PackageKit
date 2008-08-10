@@ -99,14 +99,14 @@ NPError NS_PluginInitialize()
 {
     if (module_handle != 0) /* Already initialized */
         return NPERR_NO_ERROR;
-    
+
     make_module_resident();
-    
+
 #ifdef ENABLE_NLS
     bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif
-    
+
     return NPERR_NO_ERROR;
 }
 
@@ -141,7 +141,7 @@ nsPluginInstanceBase * NS_NewPluginInstance(nsPluginCreateData * aCreateDataStru
     const char *displayName = "";
     const char *packageNames = NULL;
     const char *desktopNames = NULL;
-    
+
     if(!aCreateDataStruct)
         return NULL;
 
@@ -153,12 +153,12 @@ nsPluginInstanceBase * NS_NewPluginInstance(nsPluginCreateData * aCreateDataStru
         else if (strcmp(aCreateDataStruct->argn[i], "desktopnames") == 0)
             desktopNames = aCreateDataStruct->argv[i];
     }
-      
+
     PkpPluginInstance * plugin = new PkpPluginInstance(aCreateDataStruct->instance, displayName, packageNames, desktopNames);
-  
+
     NPN_SetValue(aCreateDataStruct->instance,
                  NPPVpluginWindowBool, (void *)FALSE);
-  
+
     return plugin;
 }
 
@@ -194,7 +194,7 @@ NPBool PkpPluginInstance::init(NPWindow* aWindow)
 {
     if(aWindow == NULL)
         return FALSE;
-  
+
     if (SetWindow(aWindow))
         mInitialized = TRUE;
 	
@@ -231,14 +231,14 @@ NPError PkpPluginInstance::SetWindow(NPWindow* aWindow)
     mY = aWindow->y;
     mWidth = aWindow->width;
     mHeight = aWindow->height;
-  
+
     mWindow = (Window) aWindow->window;
     NPSetWindowCallbackStruct *ws_info = (NPSetWindowCallbackStruct *)aWindow->ws_info;
     mDisplay = ws_info->display;
     mVisual = ws_info->visual;
     mDepth = ws_info->depth;
     mColormap = ws_info->colormap;
-  
+
     return NPERR_NO_ERROR;
 }
 
@@ -248,15 +248,15 @@ PkpPluginInstance::refresh()
     NPRect rect;
 
     /* Coordinates here are relative to the plugin's origin (mX,mY) */
-    
+
     rect.left = 0;
     rect.right =  mWidth;
     rect.top = 0;
     rect.bottom = mHeight;
-    
+
     NPN_InvalidateRect(mInstance, &rect);
 }
-                               
+
 uint16
 PkpPluginInstance::HandleEvent(void *event)
 {
@@ -277,7 +277,7 @@ PkpPluginInstance::HandleEvent(void *event)
 
             cairo_destroy(cr);
             cairo_surface_destroy(surface);
-            
+
             return 1;
         }
     case ButtonPress:

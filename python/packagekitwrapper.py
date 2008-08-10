@@ -53,7 +53,7 @@ class PackageKitClient:
         for cb in callbacks.keys():
             pk_xn.connect_to_signal(cb, callbacks[cb])
 
-        method()
+        polkit_auth_wrapper(method)
         self._wait()
         if self._error_enum:
             raise PackageKitError(self._error_enum)
@@ -64,44 +64,50 @@ class PackageKitClient:
 
     def _wrapPackageCall(self, pk_xn, method):
         '''
-        Wraps a call which emits Finished, ErrorCode on completion and Package for information
-        returns a list of dicts with 'installed', 'id' and 'summary' keys
+        Wraps a call which emits Finished, ErrorCode on completion and
+        Package for information returns a list of dicts with
+        'installed', 'id' and 'summary' keys
         '''
 
         result = []
-        package_cb = lambda i, id, summary: result.append({'installed' : (i == 'installed'),
-                                                           'id': (str(id)),
-                                                           'summary' : str(summary)
-                                                           }
-                                                          )
+        package_cb = lambda i, id, summary: result.append(
+            {'installed' : (i == 'installed'),
+             'id': (str(id)),
+             'summary' : str(summary)
+             })
         self._wrapCall(pk_xn, method, {'Package' : package_cb})
         return result
 
     def _wrapDetailsCall(self, pk_xn, method):
         '''
-        Wraps a call which emits Finished, ErrorCode on completion and Details for information
-        returns a list of dicts with 'id', 'license', 'group', 'description', 'upstream_url', 'size'.keys
+        Wraps a call which emits Finished, ErrorCode on completion and
+        Details for information returns a list of dicts with 'id',
+        'license', 'group', 'description', 'upstream_url', 'size'.keys
         '''
         result = []
-        details_cb = lambda id, license, group, detail, url, size: result.append({"id" : str(id),
-                                                                                  "license" : str(license),
-                                                                                  "group" : str(group),
-                                                                                  "detail" : str(detail),
-                                                                                  "url" : str(url),
-                                                                                  "size" : int(size)}
-                                                                                 )
+        details_cb = lambda id, license, group, detail, url, size: result.append
+        ({"id" : str(id),
+          "license" : str(license),
+          "group" : str(group),
+          "detail" : str(detail),
+          "url" : str(url),
+          "size" : int(size)
+          })
+
         self._wrapCall(pk_xn, method, {'Details' : details_cb})
         return result
 
     def _wrapReposCall(self, pk_xn, method):
         '''
-        Wraps a call which emits Finished, ErrorCode and RepoDetail for information
-        returns a list of dicts with 'id', 'description', 'enabled' keys
+        Wraps a call which emits Finished, ErrorCode and RepoDetail
+        for information returns a list of dicts with 'id',
+        'description', 'enabled' keys
         '''
         result = []
-        repo_cb = lambda id, description, enabled: result.append({'id' : str(id),
-                                                                  'desc' : str(description),
-                                                                  'enabled' : enabled})
+        repo_cb = lambda id, description, enabled: result.append
+        ({'id' : str(id),
+          'desc' : str(description),
+          'enabled' : enabled})
         self._wrapCall(pk_xn, method, {'RepoDetail' : repo_cb})
         return result
 
@@ -116,22 +122,25 @@ class PackageKitClient:
             pass
 
     def Resolve(self, filter, package):
-        '''Resolve a package name to a PackageKit package_id.
+        '''
+        Resolve a package name to a PackageKit package_id filter and
+        package are directly passed to the PackageKit transaction
+        D-BUS method Resolve()
 
-        filter and package are directly passed to the PackageKit transaction D-BUS
-        method Resolve()
-
-        Return Dict with keys of (installed, id, short_description) for all matches,
-        where installed is a boolean and id and short_description are strings.
+        Return Dict with keys of (installed, id, short_description)
+        for all matches, where installed is a boolean and id and
+        short_description are strings.
         '''
         xn = self._get_xn()
         return self._wrapPackageCall(xn, lambda : xn.Resolve(filter, package))
 
 
     def GetDetails(self, package_id):
-        '''Get details about a PackageKit package_id.
+        '''
+        Get details about a PackageKit package_id.
 
-        Return dict with keys (id, license, group, description, upstream_url, size).
+        Return dict with keys (id, license, group, description,
+        upstream_url, size).
         '''
         xn = self._get_xn()
         return self._wrapDetailsCall(xn, lambda : xn.GetDetails(package_id))
@@ -148,7 +157,8 @@ class PackageKitClient:
         Search a packages details.
         '''
         xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.SearchDetails(filter, name))
+        return self._wrapPackageCall(xn,
+                                     lambda : xn.SearchDetails(filter, name))
 
 
     def InstallPackages(self, package_ids, progress_cb=None):
@@ -217,7 +227,8 @@ class PackageKitClient:
 
     def GetUpdates(self, filter=None):
         '''
-        This method should return a list of packages that are installed and are upgradable.
+        This method should return a list of packages that are installed and
+        are upgradable.
 
         It should only return the newest update for each installed package.
         '''
@@ -228,7 +239,8 @@ class PackageKitClient:
 
     def UpdateSystem(self):
         '''
-        This method should return a list of packages that are installed and are upgradable.
+        This method should return a list of packages that are
+        installed and are upgradable.
 
         It should only return the newest update for each installed package.
         '''
@@ -273,6 +285,16 @@ class PackageKitClient:
             # directly, so delay it a bit
             gobject.timeout_add(10, _cancel, pk_xn)
 
+    def _auth(self):
+        policykit = self.bus.get_object(
+            'org.freedesktop.PolicyKit.AuthenticationAgent', '/',
+            'org.freedesktop.PolicyKit.AuthenticationAgent')
+        if(policykit == None):
+           print("Error: Could not get PolicyKit D-Bus Interface\n")
+        granted = policykit.ObtainAuthorization("org.freedesktop.packagekit.update-system",
+                                                (dbus.UInt32)(xid),
+                                                (dbus.UInt32)(os.getpid()))
+
     def _InstRemovePackages(self, package_ids, progress_cb, install,
         allow_deps, auto_remove):
         '''Shared implementation of InstallPackages and RemovePackages.'''
@@ -310,7 +332,8 @@ class PackageKitClient:
                 e._dbus_error_name == 'org.freedesktop.DBus.Error.ServiceUnknown'):
                 # first initialization (lazy) or timeout
                 self.pk_control = dbus.Interface(self.bus.get_object(
-                    'org.freedesktop.PackageKit', '/org/freedesktop/PackageKit',
+                        'org.freedesktop.PackageKit',
+                        '/org/freedesktop/PackageKit',
                     False), 'org.freedesktop.PackageKit')
                 tid = self.pk_control.GetTid()
             else:
@@ -319,6 +342,36 @@ class PackageKitClient:
         return dbus.Interface(self.bus.get_object('org.freedesktop.PackageKit',
             tid, False), 'org.freedesktop.PackageKit.Transaction')
 
+#### PolicyKit authentication borrowed wrapper ##
+class PermissionDeniedByPolicy(dbus.DBusException):
+    _dbus_error_name = 'org.freedesktop.PackageKit.PermissionDeniedByPolicy'
+
+
+def polkit_auth_wrapper(fn, *args, **kwargs):
+    '''Function call wrapper for PolicyKit authentication.
+
+    Call fn(*args, **kwargs). If it fails with a PermissionDeniedByPolicy
+    and the caller can authenticate to get the missing privilege, the PolicyKit
+    authentication agent is called, and the function call is attempted again.
+    '''
+    try:
+        return fn(*args, **kwargs)
+    except dbus.DBusException, e:
+        if e._dbus_error_name == PermissionDeniedByPolicy._dbus_error_name:
+            # last words in message are privilege and auth result
+            (priv, auth_result) = e.message.split()[-2:]
+            if auth_result.startswith('auth_'):
+                pk_auth = dbus.Interface(dbus.SessionBus().get_object(
+                    'org.freedesktop.PolicyKit.AuthenticationAgent', '/', False),
+                    'org.freedesktop.PolicyKit.AuthenticationAgent')
+                # TODO: provide xid
+                res = pk_auth.ObtainAuthorization(priv, dbus.UInt32(0),
+                    dbus.UInt32(os.getpid()), timeout=300)
+                if res:
+                    return fn(*args, **kwargs)
+            raise PermissionDeniedByPolicy(priv + ' ' + auth_result)
+        else:
+            raise
 
 #
 # Test code

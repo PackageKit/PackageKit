@@ -12,7 +12,7 @@ will show:
  | Version: 20061119-14.fc9           |
  +------------------------------------+
 
-Click on the plugin, and it will fire off gpk-install-package to install the package;
+Click on the plugin, and it asks the session service to install the package;
 the display changes to:
 
  +------------------------------------+
@@ -35,17 +35,17 @@ Security Considerations
 The design as a plugin is specifically meant to avoid revealing information about installed
 applications to the web page. None of the information in the plugin is revealed in the DOM
 tree. It might be possible to guess at results by subtle timing attacks, but it would at
-best be a probalistic thing.
+best be a probabilistic thing.
 
-Wweb pages probably can trick the user into clicking on the plugin
-and installing or running apps they dont' want to install or run:
+Web pages probably can trick the user into clicking on the plugin
+and installing or running applications they dont' want to install or run:
 
  - The application title is supplied by the web page
  - The web page could put elements over the plugin to make it appear
 
 (The second is why I consider the first to be acceptable.) However, importantly, the
 only applications that could be installed in that way are applications from the package
-repository already configured for the system. The only applications that can be run in 
+repository already configured for the system. The only applications that can be run in
 this way are applications already on the system. And there is no ability to pass command
 line arguments or files to the applications. So, the security risk should be minimal.
 
@@ -54,21 +54,21 @@ Accessibility
 
 The design as a plugin (for the above security considerations) causes some problems for
 accessibility. In particular, there is no access into the plugin for screenreaders
-or other assistive technologies. Making this work would require the existence of a 
+or other assistive technologies. Making this work would require the existence of a
 system for integrating accessibility support between the browser and plugins, which,
 to my knowledge does not exist at the moment.
 
-Keynav is also missing at the moment, but could be added quite easily. (Basically,
-the Return keypress just needs to be treated like clicking on the plugin.)
+Keyboard navigation is also missing at the moment, but could be added quite easily.
+(Basically, the Return keypress just needs to be treated like clicking on the plugin.)
 
 The fonts, font sizes, and colors used in the plugin come from the system theme, so they
-should not pose a problem for users with special needs. (But see discussion of 
+should not pose a problem for users with special needs. (But see discussion of
 sizing below.)
 
 Cross Browser Support
 =====================
 
-The plugins acts as a standard windowless plugin, so it shouldn't be restricted
+The plugin acts as a standard windowless plugin, so it shouldn't be restricted
 to working in Firefox or in Gecko-based browsers.
 
 The plugin does assume that the toolkit hosting the browser is GTK+ for a couple
@@ -82,7 +82,7 @@ These could be fixed if necessary. (Use XSETTINGS directly for fonts and colors,
 just skip the timestamp and let the newly launched app get placed in the
 background if not running GTK+ and no timestamp is provided.)
 
-More deeply, the plugin requires that the GLib main loop be running, so that 
+More deeply, the plugin requires that the GLib main loop be running, so that
 libpackagekit can receive asynchronous notifications from the PackageKit daemon.
 So, getting it to work in Konqueror is going to be hard unless Qt has been
 compiled to use the GLib main loop.
@@ -98,7 +98,7 @@ packagekit-plugin builds with the standard:
 
 Instead of doing 'make install', you can symlink .libs/packagekit-plugin into
 ~/.mozilla/plugins. Then you can restart your browser and load the HTML page
-under tests/. 
+under tests/.
 
 If you do this, you probably want to delete the symlink when you are
 done so that it doesn't interfere with a system install of the plugin.
@@ -106,7 +106,7 @@ done so that it doesn't interfere with a system install of the plugin.
 Using
 =====
 
-dd the following code to your web page:
+Add the following code to your web page:
 
     <object type="application/x-packagekit-plugin" width="300" height="150">
       <!-- Name that will be used in the user interface -->
@@ -119,7 +119,7 @@ dd the following code to your web page:
 
 Unfortunately browser plugins have no mechanism for size negotiation, so you
 have to specify a predetermined size in some fashion. You can do it with the pixel
-sizes as above, or you can do it with CSS using 'em' sizes or percentage 
+sizes as above, or you can do it with CSS using 'em' sizes or percentage
 lengths. For example, you could have in your CSS:
 
       .packagekit-plugin {
@@ -149,3 +149,4 @@ src/ is new code written by Red Hat, Inc.
 
 Owen Taylor <otaylor@redhat.com>
 July 24, 2008
+

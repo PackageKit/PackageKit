@@ -198,7 +198,7 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	TAR *t;
 	FILE *file;
 	guint i;
-	const gchar *src;
+	gchar *src;
 	gchar *dest;
 
 	file = g_fopen (tarfilename, "a+");
@@ -211,7 +211,7 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 
 	/* add each of the files */
 	for (i=0; i<file_array->len; i++) {
-		src = (const gchar *) g_ptr_array_index (file_array, i);
+		src = (gchar *) g_ptr_array_index (file_array, i);
 		dest =  g_path_get_basename (src);
 
 		/* add file to archive */
@@ -224,6 +224,7 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 
 		/* delete file */
 		g_remove (src);
+		g_free (src);
 
 		/* free the stripped filename */
 		g_free (dest);
@@ -410,7 +411,7 @@ main (int argc, char *argv[])
 	PkControl *control = NULL;
 	PkRoleEnum roles;
 	const gchar *package_list = NULL;
-	const gchar *tempdir = NULL;
+	gchar *tempdir = NULL;
 	gboolean exists;
 	gboolean overwrite;
 
@@ -474,7 +475,7 @@ main (int argc, char *argv[])
 	}
 
 	/* download packages to a temporary directory */
-	tempdir = g_strconcat (g_get_tmp_dir (), "/pack", NULL);
+	tempdir = g_build_filename (g_get_tmp_dir (), "pack", NULL);
 
 	/* check if file exists before we overwrite it */
 	exists = g_file_test (pack_filename, G_FILE_TEST_EXISTS);
@@ -509,6 +510,8 @@ main (int argc, char *argv[])
 out:
 	/* get rid of temp directory */
 	g_rmdir (tempdir);
+	
+	g_free (tempdir);
 	g_free (packname);
 	g_free (with_package_list);
 	g_free (options_help);
