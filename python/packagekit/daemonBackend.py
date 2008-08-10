@@ -538,9 +538,9 @@ class PackageKitBaseBackend(dbus.service.Object):
         Print a list of depends for a given package
         '''
         pklog.info("GetDepends(%s,%s,%s)" % (filters,package_ids,recursive))
-        self.doGetDepends(package_ids,recursive)
+        self.doGetDepends(filters,package_ids,recursive)
 
-    def doGetDepends(self,package_ids,recursive):
+    def doGetDepends(self,filters,package_ids,recursive):
         '''
         Should be replaced in the corresponding backend sub class
         '''
