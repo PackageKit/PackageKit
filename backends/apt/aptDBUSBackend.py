@@ -291,7 +291,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    def doGetUpdateDetails(self, pkg_ids):
+    def doGetUpdateDetail(self, pkg_ids):
         '''
         Implement the {backend}-get-update-details functionality
         '''
