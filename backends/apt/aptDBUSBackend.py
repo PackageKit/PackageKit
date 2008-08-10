@@ -656,6 +656,45 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package name %s could not be resolved" % name)
             self.Finished(EXIT_FAILED)
 
+    @threaded
+    def doGetDepends(self, filters, pkg_ids, recursive=False):
+        '''
+        Implement the apt2-get-depends functionality
+        '''
+        pklog.info("Get depends (%s,%s,%s)" % (filters, pkg_ids, recursive))
+        #FIXME: recursive is not yet implemented
+        if recursive == True:
+            pkglog.warn("Recursive dependencies are not yet implemented")
+        self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(True)
+
+        for pkg_id in pkg_ids:
+            if self._is_canceled(): return
+            pkg = self._find_package_by_id(pkg_id)
+            if pkg == None:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package %s isn't available" % name)
+                self.Finished(EXIT_FAILED)
+                return
+            for dep in pkg.candidateDependencies:
+                # FIXME: Support or dependencies
+                # FIXME: Support provides
+                for b_dep in dep.or_dependencies:
+                    # FIXME: Take version numbers into account
+                    if self._cache.has_key(b_dep.name):
+                        if self._is_package_visible(self._cache[b_dep.name],
+                                                    filters):
+                            self._emit_package(self._cache[b_dep.name])
+                    else:
+                        self.Package(INFO_UNKNOWN,
+                                     "%s;%s;%s;" % (b_dep.name, b_dep.version,
+                                                    pkg.architecture),
+                                     "Unknown package")
+        self.Finished(EXIT_SUCCESS)
+
+
     # Helpers
 
     def _open_cache(self, prange=(0,100), progress=True):
