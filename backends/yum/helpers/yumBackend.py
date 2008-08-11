@@ -954,6 +954,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
             except yum.Errors.InstallError,e:
                 self.error(ERROR_LOCAL_INSTALL_FAILED,str(e))
+	shutil.rmtree(tempdir)
 
     def _check_local_file(self, pkg):
         """
