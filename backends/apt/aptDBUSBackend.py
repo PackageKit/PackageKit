@@ -259,7 +259,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if self._canceled.isSet():
                 self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
                                "The search was canceled")
-                self.Finished(EXIT_KILL)
+                self.Finished(EXIT_KILLED)
                 self._canceled.clear()
                 return
             elif search in pkg.name and self._is_package_visible(pkg, filters):
@@ -328,7 +328,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if self._canceled.isSet():
                 self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
                                "Calculating updates was canceled")
-                self.Finished(EXIT_KILL)
+                self.Finished(EXIT_KILLED)
                 self._canceled.clear()
                 return
             else:
@@ -440,7 +440,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except apt.cache.FetchCancelledException:
             self._open_cache(prange=(95,100))
             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
-            self.Finished(EXIT_KILL)
+            self.Finished(EXIT_KILLED)
             self._canceled.clear()
             return
         except:
@@ -653,7 +653,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except apt.cache.FetchCancelledException:
             self._canceled.clear()
             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
-            self.Finished(EXIT_KILL)
+            self.Finished(EXIT_KILLED)
             return
         except:
             self._open_cache(prange=(95,100))
@@ -678,7 +678,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if self._canceled.isSet():
                 self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
                                "The search was canceled")
-                self.Finished(EXIT_KILL)
+                self.Finished(EXIT_KILLED)
                 self._canceled.clear()
                 return
             elif self._is_package_visible(pkg, filters):
@@ -813,7 +813,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if self._canceled.isSet():
             self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
                            "The search was canceled")
-            self.Finished(EXIT_KILL)
+            self.Finished(EXIT_KILLED)
             self._canceled.clear()
             return True
         else:
@@ -843,7 +843,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         if self._canceled.isSet():
              self.ErrorCode(ERROR_TRANSACTION_CANCELLED, msg)
-             self.Finished(EXIT_KILL)
+             self.Finished(EXIT_KILLED)
              self._canceled.clear()
              return True
         return False
