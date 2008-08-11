@@ -686,53 +686,68 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
 
     @threaded
-    def doGetDepends(self, filters, pkg_ids, recursive=False):
+    def doGetDepends(self, filters, ids, recursive=False):
         '''
         Implement the apt2-get-depends functionality
+
+        Emit all packages that need to be installed or updated to install
+        the given package ids. It behaves like a preview of the changes
+        required for the installation. An error will be emitted if the 
+        dependecies cannot be satisfied.
+        In contrast to the yum backend the whole dependency resoltions is done 
+        by the package manager. Therefor the list of satisfied packages cannot
+        be computed easily. GDebi features this. Perhaps this should be moved
+        to python-apt.
         '''
-        pklog.info("Get depends (%s,%s,%s)" % (filters, pkg_ids, recursive))
+        pklog.info("Get depends (%s,%s,%s)" % (filters, ids, recursive))
         #FIXME: recursive is not yet implemented
         if recursive == True:
-            pkglog.warn("Recursive dependencies are not yet implemented")
+            pkglog.warn("Recursive dependencies are not implemented")
         self.StatusChanged(STATUS_QUERY)
         self.NoPercentageUpdates()
         self._check_init(progress=False)
         self.AllowCancel(True)
 
-        for pkg_id in pkg_ids:
+        # Mark all packages for installation
+        self._cache._depcache.Init()
+        for id in ids:
             if self._is_canceled(): return
-            pkg = self._find_package_by_id(pkg_id)
+            pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                                "Package %s isn't available" % name)
                 self.Finished(EXIT_FAILED)
                 return
-            for dep in pkg.candidateDependencies:
-                # FIXME: Support or dependencies
-                # FIXME: Support provides
-                for b_dep in dep.or_dependencies:
-                    if self._cache.has_key(b_dep.name):
-                        dep_pkg = self._cache[b_dep.name]
-                        # Check if the required version is available
-                        if b_dep.version != "" and \
-                           apt_pkg.CheckDep(dep_pkg.candidateVersion,
-                                            b_dep.relation,
-                                            b_dep.version) != 1:
-                            self.Package(INFO_UNKNOWN,
-                                        "%s;%s;%s;" % (b_dep.name, 
-                                                       b_dep.version,
-                                                       dep_pkg.architecture),
-                                        dep_pkg.summary)
-                            continue
-                        if self._is_package_visible(dep_pkg, filters):
-                            self._emit_package(dep_pkg)
-                    else:
-                        self.Package(INFO_UNKNOWN,
-                                     "%s;%s;%s;" % (b_dep.name, b_dep.version,
-                                                    pkg.architecture),
-                                     "Unknown package")
+            try:
+                pkg.markInstall()
+            except Exception, e:
+                #FIXME: Introduce a new info enumerate PK_INFO_MISSING for
+                #       missing dependecies
+                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
+                               "Dependecies for %s cannot be satisfied: %s" % e)
+                self.Finished(EXIT_FAILED)
+                return
+        # Check the status of the resulting changes
+        for p in self._cache.getChanges():
+            if self._is_canceled(): return
+            if p.markedDelete:
+                # Packagekit policy forbids removing packages for installation
+                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
+                               "Remove the package %s before" % p.name)
+                self.Finished(EXIT_FAILED)
+                return
+            elif p.markedUpgrade or p.markedUpgrade:
+                self._emit_package(p)
+            else:
+                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
+                               "Please use an advanced package management tool "
+                               "e.g. Synaptic or aptitude, since there is a "
+                               "complex dependency situation.")
+                self.Finished(EXIT_FAILED)
+                return
+        # Clean up
+        self._cache._depcache.Init()
         self.Finished(EXIT_SUCCESS)
-
 
     # Helpers
 
