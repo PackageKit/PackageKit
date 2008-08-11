@@ -903,14 +903,13 @@ def takeover():
     try:
         bus = dbus.SystemBus()
     except dbus.DBusException, e:
-        print  "Unable to connect to dbus"
-        print "%s" %(e,)
+        pklog.critical("Unable to connect to dbus: %s" % e)
         sys.exit(1)
     proxy = bus.get_object(PACKAGEKIT_DBUS_SERVICE, PACKAGEKIT_DBUS_PATH)
     iface = dbus.Interface(proxy, PACKAGEKIT_DBUS_INTERFACE)
     try:
         iface.Exit()
-    except dbus.exceptions.DBusException:
+    except dbus.DBusException:
         pass
 
 def run():
