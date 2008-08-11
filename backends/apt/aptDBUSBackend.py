@@ -649,10 +649,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkgs.append(pkg.name[:])
             try:
                 pkg.markInstall()
-            except:
+            except Exception, e:
                 self._open_cache(prange=(90,100))
                 self.ErrorCode(ERROR_UNKNOWN, "%s could not be queued for "
-                                              "installation" % pkg.name)
+                                              "installation: %s" % (pkg.name,e))
                 self.Finished(EXIT_FAILED)
                 return
         try:
@@ -698,9 +698,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
             self.Finished(EXIT_KILLED)
             return
-        except:
+        except Exception, e:
             self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_UNKNOWN, "Refreshing cache failed")
+            self.ErrorCode(ERROR_UNKNOWN, "Refreshing cache failed: %s" % e)
             self.Finished(EXIT_FAILED)
             return
         self.PercentageChanged(100)
@@ -836,7 +836,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         if self._cache._depcache.BrokenCount > 0:
             self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
-                           "Not all dependecies can be satisfied")
+                           "There are broken dependecies on your system. "
+                           "Please use an advanced package manage e.g. "
+                           "Synaptic or aptitude to resolve this situation.")
             self.Finished(EXIT_FAILED)
             self.Exit()
             return
