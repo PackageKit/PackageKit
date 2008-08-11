@@ -114,6 +114,15 @@ backend_update_system (PkBackend *backend)
 }
 
 /**
+ * backend_update_packages
+ *  */
+static void
+backend_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_dbus_update_packages (dbus, package_ids);
+}
+
+/**
  * backend_install_packages
  *  */
 static void
@@ -237,7 +246,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* service_pack */
-	NULL,					/* update_packages */
+	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	NULL					/* what_provides */
 );

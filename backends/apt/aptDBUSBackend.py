@@ -499,7 +499,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-update functionality
         '''
         pklog.info("Updating package with id %s" % ids)
-        self.StatusChanged(STATUS_INSTALL)
+        self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_RUNNING)
@@ -513,7 +513,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
             if not pkg.isUpgradable:
                 self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,
-                               "Package %s is already installed" % pkg.name)
+                               "Package %s is already up-to-date" % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
             pkgs.append(pkg.name[:])
@@ -522,24 +522,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             except:
                 self._open_cache(prange=(90,100))
                 self.ErrorCode(ERROR_UNKNOWN, "%s could not be queued for "
-                                              "installation" % pkg.name)
+                                              "update" % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
         try:
             self._cache.commit(PackageKitFetchProgress(self, prange=(10,50)),
                                PackageKitInstallProgress(self, prange=(50,90)))
         except Exception, e:
-            pklog.warning("exception %s during commit()" % e)
+            pklog.warning("Exception during commit(): %s" % e)
             self._open_cache(prange=(90,100))
-            self.ErrorCode(ERROR_UNKNOWN, "Installation failed")
+            self.ErrorCode(ERROR_UNKNOWN, "Update failed")
             self.Finished(EXIT_FAILED)
             return
         self._open_cache(prange=(90,100))
         self.PercentageChanged(100)
         pklog.debug("Checking success of operation")
         for p in pkgs:
-            if not self._cache.has_key(p) or not self._cache[p].isInstalled:
-                self.ErrorCode(ERROR_UNKNOWN, "%s was not installed" % p)
+            if not self._cache.has_key(p) or not self._cache[p].isInstalled \
+               or self._cache[p].isUpgradable:
+                self.ErrorCode(ERROR_UNKNOWN, "%s was not updated" % p)
                 self.Finished(EXIT_FAILED)
                 return
         pklog.debug("Sending success signal")
