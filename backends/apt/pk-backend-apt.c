@@ -212,7 +212,14 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_i
 	        pk_backend_dbus_get_depends (dbus, filters, package_ids, recursive);
 }
 
-
+/**
+ *  * pk_backend_download_packages
+ *   */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	        pk_backend_dbus_download_packages (dbus, package_ids, directory);
+}
 
 
 PK_BACKEND_OPTIONS (
@@ -223,7 +230,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
-	NULL,					/* download_packages */
+	backend_download_packages,		/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_files */

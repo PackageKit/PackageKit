@@ -556,6 +556,31 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    def doDownloadPackages(self, ids, dir):
+        '''
+        Implement the {backend}-download-packages functionality
+
+        Does not work yet. Need to find a way to get the package uri
+        '''
+        pklog.info("Downloading packages: %s" % ids)
+        self.StatusChanged(STATUS_INSTALL)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        self._check_init(prange=(0,10))
+        progress = PackageKitFetchProgress(self, prange=(10,90))
+        fetcher = apt_pkg.GetAcquire(progress)
+        for id in ids:
+            pkg = self._find_package_by_id(id)
+            apt_pkg.GetPkgAcqFile(fetcher,
+                                  "http://www.glatzor.de/index.php")
+        for item in fetcher.Items:
+            pklog.debug("Download item: %s" % item)
+        res = fetcher.Run()
+        pklog.debug("Sending success signal")
+        self.Finished(EXIT_SUCCESS)
+ 
+    @threaded
+    @async
     def doInstallPackages(self, ids):
         '''
         Implement the {backend}-install functionality
