@@ -874,7 +874,8 @@ def main():
                            "(Only needed by developers)")
     parser.add_option("-d", "--debug",
                       action="store_true", dest="debug",
-                      help="Show a lot of additional information "
+                      help="Show a lot of additional information and drop to "
+                           "a debugging console on unhandled exceptions "
                            "(Only needed by developers)")
     (options, args) = parser.parse_args()
     if options.debug:
