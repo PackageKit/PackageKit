@@ -908,7 +908,10 @@ def takeover():
         sys.exit(1)
     proxy = bus.get_object(PACKAGEKIT_DBUS_SERVICE, PACKAGEKIT_DBUS_PATH)
     iface = dbus.Interface(proxy, PACKAGEKIT_DBUS_INTERFACE)
-    iface.Exit()
+    try:
+        iface.Exit()
+    except dbus.exceptions.DBusException:
+        pass
 
 def run():
     """
