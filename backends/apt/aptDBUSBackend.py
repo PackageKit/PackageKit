@@ -702,7 +702,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.info("Get depends (%s,%s,%s)" % (filters, ids, recursive))
         #FIXME: recursive is not yet implemented
         if recursive == True:
-            pkglog.warn("Recursive dependencies are not implemented")
+            pklog.warn("Recursive dependencies are not implemented")
         self.StatusChanged(STATUS_QUERY)
         self.NoPercentageUpdates()
         self._check_init(progress=False)
