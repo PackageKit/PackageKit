@@ -26,26 +26,36 @@ PackageKit on the command. For example:
 </p>
 <pre>
 [hughsie@laptop ~]$ pkcon get updates
-normal       powertop             i386    1.8-1.fc8       fedora    Power consumption monitor
-security     kernel               i386    2.6.23-0.115.rc3.git1.fc8 installed The Linux kernel
-security     gtkhtml2             i386    2.19.1-4.fc8    fedora    An HTML widget for GTK+ 2.0
-Runtime was 0 seconds
+[hughsie@hughsie-work PackageKit]$ pkcon get-updates
+security    	bluez-utils-3.35-3.fc9                  	Bluetooth utilities
+bugfix      	xterm-236-1.fc9                         	Terminal emulator for the X Window System
+bugfix      	kernel-devel-2.6.25.14-108.fc9          	Development package for building kernel modules to match the kernel
+enhancement 	kde-filesystem-4-17.fc9                 	KDE filesystem layout
+enhancement 	subversion-1.5.1-1.fc9                  	Modern Version Control System designed to replace CVS
 </pre>
 <p>or</p>
 <pre>
-[hughsie@laptop ~]$ pkcon search name power
-installed    powerman             i386    1.0.25-2.fc7    installed   PowerMan - Power to the Cluster
-installed    powertop             i386    1.8-1.fc8       installed   Power consumption monitor
-installed    gnome-power-manager  i386    2.20.0-5.fc8    installed   GNOME Power Manager
-available    kpowersave           i386    0.7.3-0.2svn20070828.fc8 development KPowersave is the KDE frontend for powermanagement
-available    kadu-powerkadu       i386    0.5.0-4.fc8     development Powerkadu module for Kadu
-available    powermanga           i386    0.90-1          development Arcade 2D shoot-them-up game
-Runtime was 2 seconds
+[hughsie@hughsie-work PackageKit]$ pkcon --filter=~devel search name power
+installed   	DeviceKit-power-001-0.8.20080811git.fc9 	Power Management Service
+installed   	gnome-power-manager-2.23.4-1.118.20080801svn.fc9.hughsie	GNOME Power Manager
+installed   	powerman-2.1-1.fc9                      	PowerMan - Power to the Cluster
+installed   	powertop-1.9-3.fc9                      	Power consumption monitor
+available   	gnome-power-manager-2.22.1-1.fc9        	GNOME Power Manager
+available   	kadu-powerkadu-0.6.0-3.fc9              	PowerKadu
+available   	kadu-powerkadu-0.6.0.1-1.fc9            	PowerKadu
+available   	kpowersave-0.7.3-3.fc9                  	KPowersave is the KDE frontend for powermanagement
+available   	powerman-1.0.32-5.fc9                   	PowerMan - Power to the Cluster
+available   	powermanga-0.90-3                       	Arcade 2D shoot-them-up game
 </pre>
 <p>
 The <code>pkmon</code> program allows you to monitor what PackageKit is
 doing on the command line and is mainly used for debugging.
 </p>
+<p>
+The <code>pkgenpack</code> program allows you to generate
+<a href="pk-faq.html#service-pack">Service Packs</a> with a package and its dependencies.
+</p>
+
 
 <h2>Using graphical tools:</h2>
 <p>

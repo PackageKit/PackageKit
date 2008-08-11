@@ -42,6 +42,7 @@
 <li><a href="#how-fast">How fast is PackageKit?</a></li>
 <li><a href="#multiple-users">How does PackageKit work with multiple users?</a></li>
 <li><a href="#use-existing-tools">Can users still use their normal package managers?</a></li>
+<li><a href="#service-pack">What is a Service Pack?</a></li>
 <li><a href="#hughsies-law">What is Hughsie's law?</a></li>
 <li><a href="#translation">How do I translate gnome-packagekit?</a></li>
 <li><a href="#corporate-sponsor">Is there an organization sponsoring development of PackageKit?</a></li>
@@ -508,6 +509,16 @@ You can use rpm and yum or dpkg and apt when PK is inactive (99.999% of the time
 when you really need some command line love.
 No more fighting over <code>yum</code>, <code>yum-updatesd</code>,
 <code>pup</code> and <code>pirut</code>.
+</p>
+
+<hr>
+<h3><a name="service-pack">What is a Service Pack?</a></h3>
+<p>
+A service pack is a tarball which contains the particular package and its dependencies.
+The user can select the dependencies to be packed using the --with-package-list option.
+Along with the dependencies, a service pack has a file named metadata.conf which contains
+the distribution name and version and the date of creation of the pack.
+Service packs are generated using the command line client <code>pkgenpack</code>.
 </p>
 
 <hr>
