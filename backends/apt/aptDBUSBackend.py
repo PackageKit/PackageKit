@@ -925,7 +925,7 @@ def run():
 def main():
     parser = optparse.OptionParser(description="APT backend for PackageKit")
     parser.add_option("-t", "--takeover",
-                      action="store", type="string", dest="takeover",
+                      action="store_true", dest="takeover",
                       help="Exit the currently running backend "
                            "(Only needed by developers)")
     parser.add_option("-p", "--profile",
