@@ -878,7 +878,27 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             return None
 
+def takeover():
+    """
+    Exit the currently running backend
+    """
+    PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
+    PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitBackend'
+    PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
+    try:
+        bus = dbus.SystemBus()
+    except dbus.DBusException, e:
+        print  "Unable to connect to dbus"
+        print "%s" %(e,)
+        sys.exit(1)
+    proxy = bus.get_object(PACKAGEKIT_DBUS_SERVICE, PACKAGEKIT_DBUS_PATH)
+    iface = dbus.Interface(proxy, PACKAGEKIT_DBUS_INTERFACE)
+    iface.Exit()
+
 def run():
+    """
+    Start the apt backend
+    """
     loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus(mainloop=loop)
     bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
@@ -886,6 +906,10 @@ def run():
 
 def main():
     parser = optparse.OptionParser(description="APT backend for PackageKit")
+    parser.add_option("-t", "--takeover",
+                      action="store", type="string", dest="takeover",
+                      help="Exit the currently running backend "
+                           "(Only needed by developers)")
     parser.add_option("-p", "--profile",
                       action="store", type="string", dest="profile",
                       help="Store profiling stats in the given file "
@@ -899,6 +923,9 @@ def main():
     if options.debug:
         pklog.setLevel(logging.DEBUG)
         sys.excepthook = debug_exception
+
+    if options.takeover:
+        takeover()
 
     if options.profile:
         import hotshot
