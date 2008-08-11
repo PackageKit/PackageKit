@@ -24,6 +24,7 @@ import os
 import pty
 import re
 import signal
+import shutil
 import sys
 import time
 import threading
@@ -556,26 +557,68 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
-    def doDownloadPackages(self, ids, dir):
+    def doDownloadPackages(self, ids, dest):
         '''
         Implement the {backend}-download-packages functionality
-
-        Does not work yet. Need to find a way to get the package uri
         '''
         pklog.info("Downloading packages: %s" % ids)
-        self.StatusChanged(STATUS_INSTALL)
-        self.AllowCancel(False)
+        self.StatusChanged(STATUS_DOWNLOAD)
+        self.AllowCancel(True)
         self.PercentageChanged(0)
+        # Check the destination directory
+        if not os.path.isdir(dest) or not os.access(dest, os.W_OK):
+            self.ErrorCode(ERROR_UNKOWN,
+                           "The directory '%s' is not writable" % dest)
+            self.Finished(EXIT_FAILED)
+            return
+        # Setup the fetcher
         self._check_init(prange=(0,10))
+        self._cache._depcache.Init()
         progress = PackageKitFetchProgress(self, prange=(10,90))
         fetcher = apt_pkg.GetAcquire(progress)
+        pm = apt_pkg.GetPackageManager(self._cache._depcache)
+        recs = apt_pkg.GetPkgRecords(self._cache._cache)
+        list = apt_pkg.GetPkgSourceList()
+        list.ReadMainList()
+        # Mark installed packages for reinstallation and not installed packages
+        # for installation without dependencies
         for id in ids:
+            if self._is_canceled(): return
             pkg = self._find_package_by_id(id)
-            apt_pkg.GetPkgAcqFile(fetcher,
-                                  "http://www.glatzor.de/index.php")
-        for item in fetcher.Items:
-            pklog.debug("Download item: %s" % item)
+            if pkg == None:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "There is no package %s" % id)
+                self.Finished(EXIT_FAILED)
+                return
+            if pkg.isInstalled:
+                self._cache._depcache.SetReInstall(pkg._pkg, True)
+            else:
+                self._cache._depcache.MarkInstall(pkg._pkg, False)
+        # Download 
+        pm.GetArchives(fetcher, list, recs)
         res = fetcher.Run()
+        self._cache._depcache.Init()
+        self.PercentageChanged(95)
+        # Copy files from cache to final destination
+        for item in fetcher.Items:
+            if self._is_canceled(): return
+            pklog.debug("Download item: %s" % item)
+            if (item.Status != item.StatDone and not item.StatIdle) or \
+                res == fetcher.ResultCancelled:
+                self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,
+                               "Failed to download %s" % item.DescURI)
+                self.Finished(EXIT_FAILED)
+                return
+            pklog.debug("Copying %s to %s ..." % (item.DestFile, dest))
+            try:
+                shutil.copy(item.DestFile, dest)
+            except Exception, e:
+                self.ErrorCode(ERROR_INTERNAL_ERROR,
+                               "Failed to copy %s to %s: %s" % (pkg_path,
+                                                                dest, e))
+                self.Finished(EXIT_FAILED)
+                return
+        self.PercentageChanged(100)
         pklog.debug("Sending success signal")
         self.Finished(EXIT_SUCCESS)
  
