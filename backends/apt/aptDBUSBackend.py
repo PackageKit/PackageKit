@@ -18,10 +18,13 @@ the Free Software Foundation; either version 2 of the License, or
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 __state__   = "experimental"
 
+import logging
+import optparse
 import os
 import pty
 import re
 import signal
+import sys
 import time
 import threading
 import warnings
@@ -55,6 +58,23 @@ os.putenv("APT_LISTCHANGES_FRONTEND", "none")
 # Setup threading support
 gobject.threads_init()
 dbus.glib.threads_init()
+
+def debug_exception(type, value, tb):
+    """
+    Provides an interactive debugging session on unhandled exceptions
+    See http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/65287
+    """
+    if hasattr(sys, 'ps1') or not sys.stderr.isatty() or \
+       not sys.stdin.isatty() or not sys.stdout.isatty() or type==SyntaxError:
+        # Calls the default handler in interactive mode, if output is·
+        # redirected or on syntax errors
+        sys.__excepthook__(type, value, tb)
+    else:
+       import traceback, pdb
+       traceback.print_exception(type, value, tb)
+       print
+       pdb.pm()
+
 
 class PackageKitOpProgress(apt.progress.OpProgress):
     '''
@@ -840,12 +860,34 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             return None
 
-
-def main():
+def run():
     loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus(mainloop=loop)
     bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
     manager = PackageKitAptBackend(bus_name, PACKAGEKIT_DBUS_PATH)
+
+def main():
+    parser = optparse.OptionParser(description="APT backend for PackageKit")
+    parser.add_option("-p", "--profile",
+                      action="store", type="string", dest="profile",
+                      help="Store profiling stats in the given file "
+                           "(Only needed by developers)")
+    parser.add_option("-d", "--debug",
+                      action="store_true", dest="debug",
+                      help="Show a lot of additional information "
+                           "(Only needed by developers)")
+    (options, args) = parser.parse_args()
+    if options.debug:
+        pklog.setLevel(logging.DEBUG)
+        sys.excepthook = debug_exception
+
+    if options.profile:
+        import hotshot
+        prof = hotshot.Profile(options.profile)
+        prof.runcall(run)
+        prof.close()
+    else:
+        run()
 
 if __name__ == '__main__':
     main()
