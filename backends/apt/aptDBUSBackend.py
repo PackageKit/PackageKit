@@ -44,9 +44,19 @@ warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
 
-XAPIANDBPATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
-XAPIANDB = XAPIANDBPATH + "/index"
-XAPIANDBVALUES = XAPIANDBPATH + "/values"
+# Xapian database is optionally used to speed up package description search
+XAPIAN_DB_PATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
+XAPIAN_DB = XAPIAN_DB_PATH + "/index"
+XAPIAN_DB_VALUES = XAPIAN_DB_PATH + "/values"
+XAPIAN_SUPPORT = False
+try:
+    import xapian
+except ImportError:
+    pass
+else:
+    if os.access(XAPIAN_DB, os.R_OK):
+        pklog.debug("Use XAPIAN for the search")
+        XAPIAN_SUPPORT = True
 
 # Required for daemon mode
 os.putenv("PATH",
@@ -213,15 +223,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled = threading.Event()
         self._canceled.clear()
         self._lock = threading.Lock()
-        # Check for xapian support
-        self._use_xapian = False
-        try:
-            import xapian
-        except ImportError:
-            pass
-        else:
-            if os.access(XAPIANDB, os.R_OK):
-                self._use_xapian = True
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -277,13 +278,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         results = []
 
-        if self._use_xapian == True:
+        if XAPIAN_SUPPORT == True:
             search_flags = (xapian.QueryParser.FLAG_BOOLEAN |
                             xapian.QueryParser.FLAG_PHRASE |
                             xapian.QueryParser.FLAG_LOVEHATE |
                             xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
             pklog.debug("Performing xapian db based search")
-            db = xapian.Database(XAPIANDB)
+            db = xapian.Database(XAPIAN_DB)
             parser = xapian.QueryParser()
             query = parser.parse_query(unicode(search),
                                        search_flags)
