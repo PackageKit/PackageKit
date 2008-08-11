@@ -9,7 +9,7 @@ http://wiki.debian.org/PackageKit
 TODO:
 
  * Implement all open backend methods. A list of implemented backend methods 
-   can be found in PackageKit FAQ or in pk-backend-apt2.c.
+   can be found in PackageKit FAQ or in pk-backend-apt.c.
 
  * Blacklist packages requiring input on the terminal and try to change
    the Debian policy in the long run. Way of automation?
@@ -65,6 +65,3 @@ TODO:
   The following could not be maped: science, documentation, electronics
   Are there any derivates with additional sections?
 
- * Fix the dbus policy. Should we require at_console for searching?
- 
-DONE:
