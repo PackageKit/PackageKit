@@ -704,11 +704,21 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 # FIXME: Support or dependencies
                 # FIXME: Support provides
                 for b_dep in dep.or_dependencies:
-                    # FIXME: Take version numbers into account
                     if self._cache.has_key(b_dep.name):
-                        if self._is_package_visible(self._cache[b_dep.name],
-                                                    filters):
-                            self._emit_package(self._cache[b_dep.name])
+                        dep_pkg = self._cache[b_dep.name]
+                        # Check if the required version is available
+                        if b_dep.version != "" and \
+                           apt_pkg.CheckDep(dep_pkg.candidateVersion,
+                                            b_dep.relation,
+                                            b_dep.version) != 1:
+                            self.Package(INFO_UNKNOWN,
+                                        "%s;%s;%s;" % (b_dep.name, 
+                                                       b_dep.version,
+                                                       dep_pkg.architecture),
+                                        dep_pkg.summary)
+                            continue
+                        if self._is_package_visible(dep_pkg, filters):
+                            self._emit_package(dep_pkg)
                     else:
                         self.Package(INFO_UNKNOWN,
                                      "%s;%s;%s;" % (b_dep.name, b_dep.version,
