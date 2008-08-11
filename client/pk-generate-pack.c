@@ -286,7 +286,7 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	GPtrArray *file_array = NULL;
 	PkClient *client;
 	GError *error_local;
-	gboolean ret;
+	gboolean ret = FALSE;
 	gchar *text;
 
 	client = pk_client_new ();
