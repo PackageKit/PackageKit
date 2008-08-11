@@ -404,8 +404,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # replace all multiple spaces by newlines
             p = re.compile(r'\s\s+', re.MULTILINE)
             desc = p.sub('\n', desc)
-            #FIXME: group and licence information missing
-            self.Details(pkg_id, 'unknown', 'unknown', desc,
+            #FIXME: group information missing
+            #FIXME: We need more fine grained license information!
+            origin = pkg.candidateOrigin
+            if origin[0].component in ["main", "universe"] and \
+               origin[0].origin in ["Debian", "Ubuntu"]:
+                license = "free"
+            else:
+                license = "unknown"
+            self.Details(pkg_id, license, 'unknown', desc,
                          pkg.homepage, pkg.packageSize)
             self.Finished(EXIT_SUCCESS)
 
