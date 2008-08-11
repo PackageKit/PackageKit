@@ -188,6 +188,32 @@ out:
 }
 
 /**
+ * pk_generate_pack_get_metadata:
+ **/
+static gchar *
+pk_generate_pack_get_metadata (void)
+{
+	gchar *distro_id = NULL;
+	gchar *datetime = NULL;
+	gchar *contents = NULL;
+
+	/* get needed data */
+	distro_id = pk_get_distro_id ();
+	if (distro_id == NULL)
+		goto out;
+	datetime = pk_iso8601_present ();
+	if (datetime == NULL)
+		goto out;
+
+	/* whole file */
+	contents = g_strdup_printf ("distro_id=%s\ncreated=%s\n", distro_id, datetime);
+out:
+	g_free (distro_id);
+	g_free (datetime);
+	return contents;
+}
+
+/**
  * pk_generate_pack_create:
  **/
 static gboolean
@@ -200,13 +226,32 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	guint i;
 	gchar *src;
 	gchar *dest;
+	gchar *meta_src;
+	gchar *meta_dest;
+	gchar *meta_contents;
 
+	/* create a file with metadata in it */
+	meta_contents = pk_generate_pack_get_metadata ();
+	meta_src = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
+	meta_dest = g_path_get_basename (meta_src);
+	ret = g_file_set_contents (meta_src, meta_contents, -1, error);
+	if (!ret)
+		goto out;
+
+	/* create the tar file */
 	file = g_fopen (tarfilename, "a+");
 	retval = tar_open (&t, (gchar *)tarfilename, NULL, O_WRONLY, 0, TAR_GNU);
 	if (retval != 0) {
 		*error = g_error_new (1, 0, "failed to open tar file: %s", tarfilename);
 		ret = FALSE;
 		goto out;
+	}
+
+	/* add the metadata first */
+	retval = tar_append_file(t, (gchar *)meta_src, meta_dest);
+	if (retval != 0) {
+		 *error = g_error_new (1, 0, "failed to copy %s into %s", meta_src, meta_dest);
+		ret = FALSE;
 	}
 
 	/* add each of the files */
@@ -237,6 +282,11 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	tar_close (t);
 	fclose (file);
 out:
+	/* delete metadata file */
+	g_remove (meta_contents);
+	g_remove (meta_src);
+	g_free (meta_src);
+	g_free (meta_dest);
 	return ret;
 }
 
