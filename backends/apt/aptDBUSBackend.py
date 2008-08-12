@@ -909,17 +909,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         id = self._get_package_id(pkg.name, pkgver, pkg.architecture, origin)
         return id
 
-    def _emit_package(self, pkg):
+    def _emit_package(self, pkg, info=None):
         '''
         Send the Package signal for a given apt package
         '''
         id = self.get_id_from_package(pkg)
-        if pkg.isInstalled:
-            status = INFO_INSTALLED
-        else:
-            status = INFO_AVAILABLE
+        if info == None:
+            if pkg.isInstalled:
+                info = INFO_INSTALLED
+            else:
+                info = INFO_AVAILABLE
         summary = pkg.summary
-        self.Package(status, id, summary)
+        self.Package(info, id, summary)
 
     def _is_package_visible(self, pkg, filters):
         '''
