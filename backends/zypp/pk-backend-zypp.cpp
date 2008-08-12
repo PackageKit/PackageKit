@@ -828,10 +828,8 @@ backend_get_update_detail_thread (PkBackend *backend)
 		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 
 		zypp::Capabilities obs = solvable.obsoletes ();
-		zypp::Capabilities upd = solvable.freshens ();
 
 		gchar *obsoletes = zypp_build_package_id_capabilities (obs);
-		gchar *updates = zypp_build_package_id_capabilities (upd);
 
 		PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
@@ -868,26 +866,27 @@ backend_get_update_detail_thread (PkBackend *backend)
 			zypp::sat::SolvableSet content = patch->contents ();
 
 			for (zypp::sat::SolvableSet::const_iterator it = content.begin (); it != content.end (); it++) {
-				obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), " ", (gchar *)NULL);
-				updates = g_strconcat (updates, zypp_build_package_id_capabilities (it->freshens ()), " ", (gchar *)NULL);
+				obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), "^", (gchar *)NULL);
 			}
 		}
 
 		pk_backend_update_detail (backend,
 					  package_ids[i],
-					  updates,	// updates
+					  NULL,		// updates TODO with Resolver.installs
 					  obsoletes,	// CURRENTLY CAUSES SEGFAULT obsoletes,
 					  "",		// CURRENTLY CAUSES SEGFAULT solvable.vendor ().c_str (),
 					  bugzilla,	// bugzilla
 					  cve,		// cve
-					  restart,
-					  solvable.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (),
-					  NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
+					  restart,	// restart -flag
+					  solvable.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (),	// update-text
+					  NULL,		// ChangeLog text
+					  PK_UPDATE_STATE_ENUM_UNKNOWN,		// state of the update
+					  NULL, // date that the update was issued
+					  NULL);	// date that the update was updated
 
 		g_free (bugzilla);
 		g_free (cve);
 		g_free (obsoletes);
-		g_free (updates);
 	}
 
 	pk_backend_finished (backend);
@@ -1361,8 +1360,7 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 	std::list <zypp::RepoInfo> repos;
 	try
 	{
-		repos = manager.knownRepositories();
-		//repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
+		repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
 	}
 	catch ( const zypp::Exception &e)
 	{
