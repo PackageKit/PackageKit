@@ -1687,14 +1687,70 @@ backend_what_provides_thread (PkBackend *backend)
 	zypp::Capability cap (search);
 	zypp::sat::WhatProvides prov (cap);
 
-	for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
-		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+	if(g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
 
-		PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
-		if( it->isSystem ())
-			info = PK_INFO_ENUM_INSTALLED;
 
-		pk_backend_package (backend, info, package_id, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+		// solver run
+		zypp::ResPool pool = zypp::ResPool::instance ();
+		zypp::Resolver solver(pool);
+
+		if (solver.resolvePool () == FALSE) {
+			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
+			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
+				pk_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
+			}
+			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
+			pk_backend_finished (backend);
+			return FALSE;
+		}
+
+		// look for packages which would be installed
+		for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
+				it != pool.byKindEnd (zypp::ResKind::package); it++) {
+			PkInfoEnum status = PK_INFO_ENUM_UNKNOWN;
+
+			gboolean hit = FALSE;
+
+			if (it->status ().isToBeUninstalled ()) {
+				status = PK_INFO_ENUM_REMOVING;
+				hit = TRUE;
+			}else if (it->status ().isToBeInstalled ()) {
+				status = PK_INFO_ENUM_INSTALLING;
+				hit = TRUE;
+			}else if (it->status ().isToBeUninstalledDueToUpgrade ()) {
+				status = PK_INFO_ENUM_UPDATING;
+				hit = TRUE;
+			}else if (it->status ().isToBeUninstalledDueToObsolete ()) {
+				status = PK_INFO_ENUM_OBSOLETING;
+				hit = TRUE;
+			}
+
+			if (hit) {
+				gchar *package_id;
+				package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
+						it->resolvable ()->edition ().asString ().c_str(),
+						it->resolvable ()->arch ().c_str(),
+						it->resolvable ()->repoInfo().alias ().c_str ());
+
+				pk_backend_package (backend, status, package_id, it->resolvable ()->description ().c_str ());
+
+				g_free (package_id);
+			}
+			it->statusReset ();
+		}
+
+
+
+	}else{
+		for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
+			gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+
+			PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
+			if( it->isSystem ())
+				info = PK_INFO_ENUM_INSTALLED;
+
+			pk_backend_package (backend, info, package_id, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+		}
 	}
 
 	pk_backend_finished (backend);
