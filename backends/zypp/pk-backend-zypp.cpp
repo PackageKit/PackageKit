@@ -844,6 +844,8 @@ backend_get_update_detail_thread (PkBackend *backend)
 				restart = PK_RESTART_ENUM_SYSTEM;
 			} else if (patch->restartSuggested ()) {
 				restart = PK_RESTART_ENUM_SESSION;
+			} else if (patch->reloginSuggested()) {
+				restart = PK_RESTART_ENUM_SESSION;
 			}
 
 			// Building links like "http://www.distro-update.org/page?moo;Bugfix release for kernel;http://www.test.de/bgz;test domain"
