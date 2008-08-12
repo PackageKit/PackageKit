@@ -333,8 +333,23 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._canceled.clear()
                 return
             else:
-                self._emit_package(pkg)
-        self._open_cache(progress=False)
+                info = INFO_NORMAL
+                archive = pkg.candidateOrigin[0].archive
+                origin = pkg.candidateOrigin[0].origin
+                trusted = pkg.candidateOrigin[0].trusted
+                label = pkg.candidateOrigin[0].label
+                if origin in ["Debian", "Ubuntu"] and trusted == True:
+                    if archive.endswith("-security") or \
+                       label == "Debian-Security":
+                        info = INFO_SECURITY
+                    elif archive.endswith("-backports"):
+                        info = INFO_ENHANCEMENT
+                    elif archive.endswith("-updates"):
+                        info = INFO_BUGFIX
+                if origin in ["Backports.org archive"] and trusted == True:
+                        info = INFO_ENHANCEMENT
+                self._emit_package(pkg, info)
+        self._cache._depcache.Init()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
