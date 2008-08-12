@@ -50,8 +50,8 @@
 #include <gdk/gdkx.h>
 #include <gio/gdesktopappinfo.h>
 
-#include "pk-package-id.h"
-#include "pk-package-ids.h"
+#include <pk-package-id.h>
+#include <pk-package-ids.h>
 
 #include "plugin.h"
 
