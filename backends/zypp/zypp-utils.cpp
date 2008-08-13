@@ -626,7 +626,7 @@ zypp_get_updates (std::string repo)
 }
 
 std::set<zypp::PoolItem> *
-zypp_get_patches ()
+zypp_get_patches (PkRestartEnum restart)
 {
         std::set<zypp::PoolItem> *patches = new std::set<zypp::PoolItem> ();
 	_updating_self = FALSE;
@@ -647,6 +647,16 @@ zypp_get_patches ()
 			}
 			else
 				patches->insert ((*it)->candidateObj ());
+
+			// set the restart flag if a restart is needed
+			if (restart != PK_RESTART_ENUM_SYSTEM && (patch->reloginSuggested () ||
+								  patch->restartSuggested () ||
+								  patch->rebootSuggested ())) {
+					if(patch->reloginSuggested () || patch->restartSuggested ())
+						restart = PK_RESTART_ENUM_SESSION;
+					if(patch->rebootSuggested ())
+						restart = PK_RESTART_ENUM_SYSTEM;
+			}
 
 			// check if the patch updates libzypp or packageKit and show only these
 			if (!_updating_self && patch->restartSuggested ()) {

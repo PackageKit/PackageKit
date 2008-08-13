@@ -912,13 +912,13 @@ backend_update_system_thread (PkBackend *backend)
 
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
+	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
 	//get all Patches for Update
-	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
+	std::set<zypp::PoolItem> *candidates = zypp_get_patches (restart);
 	//std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
 	
 	if (_updating_self) {
-		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, "Package Management System updated - restart needed");
 		_updating_self = FALSE;
 	}
 	else {
@@ -935,7 +935,7 @@ backend_update_system_thread (PkBackend *backend)
 
 		//candidates->insert (candidates2->begin (), candidates2->end ());
 	}
-
+	
 	pk_backend_set_percentage (backend, 80);
 	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
 	for (ci = cb; ci != ce; ++ci) {
@@ -949,6 +949,9 @@ backend_update_system_thread (PkBackend *backend)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
+	
+	if (restart != PK_RESTART_ENUM_NONE)
+		pk_backend_require_restart (backend, restart, "A restart is needed");
 
 	//delete (candidates2);
 	delete (candidates);
@@ -1538,8 +1541,9 @@ backend_update_packages_thread (PkBackend *backend)
 	gboolean retval;
 	gchar **package_ids;
 	package_ids = pk_backend_get_strv (backend, "package_ids");
+	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	zypp_get_patches (); // make shure _updating_self is set
+	zypp_get_patches (restart); // make shure _updating_self is set
 
 	if (_updating_self) {
 		pk_debug ("updating self and setting restart");
@@ -1554,6 +1558,10 @@ backend_update_packages_thread (PkBackend *backend)
 
 	retval = zypp_perform_execution (backend, UPDATE, FALSE);
 	pk_backend_finished (backend);
+	
+	if (restart != PK_RESTART_ENUM_NONE)
+		pk_backend_require_restart (backend, restart, "A restart is needed");
+
 	return retval;
 }
 
