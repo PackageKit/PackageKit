@@ -632,6 +632,8 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 out:
 	g_strfreev (package_ids);
 	g_strfreev (files);
+	g_ptr_array_foreach (array_files, (GFunc) g_free, NULL);
+	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
 	g_ptr_array_free (array_files, TRUE);
 	g_ptr_array_free (array_packages, TRUE);
 	return ret;

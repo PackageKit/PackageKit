@@ -883,7 +883,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 pack.extract(mem,path = tempdir)
             files = os.listdir(tempdir)
             for file in files:
-                inst_files.append(os.path.join(tempdir, file))
+                if file.endswith('.rpm'):
+                    inst_files.append(os.path.join(tempdir, file))
 
         # remove files of packages that alrady exist
         for inst_file in inst_files:
