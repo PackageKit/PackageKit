@@ -127,6 +127,7 @@ packagekitd_LDADD =					\
 	$(POLKIT_LIBS)					\
 	$(SELFTEST_LIBS)				\
 	$(GIO_LIBS)					\
+	$(TAR_LIBS)					\
 	$(NULL)
 
 if BACKEND_TYPE_BOX
