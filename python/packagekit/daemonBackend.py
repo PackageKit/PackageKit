@@ -498,15 +498,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ssb',out_signature='')
-    def GetRequires(self,filters,package_ids,recursive):
+                         in_signature='ssb', out_signature='')
+    def GetRequires(self, filters, package_ids, recursive):
         '''
         Print a list of requires for a given package
         '''
-        pklog.info("GetRequires(%s,%s,%s)" % (filters,package_ids,recursive))
-        self.doGetRequires(filters,package,recursive)
+        pklog.info("GetRequires(%s,%s,%s)" % (filters, package_ids, recursive))
+        self.doGetRequires(filters, package_ids ,recursive)
 
-    def doGetRequires(self,filters,package,recursive):
+    def doGetRequires(self, filters, package_ids, recursive):
         '''
         Should be replaced in the corresponding backend sub class
         '''
