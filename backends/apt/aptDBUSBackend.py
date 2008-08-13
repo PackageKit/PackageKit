@@ -770,7 +770,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
 
     @threaded
-    def doGetDepends(self, filters, ids, recursive=False):
+    def doGetDepends(self, filter, ids, recursive=False):
         '''
         Implement the apt2-get-depends functionality
 
@@ -783,7 +783,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         be computed easily. GDebi features this. Perhaps this should be moved
         to python-apt.
         '''
-        pklog.info("Get depends (%s,%s,%s)" % (filters, ids, recursive))
+        pklog.info("Get depends (%s,%s,%s)" % (filter, ids, recursive))
         #FIXME: recursive is not yet implemented
         if recursive == True:
             pklog.warn("Recursive dependencies are not implemented")
@@ -820,8 +820,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "Remove the package %s before" % p.name)
                 self.Finished(EXIT_FAILED)
                 return
-            elif p.markedUpgrade or p.markedUpgrade:
-                self._emit_package(p)
+            elif p.markedInstall or p.markedUpgrade:
+                if self._is_package_visible(p, filter):
+                    self._emit_package(p)
             else:
                 self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
                                "Please use an advanced package management tool "
