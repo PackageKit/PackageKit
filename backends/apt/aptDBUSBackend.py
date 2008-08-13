@@ -224,6 +224,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled = threading.Event()
         self._canceled.clear()
         self._lock = threading.Lock()
+        apt_pkg.InitConfig()
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -885,6 +886,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Clean up
         self._cache._depcache.Init()
         self.Finished(EXIT_SUCCESS)
+
+    def doSetProxy(self, http_proxy, ftp_proxy):
+        '''
+        Set a proxy server for http and ftp transfer
+        '''
+        if http_proxy:
+            pkglog.debug("Set http proxy to %s" % http_proxy)
+            apt_pkg.Config.set("http::Proxy", http_proxy)
+        if ftp_proxy:
+            pkglog.debug("Set ftp proxy to %s" % ftp_proxy)
+            apt_pkg.Config.set("ftp::Proxy", ftp_proxy)
 
     # Helpers
 
