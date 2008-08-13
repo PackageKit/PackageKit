@@ -229,15 +229,19 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	gchar *meta_src;
 	gchar *meta_dest;
 	gchar *meta_contents;
+	GError *error_local = NULL;
 
 	/* create a file with metadata in it */
 	meta_contents = pk_generate_pack_get_metadata ();
 	meta_src = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
 	meta_dest = g_path_get_basename (meta_src);
-	ret = g_file_set_contents (meta_src, meta_contents, -1, error);
-	if (!ret)
+	ret = g_file_set_contents (meta_src, meta_contents, -1, &error_local);
+	if (!ret) {
+		pk_warning ("failed to add metadata: %s", error_local->message);
+		g_error_free (error_local);
 		goto out;
-
+	}
+	
 	/* create the tar file */
 	file = g_fopen (tarfilename, "a+");
 	retval = tar_open (&t, (gchar *)tarfilename, NULL, O_WRONLY, 0, TAR_GNU);
@@ -284,6 +288,7 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 out:
 	/* delete metadata file */
 	g_remove (meta_contents);
+	g_free (meta_contents);
 	g_remove (meta_src);
 	g_free (meta_src);
 	g_free (meta_dest);
