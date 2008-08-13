@@ -833,6 +833,58 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._cache._depcache.Init()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
+    def doGetRequires(self, filter, ids, recursive=False):
+        '''
+        Implement the apt2-get-requires functionality
+        '''
+        pklog.info("Get requires (%s,%s,%s)" % (filter, ids, recursive))
+        #FIXME: recursive is not yet implemented
+        if recursive == True:
+            pklog.warn("Recursive dependencies are not implemented")
+        self.StatusChanged(STATUS_INFO)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(True)
+        pkgs = []
+
+        # Mark all packages for installation
+        self._cache._depcache.Init()
+        for id in ids:
+            if self._is_canceled(): return
+            pkg = self._find_package_by_id(id)
+            if pkg == None:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package %s isn't available" % name)
+                self.Finished(EXIT_FAILED)
+                return
+            pkgs.append(pkg)
+            try:
+                pkg.markDelete()
+            except Exception, e:
+                #FIXME: Introduce a new info enumerate PK_INFO_MISSING for
+                #       missing dependecies
+                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
+                               "Error removing %s: %s" % (pkg.name, e))
+                self.Finished(EXIT_FAILED)
+                return
+        # Check the status of the resulting changes
+        for p in self._cache.getChanges():
+            if self._is_canceled(): return
+            if p.markedDelete:
+                if not p in pkgs and self._is_package_visible(p, filter):
+                    self._emit_package(p)
+            else:
+                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
+                               "Please use an advanced package management tool "
+                               "e.g. Synaptic or aptitude, since there is a "
+                               "complex dependency situation.")
+                self.Finished(EXIT_FAILED)
+                return
+        # Clean up
+        self._cache._depcache.Init()
+        self.Finished(EXIT_SUCCESS)
+
     # Helpers
 
     def _open_cache(self, prange=(0,100), progress=True):

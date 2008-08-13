@@ -204,6 +204,15 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 }
 
 /**
+ *  * pk_backend_get_requires:
+ *   */
+static void
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+{
+	        pk_backend_dbus_get_requires (dbus, filters, package_ids, recursive);
+}
+
+/**
  *  * pk_backend_get_depends:
  *   */
 static void
@@ -236,7 +245,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,					/* get_repo_list */
-	NULL,					/* get_requires */
+	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,					/* install_files */
