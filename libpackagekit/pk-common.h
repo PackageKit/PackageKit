@@ -54,6 +54,13 @@ G_BEGIN_DECLS
  */
 #define	PK_DBUS_INTERFACE_TRANSACTION	"org.freedesktop.PackageKit.Transaction"
 
+/**
+ * PK_SERVICE_PACK_GROUP_NAME:
+ *
+ * The group name of the Service Pack config file
+ */
+#define	PK_SERVICE_PACK_GROUP_NAME	"PackageKit Service Pack"
+
 guint		 pk_strlen				(const gchar	*text,
 							 guint		 len)
 							 G_GNUC_WARN_UNUSED_RESULT;
