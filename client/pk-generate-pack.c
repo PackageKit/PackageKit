@@ -359,7 +359,7 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	const PkPackageObj *obj;
 	GPtrArray *file_array = NULL;
 	PkClient *client;
-	GError *error_local;
+	GError *error_local = NULL;
 	gboolean ret = FALSE;
 	gchar *text;
 
