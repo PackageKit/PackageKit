@@ -17,10 +17,6 @@ SELFTEST_LIBS =							\
 	$(top_builddir)/libselftest/libselftest.la		\
 	$(NULL)
 
-PK_LIBS =							\
-	$(top_builddir)/libpackagekit/libpackagekit.la		\
-	$(NULL)
-
 lib_LTLIBRARIES =						\
 	libpackagekit.la					\
 	$(NULL)
@@ -111,6 +107,7 @@ check_PROGRAMS =						\
 	pk-self-test
 
 pk_self_test_SOURCES =						\
+	$(libpackagekit_la_SOURCES)				\
 	pk-self-test.c						\
 	$(NULL)
 
@@ -118,8 +115,11 @@ pk_self_test_LDADD =						\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(SELFTEST_LIBS)					\
-	$(PK_LIBS)						\
+	$(POLKIT_LIBS)						\
+	$(SQLITE_LIBS)						\
 	$(NULL)
+
+pk_self_test_CFLAGS = $(AM_CFLAGS)
 
 TESTS = pk-self-test
 endif
