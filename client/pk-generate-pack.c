@@ -250,7 +250,7 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	gchar *src;
 	gchar *dest;
 	gchar *meta_src;
-	gchar *meta_dest;
+	gchar *meta_dest = NULL;
 
 	/* create a file with metadata in it */
 	meta_src = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
