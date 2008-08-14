@@ -18,6 +18,7 @@ the Free Software Foundation; either version 2 of the License, or
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 __state__   = "experimental"
 
+import locale
 import logging
 import optparse
 import os
@@ -897,6 +898,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if ftp_proxy:
             pkglog.debug("Set ftp proxy to %s" % ftp_proxy)
             apt_pkg.Config.set("ftp::Proxy", ftp_proxy)
+
+    def doSetLocale(self, code):
+        '''
+        Set the locale of the daemon
+
+        '''
+        #FIXME: Needs testing
+        if code != "":
+            pklog.debug("Setting language to %s" % code)
+            locale.setlocale("LANG", code)
 
     # Helpers
 
