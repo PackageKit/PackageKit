@@ -34,7 +34,10 @@
 
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <libtar.h>
+#include <sys/stat.h>
 
+#include <glib/gstdio.h>
 #include <glib/gi18n.h>
 #include <pk-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
@@ -197,6 +200,7 @@ pk_transaction_error_get_type (void)
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INVALID_STATE, "InvalidState"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INITIALIZE_FAILED, "InitializeFailed"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_COMMIT_FAILED, "CommitFailed"),
+			ENUM_ENTRY (PK_TRANSACTION_ERROR_PACK_INVALID, "PackInvalid"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INVALID_PROVIDE, "InvalidProvide"),
 			{ 0, NULL, NULL }
 		};
@@ -2005,6 +2009,110 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 }
 
 /**
+ * pk_transaction_check_metadata_conf:
+ **/
+static gboolean
+pk_transaction_check_metadata_conf (const gchar *full_path)
+{
+	GKeyFile *file;
+	gboolean ret;
+	GError *error = NULL;
+	gchar *distro_id = NULL;
+	gchar *distro_id_us = NULL;
+
+	/* load the file */
+	file = g_key_file_new ();
+	ret = g_key_file_load_from_file (file, full_path, G_KEY_FILE_NONE, &error);
+	if (!ret) {
+		pk_warning ("failed to load file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* read the value */
+	distro_id = g_key_file_get_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", &error);
+	if (!ret) {
+		pk_warning ("failed to get value: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get this system id */
+	distro_id_us = pk_get_distro_id ();
+
+	/* do we match? */
+	ret = pk_strequal (distro_id_us, distro_id);
+
+out:
+	g_key_file_free (file);
+	g_free (distro_id);
+	g_free (distro_id_us);
+	return ret;
+}
+
+/**
+ * pk_transaction_check_pack_distro_id:
+ **/
+static gboolean
+pk_transaction_check_pack_distro_id (const gchar *full_path, gchar **failure)
+{
+	gboolean ret = TRUE;
+	gchar *meta_src = NULL;
+	gchar *metafile = NULL;
+	gboolean retval;
+	TAR *t;
+	GDir *dir = NULL;
+	const gchar *filename;
+
+	/* open */
+	retval = tar_open (&t, (gchar *) full_path, NULL, O_RDONLY, 0, TAR_GNU);
+	if (retval != 0) {
+		*failure = g_strdup_printf ("failed to open tar file: %s", full_path);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* extract */
+	meta_src = g_build_filename (g_get_tmp_dir (), "meta", NULL);
+	retval = tar_extract_all (t, meta_src);
+	if (retval != 0) {
+		*failure = g_strdup_printf ("failed to extract from tar file: %s", full_path);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* close */
+	tar_close (t);
+
+	/* get the files */
+	dir = g_dir_open (meta_src, 0, NULL);
+	if (dir == NULL) {
+		*failure = g_strdup_printf ("failed to get directory for %s", meta_src);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* find the file, and check the metadata */
+	while ((filename = g_dir_read_name (dir))) {
+		metafile = g_build_filename (meta_src, filename, NULL);
+		if (pk_strequal (filename, "metadata.conf")) {
+			ret = pk_transaction_check_metadata_conf (metafile);
+			if (!ret) {
+				*failure = g_strdup_printf ("Service Pack %s not compatible with your distro", full_path);
+				ret = FALSE;
+				goto out;
+			}
+		}
+		g_free (metafile);
+	}
+out:
+	g_rmdir (meta_src);
+	g_free (meta_src);
+	g_dir_close (dir);
+	return ret;
+}
+
+/**
  * pk_transaction_install_files:
  **/
 void
@@ -2015,6 +2123,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	gboolean ret;
 	GError *error;
 	gchar *sender;
+	gchar *failure = NULL;
 	guint length;
 	guint i;
 
@@ -2035,15 +2144,26 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		return;
 	}
 
-	/* check all files exists */
+	/* check all files exists and are valid */
 	length = g_strv_length (full_paths);
 	for (i=0; i<length; i++) {
+		/* exists */
 		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
 		if (!ret) {
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
 					     "No such file %s", full_paths[i]);
 			dbus_g_method_return_error (context, error);
 			return;
+		}
+		/* valid */
+		if (g_str_has_suffix (full_paths[i], ".pack")) {
+			ret = pk_transaction_check_pack_distro_id (full_paths[i], &failure);
+			if (!ret) {
+				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, failure);
+				dbus_g_method_return_error (context, error);
+				g_free (failure);
+				return;
+			}
 		}
 	}
 
@@ -2078,6 +2198,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	}
 
 	dbus_g_method_return (context);
+	return;
 }
 
 /**

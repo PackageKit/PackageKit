@@ -18,9 +18,11 @@ Source0:   http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires: dbus >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_glib_version}
 Requires: PackageKit-libs = %{epoch}:%{version}-%{release}
 Requires: yum-packagekit = %{epoch}:%{version}-%{release}
 Requires: yum >= 3.2.6
+Requires: libtar
 Requires: shared-mime-info
 
 BuildRequires: glib2-devel >= %{glib2_version}
@@ -40,6 +42,8 @@ BuildRequires: python-devel
 BuildRequires: perl(XML::Parser)
 BuildRequires: intltool
 BuildRequires: gettext
+BuildRequires: xulrunner-devel
+BuildRequires: libtar-devel
 
 %description 
 PackageKit is a D-Bus abstraction layer that allows the session user
@@ -97,6 +101,17 @@ Requires: sqlite-devel
 %description devel
 Headers and libraries for PackageKit.
 
+%package browser-plugin
+Summary: Browser Plugin for PackageKit
+Group: Development/Libraries
+Requires: gtk2
+Requires: PackageKit-libs = %{epoch}:%{version}-%{release}
+
+%description browser-plugin
+The PackageKit browser plugin allows web sites to offer the ability to
+users to install and update packages from configured repositories
+using PackageKit.
+
 %prep
 %setup -q
 
@@ -113,6 +128,8 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.a
+rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.a
+rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
 
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/yumDBUSBackend.py
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
@@ -190,6 +207,11 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files devel
 %defattr(-,root,root,-)
+
+%files browser-plugin
+%dir %{_libdir}/mozilla
+%dir %{_libdir}/mozilla/plugins
+%{_libdir}/mozilla/plugins/packagekit-plugin.so
 
 %{_libdir}/lib*.so
 %{_libdir}/pkgconfig/*

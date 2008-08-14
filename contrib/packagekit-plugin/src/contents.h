@@ -42,7 +42,7 @@
 #include <X11/Xlib.h>
 #include <gio/gio.h>
 #include <pango/pango.h>
-#include <packagekit/pk-client.h>
+#include <pk-client.h>
 #include <cairo.h>
 #include <dbus/dbus-glib.h>
 #include <gtk/gtk.h>

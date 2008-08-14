@@ -165,8 +165,7 @@ zypp_build_pool (gboolean include_local)
 	zypp::RepoManager manager;
 	std::list<zypp::RepoInfo> repos;
 	try {
-		repos = manager.knownRepositories ();
-		//repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
+		repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
 		for (std::list<zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end (); it++) {
 			zypp::RepoInfo repo (*it);
 
@@ -627,7 +626,7 @@ zypp_get_updates (std::string repo)
 }
 
 std::set<zypp::PoolItem> *
-zypp_get_patches ()
+zypp_get_patches (PkRestartEnum restart)
 {
         std::set<zypp::PoolItem> *patches = new std::set<zypp::PoolItem> ();
 	_updating_self = FALSE;
@@ -648,6 +647,16 @@ zypp_get_patches ()
 			}
 			else
 				patches->insert ((*it)->candidateObj ());
+
+			// set the restart flag if a restart is needed
+			if (restart != PK_RESTART_ENUM_SYSTEM && (patch->reloginSuggested () ||
+								  patch->restartSuggested () ||
+								  patch->rebootSuggested ())) {
+					if(patch->reloginSuggested () || patch->restartSuggested ())
+						restart = PK_RESTART_ENUM_SESSION;
+					if(patch->rebootSuggested ())
+						restart = PK_RESTART_ENUM_SYSTEM;
+			}
 
 			// check if the patch updates libzypp or packageKit and show only these
 			if (!_updating_self && patch->restartSuggested ()) {
@@ -862,8 +871,7 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 	std::list <zypp::RepoInfo> repos;
 	try
 	{
-		repos = manager.knownRepositories();
-		//repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
+		repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
 	}
 	catch ( const zypp::Exception &e)
 	{

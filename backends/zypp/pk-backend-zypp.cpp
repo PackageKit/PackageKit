@@ -828,10 +828,8 @@ backend_get_update_detail_thread (PkBackend *backend)
 		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 
 		zypp::Capabilities obs = solvable.obsoletes ();
-		zypp::Capabilities upd = solvable.freshens ();
 
 		gchar *obsoletes = zypp_build_package_id_capabilities (obs);
-		gchar *updates = zypp_build_package_id_capabilities (upd);
 
 		PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
@@ -845,6 +843,8 @@ backend_get_update_detail_thread (PkBackend *backend)
 			if (patch->rebootSuggested ()) {
 				restart = PK_RESTART_ENUM_SYSTEM;
 			} else if (patch->restartSuggested ()) {
+				restart = PK_RESTART_ENUM_SESSION;
+			} else if (patch->reloginSuggested()) {
 				restart = PK_RESTART_ENUM_SESSION;
 			}
 
@@ -868,26 +868,27 @@ backend_get_update_detail_thread (PkBackend *backend)
 			zypp::sat::SolvableSet content = patch->contents ();
 
 			for (zypp::sat::SolvableSet::const_iterator it = content.begin (); it != content.end (); it++) {
-				obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), " ", (gchar *)NULL);
-				updates = g_strconcat (updates, zypp_build_package_id_capabilities (it->freshens ()), " ", (gchar *)NULL);
+				obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), "^", (gchar *)NULL);
 			}
 		}
 
 		pk_backend_update_detail (backend,
 					  package_ids[i],
-					  updates,	// updates
+					  NULL,		// updates TODO with Resolver.installs
 					  obsoletes,	// CURRENTLY CAUSES SEGFAULT obsoletes,
 					  "",		// CURRENTLY CAUSES SEGFAULT solvable.vendor ().c_str (),
 					  bugzilla,	// bugzilla
 					  cve,		// cve
-					  restart,
-					  solvable.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (),
-					  NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
+					  restart,	// restart -flag
+					  solvable.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (),	// update-text
+					  NULL,		// ChangeLog text
+					  PK_UPDATE_STATE_ENUM_UNKNOWN,		// state of the update
+					  NULL, // date that the update was issued
+					  NULL);	// date that the update was updated
 
 		g_free (bugzilla);
 		g_free (cve);
 		g_free (obsoletes);
-		g_free (updates);
 	}
 
 	pk_backend_finished (backend);
@@ -911,13 +912,13 @@ backend_update_system_thread (PkBackend *backend)
 
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
+	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
 	//get all Patches for Update
-	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
+	std::set<zypp::PoolItem> *candidates = zypp_get_patches (restart);
 	//std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
 	
 	if (_updating_self) {
-		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, "Package Management System updated - restart needed");
 		_updating_self = FALSE;
 	}
 	else {
@@ -934,7 +935,7 @@ backend_update_system_thread (PkBackend *backend)
 
 		//candidates->insert (candidates2->begin (), candidates2->end ());
 	}
-
+	
 	pk_backend_set_percentage (backend, 80);
 	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
 	for (ci = cb; ci != ce; ++ci) {
@@ -948,6 +949,9 @@ backend_update_system_thread (PkBackend *backend)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
+	
+	if (restart != PK_RESTART_ENUM_NONE)
+		pk_backend_require_restart (backend, restart, "A restart is needed");
 
 	//delete (candidates2);
 	delete (candidates);
@@ -1361,8 +1365,7 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 	std::list <zypp::RepoInfo> repos;
 	try
 	{
-		repos = manager.knownRepositories();
-		//repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
+		repos = std::list<zypp::RepoInfo>(manager.repoBegin(),manager.repoEnd());
 	}
 	catch ( const zypp::Exception &e)
 	{
@@ -1538,8 +1541,9 @@ backend_update_packages_thread (PkBackend *backend)
 	gboolean retval;
 	gchar **package_ids;
 	package_ids = pk_backend_get_strv (backend, "package_ids");
+	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	zypp_get_patches (); // make shure _updating_self is set
+	zypp_get_patches (restart); // make shure _updating_self is set
 
 	if (_updating_self) {
 		pk_debug ("updating self and setting restart");
@@ -1554,6 +1558,10 @@ backend_update_packages_thread (PkBackend *backend)
 
 	retval = zypp_perform_execution (backend, UPDATE, FALSE);
 	pk_backend_finished (backend);
+	
+	if (restart != PK_RESTART_ENUM_NONE)
+		pk_backend_require_restart (backend, restart, "A restart is needed");
+
 	return retval;
 }
 
@@ -1687,14 +1695,70 @@ backend_what_provides_thread (PkBackend *backend)
 	zypp::Capability cap (search);
 	zypp::sat::WhatProvides prov (cap);
 
-	for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
-		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+	if(g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
 
-		PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
-		if( it->isSystem ())
-			info = PK_INFO_ENUM_INSTALLED;
 
-		pk_backend_package (backend, info, package_id, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+		// solver run
+		zypp::ResPool pool = zypp::ResPool::instance ();
+		zypp::Resolver solver(pool);
+
+		if (solver.resolvePool () == FALSE) {
+			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
+			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
+				pk_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
+			}
+			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
+			pk_backend_finished (backend);
+			return FALSE;
+		}
+
+		// look for packages which would be installed
+		for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
+				it != pool.byKindEnd (zypp::ResKind::package); it++) {
+			PkInfoEnum status = PK_INFO_ENUM_UNKNOWN;
+
+			gboolean hit = FALSE;
+
+			if (it->status ().isToBeUninstalled ()) {
+				status = PK_INFO_ENUM_REMOVING;
+				hit = TRUE;
+			}else if (it->status ().isToBeInstalled ()) {
+				status = PK_INFO_ENUM_INSTALLING;
+				hit = TRUE;
+			}else if (it->status ().isToBeUninstalledDueToUpgrade ()) {
+				status = PK_INFO_ENUM_UPDATING;
+				hit = TRUE;
+			}else if (it->status ().isToBeUninstalledDueToObsolete ()) {
+				status = PK_INFO_ENUM_OBSOLETING;
+				hit = TRUE;
+			}
+
+			if (hit) {
+				gchar *package_id;
+				package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
+						it->resolvable ()->edition ().asString ().c_str(),
+						it->resolvable ()->arch ().c_str(),
+						it->resolvable ()->repoInfo().alias ().c_str ());
+
+				pk_backend_package (backend, status, package_id, it->resolvable ()->description ().c_str ());
+
+				g_free (package_id);
+			}
+			it->statusReset ();
+		}
+
+
+
+	}else{
+		for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
+			gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+
+			PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
+			if( it->isSystem ())
+				info = PK_INFO_ENUM_INSTALLED;
+
+			pk_backend_package (backend, info, package_id, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+		}
 	}
 
 	pk_backend_finished (backend);

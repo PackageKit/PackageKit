@@ -168,7 +168,7 @@ std::set<zypp::PoolItem> * zypp_get_updates (std::string repo);
 /**
   * Returns a set of all patches the could be installed
   */
-std::set<zypp::PoolItem> * zypp_get_patches ();
+std::set<zypp::PoolItem> * zypp_get_patches (PkRestartEnum restart = PK_RESTART_ENUM_NONE);
 
 /**
   * perform changes in pool to the system
