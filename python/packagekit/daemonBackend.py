@@ -837,6 +837,23 @@ class PackageKitBaseBackend(dbus.service.Object):
                        "This function is not implemented in this backend")
         self.Finished(EXIT_FAILED)
 
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s',out_signature='')
+    def SetLocale(self, code):
+        '''
+        Allow to set the locale of the backend.
+        '''
+        pklog.info("SetLocale(): %s" % code)
+        self.doSetLocale(code)
+
+    def doSetLocale(self, code):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
 #
 # Utility methods
 #
