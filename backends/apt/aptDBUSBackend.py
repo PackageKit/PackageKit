@@ -327,6 +327,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         self._check_init(progress=False)
         self._cache.upgrade(False)
+        updates = filter(lambda p: self._cache[p].isUpgradable,
+                         self._cache.keys())
         for pkg in self._cache.getChanges():
             if self._canceled.isSet():
                 self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
@@ -335,6 +337,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._canceled.clear()
                 return
             else:
+                updates.remove(pkg.name)
                 info = INFO_NORMAL
                 archive = pkg.candidateOrigin[0].archive
                 origin = pkg.candidateOrigin[0].origin
@@ -351,6 +354,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 if origin in ["Backports.org archive"] and trusted == True:
                         info = INFO_ENHANCEMENT
                 self._emit_package(pkg, info)
+        # Report packages that are upgradable but cannot be upgraded
+        for missed in updates:
+             self._emit_package(self._cache[missed], INFO_BLOCKED)
         self._cache._depcache.Init()
         self.Finished(EXIT_SUCCESS)
 
