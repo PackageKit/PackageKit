@@ -252,8 +252,8 @@ PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk
 
 AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
 		 
-AC_SUBST(PK_PLUGIN_CFLAGS)
-AC_SUBST(PK_PLUGIN_LIBS)
+AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
+AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
 
 if test $build_browser_plugin = "yes"; then
 	# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
@@ -261,8 +261,8 @@ if test $build_browser_plugin = "yes"; then
 	packagekit_save_CPPFLAGS="$CPPFLAGS"
 	packagekit_save_LDFLAGS="$LDFLAGS"
 
-	CPPFLAGS="$CPPFLAGS $PLUGIN_CFLAGS"
-	LDFLAGS="$CPPFLAGS $PLUGIN_LIBS"
+	CPPFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_CFLAGS"
+	LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
 
 	AC_CHECK_FUNCS(gdk_app_launch_context_new)
 
