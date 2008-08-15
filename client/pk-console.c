@@ -778,13 +778,12 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 	guint length;
 	GPtrArray *array_packages;
 
-
 	array_packages = g_ptr_array_new ();
 	length = g_strv_length (packages);
-	for (i=2; i<length; i++) {
+	for (i=3; i<length; i++) {
 			package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, packages[i], error);
 			if (package_id == NULL) {
-				*error = g_error_new (1, 0, "%s: packages[i]", _("Could not find package to download:"));
+				*error = g_error_new (1, 0, "%s: %s", _("Could not find package to download"), packages[i]);
 				ret = FALSE;
 				break;
 			}
@@ -1220,7 +1219,7 @@ pk_console_get_summary (PkRoleEnum roles)
 		g_string_append_printf (string, "  %s\n", "install [packages|files]");
 	}
 	if (pk_enums_contain (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
-		g_string_append_printf (string, "  %s\n", "download [packages] [directory]");
+		g_string_append_printf (string, "  %s\n", "download [directory] [packages]");
 	}
 	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
 		g_string_append_printf (string, "  %s\n", "install-sig [type] [key_id] [package_id]");
@@ -1299,7 +1298,6 @@ main (int argc, char *argv[])
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
-	const gchar *directory = "/tmp";
 	PkGroupEnum groups;
 	gchar *text;
 	ret = FALSE;
@@ -1486,11 +1484,16 @@ main (int argc, char *argv[])
 		}
 		ret = pk_console_remove_packages (client, argv, &error);
 	} else if (strcmp (mode, "download") == 0) {
-		if (value == NULL || directory == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify the package to download and the destination directory"));
+		if (value == NULL || details == NULL) {
+			error = g_error_new (1, 0, "%s", _("You need to specify the destination directory and then the packages to download"));
 			goto out;
 		}
-		ret = pk_console_download_packages (client, argv, directory, &error);
+		ret = g_file_test (value, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR);
+		if (!ret) {
+			error = g_error_new (1, 0, "%s: %s", _("Directory not found"), value);
+			goto out;
+		}
+		ret = pk_console_download_packages (client, argv, value, &error);
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a eula-id"));
