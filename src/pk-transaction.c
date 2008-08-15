@@ -191,6 +191,7 @@ pk_transaction_error_get_type (void)
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_NOT_SUPPORTED, "NotSupported"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_NO_SUCH_TRANSACTION, "NoSuchTransaction"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_NO_SUCH_FILE, "NoSuchFile"),
+			ENUM_ENTRY (PK_TRANSACTION_ERROR_NO_SUCH_DIRECTORY, "NoSuchDirectory"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE, "TransactionExistsWithRole"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
@@ -1260,6 +1261,8 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint uid;
+	const gchar *dbus_name;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1272,6 +1275,35 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	                             "Operation not yet supported by backend");
 		pk_transaction_list_remove (transaction->priv->transaction_list,
 					    transaction->priv->tid);
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* does directory exist? */
+	ret = g_file_test (directory, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR);
+	if (!ret) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_DIRECTORY,
+	                             "directory '%s' cannot be found", directory);
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* get the UID of the sender */
+	dbus_name = dbus_g_method_get_sender (context);
+	ret = pk_security_uid_from_dbus_sender (transaction->priv->security, dbus_name, &uid);
+	if (!ret) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+	                             "cannot get uid from dbus sender: %s", dbus_name);
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* check for write access on the directory */
+	ret = pk_client_check_permissions (directory, uid, uid, W_OK);
+	if (!ret) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
+	                             "cannot get write to %s with uid %i", directory, uid);
+	        dbus_g_method_return_error (context, error);
 	        return;
 	}
 

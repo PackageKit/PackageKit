@@ -53,6 +53,10 @@ typedef struct
 GType		 pk_security_get_type		(void) G_GNUC_CONST;
 PkSecurity	*pk_security_new		(void);
 
+gboolean	 pk_security_uid_from_dbus_sender (PkSecurity	*security,
+						 const gchar	*dbus_name,
+						 guint		*uid)
+						 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_security_action_is_allowed	(PkSecurity	*security,
 						 const gchar	*dbus_sender,
 						 gboolean	 trusted,

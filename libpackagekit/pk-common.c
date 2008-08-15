@@ -34,6 +34,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
+#include <sys/stat.h>
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
@@ -871,6 +873,45 @@ pk_strbuild_va (const gchar *first_element, va_list *args)
 	g_string_set_size (string, string->len - 1);
 
 	return g_string_free (string, FALSE);
+}
+
+/**
+ * gpk_client_check_permissions:
+ * @filename: a filename to check
+ * @euid: the effective user ID to check for, or the output of geteuid()
+ * @egid: the effective group ID to check for, or the output of getegid()
+ * @mode: bitfield of R_OK, W_OK, XOK
+ *
+ * Like, access but a bit more accurate - access will let root do anything.
+ * Does not get read-only or no-exec filesystems right.
+ *
+ * Return value: %TRUE if the file has access perms
+ **/
+gboolean
+pk_client_check_permissions (const gchar *filename, guint euid, guint egid, guint mode)
+{
+	struct stat statbuf;
+
+	if (stat (filename, &statbuf) == 0) {
+		if ((mode & R_OK) &&
+		    !((statbuf.st_mode & S_IROTH) ||
+		      ((statbuf.st_mode & S_IRUSR) && euid == statbuf.st_uid) ||
+		      ((statbuf.st_mode & S_IRGRP) && egid == statbuf.st_gid)))
+			return FALSE;
+		if ((mode & W_OK) &&
+		    !((statbuf.st_mode & S_IWOTH) ||
+		      ((statbuf.st_mode & S_IWUSR) && euid == statbuf.st_uid) ||
+		      ((statbuf.st_mode & S_IWGRP) && egid == statbuf.st_gid)))
+			return FALSE;
+		if ((mode & X_OK) &&
+		    !((statbuf.st_mode & S_IXOTH) ||
+		      ((statbuf.st_mode & S_IXUSR) && euid == statbuf.st_uid) ||
+		      ((statbuf.st_mode & S_IXGRP) && egid == statbuf.st_gid)))
+			return FALSE;
+
+		return TRUE;
+	}
+	return FALSE;
 }
 
 /***************************************************************************

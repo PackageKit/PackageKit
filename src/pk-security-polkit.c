@@ -54,6 +54,40 @@ G_DEFINE_TYPE (PkSecurity, pk_security, G_TYPE_OBJECT)
 static gpointer pk_security_object = NULL;
 
 /**
+ * pk_security_uid_from_dbus_sender:
+ **/
+gboolean
+pk_security_uid_from_dbus_sender (PkSecurity *security, const gchar *dbus_name, guint *uid)
+{
+	PolKitCaller *caller;
+	DBusError dbus_error;
+	polkit_bool_t retval;
+	gboolean ret = FALSE;
+
+	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
+
+	/* get the PolKitCaller information */
+	dbus_error_init (&dbus_error);
+	caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_name, &dbus_error);
+	if (dbus_error_is_set (&dbus_error)) {
+		pk_warning ("failed to get caller %s: %s\n", dbus_error.name, dbus_error.message);
+		dbus_error_free (&dbus_error);
+		goto out;
+	}
+
+	/* get uid */
+	retval = polkit_caller_get_uid (caller, uid);
+	if (!retval) {
+		pk_warning ("failed to get UID");
+		goto out;
+	}
+	ret = TRUE;
+out:
+	polkit_caller_unref (caller);
+	return ret;
+}
+
+/**
  * pk_security_can_do_action:
  **/
 G_GNUC_WARN_UNUSED_RESULT static PolKitResult
@@ -102,7 +136,6 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 {
 	const gchar *policy = NULL;
 
-	g_return_val_if_fail (security != NULL, NULL);
 	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
 
 	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
