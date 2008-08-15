@@ -59,6 +59,12 @@ pk_generate_pack_perhaps_resolve (PkClient *client, PkFilterEnum filter, const g
 	PkPackageList *list;
 	gchar **packages;
 
+	/* check for NULL values */
+	if (package == NULL) {
+		pk_warning ("Cannot resolve the package: invalid package");
+		return NULL;
+	}
+
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package);
 	if (valid) {
@@ -135,6 +141,13 @@ pk_generate_pack_download_only (PkClient *client, gchar **package_ids, const gch
 	gboolean ret;
 	GError *error = NULL;
 
+	/* check for NULL values */
+	if (package_ids == NULL || directory == NULL) {
+		pk_warning (_("failed to download: invalid package_id and/or directory"));
+		ret = FALSE;
+		goto out;
+	}
+
 	pk_debug ("download+ %s %s", package_ids[0], directory);
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
@@ -166,6 +179,13 @@ pk_generate_pack_exclude_packages (PkPackageList *list, const gchar *package_lis
 	gboolean ret;
 
 	list_packages = pk_package_list_new ();
+
+	/* check for NULL values */
+	if (package_list == NULL) {
+		pk_warning ("Cannot find the list of packages to be excluded");
+		ret = FALSE;
+		goto out;
+	}
 
 	/* load a list of packages already found on the users system */
 	ret = pk_package_list_add_file (list_packages, package_list);
@@ -200,6 +220,14 @@ pk_generate_pack_set_metadata (const gchar *full_path)
 	GKeyFile *file = NULL;
 	gchar *data = NULL;
 
+	file = g_key_file_new ();
+
+	/* check for NULL values */
+	if (full_path == NULL) {
+		pk_warning (_("Could not find a valid metadata file"));
+		goto out;
+	}
+
 	/* get needed data */
 	distro_id = pk_get_distro_id ();
 	if (distro_id == NULL)
@@ -208,7 +236,6 @@ pk_generate_pack_set_metadata (const gchar *full_path)
 	if (datetime == NULL)
 		goto out;
 
-	file = g_key_file_new ();
 	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", distro_id);
 	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "created", datetime);
 
@@ -279,6 +306,13 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 		goto out;
 	}
 
+	/* check for NULL values */
+	if (file_array == NULL) {
+		g_remove ((gchar *) tarfilename);
+		ret = FALSE;
+		goto out;
+	}
+
 	/* add each of the files */
 	for (i=0; i<file_array->len; i++) {
 		src = (gchar *) g_ptr_array_index (file_array, i);
@@ -324,6 +358,12 @@ pk_generate_pack_scan_dir (const gchar *directory)
 	GPtrArray *file_array = NULL;
 	GDir *dir;
 	const gchar *filename;
+
+	/* check for NULL values */
+	if (directory == NULL) {
+		pk_warning ("failed to get directory");
+		goto out;
+	}
 
 	/* try and open the directory */
 	dir = g_dir_open (directory, 0, NULL);
@@ -469,3 +509,213 @@ out:
 	return ret;
 }
 
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_generate_pack (LibSelfTest *test)
+{
+	PkClient *client = NULL;
+	gboolean ret;
+	gboolean retval;
+	GError *error = NULL;
+	gchar *file;
+	PkPackageList *list = NULL;
+	GPtrArray *file_array = NULL;
+	gchar *src;
+	gchar **package_ids;
+
+	if (libst_start (test, "PkGeneratePack", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	/************************************************************/
+	libst_title (test, "get client");
+	client = pk_client_new ();
+	if (client != NULL)
+		libst_success (test, NULL);
+	else
+		libst_failed (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "test perhaps resolve NULL");
+	retval = pk_client_reset (client, &error);
+	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, NULL, &error);
+	if (file == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed to resolve %s", error->message);
+		g_error_free (error);
+	}
+	g_free (file);
+
+	/************************************************************/
+	libst_title (test, "test perhaps resolve gitk");
+	retval = pk_client_reset(client, &error);
+	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, "gitk;1.5.5.1-1.fc9;i386;installed", &error);
+	if (file != NULL && pk_strequal (file, "gitk;1.5.5.1-1.fc9;i386;installed"))
+		libst_success (test, NULL);
+	else
+		libst_failed (test, "got: %s", file);
+	g_free (file);
+
+	/************************************************************/
+	libst_title (test, "download only NULL");
+	ret = pk_generate_pack_download_only (client, NULL, NULL);
+	if (!ret)
+		libst_success (test, NULL);
+	else
+		libst_failed (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "download only gitk");
+	package_ids = pk_package_ids_from_id ("gitk;1.5.5.1-1.fc9;i386;installed");
+	ret = pk_generate_pack_download_only (client, package_ids, "/tmp");
+	if (ret)
+		libst_success (test, NULL);
+	else
+		libst_failed (test, NULL);
+	g_strfreev (package_ids);
+
+	/************************************************************/
+	libst_title (test, "exclude NULL");
+	list = pk_package_list_new ();
+	ret = pk_generate_pack_exclude_packages (list, NULL);
+	if (!ret)
+		libst_success (test, NULL);
+	else
+		libst_failed (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "exclude /var/lib/PackageKit/package-list.txt");
+	list = pk_package_list_new ();
+	ret = pk_generate_pack_exclude_packages (list, "/var/lib/PackageKit/package-list.txt");
+	if (ret)
+		libst_success (test, NULL);
+	else
+		libst_failed (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "exclude false.txt");
+	list = pk_package_list_new ();
+	ret = pk_generate_pack_exclude_packages (list, "/media/USB/false.txt");
+	if (!ret)
+		libst_success (test, NULL);
+	else
+		libst_failed (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "metadata NULL");
+	ret = pk_generate_pack_set_metadata (NULL);
+	if (!ret)
+		libst_success (test, NULL);
+	else
+		libst_failed (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "metadata /tmp/metadata.conf");
+	ret = pk_generate_pack_set_metadata ("/tmp/metadata.conf");
+	if (ret)
+		libst_success (test, NULL);
+	else
+		libst_failed (test, NULL);
+	g_remove ("/tmp/metadata.conf");
+
+	/************************************************************/
+	libst_title (test, "scandir NULL");
+	file_array = pk_generate_pack_scan_dir (NULL);
+	if (file_array == NULL)
+		libst_success (test, NULL);
+	else
+		libst_failed (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "scandir /tmp");
+	file_array = pk_generate_pack_scan_dir ("/tmp");
+	if (file_array != NULL)
+		libst_success (test, NULL);
+	else
+		libst_failed (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "generate pack NULL NULL");
+	ret = pk_generate_pack_create (NULL, NULL, &error);
+	if (!ret) {
+		if (error != NULL)
+			libst_success (test, "failed to create pack %s" , error->message);
+		else
+			libst_failed (test, "could not set error");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "generate pack /tmp/test.pack NULL");
+	ret = pk_generate_pack_create ("/tmp/test.pack", NULL, &error);
+	if (!ret) {
+		if (error != NULL)
+			libst_success (test, "failed to create pack %s" , error->message);
+		else
+			libst_failed (test, "could not set error");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "generate pack /tmp/test NULL");
+	ret = pk_generate_pack_create ("/tmp/test", NULL, &error);
+	if (!ret) {
+		if (error != NULL)
+			libst_success (test, "failed to create pack %s" , error->message);
+		else
+			libst_failed (test, "could not set error");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "generate pack /tmp/test.tar NULL");
+	ret = pk_generate_pack_create ("test.tar", NULL, &error);
+	if (!ret) {
+		if (error != NULL)
+			libst_success (test, "failed to create pack %s" , error->message);
+		else
+			libst_failed (test, "could not set error");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "generate pack NULL gitk");
+	file_array = g_ptr_array_new ();
+	g_ptr_array_add (file_array, NULL);
+	ret = pk_generate_pack_create (NULL, file_array, &error);
+	if (!ret) {
+		if (error != NULL)
+			libst_success (test, "failed to create pack %s" , error->message);
+		else
+			libst_failed (test, "could not set error");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "generate pack /tmp/gitk.pack gitk");
+	file_array = g_ptr_array_new ();
+	src = g_build_filename ("/tmp", "gitk-1.5.5.1-1.fc9.i386.rpm", NULL);
+	g_ptr_array_add (file_array, src);
+	ret = pk_generate_pack_create ("/tmp/gitk.pack",file_array, &error);
+	if (!ret) {
+		if (error != NULL)
+			libst_failed (test, "failed to create pack %s" , error->message);
+		else
+			libst_failed (test, "could not set error");
+	} else {
+		libst_success (test, NULL);
+	}
+	/************************************************************/
+}
+#endif

@@ -11,6 +11,7 @@ pk-application
 pk-import-desktop
 pk-import-specspo
 pk-generate-package-list
+pk-self-test
 *.glade.bak
 *.gladep
 *.gladep.bak
