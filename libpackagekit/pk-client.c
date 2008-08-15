@@ -3386,7 +3386,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::transaction:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @tid: the moo of the transaction
+	 * @tid: the ID of the transaction
 	 * @timespec: the iso8601 date and time the transaction completed
 	 * @succeeded: if the transaction succeeded
 	 * @role: the #PkRoleEnum of the transaction, e.g. PK_ROLE_ENUM_REFRESH_CACHE
@@ -3406,14 +3406,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::update-detail:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @package_id: the package_id of the package
-	 * @updates: the list of packages the update updates
-	 * @obsoletes: the list of packages the update obsoletes
-	 * @vendor_url: the list of vendor URL's of the update
-	 * @bugzilla_url: the list of bugzilla URL's of the update
-	 * @cve_url: the list of CVE URL's of the update
-	 * @restart: the #PkRestartEnum of the update, e.g. PK_RESTART_ENUM_SYSTEM
-	 * @update_text: the update summary of the update
+	 * @details: a pointer to a PkUpdateDetailsObj strusture descibing the update
 	 *
 	 * The ::update-detail signal is emitted when GetUpdateDetail() is
 	 * called on a set of package_id's.
@@ -3427,12 +3420,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::details:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @package_id: the package_id of the package
-	 * @license: the licence of the package, e.g. "GPLv2+"
-	 * @group: the #PkGroupEnum of the package, e.g. PK_GROUP_ENUM_EDUCATION
-	 * @description: the description of the package
-	 * @url: the upstream URL of the package
-	 * @size: the size of the package in bytes
+	 * @detail: a pointer to a PkDetailObj strusture descibing the package
 	 *
 	 * The ::details signal is emitted when GetDetails() is called.
 	 **/
