@@ -1299,7 +1299,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	}
 
 	/* check for write access on the directory */
-	ret = pk_client_check_permissions (directory, uid, uid, W_OK);
+	ret = pk_check_permissions (directory, uid, uid, W_OK);
 	if (!ret) {
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
 	                             "cannot get write to %s with uid %i", directory, uid);

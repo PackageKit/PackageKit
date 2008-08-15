@@ -876,7 +876,7 @@ pk_strbuild_va (const gchar *first_element, va_list *args)
 }
 
 /**
- * gpk_client_check_permissions:
+ * gpk_check_permissions:
  * @filename: a filename to check
  * @euid: the effective user ID to check for, or the output of geteuid()
  * @egid: the effective group ID to check for, or the output of getegid()
@@ -888,7 +888,7 @@ pk_strbuild_va (const gchar *first_element, va_list *args)
  * Return value: %TRUE if the file has access perms
  **/
 gboolean
-pk_client_check_permissions (const gchar *filename, guint euid, guint egid, guint mode)
+pk_check_permissions (const gchar *filename, guint euid, guint egid, guint mode)
 {
 	struct stat statbuf;
 
