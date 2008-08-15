@@ -117,6 +117,8 @@ void		 pk_transaction_get_depends		(PkTransaction	*transaction,
 void		 pk_transaction_get_details		(PkTransaction	*transaction,
 							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
+void		 pk_transaction_get_distro_upgrades	(PkTransaction	*transaction,
+							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_files		(PkTransaction	*transaction,
 							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);

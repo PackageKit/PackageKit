@@ -117,6 +117,10 @@ gboolean	 pk_backend_details			(PkBackend	*backend,
 gboolean 	 pk_backend_files 			(PkBackend 	*backend,
 							 const gchar	*package_id,
 							 const gchar 	*filelist);
+gboolean 	 pk_backend_distro_upgrade		(PkBackend 	*backend,
+							 PkDistroUpgradeEnum type,
+							 const gchar 	*name,
+							 const gchar 	*summary);
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
 							 PkErrorCodeEnum code,
 							 const gchar	*details, ...);
@@ -205,6 +209,7 @@ typedef struct {
 							 gboolean	 recursive);
 	void		(*get_details)			(PkBackend	*backend,
 							 gchar		**package_ids);
+	void		(*get_distro_upgrades)		(PkBackend	*backend);
 	void		(*get_files)			(PkBackend	*backend,
 							 gchar		**package_ids);
 	void		(*get_packages)			(PkBackend	*backend,
@@ -272,7 +277,7 @@ typedef struct {
 } PkBackendDesc;
 
 #define PK_BACKEND_OPTIONS(description, author, initialize, destroy, get_filters, get_groups, cancel, download_packages, \
-			   get_depends, get_details, get_files, get_packages, get_repo_list, get_requires,	\
+			   get_depends, get_details, get_distro_upgrades, get_files, get_packages, get_repo_list, get_requires,	\
 			   get_update_detail, get_updates, install_files, install_packages,		\
 			   install_signature, refresh_cache, remove_packages, repo_enable,		\
 			   repo_set_data, resolve, rollback, search_details, search_file, search_group,	\
@@ -288,6 +293,7 @@ typedef struct {
 		download_packages,	\
 		get_depends,		\
 		get_details,		\
+		get_distro_upgrades,	\
 		get_files,		\
 		get_packages,		\
 		get_repo_list,		\
