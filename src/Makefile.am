@@ -185,6 +185,7 @@ pk_self_test_LDADD =					\
 	$(PK_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
+	$(TAR_LIBS)					\
 	$(NULL)
 
 TESTS = pk-self-test

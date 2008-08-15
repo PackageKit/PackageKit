@@ -1522,7 +1522,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test replace unsafe (multiple invalid)");
-	text_safe = pk_strsafe ("'Richard\"Hughes\"");
+	text_safe = pk_strsafe (" Richard\"Hughes\"");
 	if (pk_strequal (text_safe, " Richard Hughes ")) {
 		libst_success (test, NULL);
 	} else {
