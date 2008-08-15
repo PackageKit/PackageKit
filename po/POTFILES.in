@@ -3,6 +3,7 @@
 # Please keep this file sorted alphabetically.
 client/pk-console.c
 client/pk-generate-pack.c
+client/pk-generate-pack-main.c
 client/pk-import-desktop.c
 client/pk-import-specspo.c
 client/pk-monitor.c

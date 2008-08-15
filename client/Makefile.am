@@ -63,7 +63,9 @@ pkmon_LDADD =						\
 	$(NULL)
 
 pkgenpack_SOURCES =					\
+	pk-generate-pack-main.c				\
 	pk-generate-pack.c				\
+	pk-generate-pack.h				\
 	pk-tools-common.c				\
 	pk-tools-common.h				\
 	$(NULL)
