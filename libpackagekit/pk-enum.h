@@ -79,7 +79,8 @@ typedef enum {
 	PK_ROLE_ENUM_WHAT_PROVIDES		= 1 << 25,
 	PK_ROLE_ENUM_ACCEPT_EULA		= 1 << 26,
 	PK_ROLE_ENUM_DOWNLOAD_PACKAGES		= 1 << 27,
-	PK_ROLE_ENUM_UNKNOWN			= 1 << 28
+	PK_ROLE_ENUM_GET_DISTRO_UPGRADES	= 1 << 28,
+	PK_ROLE_ENUM_UNKNOWN			= 1 << 29
 } PkRoleEnum;
 
 /**
@@ -362,6 +363,17 @@ typedef enum {
 } PkInfoEnum;
 
 /**
+ * PkDistroUpgradeEnum:
+ *
+ * The distro upgrade status
+ **/
+typedef enum {
+	PK_DISTRO_UPGRADE_ENUM_STABLE,
+	PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
+	PK_DISTRO_UPGRADE_ENUM_UNKNOWN
+} PkDistroUpgradeEnum;
+
+/**
  * PkSigTypeEnum:
  *
  * The signature type type
@@ -577,6 +589,9 @@ const gchar	*pk_provides_enum_to_text		(PkProvidesEnum	 provides);
 
 PkLicenseEnum	 pk_license_enum_from_text		(const gchar	*license);
 const gchar	*pk_license_enum_to_text		(PkLicenseEnum	 license);
+
+PkDistroUpgradeEnum pk_distro_upgrade_enum_from_text	(const gchar	*upgrade);
+const gchar	*pk_distro_upgrade_enum_to_text		(PkDistroUpgradeEnum upgrade);
 
 G_END_DECLS
 

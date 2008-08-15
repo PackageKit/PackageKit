@@ -122,6 +122,7 @@ struct PkTransactionPrivate
 	guint			 signal_details;
 	guint			 signal_error_code;
 	guint			 signal_files;
+	guint			 signal_distro_upgrade;
 	guint			 signal_finished;
 	guint			 signal_message;
 	guint			 signal_package;
@@ -139,6 +140,7 @@ enum {
 	PK_TRANSACTION_CALLER_ACTIVE_CHANGED,
 	PK_TRANSACTION_DETAILS,
 	PK_TRANSACTION_ERROR_CODE,
+	PK_TRANSACTION_DISTRO_UPGRADE,
 	PK_TRANSACTION_FILES,
 	PK_TRANSACTION_FINISHED,
 	PK_TRANSACTION_MESSAGE,
@@ -442,6 +444,23 @@ pk_transaction_files_cb (PkBackend *backend, const gchar *package_id,
 }
 
 /**
+ * pk_transaction_distro_upgrade_cb:
+ **/
+static void
+pk_transaction_distro_upgrade_cb (PkBackend *backend, PkDistroUpgradeEnum type,
+				  const gchar *name, const gchar *summary, PkTransaction *transaction)
+{
+	const gchar *type_text;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	type_text = pk_distro_upgrade_enum_to_text (type);
+	pk_debug ("emitting distro-upgrade %s, %s, %s", type_text, name, summary);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_DISTRO_UPGRADE], 0, type_text, name, summary);
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void
@@ -521,6 +540,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_details);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_error_code);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_files);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_distro_upgrade);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_finished);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_package);
@@ -809,6 +829,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->signal_files =
 		g_signal_connect (transaction->priv->backend, "files",
 				  G_CALLBACK (pk_transaction_files_cb), transaction);
+	transaction->priv->signal_distro_upgrade =
+		g_signal_connect (transaction->priv->backend, "distro-upgrade",
+				  G_CALLBACK (pk_transaction_distro_upgrade_cb), transaction);
 	transaction->priv->signal_finished =
 		g_signal_connect (transaction->priv->backend, "finished",
 				  G_CALLBACK (pk_transaction_finished_cb), transaction);
@@ -879,6 +902,8 @@ pk_transaction_set_running (PkTransaction *transaction)
 		desc->download_packages (priv->backend, priv->cached_package_ids, priv->cached_directory);
 	} else if (priv->role == PK_ROLE_ENUM_GET_DETAILS) {
 		desc->get_details (priv->backend, priv->cached_package_ids);
+	} else if (priv->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES) {
+		desc->get_distro_upgrades (priv->backend);
 	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
 		desc->get_files (priv->backend, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
@@ -1485,6 +1510,54 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	}
 
 	dbus_g_method_return (context);
+}
+
+/**
+ * pk_transaction_get_distro_upgrades:
+ **/
+void
+pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	pk_debug ("GetDistroUpgrades method called");
+
+	/* not implemented yet */
+	if (transaction->priv->backend->desc->get_distro_upgrades == NULL) {
+		pk_debug ("Not implemented yet: GetDistroUpgrades");
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* set the dbus name, so we can get the disconnect */
+	if (context != NULL) {
+		/* not set inside the test suite */
+		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+	}
+
+	/* save so we can run later */
+	transaction->priv->status = PK_STATUS_ENUM_WAIT;
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+				     "Could not commit to a transaction object");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	if (context != NULL) {
+		/* not set inside the test suite */
+		dbus_g_method_return (context);
+	}
 }
 
 /**
@@ -3344,6 +3417,11 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TRANSACTION_DISTRO_UPGRADE] =
+		g_signal_new ("distro-upgrade",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TRANSACTION_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
