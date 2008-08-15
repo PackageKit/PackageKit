@@ -189,7 +189,7 @@ pk_iso8601_difference (const gchar *isodate)
 
 /**
  * pk_iso8601_from_date:
- * @isodate: a %GDate to convert
+ * @date: a %GDate to convert
  *
  * Return value: If valid then a new ISO8601 date, else NULL
  **/
@@ -209,7 +209,7 @@ pk_iso8601_from_date (const GDate *date)
 
 /**
  * pk_iso8601_to_date:
- * @isodate: The ISO8601 date to convert
+ * @iso_date: The ISO8601 date to convert
  *
  * Return value: If valid then a new %GDate, else NULL
  **/

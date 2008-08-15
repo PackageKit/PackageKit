@@ -108,7 +108,7 @@ pk_dbus_monitor_name_owner_changed_cb (DBusGProxy *proxy, const gchar *name,
 
 /**
  * pk_dbus_monitor_assign:
- * @pk_dbus_monitor: This class instance
+ * @monitor: This class instance
  * @bus_type: The bus type, either PK_DBUS_MONITOR_SESSION or PK_DBUS_MONITOR_SYSTEM
  * @service: The PK_DBUS_MONITOR service name
  * Return value: success
@@ -175,7 +175,7 @@ pk_dbus_monitor_assign (PkDbusMonitor *monitor, PkDbusMonitorType bus_type, cons
 
 /**
  * pk_dbus_monitor_is_connected:
- * @pk_dbus_monitor: This class instance
+ * @monitor: This class instance
  * Return value: if we are connected to a valid watch
  **/
 gboolean
@@ -224,7 +224,7 @@ pk_dbus_monitor_class_init (PkDbusMonitorClass *klass)
 
 /**
  * pk_dbus_monitor_init:
- * @dbus_monitor: This class instance
+ * @monitor: This class instance
  **/
 static void
 pk_dbus_monitor_init (PkDbusMonitor *monitor)
