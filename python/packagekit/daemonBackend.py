@@ -316,6 +316,21 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='ssss')
+    def EulaRequired(self, eula_id, package_id, vendor_name, license_agreement):
+        '''
+        send 'eula-required' signal:
+        @param eula_id: unique identifier of the EULA agreement
+        @param package_id: the package affected by this agreement
+        @param vendor_name: the freedom hater
+        @param license_agreement: the plain text license agreement
+        '''
+        pklog.info("Eula required (%s,%s,%s,%s)" % (eula_id, package_id,
+                                                    vendor_name,
+                                                    license_agreement))
+
+    @PKSignalHouseKeeper
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='')
     def UpdatesChanged(self,typ,fname):
         '''
