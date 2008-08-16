@@ -16,7 +16,6 @@ the Free Software Foundation; either version 2 of the License, or
 """
 
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
-__state__   = "experimental"
 
 import httplib
 import locale
