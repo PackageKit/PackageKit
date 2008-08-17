@@ -962,14 +962,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 if ":" in codec:
                     codec = codec.split(":")[1]
                 if codec in term:
+                    # The codec mapping db stores the packages as a string
+                    # separated by spaces. Each package has its section
+                    # prefixed and separated by a slash
+                    # FIXME: Should make use of the section and emit a 
+                    #        RepositoryRequired signal if the package does 
+                    #        not exist
                     handlers.update(set(map(lambda s: s.split("/")[1],
                                         db[k].split(" "))))
-            for p in handlers:
-                 if not self._cache.has_key(p):
-                     continue
-                 pkg = self._cache[p]
-                 if self._is_package_visible(pkg, filters):
-                      self._emit_package(pkg)
+            self._emit_visible_packages_by_name(filters, handlers)
         elif provides_type == PROVIDES_MIMETYPE:
             # Emit packages that contain an application that can handle
             # the given mime type
@@ -980,12 +981,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
             if db.has_key(search):
                 pklog.debug("Mime type is registered: %s" % db[search])
-                for p in map(lambda s: s.split("/")[1], db[search].split(" ")):
-                     if not self._cache.has_key(p):
-                         continue
-                     pkg = self._cache[p]
-                     if self._is_package_visible(pkg, filters):
-                          self._emit_package(pkg)
+                # The mime type handler db stores the packages as a string
+                # separated by spaces. Each package has its section
+                # prefixed and separated by a slash
+                # FIXME: Should make use of the section and emit a 
+                #        RepositoryRequired signal if the package does not exist
+                handlers = map(lambda s: s.split("/")[1],
+                               db[search].split(" "))
+                self._emit_visible_packages_by_name(filters, handlers)
         else:
             self.ErrorCode(ERROR_NOT_SUPPORTED,
                            "This function is not implemented in this backend")
