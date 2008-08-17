@@ -1118,6 +1118,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         summary = pkg.summary
         self.Package(info, id, summary)
 
+    def _emit_visible_packages(self, filters, pkgs, info=None):
+        """
+        Filter and emit packages
+        """
+        for p in pkgs:
+            if self._is_package_visible(p, filters):
+                self._emit_package(p, info)
+
+    def _emit_visible_packages_by_name(self, filters, pkgs, info=None):
+        """
+        Find the packages with the given namens. Afterwards filter and emit
+        them
+        """
+        for name in pkgs:
+            if self._cache.has_key(name) and \
+               self._is_package_visible(self._cache[name], filters):
+                self._emit_package(self._cache[name], info)
+
+
     def _is_package_visible(self, pkg, filters):
         '''
         Return True if the package should be shown in the user interface
