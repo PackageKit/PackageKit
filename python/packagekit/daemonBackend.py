@@ -42,7 +42,7 @@ from pkexceptions import *
 
 logging.basicConfig(format="%(levelname)s:%(message)s")
 pklog = logging.getLogger("PackageKitBackend")
-pklog.setLevel(logging.INFO)
+pklog.setLevel(logging.WARN)
 
 syslog = logging.handlers.SysLogHandler(facility=logging.handlers.SysLogHandler.LOG_DAEMON,address='/dev/log')
 formatter = logging.Formatter('PackageKit: %(levelname)s: %(message)s')
