@@ -904,7 +904,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     def doWhatProvides(self, filters, provides_type, search):
-        def open_mapping_db(path):
+        def get_mapping_db(path):
             """
             Return the gdbm database at the given path or send an
             appropriate error message
@@ -952,15 +952,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "The search term is invalid")
                 self.Finished(EXIT_FAILED)
                 return
-            MAPPING_DB = "/var/cache/app-install/gai-codec-map.gdbm"
-            if not os.access(MAPPING_DB, os.R_OK):
-                self.ErrorCode(ERROR_UNKNOWN,
-                               "The list of codecs is not available. "
-                               "Please make sure that the package "
-                               "app-install-data is installed.")
+            db = get_mapping_db("/var/cache/app-install/gai-codec-map.gdbm")
+            if db == None:
                 self.Finished(EXIT_FAILED)
                 return
-            db = gdbm.open(MAPPING_DB)
             handlers = set()
             for k in db.keys():
                 codec = k
@@ -979,11 +974,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # Emit packages that contain an application that can handle
             # the given mime type
             handlers = set()
-            db = open_mapping_db("/var/cache/app-install/gai-mime-map.gdbm")
+            db = get_mapping_db("/var/cache/app-install/gai-mime-map.gdbm")
             if db == None:
                 self.Finished(EXIT_FAILED)
                 return
-
             if db.has_key(search):
                 pklog.debug("Mime type is registered: %s" % db[search])
                 for p in map(lambda s: s.split("/")[1], db[search].split(" ")):
