@@ -230,6 +230,15 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 	        pk_backend_dbus_download_packages (dbus, package_ids, directory);
 }
 
+/**
+ *  * pk_backend_what_provides
+ *   */
+static void
+backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provides, const gchar *search)
+{
+	        pk_backend_dbus_what_provides (dbus, filters, provides, search);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"Apt",					/* description */
@@ -264,5 +273,5 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* service_pack */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	NULL					/* what_provides */
+	backend_what_provides			/* what_provides */
 );

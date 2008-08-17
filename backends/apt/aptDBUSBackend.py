@@ -17,6 +17,7 @@ the Free Software Foundation; either version 2 of the License, or
 
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 
+import gdbm
 import httplib
 import locale
 import logging
@@ -899,6 +900,54 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
         # Clean up
         self._cache._depcache.Init()
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    def doWhatProvides(self, filters, provides_type, search):
+        self.StatusChanged(STATUS_INFO)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(False)
+        if provides_type == PROVIDES_CODEC:
+            # The search term from the codec helper looks like this one:
+            # "gstreamer.net|0.10|totem|DivX MPEG-4 Version 5 decoder|" \
+            # "decoder-video/x-divx, divxversion=(int)5 (DivX MPEG-4 Version " \
+            # "5 decoder)"
+            try:
+                (origin, version, app, descr, term) = search.split("|")
+            except ValueError, e:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "The search term is invalid")
+                self.Finished(EXIT_FAILED)
+                return
+            MAPPING_DB = "/var/cache/app-install/gai-codec-map.gdbm"
+            if not os.access(MAPPING_DB, os.R_OK):
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "The list of codecs is not available. "
+                               "Please make sure that the package "
+                               "app-install-data is installed.")
+                self.Finished(EXIT_FAILED)
+                return
+            db = gdbm.open(MAPPING_DB)
+            handlers = set()
+            for k in db.keys():
+                codec = k
+                if ":" in codec:
+                    codec = codec.split(":")[1]
+                if codec in term:
+                    handlers.update(set(map(lambda s: s.split("/")[1],
+                                        db[k].split(" "))))
+            for p in handlers:
+                 if not self._cache.has_key(p):
+                     continue
+                 pkg = self._cache[p]
+                 if self._is_package_visible(pkg, filters):
+                      self._emit_package(pkg)
+        else:
+            self.ErrorCode(ERROR_NOT_SUPPORTED,
+                           "This function is not implemented in this backend")
+            self.Finished(EXIT_FAILED)
+            return
         self.Finished(EXIT_SUCCESS)
 
     def doSetProxy(self, http_proxy, ftp_proxy):
