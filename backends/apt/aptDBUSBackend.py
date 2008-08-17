@@ -904,6 +904,38 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     def doWhatProvides(self, filters, provides_type, search):
+        def open_mapping_db(path):
+            """
+            Return the gdbm database at the given path or send an
+            appropriate error message
+            """
+            if not os.access(path, os.R_OK):
+                if self._cache.has_key("app-install-data") and \
+                   self._cache["app-install-data"].isInstalled == False:
+                    self.ErrorCode(ERROR_UNKNOWN,
+                                   "Please install the package "
+                                   "app-install data for a list of "
+                                   "applications that can handle files of "
+                                   "the given type")
+                else:
+                    self.ErrorCode(ERROR_UNKNOWN,
+                                   "The list of applications that can handle "
+                                   "files of the given type cannot be opened.\n"
+                                   "Try to reinstall the package "
+                                   "app-install-data.")
+                return None
+            try:
+                db = gdbm.open(path)
+            except:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "The list of applications that can handle "
+                               "files of the given type cannot be opened.\n"
+                               "Try to reinstall the package "
+                               "app-install-data.")
+                return None
+            else:
+                return db
+
         self.StatusChanged(STATUS_INFO)
         self.NoPercentageUpdates()
         self._check_init(progress=False)
@@ -943,6 +975,23 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                  pkg = self._cache[p]
                  if self._is_package_visible(pkg, filters):
                       self._emit_package(pkg)
+        elif provides_type == PROVIDES_MIMETYPE:
+            # Emit packages that contain an application that can handle
+            # the given mime type
+            handlers = set()
+            db = open_mapping_db("/var/cache/app-install/gai-mime-map.gdbm")
+            if db == None:
+                self.Finished(EXIT_FAILED)
+                return
+
+            if db.has_key(search):
+                pklog.debug("Mime type is registered: %s" % db[search])
+                for p in map(lambda s: s.split("/")[1], db[search].split(" ")):
+                     if not self._cache.has_key(p):
+                         continue
+                     pkg = self._cache[p]
+                     if self._is_package_visible(pkg, filters):
+                          self._emit_package(pkg)
         else:
             self.ErrorCode(ERROR_NOT_SUPPORTED,
                            "This function is not implemented in this backend")
