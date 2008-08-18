@@ -79,7 +79,8 @@ typedef enum {
 	PK_ROLE_ENUM_WHAT_PROVIDES		= 1 << 25,
 	PK_ROLE_ENUM_ACCEPT_EULA		= 1 << 26,
 	PK_ROLE_ENUM_DOWNLOAD_PACKAGES		= 1 << 27,
-	PK_ROLE_ENUM_UNKNOWN			= 1 << 28
+	PK_ROLE_ENUM_GET_DISTRO_UPGRADES	= 1 << 28,
+	PK_ROLE_ENUM_UNKNOWN			= 1 << 29
 } PkRoleEnum;
 
 /**
@@ -296,6 +297,9 @@ typedef enum {
 	PK_GROUP_ENUM_SERVERS			= 1 << 25,
 	PK_GROUP_ENUM_SYSTEM			= 1 << 26,
 	PK_GROUP_ENUM_VIRTUALIZATION		= 1 << 27,
+//	PK_GROUP_ENUM_SCIENCE			= 1 << 28,
+//	PK_GROUP_ENUM_DOCUMENTATION		= 1 << 29,
+//	PK_GROUP_ENUM_ELECTRONICS		= 1 << 30,
 	PK_GROUP_ENUM_UNKNOWN			= 1 << 28
 } PkGroupEnum;
 
@@ -360,6 +364,17 @@ typedef enum {
 	PK_INFO_ENUM_OBSOLETING			= 1 << 14,
 	PK_INFO_ENUM_UNKNOWN			= 1 << 15
 } PkInfoEnum;
+
+/**
+ * PkDistroUpgradeEnum:
+ *
+ * The distro upgrade status
+ **/
+typedef enum {
+	PK_DISTRO_UPGRADE_ENUM_STABLE,
+	PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
+	PK_DISTRO_UPGRADE_ENUM_UNKNOWN
+} PkDistroUpgradeEnum;
 
 /**
  * PkSigTypeEnum:
@@ -577,6 +592,9 @@ const gchar	*pk_provides_enum_to_text		(PkProvidesEnum	 provides);
 
 PkLicenseEnum	 pk_license_enum_from_text		(const gchar	*license);
 const gchar	*pk_license_enum_to_text		(PkLicenseEnum	 license);
+
+PkDistroUpgradeEnum pk_distro_upgrade_enum_from_text	(const gchar	*upgrade);
+const gchar	*pk_distro_upgrade_enum_to_text		(PkDistroUpgradeEnum upgrade);
 
 G_END_DECLS
 

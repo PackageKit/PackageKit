@@ -104,7 +104,6 @@ gboolean	 pk_transaction_cancel			(PkTransaction	*transaction,
 							 GError		**error);
 void		 pk_transaction_download_packages	(PkTransaction  *transaction,
 							 gchar		**package_ids,
-							 const gchar	*directory,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_allow_cancel	(PkTransaction	*transaction,
 							 gboolean	*allow_cancel,
@@ -116,6 +115,8 @@ void		 pk_transaction_get_depends		(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_details		(PkTransaction	*transaction,
 							 gchar		**package_ids,
+							 DBusGMethodInvocation *context);
+void		 pk_transaction_get_distro_upgrades	(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_files		(PkTransaction	*transaction,
 							 gchar		**package_ids,

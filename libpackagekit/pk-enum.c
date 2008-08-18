@@ -111,6 +111,7 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_WHAT_PROVIDES,		"what-provides"},
 	{PK_ROLE_ENUM_ACCEPT_EULA,		"accept-eula"},
 	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,	"download-packages"},
+	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,	"get-distro-upgrades"},
 	{0, NULL}
 };
 
@@ -231,6 +232,9 @@ static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_NETWORK,			"network"},
 	{PK_GROUP_ENUM_MAPS,			"maps"},
 	{PK_GROUP_ENUM_REPOS,			"repos"},
+//	{PK_GROUP_ENUM_SCIENCE,			"science"},
+//	{PK_GROUP_ENUM_DOCUMENTATION,		"documentation"},
+//	{PK_GROUP_ENUM_ELECTRONICS,		"electronics"},
 	{0, NULL}
 };
 
@@ -282,6 +286,13 @@ static PkEnumMatch enum_info[] = {
 static PkEnumMatch enum_sig_type[] = {
 	{PK_SIGTYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_SIGTYPE_ENUM_GPG,			"gpg"},
+	{0, NULL}
+};
+
+static PkEnumMatch enum_upgrade[] = {
+	{PK_DISTRO_UPGRADE_ENUM_UNKNOWN,	"unknown"},	/* fall though value */
+	{PK_DISTRO_UPGRADE_ENUM_STABLE,		"stable"},
+	{PK_DISTRO_UPGRADE_ENUM_UNSTABLE,		"unstable"},
 	{0, NULL}
 };
 
@@ -562,6 +573,34 @@ const gchar *
 pk_sig_type_enum_to_text (PkSigTypeEnum sig_type)
 {
 	return pk_enum_find_string (enum_sig_type, sig_type);
+}
+
+/**
+ * pk_distro_upgrade_enum_from_text:
+ * @upgrade: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_DISTRO_UPGRADE_ENUM_STABLE
+ */
+PkDistroUpgradeEnum
+pk_distro_upgrade_enum_from_text (const gchar *upgrade)
+{
+	return pk_enum_find_value (enum_upgrade, upgrade);
+}
+
+/**
+ * pk_distro_upgrade_enum_to_text:
+ * @upgrade: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "stable"
+ **/
+const gchar *
+pk_distro_upgrade_enum_to_text (PkDistroUpgradeEnum upgrade)
+{
+	return pk_enum_find_string (enum_upgrade, upgrade);
 }
 
 /**
@@ -1349,6 +1388,17 @@ libst_enum (LibSelfTest *test)
 	libst_title (test, "check we convert all the sig_type enums");
 	for (i=0; i<=PK_SIGTYPE_ENUM_UNKNOWN; i++) {
 		string = pk_sig_type_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the upgrade enums");
+	for (i=0; i<=PK_DISTRO_UPGRADE_ENUM_UNKNOWN; i++) {
+		string = pk_distro_upgrade_enum_to_text (i);
 		if (string == NULL) {
 			libst_failed (test, "failed to get %i", i);
 			break;

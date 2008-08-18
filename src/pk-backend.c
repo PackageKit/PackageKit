@@ -119,6 +119,7 @@ enum {
 	PK_BACKEND_PROGRESS_CHANGED,
 	PK_BACKEND_DETAILS,
 	PK_BACKEND_FILES,
+	PK_BACKEND_DISTRO_UPGRADE,
 	PK_BACKEND_PACKAGE,
 	PK_BACKEND_UPDATE_DETAIL,
 	PK_BACKEND_ERROR_CODE,
@@ -1188,12 +1189,13 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 
 /**
  * pk_backend_files:
+ *
+ * package_id is NULL when we are using this as a calback from DownloadPackages
  **/
 gboolean
 pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *filelist)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (filelist != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -1206,6 +1208,40 @@ pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *file
 	pk_debug ("emit files %s, %s", package_id, filelist);
 	g_signal_emit (backend, signals [PK_BACKEND_FILES], 0,
 		       package_id, filelist);
+
+	return TRUE;
+}
+
+/**
+ * pk_backend_distro_upgrade:
+ **/
+gboolean
+pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum type, const gchar *name, const gchar *summary)
+{
+	gchar *name_safe;
+	gchar *summary_safe;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (type != PK_DISTRO_UPGRADE_ENUM_UNKNOWN, FALSE);
+	g_return_val_if_fail (name != NULL, FALSE);
+	g_return_val_if_fail (summary != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
+	/* replace unsafe chars */
+	name_safe = pk_strsafe (name);
+	summary_safe = pk_strsafe (summary);
+
+	pk_debug ("emit distro-upgrade %s, %s, %s", pk_distro_upgrade_enum_to_text (type), name_safe, summary_safe);
+	g_signal_emit (backend, signals [PK_BACKEND_DISTRO_UPGRADE], 0, type, name_safe, summary_safe);
+
+	g_free (name_safe);
+	g_free (summary_safe);
 
 	return TRUE;
 }
@@ -1845,6 +1881,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_BACKEND_DISTRO_UPGRADE] =
+		g_signal_new ("distro-upgrade",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_BACKEND_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

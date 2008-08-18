@@ -579,6 +579,7 @@ libst_generate_pack (LibSelfTest *test)
 	else
 		libst_failed (test, NULL);
 	g_strfreev (package_ids);
+	g_object_unref (client);
 
 	/************************************************************/
 	libst_title (test, "exclude NULL");
@@ -597,6 +598,7 @@ libst_generate_pack (LibSelfTest *test)
 		libst_success (test, NULL);
 	else
 		libst_failed (test, NULL);
+	g_object_unref (list);
 
 	/************************************************************/
 	libst_title (test, "exclude false.txt");
@@ -606,6 +608,7 @@ libst_generate_pack (LibSelfTest *test)
 		libst_success (test, NULL);
 	else
 		libst_failed (test, NULL);
+	g_object_unref (list);
 
 	/************************************************************/
 	libst_title (test, "metadata NULL");
@@ -701,6 +704,8 @@ libst_generate_pack (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
+	if (file_array != NULL)
+		g_ptr_array_free (file_array, TRUE);
 
 	/************************************************************/
 	libst_title (test, "generate pack /tmp/gitk.pack gitk");
@@ -709,13 +714,20 @@ libst_generate_pack (LibSelfTest *test)
 	g_ptr_array_add (file_array, src);
 	ret = pk_generate_pack_create ("/tmp/gitk.pack",file_array, &error);
 	if (!ret) {
-		if (error != NULL)
+		if (error != NULL) {
 			libst_failed (test, "failed to create pack %s" , error->message);
-		else
+			g_error_free (error);
+		} else {
 			libst_failed (test, "could not set error");
+		}
 	} else {
 		libst_success (test, NULL);
 	}
+	if (file_array != NULL)
+		g_ptr_array_free (file_array, TRUE);
+	g_remove ("/tmp/gitk.pack");
+
 	/************************************************************/
+	libst_end (test);
 }
 #endif

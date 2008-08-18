@@ -243,6 +243,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
+	NULL,					/* get_distro_upgrades */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
