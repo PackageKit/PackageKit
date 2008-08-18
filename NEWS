@@ -1,3 +1,136 @@
+Version 0.3.0
+~~~~~~~~~~~~~~
+Released: 2008-08-18
+
+Notes:
+ - This is the first release of the 0.3.x codebase and it may still have
+   regressions when compared to 0.2.4. These will be fixed as a priority.
+ - There is a lot of new functionality and many bug fixes in this release.
+ - The 0.3.0 branch is not ABI stable, as new API will be added on this branch
+   to support new use cases.
+ - The 0.2.x branch is ABI and API stable, and the 0.1.x branch is now obsolete.
+
+New Features:
+ - Add a PackageKit browser plugin (Owen W. Taylor)
+ - Add a README section on testing the plugin (Owen W. Taylor)
+ - Add a profiles page on the website so we can show typical users (Richard Hughes)
+ - Rename some of the PolicyKit actions on advice of David Zeuthen (Richard Hughes)
+ - GetRole now returns the role and the search parameter or the package name (Richard Hughes)
+ - Add a SetLocale method so we can support native localisations (Richard Hughes)
+ - Add a libtar build requirement for the new pkgenpack executable (Richard Hughes)
+ - Add pk-generate-package-list to generate a package list (Richard Hughes)
+ - Add pkgenpack, a way of packaging up a package and it's deps for installation (Shishir Goel)
+ - Add 4 new fields to the UpdateDetail callback struct (Richard Hughes)
+ - Add a new method DownloadPackages() to be able to create ServicePacks (Shishir Goel)
+ - Added download packages functionality to pkcon (Shishir Goel)
+
+Translations:
+ - Updated German translation (Fabian Affolter)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Brazilian Portuguese translation (Matt Domsch)
+ - Updated Polish translation (Piotr Drąg)
+
+Backends:
+ - alpm: fix build for 0.3.0 (Valeriy Lyasotskiy)
+ - apt: Add a first try to implement DownloadPackages. Does not work yet (Sebastian Heinlein)
+ - apt: Add a small script to analyze the HotShot profiling stats (Sebastian Heinlein)
+ - apt: Add mime-type support for WhatProvides (Sebastian Heinlein)
+ - apt: Add new command line options to the backend (Sebastian Heinlein)
+ - apt: Clean up doUpdatePackages () (Sebastian Heinlein)
+ - apt: Allow to get details of several package ids (Sebastian Heinlein)
+ - apt: Fix doResolve. Thanks to Martin Pitt for the patch (Sebastian Heinlein)
+ - apt: fixes in GetDepends: report packages to be upgraded and installed (Sebastian Heinlein)
+ - apt: GetDepends(): Take version requirements into account (Sebastian Heinlein)
+ - apt: Implement a basic doGetDepends() (Sebastian Heinlein)
+ - apt: Implement codec searching in WhatProvides (Sebastian Heinlein)
+ - apt: Implement GetRequires (Sebastian Heinlein)
+ - apt: Implement SetLocale (Sebastian Heinlein)
+ - apt: Implement SetProxy (Sebastian Heinlein)
+ - apt: implement the missing doUpdatePackages() method (Michael Vogt)
+ - apt: Provide more details about updates (Sebastian Heinlein)
+ - apt: Report packages that are upgradable but cannot be upgraded (Sebastian Heinlein)
+ - apt: Show license information based on the repositories (Sebastian Heinlein)
+ - apt: Support string array of package names in doResolve (Sebastian Heinlein)
+ - dummy: add some more functionality to the dummy backend (Richard Hughes)
+ - dummy: properly emulate package_ids for get_update_detail (Richard Hughes)
+ - opkg: fix some memory leak issue (I-Fan, Chen)
+ - PiSi: compile with 0.3 changes (S.Çağlar Onur)
+ - poldek: build fix (Marcin Banasiak)
+ - poldek: implement DownloadPackages (Marcin Banasiak)
+ - razor: add an experimental razor backend (Richard Hughes)
+ - razor: add initial functionality (Richard Hughes)
+ - razor: add Resolve() functionality (Richard Hughes)
+ - razor: add SearchName and SearchDescription (Richard Hughes)
+ - razor: add the devel filter (Richard Hughes)
+ - smart: change packageid to packageids (Anders F Bjorklund)
+ - smart: use smart status flags. Fixes #16525 (Anders F Bjorklund)
+ - urpmi: Improve download error handling in installation method (Aurelien Lefebvre)
+ - yum: add a nice class to access the yum sqlite database directly (Richard Hughes)
+ - yum: add Bohdi ID to the UpdateDetail if available. Fixes RH#457358 (Richard Hughes)
+ - yum: add the SericePack decompressing code (Shishir Goel)
+ - yum: allow more than one package to be removed in one transaction (Richard Hughes)
+ - yum: don't show a backtrace if we try to install a zero byte rpm (Richard Hughes)
+ - yum: fix an error message which can lead to printf breakage in the daemon (Richard Hughes)
+ - yum: fix the DownloadPackages call to give useful output (Richard Hughes)
+ - yum: fix the GetDepends call to match on installed before available (Richard Hughes)
+ - yum: fix the Resolve call with multiple packages (Richard Hughes)
+ - yum: fix up DownloadPackages for the yum backend (Shishir Goel)
+ - yum: fix up GetRequires and GetDepends to do the filtering in the backend (Richard Hughes)
+ - yum: fix up the GPG key method since the yum API changed (Richard Hughes)
+ - yum: return all packages when we do GetPackages() rather than just the newest (Richard Hugh
+ - yum: abstract out the filtering stuff (Richard Hughes)
+ - yum: support passing more than one package_id to GetUpdateDetail (Richard Hughes)
+ - yum: tidy up yumBackend and use yumComps, yumDirect and yumProgress (Richard Hughes)
+ - zypp: added driver search for new hardware (Stefan Haas)
+ - zypp: added relogin-flag for patches (Stefan Haas)
+ - zypp: changes for new api (Wang Hoi)
+ - zypp: changes for zypp 5.4.0 (Stefan Haas)
+ - zypp: change to return all restart_suggested patches not just the first one (Scott Reeves)
+ - zypp match the libzypp updates for listing repos (Scott Reeves)
+ - zypp: pk_backend_require_restart will be send when needed (Stefan Haas)
+
+Bindings:
+ - C: Bump the soname as we changed ABI some time ago (Richard Hughes)
+ - C: Rename some source files and be more militant with const (Richard Hughes)
+ - C: Don't use-after-free in pk_task_list_status_changed_cb (Richard Hughes)
+ - C: Export libpackagekit with -export-dynamic. Fixes fd#16991 (Richard Hughes)
+ - C: Correct the 'over the wire' enum for update-packages (Richard Hughes)
+ - python: Import new python frontend bindings (Aidan Skinner)
+ - python: Use glib mainloop for running (Aidan Skinner)
+ - python: Make Resolve and GetDetails return easy-to-use dicts, not tuples (Aidan Skinner)
+ - python: Add generic wrapper call that takes a dict of callbacks to connect (Aidan Skinner)
+ - python: Wrap dbus calls so that they attempt to obtain the right privilages (Aidan Skinner)
+ - browser-plugin: Use org.freedesktop.PackageKit session service (Owen W. Taylor)
+ - browser-plugin: Call gnome_desktop_item_set_launch_time() with value from event (Owen W. Taylor)
+ - browser-plugin: Switch launching from gnome-desktop to GAppInfo (Owen W. Taylor)
+
+Bugfixes:
+ - Fixed a typo in policy file (Daniel Nicoletti)
+ - Fix building with -Wformat-security. Fixes fd#16431 (Martin Pitt)
+ - Changed the required version of dbus-glib to 0.76 (Patrick Niklaus)
+ - Add the EulaRequired signal to the dbus python backend (Sebastian Heinlein)
+ - Check the package_id for UTF8 validity (Richard Hughes)
+ - Don't optimise for the common case in pk-import-desktop (Richard Hughes)
+ - Add a new helper class for talking to an embedded python instance (Richard Hughes)
+ - Fix a small memory leak in pk_engine_transaction_list_changed_cb (Richard Hughes)
+ - Don't leak the package_ids in pk_transaction_get_update_detail (Richard Hughes)
+ - AllowCancel(FALSE) is allowed when we are finished, but not TRUE (Richard Hughes)
+ - Don't print out '%' chars on the console from python exceptions (Richard Hughes)
+ - Properly match local files correctly so we don't try to resolve them (Richard Hughes)
+ - WhatProvides has a free form search string that we need to check (Richard Hughes)
+ - Check for a zero destination in the unix network code. Fixes rh#453531 (Richard Hughes)
+ - Add some convenience helpers for managing ISO8601 dates (Richard Hughes)
+ - Use g_key_file_* in pkgenpack as we need to use a group name (Richard Hughes)
+ - Check service pack's compatibility with the distro before installing it (Shishir Goel)
+ - Don't blacklist apostrophe characters. Fixes rh#459155 (Richard Hughes)
+ - Check for write access on the directory we are downloading into (Richard Hughes)
+ - Fix broken DownloadPackages in the DBus backend (Sebastian Heinlein)
+ - Submit the filters to the doGetDepends method in the python backend (Sebastian Heinlein)
+ - Implement SetLocale in the python dbus backend (Sebastian Heinlein)
+ - Add a --with-package-list option to pkgenpack to make it useful (Shishir Goel)
+ - Add a metadata.conf file while creating the pack (Shishir Goel)
+ - Fix the configure check for libtar.h (Val L)
+
 Version 0.2.3
 ~~~~~~~~~~~~~~
 Released: 2008-07-04
