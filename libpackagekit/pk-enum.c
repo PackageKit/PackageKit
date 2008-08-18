@@ -231,6 +231,9 @@ static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_NETWORK,			"network"},
 	{PK_GROUP_ENUM_MAPS,			"maps"},
 	{PK_GROUP_ENUM_REPOS,			"repos"},
+	{PK_GROUP_ENUM_SCIENCE			"science"},
+	{PK_GROUP_ENUM_DOCUMENTATION		"documentation"},
+	{PK_GROUP_ENUM_ELECTRONICS		"electronics"},
 	{0, NULL}
 };
 
