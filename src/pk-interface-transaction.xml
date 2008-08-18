@@ -87,15 +87,6 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="directory" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The directory to install the packages into.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
     </method>
 
     <!--*****************************************************************************************-->

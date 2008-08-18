@@ -379,6 +379,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_DOWNLOAD)
         percentage = 0;
         bump = 100 / len(package_ids)
+        files = []
 
         # download each package
         for package in package_ids:
@@ -409,10 +410,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 pkg_download.localpath = local #Hack:To set the localpath we want
                 try:
                     path = repo.getPackage(pkg_download)
+                    files.append(path)
                 except IOError, e:
                     self.error(ERROR_WRITE_ERROR,"Cannot write to file")
                     continue
             percentage += bump
+
+        # emit the file list we downloaded
+        file_list = ";".join(files)
+        self.files(package,file_list)
 
         # in case we don't sum to 100
         self.percentage(100)

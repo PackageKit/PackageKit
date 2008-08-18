@@ -205,6 +205,9 @@ gprof: clean-gprof all check
 	gprof .libs/pk-self-test > gprof.txt
 endif
 
+install-data-hook:
+	mkdir -p $(localstatedir)/cache/PackageKit/downloads
+
 EXTRA_DIST =						\
 	pk-marshal.list					\
 	pk-security-polkit.c				\
