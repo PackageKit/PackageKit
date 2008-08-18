@@ -238,7 +238,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     def doInit(self):
         pklog.info("Initializing cache")
-        self.StatusChanged(STATUS_SETUP)
+        self.StatusChanged(STATUS_RUNNING)
         self.AllowCancel(False)
         self.NoPercentageUpdates()
         self._open_cache(progress=False)
