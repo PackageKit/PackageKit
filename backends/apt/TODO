@@ -25,43 +25,6 @@ TODO:
    the xapian database to also make use of it in search group and 
    search name (do we want this?)
 
- * Map Debian/Ubuntu sections to PackageKit groups:
-    - admin : System Administration 		=> admin-tools
-    - base : Base System 			=> system
-    - comm : Communication			=> communication
-    - devel : Development 			=> programming
-    - doc : Documentation			=> ???
-    - editors : Editors				=> accessoires
-    - electronics : Electronics			=> other
-    - embedded : Embedded Devices		=> system
-    - games : Games and Amusement 		=> games
-    - gnome : GNOME Desktop Environment		=> desktop-gnome
-    - graphics : Graphics			=> graphics
-    - hamradio : Amateur Radio			=> communication
-    - interpreters : Interpreted Computer L.	=> programming
-    - kde : KDE Desktop Environment		=> desktop-kde
-    - libdevel : Libraries - Development	=> programming
-    - libs : Libraries				=> system
-    - mail : Email				=> internet
-    - math : Mathematics			=> ??? science/education
-    - misc : Miscellaneous - Text Based		=> other
-    - net : Networkinga				=> network
-    - news : Newsgroup				=> internet
-    - oldlibs : Libraries - Old			=> legacy
-    - otherosfs : Cross Platform		=> system
-    - perl : Perl Programming Language		=> programming
-    - python : Python Programming Language	=> programming
-    - science : Science				=> ??? science/education
-    - shells : Shells				=> system
-    - sound : Multimedia			=> multimedia
-    - tex : TeX Authoring			=> publishing
-    - text : Word Processing			=> publishing
-    - utils : Utilities				=> accessoires
-    - web : World Wide Web			=> internet
-    - x11 : Miscellaneous  - Graphical		=> desktop-other
-    - unknown : Unknown				=> unknown
-    - alien : Converted From RPM by Alien"	=> unknown
-    - translations 				=> localization
-  The following could not be maped: science, documentation, electronics
-  Are there any derivates with additional sections?
+ * Group mapping: Are there any derivates with additional sections? We need
+   additional groups for doc, science and electronics
 
