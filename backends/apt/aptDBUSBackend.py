@@ -1182,6 +1182,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return False
         if FILTER_NOT_DEVELOPMENT in filters and self._package_is_devel(pkg):
             return False
+        if FILTER_SUPPORTED in filters and not self._package_is_supported(pkg):
+            return False
+        if FILTER_NOT_SUPPORTED in filters and self._package_is_supported(pkg):
+            return False
         return True
 
     def _package_has_gui(self, pkg):
@@ -1194,6 +1198,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: should go to a modified Package class
         return pkg.name.endswith("-dev") or pkg.name.endswith("-dbg") or \
                pkg.section.split('/')[-1].lower() in ['devel', 'libdevel']
+
+    def _package_is_supported(self, pkg):
+        origin = pkg.candidateOrigin[0]
+        return origin.origin == "Ubuntu" and \
+               origin.component in ["main", "restricted"] and \
+               origin.trusted == True
 
     def _find_package_by_id(self, id):
         '''
