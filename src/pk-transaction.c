@@ -1255,19 +1255,18 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
  * pk_transaction_download_packages:
  **/
 void
-pk_transaction_download_packages (PkTransaction *transaction, gchar **package_ids,
-				  const gchar *directory, DBusGMethodInvocation *context)
+pk_transaction_download_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
-	guint uid;
-	const gchar *dbus_name;
+	gchar *directory;
+	gint retval;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("DownloadPackages method called: %s, %s", package_ids[0], directory);
+	pk_debug ("DownloadPackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->download_packages == NULL) {
@@ -1279,34 +1278,6 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	        return;
 	}
 
-	/* does directory exist? */
-	ret = g_file_test (directory, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR);
-	if (!ret) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_DIRECTORY,
-	                             "directory '%s' cannot be found", directory);
-	        dbus_g_method_return_error (context, error);
-	        return;
-	}
-
-	/* get the UID of the sender */
-	dbus_name = dbus_g_method_get_sender (context);
-	ret = pk_security_uid_from_dbus_sender (transaction->priv->security, dbus_name, &uid);
-	if (!ret) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
-	                             "cannot get uid from dbus sender: %s", dbus_name);
-	        dbus_g_method_return_error (context, error);
-	        return;
-	}
-
-	/* check for write access on the directory */
-	ret = pk_check_permissions (directory, uid, uid, W_OK);
-	if (!ret) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
-	                             "cannot get write to %s with uid %i", directory, uid);
-	        dbus_g_method_return_error (context, error);
-	        return;
-	}
-
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (ret == FALSE) {
@@ -1314,6 +1285,18 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 	                             "The package id's '%s' are not valid", package_ids_temp);
 	        g_free (package_ids_temp);
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* create cache directory */
+	directory = g_build_filename (LOCALSTATEDIR, "cache", "PackageKit",
+				     "downloads", transaction->priv->tid, NULL);
+	/* rwxrwxr-x */
+	retval = g_mkdir (directory, 0775);
+	if (retval != 0) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
+	                             "cannot create %s", directory);
 	        dbus_g_method_return_error (context, error);
 	        return;
 	}
@@ -1340,6 +1323,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	        return;
 	}
 
+	g_free (directory);
 	dbus_g_method_return (context);
 }
 

@@ -666,15 +666,51 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 }
 
 /**
+ * pk_client_file_copy:
+ */
+static gboolean
+pk_client_file_copy (const gchar *filename, const gchar *directory)
+{
+	gboolean ret;
+	GError *error = NULL;
+	gchar *command;
+
+	/* TODO: use GIO when we have a hard dep on it */
+	command = g_strdup_printf ("cp \"%s\" \"%s\"", filename, directory);
+	pk_debug ("command: %s", command);
+	ret = g_spawn_command_line_async (command, &error);
+	if (!ret) {
+		pk_warning ("failed to copy: %s", error->message);
+		g_error_free (error);
+	}
+	g_free (command);
+	return ret;
+}
+
+/**
  * pk_client_files_cb:
  */
 static void
-pk_client_files_cb (DBusGProxy  *proxy, const gchar *package_id, const gchar *filelist, PkClient *client)
+pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *filelist, PkClient *client)
 {
+	guint i;
+	guint length;
+	gchar **split;
+
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit files %s, <lots of files>", package_id);
 	g_signal_emit (client , signals [PK_CLIENT_FILES], 0, package_id, filelist);
+
+	/* we are a callback from DownloadPackages */
+	if (client->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES && pk_strzero (package_id)) {
+		split = g_strsplit (filelist, ";", -1);
+		length = g_strv_length (split);
+		for (i=0; i<length; i++) {
+			pk_client_file_copy (split[i], client->priv->cached_directory);
+		}
+		g_strfreev (split);
+	}
 }
 
 /**
@@ -1577,7 +1613,6 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
         }
         ret = dbus_g_proxy_call (client->priv->proxy, "DownloadPackages", error,
                                  G_TYPE_STRV, package_ids,
-                                 G_TYPE_STRING, directory,
                                  G_TYPE_INVALID, G_TYPE_INVALID);
         if (ret && !client->priv->is_finished) {
                 /* allow clients to respond in the status changed callback */

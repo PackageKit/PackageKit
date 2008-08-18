@@ -822,11 +822,29 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 static void
 backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
 {
+	gchar *filename1;
+	gchar *filename2;
+	gchar *filelist;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+
+	filename1 = g_build_filename (directory, "powertop-1.8-1.fc8.rpm", NULL);
+	g_file_set_contents (filename1, "hello dave", -1, NULL);
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+
+	filename2 = g_build_filename (directory, "gtk2-2.11.6-6.fc8.rpm", NULL);
+	g_file_set_contents (filename2, "hello brian", -1, NULL);
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
-			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+			    "gtk2;2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+
+	/* send the filelist */
+	filelist = g_strjoin (";", filename1, filename2, NULL);
+	pk_backend_files (backend, NULL, filelist);
+
+	g_free (filename1);
+	g_free (filename2);
+	g_free (filelist);
+
 	pk_backend_finished (backend);
 }
 

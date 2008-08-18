@@ -1188,12 +1188,13 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 
 /**
  * pk_backend_files:
+ *
+ * package_id is NULL when we are using this as a calback from DownloadPackages
  **/
 gboolean
 pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *filelist)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (filelist != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
