@@ -591,7 +591,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     @threaded
     @async
-    def doGetDepends(self,package,recursive):
+    def doGetDepends(self,filters,package,recursive):
         '''
         Print a list of depends for a given package
         '''

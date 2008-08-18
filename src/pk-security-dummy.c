@@ -46,9 +46,6 @@ G_DEFINE_TYPE (PkSecurity, pk_security, G_TYPE_OBJECT)
 
 /**
  * pk_security_action_is_allowed:
- *
- * Only valid from an async caller, which is fine, as we won't prompt the user
- * when not async.
  **/
 G_GNUC_WARN_UNUSED_RESULT gboolean
 pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
@@ -56,6 +53,17 @@ pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
 {
 	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
 	return TRUE;
+}
+
+/**
+ * pk_security_uid_from_dbus_sender:
+ **/
+gboolean
+pk_security_uid_from_dbus_sender (PkSecurity *security, const gchar *dbus_name, guint *uid)
+{
+	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
+	/* not returning TRUE due to easy misuse */
+	return FALSE;
 }
 
 /**

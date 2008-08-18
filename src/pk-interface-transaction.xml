@@ -2003,6 +2003,43 @@
           </doc:summary>
         </doc:doc>
       </arg>
+      <arg type="s" name="changelog" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The ChangeLog text describing the changes since the last version.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="state" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The state of the update, e.g. <literal>stable</literal> or
+              <literal>testing</literal>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="issued" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The ISO8601 encoded date that the update was issued.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="updated" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The ISO8601 encoded date that the update was updated.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </signal>
 
   </interface>

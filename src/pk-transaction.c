@@ -34,9 +34,12 @@
 
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <libtar.h>
+#include <sys/stat.h>
 
+#include <glib/gstdio.h>
 #include <glib/gi18n.h>
-#include <libgbus.h>
+#include <pk-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
@@ -79,7 +82,7 @@ struct PkTransactionPrivate
 	gboolean		 emit_eula_required;
 	gboolean		 emit_signature_required;
 	gchar			*locale;
-	LibGBus			*libgbus;
+	PkDbusMonitor		*monitor;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkCache			*cache;
@@ -188,6 +191,7 @@ pk_transaction_error_get_type (void)
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_NOT_SUPPORTED, "NotSupported"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_NO_SUCH_TRANSACTION, "NoSuchTransaction"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_NO_SUCH_FILE, "NoSuchFile"),
+			ENUM_ENTRY (PK_TRANSACTION_ERROR_NO_SUCH_DIRECTORY, "NoSuchDirectory"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE, "TransactionExistsWithRole"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
@@ -197,6 +201,7 @@ pk_transaction_error_get_type (void)
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INVALID_STATE, "InvalidState"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INITIALIZE_FAILED, "InitializeFailed"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_COMMIT_FAILED, "CommitFailed"),
+			ENUM_ENTRY (PK_TRANSACTION_ERROR_PACK_INVALID, "PackInvalid"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INVALID_PROVIDE, "InvalidProvide"),
 			{ 0, NULL, NULL }
 		};
@@ -234,7 +239,7 @@ pk_transaction_set_dbus_name (PkTransaction *transaction, const gchar *dbus_name
 	}
 	transaction->priv->dbus_name = g_strdup (dbus_name);
 	pk_debug ("assigning %s to %p", dbus_name, transaction);
-	libgbus_assign (transaction->priv->libgbus, LIBGBUS_SYSTEM, dbus_name);
+	pk_dbus_monitor_assign (transaction->priv->monitor, PK_DBUS_MONITOR_SYSTEM, dbus_name);
 	return TRUE;
 }
 
@@ -369,7 +374,7 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
  * pk_transaction_caller_active_changed_cb:
  **/
 static void
-pk_transaction_caller_active_changed_cb (LibGBus *libgbus, gboolean is_active, PkTransaction *transaction)
+pk_transaction_caller_active_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolean is_active, PkTransaction *transaction)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -739,7 +744,10 @@ static void
 pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *detail, PkTransaction *transaction)
 {
 	const gchar *restart_text;
+	const gchar *state_text;
 	gchar *package_id;
+	gchar *issued;
+	gchar *updated;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -749,9 +757,17 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 
 	restart_text = pk_restart_enum_to_text (detail->restart);
 	package_id = pk_package_id_to_string (detail->id);
+	state_text = pk_update_state_enum_to_text (detail->state);
+	issued = pk_iso8601_from_date (detail->issued);
+	updated = pk_iso8601_from_date (detail->updated);
+
 	g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
 		       package_id, detail->updates, detail->obsoletes, detail->vendor_url,
-		       detail->bugzilla_url, detail->cve_url, restart_text, detail->update_text);
+		       detail->bugzilla_url, detail->cve_url, restart_text, detail->update_text,
+		       detail->changelog, state_text, issued, updated);
+
+	g_free (issued);
+	g_free (updated);
 	g_free (package_id);
 }
 
@@ -1245,6 +1261,8 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint uid;
+	const gchar *dbus_name;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1257,6 +1275,35 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	                             "Operation not yet supported by backend");
 		pk_transaction_list_remove (transaction->priv->transaction_list,
 					    transaction->priv->tid);
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* does directory exist? */
+	ret = g_file_test (directory, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR);
+	if (!ret) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_DIRECTORY,
+	                             "directory '%s' cannot be found", directory);
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* get the UID of the sender */
+	dbus_name = dbus_g_method_get_sender (context);
+	ret = pk_security_uid_from_dbus_sender (transaction->priv->security, dbus_name, &uid);
+	if (!ret) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+	                             "cannot get uid from dbus sender: %s", dbus_name);
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* check for write access on the directory */
+	ret = pk_check_permissions (directory, uid, uid, W_OK);
+	if (!ret) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
+	                             "cannot get write to %s with uid %i", directory, uid);
+	        dbus_g_method_return_error (context, error);
 	        return;
 	}
 
@@ -1850,12 +1897,22 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 		detail = pk_update_detail_list_get_obj (transaction->priv->update_detail_list, id);
 		pk_package_id_free (id);
 		if (detail != NULL) {
+			gchar *issued;
+			gchar *updated;
+			const gchar *state_text;
 			package_id = pk_package_id_to_string (detail->id);
+			issued = pk_iso8601_from_date (detail->issued);
+			updated = pk_iso8601_from_date (detail->updated);
+			state_text = pk_update_state_enum_to_text (detail->state);
+
 			/* emulate the backend */
 			g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
 				       package_id, detail->updates, detail->obsoletes,
 				       detail->vendor_url, detail->bugzilla_url, detail->cve_url,
-				       pk_restart_enum_to_text (detail->restart), detail->update_text);
+				       pk_restart_enum_to_text (detail->restart), detail->update_text,
+				       detail->changelog, state_text, issued, updated);
+			g_free (issued);
+			g_free (updated);
 			g_free (package_id);
 		} else {
 			pk_debug ("not got %s", package_ids[i]);
@@ -1984,6 +2041,110 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 }
 
 /**
+ * pk_transaction_check_metadata_conf:
+ **/
+static gboolean
+pk_transaction_check_metadata_conf (const gchar *full_path)
+{
+	GKeyFile *file;
+	gboolean ret;
+	GError *error = NULL;
+	gchar *distro_id = NULL;
+	gchar *distro_id_us = NULL;
+
+	/* load the file */
+	file = g_key_file_new ();
+	ret = g_key_file_load_from_file (file, full_path, G_KEY_FILE_NONE, &error);
+	if (!ret) {
+		pk_warning ("failed to load file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* read the value */
+	distro_id = g_key_file_get_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", &error);
+	if (!ret) {
+		pk_warning ("failed to get value: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get this system id */
+	distro_id_us = pk_get_distro_id ();
+
+	/* do we match? */
+	ret = pk_strequal (distro_id_us, distro_id);
+
+out:
+	g_key_file_free (file);
+	g_free (distro_id);
+	g_free (distro_id_us);
+	return ret;
+}
+
+/**
+ * pk_transaction_check_pack_distro_id:
+ **/
+static gboolean
+pk_transaction_check_pack_distro_id (const gchar *full_path, gchar **failure)
+{
+	gboolean ret = TRUE;
+	gchar *meta_src = NULL;
+	gchar *metafile = NULL;
+	gboolean retval;
+	TAR *t;
+	GDir *dir = NULL;
+	const gchar *filename;
+
+	/* open */
+	retval = tar_open (&t, (gchar *) full_path, NULL, O_RDONLY, 0, TAR_GNU);
+	if (retval != 0) {
+		*failure = g_strdup_printf ("failed to open tar file: %s", full_path);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* extract */
+	meta_src = g_build_filename (g_get_tmp_dir (), "meta", NULL);
+	retval = tar_extract_all (t, meta_src);
+	if (retval != 0) {
+		*failure = g_strdup_printf ("failed to extract from tar file: %s", full_path);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* close */
+	tar_close (t);
+
+	/* get the files */
+	dir = g_dir_open (meta_src, 0, NULL);
+	if (dir == NULL) {
+		*failure = g_strdup_printf ("failed to get directory for %s", meta_src);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* find the file, and check the metadata */
+	while ((filename = g_dir_read_name (dir))) {
+		metafile = g_build_filename (meta_src, filename, NULL);
+		if (pk_strequal (filename, "metadata.conf")) {
+			ret = pk_transaction_check_metadata_conf (metafile);
+			if (!ret) {
+				*failure = g_strdup_printf ("Service Pack %s not compatible with your distro", full_path);
+				ret = FALSE;
+				goto out;
+			}
+		}
+		g_free (metafile);
+	}
+out:
+	g_rmdir (meta_src);
+	g_free (meta_src);
+	g_dir_close (dir);
+	return ret;
+}
+
+/**
  * pk_transaction_install_files:
  **/
 void
@@ -1994,6 +2155,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	gboolean ret;
 	GError *error;
 	gchar *sender;
+	gchar *failure = NULL;
 	guint length;
 	guint i;
 
@@ -2014,15 +2176,26 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		return;
 	}
 
-	/* check all files exists */
+	/* check all files exists and are valid */
 	length = g_strv_length (full_paths);
 	for (i=0; i<length; i++) {
+		/* exists */
 		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
 		if (!ret) {
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
 					     "No such file %s", full_paths[i]);
 			dbus_g_method_return_error (context, error);
 			return;
+		}
+		/* valid */
+		if (g_str_has_suffix (full_paths[i], ".pack")) {
+			ret = pk_transaction_check_pack_distro_id (full_paths[i], &failure);
+			if (!ret) {
+				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", failure);
+				dbus_g_method_return_error (context, error);
+				g_free (failure);
+				return;
+			}
 		}
 	}
 
@@ -2057,6 +2230,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	}
 
 	dbus_g_method_return (context);
+	return;
 }
 
 /**
@@ -2220,7 +2394,7 @@ pk_transaction_is_caller_active (PkTransaction *transaction, gboolean *is_active
 
 	pk_debug ("is caller active");
 
-	*is_active = libgbus_is_connected (transaction->priv->libgbus);
+	*is_active = pk_dbus_monitor_is_connected (transaction->priv->monitor);
 	return TRUE;
 }
 
@@ -3226,8 +3400,9 @@ pk_transaction_class_init (PkTransactionClass *klass)
 	signals [PK_TRANSACTION_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 12, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
 	g_type_class_add_private (klass, sizeof (PkTransactionPrivate));
@@ -3277,8 +3452,8 @@ pk_transaction_init (PkTransaction *transaction)
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
 			  G_CALLBACK (pk_transaction_transaction_cb), transaction);
 
-	transaction->priv->libgbus = libgbus_new ();
-	g_signal_connect (transaction->priv->libgbus, "connection-changed",
+	transaction->priv->monitor = pk_dbus_monitor_new ();
+	g_signal_connect (transaction->priv->monitor, "connection-changed",
 			  G_CALLBACK (pk_transaction_caller_active_changed_cb), transaction);
 }
 
@@ -3316,7 +3491,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->update_detail_list);
 	g_object_unref (transaction->priv->inhibit);
 	g_object_unref (transaction->priv->backend);
-	g_object_unref (transaction->priv->libgbus);
+	g_object_unref (transaction->priv->monitor);
 	g_object_unref (transaction->priv->package_list);
 	g_object_unref (transaction->priv->transaction_list);
 	g_object_unref (transaction->priv->transaction_db);

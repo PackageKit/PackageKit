@@ -376,6 +376,7 @@ gboolean
 pk_client_set_use_buffer (PkClient *client, gboolean use_buffer, GError **error)
 {
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* are we doing this without any need? */
 	if (client->priv->use_buffer) {
@@ -402,6 +403,7 @@ gboolean
 pk_client_set_synchronous (PkClient *client, gboolean synchronous, GError **error)
 {
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* are we doing this without any need? */
 	if (client->priv->synchronous) {
@@ -599,22 +601,40 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 static void
 pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const gchar *updates,
 			    const gchar *obsoletes, const gchar *vendor_url, const gchar *bugzilla_url,
-			    const gchar *cve_url, const gchar *restart_text, const gchar *update_text, PkClient *client)
+			    const gchar *cve_url, const gchar *restart_text, const gchar *update_text,
+			    const gchar *changelog, const gchar *state_text, const gchar *issued_text,
+			    const gchar *updated_text, PkClient *client)
 {
 	PkRestartEnum restart;
 	PkUpdateDetailObj *detail;
 	PkPackageId *id;
+	GDate *issued;
+	GDate *updated;
+	PkUpdateStateEnum state;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s",
-		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
+	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
+		  package_id, updates, obsoletes, vendor_url, bugzilla_url,
+		  cve_url, restart_text, update_text, changelog,
+		  state_text, issued_text, updated_text);
+
 	id = pk_package_id_new_from_string (package_id);
 	restart = pk_restart_enum_from_text (restart_text);
+	state = pk_update_state_enum_from_text (state_text);
+	issued = pk_iso8601_to_date (issued_text);
+	updated = pk_iso8601_to_date (updated_text);
 
 	detail = pk_update_detail_obj_new_from_data (id, updates, obsoletes, vendor_url,
-						     bugzilla_url, cve_url, restart, update_text);
+						     bugzilla_url, cve_url, restart,
+						     update_text, changelog, state,
+						     issued, updated);
 	g_signal_emit (client, signals [PK_CLIENT_UPDATE_DETAIL], 0, detail);
+
+	if (issued != NULL)
+		g_date_free (issued);
+	if (updated != NULL)
+		g_date_free (updated);
 	pk_package_id_free (id);
 	pk_update_detail_obj_free (detail);
 }
@@ -753,6 +773,7 @@ pk_client_get_allow_cancel (PkClient *client, gboolean *allow_cancel, GError **e
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -836,6 +857,7 @@ pk_client_get_status (PkClient *client, PkStatusEnum *status, GError **error)
 	g_return_val_if_fail (status != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -873,6 +895,7 @@ pk_client_get_package (PkClient *client, gchar **package, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -911,6 +934,7 @@ pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentag
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -949,6 +973,7 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **text, GError **e
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (role != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -1000,6 +1025,7 @@ pk_client_cancel (PkClient *client, GError **error)
 	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* we don't need to cancel, so return TRUE */
 	if (client->priv->proxy == NULL) {
@@ -1046,6 +1072,7 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get a new ID */
 	ret = pk_control_allocate_transaction_id (client->priv->control, &tid, &error_local);
@@ -1083,6 +1110,7 @@ pk_client_get_updates (PkClient *client, PkFilterEnum filters, GError **error)
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1127,6 +1155,7 @@ pk_client_update_system_action (PkClient *client, GError **error)
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -1159,6 +1188,7 @@ pk_client_update_system (PkClient *client, GError **error)
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1226,6 +1256,7 @@ pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *sear
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1282,6 +1313,7 @@ pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *s
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1336,6 +1368,7 @@ pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *sea
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1390,6 +1423,7 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1447,6 +1481,7 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, gchar **package_i
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -1512,6 +1547,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 
         g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
         g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
         /* check the PackageIDs here to avoid a round trip if invalid */
         ret = pk_package_ids_check (package_ids);
@@ -1574,6 +1610,7 @@ pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1627,6 +1664,7 @@ pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (code != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -1661,6 +1699,7 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -1734,6 +1773,7 @@ pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (provides != PK_PROVIDES_ENUM_UNKNOWN, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1793,6 +1833,7 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -1852,6 +1893,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1905,6 +1947,7 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, gchar **packages, GEr
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (packages != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1960,6 +2003,7 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2020,6 +2064,7 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2074,6 +2119,7 @@ pk_client_remove_packages_action (PkClient *client, gchar **package_ids,
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2112,6 +2158,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2177,6 +2224,7 @@ pk_client_refresh_cache_action (PkClient *client, gboolean force, GError **error
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2209,6 +2257,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2262,6 +2311,7 @@ pk_client_install_package_action (PkClient *client, gchar **package_ids, GError 
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2293,6 +2343,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2358,6 +2409,7 @@ pk_client_install_signature_action (PkClient *client, PkSigTypeEnum type, const 
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2394,6 +2446,7 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	g_return_val_if_fail (type != PK_SIGTYPE_ENUM_UNKNOWN, FALSE);
 	g_return_val_if_fail (key_id != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the PackageID here to avoid a round trip if invalid */
 	ret = pk_package_id_check (package_id);
@@ -2456,6 +2509,7 @@ pk_client_update_packages_action (PkClient *client, gchar **package_ids, GError 
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2487,6 +2541,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2554,6 +2609,7 @@ pk_client_install_files_action (PkClient *client, gboolean trusted, gchar **file
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2619,6 +2675,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (files_rel != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2695,6 +2752,7 @@ pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2739,6 +2797,7 @@ pk_client_accept_eula_action (PkClient *client, const gchar *eula_id, GError **e
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2769,6 +2828,7 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (eula_id != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2821,6 +2881,7 @@ pk_client_repo_enable_action (PkClient *client, const gchar *repo_id, gboolean e
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2853,6 +2914,7 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (repo_id != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2908,6 +2970,7 @@ pk_client_repo_set_data_action (PkClient *client, const gchar *repo_id,
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2946,6 +3009,7 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	g_return_val_if_fail (repo_id != NULL, FALSE);
 	g_return_val_if_fail (parameter != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -3006,6 +3070,7 @@ pk_client_is_caller_active (PkClient *client, gboolean *is_active, GError **erro
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (is_active != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -3036,6 +3101,7 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -3077,6 +3143,7 @@ pk_client_requeue (PkClient *client, GError **error)
 	PkClientPrivate *priv = PK_CLIENT_GET_PRIVATE (client);
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* we are no longer waiting, we are setting up */
 	if (priv->role == PK_ROLE_ENUM_UNKNOWN) {
@@ -3167,6 +3234,9 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 {
 	DBusGProxy *proxy = NULL;
 
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 	if (client->priv->tid != NULL) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_ALREADY_TID,
 				     "cannot set the tid on an already set client");
@@ -3197,6 +3267,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				 G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Details",
@@ -3315,7 +3386,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::transaction:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @tid: the moo of the transaction
+	 * @tid: the ID of the transaction
 	 * @timespec: the iso8601 date and time the transaction completed
 	 * @succeeded: if the transaction succeeded
 	 * @role: the #PkRoleEnum of the transaction, e.g. PK_ROLE_ENUM_REFRESH_CACHE
@@ -3335,14 +3406,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::update-detail:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @package_id: the package_id of the package
-	 * @updates: the list of packages the update updates
-	 * @obsoletes: the list of packages the update obsoletes
-	 * @vendor_url: the list of vendor URL's of the update
-	 * @bugzilla_url: the list of bugzilla URL's of the update
-	 * @cve_url: the list of CVE URL's of the update
-	 * @restart: the #PkRestartEnum of the update, e.g. PK_RESTART_ENUM_SYSTEM
-	 * @update_text: the update summary of the update
+	 * @details: a pointer to a PkUpdateDetailsObj strusture descibing the update
 	 *
 	 * The ::update-detail signal is emitted when GetUpdateDetail() is
 	 * called on a set of package_id's.
@@ -3356,12 +3420,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::details:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @package_id: the package_id of the package
-	 * @license: the licence of the package, e.g. "GPLv2+"
-	 * @group: the #PkGroupEnum of the package, e.g. PK_GROUP_ENUM_EDUCATION
-	 * @description: the description of the package
-	 * @url: the upstream URL of the package
-	 * @size: the size of the package in bytes
+	 * @detail: a pointer to a PkDetailObj strusture descibing the package
 	 *
 	 * The ::details signal is emitted when GetDetails() is called.
 	 **/
@@ -3618,6 +3677,7 @@ pk_client_reset (PkClient *client, GError **error)
 	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	if (client->priv->tid != NULL && !client->priv->is_finished) {
 		pk_debug ("not exit status, will try to cancel tid %s", client->priv->tid);
@@ -3749,10 +3809,11 @@ pk_client_init (PkClient *client)
 					   G_TYPE_NONE, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_INVALID);
 
-	/* Repo Signature Required */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+	/* RepoSignatureRequired */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Package */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
@@ -3765,8 +3826,9 @@ pk_client_init (PkClient *client)
 					   G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
 	/* UpdateDetail */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	/* Transaction */

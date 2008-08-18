@@ -77,7 +77,6 @@ INCLUDES =						\
 	-I$(top_builddir)/libpackagekit			\
 	-I$(top_srcdir)/libpackagekit			\
 	-I$(top_srcdir)/libselftest			\
-	-I$(top_srcdir)/libgbus				\
 	$(NULL)
 
 PK_LIBS = $(top_builddir)/libpackagekit/libpackagekit.la

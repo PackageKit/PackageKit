@@ -883,7 +883,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 pack.extract(mem,path = tempdir)
             files = os.listdir(tempdir)
             for file in files:
-                inst_files.append(os.path.join(tempdir, file))
+                if file.endswith('.rpm'):
+                    inst_files.append(os.path.join(tempdir, file))
 
         # remove files of packages that alrady exist
         for inst_file in inst_files:
@@ -954,6 +955,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
             except yum.Errors.InstallError,e:
                 self.error(ERROR_LOCAL_INSTALL_FAILED,str(e))
+	shutil.rmtree(tempdir)
 
     def _check_local_file(self, pkg):
         """
@@ -1065,7 +1067,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     self.error(ERROR_BAD_GPG_SIGNATURE,
                                "GPG key not imported, and no GPG information was found.")
                 id = self._pkg_to_id(keyData['po'])
-                fingerprint = keyData['fingerprint']
+                fingerprint = keyData['fingerprint']()
                 hex_fingerprint = "%02x" * len(fingerprint) % tuple(map(ord, fingerprint))
                 # Borrowed from http://mail.python.org/pipermail/python-list/2000-September/053490.html
 
@@ -1332,18 +1334,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 urls['vendor'].append("%s;%s" % (href,title))
 
             # other interesting data:
-            # notice['issued'] = '2008-07-30 18:09:08'
-            # notice['updated'] = presume date and time, not used
-            # notice['status'] = 'stable'
+            changelog = ''
+            state = notice['status'] or ''
+            issued = notice['issued'] or ''
+            updated = notice['updated'] or ''
 
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
                 reboot = 'system'
             else:
                 reboot = 'none'
-            return self._format_str(desc),urls,reboot
+            return self._format_str(desc),urls,reboot,changelog,state,issued,updated
         else:
-            return "",urls,"none"
+            return "",urls,"none",'','','',''
 
     def get_update_detail(self,package_ids):
         '''
@@ -1357,11 +1360,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             pkg,inst = self._findPackage(package)
             update = self._get_updated(pkg)
             obsolete = self._get_obsoleted(pkg.name)
-            desc,urls,reboot = self._get_update_extras(pkg)
+            desc,urls,reboot,changelog,state,issued,updated = self._get_update_extras(pkg)
             cve_url = self._format_list(urls['cve'])
             bz_url = self._format_list(urls['bugzilla'])
             vendor_url = self._format_list(urls['vendor'])
-            self.update_detail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
+            self.update_detail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc,changelog,state,issued,updated)
 
     def repo_set_data(self,repoid,parameter,value):
         '''

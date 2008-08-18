@@ -63,7 +63,9 @@ pkmon_LDADD =						\
 	$(NULL)
 
 pkgenpack_SOURCES =					\
+	pk-generate-pack-main.c				\
 	pk-generate-pack.c				\
+	pk-generate-pack.h				\
 	pk-tools-common.c				\
 	pk-tools-common.h				\
 	$(NULL)
@@ -108,6 +110,30 @@ pk_import_specspo_LDADD =				\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
 	$(NULL)
+
+if PK_BUILD_TESTS
+
+check_PROGRAMS =					\
+	pk-self-test
+
+pk_self_test_SOURCES =					\
+	pk-self-test.c					\
+	pk-generate-pack.c				\
+	pk-tools-common.c				\
+	pk-tools-common.h				\
+	$(shared_SOURCES)				\
+	$(NULL)
+
+pk_self_test_LDADD =					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(SELFTEST_LIBS)				\
+	$(TAR_LIBS)					\
+	$(PK_LIBS)					\
+	$(NULL)
+
+TESTS = pk-self-test
+endif
 
 clean-local:
 	rm -f *~

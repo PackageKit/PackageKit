@@ -7,23 +7,14 @@ INCLUDES = \
 	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/libpackagekit				\
-	-I$(top_srcdir)/libgbus					\
 	-I$(top_srcdir)/libselftest				\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
 	-DPK_LOG_DIR=\""$(PK_LOG_DIR)"\" 			\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
-GBUS_LIBS =							\
-	$(top_builddir)/libgbus/libgbus.la			\
-	$(NULL)
-
 SELFTEST_LIBS =							\
 	$(top_builddir)/libselftest/libselftest.la		\
-	$(NULL)
-
-PK_LIBS =							\
-	$(top_builddir)/libpackagekit/libpackagekit.la		\
 	$(NULL)
 
 lib_LTLIBRARIES =						\
@@ -46,6 +37,7 @@ libpackagekit_include_HEADERS =					\
 	pk-enum.h						\
 	pk-common.h						\
 	pk-client.h						\
+	pk-dbus-monitor.h					\
 	pk-catalog.h						\
 	pk-control.h						\
 	pk-task-list.h						\
@@ -58,6 +50,8 @@ libpackagekit_la_SOURCES =					\
 	pk-marshal.h						\
 	pk-extra.c						\
 	pk-extra.h						\
+	pk-dbus-monitor.c					\
+	pk-dbus-monitor.h					\
 	pk-connection.c						\
 	pk-connection.h						\
 	pk-package-id.c						\
@@ -91,7 +85,6 @@ libpackagekit_la_SOURCES =					\
 libpackagekit_la_LIBADD =					\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
-	$(GBUS_LIBS)						\
 	$(POLKIT_LIBS)						\
 	$(SQLITE_LIBS)						\
 	$(NULL)
@@ -104,6 +97,9 @@ endif
 
 libpackagekit_la_LDFLAGS =					\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
+	-export-dynamic						\
+	-no-undefined						\
+	-export-symbols-regex '^pk_.*'				\
 	$(NULL)
 
 if PK_BUILD_TESTS
@@ -111,6 +107,7 @@ check_PROGRAMS =						\
 	pk-self-test
 
 pk_self_test_SOURCES =						\
+	$(libpackagekit_la_SOURCES)				\
 	pk-self-test.c						\
 	$(NULL)
 
@@ -118,8 +115,11 @@ pk_self_test_LDADD =						\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(SELFTEST_LIBS)					\
-	$(PK_LIBS)						\
+	$(POLKIT_LIBS)						\
+	$(SQLITE_LIBS)						\
 	$(NULL)
+
+pk_self_test_CFLAGS = $(AM_CFLAGS)
 
 TESTS = pk-self-test
 endif

@@ -54,6 +54,13 @@ G_BEGIN_DECLS
  */
 #define	PK_DBUS_INTERFACE_TRANSACTION	"org.freedesktop.PackageKit.Transaction"
 
+/**
+ * PK_SERVICE_PACK_GROUP_NAME:
+ *
+ * The group name of the Service Pack config file
+ */
+#define	PK_SERVICE_PACK_GROUP_NAME	"PackageKit Service Pack"
+
 guint		 pk_strlen				(const gchar	*text,
 							 guint		 len)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -102,8 +109,14 @@ gboolean	 pk_strcmp_sections			(const gchar	*id1,
 gchar		*pk_iso8601_present			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_iso8601_difference			(const gchar	*isodate);
+gchar		*pk_iso8601_from_date			(const GDate	*date);
+GDate		*pk_iso8601_to_date			(const gchar	*iso_date);
 gchar		*pk_get_distro_id			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_check_permissions			(const gchar	*filename,
+							 guint		 euid,
+							 guint		 egid,
+							 guint		 mode);
 
 G_END_DECLS
 

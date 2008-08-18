@@ -106,7 +106,7 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_SEARCH_GROUP,		"search-group"},
 	{PK_ROLE_ENUM_SEARCH_NAME,		"search-name"},
 	{PK_ROLE_ENUM_SERVICE_PACK,		"service-pack"},
-	{PK_ROLE_ENUM_UPDATE_PACKAGES,		"update-package"},
+	{PK_ROLE_ENUM_UPDATE_PACKAGES,		"update-packages"},
 	{PK_ROLE_ENUM_UPDATE_SYSTEM,		"update-system"},
 	{PK_ROLE_ENUM_WHAT_PROVIDES,		"what-provides"},
 	{PK_ROLE_ENUM_ACCEPT_EULA,		"accept-eula"},
@@ -248,6 +248,14 @@ static PkEnumMatch enum_update[] = {
 	{PK_UPDATE_ENUM_ALL,			"all"},
 	{PK_UPDATE_ENUM_SECURITY,		"security"},
 	{PK_UPDATE_ENUM_NONE,			"none"},
+	{0, NULL}
+};
+
+static PkEnumMatch enum_update_state[] = {
+	{PK_UPDATE_STATE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_UPDATE_STATE_ENUM_TESTING,		"testing"},
+	{PK_UPDATE_STATE_ENUM_UNSTABLE,		"unstable"},
+	{PK_UPDATE_STATE_ENUM_STABLE,		"stable"},
 	{0, NULL}
 };
 
@@ -1016,6 +1024,34 @@ const gchar *
 pk_update_enum_to_text (PkUpdateEnum update)
 {
 	return pk_enum_find_string (enum_update, update);
+}
+
+/**
+ * pk_update_state_enum_from_text:
+ * @update_state: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. %PK_UPDATE_STATE_ENUM_STABLE
+ **/
+PkUpdateStateEnum
+pk_update_state_enum_from_text (const gchar *update_state)
+{
+	return pk_enum_find_value (enum_update_state, update_state);
+}
+
+/**
+ * pk_update_state_enum_to_text:
+ * @update_state: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "testing"
+ **/
+const gchar *
+pk_update_state_enum_to_text (PkUpdateStateEnum update_state)
+{
+	return pk_enum_find_string (enum_update_state, update_state);
 }
 
 /**

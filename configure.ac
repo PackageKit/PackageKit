@@ -103,7 +103,7 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
-AC_CHECK_HEADERS([libtar.h])
+AC_CHECK_HEADERS(libtar.h, [AC_DEFINE(HAVE_LIBTAR_H)], [AC_MSG_ERROR([Can't find libtar.h. Please install libtar.])])
 TAR_LIBS=-ltar
 AC_SUBST(TAR_LIBS)
 
@@ -241,6 +241,33 @@ AC_ARG_ENABLE(local, AS_HELP_STRING([--enable-local],[enable running in local ch
 AM_CONDITIONAL(PK_BUILD_LOCAL, test x$enable_local = xyes)
 if test x$enable_local = xyes; then
 	AC_DEFINE(PK_BUILD_LOCAL,1,[Build local code])
+fi
+
+dnl ---------------------------------------------------------------------------
+dnl - Checks for contrib/packagekit-plugin
+dnl ---------------------------------------------------------------------------
+
+PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
+                  build_browser_plugin=yes, build_browser_plugin=no)
+
+AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
+		 
+AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
+AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
+
+if test $build_browser_plugin = "yes"; then
+	# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
+
+	packagekit_save_CPPFLAGS="$CPPFLAGS"
+	packagekit_save_LDFLAGS="$LDFLAGS"
+
+	CPPFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_CFLAGS"
+	LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
+
+	AC_CHECK_FUNCS(gdk_app_launch_context_new)
+
+	CPPFLAGS="$packagekit_save_CPPFLAGS"
+	LDFLAGS="$packagekit_save_LDFLAGS"
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -466,7 +493,7 @@ if test x$enable_poldek = xyes; then
 fi
 
 if test x$enable_zypp = xyes; then
-	PKG_CHECK_MODULES(ZYPP, libzypp >= 4.25.0)
+	PKG_CHECK_MODULES(ZYPP, libzypp >= 5.4.0)
 	AC_SUBST(ZYPP_CFLAGS)
 	AC_SUBST(ZYPP_LIBS)
 fi
@@ -499,6 +526,7 @@ docs/api/Makefile
 docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
+contrib/packagekit-plugin/Makefile
 contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
@@ -534,7 +562,6 @@ data/org.freedesktop.PackageKitYumBackend.conf
 data/org.freedesktop.PackageKitAptBackend.conf
 data/tests/Makefile
 libselftest/Makefile
-libgbus/Makefile
 libpackagekit/Makefile
 policy/Makefile
 src/Makefile
@@ -561,6 +588,7 @@ echo "
         Security framework:        ${with_security_framework}
         Networking stack:          ${with_networking_stack}
         GIO support:               ${with_gio}
+        Browser Plugin: 	   ${build_browser_plugin}
 
         Backends:
         ALPM backend:              ${enable_alpm}

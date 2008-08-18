@@ -54,6 +54,40 @@ G_DEFINE_TYPE (PkSecurity, pk_security, G_TYPE_OBJECT)
 static gpointer pk_security_object = NULL;
 
 /**
+ * pk_security_uid_from_dbus_sender:
+ **/
+gboolean
+pk_security_uid_from_dbus_sender (PkSecurity *security, const gchar *dbus_name, guint *uid)
+{
+	PolKitCaller *caller;
+	DBusError dbus_error;
+	polkit_bool_t retval;
+	gboolean ret = FALSE;
+
+	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
+
+	/* get the PolKitCaller information */
+	dbus_error_init (&dbus_error);
+	caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_name, &dbus_error);
+	if (dbus_error_is_set (&dbus_error)) {
+		pk_warning ("failed to get caller %s: %s\n", dbus_error.name, dbus_error.message);
+		dbus_error_free (&dbus_error);
+		goto out;
+	}
+
+	/* get uid */
+	retval = polkit_caller_get_uid (caller, uid);
+	if (!retval) {
+		pk_warning ("failed to get UID");
+		goto out;
+	}
+	ret = TRUE;
+out:
+	polkit_caller_unref (caller);
+	return ret;
+}
+
+/**
  * pk_security_can_do_action:
  **/
 G_GNUC_WARN_UNUSED_RESULT static PolKitResult
@@ -102,7 +136,6 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 {
 	const gchar *policy = NULL;
 
-	g_return_val_if_fail (security != NULL, NULL);
 	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
 
 	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
@@ -114,7 +147,7 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 		policy = "org.freedesktop.packagekit.system-rollback";
 	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
 		   role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		policy = "org.freedesktop.packagekit.systems-sources-configure";
+		policy = "org.freedesktop.packagekit.system-sources-configure";
 	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		policy = "org.freedesktop.packagekit.system-sources-refresh";
 	} else if (role == PK_ROLE_ENUM_SET_PROXY_PRIVATE) {
@@ -343,7 +376,7 @@ libst_security (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "map valid role to action");
 	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	if (pk_strequal (action, "org.freedesktop.packagekit.update-package")) {
+	if (pk_strequal (action, "org.freedesktop.packagekit.system-update")) {
 		libst_success (test, NULL, error);
 	} else {
 		libst_failed (test, "did not get correct action '%s'", action);

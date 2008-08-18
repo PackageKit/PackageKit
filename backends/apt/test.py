@@ -83,6 +83,15 @@ try:
     if cmd == 'get-repolist' or cmd == 'all':
         print "Testing GetRepoList()"
         iface.GetRepoList()
+    if cmd == 'get-whatprovides-mimetype' or cmd == 'all':
+        print "Testing WhatProvides mime type perl"
+        iface.WhatProvides("none", PROVIDES_MIMETYPE, "text/x-perl")
+    if cmd == 'get-whatprovides-codec' or cmd == 'all':
+        print "Testing WhatProvides codec divx"
+        iface.WhatProvides("none", PROVIDES_CODEC, 
+                           "gstreamer.net|0.10|totem|DivX MPEG-4 Version 5 "
+                           "decoder|decoder-video/x-divx, divxversion=(int)5 "
+                           "(DivX MPEG-4 Version 5 decoder)")
     if cmd == 'get-updatedetail' or cmd == 'all':
         print "Testing GetUpdateDetail(PKG_ID)"
         iface.GetUpdateDetail(PKG_ID)

@@ -112,6 +112,8 @@ pk_control_error_set (GError **error, gint code, const gchar *format, ...)
 	gchar *buffer = NULL;
 	gboolean ret = TRUE;
 
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
@@ -378,6 +380,7 @@ pk_control_get_backend_detail (PkControl *control, gchar **name, gchar **author,
 	gchar *tauthor;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
@@ -428,6 +431,7 @@ pk_control_get_time_since_action (PkControl *control, PkRoleEnum role, guint *se
 	const gchar *role_text;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	role_text = pk_role_enum_to_text (role);
 
@@ -454,6 +458,8 @@ pk_control_set_locale (PkControl *control, const gchar *tid, GError **error)
 	PkClient *client;
 	gboolean ret;
 	gchar *locale; /* does not need to be freed */
+
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	client = pk_client_new ();
 	ret = pk_client_set_tid (client, tid, error);
@@ -491,6 +497,7 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 	gchar *tid_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {

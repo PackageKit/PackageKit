@@ -1,4 +1,4 @@
-The name of this backend is apt2.
+The name of this backend is apt
 
 It supports apt which is mainly used by Debian and its derivates. In contrast to
 the backend called apt this one uses DBus for the communication with the 

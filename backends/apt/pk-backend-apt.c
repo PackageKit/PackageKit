@@ -58,14 +58,23 @@ static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
 	return (PK_GROUP_ENUM_ACCESSORIES |
+		PK_GROUP_ENUM_ADMIN_TOOLS |
+		PK_GROUP_ENUM_COMMUNICATION |
+		PK_GROUP_ENUM_DESKTOP_GNOME |
+		PK_GROUP_ENUM_DESKTOP_KDE |
+		PK_GROUP_ENUM_DESKTOP_OTHER |
 		PK_GROUP_ENUM_GAMES |
 		PK_GROUP_ENUM_GRAPHICS |
 		PK_GROUP_ENUM_INTERNET |
-		PK_GROUP_ENUM_OFFICE |
+		PK_GROUP_ENUM_LEGACY |
+		PK_GROUP_ENUM_LOCALIZATION |
+		PK_GROUP_ENUM_MULTIMEDIA |
+		PK_GROUP_ENUM_NETWORK |
 		PK_GROUP_ENUM_OTHER |
 		PK_GROUP_ENUM_PROGRAMMING |
-		PK_GROUP_ENUM_MULTIMEDIA |
-		PK_GROUP_ENUM_SYSTEM);
+		PK_GROUP_ENUM_PUBLISHING |
+		PK_GROUP_ENUM_SYSTEM |
+		PK_GROUP_ENUM_UNKNOWN);
 }
 
 /**
@@ -114,6 +123,15 @@ backend_update_system (PkBackend *backend)
 }
 
 /**
+ * backend_update_packages
+ *  */
+static void
+backend_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_dbus_update_packages (dbus, package_ids);
+}
+
+/**
  * backend_install_packages
  *  */
 static void
@@ -141,6 +159,15 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_get_update_detail:
+ *  */
+static void
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_dbus_get_update_detail (dbus, package_ids);
+}
+
+/**
  *  * pk_backend_search_details:
  *   */
 static void
@@ -157,6 +184,16 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 {
 	pk_backend_dbus_search_name (dbus, filters, search);
 }
+
+/**
+ *  * pk_backend_search_group:
+ *   */
+static void
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *group)
+{
+	pk_backend_dbus_search_group (dbus, filters, group);
+}
+
 
 /**
  *  * pk_backend_cancel:
@@ -185,6 +222,41 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 	        pk_backend_dbus_get_packages (dbus, filters);
 }
 
+/**
+ *  * pk_backend_get_requires:
+ *   */
+static void
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+{
+	        pk_backend_dbus_get_requires (dbus, filters, package_ids, recursive);
+}
+
+/**
+ *  * pk_backend_get_depends:
+ *   */
+static void
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+{
+	        pk_backend_dbus_get_depends (dbus, filters, package_ids, recursive);
+}
+
+/**
+ *  * pk_backend_download_packages
+ *   */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	        pk_backend_dbus_download_packages (dbus, package_ids, directory);
+}
+
+/**
+ *  * pk_backend_what_provides
+ *   */
+static void
+backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provides, const gchar *search)
+{
+	        pk_backend_dbus_what_provides (dbus, filters, provides, search);
+}
 
 
 PK_BACKEND_OPTIONS (
@@ -195,14 +267,14 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
-	NULL,					/* download_packages */
-	NULL,					/* get_depends */
+	backend_download_packages,		/* download_packages */
+	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,					/* get_repo_list */
-	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
+	backend_get_requires,			/* get_requires */
+	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,					/* install_files */
 	backend_install_packages,		/* install_packages */
@@ -215,10 +287,10 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
-	NULL,					/* search_group */
+	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* service_pack */
-	NULL,					/* update_packages */
+	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	NULL					/* what_provides */
+	backend_what_provides			/* what_provides */
 );

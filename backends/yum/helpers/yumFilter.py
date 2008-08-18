@@ -190,7 +190,7 @@ class YumFilter(object):
             wantDevel = True
         else:
             wantDevel = False
-        regex =  re.compile(r'(-devel)|(-dgb)|(-static)')
+        regex =  re.compile(r'(-devel)|(-debuginfo)|(-static)|(-libs)')
         if regex.search(pkg.name):
             isDevel = True
         return isDevel == wantDevel

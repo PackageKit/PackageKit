@@ -42,7 +42,7 @@ from pkexceptions import *
 
 logging.basicConfig(format="%(levelname)s:%(message)s")
 pklog = logging.getLogger("PackageKitBackend")
-pklog.setLevel(logging.DEBUG)
+pklog.setLevel(logging.WARN)
 
 syslog = logging.handlers.SysLogHandler(facility=logging.handlers.SysLogHandler.LOG_DAEMON,address='/dev/log')
 formatter = logging.Formatter('PackageKit: %(levelname)s: %(message)s')
@@ -277,9 +277,9 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssssssss')
-    def UpdateDetail(self,package_id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update):
-        pklog.info("UpdateDetail (%s,%s,%s,%s,%s,%s,%s,%s)" % (package_id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update))
+                         signature='ssssssssssss')
+    def UpdateDetail(self,package_id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update,changelog,state,issued,updated):
+        pklog.info("UpdateDetail (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (package_id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update,changelog,state,issued,updated))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -313,6 +313,21 @@ class PackageKitBaseBackend(dbus.service.Object):
         @param details:  Required details about the message
         '''
         pklog.info("Message (%s,%s)" % (type,details))
+
+    @PKSignalHouseKeeper
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='ssss')
+    def EulaRequired(self, eula_id, package_id, vendor_name, license_agreement):
+        '''
+        send 'eula-required' signal:
+        @param eula_id: unique identifier of the EULA agreement
+        @param package_id: the package affected by this agreement
+        @param vendor_name: the freedom hater
+        @param license_agreement: the plain text license agreement
+        '''
+        pklog.info("Eula required (%s,%s,%s,%s)" % (eula_id, package_id,
+                                                    vendor_name,
+                                                    license_agreement))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -430,21 +445,21 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-			 in_signature='ss',out_signature='')
+                         in_signature='ss',out_signature='')
     def DownloadPackages(self,package_ids,directory):
-	'''
-	Implement the (backend)-download-packages functionality
-	'''
-	pklog.info("DownloadPackages(%s%s)" % (packages,directory))
-	self.doDownloadPackages(packages,directory)
+        '''
+        Implement the (backend)-download-packages functionality
+        '''
+        pklog.info("DownloadPackages(%s,%s)" % (package_ids, directory))
+        self.doDownloadPackages(package_ids, directory)
 
     def doDownloadPackages(self,package_ids,directory):
-	'''
-	Should be replaced in the corresponding backend sub class
-	'''
-	self.ErrorCode(ERROR_NOT_SUPPORTED,
-			"This function is not implemented in this backend")
-	self.Finished(EXIT_FAILED)
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss',out_signature='')
@@ -498,15 +513,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ssb',out_signature='')
-    def GetRequires(self,filters,package_ids,recursive):
+                         in_signature='ssb', out_signature='')
+    def GetRequires(self, filters, package_ids, recursive):
         '''
         Print a list of requires for a given package
         '''
-        pklog.info("GetRequires(%s,%s,%s)" % (filters,package,recursive))
-        self.doGetRequires(filters,package,recursive)
+        pklog.info("GetRequires(%s,%s,%s)" % (filters, package_ids, recursive))
+        self.doGetRequires(filters, package_ids ,recursive)
 
-    def doGetRequires(self,filters,package,recursive):
+    def doGetRequires(self, filters, package_ids, recursive):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -533,14 +548,14 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ssb',out_signature='')
-    def GetDepends(self,filters,package,recursive):
+    def GetDepends(self,filters,package_ids,recursive):
         '''
         Print a list of depends for a given package
         '''
-        pklog.info("GetDepends(%s,%s,%s)" % (filters,package,recursive))
-        self.doGetDepends(package,recursive)
+        pklog.info("GetDepends(%s,%s,%s)" % (filters,package_ids,recursive))
+        self.doGetDepends(filters,package_ids,recursive)
 
-    def doGetDepends(self,package,recursive):
+    def doGetDepends(self,filters,package_ids,recursive):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -605,8 +620,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-install functionality
         '''
-        pklog.info("InstallPackages(%s)" % ",".join(packages))
-        self.doInstallPackages(packages)
+        pklog.info("InstallPackages(%s)" % package_ids)
+        self.doInstallPackages(package_ids)
 
     def doInstallPackages(self,package_ids):
         '''
@@ -657,8 +672,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-update-packages functionality
         '''
-        pklog.info("UpdatePackages(%s)" % ",".join(packages))
-        self.doUpdatePackages(packages)
+        pklog.info("UpdatePackages(%s)" % package_ids)
+        self.doUpdatePackages(package_ids)
 
     def doUpdatePackages(self,package_ids):
         '''
@@ -674,9 +689,9 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-remove functionality
         '''
-        pklog.info("RemovePackages(%s,%s,%s)" % (packages,allowdep,
-                                                   autoremove))
-        self.doRemovePackages(packages,allowdep,autoremove)
+        pklog.info("RemovePackages(%s,%s,%s)" % (package_ids,allowdep,
+                                                 autoremove))
+        self.doRemovePackages(package_ids,allowdep,autoremove)
 
     def doRemovePackages(self,package_ids,allowdep,autoremove):
         '''
@@ -692,8 +707,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Print a detailed details for a given package
         '''
-        pklog.info("GetDetails(%s)" % package)
-        self.doGetDetails(package)
+        pklog.info("GetDetails(%s)" % package_ids)
+        self.doGetDetails(package_ids)
 
     def doGetDetails(self,package_ids):
         '''
@@ -709,8 +724,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the get-files method
         '''
-        pklog.info("GetFiles(%s)" % package)
-        self.doGetFiles( package)
+        pklog.info("GetFiles(%s)" % package_ids)
+        self.doGetFiles(package_ids)
 
     def doGetFiles(self,package_ids):
         '''
@@ -777,8 +792,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
-        pklog.info("GetUpdateDetail(%s)" % package)
-        self.doGetUpdateDetail(package)
+        pklog.info("GetUpdateDetail(%s)" % package_ids)
+        self.doGetUpdateDetail(package_ids)
 
     def doGetUpdateDetail(self,package_ids):
         '''
@@ -830,6 +845,23 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.doInstallPublicKey(keyurl)
 
     def doInstallPublicKey(self,keyurl):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s',out_signature='')
+    def SetLocale(self, code):
+        '''
+        Allow to set the locale of the backend.
+        '''
+        pklog.info("SetLocale(): %s" % code)
+        self.doSetLocale(code)
+
+    def doSetLocale(self, code):
         '''
         Should be replaced in the corresponding backend sub class
         '''

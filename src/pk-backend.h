@@ -96,7 +96,11 @@ gboolean	 pk_backend_update_detail		(PkBackend	*backend,
 							 const gchar	*bugzilla_url,
 							 const gchar	*cve_url,
 							 PkRestartEnum	 restart,
-							 const gchar	*update_text);
+							 const gchar	*update_text,
+							 const gchar	*changelog,
+							 PkUpdateStateEnum state,
+							 const gchar	*issued,
+							 const gchar	*updated);
 gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 							 PkRestartEnum	 restart,
 							 const gchar	*details);

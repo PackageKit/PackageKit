@@ -985,11 +985,15 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *updates, const gchar *obsoletes,
 			  const gchar *vendor_url, const gchar *bugzilla_url,
 			  const gchar *cve_url, PkRestartEnum restart,
-			  const gchar *update_text)
+			  const gchar *update_text, const gchar	*changelog,
+			  PkUpdateStateEnum state, const gchar *issued_text,
+			  const gchar *updated_text)
 {
 	gchar *update_text_safe;
 	PkUpdateDetailObj *detail;
 	PkPackageId *id;
+	GDate *issued;
+	GDate *updated;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -1001,18 +1005,28 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 		return FALSE;
 	}
 
+	/* convert dates */
+	issued = pk_iso8601_to_date (issued_text);
+	updated = pk_iso8601_to_date (updated_text);
+
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
 
 	/* form PkUpdateDetailObj struct */
 	id = pk_package_id_new_from_string (package_id);
 	detail = pk_update_detail_obj_new_from_data (id, updates, obsoletes, vendor_url,
-						     bugzilla_url, cve_url, restart, update_text_safe);
+						     bugzilla_url, cve_url, restart,
+						     update_text_safe, changelog,
+						     state, issued, updated);
 	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0, detail);
 
 	pk_package_id_free (id);
 	pk_update_detail_obj_free (detail);
 	g_free (update_text_safe);
+	if (issued != NULL)
+		g_date_free (issued);
+	if (updated != NULL)
+		g_date_free (updated);
 	return TRUE;
 }
 

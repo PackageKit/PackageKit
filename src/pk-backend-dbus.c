@@ -39,7 +39,7 @@
 #include <glib/gprintf.h>
 
 #include <gmodule.h>
-#include <libgbus.h>
+#include <pk-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
 
 #include <pk-common.h>
@@ -75,7 +75,7 @@ struct PkBackendDbusPrivate
 	GTimer			*timer;
 	gchar			*service;
 	gulong			 signal_finished;
-	LibGBus			*gbus;
+	PkDbusMonitor		*monitor;
 };
 
 G_DEFINE_TYPE (PkBackendDbus, pk_backend_dbus, G_TYPE_OBJECT)
@@ -167,12 +167,17 @@ pk_backend_dbus_update_detail_cb (DBusGProxy *proxy, const gchar *package_id,
 				  const gchar *updates, const gchar *obsoletes,
 				  const gchar *vendor_url, const gchar *bugzilla_url,
 				  const gchar *cve_url, const gchar *restart_text,
-				  const gchar *update_text, PkBackendDbus *backend_dbus)
+				  const gchar *update_text, const gchar	*changelog,
+				  const gchar *state, const gchar *issued,
+				  const gchar *updated, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("got signal");
 	pk_backend_update_detail (backend_dbus->priv->backend, package_id, updates,
 				  obsoletes, vendor_url, bugzilla_url, cve_url,
-				  pk_restart_enum_from_text (restart_text), update_text);
+				  pk_restart_enum_from_text (restart_text),
+				  update_text, changelog,
+				  pk_update_state_enum_from_text (state),
+				  issued, updated);
 }
 
 /**
@@ -452,7 +457,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	}
 
 	/* watch */
-	libgbus_assign (backend_dbus->priv->gbus, LIBGBUS_SYSTEM, service);
+	pk_dbus_monitor_assign (backend_dbus->priv->monitor, PK_DBUS_MONITOR_SYSTEM, service);
 
 	/* grab this */
 	pk_debug ("trying to activate %s", service);
@@ -477,6 +482,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_STRING, G_TYPE_INVALID);
@@ -1400,10 +1406,10 @@ pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkFilterEnum filters
 }
 
 /**
- * pk_backend_dbus_gbus_changed_cb:
+ * pk_backend_dbus_monitor_changed_cb:
  **/
 static void
-pk_backend_dbus_gbus_changed_cb (LibGBus *libgbus, gboolean is_active, PkBackendDbus *backend_dbus)
+pk_backend_dbus_monitor_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolean is_active, PkBackendDbus *backend_dbus)
 {
 	gboolean ret;
 	g_return_if_fail (PK_IS_BACKEND_DBUS (backend_dbus));
@@ -1440,7 +1446,7 @@ pk_backend_dbus_finalize (GObject *object)
 	}
 	g_timer_destroy (backend_dbus->priv->timer);
 	g_object_unref (backend_dbus->priv->backend);
-	g_object_unref (backend_dbus->priv->gbus);
+	g_object_unref (backend_dbus->priv->monitor);
 
 	G_OBJECT_CLASS (pk_backend_dbus_parent_class)->finalize (object);
 }
@@ -1477,9 +1483,9 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	}
 
 	/* babysit the backend and do Init() again it when it crashes */
-	backend_dbus->priv->gbus = libgbus_new ();
-	g_signal_connect (backend_dbus->priv->gbus, "connection-changed",
-			  G_CALLBACK (pk_backend_dbus_gbus_changed_cb), backend_dbus);
+	backend_dbus->priv->monitor = pk_dbus_monitor_new ();
+	g_signal_connect (backend_dbus->priv->monitor, "connection-changed",
+			  G_CALLBACK (pk_backend_dbus_monitor_changed_cb), backend_dbus);
 
 	/* ProgressChanged */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_UINT_UINT,
@@ -1528,8 +1534,9 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
 	/* UpdateDetail */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	/* Transaction */

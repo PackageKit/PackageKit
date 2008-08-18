@@ -34,6 +34,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
+#include <sys/stat.h>
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
@@ -186,6 +188,65 @@ pk_iso8601_difference (const gchar *isodate)
 }
 
 /**
+ * pk_iso8601_from_date:
+ * @date: a %GDate to convert
+ *
+ * Return value: If valid then a new ISO8601 date, else NULL
+ **/
+gchar *
+pk_iso8601_from_date (const GDate *date)
+{
+	gsize retval;
+	gchar iso_date[128];
+
+	if (date == NULL)
+		return NULL;
+	retval = g_date_strftime (iso_date, 128, "%F", date);
+	if (retval == 0)
+		return NULL;
+	return g_strdup (iso_date);
+}
+
+/**
+ * pk_iso8601_to_date:
+ * @iso_date: The ISO8601 date to convert
+ *
+ * Return value: If valid then a new %GDate, else NULL
+ **/
+GDate *
+pk_iso8601_to_date (const gchar *iso_date)
+{
+	gboolean ret;
+	guint retval;
+	guint d, m, y;
+	GTimeVal time;
+	GDate *date = NULL;
+
+	if (pk_strzero (iso_date))
+		goto out;
+
+	/* try to parse complete ISO8601 date */
+	ret = g_time_val_from_iso8601 (iso_date, &time);
+	if (ret) {
+		date = g_date_new ();
+		g_date_set_time_val (date, &time);
+		goto out;
+	}
+
+	/* g_time_val_from_iso8601() blows goats and won't
+	 * accept a valid ISO8601 formatted date without a
+	 * time value - try and parse this case */
+	retval = sscanf (iso_date, "%i-%i-%i", &y, &m, &d);
+	if (retval == 3) {
+		date = g_date_new_dmy (d, m, y);
+		goto out;
+	}
+	pk_warning ("could not parse '%s'", iso_date);
+out:
+	return date;
+}
+
+/**
  * pk_strvalidate_char:
  * @item: A single char to test
  *
@@ -243,7 +304,7 @@ pk_strsafe (const gchar *text)
 	}
 
 	/* rip out any insane characters */
-	delimiters = "\\\f\r\t\"'";
+	delimiters = "\\\f\r\t\"";
 	text_safe = g_strdup (text);
 	g_strdelimit (text_safe, delimiters, ' ');
 	return text_safe;
@@ -812,6 +873,45 @@ pk_strbuild_va (const gchar *first_element, va_list *args)
 	g_string_set_size (string, string->len - 1);
 
 	return g_string_free (string, FALSE);
+}
+
+/**
+ * gpk_check_permissions:
+ * @filename: a filename to check
+ * @euid: the effective user ID to check for, or the output of geteuid()
+ * @egid: the effective group ID to check for, or the output of getegid()
+ * @mode: bitfield of R_OK, W_OK, XOK
+ *
+ * Like, access but a bit more accurate - access will let root do anything.
+ * Does not get read-only or no-exec filesystems right.
+ *
+ * Return value: %TRUE if the file has access perms
+ **/
+gboolean
+pk_check_permissions (const gchar *filename, guint euid, guint egid, guint mode)
+{
+	struct stat statbuf;
+
+	if (stat (filename, &statbuf) == 0) {
+		if ((mode & R_OK) &&
+		    !((statbuf.st_mode & S_IROTH) ||
+		      ((statbuf.st_mode & S_IRUSR) && euid == statbuf.st_uid) ||
+		      ((statbuf.st_mode & S_IRGRP) && egid == statbuf.st_gid)))
+			return FALSE;
+		if ((mode & W_OK) &&
+		    !((statbuf.st_mode & S_IWOTH) ||
+		      ((statbuf.st_mode & S_IWUSR) && euid == statbuf.st_uid) ||
+		      ((statbuf.st_mode & S_IWGRP) && egid == statbuf.st_gid)))
+			return FALSE;
+		if ((mode & X_OK) &&
+		    !((statbuf.st_mode & S_IXOTH) ||
+		      ((statbuf.st_mode & S_IXUSR) && euid == statbuf.st_uid) ||
+		      ((statbuf.st_mode & S_IXGRP) && egid == statbuf.st_gid)))
+			return FALSE;
+
+		return TRUE;
+	}
+	return FALSE;
 }
 
 /***************************************************************************
@@ -1463,7 +1563,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test replace unsafe (multiple invalid)");
-	text_safe = pk_strsafe ("'Richard\"Hughes\"");
+	text_safe = pk_strsafe (" Richard\"Hughes\"");
 	if (pk_strequal (text_safe, " Richard Hughes ")) {
 		libst_success (test, NULL);
 	} else {

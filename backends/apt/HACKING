@@ -1,5 +1,7 @@
 The backend can be tested by running it as root from the source code
-repository. Make sure to kill packagekitd before to force a reintializing
-of the cache:
+repository. Use the -t/--takeover command line switch to kill a perhaps already
+running apt backend before:
 
-  killall packagekitd; python aptDBUSBackend.py 
+  sudo python aptDBUSBackend.py --debug --takeover
+
+Use the --help command line switch for more details.
