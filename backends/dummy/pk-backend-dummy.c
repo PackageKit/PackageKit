@@ -147,6 +147,22 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_get_distro_upgrades:
+ */
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_STABLE,
+				   "Fedora 9", "Fedora 9 is a Linux-based operating system "
+				   "that showcases the latest in free and open source software.");
+	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
+				   "Fedora 10 RC1", "Fedora 10 RC1 is the first unstable version "
+				   "of Fedora for people to test.");
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_get_files:
  */
 static void
@@ -157,6 +173,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 			  "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
 	pk_backend_finished (backend);
 }
+
 /**
  * backend_get_requires:
  */
@@ -859,6 +876,7 @@ PK_BACKEND_OPTIONS (
 	backend_download_packages,		/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
+	backend_get_distro_upgrades,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
