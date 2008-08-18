@@ -1232,7 +1232,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                       "/%(src_section)s/%(prefix)s/%(src_pkg)s" \
                       "/%(src_pkg)s_%(src_ver)s/changelog"
             else:
-                return _("The list of changes is not available")
+                return "The list of changes is not available"
 
         # get the src package name
         src_pkg = pkg.sourcePackageName
