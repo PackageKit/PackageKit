@@ -58,14 +58,23 @@ static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
 	return (PK_GROUP_ENUM_ACCESSORIES |
+		PK_GROUP_ENUM_ADMIN_TOOLS |
+		PK_GROUP_ENUM_COMMUNICATION |
+		PK_GROUP_ENUM_DESKTOP_GNOME |
+		PK_GROUP_ENUM_DESKTOP_KDE |
+		PK_GROUP_ENUM_DESKTOP_OTHER |
 		PK_GROUP_ENUM_GAMES |
 		PK_GROUP_ENUM_GRAPHICS |
 		PK_GROUP_ENUM_INTERNET |
-		PK_GROUP_ENUM_OFFICE |
+		PK_GROUP_ENUM_LEGACY |
+		PK_GROUP_ENUM_LOCALIZATION |
+		PK_GROUP_ENUM_MULTIMEDIA |
+		PK_GROUP_ENUM_NETWORK |
 		PK_GROUP_ENUM_OTHER |
 		PK_GROUP_ENUM_PROGRAMMING |
-		PK_GROUP_ENUM_MULTIMEDIA |
-		PK_GROUP_ENUM_SYSTEM);
+		PK_GROUP_ENUM_PUBLISHING |
+		PK_GROUP_ENUM_SYSTEM |
+		PK_GROUP_ENUM_UNKNOWN);
 }
 
 /**
@@ -177,6 +186,16 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 }
 
 /**
+ *  * pk_backend_search_group:
+ *   */
+static void
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *group)
+{
+	pk_backend_dbus_search_name (dbus, filters, group);
+}
+
+
+/**
  *  * pk_backend_cancel:
  *   */
 static void
@@ -268,7 +287,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
-	NULL,					/* search_group */
+	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* service_pack */
 	backend_update_packages,		/* update_packages */

@@ -254,6 +254,29 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled.wait()
 
     @threaded
+    def doSearchGroup(self, filters, group):
+        '''
+        Implement the apt2-search-group functionality
+        '''
+        pklog.info("Searching for group: %s" % group)
+        self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(True)
+
+        for pkg in self._cache:
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
+                               "The search was canceled")
+                self.Finished(EXIT_KILLED)
+                self._canceled.clear()
+                return
+            elif self._get_package_group(pkg) == group and \
+                 self._is_package_visible(pkg, filters):
+                self._emit_package(pkg)
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
     def doSearchName(self, filters, search):
         '''
         Implement the apt2-search-name functionality
@@ -437,15 +460,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # replace all multiple spaces by newlines
             p = re.compile(r'\s\s+', re.MULTILINE)
             desc = p.sub('\n', desc)
-            #FIXME: group information missing
             #FIXME: We need more fine grained license information!
-            origin = pkg.candidateOrigin
-            if origin[0].component in ["main", "universe"] and \
-               origin[0].origin in ["Debian", "Ubuntu"]:
+            origin = pkg.candidateOrigin[0]
+            if origin.component in ["main", "universe"] and \
+               origin.origin in ["Debian", "Ubuntu"]:
                 license = "free"
             else:
                 license = "unknown"
-            self.Details(pkg_id, license, 'unknown', desc,
+            group = self._get_package_group(pkg)
+            self.Details(pkg_id, license, group, desc,
                          pkg.homepage, pkg.packageSize)
             self.Finished(EXIT_SUCCESS)
 
@@ -1314,6 +1337,90 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return "Failed to download the list of changes.\nPlease " \
                         "check your Internet connection."
         return changelog
+
+    def _get_package_group(self, pkg):
+        """
+        Return the packagekit group corresponding to the package's section
+        """
+        section = pkg.section
+        if section == "admin":
+            return GROUP_ADMIN_TOOLS
+        elif section == "base":
+            return GROUP_SYSTEM
+        elif section == "comm":
+            return GROUP_COMMUNICATION
+        elif section == "devel":
+            return GROUP_PROGRAMMING
+        elif section == "doc":
+            #FIXME: introduce a new group
+            return GROUP_OTHER
+        elif section == "editors":
+            return GROUP_PUBLISHING
+        elif section == "electronics":
+            #FIXME: do we need a special group?
+            return GROUP_OTHER
+        elif section == "embedded":
+            return GROUP_SYSTEM
+        elif section == "games":
+            return GROUP_GAMES
+        elif section == "GNOME":
+            return GROUP_DESKTOP_GNOME
+        elif section == "graphics":
+            return GROUP_GRAPHICS
+        elif section == "hamradio":
+            return GROUP_COMMUNICATION
+        elif section == "interpreters":
+            return GROUP_PROGRAMMING
+        elif section == "kde":
+            return GROUP_DESKTOP_KDE
+        elif section == "libdevel":
+            return GROUP_PROGRAMMING
+        elif section == "lib":
+            return GROUP_SYSTEM
+        elif section == "mail":
+            return GROUP_INTERNET
+        elif section == "math":
+            #FIXME: Need a group science
+            return GROUP_OTHER
+        elif section == "misc":
+            return GROUP_OTHER
+        elif section == "net":
+            return GROUP_NETWORK
+        elif section == "news":
+            return GROUP_INTERNET
+        elif section == "oldlibs":
+            return GROUP_LEGACY
+        elif section == "otherosfs":
+            return GROUP_SYSTEM
+        elif section == "perl":
+            return GROUP_PROGRAMMING
+        elif section == "python":
+            return GROUP_PROGRAMMING
+        elif section == "science":
+            #FIXME Need a new group
+            return GROUP_OTHER
+        elif section == "shells":
+            return GROUP_SYSTEM
+        elif section == "sound":
+            return GROUP_MULTIMEDIA
+        elif section == "tex":
+            return GROUP_PUBLISHING
+        elif section == "text":
+            return GROUP_PUBLISHING
+        elif section == "utils":
+            return GROUP_ACCESSORIES
+        elif section == "web":
+            return GROUP_INTERNET
+        elif section == "x11":
+            return GROUP_DESKTOP_OTHER
+        elif section == "unknown":
+            return GROUP_UNKNOWN
+        elif section == "alien":
+            return GROUP_UNKNOWN
+        elif section == "translations":
+            return GROUP_LOCALIZATION
+        else:
+            return GROUP_UNKNOWN
 
 def takeover():
     """
