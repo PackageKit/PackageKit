@@ -2191,7 +2191,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		if (g_str_has_suffix (full_paths[i], ".pack")) {
 			ret = pk_transaction_check_pack_distro_id (full_paths[i], &failure);
 			if (!ret) {
-				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, failure);
+				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", failure);
 				dbus_g_method_return_error (context, error);
 				g_free (failure);
 				return;
