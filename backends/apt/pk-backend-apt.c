@@ -191,7 +191,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *group)
 {
-	pk_backend_dbus_search_name (dbus, filters, group);
+	pk_backend_dbus_search_group (dbus, filters, group);
 }
 
 
