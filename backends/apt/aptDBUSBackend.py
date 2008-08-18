@@ -1167,39 +1167,36 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Return True if the package should be shown in the user interface
         '''
-        #FIXME: Needs to be optmized
-        if filters == 'none':
+        if filters == FILTER_NONE:
             return True
-        if FILTER_INSTALLED in filters and not pkg.isInstalled:
-            return False
-        if FILTER_NOT_INSTALLED in filters and pkg.isInstalled:
-            return False
-        if FILTER_GUI in filters and not self._package_has_gui(pkg):
-            return False
-        if FILTER_NOT_GUI in filters and self._package_has_gui(pkg):
-            return False
-        if FILTER_DEVELOPMENT in filters and not self._package_is_devel(pkg):
-            return False
-        if FILTER_NOT_DEVELOPMENT in filters and self._package_is_devel(pkg):
-            return False
-        if FILTER_SUPPORTED in filters and not self._package_is_supported(pkg):
-            return False
-        if FILTER_NOT_SUPPORTED in filters and self._package_is_supported(pkg):
-            return False
+        for filter in filters.split(";"):
+            if (filter == FILTER_INSTALLED and not pkg.isInstalled) or \
+               (filter == FILTER_NOT_INSTALLED and pkg.isInstalled) or \
+               (filter == FILTER_SUPPORTED and not \
+                self._is_package_supported(pkg)) or \
+               (filter == FILTER_NOT_SUPPORTED and \
+                self._is_package_supported(pkg)) or \
+               (filter == FILTER_GUI and not self._has_package_gui(pkg)) or \
+               (filter == FILTER_NOT_GUI and self._has_package_gui(pkg)) or \
+               (filter == FILTER_DEVELOPMENT and not \
+                self._is_package_devel(pkg)) or \
+               (filter == FILTER_NOT_DEVELOPMENT and \
+                self._is_package_devel(pkg)):
+                return False
         return True
 
-    def _package_has_gui(self, pkg):
+    def _has_package_gui(self, pkg):
         #FIXME: should go to a modified Package class
         #FIXME: take application data into account. perhaps checking for
         #       property in the xapian database
         return pkg.section.split('/')[-1].lower() in ['x11', 'gnome', 'kde']
 
-    def _package_is_devel(self, pkg):
+    def _is_package_devel(self, pkg):
         #FIXME: should go to a modified Package class
         return pkg.name.endswith("-dev") or pkg.name.endswith("-dbg") or \
                pkg.section.split('/')[-1].lower() in ['devel', 'libdevel']
 
-    def _package_is_supported(self, pkg):
+    def _is_package_supported(self, pkg):
         origin = pkg.candidateOrigin[0]
         return origin.origin == "Ubuntu" and \
                origin.component in ["main", "restricted"] and \
