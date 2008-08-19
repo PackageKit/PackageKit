@@ -106,9 +106,9 @@ struct PkEnginePrivate
 	PkNotify		*notify;
 	PkConf			*conf;
 	PkFileMonitor		*file_monitor;
-	PkRoleEnum		 actions;
-	PkGroupEnum		 groups;
-	PkFilterEnum		 filters;
+	PkBitfield		 actions;
+	PkBitfield		 groups;
+	PkBitfield	 filters;
 	guint			 signal_state_priority_timeout;
 	guint			 signal_state_normal_timeout;
 };
@@ -395,7 +395,7 @@ gboolean
 pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 {
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	*actions = pk_role_enums_to_text (engine->priv->actions);
+	*actions = pk_role_bitfield_to_text (engine->priv->actions);
 	return TRUE;
 }
 
@@ -406,7 +406,7 @@ gboolean
 pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
 {
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	*groups = pk_group_enums_to_text (engine->priv->groups);
+	*groups = pk_group_bitfield_to_text (engine->priv->groups);
 	return TRUE;
 }
 
@@ -417,7 +417,7 @@ gboolean
 pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
 {
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	*filters = pk_filter_enums_to_text (engine->priv->filters);
+	*filters = pk_filter_bitfield_to_text (engine->priv->filters);
 	return TRUE;
 }
 
@@ -628,7 +628,7 @@ pk_engine_remove_contents (const gchar *directory)
 {
 	gboolean ret = FALSE;
 	GDir *dir;
-	GError *error = NULL;
+	GError *error;
 	const gchar *filename;
 	gchar *src;
 	gint retval;

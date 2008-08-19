@@ -43,7 +43,7 @@ enum {
 typedef struct {
 	gint search_type;
 	gchar *needle;
-	PkFilterEnum filters;
+	PkBitfield filters;
 	PkBackend *backend;
 } SearchParams;
 
@@ -264,7 +264,7 @@ pk_opkg_package_list_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
 	gchar *uid;
 	gchar *haystack;
 	gint status, match;
-	PkFilterEnum filters = params->filters;
+	PkBitfield filters = params->filters;
 
 	if (!pkg->name)
 		return;
@@ -345,7 +345,7 @@ backend_search_thread (PkBackend *backend)
 }
 
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	SearchParams *params;
 
@@ -367,7 +367,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * backend_search_description:
  */
 static void
-backend_search_description (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_description (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	SearchParams *params;
 
@@ -386,7 +386,7 @@ backend_search_description (PkBackend *backend, PkFilterEnum filters, const gcha
 }
 
 static void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	SearchParams *params;
 
@@ -519,12 +519,14 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return (PK_FILTER_ENUM_INSTALLED |
-		PK_FILTER_ENUM_DEVELOPMENT |
-		PK_FILTER_ENUM_GUI);
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_INSTALLED,
+		PK_FILTER_ENUM_DEVELOPMENT,
+		PK_FILTER_ENUM_GUI,
+		-1);
 }
 
 
@@ -629,7 +631,7 @@ backend_get_updates_thread (PkBackend *backend)
 }
 
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -640,16 +642,18 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 /**
  * backend_get_groups:
  */
-static PkGroupEnum
+static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return (PK_GROUP_ENUM_COMMUNICATION |
-		PK_GROUP_ENUM_PROGRAMMING |
-		PK_GROUP_ENUM_GAMES |
-		PK_GROUP_ENUM_OTHER |
-		PK_GROUP_ENUM_INTERNET |
-		PK_GROUP_ENUM_REPOS |
-		PK_GROUP_ENUM_MAPS);
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_INTERNET,
+		PK_GROUP_ENUM_REPOS,
+		PK_GROUP_ENUM_MAPS,
+		-1);
 }
 
 /**

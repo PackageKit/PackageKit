@@ -25,6 +25,7 @@
 #include <glib.h>
 #include <gmodule.h>
 #include <pk-enum.h>
+#include <pk-bitfield.h>
 #include <pk-package-id.h>
 #include <pk-debug.h>
 
@@ -197,14 +198,14 @@ typedef struct {
 	const gchar	*author;
 	void		(*initialize)			(PkBackend	*backend);
 	void		(*destroy)			(PkBackend	*backend);
-	PkGroupEnum	(*get_groups)			(PkBackend	*backend);
-	PkFilterEnum	(*get_filters)			(PkBackend	*backend);
+	PkBitfield	(*get_groups)			(PkBackend	*backend);
+	PkBitfield	(*get_filters)			(PkBackend	*backend);
 	void		(*cancel)			(PkBackend	*backend);
 	void		(*download_packages)		(PkBackend	*backend,
 							 gchar		**package_ids,
 							 const gchar	*directory);
 	void		(*get_depends)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 gchar		**package_ids,
 							 gboolean	 recursive);
 	void		(*get_details)			(PkBackend	*backend,
@@ -213,17 +214,17 @@ typedef struct {
 	void		(*get_files)			(PkBackend	*backend,
 							 gchar		**package_ids);
 	void		(*get_packages)			(PkBackend	*backend,
-							 PkFilterEnum	 filters);
+							 PkBitfield	 filters);
 	void		(*get_repo_list)		(PkBackend	*backend,
-							 PkFilterEnum	 filters);
+							 PkBitfield	 filters);
 	void		(*get_requires)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 gchar		**package_ids,
 							 gboolean	 recursive);
 	void		(*get_update_detail)		(PkBackend	*backend,
 							 gchar		**package_ids);
 	void		(*get_updates)			(PkBackend	*backend,
-							 PkFilterEnum	 filters);
+							 PkBitfield	 filters);
 	void		(*install_files)		(PkBackend	*backend,
 							 gboolean	 trusted,
 							 gchar		**full_paths);
@@ -247,21 +248,21 @@ typedef struct {
 							 const gchar	*parameter,
 							 const gchar	*value);
 	void		(*resolve)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 gchar		**packages);
 	void		(*rollback)			(PkBackend	*backend,
 							 const gchar	*transaction_id);
 	void		(*search_details)		(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 const gchar	*search);
 	void		(*search_file)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 const gchar	*search);
 	void		(*search_group)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 const gchar	*search);
 	void		(*search_name)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 const gchar	*search);
 	void		(*service_pack)			(PkBackend	*backend,
 							 const gchar	*location,
@@ -270,7 +271,7 @@ typedef struct {
 							 gchar		**package_ids);
 	void		(*update_system)		(PkBackend	*backend);
 	void		(*what_provides)		(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 PkProvidesEnum	 provides,
 							 const gchar	*search);
 	gpointer	padding[10];

@@ -175,7 +175,7 @@ std::set<zypp::PoolItem> * zypp_get_patches (PkRestartEnum restart = PK_RESTART_
   */
 gboolean zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force);
 
-void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkFilterEnum filters);
+void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkBitfield filters);
 
 /**
   * convert a std::set<zypp::sat::Solvable to gchar ** array

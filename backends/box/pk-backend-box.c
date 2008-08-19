@@ -103,7 +103,7 @@ add_packages_from_list (PkBackend *backend, GList *list, gboolean updates)
 static gboolean
 backend_find_packages_thread (PkBackend *backend)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	const gchar *search;
 	guint mode;
 	GList *list = NULL;
@@ -116,22 +116,22 @@ backend_find_packages_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 		filter_box = filter_box | PKG_INSTALLED;
 	}
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 		filter_box = filter_box | PKG_AVAILABLE;
 	}
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
 		filter_box = filter_box | PKG_DEVEL;
 	}
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
 		filter_box = filter_box | PKG_NON_DEVEL;
 	}
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_GUI)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI)) {
 		filter_box = filter_box | PKG_GUI;
 	}
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_GUI)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI)) {
 		filter_box = filter_box | PKG_TEXT;
 	}
 	if (mode == SEARCH_TYPE_DETAILS) {
@@ -151,14 +151,14 @@ backend_find_packages_thread (PkBackend *backend)
 		add_packages_from_list (backend, list, FALSE);
 		box_db_repos_package_list_free (list);
 	} else {
-		if ((pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
-		     pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) ||
-		    (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
-		     !pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED))) {
+		if ((pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
+		     pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) ||
+		    (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
+		     !pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED))) {
 			list = box_db_repos_packages_search_all(db, (gchar *)search, filter_box);
-		} else if (pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 			list = box_db_repos_packages_search_installed(db, (gchar *)search, filter_box);
-		} else if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 			list = box_db_repos_packages_search_available(db, (gchar *)search, filter_box);
 		}
 		add_packages_from_list (backend, list, FALSE);
@@ -438,19 +438,21 @@ backend_destroy (PkBackend *backend)
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return (PK_FILTER_ENUM_GUI |
-		PK_FILTER_ENUM_INSTALLED |
-		PK_FILTER_ENUM_DEVELOPMENT);
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_GUI,
+		PK_FILTER_ENUM_INSTALLED,
+		PK_FILTER_ENUM_DEVELOPMENT,
+		-1);
 }
 
 /**
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_uint (backend, "type", DEPS_TYPE_DEPENDS);
 	pk_backend_thread_create (backend, backend_get_depends_requires_thread);
@@ -478,7 +480,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_uint (backend, "type", DEPS_TYPE_REQUIRES);
 	pk_backend_thread_create (backend, backend_get_depends_requires_thread);
@@ -488,7 +490,7 @@ backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_thread_create (backend, backend_get_updates_thread);
 }
@@ -547,7 +549,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_id, gboolean allow_
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
+backend_resolve (PkBackend *backend, PkBitfield filters, const gchar *package)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_RESOLVE);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -557,7 +559,7 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_DETAILS);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -567,7 +569,7 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
  * backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_FILE);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -577,7 +579,7 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_NAME);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -611,7 +613,7 @@ backend_update_system (PkBackend *backend)
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	GList *list;
 	GList *li;

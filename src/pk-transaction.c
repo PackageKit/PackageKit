@@ -109,7 +109,7 @@ struct PkTransactionPrivate
 	gchar			*cached_transaction_id;
 	gchar			*cached_full_path;
 	gchar			**cached_full_paths;
-	PkFilterEnum		 cached_filters;
+	PkBitfield	 cached_filters;
 	gchar			*cached_search;
 	gchar			*cached_repo_id;
 	gchar			*cached_key_id;
@@ -1418,7 +1418,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
@@ -1641,7 +1641,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_PACKAGES);
 
@@ -1760,7 +1760,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REPO_LIST);
 
@@ -1828,7 +1828,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
@@ -2047,7 +2047,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
 
@@ -2784,7 +2784,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (packages);
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_RESOLVE);
 
@@ -2912,7 +2912,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_DETAILS);
@@ -2974,7 +2974,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_FILE);
@@ -3036,7 +3036,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_GROUP);
@@ -3098,7 +3098,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_NAME);
@@ -3347,7 +3347,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->cached_provides = provides;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;

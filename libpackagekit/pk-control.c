@@ -167,13 +167,13 @@ pk_control_error_fixup (GError **error)
  *
  * Return value: an enumerated list of the actions the backend supports
  **/
-PkRoleEnum
+PkBitfield
 pk_control_get_actions (PkControl *control)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *actions;
-	PkRoleEnum roles_enum = PK_GROUP_ENUM_UNKNOWN;
+	PkBitfield roles_enum = 0;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), PK_GROUP_ENUM_UNKNOWN);
 
@@ -194,7 +194,7 @@ pk_control_get_actions (PkControl *control)
 	}
 
 	/* convert to enumerated types */
-	roles_enum = pk_role_enums_from_text (actions);
+	roles_enum = pk_role_bitfield_from_text (actions);
 	g_free (actions);
 out:
 	return roles_enum;
@@ -247,13 +247,13 @@ out:
  *
  * Return value: an enumerated list of the groups the backend supports
  **/
-PkGroupEnum
+PkBitfield
 pk_control_get_groups (PkControl *control)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *groups;
-	PkGroupEnum groups_enum = PK_GROUP_ENUM_UNKNOWN;
+	PkBitfield groups_enum = 0;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), PK_GROUP_ENUM_UNKNOWN);
 
@@ -274,7 +274,7 @@ pk_control_get_groups (PkControl *control)
 	}
 
 	/* convert to enumerated types */
-	groups_enum = pk_group_enums_from_text (groups);
+	groups_enum = pk_group_bitfield_from_text (groups);
 	g_free (groups);
 out:
 	return groups_enum;
@@ -292,7 +292,7 @@ pk_control_get_network_state (PkControl *control)
 	gboolean ret;
 	GError *error = NULL;
 	gchar *network_state;
-	PkGroupEnum network_state_enum = PK_NETWORK_ENUM_UNKNOWN;
+	PkNetworkEnum network_state_enum = PK_NETWORK_ENUM_UNKNOWN;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), PK_NETWORK_ENUM_UNKNOWN);
 
@@ -327,13 +327,13 @@ out:
  *
  * Return value: an enumerated list of the filters the backend supports
  **/
-PkFilterEnum
+PkBitfield
 pk_control_get_filters (PkControl *control)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *filters;
-	PkFilterEnum filters_enum = PK_FILTER_ENUM_UNKNOWN;
+	PkBitfield filters_enum = 0;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), PK_FILTER_ENUM_UNKNOWN);
 
@@ -354,7 +354,7 @@ pk_control_get_filters (PkControl *control)
 	}
 
 	/* convert to enumerated types */
-	filters_enum = pk_filter_enums_from_text (filters);
+	filters_enum = pk_filter_bitfield_from_text (filters);
 	g_free (filters);
 out:
 	return filters_enum;

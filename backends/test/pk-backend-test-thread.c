@@ -67,7 +67,7 @@ backend_search_group_thread (PkBackend *backend)
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_thread_create (backend, backend_search_group_thread);
 }
@@ -80,14 +80,14 @@ backend_search_name_thread (PkBackend *backend)
 {
 	GTimer *timer;
 	guint percentage;
-	PkFilterEnum filters;
+	PkBitfield filters;
 	gchar *filters_text;
 	const gchar *search;
 
 	filters = pk_backend_get_uint (backend, "filters");
 	search = pk_backend_get_string (backend, "search");
 
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_debug ("started task (%p) search=%s filters=%s", backend, search, filters_text);
 	g_free (filters_text);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -121,7 +121,7 @@ backend_search_name_thread (PkBackend *backend)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_thread_create (backend, backend_search_name_thread);
 }

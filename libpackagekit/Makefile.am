@@ -35,6 +35,7 @@ libpackagekit_include_HEADERS =					\
 	pk-update-detail-list.h					\
 	pk-details-obj.h					\
 	pk-enum.h						\
+	pk-bitfield.h						\
 	pk-common.h						\
 	pk-client.h						\
 	pk-dbus-monitor.h					\
@@ -68,8 +69,10 @@ libpackagekit_la_SOURCES =					\
 	pk-update-detail-list.h					\
 	pk-details-obj.c					\
 	pk-details-obj.h					\
-	pk-enum.h						\
 	pk-enum.c						\
+	pk-enum.h						\
+	pk-bitfield.c						\
+	pk-bitfield.h						\
 	pk-common.c						\
 	pk-common.h						\
 	pk-client.c						\

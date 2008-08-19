@@ -49,7 +49,7 @@
  * pk_generate_pack_perhaps_resolve:
  **/
 gchar *
-pk_generate_pack_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *package, GError **error)
+pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gboolean valid;

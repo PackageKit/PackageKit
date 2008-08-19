@@ -510,7 +510,7 @@ pk_backend_python_cancel (PkBackendPython *python)
 gboolean
 pk_backend_python_get_updates (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	const gchar *method = "get_updates";
 
 	g_return_val_if_fail (PK_IS_BACKEND_PYTHON (python), FALSE);
@@ -535,7 +535,7 @@ pk_backend_python_get_updates (PkBackendPython *python)
 gboolean
 pk_backend_python_get_repo_list (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	const gchar *method = "get_repo_list";
 
 	g_return_val_if_fail (PK_IS_BACKEND_PYTHON (python), FALSE);
@@ -660,7 +660,7 @@ pk_backend_python_repo_set_data (PkBackendPython *python)
 gboolean
 pk_backend_python_resolve (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	gchar **packages;
 	const gchar *method = "resolve";
 
@@ -709,7 +709,7 @@ pk_backend_python_rollback (PkBackendPython *python)
 gboolean
 pk_backend_python_search_name (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	const gchar *search;
 	const gchar *method = "search_name";
 
@@ -735,7 +735,7 @@ pk_backend_python_search_name (PkBackendPython *python)
 gboolean
 pk_backend_python_search_details (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	const gchar *search;
 	const gchar *method = "search_details";
 
@@ -761,7 +761,7 @@ pk_backend_python_search_details (PkBackendPython *python)
 gboolean
 pk_backend_python_search_group (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	const gchar *search;
 	const gchar *method = "search_group";
 
@@ -787,7 +787,7 @@ pk_backend_python_search_group (PkBackendPython *python)
 gboolean
 pk_backend_python_search_file (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	const gchar *search;
 	const gchar *method = "search_file";
 
@@ -813,7 +813,7 @@ pk_backend_python_search_file (PkBackendPython *python)
 gboolean
 pk_backend_python_get_depends (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	gchar **package_ids;
 	gboolean recursive;
 	const gchar *method = "get_depends";
@@ -841,7 +841,7 @@ pk_backend_python_get_depends (PkBackendPython *python)
 gboolean
 pk_backend_python_get_requires (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	gchar **package_ids;
 	gboolean recursive;
 	const gchar *method = "get_requires";
@@ -869,7 +869,7 @@ pk_backend_python_get_requires (PkBackendPython *python)
 gboolean
 pk_backend_python_get_packages (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	const gchar *method = "get_packages";
 
 	g_return_val_if_fail (PK_IS_BACKEND_PYTHON (python), FALSE);
@@ -1116,7 +1116,7 @@ pk_backend_python_service_pack (PkBackendPython *python)
 gboolean
 pk_backend_python_what_provides (PkBackendPython *python)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	PkProvidesEnum provides;
 	const gchar *search;
 	const gchar *method = "what_provides";

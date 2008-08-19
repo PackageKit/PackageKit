@@ -36,7 +36,7 @@
 #include <sigint/sigint.h>
 
 static gchar* poldek_pkg_evr (const struct pkg *pkg);
-static void poldek_backend_package (PkBackend *backend, struct pkg *pkg, PkInfoEnum infoenum, PkFilterEnum filters);
+static void poldek_backend_package (PkBackend *backend, struct pkg *pkg, PkInfoEnum infoenum, PkBitfield filters);
 static long do_get_bytes_to_download (struct poldek_ts *ts, tn_array *pkgs);
 static gint do_get_files_to_download (const struct poldek_ts *ts, const gchar *mark);
 static void pb_load_packages (PkBackend *backend);
@@ -546,7 +546,7 @@ poldek_get_security_updates (void)
  *
  * Converts PLD RPM group to PkGroupEnum.
  **/
-static PkGroupEnum
+static PkBitfield
 pld_group_to_enum (const gchar *group)
 {
 	g_return_val_if_fail (group != NULL, PK_GROUP_ENUM_OTHER);
@@ -821,14 +821,14 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires,
 {
 	tn_array	*tmp = NULL;
 	gint		i;
-	PkFilterEnum filters;
+	PkBitfield filters;
 	gboolean recursive;
 
 	tmp = n_array_new (2, NULL, NULL);
 	filters = pk_backend_get_uint (backend, "filters");
 
 	/* if ~installed doesn't exists in filters, we can query installed */
-	if (!pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 		for (i = 0; i < n_array_size (installed); i++) {
 			struct pkg      *ipkg = n_array_nth (installed, i);
 			int j;
@@ -861,7 +861,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires,
 			}
 		}
 	}
-	if (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 		for (i = 0; i < n_array_size (available); i++) {
 			struct pkg      *apkg = n_array_nth (available, i);
 			int j;
@@ -895,7 +895,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires,
 	}
 
 	/* FIXME: recursive takes too much time for available packages, so don't use it */
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 		recursive = pk_backend_get_bool (backend, "recursive");
 		if (recursive && tmp && n_array_size (tmp) > 0) {
 			for (i = 0; i < n_array_size (tmp); i++) {
@@ -917,7 +917,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 	tn_array	*reqs = pkg->reqs;
 	tn_array	*tmp = NULL;
 	gint		i;
-	PkFilterEnum filters;
+	PkBitfield filters;
 	gboolean recursive;
 
 	tmp = n_array_new (2, NULL, NULL);
@@ -962,7 +962,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 			continue;
 
 		/* first check in installed packages */
-		if (!pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 			for (j = 0; j < n_array_size (installed); j++) {
 				struct pkg	*p = n_array_nth (installed, j);
 
@@ -979,7 +979,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 			continue;
 
 		/* ... now available */
-		if (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 			for (j = 0; j < n_array_size (available); j++) {
 				struct pkg	*p = n_array_nth (available, j);
 
@@ -988,7 +988,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 					 * don't return these, which are installed.
 					 * Can be used to tell the user which packages
 					 * will be additionaly installed. */
-					if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+					if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 						gint	ret;
 
 						ret = poldek_pkg_in_array_idx (p, installed, (tn_fn_cmp)pkg_cmp_name);
@@ -1023,7 +1023,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 }
 
 static gchar*
-package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkFilterEnum filters)
+package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkBitfield filters)
 {
 	gchar *evr, *package_id, *poldek_dir;
 
@@ -1036,7 +1036,7 @@ package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkFilterEnum filters)
 	} else {
 		/* when filters contain PK_FILTER_ENUM_NOT_INSTALLED package
 		 * can't be marked as installed */
-		if (!pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
+		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
 		    pkg_is_installed (pkg)) {
 			poldek_dir = g_strdup ("installed");
 		} else {
@@ -1063,15 +1063,15 @@ package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkFilterEnum filters)
  * poldek_backend_package:
  */
 static void
-poldek_backend_package (PkBackend *backend, struct pkg *pkg, PkInfoEnum infoenum, PkFilterEnum filters)
+poldek_backend_package (PkBackend *backend, struct pkg *pkg, PkInfoEnum infoenum, PkBitfield filters)
 {
 	struct pkguinf	*pkgu;
 	gchar		*package_id;
 
 	if (infoenum == PK_INFO_ENUM_UNKNOWN) {
-		if (pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 			infoenum = PK_INFO_ENUM_INSTALLED;
-		} else if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 			infoenum = PK_INFO_ENUM_AVAILABLE;
 		} else {
 			if (pkg_is_installed (pkg)) {
@@ -1168,7 +1168,7 @@ poldek_pkg_is_gui (struct pkg *pkg)
 static gboolean
 search_package_thread (PkBackend *backend)
 {
-	PkFilterEnum		filters;
+	PkBitfield		filters;
 	PkProvidesEnum		provides;
 	gchar			*search_cmd = NULL;
 	struct poclidek_rcmd	*cmd = NULL;
@@ -1228,7 +1228,7 @@ search_package_thread (PkBackend *backend)
 		gchar		*command;
 		tn_array	*pkgs = NULL, *installed = NULL, *available = NULL;
 
-		if (!pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 			command = g_strdup_printf ("cd /installed; %s", search_cmd);
 			if (poclidek_rcmd_execline (cmd, command)) {
 				installed = poclidek_rcmd_get_packages (cmd);
@@ -1236,7 +1236,7 @@ search_package_thread (PkBackend *backend)
 
 			g_free (command);
 		}
-		if (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 			command = g_strdup_printf ("cd /all-avail; %s", search_cmd);
 			if (poclidek_rcmd_execline (cmd, command))
 				available = poclidek_rcmd_get_packages (cmd);
@@ -1244,8 +1244,8 @@ search_package_thread (PkBackend *backend)
 			g_free (command);
 		}
 
-		if (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
-		    !pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
+		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
+		    !pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
 		    installed && available) {
 			gint	i;
 
@@ -1263,14 +1263,14 @@ search_package_thread (PkBackend *backend)
 			n_array_sort_ex(pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
 
 			n_array_free (available);
-		} else if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) || available) {
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) || available) {
 			pkgs = available;
-		} else if (pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED) || installed)
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) || installed)
 			pkgs = installed;
 		if (pkgs) {
 			gint	i;
 
-			if (pk_enums_contain (filters, PK_FILTER_ENUM_NEWEST))
+			if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
 				do_newest (pkgs);
 
 			for (i = 0; i < n_array_size (pkgs); i++) {
@@ -1281,9 +1281,9 @@ search_package_thread (PkBackend *backend)
 
 				/* check if we have to do development filtering
 				 * (devel or ~devel in filters) */
-				if (pk_enums_contain (filters, PK_FILTER_ENUM_DEVELOPMENT) ||
-				    pk_enums_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
-					if (pk_enums_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
+				if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT) ||
+				    pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+					if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
 						/* devel in filters */
 						if (!poldek_pkg_is_devel (pkg))
 							continue;
@@ -1296,9 +1296,9 @@ search_package_thread (PkBackend *backend)
 
 				/* check if we have to do gui filtering
 				 * (gui or ~gui in filters) */
-				if (pk_enums_contain (filters, PK_FILTER_ENUM_GUI) ||
-				    pk_enums_contain (filters, PK_FILTER_ENUM_NOT_GUI)) {
-					if (pk_enums_contain (filters, PK_FILTER_ENUM_GUI)) {
+				if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI) ||
+				    pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI)) {
+					if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI)) {
 						/* gui in filters */
 						if (!poldek_pkg_is_gui (pkg))
 							continue;
@@ -1875,37 +1875,41 @@ backend_download_packages (PkBackend *backend, gchar **package_ids,
 /**
  * backend_get_groups:
  **/
-static PkGroupEnum
+static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return (PK_GROUP_ENUM_ACCESSORIES |
-		PK_GROUP_ENUM_ADMIN_TOOLS |
-		PK_GROUP_ENUM_COMMUNICATION |
-		PK_GROUP_ENUM_EDUCATION |
-		PK_GROUP_ENUM_FONTS |
-		PK_GROUP_ENUM_GAMES |
-		PK_GROUP_ENUM_GRAPHICS |
-		PK_GROUP_ENUM_LOCALIZATION |
-		PK_GROUP_ENUM_MULTIMEDIA |
-		PK_GROUP_ENUM_NETWORK |
-		PK_GROUP_ENUM_OFFICE |
-		PK_GROUP_ENUM_OTHER |
-		PK_GROUP_ENUM_PROGRAMMING |
-		PK_GROUP_ENUM_PUBLISHING |
-		PK_GROUP_ENUM_SERVERS |
-		PK_GROUP_ENUM_SYSTEM);
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_ACCESSORIES,
+		PK_GROUP_ENUM_ADMIN_TOOLS,
+		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_EDUCATION,
+		PK_GROUP_ENUM_FONTS,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_LOCALIZATION,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_NETWORK,
+		PK_GROUP_ENUM_OFFICE,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SERVERS,
+		PK_GROUP_ENUM_SYSTEM,
+		-1);
 }
 
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return (PK_FILTER_ENUM_NEWEST |
-		PK_FILTER_ENUM_GUI |
-		PK_FILTER_ENUM_INSTALLED |
-		PK_FILTER_ENUM_DEVELOPMENT);
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_NEWEST,
+		PK_FILTER_ENUM_GUI,
+		PK_FILTER_ENUM_INSTALLED,
+		PK_FILTER_ENUM_DEVELOPMENT,
+		-1);
 }
 
 /**
@@ -1961,7 +1965,7 @@ backend_get_depends_thread (PkBackend *backend)
 }
 
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2106,7 +2110,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
  * backend_get_packages:
  **/
 static void
-backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -2156,7 +2160,7 @@ backend_get_requires_thread (PkBackend *backend)
 }
 
 static void
-backend_get_requires (PkBackend	*backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_requires (PkBackend	*backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2364,7 +2368,7 @@ backend_get_updates_thread (PkBackend *backend)
 }
 
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -2581,7 +2585,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -2594,7 +2598,7 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -2607,7 +2611,7 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
  * backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -2620,7 +2624,7 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -2633,7 +2637,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -2687,7 +2691,7 @@ backend_update_system (PkBackend *backend)
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	tn_array	*sources = NULL;
 
@@ -2720,7 +2724,7 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
  * backend_what_provides:
  **/
 static void
-backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provides, const gchar *search)
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
