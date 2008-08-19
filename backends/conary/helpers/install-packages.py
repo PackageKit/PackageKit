@@ -12,7 +12,7 @@
 import sys
 from conaryBackend import PackageKitConaryBackend
 
-package = sys.argv[1]
+package_ids = sys.argv[1]
 backend = PackageKitConaryBackend(sys.argv[1:])
-backend.install_packages(package)
+backend.install_packages(package_ids)
 sys.exit(0)

@@ -19,7 +19,10 @@ from conary.local import database
 from conary import trove
 
 from packagekit.backend import *
+from packagekit.package import *
 from conaryCallback import UpdateCallback
+
+pkpackage = PackagekitPackage()
 
 groupMap = {
     '2DGraphics'          : GROUP_GRAPHICS,
@@ -147,13 +150,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         version = versionObj.trailingRevision()
         arch = self._get_arch(flavor)
         data = self._freezeData(versionObj, flavor)
-        return PackageKitBaseBackend.get_package_id(self, name, version, arch,
-                                                    data)
+        return pkpackage.get_package_id(name, version, arch, data)
 
     @ExceptionHandler
     def get_package_from_id(self, id):
         name, verString, archString, data = \
-            PackageKitBaseBackend.get_package_from_id(self, id)
+            pkpackage.get_package_from_id(id)
 
         version, flavor = self._thawData(data)
 
@@ -363,6 +365,22 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         updJob, suggMap = self._do_update(applyList)
 
     @ExceptionHandler
+    def update_packages(self, packages):
+        '''
+        Implement the {backend}-update functionality
+        '''
+        self.allow_cancel(True);
+        self.percentage(0)
+        self.status(STATUS_RUNNING)
+
+        for package in packages.split("|"):
+            name, version, flavor, installed = self._findPackage(package)
+            if name:
+                self._do_package_update(name, version, flavor)
+            else:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'No available updates')
+
+    @ExceptionHandler
     def refresh_cache(self):
         self.percentage()
         self.status(STATUS_REFRESH_CACHE)
@@ -383,53 +401,53 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             if name:
                 self._do_package_update(name, version, flavor)
             else:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
-                    'No available updates')
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'No available updates')
 
     @ExceptionHandler
-    def install(self, package_id):
+    def install_packages(self, package_ids):
         '''
-        Implement the {backend}-install functionality
+        Implement the {backend}-install-packages functionality
         '''
-        name, version, flavor, installed = self._findPackage(package_id)
+        for package_id in package_ids.split():
+            name, version, flavor, installed = self._findPackage(package_id)
 
+            self.allow_cancel(True)
+            self.percentage(0)
+            self.status(STATUS_RUNNING)
+
+            if name:
+                if installed == INFO_INSTALLED:
+                    self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                        'Package already installed')
+
+                self.status(INFO_INSTALLING)
+                self._get_package_update(name, version, flavor)
+                self._do_package_update(name, version, flavor)
+            else:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'Package was not found')
+
+    @ExceptionHandler
+    def remove_packages(self, allowDeps, package_ids):
+        '''
+        Implement the {backend}-remove-packages functionality
+        '''
         self.allow_cancel(True)
         self.percentage(0)
-        self.status(STATUS_INSTALL)
+        self.status(STATUS_RUNNING)
 
-        if name:
-            if installed == INFO_INSTALLED:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
-                    'Package already installed')
+        for package_id in package_ids:
+            name, version, flavor, installed = self._findPackage(package_id)
 
-            self.status(STATUS_INSTALL)
-            self._get_package_update(name, version, flavor)
-            self._do_package_update(name, version, flavor)
-        else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
-                'Package was not found')
+            if name:
+                if not installed == INFO_INSTALLED:
+                    self.error(ERROR_PACKAGE_NOT_INSTALLED, 'The package %s is not installed' % name)
 
-    @ExceptionHandler
-    def remove(self, allowDeps, package_id):
-        '''
-        Implement the {backend}-remove functionality
-        '''
-        name, version, flavor, installed = self._findPackage(package_id)
-
-        self.allow_cancel(True)
-
-        if name:
-            if not installed == INFO_INSTALLED:
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,
-                    'Package not installed')
-
-            self.status(STATUS_REMOVE)
-            name = '-%s' % name
-            self._get_package_update(name, version, flavor)
-            self._do_package_update(name, version, flavor)
-        else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
-                'Package was not found')
+                name = '-%s' % name
+                self.status(INFO_REMOVING)
+                self._get_package_update(name, version, flavor)
+                self._do_package_update(name, version, flavor)
+            else:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'The package was not found')
 
     def _get_metadata(self, id, field):
         '''
