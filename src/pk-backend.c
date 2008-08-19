@@ -139,7 +139,7 @@ static guint signals [PK_BACKEND_LAST_SIGNAL] = { 0 };
 /**
  * pk_backend_get_groups:
  **/
-PkGroupEnum
+PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_GROUP_ENUM_UNKNOWN);
@@ -155,7 +155,7 @@ pk_backend_get_groups (PkBackend *backend)
 /**
  * pk_backend_get_filters:
  **/
-PkFilterEnum
+PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_FILTER_ENUM_UNKNOWN);
@@ -171,10 +171,10 @@ pk_backend_get_filters (PkBackend *backend)
 /**
  * pk_backend_get_actions:
  **/
-PkRoleEnum
+PkBitfield
 pk_backend_get_actions (PkBackend *backend)
 {
-	PkRoleEnum roles = 0;
+	PkBitfield roles = 0;
 	PkBackendDesc *desc;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
@@ -183,79 +183,79 @@ pk_backend_get_actions (PkBackend *backend)
 	/* lets reduce pointer dereferences... */
 	desc = backend->desc;
 	if (desc->cancel != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_CANCEL);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_CANCEL);
 	}
 	if (desc->get_depends != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_GET_DEPENDS);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DEPENDS);
 	}
 	if (desc->get_details != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_GET_DETAILS);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DETAILS);
 	}
 	if (desc->get_files != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_GET_FILES);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_FILES);
 	}
 	if (desc->get_requires != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_GET_REQUIRES);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_REQUIRES);
 	}
 	if (desc->get_packages != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_GET_PACKAGES);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_PACKAGES);
 	}
 	if (desc->what_provides != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_WHAT_PROVIDES);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_WHAT_PROVIDES);
 	}
 	if (desc->get_updates != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_GET_UPDATES);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_UPDATES);
 	}
 	if (desc->get_update_detail != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	}
 	if (desc->install_packages != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGES);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGES);
 	}
 	if (desc->install_files != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_FILES);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_INSTALL_FILES);
 	}
 	if (desc->refresh_cache != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_REFRESH_CACHE);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_REFRESH_CACHE);
 	}
 	if (desc->remove_packages != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGES);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGES);
 	}
 	if (desc->download_packages != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
 	}
 	if (desc->resolve != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_RESOLVE);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_RESOLVE);
 	}
 	if (desc->rollback != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_ROLLBACK);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_ROLLBACK);
 	}
 	if (desc->search_details != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_DETAILS);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_DETAILS);
 	}
 	if (desc->search_file != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_FILE);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_FILE);
 	}
 	if (desc->search_group != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_GROUP);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_GROUP);
 	}
 	if (desc->search_name != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_NAME);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_NAME);
 	}
 	if (desc->update_packages != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_UPDATE_PACKAGES);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_UPDATE_PACKAGES);
 	}
 	if (desc->update_system != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_UPDATE_SYSTEM);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_UPDATE_SYSTEM);
 	}
 	if (desc->get_repo_list != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_GET_REPO_LIST);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_REPO_LIST);
 	}
 	if (desc->repo_enable != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_REPO_ENABLE);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_ENABLE);
 	}
 	if (desc->repo_set_data != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_REPO_SET_DATA);
+		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_SET_DATA);
 	}
 	return roles;
 }
@@ -1648,9 +1648,10 @@ pk_backend_is_online (PkBackend *backend)
 	PkNetworkEnum state;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	state = pk_network_get_network_state (backend->priv->network);
-	if (pk_enums_contain (state, PK_NETWORK_ENUM_ONLINE)) {
+	if (state == PK_NETWORK_ENUM_ONLINE ||
+	    state == PK_NETWORK_ENUM_SLOW ||
+	    state == PK_NETWORK_ENUM_FAST)
 		return TRUE;
-	}
 	return FALSE;
 }
 

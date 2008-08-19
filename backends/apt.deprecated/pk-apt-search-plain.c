@@ -30,7 +30,7 @@ extern PkBackendSpawn *spawn;
 /**
  * backend_get_groups:
  */
-static PkGroupEnum
+static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
 	return (PK_GROUP_ENUM_ACCESSORIES |
@@ -47,7 +47,7 @@ backend_get_groups (PkBackend *backend)
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
 	return (PK_FILTER_ENUM_GUI |
@@ -70,10 +70,10 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
  */
 
 void
-backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-details.py", filters_texts_text, search, NULL);
 	g_free (filters_text);
 }
@@ -82,10 +82,10 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
  * backend_search_name:
  */
 void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-name.py", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -94,7 +94,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * backend_search_group:
  */
 void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
 	pk_backend_spawn_helper (spawn, "search-group.py", filters_text, search, NULL);

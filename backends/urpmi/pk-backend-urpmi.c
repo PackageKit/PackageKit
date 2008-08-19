@@ -51,49 +51,53 @@ backend_destroy (PkBackend *backend)
 /**
  * backend_get_groups:
  */
-static PkGroupEnum
+static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-  return(PK_GROUP_ENUM_UNKNOWN |
-  PK_GROUP_ENUM_ACCESSIBILITY |
-  PK_GROUP_ENUM_ACCESSORIES |
-  PK_GROUP_ENUM_EDUCATION |
-  PK_GROUP_ENUM_GAMES |
-  PK_GROUP_ENUM_GRAPHICS |
-  PK_GROUP_ENUM_INTERNET |
-  PK_GROUP_ENUM_OFFICE |
-  PK_GROUP_ENUM_OTHER |
-  PK_GROUP_ENUM_PROGRAMMING |
-  PK_GROUP_ENUM_MULTIMEDIA |
-  PK_GROUP_ENUM_SYSTEM |
-  PK_GROUP_ENUM_DESKTOP_GNOME |
-  PK_GROUP_ENUM_DESKTOP_KDE |
-  PK_GROUP_ENUM_DESKTOP_XFCE |
-  PK_GROUP_ENUM_DESKTOP_OTHER |
-  PK_GROUP_ENUM_PUBLISHING |
-  PK_GROUP_ENUM_SERVERS |
-  PK_GROUP_ENUM_FONTS |
-  PK_GROUP_ENUM_ADMIN_TOOLS |
-  PK_GROUP_ENUM_LEGACY |
-  PK_GROUP_ENUM_LOCALIZATION |
-  PK_GROUP_ENUM_VIRTUALIZATION |
-  PK_GROUP_ENUM_POWER_MANAGEMENT |
-  PK_GROUP_ENUM_SECURITY |
-  PK_GROUP_ENUM_COMMUNICATION |
-  PK_GROUP_ENUM_NETWORK |
-  PK_GROUP_ENUM_MAPS |
-  PK_GROUP_ENUM_REPOS);
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_UNKNOWN,
+		PK_GROUP_ENUM_ACCESSIBILITY,
+		PK_GROUP_ENUM_ACCESSORIES,
+		PK_GROUP_ENUM_EDUCATION,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_INTERNET,
+		PK_GROUP_ENUM_OFFICE,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_SYSTEM,
+		PK_GROUP_ENUM_DESKTOP_GNOME,
+		PK_GROUP_ENUM_DESKTOP_KDE,
+		PK_GROUP_ENUM_DESKTOP_XFCE,
+		PK_GROUP_ENUM_DESKTOP_OTHER,
+		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SERVERS,
+		PK_GROUP_ENUM_FONTS,
+		PK_GROUP_ENUM_ADMIN_TOOLS,
+		PK_GROUP_ENUM_LEGACY,
+		PK_GROUP_ENUM_LOCALIZATION,
+		PK_GROUP_ENUM_VIRTUALIZATION,
+		PK_GROUP_ENUM_POWER_MANAGEMENT,
+		PK_GROUP_ENUM_SECURITY,
+		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_NETWORK,
+		PK_GROUP_ENUM_MAPS,
+		PK_GROUP_ENUM_REPOS,
+		-1);
 }
 
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return (PK_FILTER_ENUM_GUI |
-		PK_FILTER_ENUM_INSTALLED |
-		PK_FILTER_ENUM_DEVELOPMENT);
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_GUI,
+		PK_FILTER_ENUM_INSTALLED,
+		PK_FILTER_ENUM_DEVELOPMENT,
+		-1);
 }
 
 /**
@@ -113,10 +117,10 @@ pk_backend_bool_to_text (gboolean value)
  * pk_backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-name.pl", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -143,10 +147,10 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-depends.pl", filters_text, package_ids[0], pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 }
@@ -155,10 +159,10 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_i
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-updates.pl", filters_text, NULL);
 	g_free (filters_text);
 }
@@ -227,10 +231,10 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * pk_backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-group.pl", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -239,10 +243,10 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
  * backend_get_packages:
  */
 static void
-backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-packages.pl", filters_text, NULL);
 	g_free (filters_text);
 }
@@ -251,10 +255,10 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-requires.pl", filters_text, package_ids[0], pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 }
@@ -263,10 +267,10 @@ backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_
  * pk_backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-details.pl", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -275,10 +279,10 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
  * pk_backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-file.pl", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -287,10 +291,10 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "resolve.pl", filters_text, package_ids[0], NULL);
 	g_free (filters_text);
 }

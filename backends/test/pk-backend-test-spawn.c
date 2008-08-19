@@ -31,12 +31,12 @@ static PkBackendSpawn *spawn;
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-name.sh", filters_text, search, NULL);
 	g_free (filters_text);
 }

@@ -463,7 +463,7 @@ pk_transaction_db_create_table_last_action (PkTransactionDb *tdb)
 	timespec = pk_iso8601_present ();
 	statement = "CREATE TABLE last_action (role TEXT primary key, timespec TEXT);";
 	sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
-	for (i=1; i<PK_ROLE_ENUM_UNKNOWN; i*=2) {
+	for (i=0; i<PK_ROLE_ENUM_UNKNOWN; i++) {
 		role_text = pk_role_enum_to_text (i);
 		/* reset to now if the role does not exist */
 		statement = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);

@@ -53,7 +53,7 @@ main (int argc, char *argv[])
 	gchar *pack_filename = NULL;
 	gchar *packname = NULL;
 	PkControl *control = NULL;
-	PkRoleEnum roles;
+	PkBitfield roles;
 	const gchar *package_list = NULL;
 	gchar *tempdir = NULL;
 	gboolean exists;
@@ -95,7 +95,7 @@ main (int argc, char *argv[])
 	/* are we dumb and can't check for depends? */
 	control = pk_control_new ();
 	roles = pk_control_get_actions (control);
-	if (!pk_enums_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
+	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
 		g_print ("Please use a backend that supports GetDepends!\n");
 		goto out;
 	}

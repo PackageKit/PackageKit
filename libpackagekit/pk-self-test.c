@@ -32,6 +32,7 @@ void libst_package_ids (LibSelfTest *test);
 void libst_package_obj (LibSelfTest *test);
 void libst_package_list (LibSelfTest *test);
 void libst_enum (LibSelfTest *test);
+void libst_bitfield (LibSelfTest *test);
 void libst_common (LibSelfTest *test);
 void libst_enum_list (LibSelfTest *test);
 void libst_extra (LibSelfTest *test);
@@ -58,6 +59,7 @@ main (int argc, char **argv)
 	libst_package_obj (&test);
 	libst_package_list (&test);
 	libst_enum (&test);
+	libst_bitfield (&test);
 	libst_extra (&test);
 	libst_client (&test);
 	libst_catalog (&test);

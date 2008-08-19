@@ -251,7 +251,7 @@ backend_get_requires_thread (PkBackend *backend)
   * backend_get_requires:
   */
 static void
-backend_get_requires(PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_requires(PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_thread_create (backend, backend_get_requires_thread);
 }
@@ -259,41 +259,44 @@ backend_get_requires(PkBackend *backend, PkFilterEnum filters, gchar **package_i
 /**
  * backend_get_groups:
  */
-static PkGroupEnum
+static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return (PkGroupEnum)(PK_GROUP_ENUM_ADMIN_TOOLS |
-			PK_GROUP_ENUM_COMMUNICATION |
-			PK_GROUP_ENUM_DESKTOP_GNOME |
-			PK_GROUP_ENUM_DESKTOP_KDE |
-			PK_GROUP_ENUM_DESKTOP_OTHER |
-			PK_GROUP_ENUM_DESKTOP_XFCE |
-			PK_GROUP_ENUM_EDUCATION |
-			PK_GROUP_ENUM_GAMES |
-			PK_GROUP_ENUM_GRAPHICS |
-			PK_GROUP_ENUM_LOCALIZATION |
-			PK_GROUP_ENUM_MULTIMEDIA |
-			PK_GROUP_ENUM_NETWORK |
-			PK_GROUP_ENUM_OFFICE |
-			PK_GROUP_ENUM_PROGRAMMING |
-			PK_GROUP_ENUM_PUBLISHING |
-			PK_GROUP_ENUM_SECURITY |
-			PK_GROUP_ENUM_SYSTEM |
-			PK_GROUP_ENUM_UNKNOWN);
+	return (PkGroupEnum)(PK_GROUP_ENUM_ADMIN_TOOLS,
+		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_DESKTOP_GNOME,
+		PK_GROUP_ENUM_DESKTOP_KDE,
+		PK_GROUP_ENUM_DESKTOP_OTHER,
+		PK_GROUP_ENUM_DESKTOP_XFCE,
+		PK_GROUP_ENUM_EDUCATION,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_LOCALIZATION,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_NETWORK,
+		PK_GROUP_ENUM_OFFICE,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SECURITY,
+		PK_GROUP_ENUM_SYSTEM,
+		PK_GROUP_ENUM_UNKNOWN,
+		-1);
 }
 
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return (PkFilterEnum) (PK_FILTER_ENUM_INSTALLED |
-			PK_FILTER_ENUM_NOT_INSTALLED |
-			PK_FILTER_ENUM_ARCH |
-			PK_FILTER_ENUM_NOT_ARCH |
-			PK_FILTER_ENUM_SOURCE |
-			PK_FILTER_ENUM_NOT_SOURCE);
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_INSTALLED,
+		PK_FILTER_ENUM_NOT_INSTALLED,
+		PK_FILTER_ENUM_ARCH,
+		PK_FILTER_ENUM_NOT_ARCH,
+		PK_FILTER_ENUM_SOURCE,
+		PK_FILTER_ENUM_NOT_SOURCE,
+		-1);
 }
 
 static gboolean
@@ -452,7 +455,7 @@ backend_get_depends_thread (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_uint (backend, "type", DEPS_TYPE_DEPENDS);
 	pk_backend_thread_create (backend, backend_get_depends_thread);
@@ -683,7 +686,7 @@ backend_get_updates_thread (PkBackend *backend)
  * backend_get_updates
  */
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_thread_create (backend, backend_get_updates_thread);
 }
@@ -1223,7 +1226,7 @@ backend_resolve_thread (PkBackend *backend)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_resolve_thread);
 }
@@ -1232,12 +1235,12 @@ static gboolean
 backend_find_packages_thread (PkBackend *backend)
 {
 	const gchar *search;
-	PkFilterEnum filters;
+	PkBitfield filters;
 	guint mode;
 	//GList *list = NULL;
 
 	search = pk_backend_get_string (backend, "search");
-	filters = (PkFilterEnum) pk_backend_get_uint (backend, "filters");
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	mode = pk_backend_get_uint (backend, "mode");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -1273,7 +1276,7 @@ backend_find_packages_thread (PkBackend *backend)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_NAME);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1283,7 +1286,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_DETAILS);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1293,10 +1296,10 @@ static gboolean
 backend_search_group_thread (PkBackend *backend)
 {
 	const gchar *group;
-	PkFilterEnum filters;
+	PkBitfield filters;
 
 	group = pk_backend_get_string (backend, "search");
-	filters = (PkFilterEnum) pk_backend_get_uint (backend, "filters");
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	if (group == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
@@ -1336,7 +1339,7 @@ backend_search_group_thread (PkBackend *backend)
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *pkGroup)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *pkGroup)
 {
 	pk_backend_thread_create (backend, backend_search_group_thread);
 }
@@ -1345,7 +1348,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *pkG
  * backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_FILE);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1355,7 +1358,7 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	//FIXME - use the new param - filter
 
@@ -1507,8 +1510,8 @@ backend_get_files(PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_get_packages_thread (PkBackend *backend)
 {
-	PkFilterEnum filters;
-	filters = (PkFilterEnum) pk_backend_get_uint (backend, "filters");
+	PkBitfield filters;
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1530,7 +1533,7 @@ backend_get_packages_thread (PkBackend *backend)
   * backend_get_packages:
   */
 static void
-backend_get_packages (PkBackend *backend, PkFilterEnum filter)
+backend_get_packages (PkBackend *backend, PkBitfield filter)
 {
 	pk_backend_thread_create (backend, backend_get_packages_thread);
 }
@@ -1769,7 +1772,7 @@ backend_what_provides_thread (PkBackend *backend)
   * backend_what_provides
   */
 static void
-backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provide, const gchar *search)
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provide, const gchar *search)
 {
 	pk_backend_thread_create (backend, backend_what_provides_thread);
 }

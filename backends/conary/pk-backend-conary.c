@@ -53,29 +53,31 @@ backend_destroy (PkBackend *backend)
 /**
  * backend_get_groups:
  */
-static PkGroupEnum
+static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return (PK_GROUP_ENUM_ACCESSIBILITY |
-		PK_GROUP_ENUM_ACCESSORIES |
-		PK_GROUP_ENUM_EDUCATION |
-		PK_GROUP_ENUM_GAMES |
-		PK_GROUP_ENUM_GRAPHICS |
-		PK_GROUP_ENUM_INTERNET |
-		PK_GROUP_ENUM_OFFICE |
-		PK_GROUP_ENUM_OTHER |
-		PK_GROUP_ENUM_PROGRAMMING |
-		PK_GROUP_ENUM_MULTIMEDIA |
-		PK_GROUP_ENUM_SYSTEM);
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_ACCESSIBILITY,
+		PK_GROUP_ENUM_ACCESSORIES,
+		PK_GROUP_ENUM_EDUCATION,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_INTERNET,
+		PK_GROUP_ENUM_OFFICE,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_SYSTEM,
+		-1);
 }
 
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return PK_FILTER_ENUM_INSTALLED;
+	return pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
 }
 
 /**
@@ -128,10 +130,10 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
 	g_free (filters_text);
 }
@@ -218,10 +220,10 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * pk_backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-name.py", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -261,10 +263,10 @@ backend_update_system (PkBackend *backend)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_ids[0], NULL);
 	g_free (filters_text);
 }

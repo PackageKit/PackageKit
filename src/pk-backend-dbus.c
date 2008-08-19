@@ -605,7 +605,7 @@ pk_backend_dbus_cancel (PkBackendDbus *backend_dbus)
  * pk_backend_dbus_get_updates:
  **/
 gboolean
-pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, PkFilterEnum filters)
+pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, PkBitfield filters)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -616,7 +616,7 @@ pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, PkFilterEnum filters)
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetUpdates", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -637,7 +637,7 @@ pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, PkFilterEnum filters)
  * pk_backend_dbus_get_repo_list:
  **/
 gboolean
-pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus, PkFilterEnum filters)
+pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus, PkBitfield filters)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -648,7 +648,7 @@ pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus, PkFilterEnum filters
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRepoList", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -792,7 +792,7 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
  * pk_backend_dbus_resolve:
  **/
 gboolean
-pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkFilterEnum filters, gchar **packages)
+pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkBitfield filters, gchar **packages)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -804,7 +804,7 @@ pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkFilterEnum filters, gcha
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Resolve", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRV, packages,
@@ -856,7 +856,7 @@ pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_
  * pk_backend_dbus_search_name:
  **/
 gboolean
-pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *search)
+pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, PkBitfield filters, const gchar *search)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -868,7 +868,7 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchName", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, search,
@@ -890,7 +890,7 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
  * pk_backend_dbus_search_details:
  **/
 gboolean
-pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *search)
+pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, PkBitfield filters, const gchar *search)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -902,7 +902,7 @@ pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, PkFilterEnum filter
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchDetails", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, search,
@@ -924,7 +924,7 @@ pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, PkFilterEnum filter
  * pk_backend_dbus_search_group:
  **/
 gboolean
-pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *search)
+pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, PkBitfield filters, const gchar *search)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -936,7 +936,7 @@ pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, PkFilterEnum filters,
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchGroup", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, search,
@@ -958,7 +958,7 @@ pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, PkFilterEnum filters,
  * pk_backend_dbus_search_file:
  **/
 gboolean
-pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *search)
+pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, PkBitfield filters, const gchar *search)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -970,7 +970,7 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchFile", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, search,
@@ -992,7 +992,7 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
  * pk_backend_dbus_get_depends:
  **/
 gboolean
-pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -1004,7 +1004,7 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDepends", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRV, package_ids,
@@ -1027,7 +1027,7 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, 
  * pk_backend_dbus_get_requires:
  **/
 gboolean
-pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -1039,7 +1039,7 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkFilterEnum filters,
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRequires", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRV, package_ids,
@@ -1062,7 +1062,7 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkFilterEnum filters,
  * pk_backend_dbus_get_packages:
  **/
 gboolean
-pk_backend_dbus_get_packages (PkBackendDbus *backend_dbus, PkFilterEnum filters)
+pk_backend_dbus_get_packages (PkBackendDbus *backend_dbus, PkBitfield filters)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -1073,7 +1073,7 @@ pk_backend_dbus_get_packages (PkBackendDbus *backend_dbus, PkFilterEnum filters)
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetPackages", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1370,7 +1370,7 @@ pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location
  * pk_backend_dbus_what_provides:
  **/
 gboolean
-pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkFilterEnum filters,
+pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkBitfield filters,
 			       PkProvidesEnum provides, const gchar *search)
 {
 	gboolean ret;
@@ -1386,7 +1386,7 @@ pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkFilterEnum filters
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	provides_text = pk_provides_enum_to_text (provides);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "WhatProvides", &error,
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, provides_text,

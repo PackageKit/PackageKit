@@ -520,17 +520,17 @@ system_and_package_are_x86 (zypp::sat::Solvable item)
 }
 
 void
-zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkFilterEnum filters)
+zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkBitfield filters)
 {
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 
 		// iterate through the given filters
-		if (filters != PK_FILTER_ENUM_NONE){
+		if (filters != 0){
 			gboolean print = TRUE;
-			for (guint i = 1; i < PK_FILTER_ENUM_UNKNOWN; i*=2) {
-				if ((filters & i) == 0)
+			for (guint i = 0; i < PK_FILTER_ENUM_UNKNOWN; i++) {
+				if ((filters & pk_bitfield_value (i)) == 0)
 					continue;
 				if (i == PK_FILTER_ENUM_INSTALLED && !(it->isSystem ()))
 					print = FALSE;

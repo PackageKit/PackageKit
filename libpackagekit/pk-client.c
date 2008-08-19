@@ -47,6 +47,7 @@
 #endif
 
 #include "pk-enum.h"
+#include "pk-bitfield.h"
 #include "pk-client.h"
 #include "pk-connection.h"
 #include "pk-package-id.h"
@@ -98,7 +99,7 @@ struct _PkClientPrivate
 	gchar			*cached_search;
 	gchar			*cached_directory;
 	PkProvidesEnum		 cached_provides;
-	PkFilterEnum		 cached_filters;
+	PkBitfield	 cached_filters;
 };
 
 typedef enum {
@@ -1132,7 +1133,7 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 /**
  * pk_client_get_updates:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get a list of all the packages that can be updated for all repositories.
@@ -1140,7 +1141,7 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
  * Return value: %TRUE if we got told the daemon to get the update list
  **/
 gboolean
-pk_client_get_updates (PkClient *client, PkFilterEnum filters, GError **error)
+pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1163,7 +1164,7 @@ pk_client_get_updates (PkClient *client, PkFilterEnum filters, GError **error)
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdates", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1276,7 +1277,7 @@ pk_client_update_system (PkClient *client, GError **error)
 /**
  * pk_client_search_name:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: free text to search for, for instance, "power"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1286,7 +1287,7 @@ pk_client_update_system (PkClient *client, GError **error)
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
+pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1310,7 +1311,7 @@ pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *sear
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchName", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
@@ -1332,7 +1333,7 @@ pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *sear
 /**
  * pk_client_search_details:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: free text to search for, for instance, "power"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1343,7 +1344,7 @@ pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *sear
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
+pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1367,7 +1368,7 @@ pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *s
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchDetails", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
@@ -1389,7 +1390,7 @@ pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *s
 /**
  * pk_client_search_group:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: a group enum to search for, for instance, "system-tools"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1398,7 +1399,7 @@ pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *s
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
+pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1422,7 +1423,7 @@ pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *sea
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchGroup", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
@@ -1444,7 +1445,7 @@ pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *sea
 /**
  * pk_client_search_file:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: file to search for, for instance, "/sbin/service"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1453,7 +1454,7 @@ pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *sea
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
+pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1477,7 +1478,7 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchFile", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
@@ -1499,7 +1500,7 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
 /**
  * pk_client_get_depends:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for depends
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1509,7 +1510,7 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_depends (PkClient *client, PkFilterEnum filters, gchar **package_ids, gboolean recursive, GError **error)
+pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1546,7 +1547,7 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, gchar **package_i
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRV, package_ids,
@@ -1631,7 +1632,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 /**
  * pk_client_get_packages:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get the list of packages from the backend
@@ -1639,7 +1640,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
+pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1662,7 +1663,7 @@ pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackages", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1716,7 +1717,7 @@ pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
 /**
  * pk_client_get_requires:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for requires
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1726,7 +1727,7 @@ pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_ids, gboolean recursive, GError **error)
+pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1763,7 +1764,7 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRV, package_ids,
@@ -1786,7 +1787,7 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_
 /**
  * pk_client_what_provides:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
  * @search: a search term such as "sound/mp3"
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1798,7 +1799,7 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum provides,
+pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum provides,
 			 const gchar *search, GError **error)
 {
 	gboolean ret;
@@ -1829,7 +1830,7 @@ pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum 
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "WhatProvides", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, provides_text,
@@ -1964,7 +1965,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 /**
  * pk_client_resolve:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @packages: an array of package names to resolve, e.g. "gnome-system-tools"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1975,7 +1976,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_resolve (PkClient *client, PkFilterEnum filters, gchar **packages, GError **error)
+pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -2000,7 +2001,7 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, gchar **packages, GEr
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRV, packages,
@@ -2781,7 +2782,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
  * Return value: %TRUE if the daemon queued the transaction
  */
 gboolean
-pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
+pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -2804,7 +2805,7 @@ pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRepoList", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);

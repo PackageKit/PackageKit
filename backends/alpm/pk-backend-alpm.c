@@ -855,28 +855,30 @@ backend_destroy (PkBackend *backend)
 /**
  * backend_get_groups:
  */
-static PkGroupEnum
+static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
 	// TODO: Provide support for groups in alpm
-	return (PK_GROUP_ENUM_DESKTOP_GNOME |
-			PK_GROUP_ENUM_DESKTOP_KDE |
-			PK_GROUP_ENUM_DESKTOP_OTHER |
-			PK_GROUP_ENUM_DESKTOP_XFCE |
-			PK_GROUP_ENUM_MULTIMEDIA |
-			PK_GROUP_ENUM_OTHER |
-			PK_GROUP_ENUM_PROGRAMMING |
-			PK_GROUP_ENUM_PUBLISHING |
-			PK_GROUP_ENUM_SYSTEM);
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_DESKTOP_GNOME,
+		PK_GROUP_ENUM_DESKTOP_KDE,
+		PK_GROUP_ENUM_DESKTOP_OTHER,
+		PK_GROUP_ENUM_DESKTOP_XFCE,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SYSTEM,
+		-1);
 }
 
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return PK_FILTER_ENUM_INSTALLED;
+	return pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
 }
 
 /**
@@ -892,7 +894,7 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, FALSE);
@@ -914,7 +916,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_i
 			pmpkg_t *dep_pkg;
 			gboolean found = FALSE;
 
-			if (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 				/* search in sync dbs */
 				alpm_list_t *db_iterator;
 				for (db_iterator = alpm_option_get_syncdbs (); found == FALSE && db_iterator; db_iterator = alpm_list_next (db_iterator)) {
@@ -932,7 +934,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_i
 				}
 			}
 
-			if (!pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 				pk_debug ("alpm: searching for %s in local db", alpm_dep_get_name (dep));
 
 				/* search in local db */
@@ -1044,14 +1046,14 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
  * backend_get_packages:
  */
 static void
-backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	alpm_list_t *result = NULL;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	gboolean search_installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
-	gboolean search_not_installed = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
+	gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 
 	if (!search_not_installed) {
 		// Search in local db
@@ -1077,7 +1079,7 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
  * backend_get_repo_list:
  */
 void
-backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1123,7 +1125,7 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, FALSE);
@@ -1423,7 +1425,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	alpm_list_t *result = NULL;
 
@@ -1431,8 +1433,8 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
 
 	int iterator;
 	for (iterator = 0; iterator < g_strv_length (packages); ++iterator) {
-		gboolean search_installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
-		gboolean search_not_installed = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+		gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
+		gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 
 		if (!search_not_installed) {
 			// Search in local db
@@ -1459,14 +1461,14 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	alpm_list_t *result = NULL;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	gboolean search_installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
-	gboolean search_not_installed = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
+	gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 
 	if (!search_not_installed) {
 		// Search in local db
@@ -1492,14 +1494,14 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	alpm_list_t *result = NULL;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	gboolean search_installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
-	gboolean search_not_installed = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
+	gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 
 	if (!search_not_installed) {
 		// Search in local db
@@ -1525,14 +1527,14 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	alpm_list_t *result = NULL;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	gboolean search_installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
-	gboolean search_not_installed = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
+	gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 
 	if (!search_not_installed) {
 		// Search in local db

@@ -51,7 +51,7 @@ backend_get_groups (PkBackend *backend)
 /**
  * backend_get_filters:
  */
-extern "C" PkFilterEnum
+extern "C" PkBitfield
 backend_get_filters (PkBackend *backend)
 {
 	return (PK_FILTER_ENUM_GUI |

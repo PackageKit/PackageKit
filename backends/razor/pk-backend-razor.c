@@ -80,18 +80,18 @@ pk_razor_filter_devel (const gchar *name)
 static gboolean
 pk_razor_emit_package (PkBackend *backend, const gchar *name, const gchar *version, const gchar *arch, const gchar *summary)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	gchar *package_id;
 	gboolean ret;
 
 	filters = pk_backend_get_uint (backend, "filters");
 
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
 		ret = pk_razor_filter_devel (name);
 		if (!ret)
 			return FALSE;
 	}
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
 		ret = pk_razor_filter_devel (name);
 		if (ret)
 			return FALSE;
@@ -139,7 +139,7 @@ backend_resolve_thread (PkBackend *backend)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -278,7 +278,7 @@ backend_get_packages_thread (PkBackend *backend)
  * backend_get_packages:
  */
 static void
-backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -365,7 +365,7 @@ backend_search_thread (PkBackend *backend)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -377,7 +377,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * backend_search_description:
  */
 static void
-backend_search_description (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_description (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -388,10 +388,10 @@ backend_search_description (PkBackend *backend, PkFilterEnum filters, const gcha
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return (PK_FILTER_ENUM_DEVELOPMENT);
+	return pk_bitfield_from_enums (PK_FILTER_ENUM_DEVELOPMENT, -1);
 }
 
 PK_BACKEND_OPTIONS (

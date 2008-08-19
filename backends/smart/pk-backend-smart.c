@@ -54,12 +54,12 @@ backend_destroy (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
 	/* FIXME: Use recursive and filter here */
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	pk_backend_spawn_helper (spawn, "get-depends.py", package_ids_temp, NULL);
 	g_free (filters_text);
@@ -94,10 +94,10 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
 	g_free (filters_text);
 }
@@ -184,11 +184,11 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_ids_temp, NULL);
 	g_free (filters_text);
@@ -199,10 +199,10 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
  * pk_backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-details.py", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -211,10 +211,10 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
  * pk_backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-name.py", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -254,10 +254,10 @@ backend_update_system (PkBackend *backend)
  * pk_backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-repo-list.py", filters_text, NULL);
 	g_free (filters_text);
 }

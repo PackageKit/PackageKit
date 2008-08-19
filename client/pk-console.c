@@ -45,7 +45,7 @@
 #define PROGRESS_BAR_SIZE 15
 
 static GMainLoop *loop = NULL;
-static PkRoleEnum roles;
+static PkBitfield roles;
 static gboolean is_console = FALSE;
 static gboolean has_output_bar = FALSE;
 static gboolean need_requeue = FALSE;
@@ -467,7 +467,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
  * pk_console_perhaps_resolve:
  **/
 static gchar *
-pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *package, GError **error)
+pk_console_perhaps_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gboolean valid;
@@ -696,7 +696,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	package_ids = pk_ptr_array_to_argv (array);
 
 	/* are we dumb and can't check for requires? */
-	if (!pk_enums_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
+	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
 		/* no, just try to remove it without deps */
 		ret = pk_console_remove_only (client, package_ids, FALSE, error);
 		goto out;
@@ -849,7 +849,7 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
  * pk_console_get_requires:
  **/
 static gboolean
-pk_console_get_requires (PkClient *client, PkFilterEnum filters, const gchar *package, GError **error)
+pk_console_get_requires (PkClient *client, PkBitfield filters, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
@@ -870,7 +870,7 @@ pk_console_get_requires (PkClient *client, PkFilterEnum filters, const gchar *pa
  * pk_console_get_depends:
  **/
 static gboolean
-pk_console_get_depends (PkClient *client, PkFilterEnum filters, const gchar *package, GError **error)
+pk_console_get_depends (PkClient *client, PkBitfield filters, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
@@ -1193,7 +1193,7 @@ pk_console_sigint_handler (int sig)
  * pk_console_get_summary:
  **/
 static gchar *
-pk_console_get_summary (PkRoleEnum roles)
+pk_console_get_summary (PkBitfield roles)
 {
 	GString *string;
 	string = g_string_new ("");
@@ -1208,70 +1208,70 @@ pk_console_get_summary (PkRoleEnum roles)
 	g_string_append_printf (string, "  %s\n", "get-transactions");
 	g_string_append_printf (string, "  %s\n", "get-time");
 
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_NAME) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_DETAILS) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_GROUP) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_FILE)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_NAME) ||
+	    pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_DETAILS) ||
+	    pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_GROUP) ||
+	    pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_FILE)) {
 		g_string_append_printf (string, "  %s\n", "search [name|details|group|file] [data]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_PACKAGES) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_FILES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_PACKAGES) ||
+	    pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_FILES)) {
 		g_string_append_printf (string, "  %s\n", "install [packages|files]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
 		g_string_append_printf (string, "  %s\n", "download [directory] [packages]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
 		g_string_append_printf (string, "  %s\n", "install-sig [type] [key_id] [package_id]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_REMOVE_PACKAGES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REMOVE_PACKAGES)) {
 		g_string_append_printf (string, "  %s\n", "remove [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_UPDATE_SYSTEM) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_UPDATE_PACKAGES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_UPDATE_SYSTEM) ||
+	    pk_bitfield_contain (roles, PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		g_string_append_printf (string, "  %s\n", "update <package>");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_REFRESH_CACHE)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REFRESH_CACHE)) {
 		g_string_append_printf (string, "  %s\n", "refresh");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_RESOLVE)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_RESOLVE)) {
 		g_string_append_printf (string, "  %s\n", "resolve [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_UPDATES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_UPDATES)) {
 		g_string_append_printf (string, "  %s\n", "get-updates");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
 		g_string_append_printf (string, "  %s\n", "get-depends [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
 		g_string_append_printf (string, "  %s\n", "get-requires [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_DETAILS)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DETAILS)) {
 		g_string_append_printf (string, "  %s\n", "get-details [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_FILES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_FILES)) {
 		g_string_append_printf (string, "  %s\n", "get-files [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
 		g_string_append_printf (string, "  %s\n", "get-update-detail [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_PACKAGES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_PACKAGES)) {
 		g_string_append_printf (string, "  %s\n", "get-packages");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_REPO_LIST)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REPO_LIST)) {
 		g_string_append_printf (string, "  %s\n", "repo-list");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_REPO_ENABLE)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPO_ENABLE)) {
 		g_string_append_printf (string, "  %s\n", "repo-enable [repo_id]");
 		g_string_append_printf (string, "  %s\n", "repo-disable [repo_id]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_REPO_SET_DATA)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPO_SET_DATA)) {
 		g_string_append_printf (string, "  %s\n", "repo-set-data [repo_id] [parameter] [value];");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_WHAT_PROVIDES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_WHAT_PROVIDES)) {
 		g_string_append_printf (string, "  %s\n", "what-provides [search]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_ACCEPT_EULA)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_ACCEPT_EULA)) {
 		g_string_append_printf (string, "  %s\n", "accept-eula [eula-id]");
 	}
 	return g_string_free (string, FALSE);
@@ -1298,11 +1298,11 @@ main (int argc, char *argv[])
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
-	PkGroupEnum groups;
+	PkBitfield groups;
 	gchar *text;
 	ret = FALSE;
 	gboolean maybe_sync = TRUE;
-	PkFilterEnum filters = 0;
+	PkBitfield filters = 0;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -1321,6 +1321,7 @@ main (int argc, char *argv[])
 	}
 	dbus_g_thread_init ();
 	g_type_init ();
+	pk_debug_init (verbose);
 
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_console_sigint_handler);
@@ -1350,8 +1351,6 @@ main (int argc, char *argv[])
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
-
-	pk_debug_init (verbose);
 
 	if (program_version) {
 		g_print (VERSION "\n");
@@ -1411,7 +1410,7 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
 
 	if (filter != NULL) {
-		filters = pk_filter_enums_from_text (filter);
+		filters = pk_filter_bitfield_from_text (filter);
 	}
 	pk_debug ("filter=%s, filters=%i", filter, filters);
 
@@ -1613,7 +1612,7 @@ main (int argc, char *argv[])
 		ret = pk_client_get_packages (client, filters, &error);
 
 	} else if (strcmp (mode, "get-actions") == 0) {
-		text = pk_role_enums_to_text (roles);
+		text = pk_role_bitfield_to_text (roles);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
@@ -1623,7 +1622,7 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-filters") == 0) {
 		filters = pk_control_get_filters (control);
-		text = pk_filter_enums_to_text (filters);
+		text = pk_filter_bitfield_to_text (filters);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
@@ -1633,7 +1632,7 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-groups") == 0) {
 		groups = pk_control_get_groups (control);
-		text = pk_group_enums_to_text (groups);
+		text = pk_group_bitfield_to_text (groups);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);

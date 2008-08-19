@@ -53,41 +53,45 @@ backend_destroy (PkBackend *backend)
 /**
  * backend_get_groups:
  */
-static PkGroupEnum
+static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return (PK_GROUP_ENUM_ADMIN_TOOLS |
-		PK_GROUP_ENUM_DESKTOP_GNOME |
-		PK_GROUP_ENUM_DESKTOP_KDE |
-		PK_GROUP_ENUM_DESKTOP_XFCE |
-		PK_GROUP_ENUM_DESKTOP_OTHER |
-		PK_GROUP_ENUM_EDUCATION |
-		PK_GROUP_ENUM_FONTS |
-		PK_GROUP_ENUM_GAMES |
-		PK_GROUP_ENUM_GRAPHICS |
-		PK_GROUP_ENUM_INTERNET |
-		PK_GROUP_ENUM_LEGACY |
-		PK_GROUP_ENUM_LOCALIZATION |
-		PK_GROUP_ENUM_MULTIMEDIA |
-		PK_GROUP_ENUM_OFFICE |
-		PK_GROUP_ENUM_OTHER |
-		PK_GROUP_ENUM_PROGRAMMING |
-		PK_GROUP_ENUM_PUBLISHING |
-		PK_GROUP_ENUM_SERVERS |
-		PK_GROUP_ENUM_SYSTEM |
-		PK_GROUP_ENUM_VIRTUALIZATION);
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_ADMIN_TOOLS,
+		PK_GROUP_ENUM_DESKTOP_GNOME,
+		PK_GROUP_ENUM_DESKTOP_KDE,
+		PK_GROUP_ENUM_DESKTOP_XFCE,
+		PK_GROUP_ENUM_DESKTOP_OTHER,
+		PK_GROUP_ENUM_EDUCATION,
+		PK_GROUP_ENUM_FONTS,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_INTERNET,
+		PK_GROUP_ENUM_LEGACY,
+		PK_GROUP_ENUM_LOCALIZATION,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_OFFICE,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SERVERS,
+		PK_GROUP_ENUM_SYSTEM,
+		PK_GROUP_ENUM_VIRTUALIZATION,
+		-1);
 }
 
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return (PK_FILTER_ENUM_GUI |
-		PK_FILTER_ENUM_INSTALLED |
-		PK_FILTER_ENUM_DEVELOPMENT |
-		PK_FILTER_ENUM_FREE);
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_GUI,
+		PK_FILTER_ENUM_INSTALLED,
+		PK_FILTER_ENUM_DEVELOPMENT,
+		PK_FILTER_ENUM_FREE,
+		-1);
 }
 
 /**
@@ -103,7 +107,7 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_dbus_get_depends (dbus, filters, package_ids, recursive);
 }
@@ -130,7 +134,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_dbus_get_requires (dbus, filters, package_ids, recursive);
 }
@@ -139,7 +143,7 @@ backend_get_requires (PkBackend *backend, PkFilterEnum filters, gchar **package_
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_dbus_get_updates (dbus, filters);
 }
@@ -207,7 +211,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * pk_backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_dbus_search_details (dbus, filters, search);
 }
@@ -216,7 +220,7 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
  * pk_backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_dbus_search_file (dbus, filters, search);
 }
@@ -225,7 +229,7 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * pk_backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_dbus_search_group (dbus, filters, search);
 }
@@ -234,7 +238,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
  * pk_backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_dbus_search_name (dbus, filters, search);
 }
@@ -268,7 +272,7 @@ backend_update_system (PkBackend *backend)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	pk_backend_dbus_resolve (dbus, filters, packages);
 }
@@ -277,7 +281,7 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
  * pk_backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_dbus_get_repo_list (dbus, filters);
 }
@@ -304,7 +308,7 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
  * pk_backend_what_provides:
  */
 static void
-backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provides, const gchar *search)
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
 {
 	pk_backend_dbus_what_provides (dbus, filters, provides, search);
 }
