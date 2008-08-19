@@ -390,7 +390,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
             # if we couldn't map package_id -> pkg
             if len(packs) == 0:
-                self.message(MESSAGE_WARNING,"Could not find a match for package %s" % package)
+                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,"Could not find a match for package %s" % package)
                 continue
 
             # should have only one...
@@ -833,7 +833,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if pkg and not inst:
                 repo = self.yumbase.repos.getRepo(pkg.repoid)
                 if not already_warned and not repo.gpgcheck:
-                    self.message(MESSAGE_WARNING,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
+                    self.message(MESSAGE_UNTRUSTED_PACKAGE,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
                     already_warned = True
                 txmbr = self.yumbase.install(po=pkg)
                 txmbrs.extend(txmbr)
@@ -849,7 +849,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if pkgs:
             newest = pkgs[0]
             if newest.EVR > po.EVR:
-                self.message(MESSAGE_WARNING,"A newer version of %s is available online." % po.name)
+                self.message(MESSAGE_NEWER_PACKAGE_EXISTS,"A newer version of %s is available online." % po.name)
 
     def install_files(self,trusted,inst_files):
         '''
@@ -1588,7 +1588,7 @@ class PackageKitCallback(RPMBaseCallback):
                 self.base.status(self.state_actions[action])
                 self._showName(self.info_actions[action])
             except exceptions.KeyError,e:
-                self.base.message(MESSAGE_WARNING,"The constant '%s' was unknown, please report" % action)
+                self.base.message(MESSAGE_BACKEND_ERROR,"The constant '%s' was unknown, please report" % action)
             pct = self._calcTotalPct(ts_current,ts_total)
             self.base.percentage(pct)
         val = (ts_current*100L)/ts_total

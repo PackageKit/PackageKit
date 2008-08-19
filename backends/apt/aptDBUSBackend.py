@@ -214,7 +214,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
     def finishUpdate(self):
         pklog.debug("finishUpdate()")
         if self.conffile_prompts:
-            self._backend.Message(MESSAGE_NOTICE, "The following conffile prompts were found and need investiagtion: %s" % "\n".join(self.conffile_prompts))
+            self._backend.Message(MESSAGE_CONFIG_FILES_CHANGED, "The following conffile prompts were found and need investiagtion: %s" % "\n".join(self.conffile_prompts))
 
 def sigquit(signum, frame):
     pklog.error("Was killed")

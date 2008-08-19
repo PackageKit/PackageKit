@@ -477,7 +477,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_GROUP_NOT_FOUND, str(e))
             self.Finished(EXIT_FAILED)
         except yum.Errors.RepoError,e:
-            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
+            self.Message(MESSAGE_CACHE_BEING_REBUILT, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
             self._unlock_yum()
             self.Finished(EXIT_FAILED)
@@ -534,7 +534,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package(pkg, INFO_AVAILABLE)
                             found[str(pkg)] = 1
         except yum.Errors.RepoError,e:
-            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
+            self.Message(MESSAGE_CACHE_BEING_REBUILT, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
             self._unlock_yum()
             self.Finished(EXIT_FAILED)
@@ -801,7 +801,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package(pkg,INFO_AVAILABLE)
                             break
         except yum.Errors.RepoError,e:
-            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
+            self.Message(MESSAGE_CACHE_BEING_REBUILT, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
             self._unlock_yum()
             self.Finished(EXIT_FAILED)
@@ -831,7 +831,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if pkg and not inst:
                 repo = self.yumbase.repos.getRepo(pkg.repoid)
                 if not already_warned and not repo.gpgcheck:
-                    self.message(MESSAGE_WARNING,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
+                    self.message(MESSAGE_UNTRUSTED_PACKAGE,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
                     already_warned = True
                 txmbr = self.yumbase.install(po=pkg)
                 txmbrs.extend(txmbr)
@@ -1106,7 +1106,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     else:
                         self._show_package(pkg,INFO_NORMAL)
         except yum.Errors.RepoError,e:
-            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
+            self.Message(MESSAGE_CACHE_BEING_REBUILT, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
             self._unlock_yum()
             self.Finished(EXIT_FAILED)
@@ -1163,7 +1163,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if showDesc:
                             self._show_package_details(pkg)
         except yum.Errors.RepoError,e:
-            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
+            self.Message(MESSAGE_CACHE_BEING_REBUILT, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
             self._unlock_yum()
             self.Finished(EXIT_FAILED)
@@ -1453,7 +1453,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         package_list.append((pkg,INFO_AVAILABLE))
                         seen_nevra.append(self._get_nevra(pkg))
         except yum.Errors.RepoError,e:
-            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
+            self.Message(MESSAGE_CACHE_BEING_REBUILT, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
             self._unlock_yum()
             self.Finished(EXIT_FAILED)
@@ -1609,7 +1609,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             newest = pkgs[0]
             if newest.EVR > po.EVR:
                 #TODO Add code to send a message here
-                self.Message(MESSAGE_WARNING,"Newer version of %s, exist in the repositories " % po.name)
+                self.Message(MESSAGE_NEWER_PACKAGE_EXISTS,"Newer version of %s, exist in the repositories " % po.name)
 
 
 
@@ -2174,7 +2174,7 @@ class PackageKitCallback(RPMBaseCallback):
                 self.base.StatusChanged(self.state_actions[action])
                 self._showName(self.info_actions[action])
             except exceptions.KeyError,e:
-                self.base.Message(MESSAGE_WARNING,"The constant '%s' was unknown, please report" % action)
+                self.base.Message(MESSAGE_BACKEND_ERROR,"The constant '%s' was unknown, please report" % action)
             pct = self._calcTotalPct(ts_current, ts_total)
             self.base.PercentageChanged(pct)
         val = (ts_current*100L)/ts_total

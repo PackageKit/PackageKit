@@ -758,7 +758,7 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 
 	/* check over */
 	if (percentage > PK_BACKEND_PERCENTAGE_INVALID) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "percentage value is invalid: %i", percentage);
 		return FALSE;
 	}
@@ -767,7 +767,7 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 	if (percentage < 100 &&
 	    backend->priv->last_percentage < 100 &&
 	    percentage < backend->priv->last_percentage) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "percentage value is going down to %i from %i",
 				    percentage, backend->priv->last_percentage);
 		return FALSE;
@@ -868,7 +868,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	/* backends don't do this */
 	if (status == PK_STATUS_ENUM_WAIT) {
 		pk_warning ("backend tried to WAIT, only the runner should set this value");
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "backends shouldn't use STATUS_WAIT");
 		return FALSE;
 	}
@@ -876,7 +876,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	/* sanity check */
 	if (status == PK_STATUS_ENUM_SETUP && backend->priv->status != PK_STATUS_ENUM_WAIT) {
 		pk_warning ("backend tried to SETUP, but should be in WAIT");
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "Tried to SETUP when not in WAIT");
 		return FALSE;
 	}
@@ -1087,7 +1087,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error && message != PK_MESSAGE_ENUM_DAEMON) {
+	if (backend->priv->set_error && message != PK_MESSAGE_ENUM_BACKEND_ERROR) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -1366,7 +1366,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	/* warn the backend developer that they've done something worng
 	 * - we can't use pk_backend_message here as we have already set
 	 * backend->priv->set_error to TRUE and hence the message would be ignored */
-	message = PK_MESSAGE_ENUM_DAEMON;
+	message = PK_MESSAGE_ENUM_BACKEND_ERROR;
 	buffer = "ErrorCode() has to be followed with Finished()!";
 	pk_warning ("emit message %i, %s", message, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
@@ -1567,14 +1567,14 @@ pk_backend_finished (PkBackend *backend)
 
 	/* are we trying to finish in init? */
 	if (backend->priv->during_initialize) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "You can't call pk_backend_finished in backend_initialize!");
 		return FALSE;
 	}
 
 	/* check we have not already finished */
 	if (backend->priv->finished) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "Backends cannot request Finished more than once!");
 		return FALSE;
 	}
@@ -1585,7 +1585,7 @@ pk_backend_finished (PkBackend *backend)
 	    (backend->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	     backend->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "Backends should send a Package() for this role!");
 	}
 
@@ -1598,7 +1598,7 @@ pk_backend_finished (PkBackend *backend)
 	/* check we sent at least one status calls */
 	if (backend->priv->set_error == FALSE &&
 	    backend->priv->status == PK_STATUS_ENUM_SETUP) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "Backends should send status <value> signals for %s!", role_text);
 		pk_warning ("GUI will remain unchanged!");
 	}

@@ -373,7 +373,7 @@ pk_task_list_class_init (PkTaskListClass *klass)
 	 * PkTaskList::message:
 	 * @tlist: the #PkTaskList instance that emitted the signal
 	 * @client: the #PkClient instance that caused the signal
-	 * @message: the PkMessageEnum type of the message, e.g. PK_MESSAGE_ENUM_WARNING
+	 * @message: the PkMessageEnum type of the message, e.g. %PK_MESSAGE_ENUM_BROKEN_MIRROR
 	 * @details: the non-localised message details
 	 *
 	 * The ::message signal is emitted when the transaction wants to tell

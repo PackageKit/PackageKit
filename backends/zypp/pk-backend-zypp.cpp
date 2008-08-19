@@ -1618,7 +1618,7 @@ backend_repo_set_data_thread (PkBackend *backend)
 			}else if (g_ascii_strcasecmp (value, "false") == 0) {
 				repo.setAutorefresh (FALSE);
 			} else {
-				pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Autorefresh a repo: Enter true or false");
+				pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, "Autorefresh a repo: Enter true or false");
 				bReturn = FALSE;
 			}
 
@@ -1629,14 +1629,14 @@ backend_repo_set_data_thread (PkBackend *backend)
 			gint length = strlen (value);
 
 			if (length > 2) {
-				pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Priorities has to be between 1 (highest) and 99");
+				pk_backend_message (backend, PK_MESSAGE_ENUM_PRIORITY_INVALID, "Priorities has to be between 1 (highest) and 99");
 				bReturn = false;
 			} else {
 				for (gint i = 0; i < length; i++) {
 					gint tmp = g_ascii_digit_value (value[i]);
 
 					if (tmp == -1) {
-						pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Priorities has to be a number between 1 (highest) and 99");
+						pk_backend_message (backend, PK_MESSAGE_ENUM_PRIORITY_INVALID, "Priorities has to be a number between 1 (highest) and 99");
 						bReturn = FALSE;
 						prio = 0;
 						break;
