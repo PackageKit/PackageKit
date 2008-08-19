@@ -1643,7 +1643,7 @@ poldek_backend_log (void *data, int pri, char *message)
 		pberror->vfffmsg = g_strdup (message);
 
 		// 'vfff: unable to connect to ftp.pld-linux.org:21: Connection refused'
-		pk_backend_message (backend, PK_MESSAGE_ENUM_WARNING, "%s", message);
+		pk_backend_message (backend, PK_MESSAGE_ENUM_CONNECTION_REFUSED, "%s", message);
 	} else {
 		if (pri & LOGERR) {
 			g_string_append_printf (pberror->tslog, "error: %s", message);

@@ -120,7 +120,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		info = pk_info_enum_from_text (sections[1]);
 		if (info == PK_INFO_ENUM_UNKNOWN) {
-			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Info enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
@@ -177,7 +177,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		restart = pk_restart_enum_from_text (sections[7]);
 		if (restart == PK_RESTART_ENUM_UNKNOWN) {
-			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Restart enum not recognised, and hence ignored: '%s'", sections[7]);
 			ret = FALSE;
 			goto out;
@@ -230,7 +230,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		error_enum = pk_error_enum_from_text (sections[1]);
 		if (error_enum == PK_ERROR_ENUM_UNKNOWN) {
-			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Error enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
@@ -254,7 +254,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		restart_enum = pk_restart_enum_from_text (sections[1]);
 		if (restart_enum == PK_RESTART_ENUM_UNKNOWN) {
-			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Restart enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
@@ -268,7 +268,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		message_enum = pk_message_enum_from_text (sections[1]);
 		if (message_enum == PK_MESSAGE_ENUM_UNKNOWN) {
-			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Message enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
@@ -293,7 +293,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		status_enum = pk_status_enum_from_text (sections[1]);
 		if (status_enum == PK_STATUS_ENUM_UNKNOWN) {
-			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Status enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
@@ -331,19 +331,19 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 
 		sig_type = pk_sig_type_enum_from_text (sections[8]);
 		if (sig_type == PK_SIGTYPE_ENUM_UNKNOWN) {
-			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Sig enum not recognised, and hence ignored: '%s'", sections[8]);
 			ret = FALSE;
 			goto out;
 		}
 		if (pk_strzero (sections[1])) {
-			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "package_id blank, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
 		if (pk_strzero (sections[2])) {
-			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "repository name blank, and hence ignored: '%s'", sections[2]);
 			ret = FALSE;
 			goto out;

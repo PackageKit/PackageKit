@@ -170,9 +170,17 @@ static PkEnumMatch enum_restart[] = {
 
 static PkEnumMatch enum_message[] = {
 	{PK_MESSAGE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_MESSAGE_ENUM_NOTICE,		"notice"},
-	{PK_MESSAGE_ENUM_WARNING,		"warning"},
-	{PK_MESSAGE_ENUM_DAEMON,		"daemon"},
+	{PK_MESSAGE_ENUM_BROKEN_MIRROR,		"broken-mirror"},
+	{PK_MESSAGE_ENUM_CONNECTION_REFUSED,	"connection-refused"},
+	{PK_MESSAGE_ENUM_PARAMETER_INVALID,	"parameter-invalid"},
+	{PK_MESSAGE_ENUM_PRIORITY_INVALID,	"priority-invalid"},
+	{PK_MESSAGE_ENUM_BACKEND_ERROR,		"backend-error"},
+	{PK_MESSAGE_ENUM_DAEMON_ERROR,		"daemon-error"},
+	{PK_MESSAGE_ENUM_CACHE_BEING_REBUILT,	"cache-being-rebuilt"},
+	{PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE,	"untrusted-package"},
+	{PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS,	"newer-package-exists"},
+	{PK_MESSAGE_ENUM_COULD_NOT_FIND_PACKAGE,"could-not-find-package"},
+	{PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,	"config-files-changed"},
 	{0, NULL}
 };
 

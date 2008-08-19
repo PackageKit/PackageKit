@@ -419,7 +419,7 @@ pk_transaction_error_code_cb (PkBackend *backend, PkErrorCodeEnum code,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	if (code == PK_ERROR_ENUM_UNKNOWN) {
-		pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+		pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "backend emitted 'unknown error' rather than a specific error "
 				    "- this is a backend problem and should be fixed!");
 	}
@@ -570,7 +570,8 @@ pk_transaction_message_cb (PkBackend *backend, PkMessageEnum message, const gcha
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 #ifndef PK_IS_DEVELOPER
-	if (message == PK_MESSAGE_ENUM_DAEMON) {
+	if (message == PK_MESSAGE_ENUM_BACKEND_ERROR ||
+	    message == PK_MESSAGE_ENUM_DAEMON_ERROR) {
 		pk_warning ("ignoring message: %s", details);
 		return;
 	}
@@ -603,7 +604,7 @@ pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransa
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (obj->info == PK_INFO_ENUM_INSTALLED) {
-			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "backend emitted 'installed' rather than 'installing' "
 					    "- you need to do the package *before* you do the action");
 			return;

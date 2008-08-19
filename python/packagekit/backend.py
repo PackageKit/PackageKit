@@ -87,7 +87,7 @@ class PackageKitBaseBackend:
     def message(self,typ,msg):
         '''
         send 'message' signal
-        @param typ: MESSAGE_WARNING, MESSAGE_NOTICE, MESSAGE_DEAMON
+        @param typ: MESSAGE_BROKEN_MIRROR
         '''
         print "message\t%s\t%s" % (typ,msg)
         sys.stdout.flush()

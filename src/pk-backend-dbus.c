@@ -414,7 +414,7 @@ pk_backend_dbus_startup (PkBackendDbus *backend_dbus)
 	if (!ret) {
 		pk_warning ("%s", error->message);
 		/* cannot use ErrorCode as not in transaction */
-		pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON, error->message);
+		pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON_ERROR, error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -1416,11 +1416,11 @@ pk_backend_dbus_monitor_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolean is_
 
 	if (!is_active) {
 		pk_warning ("DBUS backend disconnected");
-		pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON, "DBUS backend has exited");
+		pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON_ERROR, "DBUS backend has exited");
 		/* Init() */
 		ret = pk_backend_dbus_startup (backend_dbus);
 		if (!ret) {
-			pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON, "DBUS backend will not start");
+			pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON_ERROR, "DBUS backend will not start");
 		}
 	}
 }

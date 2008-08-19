@@ -3568,7 +3568,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::message:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @message: the PkMessageEnum type of the message, e.g. PK_MESSAGE_ENUM_WARNING
+	 * @message: the PkMessageEnum type of the message, e.g. %PK_MESSAGE_ENUM_BROKEN_MIRROR
 	 * @details: the non-localised message details
 	 *
 	 * The ::message signal is emitted when the transaction wants to tell
