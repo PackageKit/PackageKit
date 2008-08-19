@@ -262,7 +262,8 @@ backend_get_requires(PkBackend *backend, PkBitfield filters, gchar **package_ids
 static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return (PkGroupEnum)(PK_GROUP_ENUM_ADMIN_TOOLS,
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_ADMIN_TOOLS,
 		PK_GROUP_ENUM_COMMUNICATION,
 		PK_GROUP_ENUM_DESKTOP_GNOME,
 		PK_GROUP_ENUM_DESKTOP_KDE,
