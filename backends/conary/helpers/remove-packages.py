@@ -13,7 +13,7 @@ import sys
 from conaryBackend import PackageKitConaryBackend
 
 allowDeps = sys.argv[1]
-package = sys.argv[2]
+package_ids = sys.argv[2:]
 backend = PackageKitConaryBackend(sys.argv[1:])
-backend.remove_packages(allowDeps, package)
+backend.remove_packages(allowDeps, package_ids)
 sys.exit(0)
