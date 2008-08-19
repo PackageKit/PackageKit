@@ -628,7 +628,7 @@ pk_engine_remove_contents (const gchar *directory)
 {
 	gboolean ret = FALSE;
 	GDir *dir;
-	GError *error;
+	GError *error = NULL;
 	const gchar *filename;
 	gchar *src;
 	gint retval;
