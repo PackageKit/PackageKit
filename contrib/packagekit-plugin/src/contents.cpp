@@ -598,6 +598,9 @@ void
 PkpContents::runApplication (Time time)
 {
     GError *error = NULL;
+#ifdef HAVE_GDK_APP_LAUNCH_CONTEXT_NEW
+    GdkAppLaunchContext *context;
+#endif
 
     if (mAppInfo == 0) {
         g_warning("Didn't find application to launch");
@@ -607,20 +610,22 @@ PkpContents::runApplication (Time time)
     if (time == 0)
         time = get_server_timestamp();
 
-    GAppLaunchContext *context = 0;
 #ifdef HAVE_GDK_APP_LAUNCH_CONTEXT_NEW
     context = gdk_app_launch_context_new();
-    gdk_app_launch_context_set_timestamp(time);
+    gdk_app_launch_context_set_timestamp(context, time);
+    if (!g_app_info_launch(mAppInfo, NULL, G_APP_LAUNCH_CONTEXT (context), &error)) {
+#else
+    if (!g_app_info_launch(mAppInfo, NULL, NULL, &error)) {
 #endif
-
-    if (!g_app_info_launch(mAppInfo, NULL, context, &error)) {
         g_warning("%s\n", error->message);
         g_clear_error(&error);
         return;
     }
 
-    if (context != 0)
+#ifdef HAVE_GDK_APP_LAUNCH_CONTEXT_NEW
+    if (context != NULL)
         g_object_unref(context);
+#endif
 }
 
 void
