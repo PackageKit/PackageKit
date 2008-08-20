@@ -59,6 +59,7 @@
 #include "pk-control.h"
 #include "pk-update-detail-obj.h"
 #include "pk-details-obj.h"
+#include "pk-distro-upgrade-obj.h"
 
 static void     pk_client_class_init	(PkClientClass *klass);
 static void     pk_client_init		(PkClient      *client);
@@ -605,11 +606,14 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 			     const gchar *summary, PkClient *client)
 {
 	PkUpdateStateEnum type;
+	PkDistroUpgradeObj *obj;
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	type = pk_update_state_enum_from_text (type_text);
+	obj = pk_distro_upgrade_obj_new_from_data  (type, name, summary);
 	pk_debug ("emitting distro_upgrade %s, %s, %s", type_text, name, summary);
-	g_signal_emit (client, signals [PK_CLIENT_DISTRO_UPGRADE], 0, type, name, summary);
+	g_signal_emit (client, signals [PK_CLIENT_DISTRO_UPGRADE], 0, obj);
+	pk_distro_upgrade_obj_free (obj);
 }
 
 /**
@@ -3520,8 +3524,8 @@ pk_client_class_init (PkClientClass *klass)
 		g_signal_new ("distro-upgrade",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, distro_upgrade),
-			      NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	/**
 	 * PkClient::update-detail:
 	 * @client: the #PkClient instance that emitted the signal
