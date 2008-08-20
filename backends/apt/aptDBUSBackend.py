@@ -1359,13 +1359,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         elif section == "devel":
             return GROUP_PROGRAMMING
         elif section == "doc":
-            #FIXME: introduce a new group
-            return GROUP_OTHER
+            return GROUP_DOCUMENTATION
         elif section == "editors":
             return GROUP_PUBLISHING
         elif section == "electronics":
-            #FIXME: do we need a special group?
-            return GROUP_OTHER
+            return GROUP_ELECTRONICS
         elif section == "embedded":
             return GROUP_SYSTEM
         elif section == "games":
@@ -1387,8 +1385,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         elif section == "mail":
             return GROUP_INTERNET
         elif section == "math":
-            #FIXME: Need a group science
-            return GROUP_OTHER
+            return GROUP_SCIENCE
         elif section == "misc":
             return GROUP_OTHER
         elif section == "net":
@@ -1404,8 +1401,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         elif section == "python":
             return GROUP_PROGRAMMING
         elif section == "science":
-            #FIXME Need a new group
-            return GROUP_OTHER
+            return GROUP_SCIENCE
         elif section == "shells":
             return GROUP_SYSTEM
         elif section == "sound":
