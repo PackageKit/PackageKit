@@ -448,7 +448,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             e,v,r = self._getEVR(idver)
         else:
             n = id
-            e = v = r = a = None
+            e = v = r = a = d = None
         # search the rpmdb for the nevra
         pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
         # if the package is found, then return it (do not have to match the repo_id)
