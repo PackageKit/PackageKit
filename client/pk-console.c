@@ -206,6 +206,23 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
 }
 
 /**
+ * pk_console_distro_upgrade_cb:
+ **/
+static void
+pk_console_distro_upgrade_cb (PkClient *client, PkUpdateStateEnum type, const gchar *name,
+			      const gchar *summary, gpointer user_data)
+{
+	const gchar *type_text;
+	type_text = pk_update_state_enum_to_text (type);
+	if (awaiting_space) {
+		g_print ("\n");
+	}
+	g_print ("Distro       : %s\n", name);
+	g_print (" type        : %s\n", type_text);
+	g_print (" summary     : %s\n", summary);
+}
+
+/**
  * pk_console_update_detail_cb:
  **/
 static void
@@ -1249,6 +1266,9 @@ pk_console_get_summary (PkBitfield roles)
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DETAILS)) {
 		g_string_append_printf (string, "  %s\n", "get-details [package]");
 	}
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES)) {
+		g_string_append_printf (string, "  %s\n", "get-distro-upgrades");
+	}
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_FILES)) {
 		g_string_append_printf (string, "  %s\n", "get-files [package]");
 	}
@@ -1374,6 +1394,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_package_cb), NULL);
 	g_signal_connect (client, "transaction",
 			  G_CALLBACK (pk_console_transaction_cb), NULL);
+	g_signal_connect (client, "distro-upgrade",
+			  G_CALLBACK (pk_console_distro_upgrade_cb), NULL);
 	g_signal_connect (client, "details",
 			  G_CALLBACK (pk_console_details_cb), NULL);
 	g_signal_connect (client, "files",
@@ -1569,6 +1591,9 @@ main (int argc, char *argv[])
 			goto out;
 		}
 		ret = pk_console_get_depends (client, filters, value, &error);
+
+	} else if (strcmp (mode, "get-distro-upgrades") == 0) {
+		ret = pk_client_get_distro_upgrades (client, &error);
 
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {

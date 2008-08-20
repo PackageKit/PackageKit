@@ -97,6 +97,10 @@ struct _PkClientClass
 							 PkRoleEnum	 role,
 							 guint		 duration,
 							 const gchar	*data);
+	void		(* distro_upgrade)		(PkClient	*client,
+							 PkUpdateStateEnum type,
+							 const gchar	*name,
+							 const gchar	*summary);
 	void		(* update_detail)		(PkClient	*client,
 							 PkUpdateDetailObj	*update_detail);
 	void		(* details)			(PkClient	*client,
@@ -252,6 +256,8 @@ gboolean	 pk_client_what_provides		(PkClient	*client,
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_details			(PkClient	*client,
 							 gchar		**package_ids,
+							 GError		**error);
+gboolean	 pk_client_get_distro_upgrades		(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_get_files			(PkClient	*client,
 							 gchar		**package_ids,

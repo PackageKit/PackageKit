@@ -21,6 +21,7 @@ __pkcon_commandlist="
     get-actions
     get-depends
     get-details
+    get-distro-upgrades
     get-files
     get-filters
     get-groups
