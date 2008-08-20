@@ -1032,7 +1032,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
             if not pkg.isInstalled:
-                self.Files(id, "")
+                continue
             path = "/var/lib/dpkg/info/%s.list" % pkg.name
             list = open(path)
             files = re.sub("\n", ";", list.read(), 0)
