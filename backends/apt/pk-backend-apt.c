@@ -61,9 +61,11 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_ACCESSORIES,
 		PK_GROUP_ENUM_ADMIN_TOOLS,
 		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_DOCUMENTATION,
 		PK_GROUP_ENUM_DESKTOP_GNOME,
 		PK_GROUP_ENUM_DESKTOP_KDE,
 		PK_GROUP_ENUM_DESKTOP_OTHER,
+		PK_GROUP_ENUM_ELECTRONICS,
 		PK_GROUP_ENUM_GAMES,
 		PK_GROUP_ENUM_GRAPHICS,
 		PK_GROUP_ENUM_INTERNET,
@@ -74,6 +76,7 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_OTHER,
 		PK_GROUP_ENUM_PROGRAMMING,
 		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SCIENCE,
 		PK_GROUP_ENUM_SYSTEM,
 		PK_GROUP_ENUM_UNKNOWN,
 		-1);
@@ -153,6 +156,16 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 {
 	pk_backend_dbus_remove_packages (dbus, package_ids, allow_deps, autoremove);
 }
+
+/**
+ * backend_get_files:
+ *  */
+static void
+backend_get_files (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_dbus_get_files (dbus, package_ids);
+}
+
 
 /**
  * backend_get_details:
@@ -276,7 +289,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_distro_upgrades */
-	NULL,					/* get_files */
+	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,					/* get_repo_list */
 	backend_get_requires,			/* get_requires */

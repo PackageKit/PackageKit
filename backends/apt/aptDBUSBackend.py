@@ -1019,6 +1019,26 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self.Finished(EXIT_SUCCESS)
 
+    def doGetFiles(self, package_ids):
+        """
+        Emit the Files signal which includes the files included in a package
+        Apt only supports this for installed packages
+        """
+        for id in package_ids:
+            pkg = self._find_package_by_id(id)
+            if pkg == None:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package %s doesn't exist" % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
+            if not pkg.isInstalled:
+                continue
+            path = "/var/lib/dpkg/info/%s.list" % pkg.name
+            list = open(path)
+            files = re.sub("\n", ";", list.read(), 0)
+            self.Files(id, files)
+        self.Finished(EXIT_SUCCESS)
+
     def doSetProxy(self, http_proxy, ftp_proxy):
         '''
         Set a proxy server for http and ftp transfer
@@ -1359,13 +1379,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         elif section == "devel":
             return GROUP_PROGRAMMING
         elif section == "doc":
-            #FIXME: introduce a new group
-            return GROUP_OTHER
+            return GROUP_DOCUMENTATION
         elif section == "editors":
             return GROUP_PUBLISHING
         elif section == "electronics":
-            #FIXME: do we need a special group?
-            return GROUP_OTHER
+            return GROUP_ELECTRONICS
         elif section == "embedded":
             return GROUP_SYSTEM
         elif section == "games":
@@ -1387,8 +1405,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         elif section == "mail":
             return GROUP_INTERNET
         elif section == "math":
-            #FIXME: Need a group science
-            return GROUP_OTHER
+            return GROUP_SCIENCE
         elif section == "misc":
             return GROUP_OTHER
         elif section == "net":
@@ -1404,8 +1421,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         elif section == "python":
             return GROUP_PROGRAMMING
         elif section == "science":
-            #FIXME Need a new group
-            return GROUP_OTHER
+            return GROUP_SCIENCE
         elif section == "shells":
             return GROUP_SYSTEM
         elif section == "sound":
