@@ -59,6 +59,7 @@
 #include "pk-control.h"
 #include "pk-update-detail-obj.h"
 #include "pk-details-obj.h"
+#include "pk-distro-upgrade-obj.h"
 
 static void     pk_client_class_init	(PkClientClass *klass);
 static void     pk_client_init		(PkClient      *client);
@@ -112,6 +113,7 @@ typedef enum {
 	PK_CLIENT_REQUIRE_RESTART,
 	PK_CLIENT_MESSAGE,
 	PK_CLIENT_TRANSACTION,
+	PK_CLIENT_DISTRO_UPGRADE,
 	PK_CLIENT_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
 	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
@@ -594,6 +596,24 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 		  succeeded, role_text, duration, data);
 	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec,
 		       succeeded, role, duration, data);
+}
+
+/**
+ * pk_client_distro_upgrade_cb:
+ */
+static void
+pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gchar *name,
+			     const gchar *summary, PkClient *client)
+{
+	PkUpdateStateEnum type;
+	PkDistroUpgradeObj *obj;
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	type = pk_update_state_enum_from_text (type_text);
+	obj = pk_distro_upgrade_obj_new_from_data  (type, name, summary);
+	pk_debug ("emitting distro_upgrade %s, %s, %s", type_text, name, summary);
+	g_signal_emit (client, signals [PK_CLIENT_DISTRO_UPGRADE], 0, obj);
+	pk_distro_upgrade_obj_free (obj);
 }
 
 /**
@@ -2083,6 +2103,53 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 }
 
 /**
+ * pk_client_get_distro_upgrades:
+ * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * This method should return a list of distribution upgrades that are available.
+ * It should not return updates, only major upgrades.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_get_distro_upgrades (PkClient *client, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetDistroUpgrades", error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret && !client->priv->is_finished) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
+	}
+	pk_client_error_fixup (error);
+	return ret;
+}
+
+/**
  * pk_client_get_files:
  * @client: a valid #PkClient instance
  * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
@@ -3306,6 +3373,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "DistroUpgrade",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Details",
 				 G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
@@ -3336,6 +3405,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     G_CALLBACK (pk_client_transaction_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
 				     G_CALLBACK (pk_client_update_detail_cb), client, NULL);
+	dbus_g_proxy_connect_signal (proxy, "DistroUpgrade",
+				     G_CALLBACK (pk_client_distro_upgrade_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Details",
 				     G_CALLBACK (pk_client_details_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Files",
@@ -3439,6 +3510,22 @@ pk_client_class_init (PkClientClass *klass)
 			      NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT_STRING,
 			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING);
+	/**
+	 * PkClient::distro_upgrade:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @type: A valid upgrade %PkUpdateStateEnum type
+	 * @name: The short name of the distribution, e.g. <literal>Fedora Core 10 RC1</literal>
+	 * @summary: The multi-line description of the release.
+	 *
+	 * The ::distro_upgrade signal is emitted when the method GetDistroUpgrades() is
+	 * called, and the upgrade options are being sent.
+	 **/
+	signals [PK_CLIENT_DISTRO_UPGRADE] =
+		g_signal_new ("distro-upgrade",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkClientClass, distro_upgrade),
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	/**
 	 * PkClient::update-detail:
 	 * @client: the #PkClient instance that emitted the signal
@@ -3670,6 +3757,8 @@ pk_client_disconnect_proxy (PkClient *client)
 				        G_CALLBACK (pk_client_package_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Transaction",
 				        G_CALLBACK (pk_client_transaction_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "DistroUpgrade",
+				        G_CALLBACK (pk_client_distro_upgrade_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Details",
 				        G_CALLBACK (pk_client_details_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Files",
@@ -3803,6 +3892,10 @@ pk_client_init (PkClient *client)
 
 	/* Use a main control object */
 	client->priv->control = pk_control_new ();
+
+	/* DistroUpgrade */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* ProgressChanged */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_UINT_UINT,

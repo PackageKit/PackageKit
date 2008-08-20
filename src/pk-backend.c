@@ -257,6 +257,9 @@ pk_backend_get_actions (PkBackend *backend)
 	if (desc->repo_set_data != NULL) {
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_SET_DATA);
 	}
+	if (desc->get_distro_upgrades != NULL) {
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
+	}
 	return roles;
 }
 
