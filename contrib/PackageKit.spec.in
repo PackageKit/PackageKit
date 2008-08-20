@@ -158,6 +158,8 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_localstatedir}/lib/PackageKit
 %dir %{python_sitelib}/packagekit
 %dir %{_localstatedir}/run/PackageKit
+%dir %{_localstatedir}/cache/PackageKit
+%dir %{_localstatedir}/cache/PackageKit/downloads
 %{python_sitelib}/packagekit/*py*
 %dir %{_sysconfdir}/bash_completion.d
 %config %{_sysconfdir}/bash_completion.d/pk-completion.bash
