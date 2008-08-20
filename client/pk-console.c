@@ -39,6 +39,7 @@
 #include <pk-common.h>
 #include <pk-connection.h>
 #include <pk-update-detail-obj.h>
+#include <pk-distro-upgrade-obj.h>
 
 #include "pk-tools-common.h"
 
@@ -209,17 +210,14 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
  * pk_console_distro_upgrade_cb:
  **/
 static void
-pk_console_distro_upgrade_cb (PkClient *client, PkUpdateStateEnum type, const gchar *name,
-			      const gchar *summary, gpointer user_data)
+pk_console_distro_upgrade_cb (PkClient *client, const PkDistroUpgradeObj *obj, gpointer user_data)
 {
-	const gchar *type_text;
-	type_text = pk_update_state_enum_to_text (type);
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	g_print ("Distro       : %s\n", name);
-	g_print (" type        : %s\n", type_text);
-	g_print (" summary     : %s\n", summary);
+	g_print ("Distro       : %s\n", obj->name);
+	g_print (" type        : %s\n", pk_update_state_enum_to_text (obj->state));
+	g_print (" summary     : %s\n", obj->summary);
 }
 
 /**
