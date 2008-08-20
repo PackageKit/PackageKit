@@ -833,6 +833,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         # Mark all packages for installation
         self._cache._depcache.Init()
+        pkgs = []
         for id in ids:
             if self._is_canceled(): return
             pkg = self._find_package_by_id(id)
@@ -850,9 +851,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "Dependecies for %s cannot be satisfied: %s" % e)
                 self.Finished(EXIT_FAILED)
                 return
+            pkgs.append(pkg)
         # Check the status of the resulting changes
         for p in self._cache.getChanges():
             if self._is_canceled(): return
+            if p in pkgs: continue
             if p.markedDelete:
                 # Packagekit policy forbids removing packages for installation
                 self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
