@@ -1019,6 +1019,26 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self.Finished(EXIT_SUCCESS)
 
+    def doGetFiles(self, package_ids):
+        """
+        Emit the Files signal which includes the files included in a package
+        Apt only supports this for installed packages
+        """
+        for id in package_ids:
+            pkg = self._find_package_by_id(id)
+            if pkg == None:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package %s doesn't exist" % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
+            if not pkg.isInstalled:
+                self.Files(id, "")
+            path = "/var/lib/dpkg/info/%s.list" % pkg.name
+            list = open(path)
+            files = re.sub("\n", ";", list.read(), 0)
+            self.Files(id, files)
+        self.Finished(EXIT_SUCCESS)
+
     def doSetProxy(self, http_proxy, ftp_proxy):
         '''
         Set a proxy server for http and ftp transfer
