@@ -109,7 +109,7 @@ struct PkTransactionPrivate
 	gchar			*cached_transaction_id;
 	gchar			*cached_full_path;
 	gchar			**cached_full_paths;
-	PkBitfield	 cached_filters;
+	PkBitfield		 cached_filters;
 	gchar			*cached_search;
 	gchar			*cached_repo_id;
 	gchar			*cached_key_id;
@@ -607,6 +607,24 @@ pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransa
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "backend emitted 'installed' rather than 'installing' "
 					    "- you need to do the package *before* you do the action");
+			return;
+		}
+	}
+
+	/* check we are respecting the filters */
+	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		if (obj->info == PK_INFO_ENUM_INSTALLED) {
+			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+					    "backend emitted package that was installed when "
+					    "the ~installed filter is in place");
+			return;
+		}
+	}
+	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_INSTALLED)) {
+		if (obj->info == PK_INFO_ENUM_AVAILABLE) {
+			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+					    "backend emitted package that was ~installed when "
+					    "the installed filter is in place");
 			return;
 		}
 	}
