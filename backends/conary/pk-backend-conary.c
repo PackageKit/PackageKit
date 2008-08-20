@@ -109,7 +109,7 @@ static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "get-details.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -121,7 +121,7 @@ static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "get-files.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -145,7 +145,7 @@ static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "get-update-detail.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -166,7 +166,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -180,7 +180,7 @@ backend_install_files (PkBackend *backend, gboolean trusted, const gchar *full_p
 {
 	gchar *package_ids_temp;
 
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "install-files.py", full_paths, NULL);
 	g_free (package_ids_temp);
 }
@@ -211,7 +211,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "remove-packages.py", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -245,7 +245,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "update-packages.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }

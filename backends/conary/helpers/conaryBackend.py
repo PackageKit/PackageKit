@@ -115,6 +115,9 @@ def ExceptionHandler(func):
     return wrapper
 
 class PackageKitConaryBackend(PackageKitBaseBackend):
+    # Packages there require a reboot
+    rebootpkgs = ("kernel", "glibc", "hal", "dbus")
+
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
 
@@ -313,8 +316,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         if name:
             if installed == INFO_INSTALLED:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
-                    'Package already installed')
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'Package already installed')
 
             else:
                 updJob, suggMap = self._get_package_update(name, version,
@@ -327,8 +329,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     else:
                         self.package(id, INFO_AVAILABLE, '')
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
-                'Package was not found')
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'Package was not found')
 
     @ExceptionHandler
     def get_files(self, package_id):
@@ -365,22 +366,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         updJob, suggMap = self._do_update(applyList)
 
     @ExceptionHandler
-    def update_packages(self, packages):
-        '''
-        Implement the {backend}-update functionality
-        '''
-        self.allow_cancel(True);
-        self.percentage(0)
-        self.status(STATUS_RUNNING)
-
-        for package in packages.split("|"):
-            name, version, flavor, installed = self._findPackage(package)
-            if name:
-                self._do_package_update(name, version, flavor)
-            else:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'No available updates')
-
-    @ExceptionHandler
     def refresh_cache(self):
         self.percentage()
         self.status(STATUS_REFRESH_CACHE)
@@ -404,11 +389,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'No available updates')
 
     @ExceptionHandler
-    def install_packages(self, package_ids):
+    def update_packages(self, package_ids):
         '''
-        Implement the {backend}-install-packages functionality
+        Implement the {backend}-{install,update}-packages functionality
         '''
-        for package_id in package_ids.split():
+        for package_id in package_ids.split('%'):
             name, version, flavor, installed = self._findPackage(package_id)
 
             self.allow_cancel(True)
@@ -435,7 +420,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        for package_id in package_ids:
+        for package_id in package_ids.split('%'):
             name, version, flavor, installed = self._findPackage(package_id)
 
             if name:
@@ -517,6 +502,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             return "",urls,"none"
 
+    def _check_for_reboot(self, name):
+        if name in self.rebootpkgs:
+            self.require_restart(RESTART_SYSTEM,"")
 
     @ExceptionHandler
     def get_update_detail(self,id):
