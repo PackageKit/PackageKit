@@ -155,6 +155,16 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 }
 
 /**
+ * backend_get_files:
+ *  */
+static void
+backend_get_files (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_dbus_get_files (dbus, package_ids);
+}
+
+
+/**
  * backend_get_details:
  *  */
 static void
@@ -276,7 +286,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_distro_upgrades */
-	NULL,					/* get_files */
+	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,					/* get_repo_list */
 	backend_get_requires,			/* get_requires */
