@@ -206,8 +206,8 @@ gprof: clean-gprof all check
 endif
 
 install-data-hook:
-	if test -w $(localstatedir); then \
-		mkdir -p $(localstatedir)/cache/PackageKit/downloads; \
+	if test -w $(DESTDIR)$(prefix)/; then \
+		mkdir -p $(DESTDIR)$(localstatedir)/cache/PackageKit/downloads; \
 	fi
 
 EXTRA_DIST =						\
