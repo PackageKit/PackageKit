@@ -97,6 +97,7 @@ pk_import_desktop_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
+	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 pk_import_specspo_SOURCES =				\
