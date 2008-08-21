@@ -863,11 +863,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 return
 
         self._check_init()
-        self.allow_cancel(False);
+        self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
         # process these first
+        tempdir = tempfile.mkdtemp()
         inst_packs = []
 
         for inst_file in inst_files:
@@ -875,16 +876,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 continue
             elif inst_file.endswith('.pack'):
                 inst_packs.append(inst_file)
-                inst_files.remove(inst_file)
             else:
                 self.error(ERROR_INVALID_PACKAGE_FILE,'Only rpm files and packs are supported')
                 return
 
         # decompress and add the contents of any .pack files
         for inst_pack in inst_packs:
+            inst_files.remove(inst_pack)
             pack = tarfile.TarFile(name = inst_pack,mode = "r")
             members = pack.getnames()
-            tempdir = tempfile.mkdtemp()
             for mem in members:
                 pack.extract(mem,path = tempdir)
             files = os.listdir(tempdir)
