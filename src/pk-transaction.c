@@ -2176,13 +2176,19 @@ gboolean
 pk_transaction_archive_extract (const gchar *filename, const gchar *directory, GError **error)
 {
 	gboolean ret = FALSE;
-	struct archive *arch;
+	struct archive *arch = NULL;
 	struct archive_entry *entry;
 	int r;
+	int retval;
+	gchar *retcwd;
 	gchar buf[PATH_MAX];
 
 	/* save the PWD as we chdir to extract */
-	getcwd (buf, PATH_MAX);
+	retcwd = getcwd (buf, PATH_MAX);
+	if (retcwd == NULL) {
+		*error = g_error_new (1, 0, "failed to get cwd");
+		goto out;
+	}
 
 	/* we can only read tar achives */
 	arch = archive_read_new ();
@@ -2196,7 +2202,11 @@ pk_transaction_archive_extract (const gchar *filename, const gchar *directory, G
 	}
 
 	/* switch to our destination directory */
-	chdir (directory);
+	retval = chdir (directory);
+	if (retval != 0) {
+		*error = g_error_new (1, 0, "failed chdir to %s", directory);
+		goto out;
+	}
 
 	/* decompress each file */
 	for (;;) {
@@ -2218,11 +2228,16 @@ pk_transaction_archive_extract (const gchar *filename, const gchar *directory, G
 	ret = TRUE;
 out:
 	/* close the archive */
-	archive_read_close (arch);
-	archive_read_finish (arch);
+	if (arch != NULL) {
+		archive_read_close (arch);
+		archive_read_finish (arch);
+	}
 
 	/* switch back to PWD */
-	chdir (buf);
+	retval = chdir (buf);
+	if (retval != 0)
+		pk_warning ("cannot chdir back!");
+
 	return ret;
 }
 #else /* HAVE_ARCHIVE_H */
