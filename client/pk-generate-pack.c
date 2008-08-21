@@ -37,9 +37,10 @@
 #include <pk-control.h>
 #include <pk-package-id.h>
 #include <pk-common.h>
-#ifdef HAVE_LIBTAR_H
-  #include <libtar.h>
-#endif
+#ifdef HAVE_ARCHIVE_H
+#include <archive.h>
+#include <archive_entry.h>
+#endif /* HAVE_ARCHIVE_H */
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
@@ -265,89 +266,127 @@ out:
 	return ret;
 }
 
-#ifdef HAVE_LIBTAR_H
+#ifdef HAVE_ARCHIVE_H
+/**
+ * pk_generate_pack_archive_add_file:
+ **/
+static gboolean
+pk_generate_pack_archive_add_file (struct archive *arch, const gchar *filename, GError **error)
+{
+	int retval;
+	int len;
+	int fd = -1;
+	int wrote;
+	gboolean ret = FALSE;
+	gchar *filename_basename = NULL;
+	struct archive_entry *entry = NULL;
+	struct stat st;
+	gchar buff[8192];
+
+	/* stat file */
+	retval = stat (filename, &st);
+	if (retval != 0) {
+		*error = g_error_new (1, 0, "file not found %s", filename);
+		goto out;
+	}
+	pk_debug ("stat(%s), size=%lu bytes\n", filename, st.st_size);
+
+	/* create new entry */
+	entry = archive_entry_new ();
+	archive_entry_copy_stat (entry, &st);
+	filename_basename = g_path_get_basename (filename);
+	archive_entry_set_pathname (entry, filename_basename);
+
+	/* ._BIG FAT BUG_. We should not have to do this, as it should be
+	 * set from archive_entry_copy_stat() */
+	archive_entry_set_size (entry, st.st_size);
+
+	/* write header */
+	retval = archive_write_header (arch, entry);
+	if (retval != ARCHIVE_OK) {
+		*error = g_error_new (1, 0, "failed to write header: %s\n", archive_error_string (arch));
+		goto out;
+	}
+
+	/* open file to copy */
+	fd = open (filename, O_RDONLY);
+	if (fd < 0) {
+		*error = g_error_new (1, 0, "failed to get fd for %s", filename);
+		goto out;
+	}
+
+	/* write data to archive -- how come no convenience function? */
+	len = read (fd, buff, sizeof (buff));
+	while (len > 0) {
+		wrote = archive_write_data (arch, buff, len);
+		if (wrote != len)
+			pk_warning("wrote %i instead of %i\n", wrote, len);
+		len = read (fd, buff, sizeof (buff));
+	}
+	ret = TRUE;
+out:
+	if (fd >= 0)
+		close (fd);
+	if (entry != NULL)
+		archive_entry_free (entry);
+	g_free (filename_basename);
+	return ret;
+}
+
 /**
  * pk_generate_pack_create:
  **/
 gboolean
 pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError **error)
 {
-	gboolean ret = TRUE;
-	guint retval;
-	TAR *t;
-	FILE *file;
+	struct archive *arch = NULL;
+	gboolean ret = FALSE;
+	const gchar *src;
 	guint i;
-	gchar *src;
-	gchar *dest;
-	gchar *meta_src;
-	gchar *meta_dest = NULL;
+	gchar *metadata_filename;
+
+	g_return_val_if_fail (tarfilename != NULL, FALSE);
+	g_return_val_if_fail (file_array != NULL, FALSE);
+	g_return_val_if_fail (error != NULL, FALSE);
 
 	/* create a file with metadata in it */
-	meta_src = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
-	ret = pk_generate_pack_set_metadata (meta_src);
+	metadata_filename = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
+	ret = pk_generate_pack_set_metadata (metadata_filename);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to generate metadata file %s", meta_src);
-		ret = FALSE;
-		goto out;
+	        *error = g_error_new (1, 0, "failed to generate metadata file %s", metadata_filename);
+	        goto out;
 	}
+	g_ptr_array_add (file_array, g_strdup (metadata_filename));
 
-	/* create the tar file */
-	file = g_fopen (tarfilename, "a+");
-	retval = tar_open (&t, (gchar *)tarfilename, NULL, O_WRONLY, 0, TAR_GNU);
-	if (retval != 0) {
-		*error = g_error_new (1, 0, "failed to open tar file: %s", tarfilename);
-		ret = FALSE;
-		goto out;
-	}
+	/* we can only write tar achives */
+	arch = archive_write_new ();
+	archive_write_set_compression_none (arch);
+	archive_write_set_format_ustar (arch);
+	archive_write_open_filename (arch, tarfilename);
 
-	/* add the metadata first */
-	meta_dest = g_path_get_basename (meta_src);
-	retval = tar_append_file(t, (gchar *)meta_src, meta_dest);
-	if (retval != 0) {
-		*error = g_error_new (1, 0, "failed to copy %s into %s", meta_src, meta_dest);
-		ret = FALSE;
-		goto out;
-	}
-
-	/* check for NULL values */
-	if (file_array == NULL) {
-		g_remove ((gchar *) tarfilename);
-		ret = FALSE;
-		goto out;
-	}
-
-	/* add each of the files */
+	/* for each filename */
 	for (i=0; i<file_array->len; i++) {
-		src = (gchar *) g_ptr_array_index (file_array, i);
-		dest =  g_path_get_basename (src);
-
-		/* add file to archive */
-		pk_debug ("adding %s", src);
-		retval = tar_append_file (t, (gchar *)src, dest);
-		if (retval != 0) {
-			*error = g_error_new (1, 0, "failed to copy %s into %s", src, dest);
-			ret = FALSE;
-		}
-
-		/* delete file */
-		g_remove (src);
-		g_free (src);
-
-		/* free the stripped filename */
-		g_free (dest);
-
-		/* abort */
+		src = (const gchar *) g_ptr_array_index (file_array, i);
+		/* try to add to archive */
+		ret = pk_generate_pack_archive_add_file (arch, src, error);
 		if (!ret)
-			break;
+			goto out;
 	}
-	tar_append_eof (t);
-	tar_close (t);
-	fclose (file);
+
+	/* completed all okay */
+	ret = TRUE;
 out:
-	/* delete metadata file */
-	g_remove (meta_src);
-	g_free (meta_src);
-	g_free (meta_dest);
+	/* delete each filename */
+	for (i=0; i<file_array->len; i++) {
+		src = (const gchar *) g_ptr_array_index (file_array, i);
+		g_remove (src);
+	}
+
+	/* close the archive */
+	if (arch != NULL) {
+		archive_write_close (arch);
+		archive_write_finish (arch);
+	}
 	return ret;
 }
 #else
@@ -656,70 +695,6 @@ libst_generate_pack (LibSelfTest *test)
 		libst_success (test, NULL);
 	else
 		libst_failed (test, NULL);
-
-	/************************************************************/
-	libst_title (test, "generate pack NULL NULL");
-	ret = pk_generate_pack_create (NULL, NULL, &error);
-	if (!ret) {
-		if (error != NULL)
-			libst_success (test, "failed to create pack %s" , error->message);
-		else
-			libst_failed (test, "could not set error");
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "generate pack /tmp/test.pack NULL");
-	ret = pk_generate_pack_create ("/tmp/test.pack", NULL, &error);
-	if (!ret) {
-		if (error != NULL)
-			libst_success (test, "failed to create pack %s" , error->message);
-		else
-			libst_failed (test, "could not set error");
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "generate pack /tmp/test NULL");
-	ret = pk_generate_pack_create ("/tmp/test", NULL, &error);
-	if (!ret) {
-		if (error != NULL)
-			libst_success (test, "failed to create pack %s" , error->message);
-		else
-			libst_failed (test, "could not set error");
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "generate pack /tmp/test.tar NULL");
-	ret = pk_generate_pack_create ("test.tar", NULL, &error);
-	if (!ret) {
-		if (error != NULL)
-			libst_success (test, "failed to create pack %s" , error->message);
-		else
-			libst_failed (test, "could not set error");
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "generate pack NULL gitk");
-	file_array = g_ptr_array_new ();
-	g_ptr_array_add (file_array, NULL);
-	ret = pk_generate_pack_create (NULL, file_array, &error);
-	if (!ret) {
-		if (error != NULL)
-			libst_success (test, "failed to create pack %s" , error->message);
-		else
-			libst_failed (test, "could not set error");
-	} else {
-		libst_failed (test, NULL);
-	}
-	if (file_array != NULL)
-		g_ptr_array_free (file_array, TRUE);
 
 	/************************************************************/
 	libst_title (test, "generate pack /tmp/gitk.pack gitk");

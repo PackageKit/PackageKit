@@ -22,7 +22,7 @@ Requires: dbus-glib >= %{dbus_glib_version}
 Requires: PackageKit-libs = %{epoch}:%{version}-%{release}
 Requires: yum-packagekit = %{epoch}:%{version}-%{release}
 Requires: yum >= 3.2.6
-Requires: libtar
+Requires: libarchive
 Requires: shared-mime-info
 
 BuildRequires: glib2-devel >= %{glib2_version}
@@ -43,7 +43,7 @@ BuildRequires: perl(XML::Parser)
 BuildRequires: intltool
 BuildRequires: gettext
 BuildRequires: xulrunner-devel
-BuildRequires: libtar-devel
+BuildRequires: libarchive-devel
 
 %description 
 PackageKit is a D-Bus abstraction layer that allows the session user

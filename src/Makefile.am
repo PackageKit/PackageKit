@@ -127,7 +127,7 @@ packagekitd_LDADD =					\
 	$(POLKIT_LIBS)					\
 	$(SELFTEST_LIBS)				\
 	$(GIO_LIBS)					\
-	$(TAR_LIBS)					\
+	$(ARCHIVE_LIBS)					\
 	$(NULL)
 
 if BACKEND_TYPE_BOX
@@ -185,7 +185,7 @@ pk_self_test_LDADD =					\
 	$(PK_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
-	$(TAR_LIBS)					\
+	$(ARCHIVE_LIBS)					\
 	$(NULL)
 
 TESTS = pk-self-test
