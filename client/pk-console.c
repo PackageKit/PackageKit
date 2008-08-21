@@ -776,6 +776,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 out:
 	g_object_unref (list);
 	g_strfreev (package_ids);
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 	return ret;
 }
