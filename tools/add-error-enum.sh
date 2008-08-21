@@ -7,5 +7,5 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-$EDITOR docs/spec/pk-concepts.xml libpackagekit/pk-enum.h libpackagekit/pk-enum.c ../gnome-packagekit/src/gpk-common.c
+$EDITOR docs/api/spec/pk-concepts.xml libpackagekit/pk-enum.h libpackagekit/pk-enum.c ../gnome-packagekit/src/gpk-common.c
 
