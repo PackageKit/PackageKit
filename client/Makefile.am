@@ -71,7 +71,7 @@ pkgenpack_SOURCES =					\
 	$(NULL)
 
 pkgenpack_LDADD = 					\
-	$(TAR_LIBS)					\
+	$(ARCHIVE_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
@@ -129,7 +129,7 @@ pk_self_test_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SELFTEST_LIBS)				\
-	$(TAR_LIBS)					\
+	$(ARCHIVE_LIBS)					\
 	$(PK_LIBS)					\
 	$(NULL)
 

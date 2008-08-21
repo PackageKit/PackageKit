@@ -105,19 +105,19 @@ AC_SUBST(DBUS_LIBS)
 
 
 dnl ---------------------------------------------------------------------------
-dnl - libtar
+dnl - libarchive
 dnl ---------------------------------------------------------------------------
-AC_CHECK_HEADERS(libtar.h,
-		 HAVE_LIBTAR_H="yes",
-		 HAVE_LIBTAR_H="no")
-if test "x$HAVE_LIBTAR_H" = "xyes"; then
-		AC_DEFINE(HAVE_LIBTAR_H)
-		TAR_LIBS=-ltar
-		AC_SUBST(TAR_LIBS)
+AC_CHECK_HEADERS(archive.h,
+		 HAVE_ARCHIVE_H="yes",
+		 HAVE_ARCHIVE_H="no")
+if test "x$HAVE_ARCHIVE_H" = "xyes"; then
+		AC_DEFINE(HAVE_ARCHIVE_H)
+		ARCHIVE_LIBS=-larchive
+		AC_SUBST(ARCHIVE_LIBS)
 else
-		AC_MSG_WARN([Can't find libtar.h. Service packs cannot be created or checked.])
+		AC_MSG_WARN([Cannot find archive.h. Service packs cannot be created or checked.])
 fi
-AM_CONDITIONAL(HAVE_LIBTAR_H, test x$HAVE_LIBTAR_H = xyes)
+AM_CONDITIONAL(HAVE_ARCHIVE_H, test x$HAVE_ARCHIVE_H = xyes)
 
 
 dnl ---------------------------------------------------------------------------

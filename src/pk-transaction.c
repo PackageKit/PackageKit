@@ -36,15 +36,16 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#ifdef HAVE_LIBTAR_H
-#include <libtar.h>
-#endif /* HAVE_LIBTAR_H */
-
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
 #include <pk-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
+
+#ifdef HAVE_ARCHIVE_H
+#include <archive.h>
+#include <archive_entry.h>
+#endif /* HAVE_ARCHIVE_H */
 
 #include <pk-common.h>
 #include <pk-package-id.h>
@@ -2119,7 +2120,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	}
 }
 
-#ifdef HAVE_LIBTAR_H
 /**
  * pk_transaction_check_metadata_conf:
  **/
@@ -2163,6 +2163,78 @@ out:
 }
 
 /**
+ * pk_transaction_archive_extract:
+ * @directory: the directory to unpack into
+ * @error: a valid %GError
+ *
+ * Decompress a tar file
+ *
+ * Return value: %TRUE if the file was decompressed
+ **/
+#ifdef HAVE_ARCHIVE_H
+gboolean
+pk_transaction_archive_extract (const gchar *filename, const gchar *directory, GError **error)
+{
+	gboolean ret = FALSE;
+	struct archive *arch;
+	struct archive_entry *entry;
+	int r;
+	gchar buf[PATH_MAX];
+
+	/* save the PWD as we chdir to extract */
+	getcwd (buf, PATH_MAX);
+
+	/* we can only read tar achives */
+	arch = archive_read_new ();
+	archive_read_support_format_tar (arch);
+
+	/* open the tar file */
+	r = archive_read_open_file (arch, filename, 10240);
+	if (r) {
+		*error = g_error_new (1, 0, "cannot open: %s", archive_error_string (arch));
+		goto out;
+	}
+
+	/* switch to our destination directory */
+	chdir (directory);
+
+	/* decompress each file */
+	for (;;) {
+		r = archive_read_next_header (arch, &entry);
+		if (r == ARCHIVE_EOF)
+			break;
+		if (r != ARCHIVE_OK) {
+			*error = g_error_new (1, 0, "cannot read header: %s", archive_error_string (arch));
+			goto out;
+		}
+		r = archive_read_extract (arch, entry, 0);
+		if (r != ARCHIVE_OK) {
+			*error = g_error_new (1, 0, "cannot extract: %s", archive_error_string (arch));
+			goto out;
+		}
+	}
+
+	/* completed all okay */
+	ret = TRUE;
+out:
+	/* close the archive */
+	archive_read_close (arch);
+	archive_read_finish (arch);
+
+	/* switch back to PWD */
+	chdir (buf);
+	return ret;
+}
+#else /* HAVE_ARCHIVE_H */
+gboolean
+pk_transaction_archive_extract (const gchar *filename, const gchar *directory, GError **error)
+{
+	*error = g_error_new (1, 0, "Cannot check PackageKit as not built with libarchive support");
+	return FALSE;
+}
+#endif /* HAVE_ARCHIVE_H */
+
+/**
  * pk_transaction_check_pack_distro_id:
  **/
 static gboolean
@@ -2171,30 +2243,17 @@ pk_transaction_check_pack_distro_id (const gchar *full_path, gchar **failure)
 	gboolean ret = TRUE;
 	gchar *meta_src = NULL;
 	gchar *metafile = NULL;
-	gboolean retval;
-	TAR *t;
 	GDir *dir = NULL;
 	const gchar *filename;
+	GError *error = NULL;
 
-	/* open */
-	retval = tar_open (&t, (gchar *) full_path, NULL, O_RDONLY, 0, TAR_GNU);
-	if (retval != 0) {
-		*failure = g_strdup_printf ("failed to open tar file: %s", full_path);
-		ret = FALSE;
-		goto out;
-	}
-
-	/* extract */
 	meta_src = g_build_filename (g_get_tmp_dir (), "meta", NULL);
-	retval = tar_extract_all (t, meta_src);
-	if (retval != 0) {
-		*failure = g_strdup_printf ("failed to extract from tar file: %s", full_path);
-		ret = FALSE;
+	ret = pk_transaction_archive_extract (full_path, meta_src, &error);
+	if (!ret) {
+		*failure = g_strdup_printf ("failed to check %s: %s", full_path, error->message);
+		g_error_free (error);
 		goto out;
 	}
-
-	/* close */
-	tar_close (t);
 
 	/* get the files */
 	dir = g_dir_open (meta_src, 0, NULL);
@@ -2223,18 +2282,6 @@ out:
 	g_dir_close (dir);
 	return ret;
 }
-#else /* HAVE_LIBTAR_H */
-/**
- * pk_transaction_check_pack_distro_id:
- **/
-static gboolean
-pk_transaction_check_pack_distro_id (const gchar *full_path, gchar **failure)
-{
-	*failure = g_strdup ("Cannot check PackageKit as not built with libtar support");
-	return FALSE;
-}
-#endif /* HAVE_LIBTAR_H */
-
 
 /**
  * pk_transaction_install_files:
