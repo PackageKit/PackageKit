@@ -1040,7 +1040,17 @@ static void
 pk_console_files_cb (PkClient *client, const gchar *package_id,
 		     const gchar *filelist, gpointer data)
 {
-	gchar **filevector = g_strsplit (filelist, ";", 0);
+	PkRoleEnum role;
+	gchar **filevector;
+
+	/* don't print if we are DownloadPackages */
+	pk_client_get_role (client, &role, NULL, NULL);
+	if (role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+		pk_debug ("ignoring ::files");
+		return;
+	}
+
+	filevector = g_strsplit (filelist, ";", 0);
 
 	if (awaiting_space) {
 		g_print ("\n");
@@ -1340,7 +1350,6 @@ main (int argc, char *argv[])
 	}
 	dbus_g_thread_init ();
 	g_type_init ();
-	pk_debug_init (verbose);
 
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_console_sigint_handler);
@@ -1370,6 +1379,9 @@ main (int argc, char *argv[])
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
+
+	/* we are now parsed */
+	pk_debug_init (verbose);
 
 	if (program_version) {
 		g_print (VERSION "\n");
