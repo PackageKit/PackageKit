@@ -103,9 +103,22 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
-AC_CHECK_HEADERS(libtar.h, [AC_DEFINE(HAVE_LIBTAR_H)], [AC_MSG_ERROR([Can't find libtar.h. Please install libtar.])])
-TAR_LIBS=-ltar
-AC_SUBST(TAR_LIBS)
+
+dnl ---------------------------------------------------------------------------
+dnl - libtar
+dnl ---------------------------------------------------------------------------
+AC_CHECK_HEADERS(libtar.h,
+		 HAVE_LIBTAR_H="yes",
+		 HAVE_LIBTAR_H="no")
+if test "x$HAVE_LIBTAR_H" = "xyes"; then
+		AC_DEFINE(HAVE_LIBTAR_H)
+		TAR_LIBS=-ltar
+		AC_SUBST(TAR_LIBS)
+else
+		AC_MSG_WARN([Can't find libtar.h. Service packs cannot be created or checked.])
+fi
+AM_CONDITIONAL(HAVE_LIBTAR_H, test x$HAVE_LIBTAR_H = xyes)
+
 
 dnl ---------------------------------------------------------------------------
 dnl - xsltproc
@@ -251,7 +264,7 @@ PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk
                   build_browser_plugin=yes, build_browser_plugin=no)
 
 AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
-		 
+
 AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
 AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
 

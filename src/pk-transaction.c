@@ -34,8 +34,11 @@
 
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <libtar.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_LIBTAR_H
+#include <libtar.h>
+#endif /* HAVE_LIBTAR_H */
 
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
@@ -2116,6 +2119,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	}
 }
 
+#ifdef HAVE_LIBTAR_H
 /**
  * pk_transaction_check_metadata_conf:
  **/
@@ -2219,6 +2223,18 @@ out:
 	g_dir_close (dir);
 	return ret;
 }
+#else /* HAVE_LIBTAR_H */
+/**
+ * pk_transaction_check_pack_distro_id:
+ **/
+static gboolean
+pk_transaction_check_pack_distro_id (const gchar *full_path, gchar **failure)
+{
+	*failure = g_strdup ("Cannot check PackageKit as not built with libtar support");
+	return FALSE;
+}
+#endif /* HAVE_LIBTAR_H */
+
 
 /**
  * pk_transaction_install_files:

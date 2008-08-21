@@ -37,7 +37,9 @@
 #include <pk-control.h>
 #include <pk-package-id.h>
 #include <pk-common.h>
-#include <libtar.h>
+#ifdef HAVE_LIBTAR_H
+  #include <libtar.h>
+#endif
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
@@ -263,6 +265,7 @@ out:
 	return ret;
 }
 
+#ifdef HAVE_LIBTAR_H
 /**
  * pk_generate_pack_create:
  **/
@@ -347,6 +350,17 @@ out:
 	g_free (meta_dest);
 	return ret;
 }
+#else
+/**
+ * pk_generate_pack_create:
+ **/
+gboolean
+pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError **error)
+{
+	*error = g_error_new (1, 0, "Cannot create pack as PackageKit as not built with libtar support");
+	return FALSE;
+}
+#endif
 
 /**
  * pk_generate_pack_scan_dir:
