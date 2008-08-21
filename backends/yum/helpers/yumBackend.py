@@ -412,7 +412,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     path = repo.getPackage(pkg_download)
                     files.append(path)
                 except IOError, e:
-                    self.error(ERROR_WRITE_ERROR,"Cannot write to file")
+                    self.error(PACKAGE_DOWNLOAD_FAILED,"Cannot write to file")
                     continue
             percentage += bump
 
