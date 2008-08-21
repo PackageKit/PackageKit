@@ -699,7 +699,7 @@ pk_client_file_copy (const gchar *filename, const gchar *directory)
 	/* TODO: use GIO when we have a hard dep on it */
 	command = g_strdup_printf ("cp \"%s\" \"%s\"", filename, directory);
 	pk_debug ("command: %s", command);
-	ret = g_spawn_command_line_async (command, &error);
+	ret = g_spawn_command_line_sync (command, NULL, NULL, NULL, &error);
 	if (!ret) {
 		pk_warning ("failed to copy: %s", error->message);
 		g_error_free (error);
@@ -724,7 +724,7 @@ pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *fil
 	g_signal_emit (client , signals [PK_CLIENT_FILES], 0, package_id, filelist);
 
 	/* we are a callback from DownloadPackages */
-	if (client->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES && pk_strzero (package_id)) {
+	if (client->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
 		split = g_strsplit (filelist, ";", -1);
 		length = g_strv_length (split);
 		for (i=0; i<length; i++) {
