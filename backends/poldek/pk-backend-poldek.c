@@ -146,11 +146,17 @@ static struct poclidek_ctx	*cctx = NULL;
  * Returns TRUE on success, FALSE when some error occurs.
  **/
 static gboolean
-execute_command (const gchar *command)
+execute_command (const gchar *format, ...)
 {
 	struct poclidek_rcmd *rcmd;
 	struct poldek_ts *ts;
+	gchar *command;
+	va_list args;
 	gboolean result = FALSE;
+
+	va_start (args, format);
+	command = g_strdup_vprintf (format, args);
+	va_end (args);
 
 	ts = poldek_ts_new (ctx, 0);
 	rcmd = poclidek_rcmd_new (cctx, ts);
@@ -164,6 +170,8 @@ execute_command (const gchar *command)
 	poclidek_rcmd_free (rcmd);
 	poldek_ts_free (ts);
 
+	g_free (command);
+
 	return result;
 }
 
@@ -176,10 +184,16 @@ execute_command (const gchar *command)
  * result of specified command. On failure returns NULL.
  **/
 static tn_array*
-execute_packages_command (const gchar *command)
+execute_packages_command (const gchar *format, ...)
 {
 	struct poclidek_rcmd *rcmd;
 	tn_array *packages = NULL;
+	va_list args;
+	gchar *command;
+
+	va_start (args, format);
+	command = g_strdup_vprintf (format, args);
+	va_end (args);
 
 	rcmd = poclidek_rcmd_new (cctx, NULL);
 
@@ -188,6 +202,8 @@ execute_packages_command (const gchar *command)
 	}
 
 	poclidek_rcmd_free (rcmd);
+
+	g_free (command);
 
 	return packages;
 }
@@ -288,16 +304,14 @@ poldek_vf_progress_new (void *data, const gchar *label)
 	guint ts_type = pk_backend_get_uint (backend, "ts_type");
 
 	if (ts_type == TS_TYPE_ENUM_INSTALL || ts_type == TS_TYPE_ENUM_UPDATE) {
-		gchar *filename = g_path_get_basename (label), *pkgname, *command;
+		gchar *filename = g_path_get_basename (label), *pkgname;
 		tn_array *packages = NULL;
 
 		pkgname = g_strndup (filename, (sizeof(gchar)*strlen(filename)-4));
 
-		command = g_strdup_printf ("cd /all-avail; ls -q %s", pkgname);
-
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 
-		if ((packages = execute_packages_command (command)) != NULL) {
+		if ((packages = execute_packages_command ("cd /all-avail; ls -q %s", pkgname)) != NULL) {
 			struct pkg *pkg = n_array_nth (packages, 0);
 
 			poldek_backend_package (backend, pkg, PK_INFO_ENUM_DOWNLOADING, PK_FILTER_ENUM_NONE);
@@ -305,7 +319,6 @@ poldek_vf_progress_new (void *data, const gchar *label)
 			n_array_free (packages);
 		}
 
-		g_free (command);
 		g_free (pkgname);
 		g_free (filename);
 	}
@@ -732,18 +745,15 @@ poldek_pkg_get_cves_from_pld_changelog (struct pkg *pkg, time_t since)
 			s += 7; /* cut "\n- see " */
 
 			if ((e = strchr (s, '\''))) {
-				gchar *command;
 				tn_array *packages = NULL;
 
 				*e = '\0'; /* now s is the name of package with changelog */
-
-				command = g_strdup_printf ("cd /all-avail; ls -q %s*", s);
 
 				/* release it */
 				g_free (chlog);
 				chlog = NULL;
 
-				if ((packages = execute_packages_command (command)) != NULL) {
+				if ((packages = execute_packages_command ("cd /all-avail; ls -q %s*", s)) != NULL) {
 					struct pkg *p = n_array_nth (packages, 0);
 					struct pkguinf *inf_parent = NULL;
 
@@ -756,8 +766,6 @@ poldek_pkg_get_cves_from_pld_changelog (struct pkg *pkg, time_t since)
 
 					n_array_free (packages);
 				}
-
-				g_free (command);
 			}
 		}
 	}
@@ -1124,15 +1132,14 @@ poldek_get_pkg_from_package_id (const gchar *package_id)
 {
 	PkPackageId		*pi;
 	struct pkg		*result = NULL;
-	gchar			*vr, *command;
+	gchar			*vr;
 	tn_array *packages = NULL;
 
 	pi = pk_package_id_new_from_string (package_id);
 
 	vr = poldek_get_vr_from_package_id_evr (pi->version);
-	command = g_strdup_printf ("cd /%s; ls -q %s-%s.%s", pi->data, pi->name, vr, pi->arch);
 
-	if ((packages = execute_packages_command (command)) != NULL) {
+	if ((packages = execute_packages_command ("cd /%s; ls -q %s-%s.%s", pi->data, pi->name, vr, pi->arch)) != NULL) {
 		if (n_array_size (packages) > 0) {
 			/* only one package is needed */
 			result = pkg_link (n_array_nth (packages, 0));
@@ -1143,7 +1150,6 @@ poldek_get_pkg_from_package_id (const gchar *package_id)
 	pk_package_id_free (pi);
 
 	g_free (vr);
-	g_free (command);
 
 	return result;
 }
@@ -1248,22 +1254,14 @@ search_package_thread (PkBackend *backend)
 	}
 
 	if (search_cmd != NULL) {
-		gchar		*command;
 		tn_array	*pkgs = NULL, *installed = NULL, *available = NULL;
 
 		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-			command = g_strdup_printf ("cd /installed; %s", search_cmd);
-
-			installed = execute_packages_command (command);
-
-			g_free (command);
+			installed = execute_packages_command ("cd /installed; %s", search_cmd);
 		}
+
 		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
-			command = g_strdup_printf ("cd /all-avail; %s", search_cmd);
-
-			available = execute_packages_command (command);
-
-			g_free (command);
+			available = execute_packages_command ("cd /all-avail; %s", search_cmd);
 		}
 
 		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
@@ -2228,14 +2226,11 @@ backend_get_update_detail_thread (PkBackend *backend)
 
 	for (n = 0; n < g_strv_length (package_ids); n++) {
 		PkPackageId *pi = NULL;
-		gchar *command;
 		tn_array *packages = NULL;
 
 		pi = pk_package_id_new_from_string (package_ids[n]);
 
-		command = g_strdup_printf ("cd /installed; ls -q %s", pi->name);
-
-		if ((packages = execute_packages_command (command)) != NULL) {
+		if ((packages = execute_packages_command ("cd /installed; ls -q %s", pi->name)) != NULL) {
 			struct pkg *pkg = NULL;
 			struct pkg *upkg = NULL;
 
@@ -2304,7 +2299,6 @@ backend_get_update_detail_thread (PkBackend *backend)
 						  "", NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
 		}
 
-		g_free (command);
 		pk_package_id_free (pi);
 	}
 
