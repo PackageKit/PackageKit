@@ -793,14 +793,14 @@ poldek_pkg_get_cves_from_pld_changelog (struct pkg *pkg, time_t since)
 static void
 do_newest (tn_array *pkgs)
 {
-	guint	i = 1;
+	guint i = 1;
 
 	if (!n_array_is_sorted (pkgs))
 		n_array_sort_ex (pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
 
 	while (i < pkgs->items) {
 		if (pkg_cmp_name (pkgs->data[i - 1], pkgs->data[i]) == 0) {
-			struct pkg	*pkg = n_array_nth (pkgs, i);
+			struct pkg *pkg = n_array_nth (pkgs, i);
 
 			if (!pkg_is_installed (pkg)) {
 				n_array_remove_nth (pkgs, i);
@@ -1180,7 +1180,6 @@ search_package_thread (PkBackend *backend)
 	cmd = poclidek_rcmd_new (cctx, NULL);
 
 	mode = pk_backend_get_uint (backend, "mode");
-	search = pk_backend_get_string (backend, "search");
 	filters = pk_backend_get_uint (backend, "filters");
 
 	/* GetPackages */
@@ -1188,11 +1187,15 @@ search_package_thread (PkBackend *backend)
 		search_cmd = g_strdup ("ls -q");
 	/* SearchName */
 	} else if (mode == SEARCH_ENUM_NAME) {
+		search = pk_backend_get_string (backend, "search");
+
 		search_cmd = g_strdup_printf ("ls -q *%s*", search);
 	/* SearchGroup */
 	} else if (mode == SEARCH_ENUM_GROUP) {
 		PkGroupEnum	group;
 		const gchar	*regex;
+
+		search = pk_backend_get_string (backend, "search");
 
 		group = pk_group_enum_from_text (search);
 		regex = pld_group_get_regex_from_enum (group);
@@ -1200,13 +1203,19 @@ search_package_thread (PkBackend *backend)
 		search_cmd = g_strdup_printf ("search -qg --perlre %s", regex);
 	/* SearchDetails */
 	} else if (mode == SEARCH_ENUM_DETAILS) {
+		search = pk_backend_get_string (backend, "search");
+
 		search_cmd = g_strdup_printf ("search -dsq *%s*", search);
 	/* SearchFile */
 	} else if (mode == SEARCH_ENUM_FILE) {
+		search = pk_backend_get_string (backend, "search");
+
 		search_cmd = g_strdup_printf ("search -qlf *%s*", search);
 	/* WhatProvides */
 	} else if (mode == SEARCH_ENUM_PROVIDES) {
 		provides = pk_backend_get_uint (backend, "provides");
+
+		search = pk_backend_get_string (backend, "search");
 
 		if (provides == PK_PROVIDES_ENUM_ANY) {
 			search_cmd = g_strdup_printf ("search -qp %s", search);
@@ -1215,16 +1224,21 @@ search_package_thread (PkBackend *backend)
 		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
 			search_cmd = g_strdup_printf ("search -qp mimetype(%s)", search);
 		}
+	/* Resolve */
 	} else if (mode == SEARCH_ENUM_RESOLVE) {
 		gchar **package_ids;
+		gchar *packages_str;
 
 		package_ids = pk_backend_get_strv (backend, "package_ids");
 
-		search_cmd = g_strdup_printf ("ls -q %s", package_ids[0]);
+		packages_str = g_strjoinv(" ", package_ids);
+
+		search_cmd = g_strdup_printf ("ls -q %s", packages_str);
+
+		g_free (packages_str);
 	}
 
-	if (cmd != NULL && search_cmd)
-	{
+	if (cmd != NULL && search_cmd != NULL) {
 		gchar		*command;
 		tn_array	*pkgs = NULL, *installed = NULL, *available = NULL;
 
@@ -1247,12 +1261,12 @@ search_package_thread (PkBackend *backend)
 		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
 		    !pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
 		    installed && available) {
-			gint	i;
+			guint i;
 
-			pkgs = installed;
+			pkgs = available;
 
-			for (i = 0; i < n_array_size (available); i++) {
-				struct pkg	*pkg = n_array_nth (available, i);
+			for (i = 0; i < n_array_size (installed); i++) {
+				struct pkg *pkg = n_array_nth (installed, i);
 
 				/* check for duplicates */
 				if (!poldek_pkg_in_array (pkg, pkgs, (tn_fn_cmp)pkg_cmp_name_evr)) {
@@ -1262,11 +1276,12 @@ search_package_thread (PkBackend *backend)
 
 			n_array_sort_ex(pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
 
-			n_array_free (available);
+			n_array_free (installed);
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) || available) {
 			pkgs = available;
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) || installed)
 			pkgs = installed;
+
 		if (pkgs) {
 			gint	i;
 
@@ -1274,7 +1289,7 @@ search_package_thread (PkBackend *backend)
 				do_newest (pkgs);
 
 			for (i = 0; i < n_array_size (pkgs); i++) {
-				struct pkg	*pkg = n_array_nth (pkgs, i);
+				struct pkg *pkg = n_array_nth (pkgs, i);
 
 				if (sigint_reached ())
 					break;
@@ -2040,56 +2055,59 @@ static gboolean
 backend_get_files_thread (PkBackend *backend)
 {
 	gchar **package_ids;
-	struct pkg	*pkg;
+	gint n;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	pb_load_packages (backend);
 
-	pkg = poldek_get_pkg_from_package_id (package_ids[0]);
+	for (n = 0; n < g_strv_length (package_ids); n++) {
+		struct pkg *pkg;
 
-	if (pkg) {
-		struct pkgflist		*flist = pkg_get_flist (pkg);
-		GString			*filelist;
-		gchar			*result, *sep;
-		gint			i, j;
+		pkg = poldek_get_pkg_from_package_id (package_ids[n]);
 
-		sep = "";
+		if (pkg != NULL) {
+			struct pkgflist *flist = pkg_get_flist (pkg);
+			GString *filelist;
+			gchar *result, *sep;
+			gint i, j;
 
-		if (!flist) {
-			pkg_free (pkg);
-			pk_backend_finished (backend);
-			return TRUE;
-		}
+			sep = "";
 
-		filelist = g_string_new ("");
-
-		for (i = 0; i < n_tuple_size (flist->fl); i++) {
-			struct pkgfl_ent	*flent = n_tuple_nth (flist->fl, i);
-			gchar			*dirname;
-
-			dirname = g_strdup_printf ("%s%s", *flent->dirname == '/' ? "" : "/", flent->dirname);
-
-			for (j = 0; j < flent->items; j++) {
-				struct flfile	*f = flent->files[j];
-
-				if (strcmp (dirname, "/") == 0)
-					g_string_append_printf (filelist, "%s/%s", sep, f->basename);
-				else
-					g_string_append_printf (filelist, "%s%s/%s", sep, dirname, f->basename);
-
-				sep = ";";
+			if (flist == NULL) {
+				pkg_free (pkg);
+				continue;
 			}
-			g_free (dirname);
+
+			filelist = g_string_new ("");
+
+			for (i = 0; i < n_tuple_size (flist->fl); i++) {
+				struct pkgfl_ent *flent = n_tuple_nth (flist->fl, i);
+				gchar *dirname;
+
+				dirname = g_strdup_printf ("%s%s", *flent->dirname == '/' ? "" : "/", flent->dirname);
+
+				for (j = 0; j < flent->items; j++) {
+					struct flfile *f = flent->files[j];
+
+					if (strcmp (dirname, "/") == 0)
+						g_string_append_printf (filelist, "%s/%s", sep, f->basename);
+					else
+						g_string_append_printf (filelist, "%s%s/%s", sep, dirname, f->basename);
+
+					sep = ";";
+				}
+				g_free (dirname);
+			}
+
+			result = g_string_free (filelist, FALSE);
+
+			pk_backend_files (backend, package_ids[n], result);
+
+			g_free (result);
+
+			pkg_free (pkg);
 		}
-
-		result = g_string_free (filelist, FALSE);
-
-		pk_backend_files (backend, package_ids[0], result);
-
-		g_free (result);
-
-		pkg_free (pkg);
 	}
 
 	pk_backend_finished (backend);
@@ -2293,7 +2311,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 					  "",
 					  "",
 					  PK_RESTART_ENUM_NONE,
-					  "");
+					  "", NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
 	}
 
 	g_free (command);
@@ -2693,7 +2711,7 @@ backend_update_system (PkBackend *backend)
 static void
 backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
-	tn_array	*sources = NULL;
+	tn_array *sources = NULL;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2702,11 +2720,11 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 	sources = poldek_get_sources (ctx);
 
 	if (sources) {
-		gint	i;
+		gint i;
 
 		for (i = 0; i < n_array_size (sources); i++) {
-			struct source	*src = n_array_nth (sources, i);
-			gboolean	enabled = TRUE;
+			struct source *src = n_array_nth (sources, i);
+			gboolean enabled = TRUE;
 
 			if (src->flags & PKGSOURCE_NOAUTO)
 				enabled = FALSE;
