@@ -874,13 +874,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         for inst_file in inst_files:
             if inst_file.endswith('.rpm'):
                 continue
-            elif inst_file.endswith('.pack'):
+            elif inst_file.endswith('.servicepack'):
                 inst_packs.append(inst_file)
             else:
                 self.error(ERROR_INVALID_PACKAGE_FILE,'Only rpm files and packs are supported')
                 return
 
-        # decompress and add the contents of any .pack files
+        # decompress and add the contents of any .servicepack files
         for inst_pack in inst_packs:
             inst_files.remove(inst_pack)
             pack = tarfile.TarFile(name = inst_pack,mode = "r")

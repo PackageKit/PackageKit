@@ -95,7 +95,7 @@ manpage.1: manpage.xml
   <refsect1>
     <title>Naming a Service Pack</title>
     <para>
-     The only valid extension for a service pack is ".pack". The user needs to specify
+     The only valid extension for a service pack is ".servicepack". The user needs to specify
      the full path of the pack, when using pkgenpack to generate a service pack.
     </para>
   </refsect1>
@@ -108,23 +108,23 @@ manpage.1: manpage.xml
       have installed Fedora 9 two days ago. James simply runs:
     </para>
     <para>
-      [james@jamesbook:~]$pkgenpack /media/USB/TimPacks/valgrind.pack valgrind
+      [james@jamesbook:~]$pkgenpack /media/USB/TimPacks/valgrind.servicepack valgrind
     </para>
     <para>
-     This generates a file valgrind.pack on the USB key Tim gave to James. Tim can now go home,
-     insert the USB key and double click on the valgrind.pack to be prompted to install these packages.
+     This generates a file valgrind.servicepack on the USB key Tim gave to James. Tim can now go home,
+     insert the USB key and double click on the valgrind.servicepack to be prompted to install these packages.
     </para>
     <para>
-      2. Bill wants to create a service pack named kdegames.pack for his new system which does not have
+      2. Bill wants to create a service pack named kdegames.servicepack for his new system which does not have
       an internet connection. He generates a list of packages on his system using pk-generate-package-list
       and copies that list to his USB key. He then gives that USB to Rishi who has a good internet connectivity.
       Rishi runs the following command on his system:
     </para>
     <para>
-      [rishi@devils-temple:~]$pkgenpack --with-package-list /media/USB/package-list.txt /home/rishi/Desktop/kdegames.pack kdegames
+      [rishi@devils-temple:~]$pkgenpack --with-package-list /media/USB/package-list.txt /home/rishi/Desktop/kdegames.servicepack kdegames
     </para>
     <para>
-      This generates a service pack, kdegames.pack, on Rishi's Desktop, which can be distributed
+      This generates a service pack, kdegames.servicepack, on Rishi's Desktop, which can be distributed
       to Bill and users with similar requirements.
     </para>
   </refsect1>
@@ -134,7 +134,7 @@ manpage.1: manpage.xml
       Service Packs can be installed using pkcon by specifying the valid path. For example:
     </para>
     <para>
-      [hacker@tim-lounge:~]$pkcon install /home/USB/TimPacks/valgrind.pack
+      [hacker@tim-lounge:~]$pkcon install /home/USB/TimPacks/valgrind.servicepack
     </para>
   </refsect1>
   <refsect1>

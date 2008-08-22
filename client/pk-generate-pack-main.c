@@ -113,8 +113,8 @@ main (int argc, char *argv[])
 	}
 
 	/* check the suffix */
-	if (!g_str_has_suffix (pack_filename,".pack")) {
-		g_print(_("Invalid name for the service pack, Specify a name with .pack extension\n"));
+	if (!g_str_has_suffix (pack_filename,".servicepack")) {
+		g_print(_("Invalid name for the service pack, Specify a name with .servicepack extension\n"));
 		goto out;
 	}
 

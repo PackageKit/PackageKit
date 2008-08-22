@@ -2342,7 +2342,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 			return;
 		}
 		/* valid */
-		if (g_str_has_suffix (full_paths[i], ".pack")) {
+		if (g_str_has_suffix (full_paths[i], ".servicepack")) {
 			ret = pk_transaction_check_pack_distro_id (full_paths[i], &failure);
 			if (!ret) {
 				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", failure);

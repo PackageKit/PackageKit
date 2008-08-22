@@ -697,11 +697,11 @@ libst_generate_pack (LibSelfTest *test)
 		libst_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "generate pack /tmp/gitk.pack gitk");
+	libst_title (test, "generate pack /tmp/gitk.servicepack gitk");
 	file_array = g_ptr_array_new ();
 	src = g_build_filename ("/tmp", "gitk-1.5.5.1-1.fc9.i386.rpm", NULL);
 	g_ptr_array_add (file_array, src);
-	ret = pk_generate_pack_create ("/tmp/gitk.pack",file_array, &error);
+	ret = pk_generate_pack_create ("/tmp/gitk.servicepack",file_array, &error);
 	if (!ret) {
 		if (error != NULL) {
 			libst_failed (test, "failed to create pack %s" , error->message);
@@ -714,7 +714,7 @@ libst_generate_pack (LibSelfTest *test)
 	}
 	if (file_array != NULL)
 		g_ptr_array_free (file_array, TRUE);
-	g_remove ("/tmp/gitk.pack");
+	g_remove ("/tmp/gitk.servicepack");
 
 	/************************************************************/
 	libst_end (test);
