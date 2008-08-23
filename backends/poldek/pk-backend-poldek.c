@@ -249,20 +249,23 @@ poldek_get_bytes_to_download (struct poldek_ts *ts, tn_array *pkgs)
 static long
 poldek_get_bytes_to_download_from_ts (struct poldek_ts *ts)
 {
-	gchar mark[2][2] = {"I", "D"};
+	tn_array *pkgs = NULL;
 	long bytes = 0;
-	gint i = 0;
 
-	while (mark[i]) {
-		tn_array *pkgs = poldek_ts_get_summary (ts, mark[i]);
+	pkgs = poldek_ts_get_summary (ts, "I");
 
-		if (pkgs) {
-			bytes += do_get_bytes_to_download (ts, pkgs);
+	if (pkgs) {
+		bytes += do_get_bytes_to_download (ts, pkgs);
 
-			n_array_free (pkgs);
-		}
+		n_array_free (pkgs);
+	}
 
-		i++;
+	pkgs = poldek_ts_get_summary (ts, "D");
+
+	if (pkgs) {
+		bytes += do_get_bytes_to_download (ts, pkgs);
+
+		n_array_free (pkgs);
 	}
 
 	return bytes;
