@@ -2358,16 +2358,22 @@ backend_get_update_detail_thread (PkBackend *backend)
 			pkg = n_array_nth (packages, 0);
 
 			if (strcmp (pkg->name, pi->name) == 0) {
-				gchar *updates;
-				gchar *obsoletes;
+				gchar *updates = NULL;
+				gchar *obsoletes = NULL;
 				gchar *cve_url = NULL;
+				const gchar *changes = NULL;
 				tn_array *cves = NULL;
+				struct pkguinf *upkg_uinf = NULL;
 
 				updates = package_id_from_pkg (pkg, "installed", 0);
 
 				upkg = poldek_get_pkg_from_package_id (package_ids[n]);
 
 				obsoletes = get_obsoletedby_pkg (upkg);
+
+				if ((upkg_uinf = pkg_uinf (upkg)) != NULL) {
+					changes = pkguinf_get_changelog (upkg_uinf, pkg->btime);
+				}
 
 				if ((cves = poldek_pkg_get_cves_from_pld_changelog (upkg, pkg->btime))) {
 					GString *string;
@@ -2397,7 +2403,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 							  "",
 							  cve_url ? cve_url : "",
 							  PK_RESTART_ENUM_NONE,
-							  "", NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
+							  "", changes, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
 
 				g_free (updates);
 				g_free (obsoletes);
