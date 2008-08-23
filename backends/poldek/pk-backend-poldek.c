@@ -132,7 +132,6 @@ typedef struct {
 
 /* global variables */
 static gint verbose = 1;
-static gint ref = 0;
 static PbError *pberror;
 /* cached locale variants */
 static GHashTable *clv;
@@ -1915,10 +1914,6 @@ backend_initalize (PkBackend *backend)
 	pberror = g_new0 (PbError, 1);
 	pberror->tslog = g_string_new ("");
 
-	/* reference count for the global variables */
-	if (ref++ > 1)
-		return;
-
 	do_poldek_init (backend);
 }
 /**
@@ -1927,9 +1922,6 @@ backend_initalize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	if (ref-- > 0)
-		return;
-
 	do_poldek_destroy (backend);
 
 	/* release PbError struct */
