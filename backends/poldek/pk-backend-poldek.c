@@ -2807,7 +2807,7 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 			if (src->flags & PKGSOURCE_NOAUTO)
 				enabled = FALSE;
 
-			pk_backend_repo_detail (backend, src->name, src->path, enabled);
+			pk_backend_repo_detail (backend, src->path, src->name, enabled);
 		}
 
 		n_array_free (sources);
