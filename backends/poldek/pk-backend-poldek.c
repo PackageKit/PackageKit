@@ -72,6 +72,7 @@ static PLDGroupRegex group_perlre[] = {
 	{PK_GROUP_ENUM_ACCESSORIES, "/.*Archiving\\|.*Dictionaries/"},
 	{PK_GROUP_ENUM_ADMIN_TOOLS, "/.*Databases.*\\|.*Admin/"},
 	{PK_GROUP_ENUM_COMMUNICATION, "/.*Communications/"},
+	{PK_GROUP_ENUM_DOCUMENTATION, "/Documentation/"},
 	{PK_GROUP_ENUM_EDUCATION, "/.*Engineering\\|.*Math\\|.*Science/"},
 	{PK_GROUP_ENUM_FONTS, "/Fonts/"},
 	{PK_GROUP_ENUM_GAMES, "/.*Games.*/"},
@@ -736,6 +737,8 @@ pld_group_to_enum (const gchar *group)
 		 strstr (group, "Math") != NULL	||
 		 strstr (group, "Science") != NULL)
 		return PK_GROUP_ENUM_EDUCATION;
+	else if (strcmp (group, "Documentation") == 0)
+		return PK_GROUP_ENUM_DOCUMENTATION;
 	else if (strcmp (group, "Fonts") == 0)
 		return PK_GROUP_ENUM_FONTS;
 	else if (strstr (group, "Games") != NULL)
@@ -2004,6 +2007,7 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_ACCESSORIES,
 		PK_GROUP_ENUM_ADMIN_TOOLS,
 		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_DOCUMENTATION,
 		PK_GROUP_ENUM_EDUCATION,
 		PK_GROUP_ENUM_FONTS,
 		PK_GROUP_ENUM_GAMES,
