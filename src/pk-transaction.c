@@ -908,6 +908,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	pk_backend_set_string (priv->backend, "key_id", priv->cached_key_id);
 	pk_backend_set_string (priv->backend, "parameter", priv->cached_parameter);
 	pk_backend_set_string (priv->backend, "value", priv->cached_value);
+	pk_backend_set_string (priv->backend, "directory", priv->cached_directory);
 
 	/* lets reduce pointer dereferences... */
 	desc = priv->backend->desc;
