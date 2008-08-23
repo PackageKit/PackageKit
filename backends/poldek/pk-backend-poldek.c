@@ -134,6 +134,8 @@ typedef struct {
 static gint verbose = 1;
 static gint ref = 0;
 static PbError *pberror;
+/* cached locale variants */
+static GHashTable *clv;
 
 static struct poldek_ctx	*ctx = NULL;
 static struct poclidek_ctx	*cctx = NULL;
@@ -206,6 +208,123 @@ execute_packages_command (const gchar *format, ...)
 	g_free (command);
 
 	return packages;
+}
+
+/**
+ * cut_country_code: (copied from poldek::misc.c)
+ *
+ * Usually lang looks like:
+ *   ll[_CC][.EEEE][@dddd]
+ * where:
+ *   ll      ISO language code
+ *   CC      (optional) ISO country code
+ *   EE      (optional) encoding
+ *   dd      (optional) dialect
+ *
+ * Returns: lang without country code (ll[.EEEE][@dddd]) or NULL when it's not
+ *          present in lang string. Returned value must be released.
+ **/
+static gchar*
+cut_country_code (const gchar *lang)
+{
+	gchar *p;
+	gchar *q;
+	gchar *newlang;
+
+	if ((q = strchr (lang, '_')) == NULL)
+		return NULL;
+
+	/* newlang is always shorter than lang */
+	newlang = malloc (strlen (lang));
+
+	p = n_strncpy (newlang, lang, q - lang + 1);
+
+	if ((q = strchr (lang, '.')))
+		n_strncpy (p, q, strlen (q) + 1);
+	else if ((q = strchr (lang, '@')))
+		n_strncpy(p, q, strlen(q) + 1);
+
+	return newlang;
+}
+
+/**
+ * get_locale_variants:
+ *
+ * Returns pointer to tn_array in which are locales which suit to lang. For
+ * example: for lang "pl_PL.UTF-8", returned array will contain "pl_PL.UTF-8",
+ * "pl.UTF-8", "pl_PL" and "pl". This array is needed by pkg_xuinf().
+ **/
+static tn_array*
+get_locale_variants (PkBackend *backend, const gchar *lang)
+{
+	tn_array *langs;
+	gchar *copy;
+	gchar *wocc = NULL;
+	gchar *sep = "@.";
+	gint len;
+
+	/* first check cached_locale_variants */
+	if ((langs = g_hash_table_lookup (clv, lang)) != NULL)
+		return langs;
+
+	langs = n_array_new (2, (tn_fn_free)free, NULL);
+
+	n_array_push (langs, g_strdup (lang));
+
+	/* try without country code */
+	if ((wocc = cut_country_code (lang)) != NULL)
+		n_array_push (langs, wocc);
+
+	len = strlen (lang) + 1;
+	copy = g_alloca (len);
+	memcpy (copy, lang, len);
+
+	while (*sep) {
+		gchar *p;
+
+		if ((p = strchr (copy, *sep)) != NULL) {
+			*p = '\0';
+
+			n_array_push (langs, g_strdup (copy));
+
+			/* try without country code */
+			if ((wocc = cut_country_code (copy)) != NULL)
+				n_array_push (langs, wocc);
+		}
+
+		sep++;
+	}
+
+	g_hash_table_insert (clv, g_strdup (lang), langs);
+
+	return langs;
+}
+
+/**
+ * pkg_uinf_i18n:
+ *
+ * Returns pointer to struct pkguinf with localized summary and description.
+ **/
+static struct pkguinf*
+pkg_uinf_i18n (PkBackend *backend, struct pkg *pkg)
+{
+	struct pkguinf *pkgu = NULL;
+	gchar *lang = NULL;
+
+	lang = pk_backend_get_locale (backend);
+
+	if (lang) {
+		tn_array *langs;
+
+		langs = get_locale_variants (backend, lang);
+		pkgu = pkg_xuinf (pkg, langs);
+	} else {
+		pkgu = pkg_uinf (pkg);
+	}
+
+	g_free (lang);
+
+	return pkgu;
 }
 
 static gint
@@ -1096,8 +1215,8 @@ package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkBitfield filters)
 static void
 poldek_backend_package (PkBackend *backend, struct pkg *pkg, PkInfoEnum infoenum, PkBitfield filters)
 {
-	struct pkguinf	*pkgu;
-	gchar		*package_id;
+	struct pkguinf *pkgu = NULL;
+	gchar *package_id;
 
 	if (infoenum == PK_INFO_ENUM_UNKNOWN) {
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
@@ -1115,10 +1234,9 @@ poldek_backend_package (PkBackend *backend, struct pkg *pkg, PkInfoEnum infoenum
 
 	package_id = package_id_from_pkg (pkg, NULL, filters);
 
-	pkgu = pkg_uinf (pkg);
-
-	if (pkgu) {
+	if ((pkgu = pkg_uinf_i18n (backend, pkg))) {
 		pk_backend_package (backend, infoenum, package_id, pkguinf_get (pkgu, PKGUINF_SUMMARY));
+
 		pkguinf_free (pkgu);
 	} else {
 		pk_backend_package (backend, infoenum, package_id, "");
@@ -1501,6 +1619,7 @@ static void
 pb_error_clean (void)
 {
 	g_free (pberror->vfffmsg);
+	pberror->vfffmsg = NULL;
 
 	pberror->tslog = g_string_erase (pberror->tslog, 0, -1);
 	pberror->rpmstate = PB_RPM_STATE_ENUM_NONE;
@@ -1639,8 +1758,10 @@ poldek_backend_log (void *data, int pri, char *message)
 		if (pberror->vfffmsg) {
 			if (strcmp (pberror->vfffmsg, message) == 0)
 				return;
-			else
+			else {
 				g_free (pberror->vfffmsg);
+				pberror->vfffmsg = NULL;
+			}
 		}
 
 		pberror->vfffmsg = g_strdup (message);
@@ -1748,6 +1869,8 @@ do_poldek_init (PkBackend *backend)
 	/* disable unique package names */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_UNIQN, 0);
 
+	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_LDALLDESC, 1);
+
 	/* poldek has to ask. Otherwise callbacks won't be used */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_INST, 1);
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_UNINST, 1);
@@ -1787,6 +1910,8 @@ poldek_reload (PkBackend *backend, gboolean load_packages) {
 static void
 backend_initalize (PkBackend *backend)
 {
+	clv = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify)n_array_free);
+
 	pberror = g_new0 (PbError, 1);
 	pberror->tslog = g_string_new ("");
 
@@ -1810,6 +1935,8 @@ backend_destroy (PkBackend *backend)
 	/* release PbError struct */
 	g_free (pberror->vfffmsg);
 	g_string_free (pberror->tslog, TRUE);
+
+	g_hash_table_destroy (clv);
 
 	g_free (pberror);
 }
@@ -1997,11 +2124,9 @@ backend_get_details_thread (PkBackend *backend)
 			struct pkguinf *pkgu = NULL;
 			PkGroupEnum group;
 
-			pkgu = pkg_uinf (pkg);
-
 			group = pld_group_to_enum (pkg_group (pkg));
 
-			if (pkgu) {
+			if ((pkgu = pkg_uinf_i18n (backend, pkg)) != NULL) {
 				pk_backend_details (backend,
 							package_ids[n],
 							pkguinf_get (pkgu, PKGUINF_LICENSE),
