@@ -548,6 +548,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
             pkgs.append(pkg.name[:])
+            if pkg._pkg.Essential == True:
+                self.ErrorCode(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                               "Package %s cannot be removed." % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
             try:
                 pkg.markDelete()
             except:
@@ -975,6 +980,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                                "Package %s isn't available" % name)
+                self.Finished(EXIT_FAILED)
+                return
+            if pkg._pkg.Essential == True:
+                self.ErrorCode(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                               "Package %s cannot be removed." % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
             pkgs.append(pkg)
