@@ -797,6 +797,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "Failed to install package %s" % deb.pkgname)
                 self.Finished(EXIT_FAILED)
                 return
+            # Check if there is a newer version in the cache
+            if deb.compareToVersionInCache() == apt.debfile.VERSION_OUTDATED:
+                self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
+                             "There is a later version of %s "
+                             "available in the repositories." % deb.pkgname)
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
