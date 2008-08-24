@@ -202,7 +202,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         # we timed out, send ctrl-c
         if self.last_activity + self.timeout < time.time():
             pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
-            os.write(self.master_fd, 3)
+            os.write(self.master_fd, chr(3))
 
     def conffile(self, current, new):
         pklog.warning("Config file prompt: '%s' (sending no)" % current)
