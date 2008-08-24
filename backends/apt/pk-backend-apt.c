@@ -149,6 +149,16 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ *  * backend_install_files:
+ *   */
+static void
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
+{
+	        pk_backend_dbus_install_files (dbus, trusted, full_paths);
+}
+
+
+/**
  * backend_remove_packages
  *  */
 static void
