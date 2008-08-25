@@ -35,6 +35,7 @@ import urllib2
 import warnings
 
 import apt
+import apt.debfile
 import apt_pkg
 import dbus
 import dbus.glib
@@ -164,18 +165,16 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
     Handle the installation and removal process. Bits taken from
     DistUpgradeViewNonInteractive.
     '''
-
-    # a insanly long timeout to be able to kill hanging maintainer
-    # scripts
-    TIMEOUT = 10*60
-
     def __init__(self, backend, prange=(0,100)):
         apt.progress.InstallProgress.__init__(self)
         self._backend = backend
         self.pstart = prange[0]
         self.pend = prange[1]
         self.pprev = None
+        self.last_activity = None
         self.conffile_prompts = set()
+        # insanly long timeout to be able to kill hanging maintainer scripts
+        self.timeout = 10*60
 
     def statusChange(self, pkg, percent, status):
         progress = self.pstart + percent/100 * (self.pend - self.pstart)
@@ -201,9 +200,9 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         except Exception, e:
             pklog.debug("ioerror: %s" % e)
         # we timed out, send ctrl-c
-        if self.last_activity + self.TIMEOUT < time.time():
-            pklog.critical("no activity for %s time sending ctrl-c" % self.TIMEOUT)
-            os.write(self.master_fd, 3)
+        if self.last_activity + self.timeout < time.time():
+            pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
+            os.write(self.master_fd, chr(3))
 
     def conffile(self, current, new):
         pklog.warning("Config file prompt: '%s' (sending no)" % current)
@@ -215,6 +214,24 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         pklog.debug("finishUpdate()")
         if self.conffile_prompts:
             self._backend.Message(MESSAGE_CONFIG_FILES_CHANGED, "The following conffile prompts were found and need investiagtion: %s" % "\n".join(self.conffile_prompts))
+
+class PackageKitDpkgInstallProgress(apt.progress.DpkgInstallProgress,PackageKitInstallProgress):
+    def run(self, debfile):
+        apt.progress.DpkgInstallProgress.run(self, debfile)
+
+    def updateInterface(self):
+        #pklog.debug("Updating interface")
+        apt.progress.DpkgInstallProgress.updateInterface(self)
+       # pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
+       # os.write(self.master_fd, 3)
+        try:
+            pklog.debug("%s" % os.read(self.master_fd, 512))
+        except Exception, e:
+            pklog.debug("ioerror: %s" % e)
+        # we timed out, send ctrl-c
+        if self.last_activity + self.timeout < time.time():
+            pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
+            os.write(self.master_fd, chr(3))
 
 def sigquit(signum, frame):
     pklog.error("Was killed")
@@ -531,6 +548,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
             pkgs.append(pkg.name[:])
+            if pkg._pkg.Essential == True:
+                self.ErrorCode(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                               "Package %s cannot be removed." % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
             try:
                 pkg.markDelete()
             except:
@@ -731,6 +753,65 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    def doInstallFiles(self, trusted, full_paths):
+        '''
+        Implement install-files for the apt backend
+        Install local Debian package files
+        '''
+        pklog.info("Installing package files: %s" % full_paths)
+        self.StatusChanged(STATUS_INSTALL)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        self._check_init(prange=(0,10))
+        self._cache.clear()
+        dependencies = []
+        packages = []
+        # Collect all dependencies which need to be installed
+        for path in full_paths:
+            deb = apt.debfile.DebPackage(path, self._cache)
+            packages.append(deb)
+            deb.checkDeb()
+            (install, remove, unauthenticated) = deb.requiredChanges
+            if len(remove) > 0:
+                self.ErrorCode(ERROR_UNKNOWN, "Remove the following packages "
+                                              "before: %s" % remove)
+                self.Finished(EXIT_FAILED)
+                return
+            dependencies.extend(install)
+        # Install all dependecies before
+        try:
+            for dep in dependencies:
+                self._cache[dep].markInstall()
+            self._cache.commit(PackageKitFetchProgress(self, prange=(10,25)),
+                               PackageKitInstallProgress(self, prange=(25,50)))
+        except:
+            self._open_cache(prange=(90,99))
+            self.ErrorCode(ERROR_UNKNOWN, "Failed to install dependecies")
+            self.Finished(EXIT_FAILED)
+            return
+        # Install the Debian package files
+        for deb in packages:
+            try:
+                res = deb.install(PackageKitDpkgInstallProgress(self))
+            except Exception, e:
+                self.ErrorCode(ERROR_UNKNOWN, "Failed to install dpkg: %s" % e)
+                self.Finished(EXIT_FAILED)
+                return
+            if res != 0:
+                self.ErrorCode(ERROR_UNKNOWN, 
+                               "Failed to install package %s" % deb.pkgname)
+                self.Finished(EXIT_FAILED)
+                return
+            # Check if there is a newer version in the cache
+            if deb.compareToVersionInCache() == apt.debfile.VERSION_OUTDATED:
+                self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
+                             "There is a later version of %s "
+                             "available in the repositories." % deb.pkgname)
+        self.PercentageChanged(100)
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -899,6 +980,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                                "Package %s isn't available" % name)
+                self.Finished(EXIT_FAILED)
+                return
+            if pkg._pkg.Essential == True:
+                self.ErrorCode(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                               "Package %s cannot be removed." % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
             pkgs.append(pkg)
