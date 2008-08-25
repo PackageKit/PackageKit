@@ -636,79 +636,180 @@
       New methods require a new transaction path (i.e. another call to <literal>GetTid</literal>)
       which is synchronous and thus very fast.
     </para>
-    <para>
-      A typical successful transaction can be seen below.
-    </para>
-    <mediaobject id="pk-transactions-success">
-      <imageobject>
-        <imagedata format="PNG" fileref="pk-transactions-success.png" align="center"/>
-      </imageobject>
-    </mediaobject>
-    <para>
-      A typical simple transaction failure case can be seen below.
-      The user is not given the change to requeue the transaction as it is a fatal error.
-    </para>
-    <mediaobject id="pk-transactions-failure">
-      <imageobject>
-        <imagedata format="PNG" fileref="pk-transactions-failure.png" align="center"/>
-      </imageobject>
-    </mediaobject>
-    <para>
-      In this non-trivial example, a local file install is being attempted.
-      First the <literal>InstallFile</literal> is called with the <literal>trusted</literal>
-      flag set.
-      This will fail if the package does not have a valid GPG key, and ordinarily the transaction
-      would fail. What the client can do, e.g. using <literal>gnome-packagekit</literal>, is
-      to re-request the <literal>InstallFile</literal> with <literal>non-trusted</literal>.
-      This will use a different PolicyKit authentication, and allow the file to succeed.
-    </para>
-    <para>
-      So why do we bother calling <literal>trusted</literal> in the first place?
-      Well, the trusted PolicyKit role can be saved in the gnome-keyring, or could be
-      set to the users password as the GPG key is already trusted by the user.
-      The <literal>non-trusted</literal> action would likely ask for the administrator password,
-      and not allowed to be saved. This gives the user the benifit of installing trusted local
-      files without a password (common case) but requiring something stronger for untrusted or
-      unsigned files.
-    </para>
-    <mediaobject id="pk-transactions-trusted">
-      <imageobject>
-        <imagedata format="PNG" fileref="pk-transactions-trusted.png" align="center"/>
-      </imageobject>
-    </mediaobject>
-    <para>
-      If the package is signed, and a valid GPG signature is available, then we need to ask the
-      user to import the key, and re-run the transaction.
-      This is done as three transactions, as other transactions may be queued and have a higher
-      priority, and to make sure that the transaction object is not reused.
-    </para>
-    <mediaobject id="pk-transactions-sig-install">
-      <imageobject>
-        <imagedata format="PNG" fileref="pk-transactions-sig-install.png" align="center"/>
-      </imageobject>
-    </mediaobject>
-    <para>
-      If the package is signed, and a valid GPG signature is available, then we need to ask the
-      user to import the key, and re-run the transaction.
-      This is done as three transactions, as other transactions may be queued and have a higher
-      priority, and to make sure that the transaction object is not reused.
-    </para>
-    <mediaobject id="pk-transactions-set-locale">
-      <imageobject>
-        <imagedata format="PNG" fileref="pk-transactions-set-locale.png" align="center"/>
-      </imageobject>
-    </mediaobject>
-    <para>
-      The PackageKit backend may support native localisation, which we should support if the
-      translations exist.
-      In the prior examples the <literal>SetLocale()</literal> method has been left out for brevity.
-      If you are using the raw DBUS methods to access PackageKit, you will also need to make
-      a call to <literal>SetLocale()</literal> so the daemon knows what locale to assign the
-      transaction.
-      If you are using libpackagekit to schedule transactions, then the locale will be set
-      automatically in the <literal>PkControl</literal> GObject, and you do not need to call
-      <literal>pk_client_set_locale()</literal> manually.
-    </para>
+
+    <sect2 id="introduction-ideas-transactions-success">
+      <title>Transaction example: Success</title>
+      <mediaobject id="pk-transactions-success">
+        <imageobject>
+          <imagedata format="PNG" fileref="pk-transactions-success.png" align="center"/>
+        </imageobject>
+      </mediaobject>
+      <para>
+        A typical successful transaction would emit signals such as
+        <literal>::Progress()</literal>, <literal>::Package()</literal> and
+        <literal>::StatusChanged()</literal>.
+        These are used to inform the client application of the current state,
+        so widgets such as icons or description text can be updated.
+      </para>
+    </sect2>
+
+    <sect2 id="introduction-ideas-transactions-failure">
+      <title>Transaction example: Failure</title>
+      <mediaobject id="pk-transactions-failure">
+        <imageobject>
+          <imagedata format="PNG" fileref="pk-transactions-failure.png" align="center"/>
+        </imageobject>
+      </mediaobject>
+      <para>
+        This is the typical transaction failure case when there is no network available.
+        The user is not given the chance to requeue the transaction as it is a fatal error.
+      </para>
+    </sect2>
+
+    <sect2 id="introduction-ideas-transactions-trusted">
+      <title>Transaction example: Trusted</title>
+      <mediaobject id="pk-transactions-trusted">
+        <imageobject>
+          <imagedata format="PNG" fileref="pk-transactions-trusted.png" align="center"/>
+        </imageobject>
+      </mediaobject>
+      <para>
+        In this non-trivial example, a local file install is being attempted.
+        First the <literal>InstallFile</literal> is called with the <literal>trusted</literal>
+        flag set.
+        This will fail if the package does not have a valid GPG key, and ordinarily the transaction
+        would fail. What the client can do, e.g. using <literal>libpackagekit</literal>, is
+        to re-request the <literal>InstallFile</literal> with <literal>non-trusted</literal>.
+        This will use a different PolicyKit authentication, and allow the file to succeed.
+      </para>
+      <para>
+        So why do we bother calling <literal>trusted</literal> in the first place?
+        Well, the trusted PolicyKit role can be saved in the gnome-keyring, or could be
+        set to the users password as the GPG key is already trusted by the user.
+        The <literal>non-trusted</literal> action would likely ask for the administrator password,
+        and not allowed to be saved. This gives the user the benifit of installing trusted local
+        files without a password (common case) but requiring something stronger for untrusted or
+        unsigned files.
+      </para>
+    </sect2>
+
+    <sect2 id="introduction-ideas-transactions-sig-install">
+      <title>Transaction example: Package signature install</title>
+      <mediaobject id="pk-transactions-sig-install">
+        <imageobject>
+          <imagedata format="PNG" fileref="pk-transactions-sig-install.png" align="center"/>
+        </imageobject>
+      </mediaobject>
+      <para>
+        If the package is signed, and a valid GPG signature is available, then we need to ask the
+        user to import the key, and re-run the transaction.
+        This is done as three transactions, as other transactions may be queued and have a higher
+        priority, and to make sure that the transaction object is not reused.
+      </para>
+      <para>
+        Keep in mind that PackageKit can only be running one transaction at any
+        one time.
+        If we had designed the PackageKit API to block and wait for user input,
+        then no other transactions could be run whilst we are waiting for the user.
+      </para>
+      <para>
+        This is best explained using an example:
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>User clicks "install vmware" followed by "confirm".</para>
+        </listitem>
+        <listitem>
+          <para>User walks away from the computer and takes a nap</para>
+        </listitem>
+        <listitem>
+          <para>System upgrade is scheduled (300Mb of updates)</para>
+        </listitem>
+      </itemizedlist>
+      <para>
+        The vmware package is downloaded, but cannot be installed until a EULA
+        is agreed to.
+        If we pause the transaction then we never apply the updates automatically
+        and the computer is not kept up to date.
+        The user would have to wait a substantial amount of time waiting for
+        the updates to download when returning from his nap after clicking "I agree"
+        to the vmware EULA.
+      </para>
+      <para>
+        In the current system where transactions cannot block, the first
+        transaction downloads vmware, and then it finishes, and puts up a UI
+        for the user to click.
+        In the meantime the second transaction (the update) is scheduled,
+        downloaded and installed, and then finishes.
+        The user returns, clicks "okay" and a third transaction is created that
+        accepts the eula, and a forth that actually installs vmware.
+      </para>
+      <para>
+        It seems complicated, but it's essential to make sure none of the
+        callbacks block and stop other transactions from happening.
+      </para>
+    </sect2>
+
+    <sect2 id="introduction-ideas-transactions-download">
+      <title>Transaction example: Download</title>
+      <mediaobject id="pk-transactions-download">
+        <imageobject>
+          <imagedata format="PNG" fileref="pk-transactions-download.png" align="center"/>
+        </imageobject>
+      </mediaobject>
+      <para>
+        When the <literal>DownloadPackages()</literal> method is called on a number
+        of packages, then these are downloaded by the daemon into a temporary
+        directory.
+        This directory can only be written by the <literal>packagekitd</literal>
+        user (usually root) but can be read by all users.
+        The files are not downloaded into any specific directory, instead a
+        random one is created in <literal>/var/cache/PackageKit</literal>.
+        The reason for this intermediate step is that the
+        <literal>DownloadPackages()</literal> method does not take a destination
+        directory as the dameon is running as a different user to the user,
+        and in a different SELinux context.
+      </para>
+      <para>
+        To preserve the SELinux attributes and the correct user and group ownership
+        of the newly created files, the client (running in the user session) has
+        to copy the files from the temporary directory into the chosen destination
+        directory.
+        NOTE: this copy step is optional but recommended, as the files will remain in
+        the temporary directory until the daemon is times out and is restarted.
+        As the client does not know (intentionally) the temporary directory or the
+        filenames of the packages that are created, the <literal>::Files()</literal>
+        signal is emitted with the full path of the downloaded files.
+        It is expected the <literal>package_id</literal> parameter of
+        <literal>::Files()</literal> will be blank, although this is not mandated.
+      </para>
+      <para>
+        Multiple <literal>::Files()</literal> signals can be sent by the dameon,
+        as the download operation may be pipelined, and the client should honour
+        every signal by copying each file.
+      </para>
+    </sect2>
+
+    <sect2 id="introduction-ideas-transactions-set-locale">
+      <title>Transaction example: Setting the locale</title>
+      <mediaobject id="pk-transactions-set-locale">
+        <imageobject>
+          <imagedata format="PNG" fileref="pk-transactions-set-locale.png" align="center"/>
+        </imageobject>
+      </mediaobject>
+      <para>
+        The PackageKit backend may support native localisation, which we should support if the
+        translations exist.
+        In the prior examples the <literal>SetLocale()</literal> method has been left out for brevity.
+        If you are using the raw DBUS methods to access PackageKit, you will also need to make
+        a call to <literal>SetLocale()</literal> so the daemon knows what locale to assign the
+        transaction.
+        If you are using libpackagekit to schedule transactions, then the locale will be set
+        automatically in the <literal>PkControl</literal> GObject, and you do not need to call
+        <literal>pk_client_set_locale()</literal> manually.
+      </para>
+    </sect2>
+
   </sect1>
 
   <sect1 id="introduction-ideas-transactionid">

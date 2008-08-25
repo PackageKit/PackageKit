@@ -14,7 +14,7 @@ Epoch:     1
 License:   GPLv2+
 Group:     System Environment/Libraries
 URL:       http://packagekit.freedesktop.org
-Source0:   http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.tar.gz
+Source0:   http://www.packagekit.org/releases/%{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires: dbus >= %{dbus_version}

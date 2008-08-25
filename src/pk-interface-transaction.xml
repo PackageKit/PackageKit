@@ -74,7 +74,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This method downloads packages into a specified directory.
+            This method downloads packages into a temporary directory.
           </doc:para>
         </doc:description>
       </doc:doc>
