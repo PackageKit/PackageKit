@@ -24,6 +24,7 @@ Requires: yum-packagekit = %{epoch}:%{version}-%{release}
 Requires: yum >= 3.2.6
 Requires: libarchive
 Requires: shared-mime-info
+Requires: python-sqlite2
 
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: dbus-devel  >= %{dbus_version}
