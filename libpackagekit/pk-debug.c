@@ -230,9 +230,6 @@ pk_warning_real (const gchar *func, const gchar *file, const int line, const gch
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 
 	g_free(buffer);
-
-	/* we want to fix this! */
-	pk_debug_backtrace ();
 }
 
 /**
