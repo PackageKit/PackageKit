@@ -27,6 +27,7 @@
 #include <errno.h>
 
 #include <string.h>
+#include <locale.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #ifdef HAVE_UNISTD_H
