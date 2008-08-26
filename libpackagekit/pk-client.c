@@ -78,6 +78,7 @@ struct _PkClientPrivate
 	DBusGProxy		*proxy;
 	GMainLoop		*loop;
 	gboolean		 is_finished;
+	gboolean		 is_finishing;
 	gboolean		 use_buffer;
 	gboolean		 synchronous;
 	gchar			*tid;
@@ -499,7 +500,14 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	/* only this instance is finished, and do it before the signal so we can reset */
 	client->priv->is_finished = TRUE;
 
+	/* we are finishing, so we can detect when we try to do insane things
+	 * in the ::Finished() handler */
+	client->priv->is_finishing = TRUE;
+
 	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit, runtime);
+
+	/* done callback */
+	client->priv->is_finishing = FALSE;
 
 	/* exit our private loop */
 	if (client->priv->synchronous) {
@@ -1087,6 +1095,13 @@ pk_client_cancel (PkClient *client, GError **error)
 	/* we don't need to cancel, so return TRUE */
 	if (client->priv->proxy == NULL) {
 		return TRUE;
+	}
+
+	/* we cannot cancel a client in ::Finished() */
+	if (client->priv->is_finishing) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
+				     "unable to cancel client in finished handler");
+		return FALSE;
 	}
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", &error_local,
@@ -3804,6 +3819,15 @@ pk_client_reset (PkClient *client, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* we cannot reset a synchronous client in ::Finished() --
+	   the whole point of a sync client is we don't handle this signal
+	   and we'll clear the package cache if we allow this */
+	if (client->priv->is_finishing && client->priv->synchronous) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
+				     "unable to reset synchronous client in finished handler");
+		return FALSE;
+	}
+
 	if (client->priv->tid != NULL && !client->priv->is_finished) {
 		pk_debug ("not exit status, will try to cancel tid %s", client->priv->tid);
 		/* we try to cancel the running tranaction */
@@ -3861,6 +3885,7 @@ pk_client_init (PkClient *client)
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
+	client->priv->is_finishing = FALSE;
 	client->priv->package_list = pk_package_list_new ();
 	client->priv->cached_package_id = NULL;
 	client->priv->cached_package_ids = NULL;
@@ -4042,6 +4067,7 @@ void init()
 #include <glib/gstdio.h>
 
 static gboolean finished = FALSE;
+static gboolean reset_okay = FALSE;
 static guint clone_packages = 0;
 
 static void
@@ -4050,6 +4076,18 @@ libst_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, LibS
 	finished = TRUE;
 	/* this is actually quite common */
 	g_object_unref (client);
+}
+
+static void
+libst_client_finished2_cb (PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
+{
+	GError *error = NULL;
+	/* this is supported */
+	reset_okay = pk_client_reset (client, &error);
+	if (!reset_okay) {
+		pk_warning ("failed to reset in ::Finished(): %s", error->message);
+		g_error_free (error);
+	}
 }
 
 static void
@@ -4146,6 +4184,39 @@ libst_client (LibSelfTest *test)
 	} else {
 		libst_success (test, NULL);
 	}
+
+	/************************************************************/
+	libst_title (test, "get new client so we can test resets in ::Finished()");
+	client = pk_client_new ();
+	if (client != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* check reset during finalise when sync */
+	pk_client_set_synchronous (client, TRUE, NULL);
+	g_signal_connect (client, "finished",
+			  G_CALLBACK (libst_client_finished2_cb), test);
+
+	/************************************************************/
+	libst_title (test, "search name sync, with a reset in finalise");
+	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check reset failed");
+	if (!reset_okay) {
+		libst_success (test, "failed to reset in finished as sync");
+	} else {
+		libst_failed (test, "reset in finished when sync");
+	}
+
+	g_object_unref (client);
 
 	/************************************************************/
 	libst_title (test, "get new client");
