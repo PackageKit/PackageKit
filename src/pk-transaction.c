@@ -831,7 +831,14 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* assign */
 	pk_backend_set_current_tid (priv->backend, priv->tid);
-	pk_backend_set_locale (priv->backend, priv->locale);
+
+	/* if we didn't set a locale for this transaction, we would reuse the
+	 * last set locale in the backend, or NULL if it was not ever set.
+	 * in this case use the C locale */
+	if (priv->locale == NULL)
+		pk_backend_set_locale (priv->backend, "C");
+	else
+		pk_backend_set_locale (priv->backend, priv->locale);
 
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
