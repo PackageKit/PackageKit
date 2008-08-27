@@ -3,7 +3,7 @@ PackageKit Release Notes
 1. Write NEWS entries for PackageKit and gnome-packagekit in the same
    format as usual. Ignore any trivial commits.
 
-git-shortlog PACKAGEKIT_0_2_4.. | grep -v trivial | grep -v Merge > NEWS.new
+git-shortlog PACKAGEKIT_0_3_1.. | grep -v trivial | grep -v Merge > NEWS.new
 
 2. Add download date to docs/html/pk-download.html, save file.
 
@@ -11,8 +11,8 @@ git-shortlog PACKAGEKIT_0_2_4.. | grep -v trivial | grep -v Merge > NEWS.new
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.3.1"
-git tag -a -f -m "Release 0.3.1" PACKAGEKIT_0_3_1
+git commit -a -m "Release version 0.3.2"
+git tag -a -f -m "Release 0.3.2" PACKAGEKIT_0_3_2
 git push --tags
 git push
 git push git+ssh://hughsient@git.freedesktop.org/git/packagekit
@@ -20,8 +20,8 @@ git push --tags git+ssh://hughsient@git.freedesktop.org/git/packagekit
 
 5. Commit changes in gnome-packagekit git:
 
-git commit -a -m "Release version 0.3.1"
-git-tag GNOME_PACKAGEKIT_0_3_1
+git commit -a -m "Release version 0.3.2"
+git-tag GNOME_PACKAGEKIT_0_3_2
 git push --tags
 git push
 
@@ -41,9 +41,9 @@ git push
 10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-Subject: PackageKit and gnome-packagekit 0.3.1 released!
+Subject: PackageKit and gnome-packagekit 0.3.2 released!
 
-Today I released PackageKit and gnome-packagekit 0.3.1.
+Today I released PackageKit and gnome-packagekit 0.3.2.
 
 PackageKit release notes: http://gitweb.freedesktop.org/?p=packagekit.git;a=blob;f=NEWS
 
