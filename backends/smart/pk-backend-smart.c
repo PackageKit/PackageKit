@@ -51,6 +51,17 @@ backend_destroy (PkBackend *backend)
 }
 
 /**
+ * backend_get_filters:
+ */
+static PkBitfield
+backend_get_filters (PkBackend *backend)
+{
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_INSTALLED,
+		-1);
+}
+
+/**
  * backend_download_packages:
  */
 static void
@@ -295,7 +306,7 @@ PK_BACKEND_OPTIONS (
 	backend_initialize,				/* initialize */
 	backend_destroy,				/* destroy */
 	NULL,						/* get_groups */
-	NULL,						/* get_filters */
+	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
 	backend_download_packages,			/* download_packages */
 	backend_get_depends,				/* get_depends */
