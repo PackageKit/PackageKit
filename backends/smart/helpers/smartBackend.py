@@ -190,6 +190,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 if searchstring in info.getDescription():
                     self._show_package(package)
 
+    @needs_cache
+    def get_packages(self, filters):
+        packages = self.ctrl.getCache().getPackages()
+        for package in packages:
+            if self._passes_filters(package, filters):
+                self._show_package(package)
+
     def refresh_cache(self):
         self.ctrl.rebuildSysConfChannels()
         self.ctrl.reloadChannels(None, caching=smart.const.NEVER)
