@@ -182,6 +182,18 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 self._show_package(package)
 
     @needs_cache
+    def search_group(self, filters, searchstring):
+        packages = self.ctrl.getCache().getPackages()
+        for package in packages:
+            if self._passes_filters(package, filters):
+                info = package.loaders.keys()[0].getInfo(package)
+                group = info.getGroup()
+                if group in self.GROUPS:
+                    group = self.GROUPS[group]
+                    if searchstring in group:
+                        self._show_package(package)
+
+    @needs_cache
     def search_details(self, filters, searchstring):
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
@@ -202,6 +214,80 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.reloadChannels(None, caching=smart.const.NEVER)
         self.ctrl.saveSysConf()
 
+    from packagekit.enums import *
+
+    GROUPS = {
+    # RPM
+    'Amusement/Games'                         : GROUP_GAMES,
+    'Amusement/Graphics'                      : GROUP_GRAPHICS,
+    'Applications/Archiving'                  : GROUP_OTHER,
+    'Applications/Communications'             : GROUP_COMMUNICATION,
+    'Applications/Databases'                  : GROUP_OTHER,
+    'Applications/Editors'                    : GROUP_PUBLISHING,
+    'Applications/Emulators'                  : GROUP_OTHER,
+    'Applications/Engineering'                : GROUP_OTHER,
+    'Applications/File'                       : GROUP_OTHER,
+    'Applications/Internet'                   : GROUP_INTERNET,
+    'Applications/Multimedia'                 : GROUP_MULTIMEDIA,
+    'Applications/Productivity'               : GROUP_OTHER,
+    'Applications/Publishing'                 : GROUP_PUBLISHING,
+    'Applications/System'                     : GROUP_SYSTEM,
+    'Applications/Text'                       : GROUP_PUBLISHING,
+    'Development/Debuggers'                   : GROUP_PROGRAMMING,
+    'Development/Languages'                   : GROUP_PROGRAMMING,
+    'Development/Libraries'                   : GROUP_PROGRAMMING,
+    'Development/System'                      : GROUP_PROGRAMMING,
+    'Development/Tools'                       : GROUP_PROGRAMMING,
+    'Documentation'                           : GROUP_DOCUMENTATION,
+    'System Environment/Base'                 : GROUP_SYSTEM,
+    'System Environment/Daemons'              : GROUP_SYSTEM,
+    'System Environment/Kernel'               : GROUP_SYSTEM,
+    'System Environment/Libraries'            : GROUP_SYSTEM,
+    'System Environment/Shells'               : GROUP_SYSTEM,
+    'User Interface/Desktops'                 : GROUP_DESKTOP_OTHER,
+    'User Interface/X'                        : GROUP_DESKTOP_OTHER,
+    'User Interface/X Hardware Support'       : GROUP_DESKTOP_OTHER,
+    # DEB
+    "admin"                                   : GROUP_ADMIN_TOOLS,
+    "base"                                    : GROUP_SYSTEM,
+    "comm"                                    : GROUP_COMMUNICATION,
+    "devel"                                   : GROUP_PROGRAMMING,
+    "doc"                                     : GROUP_DOCUMENTATION,
+    "editors"                                 : GROUP_PUBLISHING,
+    "electronics"                             : GROUP_ELECTRONICS,
+    "embedded"                                : GROUP_SYSTEM,
+    "games"                                   : GROUP_GAMES,
+    "GNOME"                                   : GROUP_DESKTOP_GNOME,
+    "graphics"                                : GROUP_GRAPHICS,
+    "hamradio"                                : GROUP_COMMUNICATION,
+    "interpreters"                            : GROUP_PROGRAMMING,
+    "kde"                                     : GROUP_DESKTOP_KDE,
+    "libdevel"                                : GROUP_PROGRAMMING,
+    "lib"                                     : GROUP_SYSTEM,
+    "mail"                                    : GROUP_INTERNET,
+    "math"                                    : GROUP_SCIENCE,
+    "misc"                                    : GROUP_OTHER,
+    "net"                                     : GROUP_NETWORK,
+    "news"                                    : GROUP_INTERNET,
+    "oldlibs"                                 : GROUP_LEGACY,
+    "otherosfs"                               : GROUP_SYSTEM,
+    "perl"                                    : GROUP_PROGRAMMING,
+    "python"                                  : GROUP_PROGRAMMING,
+    "science"                                 : GROUP_SCIENCE,
+    "shells"                                  : GROUP_SYSTEM,
+    "sound"                                   : GROUP_MULTIMEDIA,
+    "tex"                                     : GROUP_PUBLISHING,
+    "text"                                    : GROUP_PUBLISHING,
+    "utils"                                   : GROUP_ACCESSORIES,
+    "web"                                     : GROUP_INTERNET,
+    "x11"                                     : GROUP_DESKTOP_OTHER,
+    "unknown"                                 : GROUP_UNKNOWN,
+    "alien"                                   : GROUP_UNKNOWN,
+    "translations"                            : GROUP_LOCALIZATION,
+    # Slack
+    "Slackware"                               : GROUP_UNKNOWN
+    }
+    
     @needs_cache
     def get_details(self, packageids):
         for packageid in packageids:
@@ -244,7 +330,19 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if not pkgsize:
                 pkgsize = "unknown"
 
-            self.details(packageid, "unknown", "unknown", description, url,
+            if info:
+                if hasattr(info, 'getLicense'):
+                    license = info.getLicense()
+                else:
+                    license = "unknown"
+
+                group = info.getGroup()
+                if group in self.GROUPS:
+                    group = self.GROUPS[group]
+                else:
+                    group = "unknown"
+
+            self.details(packageid, license, group, description, url,
                     pkgsize)
 
     @needs_cache

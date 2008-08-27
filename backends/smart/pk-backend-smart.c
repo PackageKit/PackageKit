@@ -51,6 +51,36 @@ backend_destroy (PkBackend *backend)
 }
 
 /**
+ * backend_get_groups:
+ */
+static PkBitfield
+backend_get_groups (PkBackend *backend)
+{
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_ACCESSORIES,
+		PK_GROUP_ENUM_ADMIN_TOOLS,
+		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_DESKTOP_GNOME,
+		PK_GROUP_ENUM_DESKTOP_KDE,
+		PK_GROUP_ENUM_DESKTOP_OTHER,
+		PK_GROUP_ENUM_DOCUMENTATION,
+		PK_GROUP_ENUM_ELECTRONICS,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_INTERNET,
+		PK_GROUP_ENUM_LEGACY,
+		PK_GROUP_ENUM_LOCALIZATION,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_NETWORK,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SCIENCE,
+		PK_GROUP_ENUM_SYSTEM,
+		-1);
+}
+
+/**
  * backend_get_filters:
  */
 static PkBitfield
@@ -245,6 +275,18 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 }
 
 /**
+ * pk_backend_search_group:
+ */
+static void
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "search-group.py", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
+/**
  * pk_backend_search_name:
  */
 static void
@@ -317,7 +359,7 @@ PK_BACKEND_OPTIONS (
 	"James Bowes <jbowes@dangerouslyinc.com>",	/* author */
 	backend_initialize,				/* initialize */
 	backend_destroy,				/* destroy */
-	NULL,						/* get_groups */
+	backend_get_groups,				/* get_groups */
 	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
 	backend_download_packages,			/* download_packages */
@@ -341,7 +383,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* rollback */
 	backend_search_details,				/* search_details */
 	NULL,						/* search_file */
-	NULL,						/* search_group */
+	backend_search_group,				/* search_group */
 	backend_search_name,				/* search_name */
 	NULL,						/* service_pack */
 	backend_update_packages,			/* update_packages */
