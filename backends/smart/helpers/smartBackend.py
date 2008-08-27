@@ -21,7 +21,10 @@ from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
         INFO_SECURITY, INFO_BUGFIX, INFO_ENHANCEMENT, \
         ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED
+from packagekit.package import PackagekitPackage
 
+# Global vars
+pkpackage = PackagekitPackage()
 
 def needs_cache(func):
     """ Load smart's channels, and save the cache when done. """
@@ -303,7 +306,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if package.installed and not channel.getType().endswith('-sys'):
                 continue
             info = loader.getInfo(package)
-            self.package(self.get_package_id(package.name, version, arch,
+            self.package(pkpackage.get_package_id(package.name, version, arch,
                 channel.getAlias()), status, info.getSummary())
 
     def _get_status(self, package):
