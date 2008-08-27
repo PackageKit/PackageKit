@@ -1,3 +1,58 @@
+Version 0.3.1
+~~~~~~~~~~~~~~
+Released: 2008-08-27
+
+New Features:
+ - Add new API for GetDistroUpgrades() and ::DistroUpgrade() (Richard Hughes)
+ - Change DownloadPackages() so we get the correct SELinux contexts (Richard Hughes)
+ - Change Service Packs extension from .pack to .servicepack (Shishir Goel)
+ - Set "directory" as an argument for DownloadPackages() (Marcin Banasiak)
+ - Switch to using a guint64 bitfield type (Richard Hughes)
+ - Make PkMessages into proper enumerated types (Richard Hughes)
+ - Make sure the backends are respecting the installed filter (Richard Hughes)
+ - Remove the libtar code, and instead use the libarchive library (Richard Hughes)
+
+Bugfixes:
+ - Fix compiling the browser plugins with a new gtk (Richard Hughes)
+ - Don't crash the daemon if we never called SetLocale. Fixes fd#17298 (Richard Hughes)
+ - Don't allow reset (if sync) or cancel in ::Finished() (Richard Hughes)
+ - Fix a memory leak in RemovePackages (Shishir Goel)
+ - Clarify some documentation about the transaction methods (Richard Hughes)
+ - Build fix for pk-import-desktop (Sebastian Heinlein)
+ - Don't crash the 64 bit client tools when the daemon exits (Richard Hughes)
+ - Fix compile by adding add locale.h include (Scott Reeves)
+
+Backends:
+ - apt: Add support for Ubuntu supported filter (Sebastian Heinlein)
+ - apt: Fix filtering. Was totally broken (Sebastian Heinlein)
+ - apt: Fix wrong use of the STATUS_SETUP in doInit() (Sebastian Heinlein)
+ - apt: implement GetFiles (Sebastian Heinlein)
+ - apt: Instead of sending an empty file list for a package send none (Sebastian Heinlein)
+ - apt: support the new groups science, doc and electronics (Sebastian Heinlein)
+ - apt: do not report the package itself on GetDepends (Sebastian Heinlein)
+ - apt: Implement InstallFiles (Sebastian Heinlein)
+ - apt: Send a message if a newer package exists (Sebastian Heinlein)
+ - apt: fix killing hanging installations (Sebastian Heinlein)
+ - apt: Do not allow to remove essential packages (Sebastian Heinlein)
+ - apt: Add method for calling InstallFiles in the dbus backend (Sebastian Heinlein)
+ - conary: update to support {install,remove}-packages (Ken VanDine)
+ - conary: more updates to work with 0.3.x series (Ken VanDine)
+ - poldek: support multiple package_ids in GetFiles (Marcin Banasiak)
+ - poldek: make execute_* functions use va_list (Marcin Banasiak)
+ - poldek: fix crash (Marcin Banasiak)
+ - poldek: get localized descriptions and summaries (Marcin Banasiak)
+ - poldek: removed backend reference count (Marcin Banasiak)
+ - poldek: use source name as repo description (Marcin Banasiak)
+ - poldek: pass changes to GetUpdateDetail() (Marcin Banasiak)
+ - poldek: support documentation group (Marcin Banasiak)
+ - smart: use alias if channel has no name (Anders F Bjorklund)
+ - smart: GetDetails should be getDescription (Anders F Bjorklund)
+ - smart: match helpers with backend (Anders F Bjorklund)
+ - smart: use PackagekitPackage (Anders F Bjorklund)
+ - urpmi: make updatedetail signal compatible with 0.3.X (Aurelien Lefebvre)
+ - yum: fix InstallFile to make it work for multiple simultaneous packs (Shishir Goel)
+ - zypp: finish the switch to PkBitfield (Scott Reeves)
+
 Version 0.3.0
 ~~~~~~~~~~~~~~
 Released: 2008-08-18
