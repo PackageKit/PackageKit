@@ -80,6 +80,7 @@ struct _PkClientPrivate
 	PkControl		*control;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
+	gulong			 pconnection_signal_id;
 	PkRestartEnum		 require_restart;
 	PkStatusEnum		 last_status;
 	PkRoleEnum		 role;
@@ -3671,8 +3672,8 @@ pk_client_init (PkClient *client)
 
 	/* watch for PackageKit on the bus, and try to connect up at start */
 	client->priv->pconnection = pk_connection_new ();
-	g_signal_connect (client->priv->pconnection, "connection-changed",
-			  G_CALLBACK (pk_connection_changed_cb), client);
+	client->priv->pconnection_signal_id = g_signal_connect (client->priv->pconnection, "connection-changed",
+								G_CALLBACK (pk_connection_changed_cb), client);
 	if (pk_connection_valid (client->priv->pconnection)) {
 		pk_client_connect (client);
 	}
@@ -3776,6 +3777,7 @@ pk_client_finalize (GObject *object)
 	g_main_loop_unref (client->priv->loop);
 
 	/* disconnect signal handlers */
+	g_signal_handler_disconnect (client->priv->pconnection, client->priv->pconnection_signal_id);
 	pk_client_disconnect_proxy (client);
 	g_object_unref (client->priv->pconnection);
 	g_object_unref (client->priv->package_list);
