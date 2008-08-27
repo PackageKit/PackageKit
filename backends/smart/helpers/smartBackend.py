@@ -271,11 +271,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         channels = smart.sysconf.get("channels", ())
         for alias in channels:
             channel = smart.sysconf.get(("channels", alias))
+            name = channel.get("name", alias)
             parsed = smart.channel.parseChannelData(channel)
             enabled = 'true'
             if channel.has_key('disabled') and channel['disabled'] == 'yes':
                 enabled = 'false'
-            self.repo_detail(alias, channel['name'], enabled)
+            self.repo_detail(alias, name, enabled)
 
     def repo_enable(self, repoid, enable):
         if smart.sysconf.has(("channels", repoid)):
