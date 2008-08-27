@@ -170,7 +170,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             if self._passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
-                if searchstring in info.GetDetails():
+                if searchstring in info.getDescription():
                     self._show_package(package)
 
     def refresh_cache(self):
@@ -198,7 +198,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             info = infos[0]
 
             version, arch = package.version.split('@')
-            description = info.GetDetails()
+            description = info.getDescription()
             description = description.replace("\n\n", ";")
             description = description.replace("\n", " ")
             urls = info.getReferenceURLs()
