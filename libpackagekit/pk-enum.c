@@ -156,6 +156,7 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_INVALID_PACKAGE_FILE,    "invalid-package-file"},
 	{PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED, "package-install-blocked"},
 	{PK_ERROR_ENUM_PACKAGE_CORRUPT,         "package-corrupt"},
+	{PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED, "all-packages-already-installed"},
 	{0, NULL}
 };
 
@@ -181,6 +182,7 @@ static PkEnumMatch enum_message[] = {
 	{PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS,	"newer-package-exists"},
 	{PK_MESSAGE_ENUM_COULD_NOT_FIND_PACKAGE,"could-not-find-package"},
 	{PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,	"config-files-changed"},
+	{PK_MESSAGE_ENUM_PACKAGE_ALREADY_INSTALLED, "package-already-installed"},
 	{0, NULL}
 };
 

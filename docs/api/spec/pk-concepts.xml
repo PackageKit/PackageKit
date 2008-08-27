@@ -355,8 +355,17 @@
           <row>
             <entry><literal>package-already-installed</literal></entry>
             <entry>
-              The package that is trying to be installed or updated is already
+              The (single) package that is trying to be installed or updated is already
               installed
+            </entry>
+          </row>
+          <row>
+            <entry><literal>all-packages-already-installed</literal></entry>
+            <entry>
+	      Multiple package installs were attempted, but all of
+	      them were already installed.  The backend should
+	      generate package-already-installed messages (not errors)
+	      for each package.
             </entry>
           </row>
           <row>
