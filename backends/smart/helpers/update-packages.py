@@ -14,7 +14,7 @@ import sys
 
 from smartBackend import PackageKitSmartBackend
 
-packages = sys.argv[1]
+package = sys.argv[1]
 backend = PackageKitSmartBackend(sys.argv[1:])
-backend.update_packages(packages)
+backend.update(package)
 sys.exit(0)

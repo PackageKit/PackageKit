@@ -85,7 +85,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def remove(self, allowdeps, packageid):
+    def remove(self, packageid):
         ratio, results, suggestions = self._search_packageid(packageid)
 
         packages = self._process_search_results(results)
