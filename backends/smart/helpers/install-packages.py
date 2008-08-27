@@ -16,5 +16,5 @@ from smartBackend import PackageKitSmartBackend
 
 package = sys.argv[1]
 backend = PackageKitSmartBackend(sys.argv[1:])
-backend.install_packages(package)
+backend.install(package)
 sys.exit(0)
