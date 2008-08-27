@@ -506,6 +506,7 @@ pk_console_perhaps_resolve (PkClient *client, PkBitfield filter, const gchar *pa
 
 	/* we need to resolve it */
 	packages = pk_package_ids_from_id (package);
+pk_warning ("%s: %i", packages[0], filter);
 	ret = pk_client_resolve (client_task, filter, packages, error);
 	g_strfreev (packages);
 	if (!ret) {
@@ -585,7 +586,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		if (is_local) {
 			g_ptr_array_add (array_files, g_strdup (packages[i]));
 		} else {
-			package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NOT_INSTALLED, packages[i], error);
+			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages[i], error);
 			if (package_id == NULL) {
 				*error = g_error_new (1, 0, "%s: %s", _("Could not find package to install"), packages[i]);
 				ret = FALSE;
@@ -691,7 +692,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	list = pk_package_list_new ();
 	length = g_strv_length (packages);
 	for (i=2; i<length; i++) {
-		package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, packages[i], error);
+		package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), packages[i], error);
 		if (package_id == NULL) {
 			*error = g_error_new (1, 0, "%s:%s\n", _("Could not find package to remove"), packages[i]);
 			ret = FALSE;
@@ -725,7 +726,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 
 	pk_debug ("Getting installed requires for %s", package_ids[0]);
 	/* see if any packages require this one */
-	ret = pk_client_get_requires (client_task, PK_FILTER_ENUM_INSTALLED, package_ids, TRUE, error);
+	ret = pk_client_get_requires (client_task, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, TRUE, error);
 	if (!ret) {
 		pk_warning ("failed to get requires");
 		goto out;
@@ -797,7 +798,7 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 	array_packages = g_ptr_array_new ();
 	length = g_strv_length (packages);
 	for (i=3; i<length; i++) {
-			package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, packages[i], error);
+			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), packages[i], error);
 			if (package_id == NULL) {
 				*error = g_error_new (1, 0, "%s: %s", _("Could not find package to download"), packages[i]);
 				ret = FALSE;
@@ -848,7 +849,7 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 	gchar *package_id;
 	gchar **package_ids;
 
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, error);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s: %s", _("Could not find package to update"), package);
 		return FALSE;
@@ -870,7 +871,7 @@ pk_console_get_requires (PkClient *client, PkBitfield filters, const gchar *pack
 	gboolean ret;
 	gchar *package_id;
 	gchar **package_ids;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, error);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s %s", _("Could not find what packages require"), package);
 		return FALSE;
@@ -891,7 +892,7 @@ pk_console_get_depends (PkClient *client, PkBitfield filters, const gchar *packa
 	gboolean ret;
 	gchar *package_id;
 	gchar **package_ids;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, error);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s %s", _("Could not get dependencies for"), package);
 		return FALSE;
@@ -912,7 +913,7 @@ pk_console_get_details (PkClient *client, const gchar *package, GError **error)
 	gboolean ret;
 	gchar *package_id;
 	gchar **package_ids;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, error);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s %s", _("Could not find details for"), package);
 		return FALSE;
@@ -935,7 +936,7 @@ pk_console_get_files (PkClient *client, const gchar *package, GError **error)
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, &error_local);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s (%s)", _("Could not find the files for this package"), error_local->message);
 		g_error_free (error_local);
@@ -961,7 +962,7 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 	gboolean ret;
 	gchar *package_id;
 	gchar **package_ids;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, error);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s %s", _("Could not find the update details for"), package);
 		return FALSE;
