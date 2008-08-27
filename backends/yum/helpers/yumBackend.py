@@ -920,7 +920,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             show = False
                     if show:
                         self._show_package(pkg,INFO_AVAILABLE)
-                        break
 
     @handle_repo_error
     def install_packages(self,package_ids):
