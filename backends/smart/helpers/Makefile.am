@@ -20,6 +20,7 @@ dist_helper_DATA = 			\
 	smartBackend.py			\
 	update-packages.py		\
 	update-system.py		\
+	download-packages.py		\
 	$(NULL)
 
 install-data-hook:

@@ -20,7 +20,8 @@ import smart
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
         INFO_SECURITY, INFO_BUGFIX, INFO_ENHANCEMENT, \
-        ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED
+        ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED, \
+        ERROR_PACKAGE_DOWNLOAD_FAILED
 from packagekit.package import PackagekitPackage
 
 # Global vars
@@ -51,24 +52,26 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         smart.initPsyco()
 
     @needs_cache
-    def install(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
-
-        packages = self._process_search_results(results)
+    def install_packages(self, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
 
         available = [package for package in packages if not package.installed]
-        if len(available) != 1:
+        if len(available) < 1:
             return
-        package = available[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyInstall)
-        trans.enqueue(package, smart.transaction.INSTALL)
+        for package in available:
+            trans.enqueue(package, smart.transaction.INSTALL)
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
     def install_files(self, trusted, paths):
-        self.ctrl.addFileChannel(path)
+        for path in paths:
+            self.ctrl.addFileChannel(path)
         self.ctrl.reloadChannels()
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyInstall)
@@ -85,35 +88,49 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def remove(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
-
-        packages = self._process_search_results(results)
+    def remove_packages(self, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
 
         installed = [package for package in packages if package.installed]
-        if len(installed) != 1:
+        if len(installed) < 1:
             return
-        package = installed[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyRemove)
-        trans.enqueue(package, smart.transaction.REMOVE)
+        for package in installed:
+            trans.enqueue(package, smart.transaction.REMOVE)
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def update(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
+    def update_packages(self, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
 
-        packages = self._process_search_results(results)
         installed = [package for package in packages if package.installed]
-        if len(installed) != 1:
+        if len(installed) < 1:
             return
-        package = installed[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyUpgrade)
-        trans.enqueue(package, smart.transaction.UPGRADE)
+        for package in installed:
+            trans.enqueue(package, smart.transaction.UPGRADE)
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
+
+    @needs_cache
+    def download_packages(self, directory, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
+
+        if len(packages) < 1:
+            return
+        self.ctrl.downloadPackages(packages, targetdir=directory)
 
     @needs_cache
     def update_system(self):
