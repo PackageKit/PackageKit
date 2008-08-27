@@ -221,7 +221,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             infos.sort()
             info = infos[0]
 
-            version, arch = package.version.split('@')
             description = info.getDescription()
             description = description.replace("\n\n", ";")
             description = description.replace("\n", " ")
@@ -314,6 +313,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def _search_packageid(self, packageid):
         idparts = packageid.split(';')
+        # FIXME: join only works with RPM packages
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
 
@@ -325,6 +325,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 status = INFO_INSTALLED
             else:
                 status = INFO_AVAILABLE
+        # FIXME: split only works with RPM packages
         version, arch = package.version.split('@')
         for loader in package.loaders:
             channel = loader.getChannel()
