@@ -271,6 +271,34 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled.wait()
 
     @threaded
+    def doSearchFile(self, filters, filename):
+        '''
+        Implement the apt2-search-file functionality
+
+        Apt specific: Works only for installed files. Since config files are
+        not removed by default even not installed packages can be reported.
+        '''
+        pklog.info("Searching for file: %s" % filename)
+        self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(True)
+
+        for pkg in self._cache:
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
+                               "The search was canceled")
+                self.Finished(EXIT_KILLED)
+                self._canceled.clear()
+                return
+            for installed_file in pkg.installedFiles:
+                if filename in installed_file:
+                    if self._is_package_visible(pkg, filters):
+                        self._emit_package(pkg)
+                    continue
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
     def doSearchGroup(self, filters, group):
         '''
         Implement the apt2-search-group functionality
