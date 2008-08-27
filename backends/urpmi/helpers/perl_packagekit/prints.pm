@@ -61,7 +61,7 @@ sub pk_print_update_detail {
   # @param restart:
   # @param update_text:
   my ($id, $updates, $obsoletes, $vendor_url, $bugzilla_url, $cve_url, $restart, $update_text) = @_;
-  printf("updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $id, $updates, $obsoletes, $vendor_url, $bugzilla_url, $cve_url, $restart, $update_text);
+  printf("updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $id, $updates, $obsoletes, $vendor_url, $bugzilla_url, $cve_url, $restart, $update_text, '', '', '', '');
 }
     
 sub pk_print_require_restart {
