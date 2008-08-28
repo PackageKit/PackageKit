@@ -17,6 +17,7 @@ the Free Software Foundation; either version 2 of the License, or
 
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 
+import errno
 import gdbm
 import httplib
 import locale
@@ -36,7 +37,6 @@ import urllib2
 import warnings
 
 import apt
-import apt.debfile
 import apt_pkg
 import dbus
 import dbus.glib
@@ -46,6 +46,8 @@ import gobject
 
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded, async
 from packagekit.enums import *
+
+import debfile
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 
@@ -108,9 +110,10 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         pid = self.fork()
         if pid == 0:
             # child
-            res = os.system("/usr/bin/dpkg --status-fd %s -i %s" % \
-                            (self.writefd, self.debfile))
-            os._exit(os.WEXITSTATUS(res))
+            dpkg_res = os.system("/usr/bin/dpkg --status-fd %s -i %s" % \
+                                 (self.writefd, self.debfile))
+            res = os.WEXITSTATUS(dpkg_res)
+            os._exit(res)
         self.child_pid = pid
         res = self.waitChild()
         return res
@@ -119,34 +122,33 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         """
         Process status messages from dpkg
         """
-        if self.statusfd != None:
-            while True:
-                try:
-                    self.read += os.read(self.statusfd.fileno(),1)
-                except OSError, (errno,errstr):
-                    # resource temporarly unavailable is ignored
-                    if errno != 11:
-                        print errstr
-                    break
-                if self.read.endswith("\n"):
-                    statusl = string.split(self.read, ":")
-                    if len(statusl) < 3:
-                        print "got garbage from dpkg: '%s'" % read
-                        self.read = ""
-                        break
-                    status = statusl[2].strip()
-                    #print status
-                    if status == "error":
-                        self.error(self.debname, status)
-                    elif status == "conffile-prompt":
-                        # we get a string like this:
-                        # 'current-conffile' 'new-conffile' useredited distedited
-                        match = re.compile("\s*\'(.*)\'\s*\'(.*)\'.*").match(status_str)
-                        if match:
-                             self.conffile(match.group(1), match.group(2))
-                    else:
-                        self.status = status
-                    self.read = ""
+        if self.statusfd == None:
+            return
+        try:
+            while not self.read.endswith("\n"):
+                self.read += os.read(self.statusfd.fileno(), 1)
+        except OSError, (error_no, error_str):
+            # resource temporarly unavailable is ignored
+            if error_no not in [errno.EAGAIN, errno.EWOULDBLOCK]:
+                print err_str
+        if self.read.endswith("\n"):
+            statusl = string.split(self.read, ":")
+            if len(statusl) < 3:
+                print "got garbage from dpkg: '%s'" % read
+                self.read = ""
+            status = statusl[2].strip()
+            #print status
+            if status == "error":
+                self.error(self.debname, status)
+            elif status == "conffile-prompt":
+                # we get a string like this:
+                # 'current-conffile' 'new-conffile' useredited distedited
+                match = re.compile("\s*\'(.*)\'\s*\'(.*)\'.*").match(status_str)
+                if match:
+                     self.conffile(match.group(1), match.group(2))
+            else:
+                self.status = status
+            self.read = ""
 
 
 class PackageKitOpProgress(apt.progress.OpProgress):
@@ -269,14 +271,15 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         if self.conffile_prompts:
             self._backend.Message(MESSAGE_CONFIG_FILES_CHANGED, "The following conffile prompts were found and need investiagtion: %s" % "\n".join(self.conffile_prompts))
 
-"""
-class PackageKitDpkgInstallProgress(apt.progress.DpkgInstallProgress,PackageKitInstallProgress):
+
+class PackageKitDpkgInstallProgress(DpkgInstallProgress,
+                                    PackageKitInstallProgress):
     def run(self, debfile):
-        apt.progress.DpkgInstallProgress.run(self, debfile)
+        return DpkgInstallProgress.run(self, debfile)
 
     def updateInterface(self):
         #pklog.debug("Updating interface")
-        apt.progress.DpkgInstallProgress.updateInterface(self)
+        DpkgInstallProgress.updateInterface(self)
        # pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
        # os.write(self.master_fd, 3)
         try:
@@ -287,7 +290,7 @@ class PackageKitDpkgInstallProgress(apt.progress.DpkgInstallProgress,PackageKitI
         if self.last_activity + self.timeout < time.time():
             pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
             os.write(self.master_fd, chr(3))
-"""
+
 
 def sigquit(signum, frame):
     pklog.error("Was killed")
@@ -848,12 +851,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,10))
-        self._cache.clear()
+        self._cache._depcache.Init()
         dependencies = []
         packages = []
         # Collect all dependencies which need to be installed
         for path in full_paths:
-            deb = apt.debfile.DebPackage(path, self._cache)
+            deb = debfile.DebPackage(path, self._cache)
             packages.append(deb)
             deb.checkDeb()
             (install, remove, unauthenticated) = deb.requiredChanges
@@ -882,13 +885,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN, "Failed to install dpkg: %s" % e)
                 self.Finished(EXIT_FAILED)
                 return
+            print res
             if res != 0:
                 self.ErrorCode(ERROR_UNKNOWN, 
                                "Failed to install package %s" % deb.pkgname)
                 self.Finished(EXIT_FAILED)
                 return
             # Check if there is a newer version in the cache
-            if deb.compareToVersionInCache() == apt.debfile.VERSION_OUTDATED:
+            if deb.compareToVersionInCache() == debfile.VERSION_OUTDATED:
                 self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
