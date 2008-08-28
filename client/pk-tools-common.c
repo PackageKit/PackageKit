@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <glib/gi18n.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-common.h>
 #include "pk-tools-common.h"
 

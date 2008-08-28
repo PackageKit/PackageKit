@@ -31,7 +31,9 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-package-ids.h>
 #include <pk-client.h>
 #include <pk-control.h>
@@ -104,6 +106,43 @@ pk_console_bar (guint subpercentage)
 }
 
 /**
+ * pk_strpad:
+ * @data: the input string
+ * @length: the desired length of the output string, with padding
+ *
+ * Returns the text padded to a length with spaces. If the string is
+ * longer than length then a longer string is returned.
+ *
+ * Return value: The padded string
+ **/
+static gchar *
+pk_strpad (const gchar *data, guint length)
+{
+	gint size;
+	guint data_len;
+	gchar *text;
+	gchar *padding;
+
+	if (data == NULL) {
+		return g_strnfill (length, ' ');
+	}
+
+	/* ITS4: ignore, only used for formatting */
+	data_len = strlen (data);
+
+	/* calculate */
+	size = (length - data_len);
+	if (size <= 0) {
+		return g_strdup (data);
+	}
+
+	padding = g_strnfill (size, ' ');
+	text = g_strdup_printf ("%s%s", data, padding);
+	g_free (padding);
+	return text;
+}
+
+/**
  * pk_console_start_bar:
  **/
 static void
@@ -144,7 +183,7 @@ pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 	}
 
 	/* pad the name-version */
-	if (pk_strzero (obj->id->version)) {
+	if (egg_strzero (obj->id->version)) {
 		package = g_strdup (obj->id->name);
 	} else {
 		package = g_strdup_printf ("%s-%s", obj->id->name, obj->id->version);
@@ -234,39 +273,39 @@ pk_console_update_detail_cb (PkClient *client, const PkUpdateDetailObj *detail, 
 	}
 	g_print ("%s\n", _("Update detail"));
 	g_print ("  package:    '%s-%s.%s'\n", detail->id->name, detail->id->version, detail->id->arch);
-	if (!pk_strzero (detail->updates)) {
+	if (!egg_strzero (detail->updates)) {
 		g_print ("  updates:    '%s'\n", detail->updates);
 	}
-	if (!pk_strzero (detail->obsoletes)) {
+	if (!egg_strzero (detail->obsoletes)) {
 		g_print ("  obsoletes:  '%s'\n", detail->obsoletes);
 	}
-	if (!pk_strzero (detail->vendor_url)) {
+	if (!egg_strzero (detail->vendor_url)) {
 		g_print ("  vendor URL: '%s'\n", detail->vendor_url);
 	}
-	if (!pk_strzero (detail->bugzilla_url)) {
+	if (!egg_strzero (detail->bugzilla_url)) {
 		g_print ("  bug URL:    '%s'\n", detail->bugzilla_url);
 	}
-	if (!pk_strzero (detail->cve_url)) {
+	if (!egg_strzero (detail->cve_url)) {
 		g_print ("  cve URL:    '%s'\n", detail->cve_url);
 	}
 	if (detail->restart != PK_RESTART_ENUM_NONE) {
 		g_print ("  restart:    '%s'\n", pk_restart_enum_to_text (detail->restart));
 	}
-	if (!pk_strzero (detail->update_text)) {
+	if (!egg_strzero (detail->update_text)) {
 		g_print ("  update_text:'%s'\n", detail->update_text);
 	}
-	if (!pk_strzero (detail->changelog)) {
+	if (!egg_strzero (detail->changelog)) {
 		g_print ("  changelog:  '%s'\n", detail->changelog);
 	}
 	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
 		g_print ("  state:      '%s'\n", pk_update_state_enum_to_text (detail->state));
 	}
 	issued = pk_iso8601_from_date (detail->issued);
-	if (!pk_strzero (issued)) {
+	if (!egg_strzero (issued)) {
 		g_print ("  issued:     '%s'\n", issued);
 	}
 	updated = pk_iso8601_from_date (detail->updated);
-	if (!pk_strzero (updated)) {
+	if (!egg_strzero (updated)) {
 		g_print ("  updated:    '%s'\n", updated);
 	}
 	g_free (issued);
@@ -396,10 +435,10 @@ pk_console_signature_finished_cb (PkClient *client_signature, PkExitEnum exit, g
 	gboolean ret;
 	GError *error = NULL;
 
-	pk_debug ("trying to requeue");
+	egg_debug ("trying to requeue");
 	ret = pk_client_requeue (client, &error);
 	if (!ret) {
-		pk_warning ("failed to requeue action: %s", error->message);
+		egg_warning ("failed to requeue action: %s", error->message);
 		g_error_free (error);
 		g_main_loop_quit (loop);
 	}
@@ -444,7 +483,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	pk_debug ("%s runtime was %.1f seconds", role_text, time);
+	egg_debug ("%s runtime was %.1f seconds", role_text, time);
 
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
@@ -458,19 +497,19 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 
 	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
 	    exit == PK_EXIT_ENUM_FAILED && need_requeue) {
-		pk_warning ("waiting for second install file to finish");
+		egg_warning ("waiting for second install file to finish");
 		return;
 	}
 
 	/* have we failed to install, and the gpg key is now installed */
 	if (exit == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
-		pk_debug ("key now installed");
+		egg_debug ("key now installed");
 		return;
 	}
 
 	/* have we failed to install, and the eula key is now installed */
 	if (exit == PK_EXIT_ENUM_EULA_REQUIRED && need_requeue) {
-		pk_debug ("eula now agreed");
+		egg_debug ("eula now agreed");
 		return;
 	}
 
@@ -500,17 +539,17 @@ pk_console_perhaps_resolve (PkClient *client, PkBitfield filter, const gchar *pa
 
 	ret = pk_client_reset (client_task, error);
 	if (!ret) {
-		pk_warning ("failed to reset client task");
+		egg_warning ("failed to reset client task");
 		return NULL;
 	}
 
 	/* we need to resolve it */
 	packages = pk_package_ids_from_id (package);
-pk_warning ("%s: %i", packages[0], filter);
+egg_warning ("%s: %i", packages[0], filter);
 	ret = pk_client_resolve (client_task, filter, packages, error);
 	g_strfreev (packages);
 	if (!ret) {
-		pk_warning ("Resolve is not supported in this backend");
+		egg_warning ("Resolve is not supported in this backend");
 		return NULL;
 	}
 
@@ -533,7 +572,7 @@ pk_warning ("%s: %i", packages[0], filter);
 	list = pk_client_get_package_list (client_task);
 	length = pk_package_list_get_size (list);
 	if (length == 0) {
-		pk_debug ("Could not find a package match");
+		egg_debug ("Could not find a package match");
 		return NULL;
 	}
 
@@ -598,7 +637,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 
 	/* one of the resolves failed */
 	if (!ret) {
-		pk_warning ("resolve failed");
+		egg_warning ("resolve failed");
 		goto out;
 	}
 
@@ -611,13 +650,13 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		/* reset */
 		ret = pk_client_reset (client, error);
 		if (!ret) {
-			pk_warning ("failed to reset");
+			egg_warning ("failed to reset");
 			goto out;
 		}
 
 		ret = pk_client_install_packages (client, package_ids, error);
 		if (!ret) {
-			pk_warning ("failed to install packages");
+			egg_warning ("failed to install packages");
 			goto out;
 		}
 	}
@@ -634,13 +673,13 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		/* reset */
 		ret = pk_client_reset (client, error);
 		if (!ret) {
-			pk_warning ("failed to reset");
+			egg_warning ("failed to reset");
 			goto out;
 		}
 
 		ret = pk_client_install_files (client, trusted, files, error);
 		if (!ret) {
-			pk_warning ("failed to install files");
+			egg_warning ("failed to install files");
 			goto out;
 		}
 	}
@@ -663,7 +702,7 @@ pk_console_remove_only (PkClient *client, gchar **package_ids, gboolean force, G
 {
 	gboolean ret;
 
-	pk_debug ("remove+ %s", package_ids[0]);
+	egg_debug ("remove+ %s", package_ids[0]);
 	ret = pk_client_reset (client, error);
 	if (!ret) {
 		return ret;
@@ -699,7 +738,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 			break;
 		}
 		g_ptr_array_add (array, g_strdup (package_id));
-		pk_debug ("resolved to %s", package_id);
+		egg_debug ("resolved to %s", package_id);
 		g_free (package_id);
 	}
 
@@ -720,15 +759,15 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 
 	ret = pk_client_reset (client_task, error);
 	if (!ret) {
-		pk_warning ("failed to reset");
+		egg_warning ("failed to reset");
 		goto out;
 	}
 
-	pk_debug ("Getting installed requires for %s", package_ids[0]);
+	egg_debug ("Getting installed requires for %s", package_ids[0]);
 	/* see if any packages require this one */
 	ret = pk_client_get_requires (client_task, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, TRUE, error);
 	if (!ret) {
-		pk_warning ("failed to get requires");
+		egg_warning ("failed to get requires");
 		goto out;
 	}
 
@@ -745,7 +784,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	/* if there are no required packages, just do the remove */
 	length = pk_package_list_get_size (list);
 	if (length == 0) {
-		pk_debug ("no requires");
+		egg_debug ("no requires");
 		ret = pk_console_remove_only (client, package_ids, FALSE, error);
 		goto out;
 	}
@@ -809,7 +848,7 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 	
 	/* one of the resolves failed */
 	if (!ret) {
-		pk_warning ("resolve failed");
+		egg_warning ("resolve failed");
 		goto out;
 	}
 
@@ -822,13 +861,13 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 		/* reset */
 		ret = pk_client_reset (client, error);
 		if (!ret) {
-			pk_warning ("failed to reset");
+			egg_warning ("failed to reset");
 			goto out;
 		}
 
 		ret = pk_client_download_packages (client, package_ids, directory, error);
 		if (!ret) {
-			pk_warning ("failed to download the packages");
+			egg_warning ("failed to download the packages");
 			goto out;
 		}
 	}
@@ -990,21 +1029,21 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 	if (need_requeue) {
 		if (error_code == PK_ERROR_ENUM_GPG_FAILURE ||
 		    error_code == PK_ERROR_ENUM_NO_LICENSE_AGREEMENT) {
-			pk_debug ("ignoring %s error as handled", pk_error_enum_to_text (error_code));
+			egg_debug ("ignoring %s error as handled", pk_error_enum_to_text (error_code));
 			return;
 		}
-		pk_warning ("set requeue, but did not handle error");
+		egg_warning ("set requeue, but did not handle error");
 	}
 
 	/* do we need to do the untrusted action */
 	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
 	    error_code == PK_ERROR_ENUM_MISSING_GPG_SIGNATURE && trusted) {
-		pk_debug ("need to try again with trusted FALSE");
+		egg_debug ("need to try again with trusted FALSE");
 		trusted = FALSE;
 		ret = pk_client_install_files (client_install_files, trusted, files_cache, &error);
 		/* we succeeded, so wait for the requeue */
 		if (!ret) {
-			pk_warning ("failed to install file second time: %s", error->message);
+			egg_warning ("failed to install file second time: %s", error->message);
 			g_error_free (error);
 		}
 		need_requeue = ret;
@@ -1047,7 +1086,7 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 	/* don't print if we are DownloadPackages */
 	pk_client_get_role (client, &role, NULL, NULL);
 	if (role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
-		pk_debug ("ignoring ::files");
+		egg_debug ("ignoring ::files");
 		return;
 	}
 
@@ -1106,12 +1145,12 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	}
 
 	/* install signature */
-	pk_debug ("install signature %s", key_id);
+	egg_debug ("install signature %s", key_id);
 	ret = pk_client_install_signature (client_signature, PK_SIGTYPE_ENUM_GPG,
 					   key_id, package_id, &error);
 	/* we succeeded, so wait for the requeue */
 	if (!ret) {
-		pk_warning ("failed to install signature: %s", error->message);
+		egg_warning ("failed to install signature: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -1149,11 +1188,11 @@ pk_console_eula_required_cb (PkClient *client, const gchar *eula_id, const gchar
 	}
 
 	/* accept eula */
-	pk_debug ("accept eula %s", eula_id);
+	egg_debug ("accept eula %s", eula_id);
 	ret = pk_client_accept_eula (client_signature, eula_id, &error);
 	/* we succeeded, so wait for the requeue */
 	if (!ret) {
-		pk_warning ("failed to accept eula: %s", error->message);
+		egg_warning ("failed to accept eula: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -1187,7 +1226,7 @@ pk_console_sigint_handler (int sig)
 	PkRoleEnum role;
 	gboolean ret;
 	GError *error = NULL;
-	pk_debug ("Handling SIGINT");
+	egg_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the cancels might hang */
 	signal (SIGINT, SIG_DFL);
@@ -1197,7 +1236,7 @@ pk_console_sigint_handler (int sig)
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
 		ret = pk_client_cancel (client, &error);
 		if (!ret) {
-			pk_warning ("failed to cancel normal client: %s", error->message);
+			egg_warning ("failed to cancel normal client: %s", error->message);
 			g_error_free (error);
 			error = NULL;
 		}
@@ -1206,13 +1245,13 @@ pk_console_sigint_handler (int sig)
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
 		ret = pk_client_cancel (client_task, &error);
 		if (!ret) {
-			pk_warning ("failed to cancel task client: %s", error->message);
+			egg_warning ("failed to cancel task client: %s", error->message);
 			g_error_free (error);
 		}
 	}
 
 	/* kill ourselves */
-	pk_debug ("Retrying SIGINT");
+	egg_debug ("Retrying SIGINT");
 	kill (getpid (), SIGINT);
 }
 
@@ -1363,7 +1402,7 @@ main (int argc, char *argv[])
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		g_error_free (error);
 		g_error (_("Could not connect to system DBUS."));
 	}
@@ -1382,7 +1421,7 @@ main (int argc, char *argv[])
 	g_option_context_free (context);
 
 	/* we are now parsed */
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	if (program_version) {
 		g_print (VERSION "\n");
@@ -1446,7 +1485,7 @@ main (int argc, char *argv[])
 	if (filter != NULL) {
 		filters = pk_filter_bitfield_from_text (filter);
 	}
-	pk_debug ("filter=%s, filters=%i", filter, filters);
+	egg_debug ("filter=%s, filters=%i", filter, filters);
 
 	mode = argv[1];
 	if (argc > 2) {
@@ -1718,3 +1757,74 @@ out:
 
 	return 0;
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_console (LibSelfTest *test)
+{
+	gchar *text_safe;
+
+	if (libst_start (test, "PkConsole", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	/************************************************************
+	 ****************         Padding          ******************
+	 ************************************************************/
+	libst_title (test, "pad smaller");
+	text_safe = pk_strpad ("richard", 10);
+	if (egg_strequal (text_safe, "richard   ")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad NULL");
+	text_safe = pk_strpad (NULL, 10);
+	if (egg_strequal (text_safe, "          ")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad nothing");
+	text_safe = pk_strpad ("", 10);
+	if (egg_strequal (text_safe, "          ")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad over");
+	text_safe = pk_strpad ("richardhughes", 10);
+	if (egg_strequal (text_safe, "richardhughes")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad zero");
+	text_safe = pk_strpad ("rich", 0);
+	if (egg_strequal (text_safe, "rich")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+	libst_end (test);
+}
+#endif
+

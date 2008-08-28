@@ -33,7 +33,7 @@
 #include <glib/gi18n.h>
 
 #include <pk-enum.h>
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-update-detail-obj.h"
 

@@ -61,50 +61,16 @@ G_BEGIN_DECLS
  */
 #define	PK_SERVICE_PACK_GROUP_NAME	"PackageKit Service Pack"
 
-guint		 pk_strlen				(const gchar	*text,
-							 guint		 len)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strzero				(const gchar	*text)
-							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_strvalidate				(const gchar	*text)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strequal				(const gchar	*id1,
-							 const gchar	*id2)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strnumber				(const gchar	*text)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strtoint				(const gchar	*text,
-							 gint		*value);
-gboolean	 pk_strtouint				(const gchar	*text,
-							 guint		*value);
-gchar		*pk_strpad				(const gchar	*data,
-							 guint		 length)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gchar		*pk_strpad_extra			(const gchar	*data,
-							 guint		 length,
-							 guint		*extra)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_strsafe				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gchar		**pk_strsplit				(const gchar	*id,
-							 guint		 parts);
-gchar		*pk_strbuild_va				(const gchar	*first_element,
-							 va_list	*args)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gchar		*pk_strreplace				(const gchar	*text,
-							 const gchar	*find,
-							 const gchar	*replace);
 gchar		**pk_ptr_array_to_argv			(GPtrArray	*array)
 							 G_GNUC_WARN_UNUSED_RESULT;
 GPtrArray	*pk_argv_to_ptr_array			(gchar		**array)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		**pk_va_list_to_argv			(const gchar	*string_first,
 							 va_list	*args)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strcmp_sections			(const gchar	*id1,
-							 const gchar	*id2,
-							 guint		 parts,
-							 guint		 compare)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_iso8601_present			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -113,10 +79,6 @@ gchar		*pk_iso8601_from_date			(const GDate	*date);
 GDate		*pk_iso8601_to_date			(const gchar	*iso_date);
 gchar		*pk_get_distro_id			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_check_permissions			(const gchar	*filename,
-							 guint		 euid,
-							 guint		 egid,
-							 guint		 mode);
 
 G_END_DECLS
 

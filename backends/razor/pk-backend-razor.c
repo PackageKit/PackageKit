@@ -24,7 +24,7 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-backend-internal.h>
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-package-ids.h>
 #include <pk-enum.h>
 #include <pk-common.h>
@@ -124,7 +124,7 @@ backend_resolve_thread (PkBackend *backend)
 					    RAZOR_DETAIL_SUMMARY, &summary,
 					    RAZOR_DETAIL_LAST)) {
 		for (i=0; i<length; i++) {
-			if (pk_strequal (name, package_ids[i])) {
+			if (egg_strequal (name, package_ids[i])) {
 				pk_razor_emit_package (backend, name, version, arch, summary);
 			}
 		}
@@ -173,7 +173,7 @@ backend_get_details_thread (PkBackend *backend)
 		for (i=0; i<length; i++) {
 			/* TODO: we should cache this */
 			id = pk_package_id_new_from_string (package_ids[i]);
-			if (pk_strequal (name, id->name)) {
+			if (egg_strequal (name, id->name)) {
 				package_id = pk_package_id_build (name, version, arch, "installed");
 				razor_package_get_details (set, package,
 							   RAZOR_DETAIL_SUMMARY, &summary,
@@ -218,7 +218,7 @@ backend_resolve_package_id (const PkPackageId *id)
 					    RAZOR_DETAIL_VERSION, &version,
 					    RAZOR_DETAIL_ARCH, &arch,
 					    RAZOR_DETAIL_LAST)) {
-		if (pk_strequal (name, id->name)) {
+		if (egg_strequal (name, id->name)) {
 			package_retval = package;
 			break;
 		}
@@ -296,8 +296,8 @@ pk_str_case_contains (const gchar *haystack, const gchar *needle)
 	guint haystack_length;
 	guint needle_length;
 
-	haystack_length = pk_strlen (haystack, 1024);
-	needle_length = pk_strlen (needle, 1024);
+	haystack_length = egg_strlen (haystack, 1024);
+	needle_length = egg_strlen (needle, 1024);
 
 	/* needle longer than haystack */
 	if (needle_length > haystack_length) {

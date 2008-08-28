@@ -27,7 +27,9 @@
 #include <pk-enum.h>
 #include <pk-bitfield.h>
 #include <pk-package-id.h>
-#include <pk-debug.h>
+
+#include "egg-debug.h"
+#include "egg-string.h"
 
 G_BEGIN_DECLS
 

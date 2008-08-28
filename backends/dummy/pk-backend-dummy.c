@@ -205,7 +205,7 @@ backend_get_update_detail_timeout (gpointer data)
 	len = g_strv_length (_package_ids);
 	for (i=0; i<len; i++) {
 		package_id = _package_ids[i];
-		if (pk_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora")) {
+		if (egg_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora")) {
 			pk_backend_update_detail (backend, package_id,
 						  "powertop;1.7-1.fc8;i386;installed", "",
 						  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
@@ -213,7 +213,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source",
 						  "", PK_UPDATE_STATE_ENUM_STABLE, "2008-07-31", NULL);
 		}
-		if (pk_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
+		if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
 			pk_backend_update_detail (backend, package_id,
 						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed^"
 						  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
@@ -224,7 +224,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  PK_RESTART_ENUM_SYSTEM, "Update to newest version",
 						  "", PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
 		}
-		if (pk_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
+		if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
 			pk_backend_update_detail (backend, package_id,
 						  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
 						  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
@@ -345,7 +345,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	const gchar *eula_id;
 	gboolean has_eula;
 
-	if (pk_strequal (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva")) {
+	if (egg_strequal (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva")) {
 		if (!_has_signature) {
 			pk_backend_repo_signature_required (backend, package_ids[0], "updates",
 							    "http://example.com/gpgkey",
@@ -405,9 +405,9 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	if (type == PK_SIGTYPE_ENUM_GPG &&
-	    pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
-	    pk_strequal (key_id, "BB7576AC")) {
-		pk_debug ("installed signature %s for %s", key_id, package_id);
+	    egg_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
+	    egg_strequal (key_id, "BB7576AC")) {
+		egg_debug ("installed signature %s for %s", key_id, package_id);
 		_has_signature = TRUE;
 	} else {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
@@ -466,11 +466,11 @@ static void
 backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	if (pk_strequal (packages[0], "vips-doc")) {
+	if (egg_strequal (packages[0], "vips-doc")) {
 		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 				    "vips-doc;7.12.4-2.fc8;noarch;linva",
 				    "The vips documentation package.");
-	} else if (pk_strequal (packages[0], "glib2")) {
+	} else if (egg_strequal (packages[0], "glib2")) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 				    "glib2;2.14.0;i386;fedora", "The GLib library");
 	}
@@ -552,8 +552,8 @@ backend_search_name_timeout (gpointer data)
 	PkBackend *backend = (PkBackend *) data;
 	locale = pk_backend_get_locale (backend);
 
-	pk_debug ("locale is %s", locale);
-	if (!pk_strequal (locale, "en_GB.utf8")) {
+	egg_debug ("locale is %s", locale);
+	if (!egg_strequal (locale, "en_GB.utf8")) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 				    "evince;0.9.3-5.fc8;i386;installed",
 				    "PDF Dokument Ƥrŏgrȃɱ");
@@ -599,16 +599,16 @@ backend_update_packages_update_timeout (gpointer data)
 
 	package = _package_ids[_package_current];
 	/* emit the next package */
-	if (pk_strequal (package, "powertop;1.8-1.fc8;i386;fedora")) {
+	if (egg_strequal (package, "powertop;1.8-1.fc8;i386;fedora")) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package, "Power consumption monitor");
 		_updated_powertop = TRUE;
 	}
-	if (pk_strequal (package, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
+	if (egg_strequal (package, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package,
 				    "The Linux kernel (the core of the Linux operating system)");
 		_updated_kernel = TRUE;
 	}
-	if (pk_strequal (package, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
+	if (egg_strequal (package, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package, "An HTML widget for GTK+ 2.0");
 		_updated_gtkhtml = TRUE;
 	}
@@ -754,20 +754,20 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 
-	if (pk_strequal (rid, "local")) {
-		pk_debug ("local repo: %i", enabled);
+	if (egg_strequal (rid, "local")) {
+		egg_debug ("local repo: %i", enabled);
 		_repo_enabled_local = enabled;
-	} else if (pk_strequal (rid, "development")) {
-		pk_debug ("devel repo: %i", enabled);
+	} else if (egg_strequal (rid, "development")) {
+		egg_debug ("devel repo: %i", enabled);
 		_repo_enabled_devel = enabled;
-	} else if (pk_strequal (rid, "fedora")) {
-		pk_debug ("fedora repo: %i", enabled);
+	} else if (egg_strequal (rid, "fedora")) {
+		egg_debug ("fedora repo: %i", enabled);
 		_repo_enabled_fedora = enabled;
-	} else if (pk_strequal (rid, "livna-development")) {
-		pk_debug ("livna repo: %i", enabled);
+	} else if (egg_strequal (rid, "livna-development")) {
+		egg_debug ("livna repo: %i", enabled);
 		_repo_enabled_livna = enabled;
 	} else {
-		pk_warning ("unknown repo: %s", rid);
+		egg_warning ("unknown repo: %s", rid);
 	}
 	pk_backend_finished (backend);
 }
@@ -779,7 +779,7 @@ static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
-	pk_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
+	egg_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
 	pk_backend_finished (backend);
 }
 
@@ -790,7 +790,7 @@ static void
 backend_service_pack (PkBackend *backend, const gchar *location, gboolean enabled)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_RUNNING);
-	pk_warning ("service pack %i on %s device", enabled, location);
+	egg_warning ("service pack %i on %s device", enabled, location);
 
 	/*
 	 * VERY IMPORTANT: THE REPO MUST BE DISABLED IF IT IS ADDED!
