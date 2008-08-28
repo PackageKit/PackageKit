@@ -408,7 +408,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             providers = {}
             for required in package.requires:
-                for provider in self.ctrl.getCache().getProvides(str(required)):
+                for provider in required.providedby:
                     for package in provider.packages:
                         if not providers.has_key(package):
                             providers[package] = True
@@ -430,14 +430,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             package = packages[0]
 
-            providers = {}
-            for required in package.requires:
-                for provider in self.ctrl.getCache().getProvides(str(required)):
-                    for package in provider.packages:
-                        if not providers.has_key(package):
-                            providers[package] = True
+            requirers = {}
+            for provided in package.provides:
+                for requirer in provided.requiredby:
+                    for package in requirer.packages:
+                        if not requirers.has_key(package):
+                            requirers[package] = True
 
-            for package in providers.keys():
+            for package in requirers.keys():
                 self._show_package(package)
 
     def get_repo_list(self, filters):
