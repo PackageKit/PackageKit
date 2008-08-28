@@ -510,9 +510,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             p = re.compile(r'\s\s+', re.MULTILINE)
             desc = p.sub('\n', desc)
             #FIXME: We need more fine grained license information!
-            origin = pkg.candidateOrigin[0]
-            if origin.component in ["main", "universe"] and \
-               origin.origin in ["Debian", "Ubuntu"]:
+            candidate = pkg.candidateOrigin
+            if candidate != None and  \
+               candidate[0].component in ["main", "universe"] and \
+               candidate[0].origin in ["Debian", "Ubuntu"]:
                 license = "free"
             else:
                 license = "unknown"
@@ -1334,22 +1335,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Return True if we can be sure that the package's license isn't any 
         free one
         """
-        origin = pkg.candidateOrigin[0]
-        return ((origin.origin == "Ubuntu" and \
-                 origin.component in ["multiverse", "restricted"]) or \
-                (origin.origin == "Debian" and \
-                origin.component in ["contrib", "non-free"])) and \
-               origin.trusted == True
+        candidate = pkg.candidateOrigin
+        return candidate != None and \
+               ((candidate[0].origin == "Ubuntu" and \
+                 candidate[0].component in ["multiverse", "restricted"]) or \
+                (candidate[0].origin == "Debian" and \
+                 candidate[0].component in ["contrib", "non-free"])) and \
+               candidate[0].trusted == True
 
     def _is_package_free(self, pkg):
         """
         Return True if we can be sure that the package has got a free license
         """
-        origin = pkg.candidateOrigin[0]
-        return ((origin.origin == "Ubuntu" and \
-                 origin.component in ["main", "universe"]) or \
-                (origin.origin == "Debian" and origin.component == "main")) and\
-               origin.trusted == True
+        candidate = pkg.candidateOrigin
+        return candidate != None and \
+               ((candidate[0].origin == "Ubuntu" and \
+                 candidate[0].component in ["main", "universe"]) or \
+                (candidate[0].origin == "Debian" and \
+                 candidate[0].component == "main")) and\
+               candidate[0].trusted == True
 
     def _has_package_gui(self, pkg):
         #FIXME: should go to a modified Package class
@@ -1363,10 +1367,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                pkg.section.split('/')[-1].lower() in ['devel', 'libdevel']
 
     def _is_package_supported(self, pkg):
-        origin = pkg.candidateOrigin[0]
-        return origin.origin == "Ubuntu" and \
-               origin.component in ["main", "restricted"] and \
-               origin.trusted == True
+        candidate = pkg.candidateOrigin[0]
+        return candidate != None and \
+               candidate[0].origin == "Ubuntu" and \
+               candidate[0].component in ["main", "restricted"] and \
+               candidate[0].trusted == True
 
     def _find_package_by_id(self, id):
         '''
