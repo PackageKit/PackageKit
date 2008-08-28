@@ -567,74 +567,11 @@ pk_va_list_to_argv (const gchar *string_first, va_list *args)
 	return array;
 }
 
-/**
- * pk_strbuild_va:
- * @first_element: The first string item, or NULL
- * @args: the va_list
- *
- * This function converts a va_list into a string in a safe and efficient way,
- * e.g. pk_strbuild_va("foo","bar","baz") == "foo bar baz"
- *
- * Return value: the single string
- **/
-gchar *
-pk_strbuild_va (const gchar *first_element, va_list *args)
-{
-	const gchar *element;
-	GString *string;
-
-	/* shortcut */
-	if (egg_strzero (first_element)) {
-		return NULL;
-	}
-
-	/* set the first entry and a space */
-	string = g_string_new (first_element);
-	g_string_append_c (string, ' ');
-
-	/* do all elements */
-	while (TRUE) {
-		element = va_arg (*args, const gchar *);
-
-		/* are we at the end? Is this safe? */
-		if (element == NULL) {
-			break;
-		}
-
-		/* Ignore empty elements */
-		if (*element == '\0') {
-			continue;
-		}
-
-		g_string_append (string, element);
-		g_string_append_c (string, ' ');
-	}
-
-	/* remove last char */
-	g_string_set_size (string, string->len - 1);
-
-	return g_string_free (string, FALSE);
-}
-
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
-
-static gchar *
-pk_strbuild_test (const gchar *first_element, ...)
-{
-	va_list args;
-	gchar *text;
-
-	/* get the argument list */
-	va_start (args, first_element);
-	text = pk_strbuild_va (first_element, &args);
-	va_end (args);
-
-	return text;
-}
 
 static gchar **
 pk_va_list_to_argv_test (const gchar *first_element, ...)
@@ -695,66 +632,6 @@ libst_common (LibSelfTest *test)
 	} else {
 		libst_failed (test, "incorrect ret when both same");
 	}
-
-	/************************************************************
-	 ****************        build var args        **************
-	 ************************************************************/
-	libst_title (test, "build_va NULL");
-	text_safe = pk_strbuild_test (NULL);
-	if (text_safe == NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "build_va blank");
-	text_safe = pk_strbuild_test ("", NULL);
-	if (text_safe == NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "incorrect ret '%s'", text_safe);
-	}
-
-	/************************************************************/
-	libst_title (test, "build_va single");
-	text_safe = pk_strbuild_test ("richard", NULL);
-	if (egg_strequal (text_safe, "richard")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "incorrect ret '%s'", text_safe);
-	}
-	g_free (text_safe);
-
-	/************************************************************/
-	libst_title (test, "build_va double");
-	text_safe = pk_strbuild_test ("richard", "hughes", NULL);
-	if (egg_strequal (text_safe, "richard hughes")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "incorrect ret '%s'", text_safe);
-	}
-	g_free (text_safe);
-
-	/************************************************************/
-	libst_title (test, "build_va double with space");
-	text_safe = pk_strbuild_test ("richard", "", "hughes", NULL);
-	if (egg_strequal (text_safe, "richard hughes")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "incorrect ret '%s'", text_safe);
-	}
-	g_free (text_safe);
-
-	/************************************************************/
-	libst_title (test, "build_va triple");
-	text_safe = pk_strbuild_test ("richard", "phillip", "hughes", NULL);
-	if (egg_strequal (text_safe, "richard phillip hughes")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "incorrect ret '%s'", text_safe);
-	}
-	g_free (text_safe);
 
 	/************************************************************
 	 ****************      splitting va_list       **************

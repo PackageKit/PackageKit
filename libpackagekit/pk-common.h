@@ -67,9 +67,6 @@ gchar		*pk_strsafe				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		**pk_strsplit				(const gchar	*id,
 							 guint		 parts);
-gchar		*pk_strbuild_va				(const gchar	*first_element,
-							 va_list	*args)
-							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		**pk_ptr_array_to_argv			(GPtrArray	*array)
 							 G_GNUC_WARN_UNUSED_RESULT;
 GPtrArray	*pk_argv_to_ptr_array			(gchar		**array)
