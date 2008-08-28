@@ -30,7 +30,7 @@
 
 #include <pk-package-list.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-cache.h"
 
 #define PK_CACHE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CACHE, PkCachePrivate))
@@ -66,7 +66,7 @@ pk_cache_set_updates (PkCache *cache, PkPackageList *list)
 	pk_cache_invalidate (cache);
 
 	cache->priv->updates_cache = list;
-	pk_debug ("reffing updates cache");
+	egg_debug ("reffing updates cache");
 	g_object_ref (cache->priv->updates_cache);
 	g_object_add_weak_pointer (G_OBJECT (cache->priv->updates_cache), (gpointer) &cache->priv->updates_cache);
 	return TRUE;
@@ -80,7 +80,7 @@ pk_cache_invalidate (PkCache *cache)
 {
 	g_return_val_if_fail (PK_IS_CACHE (cache), FALSE);
 
-	pk_debug ("unreffing updates cache");
+	egg_debug ("unreffing updates cache");
 	if (cache->priv->updates_cache != NULL) {
 		g_object_unref (cache->priv->updates_cache);
 		cache->priv->updates_cache = NULL;

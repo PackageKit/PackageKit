@@ -96,7 +96,7 @@ get_zypp ()
 		        initialized = TRUE;
 	        }
         } catch (const zypp::Exception &ex) {
-		pk_error ("%s", ex.asUserString ().c_str ());
+		egg_error ("%s", ex.asUserString ().c_str ());
         }
 
 	return zypp;
@@ -174,7 +174,7 @@ zypp_build_pool (gboolean include_local)
 				continue;
                         // skip not cached repos
                         if (manager.isCached (repo) == false) {
-                                pk_warning ("%s is not cached! Do a refresh", repo.alias ().c_str ());
+                                egg_warning ("%s is not cached! Do a refresh", repo.alias ().c_str ());
                                 continue;
                         }
                         //FIXME see above, skip already cached repos
@@ -182,11 +182,11 @@ zypp_build_pool (gboolean include_local)
                                 manager.loadFromCache (repo);
 		}
 	} catch (const zypp::repo::RepoNoAliasException &ex) {
-                pk_error ("Can't figure an alias to look in cache");
+                egg_error ("Can't figure an alias to look in cache");
         } catch (const zypp::repo::RepoNotCachedException &ex) {
-                pk_error ("The repo has to be cached at first: %s", ex.asUserString ().c_str ());
+                egg_error ("The repo has to be cached at first: %s", ex.asUserString ().c_str ());
 	} catch (const zypp::Exception &ex) {
-                pk_error ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
+                egg_error ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
 	}
 
 	return zypp->pool ();
@@ -212,7 +212,7 @@ zypp_build_local_pool ()
                 }
 
 	} catch (const zypp::Exception &ex) {
-		pk_error ("%s", ex.asUserString ().c_str ());
+		egg_error ("%s", ex.asUserString ().c_str ());
 	}
 
         return zypp->pool ();
@@ -554,7 +554,7 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 					print = FALSE;
 				}
 				//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
-				//pk_debug ("my default arch is %s", myarch);
+				//egg_debug ("my default arch is %s", myarch);
 			}
 			if (!print)
 				continue;		

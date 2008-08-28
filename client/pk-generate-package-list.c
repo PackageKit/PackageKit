@@ -29,7 +29,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-package-id.h>
@@ -62,7 +62,7 @@ main (int argc, char *argv[])
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	client = pk_client_new ();
 	pk_client_set_use_buffer (client, TRUE, NULL);

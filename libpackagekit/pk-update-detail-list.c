@@ -32,7 +32,7 @@
 #include <glib/gi18n.h>
 #include <glib.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-update-detail-obj.h"
 #include "pk-update-detail-list.h"
@@ -78,7 +78,7 @@ pk_update_detail_list_add_obj (PkUpdateDetailList *list, const PkUpdateDetailObj
 	/* are we already in the cache? */
 	obj_found = pk_update_detail_list_get_obj (list, obj->id);
 	if (obj_found != NULL) {
-		pk_debug ("already in list: %s", obj->id->name);
+		egg_debug ("already in list: %s", obj->id->name);
 		return FALSE;
 	}
 

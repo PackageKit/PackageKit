@@ -24,7 +24,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pk-backend.h>
-#include <pk-debug.h>
+#include <egg-debug.h>
 
 #include <sqlite3.h>
 #include <libbox/libbox-db.h>
@@ -654,7 +654,7 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	if (!box_repos_set_param (rid, parameter, value)) {
-		pk_warning ("Cannot set PARAMETER '%s' TO '%s' for REPO '%s'", parameter, value, rid);
+		egg_warning ("Cannot set PARAMETER '%s' TO '%s' for REPO '%s'", parameter, value, rid);
 	}
 
 	pk_backend_finished (backend);

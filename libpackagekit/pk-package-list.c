@@ -42,7 +42,7 @@
 
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-package-id.h"
 #include "pk-package-obj.h"
@@ -290,7 +290,7 @@ pk_package_list_get_obj (PkPackageList *plist, guint item)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
 	if (item >= plist->priv->array->len) {
-		pk_warning ("item too large!");
+		egg_warning ("item too large!");
 		return NULL;
 	}
 	return g_ptr_array_index (plist->priv->array, item);
@@ -456,7 +456,7 @@ pk_package_list_to_file (PkPackageList *plist, const gchar *filename)
 	text = g_string_free (buffer, FALSE);
 	ret = g_file_set_contents (filename, text, -1, &error);
 	if (!ret) {
-		pk_warning ("Failed to write to disk: %s", error->message);
+		egg_warning ("Failed to write to disk: %s", error->message);
 		g_error_free (error);
 	}
 	g_free (text);
@@ -482,7 +482,7 @@ pk_package_list_add_file (PkPackageList *plist, const gchar *filename)
 
 	ret = g_file_get_contents (filename, &text, NULL, &error);
 	if (!ret) {
-		pk_warning ("Failed to read from disk: %s", error->message);
+		egg_warning ("Failed to read from disk: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}

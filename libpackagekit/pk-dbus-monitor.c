@@ -29,7 +29,7 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-marshal.h"
 #include "pk-dbus-monitor.h"
 
@@ -127,7 +127,7 @@ pk_dbus_monitor_assign (PkDbusMonitor *monitor, PkDbusMonitorType bus_type, cons
 	g_return_val_if_fail (service != NULL, FALSE);
 
 	if (monitor->priv->proxy != NULL) {
-		pk_warning ("already assigned!");
+		egg_warning ("already assigned!");
 		return FALSE;
 	}
 
@@ -141,7 +141,7 @@ pk_dbus_monitor_assign (PkDbusMonitor *monitor, PkDbusMonitorType bus_type, cons
 		monitor->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	}
 	if (error != NULL) {
-		pk_warning ("Cannot connect to bus: %s", error->message);
+		egg_warning ("Cannot connect to bus: %s", error->message);
 		g_error_free (error);
 		return FALSE;
 	}
@@ -151,7 +151,7 @@ pk_dbus_monitor_assign (PkDbusMonitor *monitor, PkDbusMonitorType bus_type, cons
 						 		DBUS_INTERFACE_DBUS,
 								&error);
 	if (error != NULL) {
-		pk_warning ("Cannot connect to DBUS: %s", error->message);
+		egg_warning ("Cannot connect to DBUS: %s", error->message);
 		g_error_free (error);
 		return FALSE;
 	}
@@ -191,7 +191,7 @@ pk_dbus_monitor_is_connected (PkDbusMonitor *monitor)
 	dbus_error_init (&error);
 	ret = dbus_bus_name_has_owner (conn, monitor->priv->service, &error);
 	if (dbus_error_is_set (&error)) {
-		pk_debug ("error: %s", error.message);
+		egg_debug ("error: %s", error.message);
 		dbus_error_free (&error);
 	}
 

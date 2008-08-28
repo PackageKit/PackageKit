@@ -14,6 +14,7 @@ INCLUDES =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
+	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
 	-I$(top_srcdir)/libpackagekit			\
 	-I$(top_srcdir)/libselftest			\
 	$(NULL)
@@ -39,6 +40,8 @@ libexec_PROGRAMS =					\
 	$(NULL)
 
 pkcon_SOURCES =						\
+	egg-debug.c					\
+	egg-debug.h					\
 	pk-console.c					\
 	pk-tools-common.c				\
 	pk-tools-common.h				\
@@ -52,6 +55,8 @@ pkcon_LDADD =						\
 	$(NULL)
 
 pkmon_SOURCES =						\
+	egg-debug.c					\
+	egg-debug.h					\
 	pk-monitor.c					\
 	$(NULL)
 
@@ -63,6 +68,8 @@ pkmon_LDADD =						\
 	$(NULL)
 
 pkgenpack_SOURCES =					\
+	egg-debug.c					\
+	egg-debug.h					\
 	pk-generate-pack-main.c				\
 	pk-generate-pack.c				\
 	pk-generate-pack.h				\
@@ -79,6 +86,8 @@ pkgenpack_LDADD = 					\
 	$(NULL)
 
 pk_generate_package_list_SOURCES =			\
+	egg-debug.c					\
+	egg-debug.h					\
 	pk-generate-package-list.c			\
 	$(NULL)
 
@@ -88,6 +97,8 @@ pk_generate_package_list_LDADD =			\
 	$(NULL)
 
 pk_import_desktop_SOURCES =				\
+	egg-debug.c					\
+	egg-debug.h					\
 	pk-import-common.c				\
 	pk-import-common.h				\
 	pk-import-desktop.c				\
@@ -101,6 +112,8 @@ pk_import_desktop_LDADD =				\
 	$(NULL)
 
 pk_import_specspo_SOURCES =				\
+	egg-debug.c					\
+	egg-debug.h					\
 	pk-import-common.c				\
 	pk-import-common.h				\
 	pk-import-specspo.c				\

@@ -31,7 +31,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-package-id.h>
@@ -62,7 +62,7 @@ pk_import_specspo_get_summary (const gchar *name)
 
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		pk_warning ("failed to reset client: %s", error->message);
+		egg_warning ("failed to reset client: %s", error->message);
 		g_error_free (error);
 		return NULL;
 	}
@@ -73,7 +73,7 @@ pk_import_specspo_get_summary (const gchar *name)
 	ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, names, &error);
 	g_strfreev (names);
 	if (!ret) {
-		pk_warning ("failed to resolve: %s", error->message);
+		egg_warning ("failed to resolve: %s", error->message);
 		g_error_free (error);
 		return NULL;
 	}
@@ -82,14 +82,14 @@ pk_import_specspo_get_summary (const gchar *name)
 	list = pk_client_get_package_list (client);
 	size = pk_package_list_get_size (list);
 	if (size != 1) {
-		pk_warning ("not correct size, %i", size);
+		egg_warning ("not correct size, %i", size);
 		return NULL;
 	}
 
 	/* get the item */
 	item = pk_package_list_get_obj (list, 0);
 	if (item == NULL) {
-		pk_error ("cannot get item");
+		egg_error ("cannot get item");
 		g_object_unref (list);
 		return NULL;
 	}
@@ -165,7 +165,7 @@ main (int argc, char *argv[])
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	client = pk_client_new ();
 	locale_array = pk_import_get_locale_list ();

@@ -34,7 +34,7 @@
 #include <sys/types.h>
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-package-id.h"
 
@@ -74,7 +74,7 @@ pk_package_id_check (const gchar *package_id)
 	}
 	ret = g_utf8_validate (package_id, -1, NULL);
 	if (!ret) {
-		pk_warning ("invalid UTF8!");
+		egg_warning ("invalid UTF8!");
 		return FALSE;
 	}
 	sections = pk_strsplit (package_id, 4);

@@ -43,7 +43,7 @@
 
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-network.h"
 #include "pk-network-nm.h"
 #include "pk-network-unix.h"
@@ -177,14 +177,14 @@ pk_network_init (PkNetwork *network)
 
 	/* NetworkManager isn't up, so we can't use it */
 	if (network->priv->use_nm && !nm_alive) {
-		pk_warning ("UseNetworkManager true, but org.freedesktop.NetworkManager not up");
+		egg_warning ("UseNetworkManager true, but org.freedesktop.NetworkManager not up");
 		network->priv->use_nm = FALSE;
 	}
 
 #if !PK_BUILD_NETWORKMANAGER
 	/* check we can actually use the default */
 	if (network->priv->use_nm) {
-		pk_warning ("UseNetworkManager true, but not built with NM support");
+		egg_warning ("UseNetworkManager true, but not built with NM support");
 		network->priv->use_nm = FALSE;
 	}
 #endif

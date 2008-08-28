@@ -536,7 +536,7 @@ ts_confirm (void *data, struct poldek_ts *ts)
 	PkBackend	*backend = (PkBackend *)data;
 	gint		i = 0, result = 1;
 
-	pk_debug ("START\n");
+	egg_debug ("START\n");
 
 	ipkgs = poldek_ts_get_summary (ts, "I");
 	dpkgs = poldek_ts_get_summary (ts, "D");
@@ -1495,7 +1495,7 @@ update_packages_thread (PkBackend *backend)
 
 	/* sth goes wrong. package_ids has to be set in UpdatePackages */
 	if (update_system == FALSE && package_ids == NULL) {
-		pk_warning ("package_ids cannot be NULL in UpdatePackages method.");
+		egg_warning ("package_ids cannot be NULL in UpdatePackages method.");
 		pk_backend_finished (backend);
 		return TRUE;
 	}
@@ -1643,14 +1643,14 @@ show_rpm_progress (PkBackend *backend, gchar *message)
 	g_return_if_fail (message != NULL);
 
 	if (pberror->rpmstate & PB_RPM_STATE_ENUM_REPACKAGING) {
-		pk_debug ("repackaging '%s'", message);
+		egg_debug ("repackaging '%s'", message);
 	} else if (pberror->rpmstate & PB_RPM_STATE_ENUM_INSTALLING) {
 		tn_array *upkgs, *ipkgs, *rpkgs, *arr = NULL;
 		guint to_install;
 		PkInfoEnum pkinfo;
 		gint n = -2;
 
-		pk_debug ("installing or updating '%s'", message);
+		egg_debug ("installing or updating '%s'", message);
 
 		to_install = pk_backend_get_uint (backend, "to_install");
 

@@ -25,7 +25,7 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-backend-internal.h>
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-package-ids.h>
 #include <pk-enum.h>
 

@@ -43,7 +43,7 @@
 #include <glib/gi18n.h>
 #include <pk-dbus-monitor.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-connection.h"
 
@@ -126,7 +126,7 @@ pk_connection_class_init (PkConnectionClass *klass)
 static void
 pk_connection_connection_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolean connected, PkConnection *connection)
 {
-	pk_debug ("emit connection-changed: %i", connected);
+	egg_debug ("emit connection-changed: %i", connected);
 	g_signal_emit (connection , signals [CONNECTION_CHANGED], 0, connected);
 }
 

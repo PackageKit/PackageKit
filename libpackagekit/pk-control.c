@@ -41,7 +41,7 @@
 #include <glib/gprintf.h>
 #include <dbus/dbus-glib.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-control.h"
 #include "pk-client.h"
 #include "pk-marshal.h"
@@ -121,14 +121,14 @@ pk_control_error_set (GError **error, gint code, const gchar *format, ...)
 
 	/* dumb */
 	if (error == NULL) {
-		pk_warning ("No error set, so can't set: %s", buffer);
+		egg_warning ("No error set, so can't set: %s", buffer);
 		ret = FALSE;
 		goto out;
 	}
 
 	/* already set */
 	if (*error != NULL) {
-		pk_warning ("not NULL error!");
+		egg_warning ("not NULL error!");
 		g_clear_error (error);
 	}
 
@@ -152,7 +152,7 @@ pk_control_error_fixup (GError **error)
 		if ((*error)->domain == DBUS_GERROR &&
 		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION) {
 			/* use one of our local codes */
-			pk_debug ("fixing up code from %i", (*error)->code);
+			egg_debug ("fixing up code from %i", (*error)->code);
 			(*error)->code = PK_CONTROL_ERROR_FAILED;
 		}
 		return TRUE;
@@ -180,7 +180,7 @@ pk_control_get_actions (PkControl *control)
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
-		pk_warning ("No proxy for manager");
+		egg_warning ("No proxy for manager");
 		goto out;
 	}
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetActions", &error,
@@ -189,7 +189,7 @@ pk_control_get_actions (PkControl *control)
 				 G_TYPE_INVALID);
 	if (!ret) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetActions failed :%s", error->message);
+		egg_warning ("GetActions failed :%s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -221,7 +221,7 @@ pk_control_set_proxy (PkControl *control, const gchar *proxy_http, const gchar *
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
-		pk_warning ("No proxy for manager");
+		egg_warning ("No proxy for manager");
 		goto out;
 	}
 	ret = dbus_g_proxy_call (control->priv->proxy, "SetProxy", &error,
@@ -231,7 +231,7 @@ pk_control_set_proxy (PkControl *control, const gchar *proxy_http, const gchar *
 				 G_TYPE_INVALID);
 	if (!ret) {
 		/* abort as the DBUS method failed */
-		pk_warning ("SetProxy failed :%s", error->message);
+		egg_warning ("SetProxy failed :%s", error->message);
 		g_error_free (error);
 	}
 out:
@@ -260,7 +260,7 @@ pk_control_get_groups (PkControl *control)
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
-		pk_warning ("No proxy for manager");
+		egg_warning ("No proxy for manager");
 		goto out;
 	}
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetGroups", &error,
@@ -269,7 +269,7 @@ pk_control_get_groups (PkControl *control)
 				 G_TYPE_INVALID);
 	if (!ret) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetGroups failed :%s", error->message);
+		egg_warning ("GetGroups failed :%s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -299,7 +299,7 @@ pk_control_get_network_state (PkControl *control)
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
-		pk_warning ("No proxy for manager");
+		egg_warning ("No proxy for manager");
 		goto out;
 	}
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetNetworkState", &error,
@@ -308,7 +308,7 @@ pk_control_get_network_state (PkControl *control)
 				 G_TYPE_INVALID);
 	if (!ret) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetNetworkState failed :%s", error->message);
+		egg_warning ("GetNetworkState failed :%s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -340,7 +340,7 @@ pk_control_get_filters (PkControl *control)
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
-		pk_warning ("No proxy for manager");
+		egg_warning ("No proxy for manager");
 		goto out;
 	}
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetFilters", &error,
@@ -349,7 +349,7 @@ pk_control_get_filters (PkControl *control)
 				 G_TYPE_INVALID);
 	if (!ret) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetFilters failed :%s", error->message);
+		egg_warning ("GetFilters failed :%s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -465,7 +465,7 @@ pk_control_set_locale (PkControl *control, const gchar *tid, GError **error)
 	client = pk_client_new ();
 	ret = pk_client_set_tid (client, tid, error);
 	if (!ret) {
-		pk_warning ("failed to set the tid: %s", (*error)->message);
+		egg_warning ("failed to set the tid: %s", (*error)->message);
 		goto out;
 	}
 
@@ -473,7 +473,7 @@ pk_control_set_locale (PkControl *control, const gchar *tid, GError **error)
 	locale = setlocale (LC_ALL, NULL);
 	ret = pk_client_set_locale (client, locale, error);
 	if (!ret) {
-		pk_warning ("failed to set the locale: %s", (*error)->message);
+		egg_warning ("failed to set the locale: %s", (*error)->message);
 		goto out;
 	}
 out:
@@ -530,7 +530,7 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 
 	/* copy */
 	*tid = g_strdup (tid_local);
-	pk_debug ("Got tid: '%s'", tid_local);
+	egg_debug ("Got tid: '%s'", tid_local);
 out:
 	g_free (tid_local);
 	return ret;
@@ -552,10 +552,10 @@ pk_control_transaction_list_print (PkControl *control)
 	if (length == 0) {
 		return TRUE;
 	}
-	pk_debug ("jobs:");
+	egg_debug ("jobs:");
 	for (i=0; i<length; i++) {
 		tid = control->priv->array[i];
-		pk_debug ("%s", tid);
+		egg_debug ("%s", tid);
 	}
 	return TRUE;
 }
@@ -584,12 +584,12 @@ pk_control_transaction_list_refresh (PkControl *control)
 				 G_TYPE_STRV, &control->priv->array,
 				 G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("ERROR: %s", error->message);
+		egg_warning ("ERROR: %s", error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetTransactionList failed!");
+		egg_warning ("GetTransactionList failed!");
 		control->priv->array = NULL;
 		return FALSE;
 	}
@@ -619,7 +619,7 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **array, PkCont
 		g_strfreev (control->priv->array);
 	}
 	control->priv->array = g_strdupv (array);
-	pk_debug ("emit transaction-list-changed");
+	egg_debug ("emit transaction-list-changed");
 	g_signal_emit (control , signals [PK_CONTROL_LIST_CHANGED], 0);
 }
 
@@ -643,7 +643,7 @@ pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 {
 	g_return_if_fail (PK_IS_CONTROL (control));
 
-	pk_debug ("emitting restart-schedule");
+	egg_debug ("emitting restart-schedule");
 	g_signal_emit (control, signals [PK_CONTROL_RESTART_SCHEDULE], 0);
 
 }
@@ -656,7 +656,7 @@ pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
 	g_return_if_fail (PK_IS_CONTROL (control));
 
-	pk_debug ("emitting updates-changed");
+	egg_debug ("emitting updates-changed");
 	g_signal_emit (control, signals [PK_CONTROL_UPDATES_CHANGED], 0);
 
 }
@@ -669,7 +669,7 @@ pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
 	g_return_if_fail (PK_IS_CONTROL (control));
 
-	pk_debug ("emitting repo-list-changed");
+	egg_debug ("emitting repo-list-changed");
 	g_signal_emit (control, signals [PK_CONTROL_REPO_LIST_CHANGED], 0);
 }
 
@@ -683,7 +683,7 @@ pk_control_network_state_changed_cb (DBusGProxy *proxy, const gchar *network_tex
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	network = pk_network_enum_from_text (network_text);
-	pk_debug ("emitting network-state-changed: %s", network_text);
+	egg_debug ("emitting network-state-changed: %s", network_text);
 	g_signal_emit (control, signals [PK_CONTROL_NETWORK_STATE_CHANGED], 0, network);
 }
 
@@ -693,7 +693,7 @@ pk_control_network_state_changed_cb (DBusGProxy *proxy, const gchar *network_tex
 static void
 pk_control_locked_cb (DBusGProxy *proxy, gboolean is_locked, PkControl *control)
 {
-	pk_debug ("emit locked %i", is_locked);
+	egg_debug ("emit locked %i", is_locked);
 	g_signal_emit (control , signals [PK_CONTROL_LOCKED], 0, is_locked);
 }
 
@@ -803,7 +803,7 @@ pk_control_init (PkControl *control)
 	/* check dbus connections, exit if not valid */
 	control->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("This program cannot start until you start the dbus system service.");
 	}
@@ -820,7 +820,7 @@ pk_control_init (PkControl *control)
 	control->priv->proxy = dbus_g_proxy_new_for_name (control->priv->connection,
 							 PK_DBUS_SERVICE, PK_DBUS_PATH, PK_DBUS_INTERFACE);
 	if (control->priv->proxy == NULL) {
-		pk_error ("Cannot connect to PackageKit.");
+		egg_error ("Cannot connect to PackageKit.");
 	}
 
 	dbus_g_proxy_add_signal (control->priv->proxy, "TransactionListChanged",

@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-client.h"
 #include "pk-package-list.h"
@@ -72,7 +72,7 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 
 	/* cancelled? */
 	if (catalog->priv->is_cancelled) {
-		pk_debug ("escaping as cancelled!");
+		egg_debug ("escaping as cancelled!");
 		return FALSE;
 	}
 
@@ -118,7 +118,7 @@ pk_catalog_process_type (PkCatalog *catalog)
 
 	/* cancelled? */
 	if (catalog->priv->is_cancelled) {
-		pk_debug ("escaping as cancelled!");
+		egg_debug ("escaping as cancelled!");
 		return FALSE;
 	}
 
@@ -151,14 +151,14 @@ pk_catalog_process_type (PkCatalog *catalog)
 	/* do each entry */
 	for (i=0; i<array->len; i++) {
 		if (catalog->priv->is_cancelled) {
-			pk_debug ("escaping as cancelled!");
+			egg_debug ("escaping as cancelled!");
 			break;
 		}
 
 		/* reset */
 		ret = pk_client_reset (catalog->priv->client, &error);
 		if (!ret) {
-			pk_warning ("reset failed: %s", error->message);
+			egg_warning ("reset failed: %s", error->message);
 			g_error_free (error);
 			break;
 		}
@@ -180,7 +180,7 @@ pk_catalog_process_type (PkCatalog *catalog)
 			ret = pk_client_what_provides (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, 0, package, &error);
 		}
 		if (!ret) {
-			pk_warning ("method failed: %s", error->message);
+			egg_warning ("method failed: %s", error->message);
 			g_error_free (error);
 			break;
 		}
@@ -207,14 +207,14 @@ pk_catalog_process_file (PkCatalog *catalog, const gchar *filename)
 
 	/* cancelled? */
 	if (catalog->priv->is_cancelled) {
-		pk_debug ("escaping as cancelled!");
+		egg_debug ("escaping as cancelled!");
 		return FALSE;
 	}
 
 	/* load all data */
 	ret = g_key_file_load_from_file (catalog->priv->file, filename, G_KEY_FILE_NONE, &error);
 	if (!ret) {
-		pk_warning ("cannot open file %s, %s", filename, error->message);
+		egg_warning ("cannot open file %s, %s", filename, error->message);
 		g_error_free (error);
 		return FALSE;
 	}
@@ -244,7 +244,7 @@ pk_catalog_cancel (PkCatalog *catalog)
 	GError *error = NULL;
 
 	if (catalog->priv->is_cancelled) {
-		pk_warning ("already cancelled");
+		egg_warning ("already cancelled");
 		return FALSE;
 	}
 	catalog->priv->is_cancelled = TRUE;
@@ -252,7 +252,7 @@ pk_catalog_cancel (PkCatalog *catalog)
 	/* cancel whatever is in progress */
 	ret = pk_client_cancel (catalog->priv->client, &error);
 	if (!ret) {
-		pk_warning ("cancel failed: %s", error->message);
+		egg_warning ("cancel failed: %s", error->message);
 		g_error_free (error);
 	}
 	return TRUE;
@@ -271,10 +271,10 @@ pk_catalog_process_files (PkCatalog *catalog, gchar **filenames)
 	len = g_strv_length (filenames);
 	for (i=0; i<len; i++) {
 		if (catalog->priv->is_cancelled) {
-			pk_debug ("escaping as cancelled!");
+			egg_debug ("escaping as cancelled!");
 			break;
 		}
-		pk_debug ("filenames[%i]=%s", i, filenames[i]);
+		egg_debug ("filenames[%i]=%s", i, filenames[i]);
 		pk_catalog_process_file (catalog, filenames[i]);
 	}
 
@@ -315,7 +315,7 @@ pk_catalog_init (PkCatalog *catalog)
 	/* name-version-arch */
 	catalog->priv->distro_id = pk_get_distro_id ();
 	if (catalog->priv->distro_id == NULL) {
-		pk_error ("no distro_id, your distro needs to implement this in pk-common.c!");
+		egg_error ("no distro_id, your distro needs to implement this in pk-common.c!");
 	}
 
 	catalog->priv->client = pk_client_new ();

@@ -53,7 +53,7 @@
 #include "pk-package-id.h"
 #include "pk-package-ids.h"
 #include "pk-package-list.h"
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-marshal.h"
 #include "pk-common.h"
 #include "pk-control.h"
@@ -193,14 +193,14 @@ pk_client_error_set (GError **error, gint code, const gchar *format, ...)
 
 	/* dumb */
 	if (error == NULL) {
-		pk_warning ("No error set, so can't set: %s", buffer);
+		egg_warning ("No error set, so can't set: %s", buffer);
 		ret = FALSE;
 		goto out;
 	}
 
 	/* already set */
 	if (*error != NULL) {
-		pk_warning ("not NULL error!");
+		egg_warning ("not NULL error!");
 		g_clear_error (error);
 	}
 
@@ -233,7 +233,7 @@ pk_client_error_print (GError **error)
 		} else {
 			name = g_quark_to_string ((*error)->domain);
 		}
-		pk_debug ("ERROR: %s: %s", name, (*error)->message);
+		egg_debug ("ERROR: %s: %s", name, (*error)->message);
 		return TRUE;
 	}
 	return FALSE;
@@ -251,7 +251,7 @@ pk_client_error_fixup (GError **error)
 		if ((*error)->domain == DBUS_GERROR &&
 		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION) {
 			/* use one of our local codes */
-			pk_debug ("fixing up code from %i", (*error)->code);
+			egg_debug ("fixing up code from %i", (*error)->code);
 			(*error)->code = PK_CLIENT_ERROR_FAILED;
 		}
 		return TRUE;
@@ -277,13 +277,13 @@ pk_client_error_refused_by_policy (GError *error)
 
 	/* not a dbus error */
 	if (error->code != DBUS_GERROR_REMOTE_EXCEPTION) {
-		pk_warning ("not a remote exception: %s", error->message);
+		egg_warning ("not a remote exception: %s", error->message);
 		return FALSE;
 	}
 
 	/* check for specific error */
 	error_name = dbus_g_error_get_name (error);
-	pk_debug ("ERROR: %s: %s", error_name, error->message);
+	egg_debug ("ERROR: %s: %s", error_name, error->message);
 	if (pk_strequal (error_name, "org.freedesktop.PackageKit.RefusedByPolicy")) {
 		return TRUE;
 	}
@@ -318,25 +318,25 @@ pk_client_error_auth_obtain (GError *error)
 	/* get PolKitAction */
 	ret = polkit_dbus_error_parse_from_strings ("org.freedesktop.PolicyKit.Error.NotAuthorized", error->message, &action, &result);
 	if (!ret) {
-		pk_warning ("Not a polkit auth failure: %s", error->message);
+		egg_warning ("Not a polkit auth failure: %s", error->message);
 		return FALSE;
 	}
 
 	/* get action_id from PolKitAction */
 	ret = polkit_action_get_action_id (action, &action_id);
 	if (!ret) {
-		pk_warning ("Unable to get an action ID");
+		egg_warning ("Unable to get an action ID");
 		return FALSE;
 	}
 
 	/* this blocks - use polkit_gnome_auth_obtain for non blocking version */
 	ret = polkit_auth_obtain (action_id, 0, getpid (), &error2);
 	if (dbus_error_is_set (&error2)) {
-		pk_warning ("Failed to obtain auth: %s", error2.message);
+		egg_warning ("Failed to obtain auth: %s", error2.message);
 	}
 	dbus_error_free (&error2);
 
-	pk_debug ("gained %s privilege = %d", action_id, ret);
+	egg_debug ("gained %s privilege = %d", action_id, ret);
 
 	polkit_action_unref (action);
 #endif
@@ -496,7 +496,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	g_object_ref (client);
 
 	exit = pk_exit_enum_from_text (exit_text);
-	pk_debug ("emit finished %s, %i", exit_text, runtime);
+	egg_debug ("emit finished %s, %i", exit_text, runtime);
 
 	/* only this instance is finished, and do it before the signal so we can reset */
 	client->priv->is_finished = TRUE;
@@ -528,7 +528,7 @@ pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subper
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit progress-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
+	egg_debug ("emit progress-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
 	g_signal_emit (client , signals [PK_CLIENT_PROGRESS_CHANGED], 0,
 		       percentage, subpercentage, elapsed, remaining);
 }
@@ -539,7 +539,7 @@ pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subper
 static void
 pk_client_change_status (PkClient *client, PkStatusEnum status)
 {
-	pk_debug ("emit status-changed %s", pk_status_enum_to_text (status));
+	egg_debug ("emit status-changed %s", pk_status_enum_to_text (status));
 	g_signal_emit (client , signals [PK_CLIENT_STATUS_CHANGED], 0, status);
 	client->priv->last_status = status;
 }
@@ -578,7 +578,7 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	id = pk_package_id_new_from_string (package_id);
 	obj = pk_package_obj_new (info, id, summary);
 
-	pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
+	egg_debug ("emit package %s, %s, %s", info_text, package_id, summary);
 	g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, obj);
 
 	/* cache */
@@ -601,7 +601,7 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	role = pk_role_enum_from_text (role_text);
-	pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec,
+	egg_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec,
 		  succeeded, role_text, duration, data);
 	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec,
 		       succeeded, role, duration, data);
@@ -620,7 +620,7 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 
 	type = pk_update_state_enum_from_text (type_text);
 	obj = pk_distro_upgrade_obj_new_from_data  (type, name, summary);
-	pk_debug ("emitting distro_upgrade %s, %s, %s", type_text, name, summary);
+	egg_debug ("emitting distro_upgrade %s, %s, %s", type_text, name, summary);
 	g_signal_emit (client, signals [PK_CLIENT_DISTRO_UPGRADE], 0, obj);
 	pk_distro_upgrade_obj_free (obj);
 }
@@ -644,7 +644,7 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
+	egg_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, updates, obsoletes, vendor_url, bugzilla_url,
 		  cve_url, restart_text, update_text, changelog,
 		  state_text, issued_text, updated_text);
@@ -686,7 +686,7 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 	group = pk_group_enum_from_text (group_text);
 	id = pk_package_id_new_from_string (package_id);
 
-	pk_debug ("emit details %s, %s, %s, %s, %s, %ld",
+	egg_debug ("emit details %s, %s, %s, %s, %s, %ld",
 		  package_id, license, group_text, description, url, (long int) size);
 
 	details = pk_details_obj_new_from_data (id, license, group, description, url, size);
@@ -707,10 +707,10 @@ pk_client_file_copy (const gchar *filename, const gchar *directory)
 
 	/* TODO: use GIO when we have a hard dep on it */
 	command = g_strdup_printf ("cp \"%s\" \"%s\"", filename, directory);
-	pk_debug ("command: %s", command);
+	egg_debug ("command: %s", command);
 	ret = g_spawn_command_line_sync (command, NULL, NULL, NULL, &error);
 	if (!ret) {
-		pk_warning ("failed to copy: %s", error->message);
+		egg_warning ("failed to copy: %s", error->message);
 		g_error_free (error);
 	}
 	g_free (command);
@@ -729,7 +729,7 @@ pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *fil
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit files %s, <lots of files>", package_id);
+	egg_debug ("emit files %s, <lots of files>", package_id);
 	g_signal_emit (client , signals [PK_CLIENT_FILES], 0, package_id, filelist);
 
 	/* we are a callback from DownloadPackages */
@@ -754,7 +754,7 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %s",
+	egg_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, repository_name, key_url, key_userid,
 		  key_id, key_fingerprint, key_timestamp, type_text);
 
@@ -771,7 +771,7 @@ pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit eula-required %s, %s, %s, %s",
+	egg_debug ("emit eula-required %s, %s, %s, %s",
 		  eula_id, package_id, vendor_name, license_agreement);
 
 	g_signal_emit (client, signals [PK_CLIENT_EULA_REQUIRED], 0,
@@ -787,7 +787,7 @@ pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
+	egg_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
 	g_signal_emit (client, signals [PK_CLIENT_REPO_DETAIL], 0, repo_id, description, enabled);
 }
 
@@ -804,7 +804,7 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	code = pk_error_enum_from_text (code_text);
-	pk_debug ("emit error-code %i, %s", code, details);
+	egg_debug ("emit error-code %i, %s", code, details);
 	g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, code, details);
 }
 
@@ -816,7 +816,7 @@ pk_client_allow_cancel_cb (DBusGProxy *proxy, gboolean allow_cancel, PkClient *c
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit allow-cancel %i", allow_cancel);
+	egg_debug ("emit allow-cancel %i", allow_cancel);
 	g_signal_emit (client , signals [PK_CLIENT_ALLOW_CANCEL], 0, allow_cancel);
 }
 
@@ -864,7 +864,7 @@ pk_client_caller_active_changed_cb (DBusGProxy  *proxy,
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit caller-active-changed %i", is_active);
+	egg_debug ("emit caller-active-changed %i", is_active);
 	g_signal_emit (client , signals [PK_CLIENT_CALLER_ACTIVE_CHANGED], 0, is_active);
 }
 
@@ -881,11 +881,11 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	restart = pk_restart_enum_from_text (restart_text);
-	pk_debug ("emit require-restart %i, %s", restart, details);
+	egg_debug ("emit require-restart %i, %s", restart, details);
 	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, details);
 	if (restart > client->priv->require_restart) {
 		client->priv->require_restart = restart;
-		pk_debug ("restart status now %s", pk_restart_enum_to_text (restart));
+		egg_debug ("restart status now %s", pk_restart_enum_to_text (restart));
 	}
 }
 
@@ -899,7 +899,7 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	message = pk_message_enum_from_text (message_text);
-	pk_debug ("emit message %i, %s", message, details);
+	egg_debug ("emit message %i, %s", message, details);
 	g_signal_emit (client , signals [PK_CLIENT_MESSAGE], 0, message, details);
 }
 
@@ -1114,7 +1114,7 @@ pk_client_cancel (PkClient *client, GError **error)
 
 	/* special case - if the tid is already finished, then cancel should return TRUE */
 	if (g_str_has_suffix (error_local->message, " doesn't exist\n")) {
-		pk_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
+		egg_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
 		g_error_free (error_local);
 		return TRUE;
 	}
@@ -2809,7 +2809,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 		file = pk_resolve_local_path (files[i]);
 		/* only replace if different */
 		if (!pk_strequal (file, files[i])) {
-			pk_debug ("resolved %s to %s", files[i], file);
+			egg_debug ("resolved %s to %s", files[i], file);
 			/* replace */
 			g_free (files[i]);
 			files[i] = g_strdup (file);
@@ -3371,7 +3371,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 		return FALSE;
 	}
 	client->priv->tid = g_strdup (tid);
-	pk_debug ("set tid %s on %p", client->priv->tid, client);
+	egg_debug ("set tid %s on %p", client->priv->tid, client);
 
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
@@ -3739,7 +3739,7 @@ pk_client_class_init (PkClientClass *klass)
 static void
 pk_client_connect (PkClient *client)
 {
-	pk_debug ("connect");
+	egg_debug ("connect");
 }
 
 /**
@@ -3750,7 +3750,7 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkClien
 {
 	/* if PK re-started mid-transaction then show a big fat warning */
 	if (!connected && client->priv->tid != NULL && !client->priv->is_finished) {
-		pk_warning ("daemon disconnected mid-transaction!");
+		egg_warning ("daemon disconnected mid-transaction!");
 	}
 }
 
@@ -3830,7 +3830,7 @@ pk_client_reset (PkClient *client, GError **error)
 	}
 
 	if (client->priv->tid != NULL && !client->priv->is_finished) {
-		pk_debug ("not exit status, will try to cancel tid %s", client->priv->tid);
+		egg_debug ("not exit status, will try to cancel tid %s", client->priv->tid);
 		/* we try to cancel the running tranaction */
 		ret = pk_client_cancel (client, error);
 		if (!ret) {
@@ -3903,7 +3903,7 @@ pk_client_init (PkClient *client)
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("Could not connect to system DBUS.");
 	}
@@ -4087,7 +4087,7 @@ libst_client_finished2_cb (PkClient *client, PkExitEnum exit, guint runtime, Lib
 	/* this is supported */
 	reset_okay = pk_client_reset (client, &error);
 	if (!reset_okay) {
-		pk_warning ("failed to reset in ::Finished(): %s", error->message);
+		egg_warning ("failed to reset in ::Finished(): %s", error->message);
 		g_error_free (error);
 	}
 }

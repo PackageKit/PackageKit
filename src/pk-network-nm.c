@@ -39,7 +39,7 @@
 #include <glib/gi18n.h>
 #include <libnm_glib.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-network-nm.h"
 #include "pk-marshal.h"
 

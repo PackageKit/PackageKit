@@ -31,7 +31,7 @@
 #include <glib/gstdio.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-client.h>
 #include <pk-control.h>
 
@@ -79,7 +79,7 @@ main (int argc, char *argv[])
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	if (with_package_list != NULL) {
 		package_list = with_package_list;

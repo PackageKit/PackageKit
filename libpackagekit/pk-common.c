@@ -42,7 +42,7 @@
 
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-enum.h"
 
@@ -176,7 +176,7 @@ pk_iso8601_difference (const gchar *isodate)
 	/* convert date */
 	ret = g_time_val_from_iso8601 (isodate, &timeval_then);
 	if (!ret) {
-		pk_warning ("failed to parse '%s'", isodate);
+		egg_warning ("failed to parse '%s'", isodate);
 		return 0;
 	}
 	g_get_current_time (&timeval_now);
@@ -241,7 +241,7 @@ pk_iso8601_to_date (const gchar *iso_date)
 		date = g_date_new_dmy (d, m, y);
 		goto out;
 	}
-	pk_warning ("could not parse '%s'", iso_date);
+	egg_warning ("could not parse '%s'", iso_date);
 out:
 	return date;
 }
@@ -299,7 +299,7 @@ pk_strsafe (const gchar *text)
 	/* is valid UTF8? */
 	ret = g_utf8_validate (text, -1, NULL);
 	if (!ret) {
-		pk_warning ("text '%s' was not valid UTF8!", text);
+		egg_warning ("text '%s' was not valid UTF8!", text);
 		return NULL;
 	}
 
@@ -333,7 +333,7 @@ pk_strnumber (const gchar *text)
 	/* max length is 10 */
 	length = pk_strlen (text, 10);
 	if (length == 10) {
-		pk_warning ("input too long: %s", text);
+		egg_warning ("input too long: %s", text);
 		return FALSE;
 	}
 
@@ -341,7 +341,7 @@ pk_strnumber (const gchar *text)
 		if (i == 0 && text[i] == '-') {
 			/* negative sign */
 		} else if (g_ascii_isdigit (text[i]) == FALSE) {
-			pk_warning ("not a number '%c' in text!", text[i]);
+			egg_warning ("not a number '%c' in text!", text[i]);
 			return FALSE;
 		}
 	}
@@ -463,13 +463,13 @@ pk_strvalidate (const gchar *text)
 	/* maximum size is 1024 */
 	length = pk_strlen (text, 1024);
 	if (length > 1024) {
-		pk_warning ("input too long: %u", length);
+		egg_warning ("input too long: %u", length);
 		return FALSE;
 	}
 
 	for (i=0; i<length; i++) {
 		if (pk_strvalidate_char (text[i]) == FALSE) {
-			pk_warning ("invalid char '%c' in text!", text[i]);
+			egg_warning ("invalid char '%c' in text!", text[i]);
 			return FALSE;
 		}
 	}
@@ -532,7 +532,7 @@ gboolean
 pk_strequal (const gchar *id1, const gchar *id2)
 {
 	if (id1 == NULL || id2 == NULL) {
-		pk_debug ("string compare invalid '%s' and '%s'", id1, id2);
+		egg_debug ("string compare invalid '%s' and '%s'", id1, id2);
 		return FALSE;
 	}
 	return (strcmp (id1, id2) == 0);
@@ -560,11 +560,11 @@ pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compa
 	guint i;
 
 	if (id1 == NULL || id2 == NULL) {
-		pk_warning ("package id compare invalid '%s' and '%s'", id1, id2);
+		egg_warning ("package id compare invalid '%s' and '%s'", id1, id2);
 		return FALSE;
 	}
 	if (compare > parts) {
-		pk_warning ("compare %i > parts %i", compare, parts);
+		egg_warning ("compare %i > parts %i", compare, parts);
 		return FALSE;
 	}
 	if (compare == parts) {
@@ -577,11 +577,11 @@ pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compa
 
 	/* check we split okay */
 	if (sections1 == NULL) {
-		pk_warning ("string id compare sections1 invalid '%s'", id1);
+		egg_warning ("string id compare sections1 invalid '%s'", id1);
 		goto out;
 	}
 	if (sections2 == NULL) {
-		pk_warning ("string id compare sections2 invalid '%s'", id2);
+		egg_warning ("string id compare sections2 invalid '%s'", id2);
 		goto out;
 	}
 

@@ -103,7 +103,7 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 			parsed_name = g_strconcat(temp,"_",items[len-2],NULL);
 			g_free(temp);
 
-			pk_debug("type is %s, group is %s, parsed_name is %s",items[len-2],items[len-1],parsed_name);
+			egg_debug("type is %s, group is %s, parsed_name is %s",items[len-2],items[len-1],parsed_name);
 
 			g_hash_table_insert(releases, parsed_name, repo);
 			g_free(contents);
@@ -119,9 +119,9 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 	dir = g_dir_open(sdir,0,&error);
 	res = sqlite3_prepare_v2(db, "insert or replace into packages values (?,?,?,?,?,?,?)", -1, &package, NULL);
 	if (res!=SQLITE_OK)
-		pk_error("sqlite error during insert prepare: %s", sqlite3_errmsg(db));
+		egg_error("sqlite error during insert prepare: %s", sqlite3_errmsg(db));
 	else
-		pk_debug("insert prepare ok for %p",package);
+		egg_debug("insert prepare ok for %p",package);
 	while ((fname = g_dir_read_name(dir))!=NULL)
 	{
 		gchar** items = g_strsplit(fname,"_",-1);
@@ -157,34 +157,34 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 				items[len-1] = temp;
 			}
 
-			pk_debug("type is %s, group is %s, parsed_name is %s",items[len-2],items[len-1],parsed_name);
+			egg_debug("type is %s, group is %s, parsed_name is %s",items[len-2],items[len-1],parsed_name);
 
 			repo = (const gchar *)g_hash_table_lookup(releases,parsed_name);
 			if (repo == NULL)
 			{
-				pk_debug("Can't find repo for %s, marking as \"unknown\"",parsed_name);
+				egg_debug("Can't find repo for %s, marking as \"unknown\"",parsed_name);
 				repo = g_strdup("unknown");
 				//g_assert(0);
 			}
 			else
-				pk_debug("repo for %s is %s",parsed_name,repo);
+				egg_debug("repo for %s is %s",parsed_name,repo);
 			g_free(parsed_name);
 
 			fullname = g_build_filename(sdir,fname,NULL);
-			pk_debug("loading %s",fullname);
+			egg_debug("loading %s",fullname);
 			if (g_file_get_contents(fullname,&contents,NULL,NULL) == FALSE)
 			{
 				pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "error loading %s",fullname);
 				goto search_task_cleanup;
 			}
 			/*else
-				pk_debug("loaded");*/
+				egg_debug("loaded");*/
 
 			res = sqlite3_bind_text(package,FIELD_REPO,repo,-1,SQLITE_TRANSIENT);
 			if (res!=SQLITE_OK)
-				pk_error("sqlite error during repo bind: %s", sqlite3_errmsg(db));
+				egg_error("sqlite error during repo bind: %s", sqlite3_errmsg(db));
 			/*else
-				pk_debug("repo bind ok");*/
+				egg_debug("repo bind ok");*/
 
 			res = sqlite3_exec(db,"begin",NULL,NULL,NULL);
 			g_assert(res == SQLITE_OK);
@@ -208,15 +208,15 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 						{
 							res=sqlite3_bind_text(package,FIELD_LONG,description,-1,SQLITE_TRANSIENT);
 							if (res!=SQLITE_OK)
-								pk_error("sqlite error during description bind: %s", sqlite3_errmsg(db));
+								egg_error("sqlite error during description bind: %s", sqlite3_errmsg(db));
 							g_free(description);
 							description = NULL;
 						}
 						res = sqlite3_step(package);
 						if (res!=SQLITE_DONE)
-							pk_error("sqlite error during step: %s", sqlite3_errmsg(db));
+							egg_error("sqlite error during step: %s", sqlite3_errmsg(db));
 						sqlite3_reset(package);
-						//pk_debug("added package");
+						//egg_debug("added package");
 						haspk = FALSE;
 					}
 					//g_assert(0);
@@ -239,15 +239,15 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 					colon[0] = '\0';
 					colon+=2;
 					/*if (strlen(colon)>3000)
-						pk_error("strlen(colon) = %d\ncolon = %s",strlen(colon),colon);*/
-					//pk_debug("entry = '%s','%s'",begin,colon);
+						egg_error("strlen(colon) = %d\ncolon = %s",strlen(colon),colon);*/
+					//egg_debug("entry = '%s','%s'",begin,colon);
 					if (begin[0] == 'P' && g_strcasecmp("Package",begin)==0)
 					{
 						res=sqlite3_bind_text(package,FIELD_PKG,colon,-1,SQLITE_STATIC);
 						haspk = TRUE;
 						count++;
 						if (count%1000==0)
-							pk_debug("Package %ld (%s)",count,colon);
+							egg_debug("Package %ld (%s)",count,colon);
 					}
 					else if (begin[0] == 'V' && g_strcasecmp("Version",begin)==0)
 						res=sqlite3_bind_text(package,FIELD_VER,colon,-1,SQLITE_STATIC);
@@ -258,7 +258,7 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 					else if (begin[0] == 'D' && g_strcasecmp("Description",begin)==0)
 						res=sqlite3_bind_text(package,FIELD_SHORT,colon,-1,SQLITE_STATIC);
 					if (res!=SQLITE_OK)
-						pk_error("sqlite error during %s bind: %s", begin, sqlite3_errmsg(db));
+						egg_error("sqlite error during %s bind: %s", begin, sqlite3_errmsg(db));
 				}
 				if (next == NULL)
 					break;
@@ -266,10 +266,10 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 			}
 			res = sqlite3_exec(db,"commit",NULL,NULL,NULL);
 			if (res!=SQLITE_OK)
-				pk_error("sqlite error during commit: %s", sqlite3_errmsg(db));
+				egg_error("sqlite error during commit: %s", sqlite3_errmsg(db));
 			res = sqlite3_clear_bindings(package);
 			if (res!=SQLITE_OK)
-				pk_error("sqlite error during clear: %s", sqlite3_errmsg(db));
+				egg_error("sqlite error during clear: %s", sqlite3_errmsg(db));
 			g_free(contents);
 			contents = NULL;
 		}

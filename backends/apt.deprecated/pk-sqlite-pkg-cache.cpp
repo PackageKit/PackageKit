@@ -53,11 +53,11 @@ sqlite_init_cache(PkBackend *backend, const char* dbname, const char *compare_fn
 		ret = sqlite3_exec(db, "select value from params where name = 'build_complete'", NULL, NULL, NULL);
 		if (ret != SQLITE_ERROR)
 			return;
-		pk_debug("ages are %lu for db, and %lu for comparism",db_age,st.st_mtime);
+		egg_debug("ages are %lu for db, and %lu for comparism",db_age,st.st_mtime);
 	}
 	ret = sqlite3_exec(db,"drop table packages",NULL,NULL,NULL); // wipe it!
 	//g_assert(ret == SQLITE_OK);
-	pk_debug("wiped db");
+	egg_debug("wiped db");
 	ret = sqlite3_exec(db,"create table packages (name text, version text, deps text, arch text, short_desc text, long_desc text, repo string, primary key(name,version,arch,repo))",NULL,NULL,NULL);
 	g_assert(ret == SQLITE_OK);
 
@@ -85,7 +85,7 @@ sqlite_search_packages_thread (PkBackend *backend)
 	type = pk_backend_get_uint (backend, "type");
 	search = pk_backend_get_string (backend, "search");
 
-	pk_debug("finding %s", search);
+	egg_debug("finding %s", search);
 
 	sqlite3_stmt *package = NULL;
 	g_strdelimit(search," ",'%');
@@ -100,11 +100,11 @@ sqlite_search_packages_thread (PkBackend *backend)
 		goto end_search_packages;
 	}
 
-	pk_debug("statement is '%s'",sel);
+	egg_debug("statement is '%s'",sel);
 	res = sqlite3_prepare_v2(db,sel, -1, &package, NULL);
 	g_free(sel);
 	if (res!=SQLITE_OK)
-		pk_error("sqlite error during select prepare: %s", sqlite3_errmsg(db));
+		egg_error("sqlite error during select prepare: %s", sqlite3_errmsg(db));
 	res = sqlite3_step(package);
 	while (res == SQLITE_ROW)
 	{
@@ -129,7 +129,7 @@ sqlite_search_packages_thread (PkBackend *backend)
 	}
 	if (res!=SQLITE_DONE)
 	{
-		pk_debug("sqlite error during step (%d): %s", res, sqlite3_errmsg(db));
+		egg_debug("sqlite error during step (%d): %s", res, sqlite3_errmsg(db));
 		g_assert(0);
 	}
 
@@ -178,23 +178,23 @@ sqlite_get_details_thread (PkBackend *backend)
 	pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
-	pk_debug("finding %s", pi->name);
+	egg_debug("finding %s", pi->name);
 
 	sqlite3_stmt *package = NULL;
 	gchar *sel = g_strdup_printf("select long_desc from packages where name = '%s' and version = '%s' and repo = '%s'",pi->name,pi->version,pi->data);
-	pk_debug("statement is '%s'",sel);
+	egg_debug("statement is '%s'",sel);
 	res = sqlite3_prepare_v2(db,sel, -1, &package, NULL);
 	g_free(sel);
 	if (res!=SQLITE_OK)
-		pk_error("sqlite error during select prepare: %s", sqlite3_errmsg(db));
+		egg_error("sqlite error during select prepare: %s", sqlite3_errmsg(db));
 	res = sqlite3_step(package);
 	pk_backend_details(backend,pi->name, "unknown", PK_GROUP_ENUM_OTHER,(const gchar*)sqlite3_column_text(package,0),"",0);
 	res = sqlite3_step(package);
 	if (res==SQLITE_ROW)
-		pk_error("multiple matches for that package!");
+		egg_error("multiple matches for that package!");
 	if (res!=SQLITE_DONE)
 	{
-		pk_debug("sqlite error during step (%d): %s", res, sqlite3_errmsg(db));
+		egg_debug("sqlite error during step (%d): %s", res, sqlite3_errmsg(db));
 		g_assert(0);
 	}
 
