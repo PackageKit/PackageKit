@@ -35,9 +35,12 @@ pkpackage = PackagekitPackage()
 def needs_cache(func):
     """ Load smart's channels, and save the cache when done. """
     def cache_wrap(obj, *args, **kwargs):
-        obj.status(STATUS_SETUP)
+        # Smart's usual output is: (delocalized)
+        # Loading cache...
+        # Updating cache...    ########## [100%]
+        #
+        obj.status(STATUS_REQUEST) # ???
         obj.ctrl.reloadChannels()
-        obj.status(STATUS_UNKNOWN)
         result = func(obj, *args, **kwargs)
         obj.ctrl.saveSysConf()
         return result
@@ -67,10 +70,12 @@ class PackageKitSmartProgress(Progress):
         if flag:
             self._oldstatus = self._backend._status
             self._backend.status(STATUS_DOWNLOAD)
+            self._backend.percentage(0)
 
     def stop(self):
         Progress.stop(self)
         if self._oldstatus:
+            self._backend.percentage(100)
             self._backend.status(self._oldstatus)
             self._oldstatus = None
 
@@ -349,6 +354,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     
     @needs_cache
     def get_details(self, packageids):
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -405,6 +411,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def get_files(self, packageids):
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -434,6 +441,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def get_depends(self, filters, packageids, recursive_text):
         recursive = self._text_to_boolean(recursive_text)
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -458,6 +466,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def get_requires(self, filters, packageids, recursive_text):
         recursive = self._text_to_boolean(recursive_text)
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -480,6 +489,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     self._show_package(package)
 
     def get_repo_list(self, filters):
+        self.status(STATUS_INFO)
         channels = smart.sysconf.get("channels", ())
         for alias in channels:
             channel = smart.sysconf.get(("channels", alias))
@@ -491,6 +501,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self.repo_detail(alias, name, enabled)
 
     def repo_enable(self, repoid, enable):
+        self.status(STATUS_INFO)
         if smart.sysconf.has(("channels", repoid)):
             if enable == "true":
                 smart.sysconf.remove(("channels", repoid, "disabled"))
