@@ -373,6 +373,7 @@ libst_package_id (LibSelfTest *test)
 	const gchar *temp;
 	PkPackageId *id;
 	PkPackageId *id2;
+	gchar **array;
 
 	if (libst_start (test, "PkPackageId", CLASS_AUTO) == FALSE) {
 		return;
