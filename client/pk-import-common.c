@@ -22,7 +22,7 @@
 #include "config.h"
 #include <glib.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-common.h>
 #include "pk-import-common.h"
 
@@ -37,12 +37,12 @@ pk_import_get_locale_list (void)
 
 	dir = g_dir_open (PK_IMPORT_LOCALEDIR, 0, NULL);
 	if (dir == NULL) {
-		pk_error ("not a valid locale dir!");
+		egg_error ("not a valid locale dir!");
 	}
 
 	name = g_dir_read_name (dir);
 	while (name != NULL) {
-		pk_debug ("locale=%s", name);
+		egg_debug ("locale=%s", name);
 		g_ptr_array_add (locale_array, g_strdup (name));
 		name = g_dir_read_name (dir);
 	}
@@ -69,7 +69,7 @@ pk_import_get_package_list (void)
 
 	ret = g_file_get_contents ("/tmp/list.txt", &contents, NULL, NULL);
 	if (ret == FALSE) {
-		pk_error ("failed to open file");
+		egg_error ("failed to open file");
 	}
 
 	lines = g_strsplit (contents, "\n", -1);

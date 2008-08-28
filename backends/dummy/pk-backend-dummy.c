@@ -407,7 +407,7 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 	if (type == PK_SIGTYPE_ENUM_GPG &&
 	    pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
 	    pk_strequal (key_id, "BB7576AC")) {
-		pk_debug ("installed signature %s for %s", key_id, package_id);
+		egg_debug ("installed signature %s for %s", key_id, package_id);
 		_has_signature = TRUE;
 	} else {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
@@ -552,7 +552,7 @@ backend_search_name_timeout (gpointer data)
 	PkBackend *backend = (PkBackend *) data;
 	locale = pk_backend_get_locale (backend);
 
-	pk_debug ("locale is %s", locale);
+	egg_debug ("locale is %s", locale);
 	if (!pk_strequal (locale, "en_GB.utf8")) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 				    "evince;0.9.3-5.fc8;i386;installed",
@@ -755,19 +755,19 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 
 	if (pk_strequal (rid, "local")) {
-		pk_debug ("local repo: %i", enabled);
+		egg_debug ("local repo: %i", enabled);
 		_repo_enabled_local = enabled;
 	} else if (pk_strequal (rid, "development")) {
-		pk_debug ("devel repo: %i", enabled);
+		egg_debug ("devel repo: %i", enabled);
 		_repo_enabled_devel = enabled;
 	} else if (pk_strequal (rid, "fedora")) {
-		pk_debug ("fedora repo: %i", enabled);
+		egg_debug ("fedora repo: %i", enabled);
 		_repo_enabled_fedora = enabled;
 	} else if (pk_strequal (rid, "livna-development")) {
-		pk_debug ("livna repo: %i", enabled);
+		egg_debug ("livna repo: %i", enabled);
 		_repo_enabled_livna = enabled;
 	} else {
-		pk_warning ("unknown repo: %s", rid);
+		egg_warning ("unknown repo: %s", rid);
 	}
 	pk_backend_finished (backend);
 }
@@ -779,7 +779,7 @@ static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
-	pk_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
+	egg_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
 	pk_backend_finished (backend);
 }
 
@@ -790,7 +790,7 @@ static void
 backend_service_pack (PkBackend *backend, const gchar *location, gboolean enabled)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_RUNNING);
-	pk_warning ("service pack %i on %s device", enabled, location);
+	egg_warning ("service pack %i on %s device", enabled, location);
 
 	/*
 	 * VERY IMPORTANT: THE REPO MUST BE DISABLED IF IT IS ADDED!

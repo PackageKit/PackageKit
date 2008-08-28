@@ -42,7 +42,7 @@
 
 #include "pk-extra.h"
 #include "pk-common.h"
-#include "pk-debug.h"
+#include "egg-debug.h"
 
 static void     pk_extra_class_init	(PkExtraClass *klass);
 static void     pk_extra_init		(PkExtra      *extra);
@@ -112,7 +112,7 @@ pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, g
 
 	/* sanity check */
 	if (package == NULL) {
-		pk_warning ("package data invalid (%s,%s,%s)", package, icon_name, exec);
+		egg_warning ("package data invalid (%s,%s,%s)", package, icon_name, exec);
 		goto out;
 	}
 
@@ -162,7 +162,7 @@ pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gc
 
 	/* sanity check */
 	if (package == NULL) {
-		pk_warning ("package data invalid (%s,%s)", package, summary);
+		egg_warning ("package data invalid (%s,%s)", package, summary);
 		goto out;
 	}
 
@@ -199,7 +199,7 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -208,7 +208,7 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_locale_cache_callback, extra, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -218,7 +218,7 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_locale_cache_callback, extra, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -242,7 +242,7 @@ pk_extra_populate_package_cache (PkExtra *extra)
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -250,7 +250,7 @@ pk_extra_populate_package_cache (PkExtra *extra)
 	statement = "SELECT package, icon, exec FROM data";
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_package_cache_callback, extra, &error_msg);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -282,7 +282,7 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 	for (i=0; i<len; i++) {
 		if (extra->priv->locale_base[i] == '_') {
 			extra->priv->locale_base[i] = '\0';
-			pk_debug ("locale_base is '%s'", extra->priv->locale_base);
+			egg_debug ("locale_base is '%s'", extra->priv->locale_base);
 			break;
 		}
 	}
@@ -400,7 +400,7 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -416,7 +416,7 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 				 "INSERT INTO localised (package, locale, summary) "
 				 "VALUES (?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL failed to prepare");
+		egg_warning ("SQL failed to prepare");
 		return FALSE;
 	}
 
@@ -429,7 +429,7 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 	sqlite3_step (sql_statement);
 	rc = sqlite3_finalize (sql_statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -463,7 +463,7 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -476,7 +476,7 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 	rc = sqlite3_prepare_v2 (extra->priv->db, "INSERT INTO data (package, icon, exec) "
 				 "VALUES (?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL failed to prepare");
+		egg_warning ("SQL failed to prepare");
 		return FALSE;
 	}
 
@@ -489,13 +489,13 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 	sqlite3_step (sql_statement);
 	rc = sqlite3_finalize (sql_statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
 
 	/* add to cache */
-	pk_debug ("adding package:%s", package);
+	egg_debug ("adding package:%s", package);
 	obj = g_new (PkExtraPackageObj, 1);
 	obj->icon_name = g_strdup (icon_name);
 	obj->exec = g_strdup (exec);
@@ -522,7 +522,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 
 	if (extra->priv->database != NULL) {
-		pk_warning ("cannot assign extra than once");
+		egg_warning ("cannot assign extra than once");
 		return FALSE;
 	}
 
@@ -537,10 +537,10 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 	/* if the database file was not installed (or was nuked) recreate it */
 	create_file = g_file_test (filename, G_FILE_TEST_EXISTS);
 
-	pk_debug ("trying to open database '%s'", filename);
+	egg_debug ("trying to open database '%s'", filename);
 	rc = sqlite3_open (filename, &extra->priv->db);
 	if (rc) {
-		pk_warning ("Can't open database: %s\n", sqlite3_errmsg (extra->priv->db));
+		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (extra->priv->db));
 		sqlite3_close (extra->priv->db);
 		extra->priv->db = NULL;
 		return FALSE;
@@ -553,7 +553,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "summary TEXT);";
 			rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, &error_msg);
 			if (rc != SQLITE_OK) {
-				pk_warning ("SQL error: %s\n", error_msg);
+				egg_warning ("SQL error: %s\n", error_msg);
 				sqlite3_free (error_msg);
 			}
 			statement = "CREATE TABLE data ("
@@ -563,7 +563,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "exec TEXT);";
 			rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, &error_msg);
 			if (rc != SQLITE_OK) {
-				pk_warning ("SQL error: %s\n", error_msg);
+				egg_warning ("SQL error: %s\n", error_msg);
 				sqlite3_free (error_msg);
 			}
 		}

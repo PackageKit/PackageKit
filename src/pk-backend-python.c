@@ -45,7 +45,7 @@
 #include <pk-package-id.h>
 #include <pk-enum.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-backend-internal.h"
 #include "pk-backend-python.h"
 #include "pk-marshal.h"
@@ -111,7 +111,7 @@ pk_backend_python_repo_detail_cb (PyObject *self, PyObject *args)
 	gboolean enabled;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "ssi", &repo_id, &description, &enabled);
 
 	pk_backend_repo_detail (python->priv->backend, repo_id, description, enabled);
@@ -127,7 +127,7 @@ pk_backend_python_status_changed_cb (PyObject *self, PyObject *args)
 	const gchar *status_text;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "s", &status_text);
 
 	pk_backend_set_status (python->priv->backend, pk_status_enum_from_text (status_text));
@@ -143,7 +143,7 @@ pk_backend_python_percentage_changed_cb (PyObject *self, PyObject *args)
 	guint percentage;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "i", &percentage);
 
 	pk_backend_set_percentage (python->priv->backend, percentage);
@@ -159,7 +159,7 @@ pk_backend_python_sub_percentage_changed_cb (PyObject *self, PyObject *args)
 	guint sub_percentage;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "i", &sub_percentage);
 
 	pk_backend_set_sub_percentage (python->priv->backend, sub_percentage);
@@ -177,7 +177,7 @@ pk_backend_python_package_cb (PyObject *self, PyObject *args)
 	const gchar *summary;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "sss", &info_text, &package_id, &summary);
 
 	pk_backend_package (python->priv->backend, pk_info_enum_from_text (info_text), package_id, summary);
@@ -198,7 +198,7 @@ pk_backend_python_details_cb (PyObject *self, PyObject *args)
 	guint64 size;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "sssssi", &package_id, &license, &group_text, &detail, &url, &size);
 
 	pk_backend_details (python->priv->backend, package_id,
@@ -217,7 +217,7 @@ pk_backend_python_files_cb (PyObject *self, PyObject *args)
 	const gchar *file_list;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "ss", &package_id, &file_list);
 
 	pk_backend_files (python->priv->backend, package_id, file_list);
@@ -244,7 +244,7 @@ pk_backend_python_update_detail_cb (PyObject *self, PyObject *args)
 	const gchar *updated;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "ssssssssssss", &package_id, &updates, &obsoletes,
 			  &vendor_url, &bugzilla_url, &cve_url, &restart_text,
 			  &update_text, &changelog, &state, &issued, &updated);
@@ -267,10 +267,10 @@ pk_backend_python_finished_cb (PyObject *self, PyObject *args)
 	const gchar *exit_text;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "s", &exit_text);
 
-	pk_debug ("deleting python %p, exit %s", python, exit_text);
+	egg_debug ("deleting python %p, exit %s", python, exit_text);
 	pk_backend_finished (python->priv->backend);
 	return Py_BuildValue("");
 }
@@ -284,7 +284,7 @@ pk_backend_python_allow_cancel_cb (PyObject *self, PyObject *args)
 	gboolean allow_cancel;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "i", &allow_cancel);
 
 	pk_backend_set_allow_cancel (python->priv->backend, allow_cancel);
@@ -301,7 +301,7 @@ pk_backend_python_error_code_cb (PyObject *self, PyObject *args)
 	const gchar *details;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "ss", &error_text, &details);
 
 	pk_backend_error_code (python->priv->backend, pk_error_enum_from_text (error_text), details);
@@ -318,7 +318,7 @@ pk_backend_python_require_restart_cb (PyObject *self, PyObject *args)
 	const gchar *details;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "ss", &type_text, &details);
 
 	pk_backend_require_restart (python->priv->backend, pk_restart_enum_from_text (type_text), details);
@@ -335,7 +335,7 @@ pk_backend_python_message_cb (PyObject *self, PyObject *args)
 	const gchar *details;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "ss", &message_text, &details);
 
 	pk_backend_message (python->priv->backend, pk_message_enum_from_text (message_text), details);
@@ -358,7 +358,7 @@ pk_backend_python_repo_signature_required_cb (PyObject *self, PyObject *args)
 	const gchar *type_text;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "ssssssss", &package_id, &repository_name,
 			  &key_url, &key_userid, &key_id, &key_fingerprint,
 			  &key_timestamp, &type_text);
@@ -381,7 +381,7 @@ pk_backend_python_eula_required_cb (PyObject *self, PyObject *args)
 	const gchar *license_agreement;
 	PkBackendPython *python = PK_BACKEND_PYTHON (pk_backend_python_object);
 
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	PyArg_ParseTuple (args, "ssss", &eula_id, &package_id, &vendor_name, &license_agreement);
 
 	pk_backend_eula_required (python->priv->backend, eula_id, package_id,
@@ -397,7 +397,7 @@ pk_backend_python_import (PkBackendPython *python, const char *name)
 {
 	PyObject *pName;
 
-	pk_debug ("importing module %s", name);
+	egg_debug ("importing module %s", name);
 	pName = PyString_FromString (name);
 	python->priv->pModule = PyImport_Import (pName);
 	Py_DECREF (pName);
@@ -444,14 +444,14 @@ pk_backend_python_startup (PkBackendPython *python, const gchar *filename)
 	/* import the file */
 	pk_backend_python_import (python, filename);
 	if (python->priv->pModule == NULL) {
-		pk_warning ("Failed to load");
+		egg_warning ("Failed to load");
 		return FALSE;
 	}
 
 	/* get an instance */
 	pk_backend_python_get_instance (python);
 	if (python->priv->pInstance == NULL) {
-		pk_warning ("Failed to get instance");
+		egg_warning ("Failed to get instance");
 		return FALSE;
 	}
 
@@ -469,12 +469,12 @@ pk_backend_python_check_method (PkBackendPython *python, const gchar *method_nam
 
 	pFunc = PyObject_GetAttrString (python->priv->pInstance, method_name);
 	if (pFunc == NULL) {
-		pk_warning ("function NULL");
+		egg_warning ("function NULL");
 		return FALSE;
 	}
 	ret = PyCallable_Check (pFunc);
 	if (!ret) {
-		pk_warning ("not callable");
+		egg_warning ("not callable");
 	}
 
 	if (pFunc != NULL) {
@@ -1182,7 +1182,7 @@ pk_backend_python_init (PkBackendPython *python)
 
 	setenv ("PYTHONPATH", "/home/hughsie/Code/PackageKit/backends/yum3/helpers", 1);
 	path = getenv ("PYTHONPATH");
-	pk_debug ("PYTHONPATH=%s", path);
+	egg_debug ("PYTHONPATH=%s", path);
 
 	Py_Initialize ();
 	Py_InitModule ("PackageKitBaseBackend", PkBackendPythonMethods);

@@ -80,7 +80,7 @@
         This part documents helper funtions in libpackagekit.
       </para>
     </partintro>
-    <xi:include href="xml/pk-debug.xml"/>
+    <xi:include href="xml/egg-debug.xml"/>
     <xi:include href="xml/pk-common.xml"/>
     <xi:include href="xml/pk-enum.xml"/>
     <xi:include href="xml/pk-package-id.xml"/>

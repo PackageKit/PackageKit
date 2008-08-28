@@ -32,7 +32,7 @@
 #include <sys/types.h>
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-enum.h"
 #include "pk-bitfield.h"
@@ -131,7 +131,7 @@ pk_role_bitfield_to_text (PkBitfield roles)
 	}
 	/* do we have a no bitfield? \n */
 	if (string->len == 0) {
-		pk_warning ("not valid!");
+		egg_warning ("not valid!");
 		g_string_append (string, pk_role_enum_to_text (PK_ROLE_ENUM_UNKNOWN));
 	} else {
 		/* remove last \n */
@@ -158,7 +158,7 @@ pk_role_bitfield_from_text (const gchar *roles)
 
 	split = g_strsplit (roles, ";", 0);
 	if (split == NULL) {
-		pk_warning ("unable to split");
+		egg_warning ("unable to split");
 		goto out;
 	}
 
@@ -194,7 +194,7 @@ pk_group_bitfield_to_text (PkBitfield groups)
 	}
 	/* do we have a no bitfield? \n */
 	if (string->len == 0) {
-		pk_warning ("not valid!");
+		egg_warning ("not valid!");
 		g_string_append (string, pk_group_enum_to_text (PK_GROUP_ENUM_UNKNOWN));
 	} else {
 		/* remove last \n */
@@ -221,7 +221,7 @@ pk_group_bitfield_from_text (const gchar *groups)
 
 	split = g_strsplit (groups, ";", 0);
 	if (split == NULL) {
-		pk_warning ("unable to split");
+		egg_warning ("unable to split");
 		goto out;
 	}
 
@@ -262,7 +262,7 @@ pk_filter_bitfield_to_text (PkBitfield filters)
 	}
 	/* do we have a 'none' filter? \n */
 	if (string->len == 0) {
-		pk_warning ("not valid!");
+		egg_warning ("not valid!");
 		g_string_append (string, pk_filter_enum_to_text (PK_FILTER_ENUM_NONE));
 	} else {
 		/* remove last \n */
@@ -289,7 +289,7 @@ pk_filter_bitfield_from_text (const gchar *filters)
 
 	split = g_strsplit (filters, ";", 0);
 	if (split == NULL) {
-		pk_warning ("unable to split");
+		egg_warning ("unable to split");
 		goto out;
 	}
 

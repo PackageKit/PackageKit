@@ -38,7 +38,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-common.h>
 #include "pk-transaction-id.h"
 #include "pk-transaction-list.h"
@@ -147,10 +147,10 @@ pk_transaction_list_remove_internal (PkTransactionList *tlist, PkTransactionItem
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* valid item */
-	pk_debug ("remove transaction %s, item %p", item->tid, item);
+	egg_debug ("remove transaction %s, item %p", item->tid, item);
 	ret = g_ptr_array_remove (tlist->priv->array, item);
 	if (ret == FALSE) {
-		pk_warning ("could not remove %p as not present in list", item);
+		egg_warning ("could not remove %p as not present in list", item);
 		return FALSE;
 	}
 	g_object_unref (item->transaction);
@@ -174,11 +174,11 @@ pk_transaction_list_remove (PkTransactionList *tlist, const gchar *tid)
 
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item == NULL) {
-		pk_warning ("could not get item");
+		egg_warning ("could not get item");
 		return FALSE;
 	}
 	if (item->finished) {
-		pk_warning ("already finished, so waiting to timeout");
+		egg_warning ("already finished, so waiting to timeout");
 		return FALSE;
 	}
 	ret = pk_transaction_list_remove_internal (tlist, item);
@@ -199,7 +199,7 @@ pk_transaction_list_remove_item_timeout (gpointer data)
 {
 	PkTransactionFinished *finished = (PkTransactionFinished *) data;
 
-	pk_debug ("transaction %s completed, removing", finished->item->tid);
+	egg_debug ("transaction %s completed, removing", finished->item->tid);
 	pk_transaction_list_remove_internal (finished->tlist, finished->item);
 	g_free (finished);
 	return FALSE;
@@ -223,20 +223,20 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 	tid = pk_transaction_get_tid (transaction);
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item == NULL) {
-		pk_error ("no transaction list item found!");
+		egg_error ("no transaction list item found!");
 	}
 
 	/* transaction is already finished? */
 	if (item->finished) {
-		pk_warning ("transaction %s finished twice!", item->tid);
+		egg_warning ("transaction %s finished twice!", item->tid);
 		return;
 	}
 
-	pk_debug ("transaction %s completed, marking finished", item->tid);
+	egg_debug ("transaction %s completed, marking finished", item->tid);
 	item->finished = TRUE;
 
 	/* we have changed what is running */
-	pk_debug ("emmitting ::changed");
+	egg_debug ("emmitting ::changed");
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
 	/* give the client a few seconds to still query the runner */
@@ -252,7 +252,7 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 		if (item->committed &&
 		    item->running == FALSE &&
 		    item->finished == FALSE) {
-			pk_debug ("running %s", item->tid);
+			egg_debug ("running %s", item->tid);
 			item->running = TRUE;
 			ret = pk_transaction_run (item->transaction);
 			/* only stop lookng if we run the job */
@@ -278,7 +278,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
 	/* already added? */
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL) {
-		pk_warning ("already added %s to list", tid);
+		egg_warning ("already added %s to list", tid);
 		return FALSE;
 	}
 
@@ -293,7 +293,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
 	/* get another connection */
 	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
 	if (connection == NULL) {
-		pk_error ("no connection");
+		egg_error ("no connection");
 	}
 
 	item->transaction = pk_transaction_new ();
@@ -303,7 +303,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
 	dbus_g_object_type_install_info (PK_TYPE_TRANSACTION, &dbus_glib_pk_transaction_object_info);
 	dbus_g_connection_register_g_object (connection, item->tid, G_OBJECT (item->transaction));
 
-	pk_debug ("adding transaction %p, item %p", item->transaction, item);
+	egg_debug ("adding transaction %p, item %p", item->transaction, item);
 	g_ptr_array_add (tlist->priv->array, item);
 	return TRUE;
 }
@@ -348,24 +348,24 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item == NULL) {
-		pk_warning ("could not get transaction: %s", tid);
+		egg_warning ("could not get transaction: %s", tid);
 		return FALSE;
 	}
 
-	pk_debug ("marking transaction %s as committed", item->tid);
+	egg_debug ("marking transaction %s as committed", item->tid);
 	item->committed = TRUE;
 
 	/* we will changed what is running */
-	pk_debug ("emmitting ::changed");
+	egg_debug ("emmitting ::changed");
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
 	/* do the transaction now if we have no other in progress */
 	if (pk_transaction_list_number_running (tlist) == 0) {
-		pk_debug ("running %s", item->tid);
+		egg_debug ("running %s", item->tid);
 		item->running = TRUE;
 		ret = pk_transaction_run (item->transaction);
 		if (!ret) {
-			pk_warning ("unable to start first job");
+			egg_warning ("unable to start first job");
 			return FALSE;
 		}
 	}
@@ -399,7 +399,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 			g_ptr_array_add (parray, g_strdup (item->tid));
 		}
 	}
-	pk_debug ("%i transactions in list, %i active", length, parray->len);
+	egg_debug ("%i transactions in list, %i active", length, parray->len);
 	array = pk_ptr_array_to_argv (parray);
 	g_ptr_array_free (parray, TRUE);
 

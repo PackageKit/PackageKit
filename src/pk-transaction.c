@@ -51,7 +51,7 @@
 #include <pk-package-id.h>
 #include <pk-package-ids.h>
 #include <pk-enum.h>
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-package-list.h>
 #include <pk-update-detail-obj.h>
 #include <pk-details-obj.h>
@@ -240,11 +240,11 @@ pk_transaction_set_dbus_name (PkTransaction *transaction, const gchar *dbus_name
 	g_return_val_if_fail (dbus_name != NULL, FALSE);
 
 	if (transaction->priv->dbus_name != NULL) {
-		pk_warning ("you can't assign more than once!");
+		egg_warning ("you can't assign more than once!");
 		return FALSE;
 	}
 	transaction->priv->dbus_name = g_strdup (dbus_name);
-	pk_debug ("assigning %s to %p", dbus_name, transaction);
+	egg_debug ("assigning %s to %p", dbus_name, transaction);
 	pk_dbus_monitor_assign (transaction->priv->monitor, PK_DBUS_MONITOR_SYSTEM, dbus_name);
 	return TRUE;
 }
@@ -317,11 +317,11 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 
 	c_tid = pk_backend_get_current_tid (transaction->priv->backend);
 	if (c_tid == NULL) {
-		pk_warning ("could not get current tid from backend");
+		egg_warning ("could not get current tid from backend");
 		return FALSE;
 	}
 
-	pk_debug ("invalidating caches");
+	egg_debug ("invalidating caches");
 
 	/* copy this into the cache if we are getting updates */
 	if (transaction->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
@@ -362,7 +362,7 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("AllowCancel now %i", allow_cancel);
+	egg_debug ("AllowCancel now %i", allow_cancel);
 	transaction->priv->allow_cancel = allow_cancel;
 
 	/* remove or add the hal inhibit */
@@ -372,7 +372,7 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
 		pk_inhibit_add (transaction->priv->inhibit, transaction);
 	}
 
-	pk_debug ("emitting allow-interrpt %i", allow_cancel);
+	egg_debug ("emitting allow-interrpt %i", allow_cancel);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_ALLOW_CANCEL], 0, allow_cancel);
 }
 
@@ -386,7 +386,7 @@ pk_transaction_caller_active_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolea
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	if (is_active == FALSE) {
-		pk_debug ("client disconnected....");
+		egg_debug ("client disconnected....");
 		g_signal_emit (transaction, signals [PK_TRANSACTION_CALLER_ACTIVE_CHANGED], 0, FALSE);
 	}
 }
@@ -429,7 +429,7 @@ pk_transaction_error_code_cb (PkBackend *backend, PkErrorCodeEnum code,
 	}
 
 	code_text = pk_error_enum_to_text (code);
-	pk_debug ("emitting error-code %s, '%s'", code_text, details);
+	egg_debug ("emitting error-code %s, '%s'", code_text, details);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_ERROR_CODE], 0, code_text, details);
 }
 
@@ -443,7 +443,7 @@ pk_transaction_files_cb (PkBackend *backend, const gchar *package_id,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("emitting files %s, %s", package_id, filelist);
+	egg_debug ("emitting files %s, %s", package_id, filelist);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_FILES], 0, package_id, filelist);
 }
 
@@ -460,7 +460,7 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend, PkDistroUpgradeEnum type,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	type_text = pk_distro_upgrade_enum_to_text (type);
-	pk_debug ("emitting distro-upgrade %s, %s, %s", type_text, name, summary);
+	egg_debug ("emitting distro-upgrade %s, %s, %s", type_text, name, summary);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_DISTRO_UPGRADE], 0, type_text, name, summary);
 }
 
@@ -479,7 +479,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 
 	/* have we already been marked as finished? */
 	if (transaction->priv->finished) {
-		pk_warning ("Already finished");
+		egg_warning ("Already finished");
 		return;
 	}
 
@@ -503,7 +503,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 
 	/* find the length of time we have been running */
 	time = pk_transaction_get_runtime (transaction);
-	pk_debug ("backend was running for %i ms", time);
+	egg_debug ("backend was running for %i ms", time);
 
 	/* add to the database if we are going to log it */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
@@ -558,7 +558,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	exit_text = pk_exit_enum_to_text (exit);
-	pk_debug ("emitting finished '%s', %i", exit_text, time);
+	egg_debug ("emitting finished '%s', %i", exit_text, time);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, time);
 }
 
@@ -576,13 +576,13 @@ pk_transaction_message_cb (PkBackend *backend, PkMessageEnum message, const gcha
 #ifndef PK_IS_DEVELOPER
 	if (message == PK_MESSAGE_ENUM_BACKEND_ERROR ||
 	    message == PK_MESSAGE_ENUM_DAEMON_ERROR) {
-		pk_warning ("ignoring message: %s", details);
+		egg_warning ("ignoring message: %s", details);
 		return;
 	}
 #endif
 
 	message_text = pk_message_enum_to_text (message);
-	pk_debug ("emitting message %s, '%s'", message_text, details);
+	egg_debug ("emitting message %s, '%s'", message_text, details);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_MESSAGE], 0, message_text, details);
 }
 
@@ -599,7 +599,7 @@ pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransa
 
 	/* have we already been marked as finished? */
 	if (transaction->priv->finished) {
-		pk_warning ("Already finished");
+		egg_warning ("Already finished");
 		return;
 	}
 
@@ -654,7 +654,7 @@ pk_transaction_progress_changed_cb (PkBackend *backend, guint percentage, guint 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("emitting percentage-changed %i, %i, %i, %i",
+	egg_debug ("emitting percentage-changed %i, %i, %i, %i",
 		  percentage, subpercentage, elapsed, remaining);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_PROGRESS_CHANGED], 0,
 		       percentage, subpercentage, elapsed, remaining);
@@ -670,7 +670,7 @@ pk_transaction_repo_detail_cb (PkBackend *backend, const gchar *repo_id,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("emitting repo-detail %s, %s, %i", repo_id, description, enabled);
+	egg_debug ("emitting repo-detail %s, %s, %i", repo_id, description, enabled);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_REPO_DETAIL], 0, repo_id, description, enabled);
 }
 
@@ -691,7 +691,7 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, const gchar *pack
 
 	type_text = pk_sig_type_enum_to_text (type);
 
-	pk_debug ("emitting repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
+	egg_debug ("emitting repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, repository_name, key_url, key_userid, key_id,
 		  key_fingerprint, key_timestamp, type_text);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_REPO_SIGNATURE_REQUIRED], 0,
@@ -713,7 +713,7 @@ pk_transaction_eula_required_cb (PkBackend *backend, const gchar *eula_id, const
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("emitting eula-required %s, %s, %s, %s",
+	egg_debug ("emitting eula-required %s, %s, %s, %s",
 		  eula_id, package_id, vendor_name, license_agreement);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_EULA_REQUIRED], 0,
 		       eula_id, package_id, vendor_name, license_agreement);
@@ -734,7 +734,7 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, co
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	restart_text = pk_restart_enum_to_text (restart);
-	pk_debug ("emitting require-restart %s, '%s'", restart_text, details);
+	egg_debug ("emitting require-restart %s, '%s'", restart_text, details);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_REQUIRE_RESTART], 0, restart_text, details);
 }
 
@@ -751,14 +751,14 @@ pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTra
 
 	/* have we already been marked as finished? */
 	if (transaction->priv->finished) {
-		pk_warning ("Already finished, so can't proxy status %s", pk_status_enum_to_text (status));
+		egg_warning ("Already finished, so can't proxy status %s", pk_status_enum_to_text (status));
 		return;
 	}
 
 	transaction->priv->status = status;
 	status_text = pk_status_enum_to_text (status);
 
-	pk_debug ("emitting status-changed '%s'", status_text);
+	egg_debug ("emitting status-changed '%s'", status_text);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_STATUS_CHANGED], 0, status_text);
 }
 
@@ -776,7 +776,7 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	role_text = pk_role_enum_to_text (role);
-	pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data);
+	egg_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_TRANSACTION], 0, old_tid, timespec, succeeded, role_text, duration, data);
 }
 
@@ -976,7 +976,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	} else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
 		desc->repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
 	} else {
-		pk_error ("failed to run as role not assigned");
+		egg_error ("failed to run as role not assigned");
 		return FALSE;
 	}
 	return TRUE;
@@ -1019,7 +1019,7 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 	g_return_val_if_fail (transaction->priv->tid == NULL, FALSE);
 
 	if (transaction->priv->tid != NULL) {
-		pk_warning ("changing a tid -- why?");
+		egg_warning ("changing a tid -- why?");
 	}
 	g_free (transaction->priv->tid);
 	transaction->priv->tid = g_strdup (tid);
@@ -1043,7 +1043,7 @@ pk_transaction_commit (PkTransaction *transaction)
 	if (!ret) {
 		pk_transaction_list_remove (transaction->priv->transaction_list,
 					    transaction->priv->tid);
-		pk_warning ("failed to commit (job not run?)");
+		egg_warning ("failed to commit (job not run?)");
 		return FALSE;
 	}
 
@@ -1232,7 +1232,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 		return;
 	}
 
-	pk_debug ("AcceptEula method called: %s", eula_id);
+	egg_debug ("AcceptEula method called: %s", eula_id);
 	ret = pk_backend_accept_eula (transaction->priv->backend, eula_id);
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
@@ -1242,7 +1242,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 	}
 
 	exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
-	pk_debug ("emitting finished transaction '%s', %i", exit_text, 0);
+	egg_debug ("emitting finished transaction '%s', %i", exit_text, 0);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
 
 	dbus_g_method_return (context);
@@ -1257,7 +1257,7 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	pk_debug ("Cancel method called on %s", transaction->priv->tid);
+	egg_debug ("Cancel method called on %s", transaction->priv->tid);
 
 	/* if it's never been run, just remove this transaction from the list */
 	if (!transaction->priv->has_been_run) {
@@ -1268,13 +1268,13 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 
 	/* if it's finished, cancelling will have no action */
 	if (transaction->priv->finished) {
-		pk_debug ("No point trying to cancel a finished transaction, ignoring");
+		egg_debug ("No point trying to cancel a finished transaction, ignoring");
 		return TRUE;
 	}
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->cancel == NULL) {
-		pk_debug ("Not implemented yet: Cancel");
+		egg_debug ("Not implemented yet: Cancel");
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
 		return FALSE;
@@ -1322,7 +1322,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("DownloadPackages method called: %s", package_ids[0]);
+	egg_debug ("DownloadPackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->download_packages == NULL) {
@@ -1392,7 +1392,7 @@ pk_transaction_get_allow_cancel (PkTransaction *transaction, gboolean *allow_can
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	pk_debug ("GetAllowCancel method called");
+	egg_debug ("GetAllowCancel method called");
 	*allow_cancel = transaction->priv->allow_cancel;
 	return TRUE;
 }
@@ -1412,12 +1412,12 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
-	pk_debug ("GetDepends method called: %s (recursive %i)", package_ids_temp, recursive);
+	egg_debug ("GetDepends method called: %s (recursive %i)", package_ids_temp, recursive);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_depends == NULL) {
-		pk_debug ("Not implemented yet: GetDepends");
+		egg_debug ("Not implemented yet: GetDepends");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -1481,12 +1481,12 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
-	pk_debug ("GetDetails method called: %s", package_ids_temp);
+	egg_debug ("GetDetails method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_details == NULL) {
-		pk_debug ("Not implemented yet: GetDetails");
+		egg_debug ("Not implemented yet: GetDetails");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -1539,11 +1539,11 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetDistroUpgrades method called");
+	egg_debug ("GetDistroUpgrades method called");
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_distro_upgrades == NULL) {
-		pk_debug ("Not implemented yet: GetDistroUpgrades");
+		egg_debug ("Not implemented yet: GetDistroUpgrades");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -1589,12 +1589,12 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
-	pk_debug ("GetFiles method called: %s", package_ids_temp);
+	egg_debug ("GetFiles method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_files == NULL) {
-		pk_debug ("Not implemented yet: GetFiles");
+		egg_debug ("Not implemented yet: GetFiles");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -1647,11 +1647,11 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetPackages method called: %s", filter);
+	egg_debug ("GetPackages method called: %s", filter);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_packages == NULL) {
-		pk_debug ("Not implemented yet: GetPackages");
+		egg_debug ("Not implemented yet: GetPackages");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -1699,12 +1699,12 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	pk_debug ("GetOldTransactions method called");
+	egg_debug ("GetOldTransactions method called");
 
 	pk_transaction_db_get_list (transaction->priv->transaction_db, number);
 
 	exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
-	pk_debug ("emitting finished transaction '%s', %i", exit_text, 0);
+	egg_debug ("emitting finished transaction '%s', %i", exit_text, 0);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
 
 	return TRUE;
@@ -1719,7 +1719,7 @@ pk_transaction_get_package_last (PkTransaction *transaction, gchar **package_id,
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	pk_debug ("GetPackageLast method called");
+	egg_debug ("GetPackageLast method called");
 
 	if (transaction->priv->last_package_id == NULL) {
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE,
@@ -1743,7 +1743,7 @@ pk_transaction_get_progress (PkTransaction *transaction,
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	pk_debug ("GetProgress method called");
+	egg_debug ("GetProgress method called");
 
 	ret = pk_backend_get_progress (transaction->priv->backend, percentage, subpercentage, elapsed, remaining);
 	if (!ret) {
@@ -1766,11 +1766,11 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetRepoList method called");
+	egg_debug ("GetRepoList method called");
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_repo_list == NULL) {
-		pk_debug ("Not implemented yet: GetRepoList");
+		egg_debug ("Not implemented yet: GetRepoList");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -1822,12 +1822,12 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
-	pk_debug ("GetRequires method called: %s (recursive %i)", package_ids_temp, recursive);
+	egg_debug ("GetRequires method called: %s (recursive %i)", package_ids_temp, recursive);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_requires == NULL) {
-		pk_debug ("Not implemented yet: GetRequires");
+		egg_debug ("Not implemented yet: GetRequires");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -1888,7 +1888,7 @@ pk_transaction_get_role (PkTransaction *transaction,
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 
-	pk_debug ("GetRole method called");
+	egg_debug ("GetRole method called");
 
 	/* we might not have this set yet */
 	if (transaction->priv->tid == NULL) {
@@ -1913,7 +1913,7 @@ pk_transaction_get_status (PkTransaction *transaction,
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	pk_debug ("GetStatus method called");
+	egg_debug ("GetStatus method called");
 
 	*status = g_strdup (pk_status_enum_to_text (transaction->priv->status));
 	return TRUE;
@@ -1941,7 +1941,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
-	pk_debug ("GetUpdateDetail method called: %s", package_ids_temp);
+	egg_debug ("GetUpdateDetail method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
 	/* need to split the package_ids into new and cached */
@@ -1949,7 +1949,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_update_detail == NULL) {
-		pk_debug ("Not implemented yet: GetUpdateDetail");
+		egg_debug ("Not implemented yet: GetUpdateDetail");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -2003,7 +2003,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 			g_free (updated);
 			g_free (package_id);
 		} else {
-			pk_debug ("not got %s", package_ids[i]);
+			egg_debug ("not got %s", package_ids[i]);
 			g_ptr_array_add (array, g_strdup (package_ids[i]));
 		}
 	}
@@ -2012,13 +2012,13 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	if (array->len == 0) {
 		const gchar *exit_text;
 		exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
-		pk_debug ("emitting finished '%s' as no more to process", exit_text);
+		egg_debug ("emitting finished '%s' as no more to process", exit_text);
 		g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
 		goto out;
 	}
 
 	/* get the new list */
-	pk_debug ("%i more to process", array->len);
+	egg_debug ("%i more to process", array->len);
 	package_ids_new = pk_ptr_array_to_argv (array);
 
 	/* alter list */
@@ -2053,11 +2053,11 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetUpdates method called");
+	egg_debug ("GetUpdates method called");
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_updates == NULL) {
-		pk_debug ("Not implemented yet: GetUpdates");
+		egg_debug ("Not implemented yet: GetUpdates");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -2092,7 +2092,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		guint length;
 
 		length = pk_package_list_get_size (updates_cache);
-		pk_debug ("we have cached data (%i) we should use!", length);
+		egg_debug ("we have cached data (%i) we should use!", length);
 
 		/* emulate the backend */
 		for (i=0; i<length; i++) {
@@ -2106,7 +2106,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 
 		/* we are done */
 		exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
-		pk_debug ("emitting finished '%s'", exit_text);
+		egg_debug ("emitting finished '%s'", exit_text);
 		g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
 
 		dbus_g_method_return (context);
@@ -2144,7 +2144,7 @@ pk_transaction_check_metadata_conf (const gchar *full_path)
 	file = g_key_file_new ();
 	ret = g_key_file_load_from_file (file, full_path, G_KEY_FILE_NONE, &error);
 	if (!ret) {
-		pk_warning ("failed to load file: %s", error->message);
+		egg_warning ("failed to load file: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -2152,7 +2152,7 @@ pk_transaction_check_metadata_conf (const gchar *full_path)
 	/* read the value */
 	distro_id = g_key_file_get_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", &error);
 	if (!ret) {
-		pk_warning ("failed to get value: %s", error->message);
+		egg_warning ("failed to get value: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -2244,7 +2244,7 @@ out:
 	/* switch back to PWD */
 	retval = chdir (buf);
 	if (retval != 0)
-		pk_warning ("cannot chdir back!");
+		egg_warning ("cannot chdir back!");
 
 	return ret;
 }
@@ -2325,7 +2325,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	full_paths_temp = pk_package_ids_to_text (full_paths, ", ");
-	pk_debug ("InstallFiles method called: %s (trusted %i)", full_paths_temp, trusted);
+	egg_debug ("InstallFiles method called: %s (trusted %i)", full_paths_temp, trusted);
 	g_free (full_paths_temp);
 
 	/* not implemented yet */
@@ -2411,7 +2411,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
-	pk_debug ("InstallPackages method called: %s", package_ids_temp);
+	egg_debug ("InstallPackages method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -2482,7 +2482,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("method called: %s, %s", key_id, package_id);
+	egg_debug ("method called: %s, %s", key_id, package_id);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->install_signature == NULL) {
@@ -2554,7 +2554,7 @@ pk_transaction_is_caller_active (PkTransaction *transaction, gboolean *is_active
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	pk_debug ("is caller active");
+	egg_debug ("is caller active");
 
 	*is_active = pk_dbus_monitor_is_connected (transaction->priv->monitor);
 	return TRUE;
@@ -2573,7 +2573,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("RefreshCache method called: %i", force);
+	egg_debug ("RefreshCache method called: %i", force);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->refresh_cache == NULL) {
@@ -2637,7 +2637,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
-	pk_debug ("RemovePackages method called: %s, %i, %i", package_ids_temp, allow_deps, autoremove);
+	egg_debug ("RemovePackages method called: %s, %i, %i", package_ids_temp, allow_deps, autoremove);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -2708,7 +2708,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("RepoEnable method called: %s, %i", repo_id, enabled);
+	egg_debug ("RepoEnable method called: %s, %i", repo_id, enabled);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->repo_enable == NULL) {
@@ -2778,7 +2778,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("RepoSetData method called: %s, %s, %s", repo_id, parameter, value);
+	egg_debug ("RepoSetData method called: %s, %s, %s", repo_id, parameter, value);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->repo_set_data == NULL) {
@@ -2850,12 +2850,12 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	packages_temp = pk_package_ids_to_text (packages, ", ");
-	pk_debug ("Resolve method called: %s, %s", filter, packages_temp);
+	egg_debug ("Resolve method called: %s, %s", filter, packages_temp);
 	g_free (packages_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->resolve == NULL) {
-		pk_debug ("Not implemented yet: Resolve");
+		egg_debug ("Not implemented yet: Resolve");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -2919,7 +2919,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("Rollback method called: %s", transaction_id);
+	egg_debug ("Rollback method called: %s", transaction_id);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->rollback == NULL) {
@@ -2985,11 +2985,11 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("SearchDetails method called: %s, %s", filter, search);
+	egg_debug ("SearchDetails method called: %s, %s", filter, search);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->search_details == NULL) {
-		pk_debug ("Not implemented yet: SearchDetails");
+		egg_debug ("Not implemented yet: SearchDetails");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -3047,11 +3047,11 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("SearchFile method called: %s, %s", filter, search);
+	egg_debug ("SearchFile method called: %s, %s", filter, search);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->search_file == NULL) {
-		pk_debug ("Not implemented yet: SearchFile");
+		egg_debug ("Not implemented yet: SearchFile");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -3109,11 +3109,11 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("SearchGroup method called: %s, %s", filter, search);
+	egg_debug ("SearchGroup method called: %s, %s", filter, search);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->search_group == NULL) {
-		pk_debug ("Not implemented yet: SearchGroup");
+		egg_debug ("Not implemented yet: SearchGroup");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -3171,11 +3171,11 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("SearchName method called: %s, %s", filter, search);
+	egg_debug ("SearchName method called: %s, %s", filter, search);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->search_name == NULL) {
-		pk_debug ("Not implemented yet: SearchName");
+		egg_debug ("Not implemented yet: SearchName");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -3231,7 +3231,7 @@ pk_transaction_service_pack (PkTransaction *transaction, const gchar *location, 
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->service_pack == NULL) {
-		pk_debug ("Not implemented yet: ServicePack");
+		egg_debug ("Not implemented yet: ServicePack");
 		return FALSE;
 	}
 	/* save so we can run later */
@@ -3253,7 +3253,7 @@ pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, GError
 
 	/* already set? */
 	if (transaction->priv->locale != NULL) {
-		pk_warning ("Already set locale");
+		egg_warning ("Already set locale");
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "Already set locale to %s", transaction->priv->locale);
 		return FALSE;
@@ -3279,7 +3279,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
-	pk_debug ("UpdatePackages method called: %s", package_ids_temp);
+	egg_debug ("UpdatePackages method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -3348,7 +3348,7 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("UpdateSystem method called");
+	egg_debug ("UpdateSystem method called");
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->update_system == NULL) {
@@ -3412,11 +3412,11 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("WhatProvides method called: %s, %s", type, search);
+	egg_debug ("WhatProvides method called: %s, %s", type, search);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->what_provides == NULL) {
-		pk_debug ("Not implemented yet: WhatProvides");
+		egg_debug ("Not implemented yet: WhatProvides");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);

@@ -42,7 +42,7 @@
 
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-package-obj.h"
 
@@ -142,18 +142,18 @@ pk_package_obj_from_string (const gchar *text)
 
 	sections = g_strsplit (text, "\t", 3);
 	if (sections == NULL) {
-		pk_warning ("invalid input: %s", text);
+		egg_warning ("invalid input: %s", text);
 		goto out;
 	}
 
 	info = pk_info_enum_from_text (sections[0]);
 	if (info == PK_INFO_ENUM_UNKNOWN) {
-		pk_warning ("invalid info for string %s", text);
+		egg_warning ("invalid info for string %s", text);
 		goto out;
 	}
 	id = pk_package_id_new_from_string (sections[1]);
 	if (id == NULL) {
-		pk_warning ("invalid package_id for string %s", text);
+		egg_warning ("invalid package_id for string %s", text);
 		goto out;
 	}
 	obj = pk_package_obj_new (info, id, sections[2]);
