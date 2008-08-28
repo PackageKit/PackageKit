@@ -5,3 +5,12 @@ running apt backend before:
   sudo python aptDBUSBackend.py --debug --takeover
 
 Use the --help command line switch for more details.
+
+Some of the development takes place in python-apt. Since this means using 
+not yet released code the corresponding work is done in PackageKit's 
+apt-consolidate branch and in python-apt's consolidate branch.
+
+bzr branch lp:~glatzor/python-apt/consolidate
+
+Just place a symlink to the apt directory of the consolidate branch working
+directory to the apt backend directory.
