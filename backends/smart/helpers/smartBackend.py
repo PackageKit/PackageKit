@@ -23,6 +23,7 @@ from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED, \
         ERROR_PACKAGE_DOWNLOAD_FAILED
 from packagekit.package import PackagekitPackage
+from packagekit.enums import *
 
 # Global vars
 pkpackage = PackagekitPackage()
@@ -30,7 +31,9 @@ pkpackage = PackagekitPackage()
 def needs_cache(func):
     """ Load smart's channels, and save the cache when done. """
     def cache_wrap(obj, *args, **kwargs):
+        obj.status(STATUS_SETUP)
         obj.ctrl.reloadChannels()
+        obj.status(STATUS_UNKNOWN)
         result = func(obj, *args, **kwargs)
         obj.ctrl.saveSysConf()
         return result
@@ -65,7 +68,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 smart.transaction.PolicyInstall)
         for package in available:
             trans.enqueue(package, smart.transaction.INSTALL)
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_INSTALL)
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -84,7 +89,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                                 'Package %s is already installed' % package)
                     trans.enqueue(package, smart.transaction.INSTALL)
 
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_INSTALL)
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -101,7 +108,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 smart.transaction.PolicyRemove)
         for package in installed:
             trans.enqueue(package, smart.transaction.REMOVE)
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_REMOVE)
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -118,7 +127,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 smart.transaction.PolicyUpgrade)
         for package in installed:
             trans.enqueue(package, smart.transaction.UPGRADE)
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_UPDATE)
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -130,6 +141,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         if len(packages) < 1:
             return
+        self.status(PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST) # ???
         self.ctrl.downloadPackages(packages, targetdir=directory)
 
     @needs_cache
@@ -143,7 +155,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if package.installed:
                 trans.enqueue(package, smart.transaction.UPGRADE)
 
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_UPDATE)
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -157,7 +171,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if package.installed:
                 trans.enqueue(package, smart.transaction.UPGRADE)
 
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_INFO)
         for (package, op) in trans.getChangeSet().items():
             if op == smart.transaction.INSTALL:
                 status = self._get_status(package)
@@ -165,6 +181,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def resolve(self, filters, packagename):
+        self.status(STATUS_QUERY)
         ratio, results, suggestions = self.ctrl.search(packagename)
         for result in results:
             if self._passes_filters(result, filters):
@@ -173,6 +190,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def search_name(self, filters, packagename):
         globbed = "*%s*" % packagename
+        self.status(STATUS_QUERY)
         ratio, results, suggestions = self.ctrl.search(globbed)
 
         packages = self._process_search_results(results)
@@ -183,6 +201,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def search_group(self, filters, searchstring):
+        self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._passes_filters(package, filters):
@@ -195,6 +214,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def search_details(self, filters, searchstring):
+        self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._passes_filters(package, filters):
@@ -210,11 +230,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 self._show_package(package)
 
     def refresh_cache(self):
+        self.status(STATUS_REFRESH_CACHE)
         self.ctrl.rebuildSysConfChannels()
         self.ctrl.reloadChannels(None, caching=smart.const.NEVER)
         self.ctrl.saveSysConf()
-
-    from packagekit.enums import *
 
     GROUPS = {
     # RPM
