@@ -63,9 +63,6 @@ G_BEGIN_DECLS
 
 gboolean	 pk_strvalidate				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gchar		*pk_strpad				(const gchar	*data,
-							 guint		 length)
-							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_strsafe				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		**pk_strsplit				(const gchar	*id,

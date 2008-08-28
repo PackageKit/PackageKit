@@ -139,6 +139,10 @@ check_PROGRAMS =					\
 	pk-self-test
 
 pk_self_test_SOURCES =					\
+	egg-debug.c					\
+	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
 	pk-self-test.c					\
 	pk-generate-pack.c				\
 	pk-tools-common.c				\

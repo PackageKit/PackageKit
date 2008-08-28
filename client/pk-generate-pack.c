@@ -31,7 +31,6 @@
 #include <glib/gstdio.h>
 #include <dbus/dbus-glib.h>
 
-#include <egg-debug.h>
 #include <pk-package-ids.h>
 #include <pk-client.h>
 #include <pk-control.h>
