@@ -60,6 +60,48 @@ pk_package_id_new (void)
 }
 
 /**
+ * pk_strsplit:
+ * @id: the ; delimited string to split
+ * @parts: how many parts the delimted string should be split into
+ *
+ * Splits a string into the correct number of parts, checking the correct
+ * number of delimiters are present.
+ *
+ * Return value: a char array is split correctly, %NULL if invalid
+ * Note: You need to use g_strfreev on the returned value
+ **/
+static gchar **
+pk_strsplit (const gchar *id, guint parts)
+{
+	gchar **sections = NULL;
+
+	if (id == NULL) {
+		goto out;
+	}
+
+	/* split by delimeter ';' */
+	sections = g_strsplit (id, ";", 0);
+	if (g_strv_length (sections) != parts) {
+		goto out;
+	}
+
+	/* name has to be valid */
+	if (egg_strzero (sections[0])) {
+		goto out;
+	}
+
+	/* all okay, phew.. */
+	return sections;
+
+out:
+	/* free sections and return NULL */
+	if (sections != NULL) {
+		g_strfreev (sections);
+	}
+	return NULL;
+}
+
+/**
  * pk_package_id_check:
  * @package_id: the text the check
  *
@@ -503,6 +545,99 @@ libst_package_id (LibSelfTest *test)
 	libst_title (test, "id equal fail (match too high)");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 5);
 	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************
+	 ****************          splitting         ****************
+	 ************************************************************/
+	libst_title (test, "test pass 1");
+	array = pk_strsplit ("foo", 1);
+	if (array != NULL &&
+	    egg_strequal (array[0], "foo")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s", array[0]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test pass 2");
+	array = pk_strsplit ("foo;moo", 2);
+	if (array != NULL &&
+	    egg_strequal (array[0], "foo") &&
+	    egg_strequal (array[1], "moo")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s, %s", array[0], array[1]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test pass 3");
+	array = pk_strsplit ("foo;moo;bar", 3);
+	if (array != NULL &&
+	    egg_strequal (array[0], "foo") &&
+	    egg_strequal (array[1], "moo") &&
+	    egg_strequal (array[2], "bar")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test on real packageid");
+	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;", 4);
+	if (array != NULL &&
+	    egg_strequal (array[0], "kde-i18n-csb") &&
+	    egg_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") &&
+	    egg_strequal (array[2], "all") &&
+	    egg_strequal (array[3], "")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test on short packageid");
+	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;;", 4);
+	if (array != NULL &&
+	    egg_strequal (array[0], "kde-i18n-csb") &&
+	    egg_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") &&
+	    egg_strequal (array[2], "") &&
+	    egg_strequal (array[3], "")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test fail under");
+	array = pk_strsplit ("foo;moo", 1);
+	if (array == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "test fail over");
+	array = pk_strsplit ("foo;moo", 3);
+	if (array == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "test fail missing first");
+	array = pk_strsplit (";moo", 2);
+	if (array == NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
