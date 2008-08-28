@@ -385,67 +385,6 @@ out:
 }
 
 /**
- * pk_strcmp_sections:
- * @id1: the first item of text to test
- * @id2: the second item of text to test
- * @parts: the number of parts each id should have
- * @compare: the leading number of parts to compare
- *
- * We only want to compare some first sections, not all the data when
- * comparing package_id's and transaction_id's.
- *
- * Return value: %TRUE if the strings can be considered the same.
- *
- **/
-gboolean
-pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compare)
-{
-	gchar **sections1;
-	gchar **sections2;
-	gboolean ret = FALSE;
-	guint i;
-
-	if (id1 == NULL || id2 == NULL) {
-		egg_warning ("package id compare invalid '%s' and '%s'", id1, id2);
-		return FALSE;
-	}
-	if (compare > parts) {
-		egg_warning ("compare %i > parts %i", compare, parts);
-		return FALSE;
-	}
-	if (compare == parts) {
-		return egg_strequal (id1, id2);
-	}
-
-	/* split, NULL will be returned if error */
-	sections1 = pk_strsplit (id1, parts);
-	sections2 = pk_strsplit (id2, parts);
-
-	/* check we split okay */
-	if (sections1 == NULL) {
-		egg_warning ("string id compare sections1 invalid '%s'", id1);
-		goto out;
-	}
-	if (sections2 == NULL) {
-		egg_warning ("string id compare sections2 invalid '%s'", id2);
-		goto out;
-	}
-
-	/* only compare preceeding sections */
-	for (i=0; i<compare; i++) {
-		if (egg_strequal (sections1[i], sections2[i]) == FALSE) {
-			goto out;
-		}
-	}
-	ret = TRUE;
-
-out:
-	g_strfreev (sections1);
-	g_strfreev (sections2);
-	return ret;
-}
-
-/**
  * pk_ptr_array_to_argv:
  * @array: the GPtrArray of strings
  *
@@ -867,62 +806,6 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "id strcmp fail");
 	ret = egg_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
-	if (!ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "id equal pass (same)");
-	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 3);
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "id equal pass (parts==match)");
-	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 4);
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "id equal pass (different)");
-	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data", 4, 3);
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "id equal fail1");
-	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.2;x64;fedora", 4, 3);
-	if (!ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "id equal fail2");
-	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "gnome;0.0.2;i386;fedora", 4, 3);
-	if (!ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "id equal fail3");
-	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 3);
-	if (!ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "id equal fail (match too high)");
-	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 5);
 	if (!ret) {
 		libst_success (test, NULL);
 	} else {

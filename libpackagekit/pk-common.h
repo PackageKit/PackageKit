@@ -74,11 +74,6 @@ GPtrArray	*pk_argv_to_ptr_array			(gchar		**array)
 gchar		**pk_va_list_to_argv			(const gchar	*string_first,
 							 va_list	*args)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strcmp_sections			(const gchar	*id1,
-							 const gchar	*id2,
-							 guint		 parts,
-							 guint		 compare)
-							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_iso8601_present			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_iso8601_difference			(const gchar	*isodate);
