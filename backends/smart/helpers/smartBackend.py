@@ -366,8 +366,17 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             self.files(packageid, ";".join(paths))
 
+    def _text_to_boolean(self,text):
+        if text == 'true' or text == 'TRUE':
+            return True
+        elif text == 'yes' or text == 'YES':
+            return True
+        return False
+
     @needs_cache
-    def get_depends(self, packageids):
+    def get_depends(self, filters, packageids, recursive_text):
+        # FIXME: use filters
+        recursive = self._text_to_boolean(recursive_text)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -384,6 +393,34 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     for package in provider.packages:
                         if not providers.has_key(package):
                             providers[package] = True
+
+            for package in providers.keys():
+                self._show_package(package)
+
+    @needs_cache
+    def get_requires(self, filters, packageids, recursive_text):
+        # FIXME: use filters
+        recursive = self._text_to_boolean(recursive_text)
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+
+            packages = self._process_search_results(results)
+
+            if len(packages) != 1:
+                return
+
+            package = packages[0]
+
+            providers = {}
+            def addproviders(package):
+                for required in package.requires:
+                    for provider in self.ctrl.getCache().getProvides(str(required)):
+                        for package in provider.packages:
+                            if not providers.has_key(package):
+                                providers[package] = True
+                            if recursive:
+                                addproviders(package)
+            addproviders(package)
 
             for package in providers.keys():
                 self._show_package(package)

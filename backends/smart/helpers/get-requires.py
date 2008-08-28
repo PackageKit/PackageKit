@@ -18,5 +18,5 @@ package = sys.argv[2]
 recursive = sys.argv[3]
 
 backend = PackageKitSmartBackend(sys.argv[1:])
-backend.get_depends(filters, package.split('|'), recursive)
+backend.get_requires(filters, package.split('|'), recursive)
 sys.exit(0)
