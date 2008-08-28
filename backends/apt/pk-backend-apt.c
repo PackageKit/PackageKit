@@ -151,12 +151,12 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 
 /**
  *  * backend_install_files:
- *   
+ *   */
 static void
 backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
 	        pk_backend_dbus_install_files (dbus, trusted, full_paths);
-} */
+}
 
 
 /**
@@ -315,7 +315,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,					/* install_files */
+	backend_install_files,			/* install_files */
 	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
