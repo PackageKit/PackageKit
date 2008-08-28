@@ -44,6 +44,8 @@ pkbackendinclude_HEADERS =				\
 shared_SOURCES =					\
 	egg-debug.c					\
 	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
 	egg-dbus-monitor.c				\
 	egg-dbus-monitor.h				\
 	pk-marshal.c					\

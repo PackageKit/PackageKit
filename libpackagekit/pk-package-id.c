@@ -35,6 +35,8 @@
 #include <glib/gi18n.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-package-id.h"
 
@@ -108,16 +110,16 @@ pk_package_id_new_from_string (const gchar *package_id)
 
 	/* create new object */
 	id = pk_package_id_new ();
-	if (pk_strzero (sections[0]) == FALSE) {
+	if (egg_strzero (sections[0]) == FALSE) {
 		id->name = g_strdup (sections[0]);
 	}
-	if (pk_strzero (sections[1]) == FALSE) {
+	if (egg_strzero (sections[1]) == FALSE) {
 		id->version = g_strdup (sections[1]);
 	}
-	if (pk_strzero (sections[2]) == FALSE) {
+	if (egg_strzero (sections[2]) == FALSE) {
 		id->arch = g_strdup (sections[2]);
 	}
-	if (pk_strzero (sections[3]) == FALSE) {
+	if (egg_strzero (sections[3]) == FALSE) {
 		id->data = g_strdup (sections[3]);
 	}
 	g_strfreev (sections);
@@ -232,9 +234,9 @@ pk_package_id_free (PkPackageId *id)
 gboolean
 pk_package_id_equal (const PkPackageId *id1, const PkPackageId *id2)
 {
-	if (pk_strequal (id1->name, id2->name) &&
-	    pk_strequal (id1->version, id2->version) &&
-	    pk_strequal (id1->arch, id2->arch))
+	if (egg_strequal (id1->name, id2->name) &&
+	    egg_strequal (id1->version, id2->version) &&
+	    egg_strequal (id1->arch, id2->arch))
 		return TRUE;
 	return FALSE;
 }
@@ -279,7 +281,7 @@ libst_package_id (LibSelfTest *test)
 
 	libst_title (test, "id build");
 	text = pk_package_id_build ("moo", "0.0.1", "i386", "fedora");
-	if (pk_strequal (text, "moo;0.0.1;i386;fedora")) {
+	if (egg_strequal (text, "moo;0.0.1;i386;fedora")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -345,10 +347,10 @@ libst_package_id (LibSelfTest *test)
 	libst_title (test, "parse package_id from string");
 	id = pk_package_id_new_from_string ("moo;0.0.1;i386;fedora");
 	if (id != NULL &&
-	    pk_strequal (id->name, "moo") &&
-	    pk_strequal (id->arch, "i386") &&
-	    pk_strequal (id->data, "fedora") &&
-	    pk_strequal (id->version, "0.0.1")) {
+	    egg_strequal (id->name, "moo") &&
+	    egg_strequal (id->arch, "i386") &&
+	    egg_strequal (id->data, "fedora") &&
+	    egg_strequal (id->version, "0.0.1")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -366,7 +368,7 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test id building with valid data");
 	text = pk_package_id_to_string (id2);
-	if (pk_strequal (text, "moo;0.0.1;i386;fedora")) {
+	if (egg_strequal (text, "moo;0.0.1;i386;fedora")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "package_id is '%s'", text);
@@ -379,8 +381,8 @@ libst_package_id (LibSelfTest *test)
 	libst_title (test, "parse short package_id from string");
 	id = pk_package_id_new_from_string ("moo;0.0.1;;");
 	if (id != NULL &&
-	    pk_strequal (id->name, "moo") &&
-	    pk_strequal (id->version, "0.0.1") &&
+	    egg_strequal (id->name, "moo") &&
+	    egg_strequal (id->version, "0.0.1") &&
 	    id->data == NULL &&
 	    id->arch == NULL) {
 		libst_success (test, NULL);

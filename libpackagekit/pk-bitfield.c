@@ -33,6 +33,8 @@
 #include <glib/gi18n.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-enum.h"
 #include "pk-bitfield.h"
@@ -323,7 +325,7 @@ libst_bitfield (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check we can convert filter bitfield to text (none)");
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NONE));
-	if (pk_strequal (text, "none")) {
+	if (egg_strequal (text, "none")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "text was %s", text);
@@ -333,7 +335,7 @@ libst_bitfield (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check we can convert filter bitfield to text (single)");
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT));
-	if (pk_strequal (text, "~devel")) {
+	if (egg_strequal (text, "~devel")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "text was %s", text);
@@ -345,7 +347,7 @@ libst_bitfield (LibSelfTest *test)
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 					   pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 					   pk_bitfield_value (PK_FILTER_ENUM_NEWEST));
-	if (pk_strequal (text, "~devel;gui;newest")) {
+	if (egg_strequal (text, "~devel;gui;newest")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "text was %s", text);
@@ -389,7 +391,7 @@ libst_bitfield (LibSelfTest *test)
 	pk_bitfield_add (filter, PK_FILTER_ENUM_NOT_FREE);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_text (filter);
-	if (pk_strequal (text, "gui;~free;newest")) {
+	if (egg_strequal (text, "gui;~free;newest")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "text was %s", text);
@@ -418,7 +420,7 @@ libst_bitfield (LibSelfTest *test)
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_text (filter);
-	if (pk_strequal (text, "none")) {
+	if (egg_strequal (text, "none")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "text was %s", text);

@@ -22,7 +22,9 @@
 #include "config.h"
 #include <glib.h>
 
-#include <egg-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-common.h>
 #include "pk-import-common.h"
 
@@ -77,7 +79,7 @@ pk_import_get_package_list (void)
 
 	i = 0;
 	do {
-		if (pk_strzero (lines[i]) == FALSE) {
+		if (egg_strzero (lines[i]) == FALSE) {
 			g_ptr_array_add (package_array, g_strdup (lines[i]));;
 		}
 	} while (lines[++i] != NULL);

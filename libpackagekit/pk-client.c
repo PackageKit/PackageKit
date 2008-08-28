@@ -46,6 +46,9 @@
 #include <polkit-dbus/polkit-dbus.h>
 #endif
 
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-enum.h"
 #include "pk-bitfield.h"
 #include "pk-client.h"
@@ -53,7 +56,6 @@
 #include "pk-package-id.h"
 #include "pk-package-ids.h"
 #include "pk-package-list.h"
-#include "egg-debug.h"
 #include "pk-marshal.h"
 #include "pk-common.h"
 #include "pk-control.h"
@@ -284,10 +286,10 @@ pk_client_error_refused_by_policy (GError *error)
 	/* check for specific error */
 	error_name = dbus_g_error_get_name (error);
 	egg_debug ("ERROR: %s: %s", error_name, error->message);
-	if (pk_strequal (error_name, "org.freedesktop.PackageKit.RefusedByPolicy")) {
+	if (egg_strequal (error_name, "org.freedesktop.PackageKit.RefusedByPolicy")) {
 		return TRUE;
 	}
-	if (pk_strequal (error_name, "org.freedesktop.PackageKit.Transaction.RefusedByPolicy")) {
+	if (egg_strequal (error_name, "org.freedesktop.PackageKit.Transaction.RefusedByPolicy")) {
 		return TRUE;
 	}
 	return FALSE;
@@ -2808,7 +2810,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 	for (i=0; i<length; i++) {
 		file = pk_resolve_local_path (files[i]);
 		/* only replace if different */
-		if (!pk_strequal (file, files[i])) {
+		if (!egg_strequal (file, files[i])) {
 			egg_debug ("resolved %s to %s", files[i], file);
 			/* replace */
 			g_free (files[i]);
@@ -4134,7 +4136,7 @@ libst_client (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test resolve /etc/hosts");
 	file = pk_resolve_local_path ("/etc/hosts");
-	if (file != NULL && pk_strequal (file, "/etc/hosts")) {
+	if (file != NULL && egg_strequal (file, "/etc/hosts")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "got: %s", file);
@@ -4144,7 +4146,7 @@ libst_client (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test resolve /etc/../etc/hosts");
 	file = pk_resolve_local_path ("/etc/../etc/hosts");
-	if (file != NULL && pk_strequal (file, "/etc/hosts")) {
+	if (file != NULL && egg_strequal (file, "/etc/hosts")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "got: %s", file);

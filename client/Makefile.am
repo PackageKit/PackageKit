@@ -42,6 +42,8 @@ libexec_PROGRAMS =					\
 pkcon_SOURCES =						\
 	egg-debug.c					\
 	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
 	pk-console.c					\
 	pk-tools-common.c				\
 	pk-tools-common.h				\
@@ -70,6 +72,8 @@ pkmon_LDADD =						\
 pkgenpack_SOURCES =					\
 	egg-debug.c					\
 	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
 	pk-generate-pack-main.c				\
 	pk-generate-pack.c				\
 	pk-generate-pack.h				\
@@ -99,6 +103,8 @@ pk_generate_package_list_LDADD =			\
 pk_import_desktop_SOURCES =				\
 	egg-debug.c					\
 	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
 	pk-import-common.c				\
 	pk-import-common.h				\
 	pk-import-desktop.c				\
@@ -114,6 +120,8 @@ pk_import_desktop_LDADD =				\
 pk_import_specspo_SOURCES =				\
 	egg-debug.c					\
 	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
 	pk-import-common.c				\
 	pk-import-common.h				\
 	pk-import-specspo.c				\

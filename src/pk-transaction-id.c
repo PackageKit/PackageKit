@@ -28,6 +28,8 @@
 #include <glib/gi18n.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-transaction-id.h"
 #define PK_TRANSACTION_ID_COUNT_FILE		LOCALSTATEDIR "/run/PackageKit/job_count.dat"
@@ -72,7 +74,7 @@ pk_transaction_id_load_job_count (void)
 	}
 
 	/* convert */
-	ret = pk_strtouint (contents, &job_count);
+	ret = egg_strtouint (contents, &job_count);
 	if (ret == FALSE) {
 		egg_warning ("failed to convert");
 	}
@@ -115,7 +117,7 @@ gboolean
 pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
 {
 	/* TODO, ignore the data part */
-	return pk_strequal (tid1, tid2);
+	return egg_strequal (tid1, tid2);
 }
 
 /**

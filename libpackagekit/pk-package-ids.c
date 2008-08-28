@@ -35,6 +35,8 @@
 #include <glib/gi18n.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-package-id.h"
 #include "pk-package-ids.h"
@@ -294,7 +296,7 @@ libst_package_ids (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "to text");
 	text = pk_package_ids_to_text (package_ids, "\t");
-	if (pk_strequal (text, "foo;0.0.1;i386;fedora\tbar;0.1.1;noarch;livna")) {
+	if (egg_strequal (text, "foo;0.0.1;i386;fedora\tbar;0.1.1;noarch;livna")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

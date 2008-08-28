@@ -45,6 +45,9 @@
 #include <fcntl.h>
 #include <dirent.h>
 
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-tools-common.h"
 
 
@@ -609,7 +612,7 @@ libst_generate_pack (LibSelfTest *test)
 	libst_title (test, "test perhaps resolve gitk");
 	retval = pk_client_reset(client, &error);
 	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, "gitk;1.5.5.1-1.fc9;i386;installed", &error);
-	if (file != NULL && pk_strequal (file, "gitk;1.5.5.1-1.fc9;i386;installed"))
+	if (file != NULL && egg_strequal (file, "gitk;1.5.5.1-1.fc9;i386;installed"))
 		libst_success (test, NULL);
 	else
 		libst_failed (test, "got: %s", file);

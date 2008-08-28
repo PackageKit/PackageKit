@@ -35,6 +35,8 @@
 #include <glib/gi18n.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-enum.h"
 
@@ -1021,7 +1023,7 @@ libst_enum (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "find string");
 	string = pk_enum_find_string (enum_role, PK_ROLE_ENUM_SEARCH_FILE);
-	if (pk_strequal (string, "search-file")) {
+	if (egg_strequal (string, "search-file")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1039,7 +1041,7 @@ libst_enum (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "find string");
 	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
-	if (pk_strequal (string, "search-file")) {
+	if (egg_strequal (string, "search-file")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

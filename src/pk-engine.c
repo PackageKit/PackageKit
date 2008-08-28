@@ -41,7 +41,9 @@
 #include <pk-package-ids.h>
 #include <pk-package-list.h>
 
-#include <egg-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-common.h>
 #include <pk-network.h>
 #include <pk-package-list.h>
@@ -359,7 +361,7 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 	}
 
 	/* don't bombard the user 10 seconds after resuming */
-	if (pk_strequal (reason, "resume")) {
+	if (egg_strequal (reason, "resume")) {
 		is_priority = FALSE;
 	}
 

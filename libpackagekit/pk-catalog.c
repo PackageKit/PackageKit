@@ -26,6 +26,8 @@
 #include <glib/gi18n.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-client.h"
 #include "pk-package-list.h"
@@ -140,11 +142,11 @@ pk_catalog_process_type (PkCatalog *catalog)
 	pk_catalog_process_type_part (catalog, array, catalog->priv->distro_id);
 
 	/* find mode */
-	if (pk_strequal (catalog->priv->type, "InstallPackages")) {
+	if (egg_strequal (catalog->priv->type, "InstallPackages")) {
 		mode = PK_CATALOG_PROGRESS_PACKAGES;
-	} else if (pk_strequal (catalog->priv->type, "InstallFiles")) {
+	} else if (egg_strequal (catalog->priv->type, "InstallFiles")) {
 		mode = PK_CATALOG_PROGRESS_FILES;
-	} else if (pk_strequal (catalog->priv->type, "InstallProvides")) {
+	} else if (egg_strequal (catalog->priv->type, "InstallProvides")) {
 		mode = PK_CATALOG_PROGRESS_PROVIDES;
 	}
 

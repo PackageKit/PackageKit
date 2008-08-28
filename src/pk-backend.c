@@ -33,8 +33,10 @@
 #include <glib/gprintf.h>
 #include <pk-network.h>
 
-#include "pk-package-obj.h"
 #include "egg-debug.h"
+#include "egg-string.h"
+
+#include "pk-package-obj.h"
 #include "pk-common.h"
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
@@ -2139,7 +2141,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get a blank string");
 	data_string = pk_backend_get_string (backend, "dave2");
-	if (pk_strequal (data_string, "")) {
+	if (egg_strequal (data_string, "")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "data was %s", data_string);
@@ -2193,7 +2195,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get a string");
 	data_string = pk_backend_get_string (backend, "dave");
-	if (pk_strequal (data_string, "ania")) {
+	if (egg_strequal (data_string, "ania")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "data was %s", data_string);
@@ -2363,7 +2365,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get backend name");
 	text = pk_backend_get_name (backend);
-	if (pk_strequal(text, "dummy")) {
+	if (egg_strequal(text, "dummy")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid name %s", text);

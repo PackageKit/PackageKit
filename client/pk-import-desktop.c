@@ -29,7 +29,9 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <egg-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-package-id.h>
@@ -101,7 +103,7 @@ pk_import_get_locale (const gchar *buffer)
 		return NULL;
 	}
 	locale = g_strdup (result+1);
-	len = pk_strlen (locale, 20);
+	len = egg_strlen (locale, 20);
 	locale[len-1] = '\0';
 	return locale;
 }
@@ -156,7 +158,7 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		name = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", locale, NULL);
 
 		/* if different, then save */
-		if (pk_strequal (name_unlocalised, name) == FALSE) {
+		if (egg_strequal (name_unlocalised, name) == FALSE) {
 			g_print (" %s", locale);
 			comment = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
 								"Comment", locale, NULL);

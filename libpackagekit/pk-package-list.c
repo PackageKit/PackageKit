@@ -43,6 +43,8 @@
 #include <glib/gi18n.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-package-id.h"
 #include "pk-package-obj.h"
@@ -492,7 +494,7 @@ pk_package_list_add_file (PkPackageList *plist, const gchar *filename)
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
 		/* we get trailing whitespace sometimes */
-		if (!pk_strzero (split[i])) {
+		if (!egg_strzero (split[i])) {
 			obj = pk_package_obj_from_string (split[i]);
 			if (obj != NULL) {
 				pk_package_list_add_obj (plist, obj);
@@ -639,7 +641,7 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "add entry");
 	text = pk_package_list_to_string (plist);
-	if (pk_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!")) {
+	if (egg_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "get string incorrect '%s'", text);
@@ -691,9 +693,9 @@ libst_package_list (LibSelfTest *test)
 	r0_text = pk_package_id_to_string (r0->id);
 	r1_text = pk_package_id_to_string (r1->id);
 	r2_text = pk_package_id_to_string (r2->id);
-	if (pk_strequal (r0_text, "abc;1.23;i386;data") &&
-	    pk_strequal (r1_text, "def;1.23;i386;data") &&
-	    pk_strequal (r2_text, "ghi;1.23;i386;data")) {
+	if (egg_strequal (r0_text, "abc;1.23;i386;data") &&
+	    egg_strequal (r1_text, "def;1.23;i386;data") &&
+	    egg_strequal (r2_text, "ghi;1.23;i386;data")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
@@ -705,9 +707,9 @@ libst_package_list (LibSelfTest *test)
 	r0 = pk_package_list_get_obj (plist, 0);
 	r1 = pk_package_list_get_obj (plist, 1);
 	r2 = pk_package_list_get_obj (plist, 2);
-	if (pk_strequal (r0->summary, "aed") &&
-	    pk_strequal (r1->summary, "fed") &&
-	    pk_strequal (r2->summary, "zed")) {
+	if (egg_strequal (r0->summary, "aed") &&
+	    egg_strequal (r1->summary, "fed") &&
+	    egg_strequal (r2->summary, "zed")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
@@ -753,9 +755,9 @@ libst_package_list (LibSelfTest *test)
 	r0_text = pk_package_id_to_string (r0->id);
 	r1_text = pk_package_id_to_string (r1->id);
 	r2_text = pk_package_id_to_string (r2->id);
-	if (pk_strequal (r0_text, "abc;1.23;i386;data") &&
-	    pk_strequal (r1_text, "def;1.23;i386;data") &&
-	    pk_strequal (r2_text, "ghi;1.23;i386;data")) {
+	if (egg_strequal (r0_text, "abc;1.23;i386;data") &&
+	    egg_strequal (r1_text, "def;1.23;i386;data") &&
+	    egg_strequal (r2_text, "ghi;1.23;i386;data")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);

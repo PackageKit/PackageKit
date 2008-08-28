@@ -56,7 +56,9 @@
 #include <pk-details-obj.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
 #include "egg-dbus-monitor.h"
+
 #include "pk-transaction.h"
 #include "pk-transaction-list.h"
 #include "pk-transaction-db.h"
@@ -512,7 +514,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		packages = pk_package_list_to_string (transaction->priv->package_list);
-		if (pk_strzero (packages) == FALSE) {
+		if (egg_strzero (packages) == FALSE) {
 			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
 		}
 		g_free (packages);
@@ -1072,7 +1074,7 @@ pk_transaction_search_check (const gchar *search, GError **error)
 	gboolean ret;
 
 	/* limit to a 1k chunk */
-	size = pk_strlen (search, 1024);
+	size = egg_strlen (search, 1024);
 
 	if (search == NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
@@ -1127,7 +1129,7 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 	g_return_val_if_fail (error != NULL, FALSE);
 
 	/* is zero? */
-	if (pk_strzero (filter)) {
+	if (egg_strzero (filter)) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "filter zero length");
 		return FALSE;
@@ -1146,7 +1148,7 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 	length = g_strv_length (sections);
 	for (i=0; i<length; i++) {
 		/* only one wrong part is enough to fail the filter */
-		if (pk_strzero (sections[i])) {
+		if (egg_strzero (sections[i])) {
 			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 					     "Single empty section of filter: %s", filter);
 			goto out;
@@ -2162,7 +2164,7 @@ pk_transaction_check_metadata_conf (const gchar *full_path)
 	distro_id_us = pk_get_distro_id ();
 
 	/* do we match? */
-	ret = pk_strequal (distro_id_us, distro_id);
+	ret = egg_strequal (distro_id_us, distro_id);
 
 out:
 	g_key_file_free (file);
@@ -2290,7 +2292,7 @@ pk_transaction_check_pack_distro_id (const gchar *full_path, gchar **failure)
 	/* find the file, and check the metadata */
 	while ((filename = g_dir_read_name (dir))) {
 		metafile = g_build_filename (meta_src, filename, NULL);
-		if (pk_strequal (filename, "metadata.conf")) {
+		if (egg_strequal (filename, "metadata.conf")) {
 			ret = pk_transaction_check_metadata_conf (metafile);
 			if (!ret) {
 				*failure = g_strdup_printf ("Service Pack %s not compatible with your distro", full_path);

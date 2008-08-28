@@ -46,6 +46,8 @@ libpackagekit_include_HEADERS =					\
 libpackagekit_la_SOURCES =					\
 	egg-debug.c						\
 	egg-debug.h						\
+	egg-string.c						\
+	egg-string.h						\
 	egg-dbus-monitor.c					\
 	egg-dbus-monitor.h					\
 	egg-obj-list.c						\

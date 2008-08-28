@@ -45,6 +45,8 @@
 #include <pk-common.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-spawn.h"
 #include "pk-marshal.h"
 
@@ -107,7 +109,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 	guint bytes_processed;
 
 	/* if nothing then don't emit */
-	if (pk_strzero (string->str)) {
+	if (egg_strzero (string->str)) {
 		return FALSE;
 	}
 
