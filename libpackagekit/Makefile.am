@@ -9,7 +9,7 @@ INCLUDES = \
 	-I$(top_srcdir)/libpackagekit				\
 	-I$(top_srcdir)/libselftest				\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
-	-DPK_LOG_DIR=\""$(PK_LOG_DIR)"\" 			\
+	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"		\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
@@ -24,7 +24,6 @@ lib_LTLIBRARIES =						\
 libpackagekit_includedir = $(includedir)/packagekit
 
 libpackagekit_include_HEADERS =					\
-	pk-debug.h						\
 	pk-extra.h						\
 	pk-connection.h						\
 	pk-package-id.h						\
@@ -39,21 +38,24 @@ libpackagekit_include_HEADERS =					\
 	pk-bitfield.h						\
 	pk-common.h						\
 	pk-client.h						\
-	pk-dbus-monitor.h					\
 	pk-catalog.h						\
 	pk-control.h						\
 	pk-task-list.h						\
 	$(NULL)
 
 libpackagekit_la_SOURCES =					\
-	pk-debug.c						\
-	pk-debug.h						\
+	egg-debug.c						\
+	egg-debug.h						\
+	egg-string.c						\
+	egg-string.h						\
+	egg-dbus-monitor.c					\
+	egg-dbus-monitor.h					\
+	egg-obj-list.c						\
+	egg-obj-list.h						\
 	pk-marshal.c						\
 	pk-marshal.h						\
 	pk-extra.c						\
 	pk-extra.h						\
-	pk-dbus-monitor.c					\
-	pk-dbus-monitor.h					\
 	pk-connection.c						\
 	pk-connection.h						\
 	pk-package-id.c						\

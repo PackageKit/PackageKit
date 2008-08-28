@@ -215,6 +215,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         if self.conffile_prompts:
             self._backend.Message(MESSAGE_CONFIG_FILES_CHANGED, "The following conffile prompts were found and need investiagtion: %s" % "\n".join(self.conffile_prompts))
 
+"""
 class PackageKitDpkgInstallProgress(apt.progress.DpkgInstallProgress,PackageKitInstallProgress):
     def run(self, debfile):
         apt.progress.DpkgInstallProgress.run(self, debfile)
@@ -232,6 +233,7 @@ class PackageKitDpkgInstallProgress(apt.progress.DpkgInstallProgress,PackageKitI
         if self.last_activity + self.timeout < time.time():
             pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
             os.write(self.master_fd, chr(3))
+"""
 
 def sigquit(signum, frame):
     pklog.error("Was killed")
@@ -269,6 +271,36 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_CANCEL)
         self._canceled.set()
         self._canceled.wait()
+
+"""
+    @threaded
+    def doSearchFile(self, filters, filename):
+        '''
+        Implement the apt2-search-file functionality
+
+        Apt specific: Works only for installed files. Since config files are
+        not removed by default even not installed packages can be reported.
+        '''
+        pklog.info("Searching for file: %s" % filename)
+        self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(True)
+
+        for pkg in self._cache:
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
+                               "The search was canceled")
+                self.Finished(EXIT_KILLED)
+                self._canceled.clear()
+                return
+            for installed_file in pkg.installedFiles:
+                if filename in installed_file:
+                    if self._is_package_visible(pkg, filters):
+                        self._emit_package(pkg)
+                    continue
+        self.Finished(EXIT_SUCCESS)
+"""
 
     @threaded
     def doSearchGroup(self, filters, group):
@@ -1285,6 +1317,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._is_package_supported(pkg)) or \
                (filter == FILTER_NOT_SUPPORTED and \
                 self._is_package_supported(pkg)) or \
+               (filter == FILTER_FREE and not self._is_package_free(pkg)) or \
+               (filter == FILTER_NOT_FREE and \
+                not self._is_package_not_free(pkg)) or \
                (filter == FILTER_GUI and not self._has_package_gui(pkg)) or \
                (filter == FILTER_NOT_GUI and self._has_package_gui(pkg)) or \
                (filter == FILTER_DEVELOPMENT and not \
@@ -1293,6 +1328,28 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._is_package_devel(pkg)):
                 return False
         return True
+
+    def _is_package_not_free(self, pkg):
+        """
+        Return True if we can be sure that the package's license isn't any 
+        free one
+        """
+        origin = pkg.candidateOrigin[0]
+        return ((origin.origin == "Ubuntu" and \
+                 origin.component in ["multiverse", "restricted"]) or \
+                (origin.origin == "Debian" and \
+                origin.component in ["contrib", "non-free"])) and \
+               origin.trusted == True
+
+    def _is_package_free(self, pkg):
+        """
+        Return True if we can be sure that the package has got a free license
+        """
+        origin = pkg.candidateOrigin[0]
+        return ((origin.origin == "Ubuntu" and \
+                 origin.component in ["main", "universe"]) or \
+                (origin.origin == "Debian" and origin.component == "main")) and\
+               origin.trusted == True
 
     def _has_package_gui(self, pkg):
         #FIXME: should go to a modified Package class

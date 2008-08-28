@@ -29,7 +29,9 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-package-id.h>
@@ -53,14 +55,14 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	/* use PK to find the correct package */
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		pk_warning ("failed to reset client: %s", error->message);
+		egg_warning ("failed to reset client: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
 
 	ret = pk_client_search_file (client, PK_FILTER_ENUM_INSTALLED, filename, &error);
 	if (!ret) {
-		pk_warning ("failed to search file: %s", error->message);
+		egg_warning ("failed to search file: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -69,14 +71,14 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	list = pk_client_get_package_list (client);
 	size = pk_package_list_get_size (list);
 	if (size != 1) {
-		pk_warning ("not correct size, %i", size);
+		egg_warning ("not correct size, %i", size);
 		goto out;
 	}
 
 	/* get the obj */
 	obj = pk_package_list_get_obj (list, 0);
 	if (obj == NULL) {
-		pk_error ("cannot get obj");
+		egg_error ("cannot get obj");
 		goto out;
 	}
 
@@ -101,7 +103,7 @@ pk_import_get_locale (const gchar *buffer)
 		return NULL;
 	}
 	locale = g_strdup (result+1);
-	len = pk_strlen (locale, 20);
+	len = egg_strlen (locale, 20);
 	locale[len-1] = '\0';
 	return locale;
 }
@@ -127,7 +129,7 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	key = g_key_file_new ();
 	ret = g_key_file_load_from_file (key, filename, G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
 	if (ret == FALSE) {
-		pk_error ("bad!!");
+		egg_error ("bad!!");
 	}
 
 	/* get this specific locale list */
@@ -156,13 +158,13 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		name = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", locale, NULL);
 
 		/* if different, then save */
-		if (pk_strequal (name_unlocalised, name) == FALSE) {
+		if (egg_strequal (name_unlocalised, name) == FALSE) {
 			g_print (" %s", locale);
 			comment = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
 								"Comment", locale, NULL);
 			genericname = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
 								    "GenericName", locale, NULL);
-			pk_debug ("PackageName=%s, Locale=%s, Name=%s, GenericName=%s, Comment=%s",
+			egg_debug ("PackageName=%s, Locale=%s, Name=%s, GenericName=%s, Comment=%s",
 				  package_name, locale, name, genericname, comment);
 			pk_extra_set_locale (extra, locale);
 
@@ -185,7 +187,7 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 
 	exec = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", NULL);
 	icon = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", NULL);
-	pk_debug ("PackageName=%s, Exec=%s, Icon=%s", package_name, exec, icon);
+	egg_debug ("PackageName=%s, Exec=%s, Icon=%s", package_name, exec, icon);
 	pk_extra_set_data_package (extra, package_name, icon, exec);
 	g_free (icon);
 	g_free (exec);
@@ -205,7 +207,7 @@ pk_desktop_process_directory (const gchar *directory)
 
 	dir = g_dir_open (directory, 0, NULL);
 	if (dir == NULL) {
-		pk_error ("not a valid desktop dir!");
+		egg_error ("not a valid desktop dir!");
 	}
 
 	pattern = g_pattern_spec_new ("*.desktop");
@@ -262,7 +264,7 @@ main (int argc, char *argv[])
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	/* set defaults */
 	if (desktop_location == NULL) {

@@ -27,7 +27,9 @@
 #include <sys/types.h>
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-transaction-id.h"
 #define PK_TRANSACTION_ID_COUNT_FILE		LOCALSTATEDIR "/run/PackageKit/job_count.dat"
@@ -67,23 +69,23 @@ pk_transaction_id_load_job_count (void)
 	guint job_count;
 	ret = g_file_get_contents (PK_TRANSACTION_ID_COUNT_FILE, &contents, NULL, NULL);
 	if (ret == FALSE) {
-		pk_warning ("failed to get last job");
+		egg_warning ("failed to get last job");
 		return FALSE;
 	}
 
 	/* convert */
-	ret = pk_strtouint (contents, &job_count);
+	ret = egg_strtouint (contents, &job_count);
 	if (ret == FALSE) {
-		pk_warning ("failed to convert");
+		egg_warning ("failed to convert");
 	}
 
 	/* check we got a sane number */
 	if (job_count > 10240) {
-		pk_warning ("invalid job count!");
+		egg_warning ("invalid job count!");
 		job_count = 0;
 	}
 
-	pk_debug ("job=%i", job_count);
+	egg_debug ("job=%i", job_count);
 	g_free (contents);
 	return job_count;
 }
@@ -97,12 +99,12 @@ pk_transaction_id_save_job_count (guint job_count)
 	gboolean ret;
 	gchar *contents;
 
-	pk_debug ("saving %i", job_count);
+	egg_debug ("saving %i", job_count);
 	contents = g_strdup_printf ("%i", job_count);
 	ret = g_file_set_contents (PK_TRANSACTION_ID_COUNT_FILE, contents, -1, NULL);
 	g_free (contents);
 	if (ret == FALSE) {
-		pk_warning ("failed to set last job");
+		egg_warning ("failed to set last job");
 		return FALSE;
 	}
 	return TRUE;
@@ -115,7 +117,7 @@ gboolean
 pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
 {
 	/* TODO, ignore the data part */
-	return pk_strequal (tid1, tid2);
+	return egg_strequal (tid1, tid2);
 }
 
 /**
