@@ -15,6 +15,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Copyright (C) 2007 James Bowes <jbowes@dangerouslyinc.com>
+# Copyright (C) 2008 Anders F Bjorklund <afb@users.sourceforge.net>
 
 import smart
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
@@ -349,17 +350,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if not pkgsize:
                 pkgsize = "unknown"
 
-            if info:
-                if hasattr(info, 'getLicense'):
-                    license = info.getLicense()
-                else:
-                    license = "unknown"
+            if hasattr(info, 'getLicense'):
+                license = info.getLicense()
+            else:
+                license = "unknown"
 
-                group = info.getGroup()
-                if group in self.GROUPS:
-                    group = self.GROUPS[group]
-                else:
-                    group = "unknown"
+            group = info.getGroup()
+            if group in self.GROUPS:
+                group = self.GROUPS[group]
+            else:
+                group = "unknown"
 
             self.details(packageid, license, group, description, url,
                     pkgsize)
