@@ -509,9 +509,54 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         return packages
 
-    @staticmethod
-    def _passes_filters(package, filters):
+    def _passes_filters(self, package, filters):
         filterlist = filters.split(';')
-
-        return (FILTER_NOT_INSTALLED not in filterlist and package.installed
-                or FILTER_INSTALLED not in filterlist and not package.installed)
+        if FILTER_NOT_INSTALLED in filterlist and package.installed:
+            return False
+        elif FILTER_INSTALLED in filterlist and not package.installed:
+            return False
+        else:
+            loader = package.loaders.keys()[0]
+            info = loader.getInfo(package)
+            for filter in filterlist:
+                if filter in (FILTER_GUI, FILTER_NOT_GUI):
+                    if hasattr(info, 'isGraphical'):
+                        graphical = info.isGraphical()
+                        if graphical is None: # tristate boolean
+                            return None
+                        if filter == FILTER_GUI and graphical:
+                            return False
+                        if filter == FILTER_NOT_GUI and graphical:
+                            return False
+                    else:
+                        self.error(ERROR_FILTER_INVALID, \
+                                   "filter %s not supported" % filter)
+                        return False
+                if filter in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
+                    if hasattr(info, 'isDevelopment'):
+                        development = info.isDevelopment()
+                        if development is None: # tristate boolean
+                            return None
+                        if filter == FILTER_DEVELOPMENT and development:
+                            return False
+                        if filter == FILTER_NOT_DEVELOPMENT and development:
+                            return False
+                    else:
+                        self.error(ERROR_FILTER_INVALID, \
+                                   "filter %s not supported" % filter)
+                        return False
+                if filter in (FILTER_FREE, FILTER_NOT_FREE):
+                    if hasattr(info, 'getLicense'):
+                        license = info.getLicense()
+                        free = pkpackage.check_license_field(license)
+                        if free is None: # tristate boolean
+                            return None
+                        if filter == FILTER_FREE and not free:
+                            return False
+                        if filter == FILTER_NOT_FREE and free:
+                            return False
+                    else:
+                        self.error(ERROR_FILTER_INVALID, \
+                                   "filter %s not supported" % filter)
+                        return False
+        return True
