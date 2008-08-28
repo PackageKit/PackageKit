@@ -92,6 +92,18 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * pk_backend_bool_to_text:
+ */
+static const gchar *
+pk_backend_bool_to_text (gboolean value)
+{
+	if (value == TRUE) {
+		return "yes";
+	}
+	return "no";
+}
+
+/**
  * backend_download_packages:
  */
 static void
@@ -111,12 +123,11 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
-	gchar *filters_text;
 	gchar *package_ids_temp;
-	/* FIXME: Use recursive and filter here */
-	filters_text = pk_filter_bitfield_to_text (filters);
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "get-depends.py", package_ids_temp, NULL);
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -142,6 +153,21 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	pk_backend_spawn_helper (spawn, "get-files.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_get_requires:
+ */
+static void
+backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+{
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-requires.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	g_free (filters_text);
 	g_free (package_ids_temp);
 }
 
@@ -188,18 +214,6 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
-}
-
-/**
- * pk_backend_bool_to_text:
- */
-static const gchar *
-pk_backend_bool_to_text (gboolean value)
-{
-	if (value == TRUE) {
-		return "yes";
-	}
-	return "no";
 }
 
 /**
@@ -369,7 +383,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_files,				/* get_files */
 	backend_get_packages,				/* get_packages */
 	backend_get_repo_list,				/* get_repo_list */
-	NULL,						/* get_requires */
+	backend_get_requires,				/* get_requires */
 	NULL,						/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	backend_install_files,				/* install_files */
