@@ -95,6 +95,59 @@ def debug_exception(type, value, tb):
        print
        pdb.pm()
 
+class DpkgInstallProgress(apt.progress.InstallProgress):
+    """
+    Progress handler for a local Debian package installation
+    """
+    def run(self, debfile):
+        """
+        Start installing the given Debian package
+        """
+        self.debfile = debfile
+        self.debname = os.path.basename(debfile).split("_")[0]
+        pid = self.fork()
+        if pid == 0:
+            # child
+            res = os.system("/usr/bin/dpkg --status-fd %s -i %s" % \
+                            (self.writefd, self.debfile))
+            os._exit(os.WEXITSTATUS(res))
+        self.child_pid = pid
+        res = self.waitChild()
+        return res
+
+    def updateInterface(self):
+        """
+        Process status messages from dpkg
+        """
+        if self.statusfd != None:
+            while True:
+                try:
+                    self.read += os.read(self.statusfd.fileno(),1)
+                except OSError, (errno,errstr):
+                    # resource temporarly unavailable is ignored
+                    if errno != 11:
+                        print errstr
+                    break
+                if self.read.endswith("\n"):
+                    statusl = string.split(self.read, ":")
+                    if len(statusl) < 3:
+                        print "got garbage from dpkg: '%s'" % read
+                        self.read = ""
+                        break
+                    status = statusl[2].strip()
+                    #print status
+                    if status == "error":
+                        self.error(self.debname, status)
+                    elif status == "conffile-prompt":
+                        # we get a string like this:
+                        # 'current-conffile' 'new-conffile' useredited distedited
+                        match = re.compile("\s*\'(.*)\'\s*\'(.*)\'.*").match(status_str)
+                        if match:
+                             self.conffile(match.group(1), match.group(2))
+                    else:
+                        self.status = status
+                    self.read = ""
+
 
 class PackageKitOpProgress(apt.progress.OpProgress):
     '''
