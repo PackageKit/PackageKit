@@ -38,7 +38,6 @@ libpackagekit_include_HEADERS =					\
 	pk-bitfield.h						\
 	pk-common.h						\
 	pk-client.h						\
-	pk-dbus-monitor.h					\
 	pk-catalog.h						\
 	pk-control.h						\
 	pk-task-list.h						\
@@ -47,12 +46,12 @@ libpackagekit_include_HEADERS =					\
 libpackagekit_la_SOURCES =					\
 	egg-debug.c						\
 	egg-debug.h						\
+	egg-dbus-monitor.c					\
+	egg-dbus-monitor.h					\
 	pk-marshal.c						\
 	pk-marshal.h						\
 	pk-extra.c						\
 	pk-extra.h						\
-	pk-dbus-monitor.c					\
-	pk-dbus-monitor.h					\
 	pk-connection.c						\
 	pk-connection.h						\
 	pk-package-id.c						\

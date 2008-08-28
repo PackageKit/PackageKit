@@ -38,7 +38,7 @@
 
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
-#include <pk-dbus-monitor.h>
+#include <egg-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
@@ -51,11 +51,12 @@
 #include <pk-package-id.h>
 #include <pk-package-ids.h>
 #include <pk-enum.h>
-#include <egg-debug.h>
 #include <pk-package-list.h>
 #include <pk-update-detail-obj.h>
 #include <pk-details-obj.h>
 
+#include "egg-debug.h"
+#include "egg-dbus-monitor.h"
 #include "pk-transaction.h"
 #include "pk-transaction-list.h"
 #include "pk-transaction-db.h"
@@ -86,7 +87,7 @@ struct PkTransactionPrivate
 	gboolean		 emit_eula_required;
 	gboolean		 emit_signature_required;
 	gchar			*locale;
-	PkDbusMonitor		*monitor;
+	EggDbusMonitor		*monitor;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkCache			*cache;
@@ -245,7 +246,7 @@ pk_transaction_set_dbus_name (PkTransaction *transaction, const gchar *dbus_name
 	}
 	transaction->priv->dbus_name = g_strdup (dbus_name);
 	egg_debug ("assigning %s to %p", dbus_name, transaction);
-	pk_dbus_monitor_assign (transaction->priv->monitor, PK_DBUS_MONITOR_SYSTEM, dbus_name);
+	egg_dbus_monitor_assign (transaction->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, dbus_name);
 	return TRUE;
 }
 
@@ -380,7 +381,7 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
  * pk_transaction_caller_active_changed_cb:
  **/
 static void
-pk_transaction_caller_active_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolean is_active, PkTransaction *transaction)
+pk_transaction_caller_active_changed_cb (EggDbusMonitor *egg_dbus_monitor, gboolean is_active, PkTransaction *transaction)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2556,7 +2557,7 @@ pk_transaction_is_caller_active (PkTransaction *transaction, gboolean *is_active
 
 	egg_debug ("is caller active");
 
-	*is_active = pk_dbus_monitor_is_connected (transaction->priv->monitor);
+	*is_active = egg_dbus_monitor_is_connected (transaction->priv->monitor);
 	return TRUE;
 }
 
@@ -3619,7 +3620,7 @@ pk_transaction_init (PkTransaction *transaction)
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
 			  G_CALLBACK (pk_transaction_transaction_cb), transaction);
 
-	transaction->priv->monitor = pk_dbus_monitor_new ();
+	transaction->priv->monitor = egg_dbus_monitor_new ();
 	g_signal_connect (transaction->priv->monitor, "connection-changed",
 			  G_CALLBACK (pk_transaction_caller_active_changed_cb), transaction);
 }
