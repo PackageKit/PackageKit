@@ -106,6 +106,43 @@ pk_console_bar (guint subpercentage)
 }
 
 /**
+ * pk_strpad:
+ * @data: the input string
+ * @length: the desired length of the output string, with padding
+ *
+ * Returns the text padded to a length with spaces. If the string is
+ * longer than length then a longer string is returned.
+ *
+ * Return value: The padded string
+ **/
+static gchar *
+pk_strpad (const gchar *data, guint length)
+{
+	gint size;
+	guint data_len;
+	gchar *text;
+	gchar *padding;
+
+	if (data == NULL) {
+		return g_strnfill (length, ' ');
+	}
+
+	/* ITS4: ignore, only used for formatting */
+	data_len = strlen (data);
+
+	/* calculate */
+	size = (length - data_len);
+	if (size <= 0) {
+		return g_strdup (data);
+	}
+
+	padding = g_strnfill (size, ' ');
+	text = g_strdup_printf ("%s%s", data, padding);
+	g_free (padding);
+	return text;
+}
+
+/**
  * pk_console_start_bar:
  **/
 static void
@@ -1720,3 +1757,74 @@ out:
 
 	return 0;
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_console (LibSelfTest *test)
+{
+	gchar *text_safe;
+
+	if (libst_start (test, "PkConsole", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	/************************************************************
+	 ****************         Padding          ******************
+	 ************************************************************/
+	libst_title (test, "pad smaller");
+	text_safe = pk_strpad ("richard", 10);
+	if (egg_strequal (text_safe, "richard   ")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad NULL");
+	text_safe = pk_strpad (NULL, 10);
+	if (egg_strequal (text_safe, "          ")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad nothing");
+	text_safe = pk_strpad ("", 10);
+	if (egg_strequal (text_safe, "          ")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad over");
+	text_safe = pk_strpad ("richardhughes", 10);
+	if (egg_strequal (text_safe, "richardhughes")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad zero");
+	text_safe = pk_strpad ("rich", 0);
+	if (egg_strequal (text_safe, "rich")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+	libst_end (test);
+}
+#endif
+
