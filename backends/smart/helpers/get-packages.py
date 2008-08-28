@@ -14,7 +14,8 @@ import sys
 
 from smartBackend import PackageKitSmartBackend
 
-packages = sys.argv[1:]
+filters = sys.argv[1]
+
 backend = PackageKitSmartBackend(sys.argv[1:])
-backend.install_packages(packages)
+backend.get_packages(filters)
 sys.exit(0)

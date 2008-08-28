@@ -51,6 +51,31 @@ backend_destroy (PkBackend *backend)
 }
 
 /**
+ * backend_get_filters:
+ */
+static PkBitfield
+backend_get_filters (PkBackend *backend)
+{
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_INSTALLED,
+		-1);
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "download-packages.py", directory, package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
  * backend_get_depends:
  */
 static void
@@ -99,6 +124,18 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * backend_get_packages:
+ */
+static void
+backend_get_packages (PkBackend *backend, PkBitfield filters)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-packages.py", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -281,14 +318,14 @@ PK_BACKEND_OPTIONS (
 	backend_initialize,				/* initialize */
 	backend_destroy,				/* destroy */
 	NULL,						/* get_groups */
-	NULL,						/* get_filters */
+	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
-	NULL,						/* download_packages */
+	backend_download_packages,			/* download_packages */
 	backend_get_depends,				/* get_depends */
 	backend_get_details,				/* get_details */
 	NULL,						/* get_distro_upgrades */
 	backend_get_files,				/* get_files */
-	NULL,						/* get_packages */
+	backend_get_packages,				/* get_packages */
 	backend_get_repo_list,				/* get_repo_list */
 	NULL,						/* get_requires */
 	NULL,						/* get_update_detail */

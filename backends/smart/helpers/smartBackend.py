@@ -20,8 +20,12 @@ import smart
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
         INFO_SECURITY, INFO_BUGFIX, INFO_ENHANCEMENT, \
-        ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED
+        ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED, \
+        ERROR_PACKAGE_DOWNLOAD_FAILED
+from packagekit.package import PackagekitPackage
 
+# Global vars
+pkpackage = PackagekitPackage()
 
 def needs_cache(func):
     """ Load smart's channels, and save the cache when done. """
@@ -48,24 +52,26 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         smart.initPsyco()
 
     @needs_cache
-    def install(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
-
-        packages = self._process_search_results(results)
+    def install_packages(self, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
 
         available = [package for package in packages if not package.installed]
-        if len(available) != 1:
+        if len(available) < 1:
             return
-        package = available[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyInstall)
-        trans.enqueue(package, smart.transaction.INSTALL)
+        for package in available:
+            trans.enqueue(package, smart.transaction.INSTALL)
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
     def install_files(self, trusted, paths):
-        self.ctrl.addFileChannel(path)
+        for path in paths:
+            self.ctrl.addFileChannel(path)
         self.ctrl.reloadChannels()
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyInstall)
@@ -82,35 +88,49 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def remove(self, allowdeps, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
-
-        packages = self._process_search_results(results)
+    def remove_packages(self, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
 
         installed = [package for package in packages if package.installed]
-        if len(installed) != 1:
+        if len(installed) < 1:
             return
-        package = installed[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyRemove)
-        trans.enqueue(package, smart.transaction.REMOVE)
+        for package in installed:
+            trans.enqueue(package, smart.transaction.REMOVE)
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def update(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
+    def update_packages(self, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
 
-        packages = self._process_search_results(results)
         installed = [package for package in packages if package.installed]
-        if len(installed) != 1:
+        if len(installed) < 1:
             return
-        package = installed[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyUpgrade)
-        trans.enqueue(package, smart.transaction.UPGRADE)
+        for package in installed:
+            trans.enqueue(package, smart.transaction.UPGRADE)
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
+
+    @needs_cache
+    def download_packages(self, directory, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
+
+        if len(packages) < 1:
+            return
+        self.ctrl.downloadPackages(packages, targetdir=directory)
 
     @needs_cache
     def update_system(self):
@@ -167,8 +187,15 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             if self._passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
-                if searchstring in info.GetDetails():
+                if searchstring in info.getDescription():
                     self._show_package(package)
+
+    @needs_cache
+    def get_packages(self, filters):
+        packages = self.ctrl.getCache().getPackages()
+        for package in packages:
+            if self._passes_filters(package, filters):
+                self._show_package(package)
 
     def refresh_cache(self):
         self.ctrl.rebuildSysConfChannels()
@@ -194,8 +221,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             infos.sort()
             info = infos[0]
 
-            version, arch = package.version.split('@')
-            description = info.GetDetails()
+            description = info.getDescription()
             description = description.replace("\n\n", ";")
             description = description.replace("\n", " ")
             urls = info.getReferenceURLs()
@@ -268,11 +294,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         channels = smart.sysconf.get("channels", ())
         for alias in channels:
             channel = smart.sysconf.get(("channels", alias))
+            name = channel.get("name", alias)
             parsed = smart.channel.parseChannelData(channel)
             enabled = 'true'
             if channel.has_key('disabled') and channel['disabled'] == 'yes':
                 enabled = 'false'
-            self.repo_detail(alias, channel['name'], enabled)
+            self.repo_detail(alias, name, enabled)
 
     def repo_enable(self, repoid, enable):
         if smart.sysconf.has(("channels", repoid)):
@@ -286,6 +313,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def _search_packageid(self, packageid):
         idparts = packageid.split(';')
+        # FIXME: join only works with RPM packages
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
 
@@ -297,13 +325,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 status = INFO_INSTALLED
             else:
                 status = INFO_AVAILABLE
+        # FIXME: split only works with RPM packages
         version, arch = package.version.split('@')
         for loader in package.loaders:
             channel = loader.getChannel()
             if package.installed and not channel.getType().endswith('-sys'):
                 continue
             info = loader.getInfo(package)
-            self.package(self.get_package_id(package.name, version, arch,
+            self.package(pkpackage.get_package_id(package.name, version, arch,
                 channel.getAlias()), status, info.getSummary())
 
     def _get_status(self, package):

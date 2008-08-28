@@ -814,7 +814,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                 show = False
                         if show:
                             self._show_package(pkg,INFO_AVAILABLE)
-                            break
 
     @handle_repo_error
     def install_packages(self,package_ids):
@@ -892,16 +891,33 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if file.endswith('.rpm'):
                     inst_files.append(os.path.join(tempdir, file))
 
+        to_remove = []
+                    
         # remove files of packages that alrady exist
         for inst_file in inst_files:
             try:
                 pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
                 if self._is_inst(pkg):
-                    inst_files.remove(inst_file)
+                    to_remove.append(inst_file)
             except yum.Errors.YumBaseError,e:
                 self.error(ERROR_INVALID_PACKAGE_FILE,'Package could not be decompressed')
             except:
                 self.error(ERROR_UNKNOWN,"Failed to open local file -- please report")
+
+        # Some fiddly code to get the messaging right
+        if len(inst_files) == 1 and len(to_remove) == 1:
+            # The single pkg to be installed was already installed
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, '%s is already installed' % inst_files[0])
+
+        for inst_file in to_remove:
+            # More than one pkg to be installed, 1 or more are already installed
+            inst_files.remove(inst_file)
+            self.message(MESSAGE_PACKAGE_ALREADY_INSTALLED, '%s is already installed' % inst_file)
+            
+        if len(inst_files) == 0:
+            # More than one pkg to be installed, all of them already installed
+            self.error(ERROR_ALL_PACKAGES_ALREADY_INSTALLED,
+                       'All of the specified packages have already been installed')
 
         # If trusted is true, it means that we will only install trusted files
         if trusted == 'yes':

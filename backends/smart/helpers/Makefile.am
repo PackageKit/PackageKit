@@ -8,6 +8,7 @@ dist_helper_DATA = 			\
 	get-details.py			\
 	get-files.py			\
 	get-repo-list.py		\
+	get-packages.py			\
 	get-updates.py			\
 	install-files.py		\
 	install-packages.py		\
@@ -20,6 +21,7 @@ dist_helper_DATA = 			\
 	smartBackend.py			\
 	update-packages.py		\
 	update-system.py		\
+	download-packages.py		\
 	$(NULL)
 
 install-data-hook:
