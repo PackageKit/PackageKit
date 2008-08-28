@@ -18,6 +18,9 @@
 # Copyright (C) 2008 Anders F Bjorklund <afb@users.sourceforge.net>
 
 import smart
+from smart.interface import Interface
+from smart.progress import Progress
+from smart.fetcher import Fetcher
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
         INFO_SECURITY, INFO_BUGFIX, INFO_ENHANCEMENT, \
@@ -41,19 +44,54 @@ def needs_cache(func):
     return cache_wrap
 
 
+class PackageKitSmartInterface(Interface):
+
+    def __init__(self, ctrl, backend):
+        Interface.__init__(self, ctrl)
+        self._progress = PackageKitSmartProgress(True, backend)
+
+    def getProgress(self, obj, hassub=False):
+        self._progress.setHasSub(hassub)
+        self._progress.setFetcherMode(isinstance(obj, Fetcher))
+        return self._progress
+
+class PackageKitSmartProgress(Progress):
+
+    def __init__(self, hassub, backend):
+        Progress.__init__(self)
+        self._hassub = hassub
+        self._backend = backend
+        self._oldstatus = None
+            
+    def setFetcherMode(self, flag):
+        if flag:
+            self._oldstatus = self._backend._status
+            self._backend.status(STATUS_DOWNLOAD)
+
+    def stop(self):
+        Progress.stop(self)
+        if self._oldstatus:
+            self._backend.status(self._oldstatus)
+            self._oldstatus = None
+
+    def expose(self, topic, percent, subkey, subtopic, subpercent, data, done):
+        self._backend.percentage(percent)
+
 class PackageKitSmartBackend(PackageKitBaseBackend):
+
+    _status = STATUS_UNKNOWN
 
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
 
-        # FIXME: Only pulsing progress for now.
-        self.percentage(None)
-
         self.ctrl = smart.init()
-        # Use the dummy interface to quiet output.
-        smart.iface.object = smart.interface.Interface(self.ctrl)
+        smart.iface.object = PackageKitSmartInterface(self.ctrl, self)
         smart.initPlugins()
         smart.initPsyco()
+
+    def status(self, state):
+        PackageKitBaseBackend.status(self, state)
+        self._status = state
 
     @needs_cache
     def install_packages(self, packageids):
