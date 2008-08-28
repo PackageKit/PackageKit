@@ -39,7 +39,7 @@
 #include <glib/gprintf.h>
 
 #include <gmodule.h>
-#include <pk-dbus-monitor.h>
+#include <egg-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
 
 #include <pk-common.h>
@@ -75,7 +75,7 @@ struct PkBackendDbusPrivate
 	GTimer			*timer;
 	gchar			*service;
 	gulong			 signal_finished;
-	PkDbusMonitor		*monitor;
+	EggDbusMonitor		*monitor;
 };
 
 G_DEFINE_TYPE (PkBackendDbus, pk_backend_dbus, G_TYPE_OBJECT)
@@ -457,7 +457,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	}
 
 	/* watch */
-	pk_dbus_monitor_assign (backend_dbus->priv->monitor, PK_DBUS_MONITOR_SYSTEM, service);
+	egg_dbus_monitor_assign (backend_dbus->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, service);
 
 	/* grab this */
 	egg_debug ("trying to activate %s", service);
@@ -1409,7 +1409,7 @@ pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkBitfield filters,
  * pk_backend_dbus_monitor_changed_cb:
  **/
 static void
-pk_backend_dbus_monitor_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolean is_active, PkBackendDbus *backend_dbus)
+pk_backend_dbus_monitor_changed_cb (EggDbusMonitor *egg_dbus_monitor, gboolean is_active, PkBackendDbus *backend_dbus)
 {
 	gboolean ret;
 	g_return_if_fail (PK_IS_BACKEND_DBUS (backend_dbus));
@@ -1483,7 +1483,7 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	}
 
 	/* babysit the backend and do Init() again it when it crashes */
-	backend_dbus->priv->monitor = pk_dbus_monitor_new ();
+	backend_dbus->priv->monitor = egg_dbus_monitor_new ();
 	g_signal_connect (backend_dbus->priv->monitor, "connection-changed",
 			  G_CALLBACK (pk_backend_dbus_monitor_changed_cb), backend_dbus);
 
