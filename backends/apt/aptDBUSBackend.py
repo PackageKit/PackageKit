@@ -272,6 +272,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled.set()
         self._canceled.wait()
 
+"""
     @threaded
     def doSearchFile(self, filters, filename):
         '''
@@ -299,6 +300,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         self._emit_package(pkg)
                     continue
         self.Finished(EXIT_SUCCESS)
+"""
 
     @threaded
     def doSearchGroup(self, filters, group):

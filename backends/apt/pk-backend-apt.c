@@ -216,12 +216,12 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 
 /**
  *  * pk_backend_search_file:
- *   */
+ *   
 static void
 backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_dbus_search_file (dbus, filters, search);
-}
+} */
 
 /**
  *  * pk_backend_search_group:
@@ -325,7 +325,7 @@ PK_BACKEND_OPTIONS (
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
-	backend_search_file,			/* search_file */
+	NULL,					/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* service_pack */
