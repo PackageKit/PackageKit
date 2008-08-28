@@ -412,15 +412,11 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             package = packages[0]
 
             providers = {}
-            def addproviders(package):
-                for required in package.requires:
-                    for provider in self.ctrl.getCache().getProvides(str(required)):
-                        for package in provider.packages:
-                            if not providers.has_key(package):
-                                providers[package] = True
-                            if recursive:
-                                addproviders(package)
-            addproviders(package)
+            for required in package.requires:
+                for provider in self.ctrl.getCache().getProvides(str(required)):
+                    for package in provider.packages:
+                        if not providers.has_key(package):
+                            providers[package] = True
 
             for package in providers.keys():
                 self._show_package(package)
