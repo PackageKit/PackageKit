@@ -142,7 +142,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         if len(packages) < 1:
             return
-        self.status(PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST) # ???
+        self.status(PK_STATUS_ENUM_DOWNLOAD)
         self.ctrl.downloadPackages(packages, targetdir=directory)
 
     @needs_cache
@@ -225,6 +225,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def get_packages(self, filters):
+        self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._passes_filters(package, filters):
@@ -394,7 +395,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def get_depends(self, filters, packageids, recursive_text):
-        # FIXME: use filters
         recursive = self._text_to_boolean(recursive_text)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -414,11 +414,11 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                             providers[package] = True
 
             for package in providers.keys():
-                self._show_package(package)
+                if self._passes_filters(package, filters):
+                    self._show_package(package)
 
     @needs_cache
     def get_requires(self, filters, packageids, recursive_text):
-        # FIXME: use filters
         recursive = self._text_to_boolean(recursive_text)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -438,7 +438,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                             requirers[package] = True
 
             for package in requirers.keys():
-                self._show_package(package)
+                if self._passes_filters(package, filters):
+                    self._show_package(package)
 
     def get_repo_list(self, filters):
         channels = smart.sysconf.get("channels", ())
