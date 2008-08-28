@@ -28,6 +28,7 @@ import re
 import signal
 import shutil
 import socket
+import string
 import sys
 import time
 import threading
@@ -272,7 +273,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled.set()
         self._canceled.wait()
 
-"""
     @threaded
     def doSearchFile(self, filters, filename):
         '''
@@ -294,13 +294,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_KILLED)
                 self._canceled.clear()
                 return
-            for installed_file in pkg.installedFiles:
+            for installed_file in self._get_installed_files(pkg):
                 if filename in installed_file:
                     if self._is_package_visible(pkg, filters):
                         self._emit_package(pkg)
                     continue
         self.Finished(EXIT_SUCCESS)
-"""
 
     @threaded
     def doSearchGroup(self, filters, group):
@@ -1153,11 +1152,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "Package %s doesn't exist" % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
-            if not pkg.isInstalled:
-                continue
-            path = "/var/lib/dpkg/info/%s.list" % pkg.name
-            list = open(path)
-            files = re.sub("\n", ";", list.read(), 0)
+            files = string.join(self._get_installed_files(pkg), ";")
             self.Files(id, files)
         self.Finished(EXIT_SUCCESS)
 
@@ -1383,6 +1378,23 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return self._cache[name]
         else:
             return None
+
+    def _get_installed_files(self, pkg):
+        """
+        Return the list of unicode names of the files which have
+        been installed by the package
+
+        This method should be obsolete by the apt.package.Package.installedFiles
+        attribute as soon as the consolidate branch of python-apt gets merged
+        """
+        path = "/var/lib/dpkg/info/%s.list" % pkg.name
+        try:
+            list = open(path)
+            files = list.read().decode().split("\n")
+            list.close()
+        except:
+            return []
+        return files
 
     def _get_changelog(self, pkg, uri=None, cancel_lock=None):
         """
