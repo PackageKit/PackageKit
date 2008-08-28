@@ -57,6 +57,7 @@ static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
+	/* FIXME: These depend on the Smart backends: */
 		PK_GROUP_ENUM_ACCESSORIES,
 		PK_GROUP_ENUM_ADMIN_TOOLS,
 		PK_GROUP_ENUM_COMMUNICATION,
@@ -88,6 +89,10 @@ backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_FILTER_ENUM_INSTALLED,
+	/* FIXME: These depend on a newer Smart API: */
+		PK_FILTER_ENUM_GUI,
+		PK_FILTER_ENUM_DEVELOPMENT,
+		PK_FILTER_ENUM_FREE,
 		-1);
 }
 
