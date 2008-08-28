@@ -40,9 +40,11 @@
 #include <glib/gi18n.h>
 #include <sqlite3.h>
 
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-extra.h"
 #include "pk-common.h"
-#include "egg-debug.h"
 
 static void     pk_extra_class_init	(PkExtraClass *klass);
 static void     pk_extra_init		(PkExtra      *extra);
@@ -101,11 +103,11 @@ pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, g
 		col = col_name[i];
 		value = argv[i];
 		/* save the package name, and use it is the key */
-		if (pk_strequal (col, "package") && value != NULL) {
+		if (egg_strequal (col, "package") && value != NULL) {
 			package = g_strdup (argv[i]);
-		} else if (pk_strequal (col, "icon") && value != NULL) {
+		} else if (egg_strequal (col, "icon") && value != NULL) {
 			icon_name = g_strdup (argv[i]);
-		} else if (pk_strequal (col, "exec") && value != NULL) {
+		} else if (egg_strequal (col, "exec") && value != NULL) {
 			exec = g_strdup (argv[i]);
 		}
 	}
@@ -153,9 +155,9 @@ pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gc
 		col = col_name[i];
 		value = argv[i];
 		/* save the package name, and use it is the key */
-		if (pk_strequal (col, "package") && value != NULL) {
+		if (egg_strequal (col, "package") && value != NULL) {
 			package = g_strdup (argv[i]);
-		} else if (pk_strequal (col, "summary") && value != NULL) {
+		} else if (egg_strequal (col, "summary") && value != NULL) {
 			summary = g_strdup (argv[i]);
 		}
 	}
@@ -278,7 +280,7 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 	extra->priv->locale_base = g_strdup (locale);
 
 	/* we only want the first section to compare */
-	len = pk_strlen (locale, 10);
+	len = egg_strlen (locale, 10);
 	for (i=0; i<len; i++) {
 		if (extra->priv->locale_base[i] == '_') {
 			extra->priv->locale_base[i] = '\0';
@@ -288,7 +290,7 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 	}
 
 	/* no point doing it twice if they are the same */
-	if (pk_strequal (extra->priv->locale_base, extra->priv->locale)) {
+	if (egg_strequal (extra->priv->locale_base, extra->priv->locale)) {
 		g_free (extra->priv->locale_base);
 		extra->priv->locale_base = NULL;
 	}
@@ -731,7 +733,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get locale");
 	text = pk_extra_get_locale (extra);
-	if (pk_strequal (text, "en")) {
+	if (egg_strequal (text, "en")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "locale was %s", text);
@@ -766,7 +768,7 @@ libst_extra (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check locale base");
-	if (pk_strequal (extra->priv->locale_base, "en")) {
+	if (egg_strequal (extra->priv->locale_base, "en")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -794,7 +796,7 @@ libst_extra (LibSelfTest *test)
 	libst_title (test, "retrieve package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-power-manager");
 	exec = pk_extra_get_exec (extra, "gnome-power-manager");
-	if (pk_strequal (icon, "gpm-main.png")) {
+	if (egg_strequal (icon, "gpm-main.png")) {
 		libst_success (test, "%s:%s", icon, exec);
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);
@@ -813,8 +815,8 @@ libst_extra (LibSelfTest *test)
 	libst_title (test, "retrieve new package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-power-manager");
 	exec = pk_extra_get_exec (extra, "gnome-power-manager");
-	if (pk_strequal (icon, "gpm-prefs.png") &&
-	    pk_strequal (exec, "gnome-power-preferences")) {
+	if (egg_strequal (icon, "gpm-prefs.png") &&
+	    egg_strequal (exec, "gnome-power-preferences")) {
 		libst_success (test, "%s:%s", icon, exec);
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);

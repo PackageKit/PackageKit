@@ -44,8 +44,10 @@
 
 #include <glib/gi18n.h>
 
-#include "pk-common.h"
 #include "egg-debug.h"
+#include "egg-string.h"
+
+#include "pk-common.h"
 #include "pk-network-unix.h"
 #include "pk-marshal.h"
 
@@ -122,7 +124,7 @@ pk_network_unix_get_network_state (PkNetworkUnix *network_unix)
 	number_lines = g_strv_length (lines);
 	for (i=0; i<number_lines; i++) {
 		/* empty line */
-		if (pk_strzero (lines[i])) {
+		if (egg_strzero (lines[i])) {
 			continue;
 		}
 
@@ -134,12 +136,12 @@ pk_network_unix_get_network_state (PkNetworkUnix *network_unix)
 		}
 
 		/* is header? */
-		if (pk_strequal (sections[0], "Iface")) {
+		if (egg_strequal (sections[0], "Iface")) {
 			continue;
 		}
 
 		/* is loopback? */
-		if (pk_strequal (sections[0], "lo")) {
+		if (egg_strequal (sections[0], "lo")) {
 			continue;
 		}
 
@@ -151,13 +153,13 @@ pk_network_unix_get_network_state (PkNetworkUnix *network_unix)
 		}
 
 		/* is destination zero (default route)? */
-		if (pk_strequal (sections[1], "00000000")) {
+		if (egg_strequal (sections[1], "00000000")) {
 			egg_debug ("destination %s is valid", sections[0]);
 			online = TRUE;
 		}
 
 		/* is gateway nonzero? */
-		if (!pk_strequal (sections[2], "00000000")) {
+		if (!egg_strequal (sections[2], "00000000")) {
 			egg_debug ("interface %s is valid", sections[0]);
 			online = TRUE;
 		}

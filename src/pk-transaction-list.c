@@ -38,7 +38,9 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include <egg-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-common.h>
 #include "pk-transaction-id.h"
 #include "pk-transaction-list.h"
@@ -92,7 +94,7 @@ pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		tmptid = pk_transaction_get_tid (item->transaction);
-		if (pk_strequal (tmptid, tid)) {
+		if (egg_strequal (tmptid, tid)) {
 			return item;
 		}
 	}
@@ -554,7 +556,7 @@ libst_transaction_list (LibSelfTest *test)
 	libst_title (test, "get from db");
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL &&
-	    pk_strequal (item->tid, tid) &&
+	    egg_strequal (item->tid, tid) &&
 	    item->transaction != NULL) {
 		libst_success (test, NULL);
 	} else {
@@ -644,7 +646,7 @@ libst_transaction_list (LibSelfTest *test)
 	libst_title (test, "get from db");
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL &&
-	    pk_strequal (item->tid, tid) &&
+	    egg_strequal (item->tid, tid) &&
 	    item->transaction != NULL) {
 		libst_success (test, NULL);
 	} else {

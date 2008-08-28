@@ -38,6 +38,8 @@
 #include <pk-common.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-transaction-db.h"
 #include "pk-marshal.h"
 
@@ -125,8 +127,8 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "succeeded")) {
-			ret = pk_strtouint (value, &temp);
+		if (egg_strequal (col, "succeeded")) {
+			ret = egg_strtouint (value, &temp);
 			if (!ret) {
 				egg_warning ("failed to parse succeeded: %s", value);
 			}
@@ -139,24 +141,24 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 				egg_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
 				item.succeeded = 1;
 			}
-		} else if (pk_strequal (col, "role")) {
+		} else if (egg_strequal (col, "role")) {
 			if (value != NULL) {
 				item.role = pk_role_enum_from_text (value);
 			}
-		} else if (pk_strequal (col, "transaction_id")) {
+		} else if (egg_strequal (col, "transaction_id")) {
 			if (value != NULL) {
 				item.tid = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "timespec")) {
+		} else if (egg_strequal (col, "timespec")) {
 			if (value != NULL) {
 				item.timespec = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "data")) {
+		} else if (egg_strequal (col, "data")) {
 			if (value != NULL) {
 				item.data = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "duration")) {
-			ret = pk_strtouint (value, &item.duration);
+		} else if (egg_strequal (col, "duration")) {
+			ret = egg_strtouint (value, &item.duration);
 			if (!ret) {
 				egg_warning ("failed to parse duration: %s", value);
 				item.duration = 0;
@@ -214,7 +216,7 @@ pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "timespec")) {
+		if (egg_strequal (col, "timespec")) {
 			*timespec = g_strdup (value);
 		} else {
 			egg_warning ("%s = %s\n", col, value);

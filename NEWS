@@ -321,7 +321,7 @@ Released: 2008-06-05
  - Allow adding and removing multiple packages at one time with pkcon (Richard Hughes)
  - Add the source filter (Richard Hughes)
  - Allow proxy_http and proxy_ftp to be NULL in the DBUS backend (Richard Hughes)
- - Add another convenience function, pk_strreplace() (Richard Hughes)
+ - Add another convenience function, egg_strreplace() (Richard Hughes)
  - Add some notes on howto do the release, as Robin is going to do the next one (Richard Hughes)
  - Add pk_package_list_add_list() convenience function (Richard Hughes)
  - Add pk_client_get_package_list() (Richard Hughes)
@@ -1108,7 +1108,7 @@ Released: 2007-11-01
    get the errors and completions (Richard Hughes)
  - Add pk-backend-python.[c|h], for common spawning functions for python
    backends and switch the backends to use them (James Bowes)
- - Use pk_strzero, pk_strlen and pk_strcmp to increase performance and
+ - Use egg_strzero, egg_strlen and pk_strcmp to increase performance and
    potentally improve security (Richard Hughes)
  - Add resolve support to pkcon get depends/requires/description/updatedetail
    (S.Çağlar Onur)

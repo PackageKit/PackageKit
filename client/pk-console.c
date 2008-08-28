@@ -31,7 +31,9 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <egg-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-package-ids.h>
 #include <pk-client.h>
 #include <pk-control.h>
@@ -144,7 +146,7 @@ pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 	}
 
 	/* pad the name-version */
-	if (pk_strzero (obj->id->version)) {
+	if (egg_strzero (obj->id->version)) {
 		package = g_strdup (obj->id->name);
 	} else {
 		package = g_strdup_printf ("%s-%s", obj->id->name, obj->id->version);
@@ -234,39 +236,39 @@ pk_console_update_detail_cb (PkClient *client, const PkUpdateDetailObj *detail, 
 	}
 	g_print ("%s\n", _("Update detail"));
 	g_print ("  package:    '%s-%s.%s'\n", detail->id->name, detail->id->version, detail->id->arch);
-	if (!pk_strzero (detail->updates)) {
+	if (!egg_strzero (detail->updates)) {
 		g_print ("  updates:    '%s'\n", detail->updates);
 	}
-	if (!pk_strzero (detail->obsoletes)) {
+	if (!egg_strzero (detail->obsoletes)) {
 		g_print ("  obsoletes:  '%s'\n", detail->obsoletes);
 	}
-	if (!pk_strzero (detail->vendor_url)) {
+	if (!egg_strzero (detail->vendor_url)) {
 		g_print ("  vendor URL: '%s'\n", detail->vendor_url);
 	}
-	if (!pk_strzero (detail->bugzilla_url)) {
+	if (!egg_strzero (detail->bugzilla_url)) {
 		g_print ("  bug URL:    '%s'\n", detail->bugzilla_url);
 	}
-	if (!pk_strzero (detail->cve_url)) {
+	if (!egg_strzero (detail->cve_url)) {
 		g_print ("  cve URL:    '%s'\n", detail->cve_url);
 	}
 	if (detail->restart != PK_RESTART_ENUM_NONE) {
 		g_print ("  restart:    '%s'\n", pk_restart_enum_to_text (detail->restart));
 	}
-	if (!pk_strzero (detail->update_text)) {
+	if (!egg_strzero (detail->update_text)) {
 		g_print ("  update_text:'%s'\n", detail->update_text);
 	}
-	if (!pk_strzero (detail->changelog)) {
+	if (!egg_strzero (detail->changelog)) {
 		g_print ("  changelog:  '%s'\n", detail->changelog);
 	}
 	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
 		g_print ("  state:      '%s'\n", pk_update_state_enum_to_text (detail->state));
 	}
 	issued = pk_iso8601_from_date (detail->issued);
-	if (!pk_strzero (issued)) {
+	if (!egg_strzero (issued)) {
 		g_print ("  issued:     '%s'\n", issued);
 	}
 	updated = pk_iso8601_from_date (detail->updated);
-	if (!pk_strzero (updated)) {
+	if (!egg_strzero (updated)) {
 		g_print ("  updated:    '%s'\n", updated);
 	}
 	g_free (issued);

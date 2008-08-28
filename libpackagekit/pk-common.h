@@ -61,22 +61,8 @@ G_BEGIN_DECLS
  */
 #define	PK_SERVICE_PACK_GROUP_NAME	"PackageKit Service Pack"
 
-guint		 pk_strlen				(const gchar	*text,
-							 guint		 len)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strzero				(const gchar	*text)
-							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_strvalidate				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strequal				(const gchar	*id1,
-							 const gchar	*id2)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strnumber				(const gchar	*text)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strtoint				(const gchar	*text,
-							 gint		*value);
-gboolean	 pk_strtouint				(const gchar	*text,
-							 guint		*value);
 gchar		*pk_strpad				(const gchar	*data,
 							 guint		 length)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -91,9 +77,6 @@ gchar		**pk_strsplit				(const gchar	*id,
 gchar		*pk_strbuild_va				(const gchar	*first_element,
 							 va_list	*args)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gchar		*pk_strreplace				(const gchar	*text,
-							 const gchar	*find,
-							 const gchar	*replace);
 gchar		**pk_ptr_array_to_argv			(GPtrArray	*array)
 							 G_GNUC_WARN_UNUSED_RESULT;
 GPtrArray	*pk_argv_to_ptr_array			(gchar		**array)
