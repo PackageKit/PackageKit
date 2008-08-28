@@ -41,6 +41,8 @@ CFILE_GLOB=$(top_srcdir)/libpackagekit/pk-*.c
 IGNORE_HFILES =						\
 	config.h					\
 	pk-marshal.h					\
+	egg-dbus-monitor.h				\
+	egg-obj-list.h					\
 	$(NULL)
 
 # Images to copy into HTML directory.
