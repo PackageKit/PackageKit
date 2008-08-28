@@ -1313,6 +1313,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._is_package_supported(pkg)) or \
                (filter == FILTER_NOT_SUPPORTED and \
                 self._is_package_supported(pkg)) or \
+               (filter == FILTER_FREE and not self._is_package_free(pkg)) or \
+               (filter == FILTER_NOT_FREE and \
+                not self._is_package_not_free(pkg)) or \
                (filter == FILTER_GUI and not self._has_package_gui(pkg)) or \
                (filter == FILTER_NOT_GUI and self._has_package_gui(pkg)) or \
                (filter == FILTER_DEVELOPMENT and not \
@@ -1321,6 +1324,28 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._is_package_devel(pkg)):
                 return False
         return True
+
+    def _is_package_not_free(self, pkg):
+        """
+        Return True if we can be sure that the package's license isn't any 
+        free one
+        """
+        origin = pkg.candidateOrigin[0]
+        return ((origin.origin == "Ubuntu" and \
+                 origin.component in ["multiverse", "restricted"]) or \
+                (origin.origin == "Debian" and \
+                origin.component in ["contrib", "non-free"])) and \
+               origin.trusted == True
+
+    def _is_package_free(self, pkg):
+        """
+        Return True if we can be sure that the package has got a free license
+        """
+        origin = pkg.candidateOrigin[0]
+        return ((origin.origin == "Ubuntu" and \
+                 origin.component in ["main", "universe"]) or \
+                (origin.origin == "Debian" and origin.component == "main")) and\
+               origin.trusted == True
 
     def _has_package_gui(self, pkg):
         #FIXME: should go to a modified Package class
