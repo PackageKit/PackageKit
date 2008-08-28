@@ -215,6 +215,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         if self.conffile_prompts:
             self._backend.Message(MESSAGE_CONFIG_FILES_CHANGED, "The following conffile prompts were found and need investiagtion: %s" % "\n".join(self.conffile_prompts))
 
+"""
 class PackageKitDpkgInstallProgress(apt.progress.DpkgInstallProgress,PackageKitInstallProgress):
     def run(self, debfile):
         apt.progress.DpkgInstallProgress.run(self, debfile)
@@ -232,6 +233,7 @@ class PackageKitDpkgInstallProgress(apt.progress.DpkgInstallProgress,PackageKitI
         if self.last_activity + self.timeout < time.time():
             pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
             os.write(self.master_fd, chr(3))
+"""
 
 def sigquit(signum, frame):
     pklog.error("Was killed")
