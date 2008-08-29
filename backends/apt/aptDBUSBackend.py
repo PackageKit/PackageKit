@@ -153,17 +153,19 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
     """
     Progress handler for a local Debian package installation
     """
-    def run(self, debfile):
+    def run(self, filename):
         """
         Start installing the given Debian package
         """
-        self.debfile = debfile
-        self.debname = os.path.basename(debfile).split("_")[0]
+        try:
+            self.debname = os.path.basename(filename).split("_")[0]
+        except:
+            self.debname = "unknown"
         pid = self.fork()
         if pid == 0:
             # child
             dpkg_res = os.system("/usr/bin/dpkg --status-fd %s -i %s" % \
-                                 (self.writefd, self.debfile))
+                                 (self.writefd, filename))
             res = os.WEXITSTATUS(dpkg_res)
             os._exit(res)
         self.child_pid = pid
@@ -326,8 +328,8 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
 
 class PackageKitDpkgInstallProgress(DpkgInstallProgress,
                                     PackageKitInstallProgress):
-    def run(self, debfile):
-        return DpkgInstallProgress.run(self, debfile)
+    def run(self, filename):
+        return DpkgInstallProgress.run(self, filename)
 
     def updateInterface(self):
         #pklog.debug("Updating interface")
@@ -910,8 +912,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for path in full_paths:
             deb = debfile.DebPackage(path, self._cache)
             packages.append(deb)
-            deb.checkDeb()
+            if not deb.checkDeb():
+                self.ErrorCode(ERROR_UNKNOWN, deb._failureString)
+                self.Finished(EXIT_FAILED)
+                return
             (install, remove, unauthenticated) = deb.requiredChanges
+            pklog.debug("Changes: Install %s, Remove %s, Unauthenticated "
+                        "%s" % (install, remove, unauthenticated))
             if len(remove) > 0:
                 self.ErrorCode(ERROR_UNKNOWN, "Remove the following packages "
                                               "before: %s" % remove)
