@@ -511,7 +511,12 @@
 	      The downloaded package is corrupt.
             </entry>
           </row>
-
+          <row>
+            <entry><literal>file-not-found</literal></entry>
+            <entry>
+	      The file could not be found on the system.
+            </entry>
+          </row>
         </tbody>
       </tgroup>
     </informaltable>

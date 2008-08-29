@@ -44,7 +44,9 @@
 #include <pk-enum.h>
 #include <pk-common.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-spawn.h"
 #include "pk-marshal.h"
 
@@ -107,7 +109,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 	guint bytes_processed;
 
 	/* if nothing then don't emit */
-	if (pk_strzero (string->str)) {
+	if (egg_strzero (string->str)) {
 		return FALSE;
 	}
 
@@ -145,7 +147,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	/* this shouldn't happen */
 	if (spawn->priv->finished) {
-		pk_error ("finished twice!");
+		egg_error ("finished twice!");
 	}
 
 	pk_spawn_read_fd_into_buffer (spawn->priv->stdout_fd, spawn->priv->stdout_buf);
@@ -162,7 +164,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	close (spawn->priv->stdout_fd);
 
 	if (WEXITSTATUS (status) > 0) {
-		pk_warning ("Running fork failed with return value %d", WEXITSTATUS (status));
+		egg_warning ("Running fork failed with return value %d", WEXITSTATUS (status));
 		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
 			spawn->priv->exit = PK_EXIT_ENUM_FAILED;
 		}
@@ -181,7 +183,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 		spawn->priv->kill_id = 0;
 	}
 
-	pk_debug ("emitting finished %i", spawn->priv->exit);
+	egg_debug ("emitting finished %i", spawn->priv->exit);
 	g_signal_emit (spawn, signals [PK_SPAWN_FINISHED], 0, spawn->priv->exit);
 
 	return FALSE;
@@ -197,20 +199,20 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
-		pk_warning ("already finished, ignoring");
+		egg_warning ("already finished, ignoring");
 		return FALSE;
 	}
 
 	/* we won't overwrite this if not unknown */
 	spawn->priv->exit = PK_EXIT_ENUM_KILLED;
 
-	pk_debug ("sending SIGKILL %i", spawn->priv->child_pid);
+	egg_debug ("sending SIGKILL %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGKILL);
 	if (retval == EINVAL) {
-		pk_warning ("The signum argument is an invalid or unsupported number");
+		egg_warning ("The signum argument is an invalid or unsupported number");
 		return FALSE;
 	} else if (retval == EPERM) {
-		pk_warning ("You do not have the privilege to send a signal to the process");
+		egg_warning ("You do not have the privilege to send a signal to the process");
 		return FALSE;
 	}
 
@@ -234,20 +236,20 @@ pk_spawn_kill (PkSpawn *spawn)
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
-		pk_warning ("already finished, ignoring");
+		egg_warning ("already finished, ignoring");
 		return FALSE;
 	}
 
 	/* we won't overwrite this if not unknown */
 	spawn->priv->exit = PK_EXIT_ENUM_CANCELLED;
 
-	pk_debug ("sending SIGQUIT %i", spawn->priv->child_pid);
+	egg_debug ("sending SIGQUIT %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGQUIT);
 	if (retval == EINVAL) {
-		pk_warning ("The signum argument is an invalid or unsupported number");
+		egg_warning ("The signum argument is an invalid or unsupported number");
 		return FALSE;
 	} else if (retval == EPERM) {
-		pk_warning ("You do not have the privilege to send a signal to the process");
+		egg_warning ("You do not have the privilege to send a signal to the process");
 		return FALSE;
 	}
 
@@ -275,11 +277,11 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 
 	len = g_strv_length (argv);
 	if (len > 5) {
-		pk_debug ("limiting debugging to 5 entries");
+		egg_debug ("limiting debugging to 5 entries");
 		len = 5;
 	}
 	for (i=0; i<len; i++) {
-		pk_debug ("argv[%i] '%s'", i, argv[i]);
+		egg_debug ("argv[%i] '%s'", i, argv[i]);
 	}
 	spawn->priv->finished = FALSE;
 
@@ -294,7 +296,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 
 	/* we failed to invoke the helper */
 	if (ret == FALSE) {
-		pk_warning ("failed to spawn '%s'", argv[0]);
+		egg_warning ("failed to spawn '%s'", argv[0]);
 		return FALSE;
 	}
 
@@ -413,7 +415,7 @@ guint finished_count = 0;
 static void
 pk_test_finished_cb (PkSpawn *spawn, PkExitEnum exit, LibSelfTest *test)
 {
-	pk_debug ("spawn exit=%i", exit);
+	egg_debug ("spawn exit=%i", exit);
 	mexit = exit;
 	finished_count++;
 	libst_loopquit (test);
@@ -425,7 +427,7 @@ pk_test_finished_cb (PkSpawn *spawn, PkExitEnum exit, LibSelfTest *test)
 static void
 pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, LibSelfTest *test)
 {
-	pk_debug ("stdout '%s'", line);
+	egg_debug ("stdout '%s'", line);
 	stdout_count++;
 }
 

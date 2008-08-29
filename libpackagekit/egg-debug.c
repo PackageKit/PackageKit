@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-debug
+ * SECTION:egg-debug
  * @short_description: Debugging functions
  *
  * This file contains functions that can be used for debugging.
@@ -41,7 +41,7 @@
 #include <time.h>
 #include <execinfo.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 
 #define CONSOLE_RESET		0
 #define CONSOLE_BLACK 		30
@@ -53,22 +53,20 @@
 #define CONSOLE_CYAN		36
 #define CONSOLE_WHITE		37
 
-#define PK_LOG_FILE		PK_LOG_DIR "/PackageKit"
-
 static gboolean do_verbose = FALSE;	/* if we should print out debugging */
 static gboolean do_logging = FALSE;	/* if we should write to a file */
 static gboolean is_console = FALSE;
 static gint fd = -1;
 
 /**
- * pk_debug_set_logging:
+ * egg_debug_set_logging:
  **/
 void
-pk_debug_set_logging (gboolean enabled)
+egg_debug_set_logging (gboolean enabled)
 {
 	do_logging = enabled;
 	if (enabled) {
-		pk_debug ("now logging to %s", PK_LOG_FILE);
+		egg_debug ("now logging to %s", EGG_LOG_FILE);
 	}
 }
 
@@ -90,10 +88,10 @@ pk_set_console_mode (guint console_code)
 }
 
 /**
- * pk_debug_backtrace:
+ * egg_debug_backtrace:
  **/
 void
-pk_debug_backtrace (void)
+egg_debug_backtrace (void)
 {
 	void *call_stack[512];
 	int  call_stack_size;
@@ -123,11 +121,10 @@ pk_log_line (const gchar *buffer)
 	ssize_t count;
 	/* open a file */
 	if (fd == -1) {
-		mkdir (PK_LOG_DIR, 0777);
-		/* ITS4: ignore, /var/log/PackageKit is owned by root, and this is just debug text */
-		fd = open (PK_LOG_FILE, O_WRONLY|O_APPEND|O_CREAT, 0777);
+		/* ITS4: ignore, /var/log/foo is owned by root, and this is just debug text */
+		fd = open (EGG_LOG_FILE, O_WRONLY|O_APPEND|O_CREAT, 0777);
 		if (fd == -1) {
-			g_error ("could not open log: '%s'", PK_LOG_FILE);
+			g_error ("could not open log: '%s'", EGG_LOG_FILE);
 		}
 	}
 
@@ -185,10 +182,10 @@ pk_print_line (const gchar *func, const gchar *file, const int line, const gchar
 }
 
 /**
- * pk_debug_real:
+ * egg_debug_real:
  **/
 void
-pk_debug_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
+egg_debug_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
 {
 	va_list args;
 	gchar *buffer = NULL;
@@ -207,10 +204,10 @@ pk_debug_real (const gchar *func, const gchar *file, const int line, const gchar
 }
 
 /**
- * pk_warning_real:
+ * egg_warning_real:
  **/
 void
-pk_warning_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
+egg_warning_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
 {
 	va_list args;
 	gchar *buffer = NULL;
@@ -233,10 +230,10 @@ pk_warning_real (const gchar *func, const gchar *file, const int line, const gch
 }
 
 /**
- * pk_error_real:
+ * egg_error_real:
  **/
 void
-pk_error_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
+egg_error_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
 {
 	va_list args;
 	gchar *buffer = NULL;
@@ -253,34 +250,34 @@ pk_error_real (const gchar *func, const gchar *file, const int line, const gchar
 	g_free(buffer);
 
 	/* we want to fix this! */
-	pk_debug_backtrace ();
+	egg_debug_backtrace ();
 
 	exit (1);
 }
 
 /**
- * pk_debug_enabled:
+ * egg_debug_enabled:
  *
  * Returns: TRUE if we have debugging enabled
  **/
 gboolean
-pk_debug_enabled (void)
+egg_debug_enabled (void)
 {
 	return do_verbose;
 }
 
 /**
- * pk_debug_init:
+ * egg_debug_init:
  * @debug: If we should print out verbose logging
  **/
 void
-pk_debug_init (gboolean debug)
+egg_debug_init (gboolean debug)
 {
 	do_verbose = debug;
 	/* check if we are on console */
 	if (isatty (fileno (stdout)) == 1) {
 		is_console = TRUE;
 	}
-	pk_debug ("Verbose debugging %i (on console %i)", do_verbose, is_console);
+	egg_debug ("Verbose debugging %i (on console %i)", do_verbose, is_console);
 }
 

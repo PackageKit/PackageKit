@@ -39,7 +39,7 @@
 
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-time.h"
 #include "pk-marshal.h"
 
@@ -161,7 +161,7 @@ pk_time_get_remaining (PkTime *time)
 
 	length = time->priv->array->len;
 	if (length < 2) {
-		pk_debug ("array too small");
+		egg_debug ("array too small");
 		return 0;
 	}
 
@@ -170,9 +170,9 @@ pk_time_get_remaining (PkTime *time)
 		item_prev = g_ptr_array_index (time->priv->array, i-1);
 		item = g_ptr_array_index (time->priv->array, i);
 		grad = pk_time_get_gradient (item, item_prev);
-		pk_debug ("gradient between %i/%i=%f", i-1, i, grad);
+		egg_debug ("gradient between %i/%i=%f", i-1, i, grad);
 		if (grad < 0.00001 || grad > 100) {
-			pk_debug ("ignoring gradient: %f", grad);
+			egg_debug ("ignoring gradient: %f", grad);
 		} else {
 			grad_ave += grad;
 			averaged++;
@@ -182,29 +182,29 @@ pk_time_get_remaining (PkTime *time)
 		}
 	}
 
-	pk_debug ("averaged %i points", averaged);
+	egg_debug ("averaged %i points", averaged);
 	if (averaged < time->priv->average_min) {
-		pk_debug ("not enough samples for accurate time: %i", averaged);
+		egg_debug ("not enough samples for accurate time: %i", averaged);
 		return 0;
 	}
 
 	/* normalise to the number of samples */
 	grad_ave /= averaged;
-	pk_debug ("grad_ave=%f", grad_ave);
+	egg_debug ("grad_ave=%f", grad_ave);
 
 	/* just for debugging */
 	elapsed = pk_time_get_elapsed (time);
-	pk_debug ("elapsed=%i", elapsed);
+	egg_debug ("elapsed=%i", elapsed);
 
 	/* 100 percent to be complete */
 	item = g_ptr_array_index (time->priv->array, length - 1);
 	percentage_left = 100 - item->percentage;
-	pk_debug ("percentage_left=%i", percentage_left);
+	egg_debug ("percentage_left=%i", percentage_left);
 	estimated = (gfloat) percentage_left / grad_ave;
 
 	/* turn to ms */
 	estimated /= 1000;
-	pk_debug ("estimated=%f seconds", estimated);
+	egg_debug ("estimated=%f seconds", estimated);
 
 	if (estimated < time->priv->value_min) {
 		estimated = 0;
@@ -227,7 +227,7 @@ pk_time_add_data (PkTime *time, guint percentage)
 
 	/* check we are going up */
 	if (percentage < time->priv->last_percentage) {
-		pk_warning ("percentage cannot go down!");
+		egg_warning ("percentage cannot go down!");
 		return FALSE;
 	}
 	time->priv->last_percentage = percentage;
@@ -235,7 +235,7 @@ pk_time_add_data (PkTime *time, guint percentage)
 	/* get runtime in ms */
 	elapsed = pk_time_get_elapsed (time);
 
-	pk_debug ("adding %i at %i (ms)", percentage, elapsed);
+	egg_debug ("adding %i at %i (ms)", percentage, elapsed);
 
 	/* create a new object and add to the array */
 	item = g_new0 (PkTimeItem, 1);

@@ -779,7 +779,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.error(ERROR_REPO_CONFIGURATION_ERROR,str(e))
         except yum.Errors.YumBaseError,e:
-            self.error(ERROR_UNKNOWN,str(e))
+            self.error(ERROR_UNKNOWN,"cannot refresh cache: %s" % str(e))
 
         # update the comps groups too
         self.comps.refresh()
@@ -866,6 +866,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
+        # check we have at least one file
+        if len(inst_files) == 0:
+            self.error(ERROR_FILE_NOT_FOUND,'no files specified to install')
+            return
+
+        # check that the files still exist
+        for inst_file in inst_files:
+            if not os.path.exists(inst_file):
+                self.error(ERROR_FILE_NOT_FOUND,'%s could not be found' % inst_file)
+                return
+
         # process these first
         tempdir = tempfile.mkdtemp()
         inst_packs = []
@@ -893,7 +904,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         to_remove = []
                     
-        # remove files of packages that alrady exist
+        # remove files of packages that already exist
         for inst_file in inst_files:
             try:
                 pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
@@ -1051,6 +1062,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
              msgs = msgs.split('\n')
         text = ";".join(msgs)
         text = self._truncate(text, 1024);
+        text = text.replace(";Please report this error in bugzilla","")
         text = text.replace("Missing Dependency: ","")
         text = text.replace(" (installed)","")
         return text
@@ -1106,6 +1118,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 message = self._format_msgs(ye.value)
                 if message.find ("conflicts with file") != -1:
                     self.error(ERROR_FILE_CONFLICTS,message)
+                if message.find ("rpm_check_debug vs depsolve") != -1:
+                    self.error(ERROR_PACKAGE_CONFLICTS,message)
                 else:
                     self.error(ERROR_TRANSACTION_ERROR,message)
 
@@ -1414,7 +1428,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             try:
                 self.yumbase.getKeyForPackage(pkg,askcb = lambda x,y,z: True)
             except yum.Errors.YumBaseError,e:
-                self.error(ERROR_UNKNOWN,str(e))
+                self.error(ERROR_UNKNOWN,"cannot install signature: %s" % str(e))
             except:
                 self.error(ERROR_GPG_FAILURE,"Error importing GPG Key for %s" % pkg)
 

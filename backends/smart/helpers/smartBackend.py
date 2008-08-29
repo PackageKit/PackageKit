@@ -15,8 +15,12 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Copyright (C) 2007 James Bowes <jbowes@dangerouslyinc.com>
+# Copyright (C) 2008 Anders F Bjorklund <afb@users.sourceforge.net>
 
 import smart
+from smart.interface import Interface
+from smart.progress import Progress
+from smart.fetcher import Fetcher
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
         INFO_SECURITY, INFO_BUGFIX, INFO_ENHANCEMENT, \
@@ -31,28 +35,68 @@ pkpackage = PackagekitPackage()
 def needs_cache(func):
     """ Load smart's channels, and save the cache when done. """
     def cache_wrap(obj, *args, **kwargs):
-        obj.status(STATUS_SETUP)
+        # Smart's usual output is: (delocalized)
+        # Loading cache...
+        # Updating cache...    ########## [100%]
+        #
+        obj.status(STATUS_REQUEST) # ???
         obj.ctrl.reloadChannels()
-        obj.status(STATUS_UNKNOWN)
         result = func(obj, *args, **kwargs)
         obj.ctrl.saveSysConf()
         return result
     return cache_wrap
 
 
+class PackageKitSmartInterface(Interface):
+
+    def __init__(self, ctrl, backend):
+        Interface.__init__(self, ctrl)
+        self._progress = PackageKitSmartProgress(True, backend)
+
+    def getProgress(self, obj, hassub=False):
+        self._progress.setHasSub(hassub)
+        self._progress.setFetcherMode(isinstance(obj, Fetcher))
+        return self._progress
+
+class PackageKitSmartProgress(Progress):
+
+    def __init__(self, hassub, backend):
+        Progress.__init__(self)
+        self._hassub = hassub
+        self._backend = backend
+        self._oldstatus = None
+            
+    def setFetcherMode(self, flag):
+        if flag:
+            self._oldstatus = self._backend._status
+            self._backend.status(STATUS_DOWNLOAD)
+            self._backend.percentage(0)
+
+    def stop(self):
+        Progress.stop(self)
+        if self._oldstatus:
+            self._backend.percentage(100)
+            self._backend.status(self._oldstatus)
+            self._oldstatus = None
+
+    def expose(self, topic, percent, subkey, subtopic, subpercent, data, done):
+        self._backend.percentage(percent)
+
 class PackageKitSmartBackend(PackageKitBaseBackend):
+
+    _status = STATUS_UNKNOWN
 
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
 
-        # FIXME: Only pulsing progress for now.
-        self.percentage(None)
-
         self.ctrl = smart.init()
-        # Use the dummy interface to quiet output.
-        smart.iface.object = smart.interface.Interface(self.ctrl)
+        smart.iface.object = PackageKitSmartInterface(self.ctrl, self)
         smart.initPlugins()
         smart.initPsyco()
+
+    def status(self, state):
+        PackageKitBaseBackend.status(self, state)
+        self._status = state
 
     @needs_cache
     def install_packages(self, packageids):
@@ -141,7 +185,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         if len(packages) < 1:
             return
-        self.status(PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST) # ???
+        self.status(PK_STATUS_ENUM_DOWNLOAD)
         self.ctrl.downloadPackages(packages, targetdir=directory)
 
     @needs_cache
@@ -224,6 +268,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def get_packages(self, filters):
+        self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._passes_filters(package, filters):
@@ -309,6 +354,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     
     @needs_cache
     def get_details(self, packageids):
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -349,23 +395,23 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if not pkgsize:
                 pkgsize = "unknown"
 
-            if info:
-                if hasattr(info, 'getLicense'):
-                    license = info.getLicense()
-                else:
-                    license = "unknown"
+            if hasattr(info, 'getLicense'):
+                license = info.getLicense()
+            else:
+                license = "unknown"
 
-                group = info.getGroup()
-                if group in self.GROUPS:
-                    group = self.GROUPS[group]
-                else:
-                    group = "unknown"
+            group = info.getGroup()
+            if group in self.GROUPS:
+                group = self.GROUPS[group]
+            else:
+                group = "unknown"
 
             self.details(packageid, license, group, description, url,
                     pkgsize)
 
     @needs_cache
     def get_files(self, packageids):
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -394,8 +440,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def get_depends(self, filters, packageids, recursive_text):
-        # FIXME: use filters
         recursive = self._text_to_boolean(recursive_text)
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -414,12 +460,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                             providers[package] = True
 
             for package in providers.keys():
-                self._show_package(package)
+                if self._passes_filters(package, filters):
+                    self._show_package(package)
 
     @needs_cache
     def get_requires(self, filters, packageids, recursive_text):
-        # FIXME: use filters
         recursive = self._text_to_boolean(recursive_text)
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -438,9 +485,11 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                             requirers[package] = True
 
             for package in requirers.keys():
-                self._show_package(package)
+                if self._passes_filters(package, filters):
+                    self._show_package(package)
 
     def get_repo_list(self, filters):
+        self.status(STATUS_INFO)
         channels = smart.sysconf.get("channels", ())
         for alias in channels:
             channel = smart.sysconf.get(("channels", alias))
@@ -452,6 +501,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self.repo_detail(alias, name, enabled)
 
     def repo_enable(self, repoid, enable):
+        self.status(STATUS_INFO)
         if smart.sysconf.has(("channels", repoid)):
             if enable == "true":
                 smart.sysconf.remove(("channels", repoid, "disabled"))
@@ -461,10 +511,49 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_REPO_NOT_FOUND, "repo %s was not found" % repoid)
 
+    systemchannel = None # unfortunately package strings depend on system
+
+    def _splitpackage(self, package):
+        if isinstance(package, smart.backends.rpm.base.RPMPackage):
+            version, arch = package.version.split('@')
+        elif isinstance(package, smart.backends.deb.base.DebPackage):
+            version, arch = package.version, DEBARCH
+        elif isinstance(package, smart.backends.slack.base.SlackPackage):
+            ver, arch, rel = package.version.rsplit('-')
+            version = "%s-%s" % (ver, rel)
+        else:
+            import os
+            machine = os.uname()[-1]
+            if machine == "Power Macintosh": #<sigh>
+                machine = "ppc"
+            version, arch = package.version, machine
+        return package.name, version, arch
+
+    def _joinpackage(self, name, version, arch):
+        if not self.systemchannel:
+            channels = smart.sysconf.get("channels", ())
+            # FIXME: should look by type, not by alias
+            if "rpm-sys" in channels:
+                self.systemchannel = "rpm-sys"
+            elif "deb-sys" in channels:
+                self.systemchannel = "deb-sys"
+            elif "slack-sys" in channels:
+                self.systemchannel = "slack-sys"
+        if self.systemchannel == "rpm-sys":
+            pkg = "%s-%s@%s" % (name, version, arch)
+        elif self.systemchannel == "deb-sys":
+            pkg = "%s_%s" % (name, version)
+        elif self.systemchannel == "slack-sys":
+            ver, rel = version.rsplit("-")
+            pkg = "%s-%s-%s-%s" % (name, ver, arch, rel)
+        else:
+            pkg = "%s-%s" % (name, version)
+        return pkg
+
     def _search_packageid(self, packageid):
         idparts = packageid.split(';')
-        # FIXME: join only works with RPM packages
-        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
+        # note: currently you can only search in channels native to system
+        packagestring = self._joinpackage(idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
 
         return (ratio, results, suggestions)
@@ -475,14 +564,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 status = INFO_INSTALLED
             else:
                 status = INFO_AVAILABLE
-        # FIXME: split only works with RPM packages
-        version, arch = package.version.split('@')
+        name, version, arch = self._splitpackage(package)
         for loader in package.loaders:
             channel = loader.getChannel()
             if package.installed and not channel.getType().endswith('-sys'):
                 continue
             info = loader.getInfo(package)
-            self.package(pkpackage.get_package_id(package.name, version, arch,
+            self.package(pkpackage.get_package_id(name, version, arch,
                 channel.getAlias()), status, info.getSummary())
 
     def _get_status(self, package):

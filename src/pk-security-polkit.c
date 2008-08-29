@@ -39,7 +39,9 @@
 #include <pk-enum.h>
 #include <pk-common.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-security.h"
 
 #define PK_SECURITY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SECURITY, PkSecurityPrivate))
@@ -70,7 +72,7 @@ pk_security_uid_from_dbus_sender (PkSecurity *security, const gchar *dbus_name, 
 	dbus_error_init (&dbus_error);
 	caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_name, &dbus_error);
 	if (dbus_error_is_set (&dbus_error)) {
-		pk_warning ("failed to get caller %s: %s\n", dbus_error.name, dbus_error.message);
+		egg_warning ("failed to get caller %s: %s\n", dbus_error.name, dbus_error.message);
 		dbus_error_free (&dbus_error);
 		goto out;
 	}
@@ -78,7 +80,7 @@ pk_security_uid_from_dbus_sender (PkSecurity *security, const gchar *dbus_name, 
 	/* get uid */
 	retval = polkit_caller_get_uid (caller, uid);
 	if (!retval) {
-		pk_warning ("failed to get UID");
+		egg_warning ("failed to get UID");
 		goto out;
 	}
 	ret = TRUE;
@@ -101,18 +103,18 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 	/* set action */
 	pk_action = polkit_action_new ();
 	if (pk_action == NULL) {
-		pk_warning ("error: polkit_action_new failed");
+		egg_warning ("error: polkit_action_new failed");
 		return POLKIT_RESULT_NO;
 	}
 	polkit_action_set_action_id (pk_action, action);
 
 	/* set caller */
-	pk_debug ("using caller %s for action %s", dbus_sender, action);
+	egg_debug ("using caller %s for action %s", dbus_sender, action);
 	dbus_error_init (&dbus_error);
 	pk_caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_sender, &dbus_error);
 	if (pk_caller == NULL) {
 		if (dbus_error_is_set (&dbus_error)) {
-			pk_warning ("error: polkit_caller_new_from_dbus_name(): %s: %s\n",
+			egg_warning ("error: polkit_caller_new_from_dbus_name(): %s: %s\n",
 				    dbus_error.name, dbus_error.message);
 			dbus_error_free (&dbus_error);
 		}
@@ -120,7 +122,7 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 	}
 
 	pk_result = polkit_context_is_caller_authorized (security->priv->pk_context, pk_action, pk_caller, TRUE, NULL);
-	pk_debug ("PolicyKit result = '%s'", polkit_result_to_string_representation (pk_result));
+	egg_debug ("PolicyKit result = '%s'", polkit_result_to_string_representation (pk_result));
 
 	polkit_action_unref (pk_action);
 	polkit_caller_unref (pk_caller);
@@ -185,7 +187,7 @@ pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
 	/* map the roles to policykit rules */
 	policy = pk_security_role_to_action (security, trusted, role);
 	if (policy == NULL) {
-		pk_warning ("policykit type required for '%s'", pk_role_enum_to_text (role));
+		egg_warning ("policykit type required for '%s'", pk_role_enum_to_text (role));
 		return FALSE;
 	}
 
@@ -280,20 +282,20 @@ pk_security_io_remove_watch (PolKitContext *pk_context, int watch_id)
 static void
 pk_security_init (PkSecurity *security)
 {
-	PolKitError *pk_error;
+	PolKitError *egg_error;
 	polkit_bool_t retval;
 	DBusError dbus_error;
 
 	security->priv = PK_SECURITY_GET_PRIVATE (security);
 
-	pk_debug ("Using PolicyKit security framework");
+	egg_debug ("Using PolicyKit security framework");
 
 	/* get a connection to the bus */
 	dbus_error_init (&dbus_error);
 	security->priv->connection = dbus_bus_get (DBUS_BUS_SYSTEM, &dbus_error);
 	if (security->priv->connection == NULL) {
 		if (dbus_error_is_set (&dbus_error)) {
-			pk_warning ("failed to get system connection %s: %s\n", dbus_error.name, dbus_error.message);
+			egg_warning ("failed to get system connection %s: %s\n", dbus_error.name, dbus_error.message);
 			dbus_error_free (&dbus_error);
 		}
 	}
@@ -306,11 +308,11 @@ pk_security_init (PkSecurity *security)
 					       pk_security_io_add_watch,
 					       pk_security_io_remove_watch);
 
-	pk_error = NULL;
-	retval = polkit_context_init (security->priv->pk_context, &pk_error);
+	egg_error = NULL;
+	retval = polkit_context_init (security->priv->pk_context, &egg_error);
 	if (retval == FALSE) {
-		pk_warning ("Could not init PolicyKit context: %s", polkit_error_get_error_message (pk_error));
-		polkit_error_free (pk_error);
+		egg_warning ("Could not init PolicyKit context: %s", polkit_error_get_error_message (egg_error));
+		polkit_error_free (egg_error);
 	}
 }
 
@@ -376,7 +378,7 @@ libst_security (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "map valid role to action");
 	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	if (pk_strequal (action, "org.freedesktop.packagekit.system-update")) {
+	if (egg_strequal (action, "org.freedesktop.packagekit.system-update")) {
 		libst_success (test, NULL, error);
 	} else {
 		libst_failed (test, "did not get correct action '%s'", action);
