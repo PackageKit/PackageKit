@@ -866,6 +866,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
+        # check we have at least one file
+        if len(inst_files) == 0:
+            self.error(ERROR_FILE_NOT_FOUND,'no files specified to install')
+            return
+
         # check that the files still exist
         for inst_file in inst_files:
             if not os.path.exists(inst_file):
