@@ -34,7 +34,9 @@
 #include <sys/types.h>
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-enum.h"
 
@@ -152,10 +154,13 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,	"repo-configuration-error"},
 	{PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,	"no-license-agreement"},
 	{PK_ERROR_ENUM_FILE_CONFLICTS,		"file-conflicts"},
+	{PK_ERROR_ENUM_PACKAGE_CONFLICTS,	"package-conflicts"},
 	{PK_ERROR_ENUM_REPO_NOT_AVAILABLE,	"repo-not-available"},
 	{PK_ERROR_ENUM_INVALID_PACKAGE_FILE,    "invalid-package-file"},
 	{PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED, "package-install-blocked"},
 	{PK_ERROR_ENUM_PACKAGE_CORRUPT,         "package-corrupt"},
+	{PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED, "all-packages-already-installed"},
+	{PK_ERROR_ENUM_FILE_NOT_FOUND,		"file-not-found"},
 	{0, NULL}
 };
 
@@ -181,6 +186,7 @@ static PkEnumMatch enum_message[] = {
 	{PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS,	"newer-package-exists"},
 	{PK_MESSAGE_ENUM_COULD_NOT_FIND_PACKAGE,"could-not-find-package"},
 	{PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,	"config-files-changed"},
+	{PK_MESSAGE_ENUM_PACKAGE_ALREADY_INSTALLED, "package-already-installed"},
 	{0, NULL}
 };
 
@@ -1019,7 +1025,7 @@ libst_enum (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "find string");
 	string = pk_enum_find_string (enum_role, PK_ROLE_ENUM_SEARCH_FILE);
-	if (pk_strequal (string, "search-file")) {
+	if (egg_strequal (string, "search-file")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1037,7 +1043,7 @@ libst_enum (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "find string");
 	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
-	if (pk_strequal (string, "search-file")) {
+	if (egg_strequal (string, "search-file")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

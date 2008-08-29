@@ -14,8 +14,8 @@ import sys
 
 from smartBackend import PackageKitSmartBackend
 
-package = sys.argv[1]
+packages = sys.argv[1:]
 backend = PackageKitSmartBackend(sys.argv[1:])
-backend.remove(package)
+backend.remove_packages(packages)
 
 sys.exit(0)

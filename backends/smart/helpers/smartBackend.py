@@ -15,13 +15,19 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Copyright (C) 2007 James Bowes <jbowes@dangerouslyinc.com>
+# Copyright (C) 2008 Anders F Bjorklund <afb@users.sourceforge.net>
 
 import smart
+from smart.interface import Interface
+from smart.progress import Progress
+from smart.fetcher import Fetcher
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
         INFO_SECURITY, INFO_BUGFIX, INFO_ENHANCEMENT, \
-        ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED
+        ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED, \
+        ERROR_PACKAGE_DOWNLOAD_FAILED
 from packagekit.package import PackagekitPackage
+from packagekit.enums import *
 
 # Global vars
 pkpackage = PackagekitPackage()
@@ -29,6 +35,11 @@ pkpackage = PackagekitPackage()
 def needs_cache(func):
     """ Load smart's channels, and save the cache when done. """
     def cache_wrap(obj, *args, **kwargs):
+        # Smart's usual output is: (delocalized)
+        # Loading cache...
+        # Updating cache...    ########## [100%]
+        #
+        obj.status(STATUS_REQUEST) # ???
         obj.ctrl.reloadChannels()
         result = func(obj, *args, **kwargs)
         obj.ctrl.saveSysConf()
@@ -36,39 +47,80 @@ def needs_cache(func):
     return cache_wrap
 
 
+class PackageKitSmartInterface(Interface):
+
+    def __init__(self, ctrl, backend):
+        Interface.__init__(self, ctrl)
+        self._progress = PackageKitSmartProgress(True, backend)
+
+    def getProgress(self, obj, hassub=False):
+        self._progress.setHasSub(hassub)
+        self._progress.setFetcherMode(isinstance(obj, Fetcher))
+        return self._progress
+
+class PackageKitSmartProgress(Progress):
+
+    def __init__(self, hassub, backend):
+        Progress.__init__(self)
+        self._hassub = hassub
+        self._backend = backend
+        self._oldstatus = None
+            
+    def setFetcherMode(self, flag):
+        if flag:
+            self._oldstatus = self._backend._status
+            self._backend.status(STATUS_DOWNLOAD)
+            self._backend.percentage(0)
+
+    def stop(self):
+        Progress.stop(self)
+        if self._oldstatus:
+            self._backend.percentage(100)
+            self._backend.status(self._oldstatus)
+            self._oldstatus = None
+
+    def expose(self, topic, percent, subkey, subtopic, subpercent, data, done):
+        self._backend.percentage(percent)
+
 class PackageKitSmartBackend(PackageKitBaseBackend):
+
+    _status = STATUS_UNKNOWN
 
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
 
-        # FIXME: Only pulsing progress for now.
-        self.percentage(None)
-
         self.ctrl = smart.init()
-        # Use the dummy interface to quiet output.
-        smart.iface.object = smart.interface.Interface(self.ctrl)
+        smart.iface.object = PackageKitSmartInterface(self.ctrl, self)
         smart.initPlugins()
         smart.initPsyco()
 
-    @needs_cache
-    def install(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
+    def status(self, state):
+        PackageKitBaseBackend.status(self, state)
+        self._status = state
 
-        packages = self._process_search_results(results)
+    @needs_cache
+    def install_packages(self, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
 
         available = [package for package in packages if not package.installed]
-        if len(available) != 1:
+        if len(available) < 1:
             return
-        package = available[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyInstall)
-        trans.enqueue(package, smart.transaction.INSTALL)
+        for package in available:
+            trans.enqueue(package, smart.transaction.INSTALL)
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_INSTALL)
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
     def install_files(self, trusted, paths):
-        self.ctrl.addFileChannel(path)
+        for path in paths:
+            self.ctrl.addFileChannel(path)
         self.ctrl.reloadChannels()
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyInstall)
@@ -81,39 +133,60 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                                 'Package %s is already installed' % package)
                     trans.enqueue(package, smart.transaction.INSTALL)
 
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_INSTALL)
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def remove(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
-
-        packages = self._process_search_results(results)
+    def remove_packages(self, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
 
         installed = [package for package in packages if package.installed]
-        if len(installed) != 1:
+        if len(installed) < 1:
             return
-        package = installed[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyRemove)
-        trans.enqueue(package, smart.transaction.REMOVE)
+        for package in installed:
+            trans.enqueue(package, smart.transaction.REMOVE)
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_REMOVE)
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def update(self, packageid):
-        ratio, results, suggestions = self._search_packageid(packageid)
+    def update_packages(self, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
 
-        packages = self._process_search_results(results)
         installed = [package for package in packages if package.installed]
-        if len(installed) != 1:
+        if len(installed) < 1:
             return
-        package = installed[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyUpgrade)
-        trans.enqueue(package, smart.transaction.UPGRADE)
+        for package in installed:
+            trans.enqueue(package, smart.transaction.UPGRADE)
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_UPDATE)
         self.ctrl.commitTransaction(trans, confirm=False)
+
+    @needs_cache
+    def download_packages(self, directory, packageids):
+        packages = []
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+            packages.extend(self._process_search_results(results))
+
+        if len(packages) < 1:
+            return
+        self.status(PK_STATUS_ENUM_DOWNLOAD)
+        self.ctrl.downloadPackages(packages, targetdir=directory)
 
     @needs_cache
     def update_system(self):
@@ -126,7 +199,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if package.installed:
                 trans.enqueue(package, smart.transaction.UPGRADE)
 
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_UPDATE)
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -140,7 +215,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if package.installed:
                 trans.enqueue(package, smart.transaction.UPGRADE)
 
+        self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        self.status(STATUS_INFO)
         for (package, op) in trans.getChangeSet().items():
             if op == smart.transaction.INSTALL:
                 status = self._get_status(package)
@@ -148,6 +225,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def resolve(self, filters, packagename):
+        self.status(STATUS_QUERY)
         ratio, results, suggestions = self.ctrl.search(packagename)
         for result in results:
             if self._passes_filters(result, filters):
@@ -156,6 +234,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def search_name(self, filters, packagename):
         globbed = "*%s*" % packagename
+        self.status(STATUS_QUERY)
         ratio, results, suggestions = self.ctrl.search(globbed)
 
         packages = self._process_search_results(results)
@@ -165,7 +244,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 self._show_package(package)
 
     @needs_cache
+    def search_group(self, filters, searchstring):
+        self.status(STATUS_QUERY)
+        packages = self.ctrl.getCache().getPackages()
+        for package in packages:
+            if self._passes_filters(package, filters):
+                info = package.loaders.keys()[0].getInfo(package)
+                group = info.getGroup()
+                if group in self.GROUPS:
+                    group = self.GROUPS[group]
+                    if searchstring in group:
+                        self._show_package(package)
+
+    @needs_cache
     def search_details(self, filters, searchstring):
+        self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._passes_filters(package, filters):
@@ -173,13 +266,95 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 if searchstring in info.getDescription():
                     self._show_package(package)
 
+    @needs_cache
+    def get_packages(self, filters):
+        self.status(STATUS_QUERY)
+        packages = self.ctrl.getCache().getPackages()
+        for package in packages:
+            if self._passes_filters(package, filters):
+                self._show_package(package)
+
     def refresh_cache(self):
+        self.status(STATUS_REFRESH_CACHE)
         self.ctrl.rebuildSysConfChannels()
         self.ctrl.reloadChannels(None, caching=smart.const.NEVER)
         self.ctrl.saveSysConf()
 
+    GROUPS = {
+    # RPM
+    'Amusement/Games'                         : GROUP_GAMES,
+    'Amusement/Graphics'                      : GROUP_GRAPHICS,
+    'Applications/Archiving'                  : GROUP_OTHER,
+    'Applications/Communications'             : GROUP_COMMUNICATION,
+    'Applications/Databases'                  : GROUP_OTHER,
+    'Applications/Editors'                    : GROUP_PUBLISHING,
+    'Applications/Emulators'                  : GROUP_OTHER,
+    'Applications/Engineering'                : GROUP_OTHER,
+    'Applications/File'                       : GROUP_OTHER,
+    'Applications/Internet'                   : GROUP_INTERNET,
+    'Applications/Multimedia'                 : GROUP_MULTIMEDIA,
+    'Applications/Productivity'               : GROUP_OTHER,
+    'Applications/Publishing'                 : GROUP_PUBLISHING,
+    'Applications/System'                     : GROUP_SYSTEM,
+    'Applications/Text'                       : GROUP_PUBLISHING,
+    'Development/Debuggers'                   : GROUP_PROGRAMMING,
+    'Development/Languages'                   : GROUP_PROGRAMMING,
+    'Development/Libraries'                   : GROUP_PROGRAMMING,
+    'Development/System'                      : GROUP_PROGRAMMING,
+    'Development/Tools'                       : GROUP_PROGRAMMING,
+    'Documentation'                           : GROUP_DOCUMENTATION,
+    'System Environment/Base'                 : GROUP_SYSTEM,
+    'System Environment/Daemons'              : GROUP_SYSTEM,
+    'System Environment/Kernel'               : GROUP_SYSTEM,
+    'System Environment/Libraries'            : GROUP_SYSTEM,
+    'System Environment/Shells'               : GROUP_SYSTEM,
+    'User Interface/Desktops'                 : GROUP_DESKTOP_OTHER,
+    'User Interface/X'                        : GROUP_DESKTOP_OTHER,
+    'User Interface/X Hardware Support'       : GROUP_DESKTOP_OTHER,
+    # DEB
+    "admin"                                   : GROUP_ADMIN_TOOLS,
+    "base"                                    : GROUP_SYSTEM,
+    "comm"                                    : GROUP_COMMUNICATION,
+    "devel"                                   : GROUP_PROGRAMMING,
+    "doc"                                     : GROUP_DOCUMENTATION,
+    "editors"                                 : GROUP_PUBLISHING,
+    "electronics"                             : GROUP_ELECTRONICS,
+    "embedded"                                : GROUP_SYSTEM,
+    "games"                                   : GROUP_GAMES,
+    "GNOME"                                   : GROUP_DESKTOP_GNOME,
+    "graphics"                                : GROUP_GRAPHICS,
+    "hamradio"                                : GROUP_COMMUNICATION,
+    "interpreters"                            : GROUP_PROGRAMMING,
+    "kde"                                     : GROUP_DESKTOP_KDE,
+    "libdevel"                                : GROUP_PROGRAMMING,
+    "lib"                                     : GROUP_SYSTEM,
+    "mail"                                    : GROUP_INTERNET,
+    "math"                                    : GROUP_SCIENCE,
+    "misc"                                    : GROUP_OTHER,
+    "net"                                     : GROUP_NETWORK,
+    "news"                                    : GROUP_INTERNET,
+    "oldlibs"                                 : GROUP_LEGACY,
+    "otherosfs"                               : GROUP_SYSTEM,
+    "perl"                                    : GROUP_PROGRAMMING,
+    "python"                                  : GROUP_PROGRAMMING,
+    "science"                                 : GROUP_SCIENCE,
+    "shells"                                  : GROUP_SYSTEM,
+    "sound"                                   : GROUP_MULTIMEDIA,
+    "tex"                                     : GROUP_PUBLISHING,
+    "text"                                    : GROUP_PUBLISHING,
+    "utils"                                   : GROUP_ACCESSORIES,
+    "web"                                     : GROUP_INTERNET,
+    "x11"                                     : GROUP_DESKTOP_OTHER,
+    "unknown"                                 : GROUP_UNKNOWN,
+    "alien"                                   : GROUP_UNKNOWN,
+    "translations"                            : GROUP_LOCALIZATION,
+    # Slack
+    "Slackware"                               : GROUP_UNKNOWN
+    }
+    
     @needs_cache
     def get_details(self, packageids):
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -197,7 +372,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             infos.sort()
             info = infos[0]
 
-            version, arch = package.version.split('@')
             description = info.getDescription()
             description = description.replace("\n\n", ";")
             description = description.replace("\n", " ")
@@ -221,11 +395,23 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if not pkgsize:
                 pkgsize = "unknown"
 
-            self.details(packageid, "unknown", "unknown", description, url,
+            if hasattr(info, 'getLicense'):
+                license = info.getLicense()
+            else:
+                license = "unknown"
+
+            group = info.getGroup()
+            if group in self.GROUPS:
+                group = self.GROUPS[group]
+            else:
+                group = "unknown"
+
+            self.details(packageid, license, group, description, url,
                     pkgsize)
 
     @needs_cache
     def get_files(self, packageids):
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -245,8 +431,17 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             self.files(packageid, ";".join(paths))
 
+    def _text_to_boolean(self,text):
+        if text == 'true' or text == 'TRUE':
+            return True
+        elif text == 'yes' or text == 'YES':
+            return True
+        return False
+
     @needs_cache
-    def get_depends(self, packageids):
+    def get_depends(self, filters, packageids, recursive_text):
+        recursive = self._text_to_boolean(recursive_text)
+        self.status(STATUS_INFO)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -259,15 +454,42 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             providers = {}
             for required in package.requires:
-                for provider in self.ctrl.getCache().getProvides(str(required)):
+                for provider in required.providedby:
                     for package in provider.packages:
                         if not providers.has_key(package):
                             providers[package] = True
 
             for package in providers.keys():
-                self._show_package(package)
+                if self._passes_filters(package, filters):
+                    self._show_package(package)
+
+    @needs_cache
+    def get_requires(self, filters, packageids, recursive_text):
+        recursive = self._text_to_boolean(recursive_text)
+        self.status(STATUS_INFO)
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+
+            packages = self._process_search_results(results)
+
+            if len(packages) != 1:
+                return
+
+            package = packages[0]
+
+            requirers = {}
+            for provided in package.provides:
+                for requirer in provided.requiredby:
+                    for package in requirer.packages:
+                        if not requirers.has_key(package):
+                            requirers[package] = True
+
+            for package in requirers.keys():
+                if self._passes_filters(package, filters):
+                    self._show_package(package)
 
     def get_repo_list(self, filters):
+        self.status(STATUS_INFO)
         channels = smart.sysconf.get("channels", ())
         for alias in channels:
             channel = smart.sysconf.get(("channels", alias))
@@ -279,6 +501,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self.repo_detail(alias, name, enabled)
 
     def repo_enable(self, repoid, enable):
+        self.status(STATUS_INFO)
         if smart.sysconf.has(("channels", repoid)):
             if enable == "true":
                 smart.sysconf.remove(("channels", repoid, "disabled"))
@@ -288,9 +511,49 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_REPO_NOT_FOUND, "repo %s was not found" % repoid)
 
+    systemchannel = None # unfortunately package strings depend on system
+
+    def _splitpackage(self, package):
+        if isinstance(package, smart.backends.rpm.base.RPMPackage):
+            version, arch = package.version.split('@')
+        elif isinstance(package, smart.backends.deb.base.DebPackage):
+            version, arch = package.version, DEBARCH
+        elif isinstance(package, smart.backends.slack.base.SlackPackage):
+            ver, arch, rel = package.version.rsplit('-')
+            version = "%s-%s" % (ver, rel)
+        else:
+            import os
+            machine = os.uname()[-1]
+            if machine == "Power Macintosh": #<sigh>
+                machine = "ppc"
+            version, arch = package.version, machine
+        return package.name, version, arch
+
+    def _joinpackage(self, name, version, arch):
+        if not self.systemchannel:
+            channels = smart.sysconf.get("channels", ())
+            # FIXME: should look by type, not by alias
+            if "rpm-sys" in channels:
+                self.systemchannel = "rpm-sys"
+            elif "deb-sys" in channels:
+                self.systemchannel = "deb-sys"
+            elif "slack-sys" in channels:
+                self.systemchannel = "slack-sys"
+        if self.systemchannel == "rpm-sys":
+            pkg = "%s-%s@%s" % (name, version, arch)
+        elif self.systemchannel == "deb-sys":
+            pkg = "%s_%s" % (name, version)
+        elif self.systemchannel == "slack-sys":
+            ver, rel = version.rsplit("-")
+            pkg = "%s-%s-%s-%s" % (name, ver, arch, rel)
+        else:
+            pkg = "%s-%s" % (name, version)
+        return pkg
+
     def _search_packageid(self, packageid):
         idparts = packageid.split(';')
-        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
+        # note: currently you can only search in channels native to system
+        packagestring = self._joinpackage(idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
 
         return (ratio, results, suggestions)
@@ -301,13 +564,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 status = INFO_INSTALLED
             else:
                 status = INFO_AVAILABLE
-        version, arch = package.version.split('@')
+        name, version, arch = self._splitpackage(package)
         for loader in package.loaders:
             channel = loader.getChannel()
             if package.installed and not channel.getType().endswith('-sys'):
                 continue
             info = loader.getInfo(package)
-            self.package(pkpackage.get_package_id(package.name, version, arch,
+            self.package(pkpackage.get_package_id(name, version, arch,
                 channel.getAlias()), status, info.getSummary())
 
     def _get_status(self, package):
@@ -334,9 +597,54 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         return packages
 
-    @staticmethod
-    def _passes_filters(package, filters):
+    def _passes_filters(self, package, filters):
         filterlist = filters.split(';')
-
-        return (FILTER_NOT_INSTALLED not in filterlist and package.installed
-                or FILTER_INSTALLED not in filterlist and not package.installed)
+        if FILTER_NOT_INSTALLED in filterlist and package.installed:
+            return False
+        elif FILTER_INSTALLED in filterlist and not package.installed:
+            return False
+        else:
+            loader = package.loaders.keys()[0]
+            info = loader.getInfo(package)
+            for filter in filterlist:
+                if filter in (FILTER_GUI, FILTER_NOT_GUI):
+                    if hasattr(info, 'isGraphical'):
+                        graphical = info.isGraphical()
+                        if graphical is None: # tristate boolean
+                            return None
+                        if filter == FILTER_GUI and graphical:
+                            return False
+                        if filter == FILTER_NOT_GUI and graphical:
+                            return False
+                    else:
+                        self.error(ERROR_FILTER_INVALID, \
+                                   "filter %s not supported" % filter)
+                        return False
+                if filter in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
+                    if hasattr(info, 'isDevelopment'):
+                        development = info.isDevelopment()
+                        if development is None: # tristate boolean
+                            return None
+                        if filter == FILTER_DEVELOPMENT and development:
+                            return False
+                        if filter == FILTER_NOT_DEVELOPMENT and development:
+                            return False
+                    else:
+                        self.error(ERROR_FILTER_INVALID, \
+                                   "filter %s not supported" % filter)
+                        return False
+                if filter in (FILTER_FREE, FILTER_NOT_FREE):
+                    if hasattr(info, 'getLicense'):
+                        license = info.getLicense()
+                        free = pkpackage.check_license_field(license)
+                        if free is None: # tristate boolean
+                            return None
+                        if filter == FILTER_FREE and not free:
+                            return False
+                        if filter == FILTER_NOT_FREE and free:
+                            return False
+                    else:
+                        self.error(ERROR_FILTER_INVALID, \
+                                   "filter %s not supported" % filter)
+                        return False
+        return True

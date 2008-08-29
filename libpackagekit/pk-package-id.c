@@ -34,7 +34,9 @@
 #include <sys/types.h>
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-package-id.h"
 
@@ -58,6 +60,48 @@ pk_package_id_new (void)
 }
 
 /**
+ * pk_strsplit:
+ * @id: the ; delimited string to split
+ * @parts: how many parts the delimted string should be split into
+ *
+ * Splits a string into the correct number of parts, checking the correct
+ * number of delimiters are present.
+ *
+ * Return value: a char array is split correctly, %NULL if invalid
+ * Note: You need to use g_strfreev on the returned value
+ **/
+static gchar **
+pk_strsplit (const gchar *id, guint parts)
+{
+	gchar **sections = NULL;
+
+	if (id == NULL) {
+		goto out;
+	}
+
+	/* split by delimeter ';' */
+	sections = g_strsplit (id, ";", 0);
+	if (g_strv_length (sections) != parts) {
+		goto out;
+	}
+
+	/* name has to be valid */
+	if (egg_strzero (sections[0])) {
+		goto out;
+	}
+
+	/* all okay, phew.. */
+	return sections;
+
+out:
+	/* free sections and return NULL */
+	if (sections != NULL) {
+		g_strfreev (sections);
+	}
+	return NULL;
+}
+
+/**
  * pk_package_id_check:
  * @package_id: the text the check
  *
@@ -74,7 +118,7 @@ pk_package_id_check (const gchar *package_id)
 	}
 	ret = g_utf8_validate (package_id, -1, NULL);
 	if (!ret) {
-		pk_warning ("invalid UTF8!");
+		egg_warning ("invalid UTF8!");
 		return FALSE;
 	}
 	sections = pk_strsplit (package_id, 4);
@@ -108,16 +152,16 @@ pk_package_id_new_from_string (const gchar *package_id)
 
 	/* create new object */
 	id = pk_package_id_new ();
-	if (pk_strzero (sections[0]) == FALSE) {
+	if (egg_strzero (sections[0]) == FALSE) {
 		id->name = g_strdup (sections[0]);
 	}
-	if (pk_strzero (sections[1]) == FALSE) {
+	if (egg_strzero (sections[1]) == FALSE) {
 		id->version = g_strdup (sections[1]);
 	}
-	if (pk_strzero (sections[2]) == FALSE) {
+	if (egg_strzero (sections[2]) == FALSE) {
 		id->arch = g_strdup (sections[2]);
 	}
-	if (pk_strzero (sections[3]) == FALSE) {
+	if (egg_strzero (sections[3]) == FALSE) {
 		id->data = g_strdup (sections[3]);
 	}
 	g_strfreev (sections);
@@ -232,11 +276,72 @@ pk_package_id_free (PkPackageId *id)
 gboolean
 pk_package_id_equal (const PkPackageId *id1, const PkPackageId *id2)
 {
-	if (pk_strequal (id1->name, id2->name) &&
-	    pk_strequal (id1->version, id2->version) &&
-	    pk_strequal (id1->arch, id2->arch))
+	if (egg_strequal (id1->name, id2->name) &&
+	    egg_strequal (id1->version, id2->version) &&
+	    egg_strequal (id1->arch, id2->arch))
 		return TRUE;
 	return FALSE;
+}
+
+/**
+ * pk_strcmp_sections:
+ * @id1: the first item of text to test
+ * @id2: the second item of text to test
+ * @parts: the number of parts each id should have
+ * @compare: the leading number of parts to compare
+ *
+ * We only want to compare some first sections, not all the data when
+ * comparing package_id's and transaction_id's.
+ *
+ * Return value: %TRUE if the strings can be considered the same.
+ *
+ **/
+static gboolean
+pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compare)
+{
+	gchar **sections1;
+	gchar **sections2;
+	gboolean ret = FALSE;
+	guint i;
+
+	if (id1 == NULL || id2 == NULL) {
+		egg_warning ("package id compare invalid '%s' and '%s'", id1, id2);
+		return FALSE;
+	}
+	if (compare > parts) {
+		egg_warning ("compare %i > parts %i", compare, parts);
+		return FALSE;
+	}
+	if (compare == parts) {
+		return egg_strequal (id1, id2);
+	}
+
+	/* split, NULL will be returned if error */
+	sections1 = pk_strsplit (id1, parts);
+	sections2 = pk_strsplit (id2, parts);
+
+	/* check we split okay */
+	if (sections1 == NULL) {
+		egg_warning ("string id compare sections1 invalid '%s'", id1);
+		goto out;
+	}
+	if (sections2 == NULL) {
+		egg_warning ("string id compare sections2 invalid '%s'", id2);
+		goto out;
+	}
+
+	/* only compare preceeding sections */
+	for (i=0; i<compare; i++) {
+		if (egg_strequal (sections1[i], sections2[i]) == FALSE) {
+			goto out;
+		}
+	}
+	ret = TRUE;
+
+out:
+	g_strfreev (sections1);
+	g_strfreev (sections2);
+	return ret;
 }
 
 /**
@@ -268,6 +373,7 @@ libst_package_id (LibSelfTest *test)
 	const gchar *temp;
 	PkPackageId *id;
 	PkPackageId *id2;
+	gchar **array;
 
 	if (libst_start (test, "PkPackageId", CLASS_AUTO) == FALSE) {
 		return;
@@ -279,7 +385,7 @@ libst_package_id (LibSelfTest *test)
 
 	libst_title (test, "id build");
 	text = pk_package_id_build ("moo", "0.0.1", "i386", "fedora");
-	if (pk_strequal (text, "moo;0.0.1;i386;fedora")) {
+	if (egg_strequal (text, "moo;0.0.1;i386;fedora")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -345,10 +451,10 @@ libst_package_id (LibSelfTest *test)
 	libst_title (test, "parse package_id from string");
 	id = pk_package_id_new_from_string ("moo;0.0.1;i386;fedora");
 	if (id != NULL &&
-	    pk_strequal (id->name, "moo") &&
-	    pk_strequal (id->arch, "i386") &&
-	    pk_strequal (id->data, "fedora") &&
-	    pk_strequal (id->version, "0.0.1")) {
+	    egg_strequal (id->name, "moo") &&
+	    egg_strequal (id->arch, "i386") &&
+	    egg_strequal (id->data, "fedora") &&
+	    egg_strequal (id->version, "0.0.1")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -366,7 +472,7 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test id building with valid data");
 	text = pk_package_id_to_string (id2);
-	if (pk_strequal (text, "moo;0.0.1;i386;fedora")) {
+	if (egg_strequal (text, "moo;0.0.1;i386;fedora")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "package_id is '%s'", text);
@@ -379,8 +485,8 @@ libst_package_id (LibSelfTest *test)
 	libst_title (test, "parse short package_id from string");
 	id = pk_package_id_new_from_string ("moo;0.0.1;;");
 	if (id != NULL &&
-	    pk_strequal (id->name, "moo") &&
-	    pk_strequal (id->version, "0.0.1") &&
+	    egg_strequal (id->name, "moo") &&
+	    egg_strequal (id->version, "0.0.1") &&
 	    id->data == NULL &&
 	    id->arch == NULL) {
 		libst_success (test, NULL);
@@ -388,6 +494,155 @@ libst_package_id (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 	pk_package_id_free (id);
+
+	libst_title (test, "id equal pass (same)");
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 3);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal pass (parts==match)");
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 4);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal pass (different)");
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data", 4, 3);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal fail1");
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.2;x64;fedora", 4, 3);
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal fail2");
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "gnome;0.0.2;i386;fedora", 4, 3);
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal fail3");
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 3);
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal fail (match too high)");
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 5);
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************
+	 ****************          splitting         ****************
+	 ************************************************************/
+	libst_title (test, "test pass 1");
+	array = pk_strsplit ("foo", 1);
+	if (array != NULL &&
+	    egg_strequal (array[0], "foo")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s", array[0]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test pass 2");
+	array = pk_strsplit ("foo;moo", 2);
+	if (array != NULL &&
+	    egg_strequal (array[0], "foo") &&
+	    egg_strequal (array[1], "moo")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s, %s", array[0], array[1]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test pass 3");
+	array = pk_strsplit ("foo;moo;bar", 3);
+	if (array != NULL &&
+	    egg_strequal (array[0], "foo") &&
+	    egg_strequal (array[1], "moo") &&
+	    egg_strequal (array[2], "bar")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test on real packageid");
+	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;", 4);
+	if (array != NULL &&
+	    egg_strequal (array[0], "kde-i18n-csb") &&
+	    egg_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") &&
+	    egg_strequal (array[2], "all") &&
+	    egg_strequal (array[3], "")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test on short packageid");
+	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;;", 4);
+	if (array != NULL &&
+	    egg_strequal (array[0], "kde-i18n-csb") &&
+	    egg_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") &&
+	    egg_strequal (array[2], "") &&
+	    egg_strequal (array[3], "")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test fail under");
+	array = pk_strsplit ("foo;moo", 1);
+	if (array == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "test fail over");
+	array = pk_strsplit ("foo;moo", 3);
+	if (array == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "test fail missing first");
+	array = pk_strsplit (";moo", 2);
+	if (array == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
 
 	libst_end (test);
 }

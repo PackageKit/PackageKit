@@ -29,6 +29,7 @@ INCLUDES =						\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" 		\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
+	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
 	-I$(top_srcdir)/libpackagekit			\
 	-I$(top_srcdir)/libselftest			\
 	$(NULL)
@@ -41,6 +42,12 @@ pkbackendinclude_HEADERS =				\
 	$(NULL)
 
 shared_SOURCES =					\
+	egg-debug.c					\
+	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
+	egg-dbus-monitor.c				\
+	egg-dbus-monitor.h				\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-transaction.c				\

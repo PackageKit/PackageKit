@@ -8,6 +8,8 @@ dist_helper_DATA = 			\
 	get-details.py			\
 	get-files.py			\
 	get-repo-list.py		\
+	get-packages.py			\
+	get-requires.py			\
 	get-updates.py			\
 	install-files.py		\
 	install-packages.py		\
@@ -16,10 +18,12 @@ dist_helper_DATA = 			\
 	repo-enable.py			\
 	resolve.py			\
 	search-name.py			\
+	search-group.py			\
 	search-details.py		\
 	smartBackend.py			\
 	update-packages.py		\
 	update-system.py		\
+	download-packages.py		\
 	$(NULL)
 
 install-data-hook:

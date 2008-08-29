@@ -39,7 +39,7 @@
 #include <glib/gprintf.h>
 
 #include <gmodule.h>
-#include <pk-dbus-monitor.h>
+#include <egg-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
 
 #include <pk-common.h>
@@ -47,7 +47,7 @@
 #include <pk-enum.h>
 #include <pk-network.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-backend-internal.h"
 #include "pk-backend-dbus.h"
 #include "pk-marshal.h"
@@ -75,7 +75,7 @@ struct PkBackendDbusPrivate
 	GTimer			*timer;
 	gchar			*service;
 	gulong			 signal_finished;
-	PkDbusMonitor		*monitor;
+	EggDbusMonitor		*monitor;
 };
 
 G_DEFINE_TYPE (PkBackendDbus, pk_backend_dbus, G_TYPE_OBJECT)
@@ -89,7 +89,7 @@ pk_backend_dbus_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 				const gchar *description, gboolean enabled,
 				PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_repo_detail (backend_dbus->priv->backend, repo_id, description, enabled);
 }
 
@@ -99,7 +99,7 @@ pk_backend_dbus_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 static void
 pk_backend_dbus_status_changed_cb (DBusGProxy *proxy, const gchar *status_text, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_set_status (backend_dbus->priv->backend, pk_status_enum_from_text (status_text));
 }
 
@@ -109,7 +109,7 @@ pk_backend_dbus_status_changed_cb (DBusGProxy *proxy, const gchar *status_text, 
 static void
 pk_backend_dbus_percentage_changed_cb (DBusGProxy *proxy, guint percentage, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_set_percentage (backend_dbus->priv->backend, percentage);
 }
 
@@ -119,7 +119,7 @@ pk_backend_dbus_percentage_changed_cb (DBusGProxy *proxy, guint percentage, PkBa
 static void
 pk_backend_dbus_sub_percentage_changed_cb (DBusGProxy *proxy, guint sub_percentage, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_set_sub_percentage (backend_dbus->priv->backend, sub_percentage);
 }
 
@@ -130,7 +130,7 @@ static void
 pk_backend_dbus_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *package_id,
 			    const gchar *summary, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_package (backend_dbus->priv->backend, pk_info_enum_from_text (info_text), package_id, summary);
 }
 
@@ -143,7 +143,7 @@ pk_backend_dbus_details_cb (DBusGProxy *proxy, const gchar *package_id,
 				const gchar *detail, const gchar *url,
 				guint64 size, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_details (backend_dbus->priv->backend, package_id,
 				license, pk_group_enum_from_text (group_text), detail, url, size);
 }
@@ -155,7 +155,7 @@ static void
 pk_backend_dbus_files_cb (DBusGProxy *proxy, const gchar *package_id,
 			  const gchar *file_list, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_files (backend_dbus->priv->backend, package_id, file_list);
 }
 
@@ -171,7 +171,7 @@ pk_backend_dbus_update_detail_cb (DBusGProxy *proxy, const gchar *package_id,
 				  const gchar *state, const gchar *issued,
 				  const gchar *updated, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_update_detail (backend_dbus->priv->backend, package_id, updates,
 				  obsoletes, vendor_url, bugzilla_url, cve_url,
 				  pk_restart_enum_from_text (restart_text),
@@ -186,7 +186,7 @@ pk_backend_dbus_update_detail_cb (DBusGProxy *proxy, const gchar *package_id,
 static void
 pk_backend_dbus_finished_cb (DBusGProxy *proxy, const gchar *exit_text, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("deleting dbus %p, exit %s", backend_dbus, exit_text);
+	egg_debug ("deleting dbus %p, exit %s", backend_dbus, exit_text);
 	pk_backend_finished (backend_dbus->priv->backend);
 }
 
@@ -196,7 +196,7 @@ pk_backend_dbus_finished_cb (DBusGProxy *proxy, const gchar *exit_text, PkBacken
 static void
 pk_backend_dbus_allow_cancel_cb (DBusGProxy *proxy, gboolean allow_cancel, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_set_allow_cancel (backend_dbus->priv->backend, allow_cancel);
 }
 
@@ -207,7 +207,7 @@ static void
 pk_backend_dbus_error_code_cb (DBusGProxy *proxy, const gchar *error_text,
 			       const gchar *details, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_error_code (backend_dbus->priv->backend, pk_error_enum_from_text (error_text), details);
 }
 
@@ -218,7 +218,7 @@ static void
 pk_backend_dbus_require_restart_cb (DBusGProxy *proxy, PkRestartEnum type,
 				    const gchar *details, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_require_restart (backend_dbus->priv->backend, type, details);
 }
 
@@ -229,7 +229,7 @@ static void
 pk_backend_dbus_message_cb (DBusGProxy *proxy, PkMessageEnum message,
 			    const gchar *details, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_message (backend_dbus->priv->backend, message, details);
 }
 
@@ -243,7 +243,7 @@ pk_backend_dbus_repo_signature_required_cb (DBusGProxy *proxy, const gchar *pack
 					    const gchar *key_fingerprint, const gchar *key_timestamp,
 					    PkSigTypeEnum type, PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_repo_signature_required (backend_dbus->priv->backend, package_id, repository_name,
 					    key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
 }
@@ -256,7 +256,7 @@ pk_backend_dbus_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const
 				  const gchar *vendor_name, const gchar *license_agreement,
 				  PkBackendDbus *backend_dbus)
 {
-	pk_debug ("got signal");
+	egg_debug ("got signal");
 	pk_backend_eula_required (backend_dbus->priv->backend, eula_id,
 				  package_id, vendor_name, license_agreement);
 }
@@ -287,7 +287,7 @@ pk_backend_dbus_time_check (PkBackendDbus *backend_dbus)
 	seconds = g_timer_elapsed (backend_dbus->priv->timer, NULL);
 	time = (guint) seconds * 1000;
 	if (time > PK_BACKEND_DBUS_MAX_SYNC_RUNTIME) {
-		pk_warning ("too much time for sync method: %ims", time);
+		egg_warning ("too much time for sync method: %ims", time);
 		pk_backend_error_code (backend_dbus->priv->backend,
 				       PK_ERROR_ENUM_INTERNAL_ERROR,
 				       "The backend took too much time to process the synchronous request - you need to fork!");
@@ -365,7 +365,7 @@ pk_backend_dbus_set_proxy (PkBackendDbus *backend_dbus, const gchar *proxy_http,
 				 G_TYPE_STRING, proxy_ftp,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		g_error_free (error);
 	}
 	return ret;
@@ -389,7 +389,7 @@ pk_backend_dbus_set_locale (PkBackendDbus *backend_dbus, const gchar *locale)
 				 G_TYPE_STRING, locale,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		g_error_free (error);
 	}
 	return ret;
@@ -412,7 +412,7 @@ pk_backend_dbus_startup (PkBackendDbus *backend_dbus)
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Init", &error,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (!ret) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		/* cannot use ErrorCode as not in transaction */
 		pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON_ERROR, error->message);
 		g_error_free (error);
@@ -451,16 +451,16 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	g_return_val_if_fail (service != NULL, FALSE);
 
 	if (backend_dbus->priv->proxy != NULL) {
-		pk_warning ("need to unref old one -- is this logically allowed?");
+		egg_warning ("need to unref old one -- is this logically allowed?");
 		pk_backend_dbus_remove_callbacks (backend_dbus);
 		g_object_unref (backend_dbus->priv->proxy);
 	}
 
 	/* watch */
-	pk_dbus_monitor_assign (backend_dbus->priv->monitor, PK_DBUS_MONITOR_SYSTEM, service);
+	egg_dbus_monitor_assign (backend_dbus->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, service);
 
 	/* grab this */
-	pk_debug ("trying to activate %s", service);
+	egg_debug ("trying to activate %s", service);
 	proxy = dbus_g_proxy_new_for_name (backend_dbus->priv->connection,
 					   service, PK_DBUS_BACKEND_PATH, PK_DBUS_BACKEND_INTERFACE);
 
@@ -562,7 +562,7 @@ pk_backend_dbus_kill (PkBackendDbus *backend_dbus)
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Exit", &error,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -590,7 +590,7 @@ pk_backend_dbus_cancel (PkBackendDbus *backend_dbus)
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Cancel", &error,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -621,7 +621,7 @@ pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, PkBitfield filters)
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -653,7 +653,7 @@ pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus, PkBitfield filters)
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -683,7 +683,7 @@ pk_backend_dbus_refresh_cache (PkBackendDbus *backend_dbus, gboolean force)
 				 G_TYPE_BOOLEAN, force,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -711,7 +711,7 @@ pk_backend_dbus_update_system (PkBackendDbus *backend_dbus)
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "UpdateSystem", &error,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -742,7 +742,7 @@ pk_backend_dbus_repo_enable (PkBackendDbus *backend_dbus, const gchar *rid, gboo
 				 G_TYPE_STRING, enabled,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -777,7 +777,7 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
 				 G_TYPE_STRING, value,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -810,7 +810,7 @@ pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkBitfield filters, gchar 
 				 G_TYPE_STRV, packages,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -841,7 +841,7 @@ pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_
 				 G_TYPE_STRING, transaction_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -874,7 +874,7 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, PkBitfield filters, co
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -908,7 +908,7 @@ pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, PkBitfield filters,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -942,7 +942,7 @@ pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, PkBitfield filters, c
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -976,7 +976,7 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, PkBitfield filters, co
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1011,7 +1011,7 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkBitfield filters, gc
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1046,7 +1046,7 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkBitfield filters, g
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1078,7 +1078,7 @@ pk_backend_dbus_get_packages (PkBackendDbus *backend_dbus, PkBitfield filters)
 				 G_TYPE_STRING, filters_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1110,7 +1110,7 @@ pk_backend_dbus_download_packages (PkBackendDbus *backend_dbus, gchar **package_
 				 G_TYPE_STRING, directory,
  	                         G_TYPE_INVALID, G_TYPE_INVALID);
         if (error != NULL) {
-                pk_warning ("%s", error->message);
+                egg_warning ("%s", error->message);
                 pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
                 pk_backend_finished (backend_dbus->priv->backend);
                 g_error_free (error);
@@ -1141,7 +1141,7 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, gchar **package_
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1171,7 +1171,7 @@ pk_backend_dbus_get_details (PkBackendDbus *backend_dbus, gchar **package_ids)
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1201,7 +1201,7 @@ pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, gchar **package_ids)
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1233,7 +1233,7 @@ pk_backend_dbus_remove_packages (PkBackendDbus *backend_dbus, gchar **package_id
 				 G_TYPE_BOOLEAN, autoremove,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1263,7 +1263,7 @@ pk_backend_dbus_install_packages (PkBackendDbus *backend_dbus, gchar **package_i
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1293,7 +1293,7 @@ pk_backend_dbus_update_packages (PkBackendDbus *backend_dbus, gchar **package_id
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1324,7 +1324,7 @@ pk_backend_dbus_install_files (PkBackendDbus *backend_dbus, gboolean trusted, gc
 				 G_TYPE_STRV, full_paths,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1355,7 +1355,7 @@ pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location
 				 G_TYPE_BOOLEAN, enabled,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1393,7 +1393,7 @@ pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkBitfield filters,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
@@ -1409,13 +1409,13 @@ pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkBitfield filters,
  * pk_backend_dbus_monitor_changed_cb:
  **/
 static void
-pk_backend_dbus_monitor_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolean is_active, PkBackendDbus *backend_dbus)
+pk_backend_dbus_monitor_changed_cb (EggDbusMonitor *egg_dbus_monitor, gboolean is_active, PkBackendDbus *backend_dbus)
 {
 	gboolean ret;
 	g_return_if_fail (PK_IS_BACKEND_DBUS (backend_dbus));
 
 	if (!is_active) {
-		pk_warning ("DBUS backend disconnected");
+		egg_warning ("DBUS backend disconnected");
 		pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON_ERROR, "DBUS backend has exited");
 		/* Init() */
 		ret = pk_backend_dbus_startup (backend_dbus);
@@ -1479,11 +1479,11 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	/* get connection */
 	backend_dbus->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		pk_error ("unable to get system connection %s", error->message);
+		egg_error ("unable to get system connection %s", error->message);
 	}
 
 	/* babysit the backend and do Init() again it when it crashes */
-	backend_dbus->priv->monitor = pk_dbus_monitor_new ();
+	backend_dbus->priv->monitor = egg_dbus_monitor_new ();
 	g_signal_connect (backend_dbus->priv->monitor, "connection-changed",
 			  G_CALLBACK (pk_backend_dbus_monitor_changed_cb), backend_dbus);
 
@@ -1588,7 +1588,7 @@ pk_backend_dbus_test_package_cb (PkBackend *backend, PkInfoEnum info,
 				 PkBackendDbus *backend_dbus)
 {
 	number_packages++;
-	pk_debug ("package count now %i", number_packages);
+	egg_debug ("package count now %i", number_packages);
 }
 
 static gboolean

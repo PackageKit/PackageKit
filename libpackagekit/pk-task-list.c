@@ -41,7 +41,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-task-list.h>
@@ -93,14 +93,14 @@ pk_task_list_print (PkTaskList *tlist)
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	length = tlist->priv->task_list->len;
-	pk_debug ("Tasks:");
+	egg_debug ("Tasks:");
 	if (length == 0) {
-		pk_debug ("[none]...");
+		egg_debug ("[none]...");
 		return TRUE;
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		pk_debug ("%s\t%s:%s %s", item->tid, pk_role_enum_to_text (item->role),
+		egg_debug ("%s\t%s:%s %s", item->tid, pk_role_enum_to_text (item->role),
 			 pk_status_enum_to_text (item->status), item->text);
 	}
 	return TRUE;
@@ -166,7 +166,7 @@ pk_task_list_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskLis
 	item = pk_task_list_find_existing_tid (tlist, tid);
 	item->status = status;
 
-	pk_debug ("emit status-changed(%s) for %s", pk_status_enum_to_text (status), tid);
+	egg_debug ("emit status-changed(%s) for %s", pk_status_enum_to_text (status), tid);
 	g_signal_emit (tlist, signals [PK_TASK_LIST_STATUS_CHANGED], 0);
 	g_free (tid);
 }
@@ -178,7 +178,7 @@ static void
 gpk_task_list_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, PkTaskList *tlist)
 {
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
-	pk_debug ("emit finished");
+	egg_debug ("emit finished");
 	g_signal_emit (tlist, signals [PK_TASK_LIST_FINISHED], 0, client, exit, runtime);
 }
 
@@ -189,7 +189,7 @@ static void
 gpk_task_list_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, PkTaskList *tlist)
 {
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
-	pk_debug ("emit error-code");
+	egg_debug ("emit error-code");
 	g_signal_emit (tlist, signals [PK_TASK_LIST_ERROR_CODE], 0, client, error_code, details);
 }
 
@@ -200,7 +200,7 @@ static void
 gpk_task_list_message_cb (PkClient *client, PkMessageEnum message, const gchar *details, PkTaskList *tlist)
 {
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
-	pk_debug ("emit message");
+	egg_debug ("emit message");
 	g_signal_emit (tlist, signals [PK_TASK_LIST_MESSAGE], 0, client, message, details);
 }
 
@@ -239,7 +239,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 
 		item = pk_task_list_find_existing_tid (tlist, tid);
 		if (item == NULL) {
-			pk_debug ("new job, have to create %s", tid);
+			egg_debug ("new job, have to create %s", tid);
 			item = g_new0 (PkTaskListItem, 1);
 			item->tid = g_strdup (tid);
 			item->monitor = pk_client_new ();
@@ -253,7 +253,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 					  G_CALLBACK (gpk_task_list_message_cb), tlist);
 			ret = pk_client_set_tid (item->monitor, tid, &error);
 			if (!ret) {
-				pk_error ("could not set tid: %s", error->message);
+				egg_error ("could not set tid: %s", error->message);
 				g_error_free (error);
 				break;
 			}
@@ -301,7 +301,7 @@ pk_task_list_get_item (PkTaskList *tlist, guint item)
 {
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), NULL);
 	if (item >= tlist->priv->task_list->len) {
-		pk_warning ("item too large!");
+		egg_warning ("item too large!");
 		return NULL;
 	}
 	return g_ptr_array_index (tlist->priv->task_list, item);
@@ -316,7 +316,7 @@ pk_task_list_transaction_list_changed_cb (PkControl *control, PkTaskList *tlist)
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 	/* for now, just refresh all the jobs. a little inefficient me thinks */
 	pk_task_list_refresh (tlist);
-	pk_debug ("emit changed");
+	egg_debug ("emit changed");
 	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
 }
 
@@ -327,7 +327,7 @@ static void
 pk_task_list_connection_changed_cb (PkConnection *connection, gboolean connected, PkTaskList *tlist)
 {
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
-	pk_debug ("connected=%i", connected);
+	egg_debug ("connected=%i", connected);
 	if (connected) {
 		/* force a refresh so we have valid data*/
 		pk_task_list_refresh (tlist);

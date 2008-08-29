@@ -866,6 +866,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
+        # check we have at least one file
+        if len(inst_files) == 0:
+            self.error(ERROR_FILE_NOT_FOUND,'no files specified to install')
+            return
+
+        # check that the files still exist
+        for inst_file in inst_files:
+            if not os.path.exists(inst_file):
+                self.error(ERROR_FILE_NOT_FOUND,'%s could not be found' % inst_file)
+                return
+
         # process these first
         tempdir = tempfile.mkdtemp()
         inst_packs = []
@@ -891,16 +902,33 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if file.endswith('.rpm'):
                     inst_files.append(os.path.join(tempdir, file))
 
-        # remove files of packages that alrady exist
+        to_remove = []
+                    
+        # remove files of packages that already exist
         for inst_file in inst_files:
             try:
                 pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
                 if self._is_inst(pkg):
-                    inst_files.remove(inst_file)
+                    to_remove.append(inst_file)
             except yum.Errors.YumBaseError,e:
                 self.error(ERROR_INVALID_PACKAGE_FILE,'Package could not be decompressed')
             except:
                 self.error(ERROR_UNKNOWN,"Failed to open local file -- please report")
+
+        # Some fiddly code to get the messaging right
+        if len(inst_files) == 1 and len(to_remove) == 1:
+            # The single pkg to be installed was already installed
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, '%s is already installed' % inst_files[0])
+
+        for inst_file in to_remove:
+            # More than one pkg to be installed, 1 or more are already installed
+            inst_files.remove(inst_file)
+            self.message(MESSAGE_PACKAGE_ALREADY_INSTALLED, '%s is already installed' % inst_file)
+            
+        if len(inst_files) == 0:
+            # More than one pkg to be installed, all of them already installed
+            self.error(ERROR_ALL_PACKAGES_ALREADY_INSTALLED,
+                       'All of the specified packages have already been installed')
 
         # If trusted is true, it means that we will only install trusted files
         if trusted == 'yes':

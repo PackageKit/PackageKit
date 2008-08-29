@@ -40,9 +40,11 @@
 #include <glib/gi18n.h>
 #include <sqlite3.h>
 
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-extra.h"
 #include "pk-common.h"
-#include "pk-debug.h"
 
 static void     pk_extra_class_init	(PkExtraClass *klass);
 static void     pk_extra_init		(PkExtra      *extra);
@@ -101,18 +103,18 @@ pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, g
 		col = col_name[i];
 		value = argv[i];
 		/* save the package name, and use it is the key */
-		if (pk_strequal (col, "package") && value != NULL) {
+		if (egg_strequal (col, "package") && value != NULL) {
 			package = g_strdup (argv[i]);
-		} else if (pk_strequal (col, "icon") && value != NULL) {
+		} else if (egg_strequal (col, "icon") && value != NULL) {
 			icon_name = g_strdup (argv[i]);
-		} else if (pk_strequal (col, "exec") && value != NULL) {
+		} else if (egg_strequal (col, "exec") && value != NULL) {
 			exec = g_strdup (argv[i]);
 		}
 	}
 
 	/* sanity check */
 	if (package == NULL) {
-		pk_warning ("package data invalid (%s,%s,%s)", package, icon_name, exec);
+		egg_warning ("package data invalid (%s,%s,%s)", package, icon_name, exec);
 		goto out;
 	}
 
@@ -153,16 +155,16 @@ pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gc
 		col = col_name[i];
 		value = argv[i];
 		/* save the package name, and use it is the key */
-		if (pk_strequal (col, "package") && value != NULL) {
+		if (egg_strequal (col, "package") && value != NULL) {
 			package = g_strdup (argv[i]);
-		} else if (pk_strequal (col, "summary") && value != NULL) {
+		} else if (egg_strequal (col, "summary") && value != NULL) {
 			summary = g_strdup (argv[i]);
 		}
 	}
 
 	/* sanity check */
 	if (package == NULL) {
-		pk_warning ("package data invalid (%s,%s)", package, summary);
+		egg_warning ("package data invalid (%s,%s)", package, summary);
 		goto out;
 	}
 
@@ -199,7 +201,7 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -208,7 +210,7 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_locale_cache_callback, extra, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -218,7 +220,7 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_locale_cache_callback, extra, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -242,7 +244,7 @@ pk_extra_populate_package_cache (PkExtra *extra)
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -250,7 +252,7 @@ pk_extra_populate_package_cache (PkExtra *extra)
 	statement = "SELECT package, icon, exec FROM data";
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_package_cache_callback, extra, &error_msg);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -278,17 +280,17 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 	extra->priv->locale_base = g_strdup (locale);
 
 	/* we only want the first section to compare */
-	len = pk_strlen (locale, 10);
+	len = egg_strlen (locale, 10);
 	for (i=0; i<len; i++) {
 		if (extra->priv->locale_base[i] == '_') {
 			extra->priv->locale_base[i] = '\0';
-			pk_debug ("locale_base is '%s'", extra->priv->locale_base);
+			egg_debug ("locale_base is '%s'", extra->priv->locale_base);
 			break;
 		}
 	}
 
 	/* no point doing it twice if they are the same */
-	if (pk_strequal (extra->priv->locale_base, extra->priv->locale)) {
+	if (egg_strequal (extra->priv->locale_base, extra->priv->locale)) {
 		g_free (extra->priv->locale_base);
 		extra->priv->locale_base = NULL;
 	}
@@ -400,7 +402,7 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -416,7 +418,7 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 				 "INSERT INTO localised (package, locale, summary) "
 				 "VALUES (?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL failed to prepare");
+		egg_warning ("SQL failed to prepare");
 		return FALSE;
 	}
 
@@ -429,7 +431,7 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 	sqlite3_step (sql_statement);
 	rc = sqlite3_finalize (sql_statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -463,7 +465,7 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -476,7 +478,7 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 	rc = sqlite3_prepare_v2 (extra->priv->db, "INSERT INTO data (package, icon, exec) "
 				 "VALUES (?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL failed to prepare");
+		egg_warning ("SQL failed to prepare");
 		return FALSE;
 	}
 
@@ -489,13 +491,13 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 	sqlite3_step (sql_statement);
 	rc = sqlite3_finalize (sql_statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
 
 	/* add to cache */
-	pk_debug ("adding package:%s", package);
+	egg_debug ("adding package:%s", package);
 	obj = g_new (PkExtraPackageObj, 1);
 	obj->icon_name = g_strdup (icon_name);
 	obj->exec = g_strdup (exec);
@@ -522,7 +524,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 
 	if (extra->priv->database != NULL) {
-		pk_warning ("cannot assign extra than once");
+		egg_warning ("cannot assign extra than once");
 		return FALSE;
 	}
 
@@ -537,10 +539,10 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 	/* if the database file was not installed (or was nuked) recreate it */
 	create_file = g_file_test (filename, G_FILE_TEST_EXISTS);
 
-	pk_debug ("trying to open database '%s'", filename);
+	egg_debug ("trying to open database '%s'", filename);
 	rc = sqlite3_open (filename, &extra->priv->db);
 	if (rc) {
-		pk_warning ("Can't open database: %s\n", sqlite3_errmsg (extra->priv->db));
+		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (extra->priv->db));
 		sqlite3_close (extra->priv->db);
 		extra->priv->db = NULL;
 		return FALSE;
@@ -553,7 +555,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "summary TEXT);";
 			rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, &error_msg);
 			if (rc != SQLITE_OK) {
-				pk_warning ("SQL error: %s\n", error_msg);
+				egg_warning ("SQL error: %s\n", error_msg);
 				sqlite3_free (error_msg);
 			}
 			statement = "CREATE TABLE data ("
@@ -563,7 +565,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "exec TEXT);";
 			rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, &error_msg);
 			if (rc != SQLITE_OK) {
-				pk_warning ("SQL error: %s\n", error_msg);
+				egg_warning ("SQL error: %s\n", error_msg);
 				sqlite3_free (error_msg);
 			}
 		}
@@ -731,7 +733,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get locale");
 	text = pk_extra_get_locale (extra);
-	if (pk_strequal (text, "en")) {
+	if (egg_strequal (text, "en")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "locale was %s", text);
@@ -766,7 +768,7 @@ libst_extra (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check locale base");
-	if (pk_strequal (extra->priv->locale_base, "en")) {
+	if (egg_strequal (extra->priv->locale_base, "en")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -794,7 +796,7 @@ libst_extra (LibSelfTest *test)
 	libst_title (test, "retrieve package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-power-manager");
 	exec = pk_extra_get_exec (extra, "gnome-power-manager");
-	if (pk_strequal (icon, "gpm-main.png")) {
+	if (egg_strequal (icon, "gpm-main.png")) {
 		libst_success (test, "%s:%s", icon, exec);
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);
@@ -813,8 +815,8 @@ libst_extra (LibSelfTest *test)
 	libst_title (test, "retrieve new package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-power-manager");
 	exec = pk_extra_get_exec (extra, "gnome-power-manager");
-	if (pk_strequal (icon, "gpm-prefs.png") &&
-	    pk_strequal (exec, "gnome-power-preferences")) {
+	if (egg_strequal (icon, "gpm-prefs.png") &&
+	    egg_strequal (exec, "gnome-power-preferences")) {
 		libst_success (test, "%s:%s", icon, exec);
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);

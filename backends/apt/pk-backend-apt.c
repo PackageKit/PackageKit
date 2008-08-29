@@ -34,7 +34,7 @@ static PkBackendDbus *dbus;
 static void
 backend_initialize (PkBackend *backend)
 {
-	pk_debug ("backend: initialize");
+	egg_debug ("backend: initialize");
 	dbus = pk_backend_dbus_new ();
 	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_APT);
 }
@@ -46,7 +46,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	pk_debug ("backend: destroy");
+	egg_debug ("backend: destroy");
 	pk_backend_dbus_kill (dbus);
 	g_object_unref (dbus);
 }
@@ -93,6 +93,7 @@ backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_INSTALLED,
 		PK_FILTER_ENUM_DEVELOPMENT,
 		PK_FILTER_ENUM_SUPPORTED,
+		PK_FILTER_ENUM_FREE,
 		-1);
 }
 
@@ -150,12 +151,12 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 
 /**
  *  * backend_install_files:
- *   */
+ *   
 static void
 backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
 	        pk_backend_dbus_install_files (dbus, trusted, full_paths);
-}
+} */
 
 
 /**
@@ -212,6 +213,15 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 {
 	pk_backend_dbus_search_name (dbus, filters, search);
 }
+
+/**
+ *  * pk_backend_search_file:
+ *   
+static void
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	pk_backend_dbus_search_file (dbus, filters, search);
+} */
 
 /**
  *  * pk_backend_search_group:

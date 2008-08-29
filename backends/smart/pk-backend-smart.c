@@ -34,7 +34,7 @@ static PkBackendSpawn *spawn;
 static void
 backend_initialize (PkBackend *backend)
 {
-	pk_debug ("backend: initialize");
+	egg_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "smart");
 }
@@ -46,8 +46,80 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	pk_debug ("backend: destroy");
+	egg_debug ("backend: destroy");
 	g_object_unref (spawn);
+}
+
+/**
+ * backend_get_groups:
+ */
+static PkBitfield
+backend_get_groups (PkBackend *backend)
+{
+	return pk_bitfield_from_enums (
+	/* FIXME: These depend on the Smart backends: */
+		PK_GROUP_ENUM_ACCESSORIES,
+		PK_GROUP_ENUM_ADMIN_TOOLS,
+		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_DESKTOP_GNOME,
+		PK_GROUP_ENUM_DESKTOP_KDE,
+		PK_GROUP_ENUM_DESKTOP_OTHER,
+		PK_GROUP_ENUM_DOCUMENTATION,
+		PK_GROUP_ENUM_ELECTRONICS,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_INTERNET,
+		PK_GROUP_ENUM_LEGACY,
+		PK_GROUP_ENUM_LOCALIZATION,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_NETWORK,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SCIENCE,
+		PK_GROUP_ENUM_SYSTEM,
+		-1);
+}
+
+/**
+ * backend_get_filters:
+ */
+static PkBitfield
+backend_get_filters (PkBackend *backend)
+{
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_INSTALLED,
+	/* FIXME: These depend on a newer Smart API: */
+		PK_FILTER_ENUM_GUI,
+		PK_FILTER_ENUM_DEVELOPMENT,
+		PK_FILTER_ENUM_FREE,
+		-1);
+}
+
+/**
+ * pk_backend_bool_to_text:
+ */
+static const gchar *
+pk_backend_bool_to_text (gboolean value)
+{
+	if (value == TRUE) {
+		return "yes";
+	}
+	return "no";
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "download-packages.py", directory, package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -56,12 +128,11 @@ backend_destroy (PkBackend *backend)
 static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
-	gchar *filters_text;
 	gchar *package_ids_temp;
-	/* FIXME: Use recursive and filter here */
-	filters_text = pk_filter_bitfield_to_text (filters);
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "get-depends.py", package_ids_temp, NULL);
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -91,6 +162,21 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_get_requires:
+ */
+static void
+backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+{
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-requires.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	g_free (filters_text);
+	g_free (package_ids_temp);
+}
+
+/**
  * backend_get_updates:
  */
 static void
@@ -99,6 +185,18 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * backend_get_packages:
+ */
+static void
+backend_get_packages (PkBackend *backend, PkBitfield filters)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-packages.py", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -121,18 +219,6 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
-}
-
-/**
- * pk_backend_bool_to_text:
- */
-static const gchar *
-pk_backend_bool_to_text (gboolean value)
-{
-	if (value == TRUE) {
-		return "yes";
-	}
-	return "no";
 }
 
 /**
@@ -204,6 +290,18 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-details.py", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * pk_backend_search_group:
+ */
+static void
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "search-group.py", filters_text, search, NULL);
 	g_free (filters_text);
 }
 
@@ -280,17 +378,17 @@ PK_BACKEND_OPTIONS (
 	"James Bowes <jbowes@dangerouslyinc.com>",	/* author */
 	backend_initialize,				/* initialize */
 	backend_destroy,				/* destroy */
-	NULL,						/* get_groups */
-	NULL,						/* get_filters */
+	backend_get_groups,				/* get_groups */
+	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
-	NULL,						/* download_packages */
+	backend_download_packages,			/* download_packages */
 	backend_get_depends,				/* get_depends */
 	backend_get_details,				/* get_details */
 	NULL,						/* get_distro_upgrades */
 	backend_get_files,				/* get_files */
-	NULL,						/* get_packages */
+	backend_get_packages,				/* get_packages */
 	backend_get_repo_list,				/* get_repo_list */
-	NULL,						/* get_requires */
+	backend_get_requires,				/* get_requires */
 	NULL,						/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	backend_install_files,				/* install_files */
@@ -304,7 +402,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* rollback */
 	backend_search_details,				/* search_details */
 	NULL,						/* search_file */
-	NULL,						/* search_group */
+	backend_search_group,				/* search_group */
 	backend_search_name,				/* search_name */
 	NULL,						/* service_pack */
 	backend_update_packages,			/* update_packages */

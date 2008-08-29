@@ -34,13 +34,15 @@ MKTMPL_OPTIONS=
 FIXXREF_OPTIONS=
 
 # Used for dependencies. The docs will be rebuilt if any of these change.
-HFILE_GLOB=$(top_srcdir)/libpackagekit/*.h
-CFILE_GLOB=$(top_srcdir)/libpackagekit/*.c
+HFILE_GLOB=$(top_srcdir)/libpackagekit/pk-*.h
+CFILE_GLOB=$(top_srcdir)/libpackagekit/pk-*.c
 
 # Header files to ignore when scanning.
 IGNORE_HFILES =						\
 	config.h					\
 	pk-marshal.h					\
+	egg-dbus-monitor.h				\
+	egg-obj-list.h					\
 	$(NULL)
 
 # Images to copy into HTML directory.

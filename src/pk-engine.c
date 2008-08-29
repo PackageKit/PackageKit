@@ -41,7 +41,9 @@
 #include <pk-package-ids.h>
 #include <pk-package-list.h>
 
-#include <pk-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-common.h>
 #include <pk-network.h>
 #include <pk-package-list.h>
@@ -172,7 +174,7 @@ pk_engine_error_get_type (void)
 static void
 pk_engine_reset_timer (PkEngine *engine)
 {
-	pk_debug ("reset timer");
+	egg_debug ("reset timer");
 	g_timer_reset (engine->priv->timer);
 }
 
@@ -188,7 +190,7 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 
 	transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 
-	pk_debug ("emitting transaction-list-changed");
+	egg_debug ("emitting transaction-list-changed");
 	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION_LIST_CHANGED], 0, transaction_list);
 	pk_engine_reset_timer (engine);
 
@@ -202,7 +204,7 @@ static void
 pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	pk_debug ("emitting locked %i", is_locked);
+	egg_debug ("emitting locked %i", is_locked);
 	g_signal_emit (engine, signals [PK_ENGINE_LOCKED], 0, is_locked);
 }
 
@@ -213,7 +215,7 @@ static void
 pk_engine_notify_repo_list_changed_cb (PkNotify *notify, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	pk_debug ("emitting repo-list-changed");
+	egg_debug ("emitting repo-list-changed");
 	g_signal_emit (engine, signals [PK_ENGINE_REPO_LIST_CHANGED], 0);
 }
 
@@ -224,7 +226,7 @@ static void
 pk_engine_notify_restart_schedule_cb (PkNotify *notify, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	pk_debug ("emitting restart-schedule");
+	egg_debug ("emitting restart-schedule");
 	g_signal_emit (engine, signals [PK_ENGINE_RESTART_SCHEDULE], 0);
 }
 
@@ -235,7 +237,7 @@ static void
 pk_engine_notify_updates_changed_cb (PkNotify *notify, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	pk_debug ("emitting updates-changed");
+	egg_debug ("emitting updates-changed");
 	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0);
 }
 
@@ -262,11 +264,11 @@ pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	pk_debug ("GetTid method called");
+	egg_debug ("GetTid method called");
 	new_tid = pk_transaction_id_generate ();
 
 	ret = pk_transaction_list_create (engine->priv->transaction_list, new_tid);
-	pk_debug ("sending tid: '%s'", new_tid);
+	egg_debug ("sending tid: '%s'", new_tid);
 	*tid =  g_strdup (new_tid);
 	g_free (new_tid);
 
@@ -299,7 +301,7 @@ pk_engine_get_transaction_list (PkEngine *engine, gchar ***transaction_list, GEr
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	pk_debug ("GetTransactionList method called");
+	egg_debug ("GetTransactionList method called");
 	*transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 
 	return TRUE;
@@ -325,7 +327,7 @@ pk_engine_state_changed_cb (gpointer data)
 		return TRUE;
 	}
 
-	pk_debug ("unreffing updates cache as state may have changed");
+	egg_debug ("unreffing updates cache as state may have changed");
 	pk_cache_invalidate (engine->priv->cache);
 
 	pk_notify_updates_changed (engine->priv->notify);
@@ -359,7 +361,7 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 	}
 
 	/* don't bombard the user 10 seconds after resuming */
-	if (pk_strequal (reason, "resume")) {
+	if (egg_strequal (reason, "resume")) {
 		is_priority = FALSE;
 	}
 
@@ -429,7 +431,7 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, GE
 {
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	pk_debug ("GetBackendDetail method called");
+	egg_debug ("GetBackendDetail method called");
 	pk_backend_get_backend_detail (engine->priv->backend, name, author);
 	return TRUE;
 }
@@ -467,13 +469,13 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	 * give sufficient percentage updates to not be marked as idle */
 	size = pk_transaction_list_get_size (engine->priv->transaction_list);
 	if (size != 0) {
-		pk_debug ("engine idle zero as %i transactions in progress", size);
+		egg_debug ("engine idle zero as %i transactions in progress", size);
 		return 0;
 	}
 
 	/* have we been updated? */
 	if (engine->priv->restart_schedule) {
-		pk_debug ("need to restart daemon *NOW*");
+		egg_debug ("need to restart daemon *NOW*");
 		pk_notify_restart_schedule (engine->priv->notify);
 		return G_MAXUINT;
 	}
@@ -495,7 +497,7 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
 	/* can we exit straight away */
 	size = pk_transaction_list_get_size (engine->priv->transaction_list);
 	if (size == 0) {
-		pk_warning ("exit!!");
+		egg_warning ("exit!!");
 		exit (0);
 		return TRUE;
 	}
@@ -520,7 +522,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	pk_debug ("SetProxy method called: %s, %s", proxy_http, proxy_ftp);
+	egg_debug ("SetProxy method called: %s, %s", proxy_http, proxy_ftp);
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
@@ -601,7 +603,7 @@ static void
 pk_engine_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	pk_debug ("setting restart_schedule TRUE");
+	egg_debug ("setting restart_schedule TRUE");
 	engine->priv->restart_schedule = TRUE;
 }
 
@@ -614,7 +616,7 @@ pk_engine_network_state_changed_cb (PkNetwork *file_monitor, PkNetworkEnum state
 	const gchar *state_text;
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	state_text = pk_network_enum_to_text (state);
-	pk_debug ("emitting network-state-changed: %s", state_text);
+	egg_debug ("emitting network-state-changed: %s", state_text);
 	g_signal_emit (engine, signals [PK_ENGINE_NETWORK_STATE_CHANGED], 0, state_text);
 }
 
@@ -636,7 +638,7 @@ pk_engine_remove_contents (const gchar *directory)
 	/* try to open */
 	dir = g_dir_open (directory, 0, &error);
 	if (dir == NULL) {
-		pk_warning ("cannot open directory: %s", error->message);
+		egg_warning ("cannot open directory: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -646,17 +648,17 @@ pk_engine_remove_contents (const gchar *directory)
 		src = g_build_filename (directory, filename, NULL);
 		ret = g_file_test (src, G_FILE_TEST_IS_DIR);
 		if (ret) {
-			pk_debug ("directory %s found in %s, deleting", filename, directory);
+			egg_debug ("directory %s found in %s, deleting", filename, directory);
 			/* recurse, but should be only 1 level deep */
 			pk_engine_remove_contents (src);
 			retval = g_remove (src);
 			if (retval != 0)
-				pk_warning ("failed to delete %s", src);
+				egg_warning ("failed to delete %s", src);
 		} else {
-			pk_debug ("file found in %s, deleting", directory);
+			egg_debug ("file found in %s, deleting", directory);
 			retval = g_unlink (src);
 			if (retval != 0)
-				pk_warning ("failed to delete %s", src);
+				egg_warning ("failed to delete %s", src);
 		}
 		g_free (src);
 	}
@@ -686,7 +688,7 @@ pk_engine_init (PkEngine *engine)
 
 	/* clear the download cache */
 	filename = g_build_filename (LOCALSTATEDIR, "cache", "PackageKit", "downloads", NULL);
-	pk_debug ("clearing download cache at %s", filename);
+	egg_debug ("clearing download cache at %s", filename);
 	pk_engine_remove_contents (filename);
 	g_free (filename);
 
@@ -698,7 +700,7 @@ pk_engine_init (PkEngine *engine)
 	/* lock database */
 	ret = pk_backend_lock (engine->priv->backend);
 	if (!ret) {
-		pk_error ("could not lock backend, you need to restart the daemon");
+		egg_error ("could not lock backend, you need to restart the daemon");
 	}
 
 	/* we dont need this, just don't keep creating and destroying it */
@@ -727,7 +729,7 @@ pk_engine_init (PkEngine *engine)
 	/* get another connection */
 	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
 	if (connection == NULL) {
-		pk_error ("no connection");
+		egg_error ("no connection");
 	}
 
 	/* add the interface */
@@ -786,7 +788,7 @@ pk_engine_finalize (GObject *object)
 	/* unlock if we locked this */
 	ret = pk_backend_unlock (engine->priv->backend);
 	if (!ret) {
-		pk_warning ("couldn't unlock the backend");
+		egg_warning ("couldn't unlock the backend");
 	}
 
 	/* if we set an state changed notifier, clear */
