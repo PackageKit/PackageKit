@@ -159,6 +159,7 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED, "package-install-blocked"},
 	{PK_ERROR_ENUM_PACKAGE_CORRUPT,         "package-corrupt"},
 	{PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED, "all-packages-already-installed"},
+	{PK_ERROR_ENUM_FILE_NOT_FOUND,		"file-not-found"},
 	{0, NULL}
 };
 

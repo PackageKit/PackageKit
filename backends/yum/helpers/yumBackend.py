@@ -866,6 +866,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
+        # check that the files still exist
+        for inst_file in inst_files:
+            if not os.path.exists(inst_file):
+                self.error(ERROR_FILE_NOT_FOUND,'%s could not be found' % inst_file)
+                return
+
         # process these first
         tempdir = tempfile.mkdtemp()
         inst_packs = []
@@ -893,7 +899,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         to_remove = []
                     
-        # remove files of packages that alrady exist
+        # remove files of packages that already exist
         for inst_file in inst_files:
             try:
                 pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
