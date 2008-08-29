@@ -600,22 +600,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "Package %s isn't available" % name)
                 self.Finished(EXIT_FAILED)
                 return
-            #FIXME: should perhaps go to python-apt since we need this in
-            #       several applications
-            desc = pkg.description
-            # Skip the first line - it's a duplicate of the summary
-            i = desc.find('\n')
-            desc = desc[i+1:]
-            # do some regular expression magic on the description
-            # Add a newline before each bullet
-            p = re.compile(r'^(\s|\t)*(\*|0|-)',re.MULTILINE)
-            desc = p.sub(ur'\n\u2022', desc)
-            # replace all newlines by spaces
-            p = re.compile(r'\n', re.MULTILINE)
-            desc = p.sub(" ", desc)
-            # replace all multiple spaces by newlines
-            p = re.compile(r'\s\s+', re.MULTILINE)
-            desc = p.sub('\n', desc)
+            desc = self._get_package_description(pkg)
             #FIXME: We need more fine grained license information!
             candidate = pkg.candidateOrigin
             if candidate != None and  \
@@ -1723,6 +1708,41 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pklog.debug("Unkown package section %s of %s" % (pkg.section,
                                                              pkg.name))
             return GROUP_UNKNOWN
+
+    def _get_package_description(self, pkg):
+        """
+        Return the formated long description
+        """
+        if not pkg._lookupRecord():
+            return ""
+        # get the translated description
+        ver = pkg._depcache.GetCandidateVer(pkg._pkg)
+        desc_iter = ver.TranslatedDescription
+        pkg._records.Lookup(desc_iter.FileList.pop(0))
+        desc = ""
+        try:
+            s = unicode(pkg._records.LongDesc,"utf-8")
+        except UnicodeDecodeError,e:
+            s = _("Invalid unicode in description for '%s' (%s). "
+                  "Please report.") % (pkg.name,e)
+        lines = string.split(s, "\n")
+        for i in range(len(lines)):
+            # Skip the first line, since its a duplication of the summary
+            if i == 0: continue
+            line = lines[i].strip()
+            # Replace all empty lines by line breaks
+            if line == ".":
+                desc += "\n"
+                continue
+            # Use dots for lists
+            p = re.compile(r'^(\s|\t)*(\*|0|-)',re.MULTILINE)
+            line = p.sub(ur'\n\u2022', line)
+            # Use line breaks only for abstracts
+            if desc == "" or desc[-1] == "\n":
+                desc += line
+            else:
+                desc += " " + line
+        return desc
 
 
 def sigquit(signum, frame):
