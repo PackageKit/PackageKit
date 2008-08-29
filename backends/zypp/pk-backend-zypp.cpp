@@ -23,7 +23,7 @@
 #include <glib.h>
 #include <pk-backend.h>
 #include <unistd.h>
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <string>
 #include <set>
 #include <glib/gi18n.h>
@@ -92,7 +92,7 @@ backend_initialize (PkBackend *backend)
 {
 	zypp_logging ();
 	get_zypp ();
-	pk_debug ("zypp_backend_initialize");
+	egg_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
 	_eventDirectors [backend] = eventDirector;
 	std::vector<std::string> *signature = new std::vector<std::string> ();
@@ -107,7 +107,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	pk_debug ("zypp_backend_destroy");
+	egg_debug ("zypp_backend_destroy");
 	EventDirector *eventDirector = _eventDirectors [backend];
 	if (eventDirector != NULL) {
 		delete (eventDirector);
@@ -191,7 +191,7 @@ backend_get_requires_thread (PkBackend *backend)
 		if (solver.resolvePool () == FALSE) {
 			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
 			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
-				pk_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
+				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
 			pk_package_id_free (pi);
@@ -404,7 +404,7 @@ backend_get_depends_thread (PkBackend *backend)
 
 			if (package_name == NULL || *package_name == '\0')
 			{
-				pk_debug ("Skipping emitting a non valid package");
+				egg_debug ("Skipping emitting a non valid package");
 				g_free (package_name);
 				continue;
 			}
@@ -601,7 +601,7 @@ check_for_self_update (PkBackend *backend, std::set<zypp::PoolItem> *candidates)
 		zypp::ResObject::constPtr res = ci->resolvable();
 		if (zypp::isKind<zypp::Patch>(res)) {
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
-			//pk_debug ("restart_suggested is %d",(int)patch->restartSuggested());
+			//egg_debug ("restart_suggested is %d",(int)patch->restartSuggested());
 			if (patch->restartSuggested ()) {
 				if (!strcmp (PACKAGEKIT_RPM_NAME, res->satSolvable ().name ().c_str ()) ||
 						!strcmp (GNOME_PACKAGKEKIT_RPM_NAME, res->satSolvable ().name ().c_str ())) {
@@ -1550,7 +1550,7 @@ backend_update_packages_thread (PkBackend *backend)
 	zypp_get_patches (restart); // make shure _updating_self is set
 
 	if (_updating_self) {
-		pk_debug ("updating self and setting restart");
+		egg_debug ("updating self and setting restart");
 		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, "Package Management System updated - restart needed");
 		_updating_self = FALSE;
 	}
@@ -1709,7 +1709,7 @@ backend_what_provides_thread (PkBackend *backend)
 		if (solver.resolvePool () == FALSE) {
 			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
 			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
-				pk_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
+				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
 			pk_backend_finished (backend);

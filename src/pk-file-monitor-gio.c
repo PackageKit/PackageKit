@@ -37,7 +37,7 @@
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 #include <pk-common.h>
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include "pk-conf.h"
 #include "pk-file-monitor.h"
 
@@ -91,7 +91,7 @@ static void
 pk_file_monitor_monitor_changed (GFileMonitor *monitor, GFile *file, GFile *other_file,
 			    GFileMonitorEvent event_type, PkFileMonitor *file_monitor)
 {
-	pk_debug ("emit: file-changed");
+	egg_debug ("emit: file-changed");
 	g_signal_emit (file_monitor, signals [PK_FILE_MONITOR_CHANGED], 0);
 }
 
@@ -104,7 +104,7 @@ pk_file_monitor_set_file (PkFileMonitor	*file_monitor, const gchar *filename)
 	GError *error = NULL;
 
 	if (file_monitor->priv->file != NULL) {
-		pk_warning ("already set file monitor, so can't set %s", filename);
+		egg_warning ("already set file monitor, so can't set %s", filename);
 		return FALSE;
 	}
 
@@ -114,13 +114,13 @@ pk_file_monitor_set_file (PkFileMonitor	*file_monitor, const gchar *filename)
 	/* watch this */
 	file_monitor->priv->monitor = g_file_monitor_file (file_monitor->priv->file, G_FILE_MONITOR_NONE, NULL, &error);
 	if (file_monitor->priv->monitor == NULL) {
-		pk_warning ("failed to setup watch: %s", error->message);
+		egg_warning ("failed to setup watch: %s", error->message);
 		g_error_free (error);
 		return FALSE;
 	}
 
 	/* we should get notified of changes */
-	pk_debug ("watching for changes: %s", filename);
+	egg_debug ("watching for changes: %s", filename);
 	g_file_monitor_set_rate_limit (file_monitor->priv->monitor, PK_FILE_MONITOR_RATE_LIMIT);
 	g_signal_connect (file_monitor->priv->monitor, "changed",
 			  G_CALLBACK (pk_file_monitor_monitor_changed), file_monitor);

@@ -44,8 +44,10 @@
 
 #include <glib/gi18n.h>
 
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
-#include "pk-debug.h"
 #include "pk-network-unix.h"
 #include "pk-marshal.h"
 
@@ -100,7 +102,7 @@ pk_network_unix_get_network_state (PkNetworkUnix *network_unix)
 	/* hack, because netlink is teh suck */
 	ret = g_file_get_contents (PK_NETWORK_PROC_ROUTE, &contents, NULL, &error);
 	if (!ret) {
-		pk_warning ("could not open %s: %s", PK_NETWORK_PROC_ROUTE, error->message);
+		egg_warning ("could not open %s: %s", PK_NETWORK_PROC_ROUTE, error->message);
 		g_error_free (error);
 		/* no idea whatsoever! */
 		return PK_NETWORK_ENUM_ONLINE;
@@ -108,57 +110,57 @@ pk_network_unix_get_network_state (PkNetworkUnix *network_unix)
 
 	/* something insane */
 	if (contents == NULL) {
-		pk_warning ("insane contents of %s", PK_NETWORK_PROC_ROUTE);
+		egg_warning ("insane contents of %s", PK_NETWORK_PROC_ROUTE);
 		return PK_NETWORK_ENUM_ONLINE;
 	}
 
 	/* one line per interface */
 	lines = g_strsplit (contents, "\n", 0);
 	if (lines == NULL) {
-		pk_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
+		egg_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
 		return PK_NETWORK_ENUM_ONLINE;
 	}
 
 	number_lines = g_strv_length (lines);
 	for (i=0; i<number_lines; i++) {
 		/* empty line */
-		if (pk_strzero (lines[i])) {
+		if (egg_strzero (lines[i])) {
 			continue;
 		}
 
 		/* tab delimited */
 		sections = g_strsplit (lines[i], "\t", 0);
 		if (sections == NULL) {
-			pk_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
+			egg_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
 			continue;
 		}
 
 		/* is header? */
-		if (pk_strequal (sections[0], "Iface")) {
+		if (egg_strequal (sections[0], "Iface")) {
 			continue;
 		}
 
 		/* is loopback? */
-		if (pk_strequal (sections[0], "lo")) {
+		if (egg_strequal (sections[0], "lo")) {
 			continue;
 		}
 
 		/* is correct parameters? */
 		number_sections = g_strv_length (sections);
 		if (number_sections != 11) {
-			pk_warning ("invalid line '%s' (%i)", lines[i], number_sections);
+			egg_warning ("invalid line '%s' (%i)", lines[i], number_sections);
 			continue;
 		}
 
 		/* is destination zero (default route)? */
-		if (pk_strequal (sections[1], "00000000")) {
-			pk_debug ("destination %s is valid", sections[0]);
+		if (egg_strequal (sections[1], "00000000")) {
+			egg_debug ("destination %s is valid", sections[0]);
 			online = TRUE;
 		}
 
 		/* is gateway nonzero? */
-		if (!pk_strequal (sections[2], "00000000")) {
-			pk_debug ("interface %s is valid", sections[0]);
+		if (!egg_strequal (sections[2], "00000000")) {
+			egg_debug ("interface %s is valid", sections[0]);
 			online = TRUE;
 		}
 		g_strfreev (sections);

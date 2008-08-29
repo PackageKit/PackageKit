@@ -37,7 +37,9 @@
 #include <sqlite3.h>
 #include <pk-common.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-transaction-db.h"
 #include "pk-marshal.h"
 
@@ -125,10 +127,10 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "succeeded")) {
-			ret = pk_strtouint (value, &temp);
+		if (egg_strequal (col, "succeeded")) {
+			ret = egg_strtouint (value, &temp);
 			if (!ret) {
-				pk_warning ("failed to parse succeeded: %s", value);
+				egg_warning ("failed to parse succeeded: %s", value);
 			}
 			if (temp == 1) {
 				item.succeeded = TRUE;
@@ -136,37 +138,37 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 				item.succeeded = FALSE;
 			}
 			if (item.succeeded > 1) {
-				pk_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
+				egg_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
 				item.succeeded = 1;
 			}
-		} else if (pk_strequal (col, "role")) {
+		} else if (egg_strequal (col, "role")) {
 			if (value != NULL) {
 				item.role = pk_role_enum_from_text (value);
 			}
-		} else if (pk_strequal (col, "transaction_id")) {
+		} else if (egg_strequal (col, "transaction_id")) {
 			if (value != NULL) {
 				item.tid = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "timespec")) {
+		} else if (egg_strequal (col, "timespec")) {
 			if (value != NULL) {
 				item.timespec = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "data")) {
+		} else if (egg_strequal (col, "data")) {
 			if (value != NULL) {
 				item.data = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "duration")) {
-			ret = pk_strtouint (value, &item.duration);
+		} else if (egg_strequal (col, "duration")) {
+			ret = egg_strtouint (value, &item.duration);
 			if (!ret) {
-				pk_warning ("failed to parse duration: %s", value);
+				egg_warning ("failed to parse duration: %s", value);
 				item.duration = 0;
 			}
 			if (item.duration > 60*60*12) {
-				pk_warning ("insane duration: %i", item.duration);
+				egg_warning ("insane duration: %i", item.duration);
 				item.duration = 0;
 			}
 		} else {
-			pk_warning ("%s = %s\n", col, value);
+			egg_warning ("%s = %s\n", col, value);
 		}
 	}
 
@@ -193,7 +195,7 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 
 	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -214,10 +216,10 @@ pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "timespec")) {
+		if (egg_strequal (col, "timespec")) {
 			*timespec = g_strdup (value);
 		} else {
-			pk_warning ("%s = %s\n", col, value);
+			egg_warning ("%s = %s\n", col, value);
 		}
 	}
 	return 0;
@@ -240,24 +242,24 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 	g_return_val_if_fail (tdb->priv->db != NULL, 0);
 
 	role_text = pk_role_enum_to_text (role);
-	pk_debug ("get_time_since_action=%s", role_text);
+	egg_debug ("get_time_since_action=%s", role_text);
 
 	statement = g_strdup_printf ("SELECT timespec FROM last_action WHERE role = '%s'", role_text);
 	rc = sqlite3_exec (tdb->priv->db, statement, pk_time_action_sqlite_callback, &timespec, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return 0;
 	}
 	if (timespec == NULL) {
-		pk_warning ("no response, assume zero");
+		egg_warning ("no response, assume zero");
 		return 0;
 	}
 
 	/* work out the difference */
 	time = pk_iso8601_difference (timespec);
-	pk_debug ("timespec=%s, difference=%i", timespec, time);
+	egg_debug ("timespec=%s, difference=%i", timespec, time);
 	g_free (timespec);
 
 	return time;
@@ -280,7 +282,7 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 
 	timespec = pk_iso8601_present ();
 	role_text = pk_role_enum_to_text (role);
-	pk_debug ("reset action time=%s to %s", role_text, timespec);
+	egg_debug ("reset action time=%s to %s", role_text, timespec);
 
 	statement = g_strdup_printf ("UPDATE last_action SET timespec = '%s' WHERE role = '%s'", timespec, role_text);
 	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
@@ -289,7 +291,7 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 
 	/* did we fail? */
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -331,7 +333,7 @@ pk_transaction_db_add (PkTransactionDb *tdb, const gchar *tid)
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
-	pk_debug ("adding transaction %s", tid);
+	egg_debug ("adding transaction %s", tid);
 
 	timespec = pk_iso8601_present ();
 	statement = g_strdup_printf ("INSERT INTO transactions (transaction_id, timespec) VALUES ('%s', '%s')", tid, timespec);
@@ -492,10 +494,10 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	/* if the database file was not installed (or was nuked) recreate it */
 	create_file = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
 
-	pk_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
+	egg_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
 	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
 	if (rc) {
-		pk_error ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
+		egg_error ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
 		sqlite3_close (tdb->priv->db);
 		return;
 	} else {

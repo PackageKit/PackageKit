@@ -1,0 +1,1 @@
+../libpackagekit/egg-string.h

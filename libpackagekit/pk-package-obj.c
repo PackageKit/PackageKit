@@ -42,7 +42,9 @@
 
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-package-obj.h"
 
@@ -142,18 +144,18 @@ pk_package_obj_from_string (const gchar *text)
 
 	sections = g_strsplit (text, "\t", 3);
 	if (sections == NULL) {
-		pk_warning ("invalid input: %s", text);
+		egg_warning ("invalid input: %s", text);
 		goto out;
 	}
 
 	info = pk_info_enum_from_text (sections[0]);
 	if (info == PK_INFO_ENUM_UNKNOWN) {
-		pk_warning ("invalid info for string %s", text);
+		egg_warning ("invalid info for string %s", text);
 		goto out;
 	}
 	id = pk_package_id_new_from_string (sections[1]);
 	if (id == NULL) {
-		pk_warning ("invalid package_id for string %s", text);
+		egg_warning ("invalid package_id for string %s", text);
 		goto out;
 	}
 	obj = pk_package_obj_new (info, id, sections[2]);
@@ -248,7 +250,7 @@ libst_package_obj (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check to string");
 	text = pk_package_obj_to_string (obj1);
-	if (pk_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!")) {
+	if (egg_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "got %s", text);
@@ -259,7 +261,7 @@ libst_package_obj (LibSelfTest *test)
 	obj3 = pk_package_obj_from_string (text);
 	if (obj3->info == PK_INFO_ENUM_INSTALLED &&
 	    pk_package_id_equal (obj3->id, obj1->id) &&
-	    pk_strequal (obj3->summary, "GNOME!")) {
+	    egg_strequal (obj3->summary, "GNOME!")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "got incorrect data %s,%s,%s",

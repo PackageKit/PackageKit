@@ -31,7 +31,6 @@
 #include <glib/gstdio.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
 #include <pk-package-ids.h>
 #include <pk-client.h>
 #include <pk-control.h>
@@ -44,6 +43,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
+
+#include "egg-debug.h"
+#include "egg-string.h"
 
 #include "pk-tools-common.h"
 
@@ -64,7 +66,7 @@ pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gch
 
 	/* check for NULL values */
 	if (package == NULL) {
-		pk_warning ("Cannot resolve the package: invalid package");
+		egg_warning ("Cannot resolve the package: invalid package");
 		return NULL;
 	}
 
@@ -76,7 +78,7 @@ pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gch
 
 	ret = pk_client_reset (client, error);
 	if (ret == FALSE) {
-		pk_warning ("failed to reset client task");
+		egg_warning ("failed to reset client task");
 		return NULL;
 	}
 
@@ -85,7 +87,7 @@ pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gch
 	ret = pk_client_resolve (client, filter, packages, error);
 	g_strfreev (packages);
 	if (ret == FALSE) {
-		pk_warning ("Resolve failed");
+		egg_warning ("Resolve failed");
 		return NULL;
 	}
 
@@ -98,12 +100,12 @@ pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gch
 	if (length == 0) {
 		ret = pk_client_reset (client, error);
 		if (ret == FALSE) {
-			pk_warning ("failed to reset client task");
+			egg_warning ("failed to reset client task");
 			return NULL;
 		}
 		ret = pk_client_what_provides (client, filter, PK_PROVIDES_ENUM_ANY, package, error);
 		if (ret == FALSE) {
-			pk_warning ("WhatProvides is not supported in this backend");
+			egg_warning ("WhatProvides is not supported in this backend");
 			return NULL;
 		}
 	}
@@ -112,7 +114,7 @@ pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gch
 	list = pk_client_get_package_list (client);
 	length = pk_package_list_get_size (list);
 	if (length == 0) {
-		pk_warning (_("Could not find a package match"));
+		egg_warning (_("Could not find a package match"));
 		return NULL;
 	}
 
@@ -146,21 +148,21 @@ pk_generate_pack_download_only (PkClient *client, gchar **package_ids, const gch
 
 	/* check for NULL values */
 	if (package_ids == NULL || directory == NULL) {
-		pk_warning (_("failed to download: invalid package_id and/or directory"));
+		egg_warning (_("failed to download: invalid package_id and/or directory"));
 		ret = FALSE;
 		goto out;
 	}
 
-	pk_debug ("download+ %s %s", package_ids[0], directory);
+	egg_debug ("download+ %s %s", package_ids[0], directory);
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		pk_warning ("failed to download: %s", error->message);
+		egg_warning ("failed to download: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
 	ret = pk_client_download_packages (client, package_ids, directory, &error);
 	if (!ret) {
-		pk_warning ("failed to download: %s", error->message);
+		egg_warning ("failed to download: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -185,7 +187,7 @@ pk_generate_pack_exclude_packages (PkPackageList *list, const gchar *package_lis
 
 	/* check for NULL values */
 	if (package_list == NULL) {
-		pk_warning ("Cannot find the list of packages to be excluded");
+		egg_warning ("Cannot find the list of packages to be excluded");
 		ret = FALSE;
 		goto out;
 	}
@@ -202,7 +204,7 @@ pk_generate_pack_exclude_packages (PkPackageList *list, const gchar *package_lis
 		/* will just ignore if the obj is not there */
 		found = pk_package_list_remove_obj (list, obj);
 		if (found)
-			pk_debug ("removed %s", obj->id->name);
+			egg_debug ("removed %s", obj->id->name);
 	}
 
 out:
@@ -227,7 +229,7 @@ pk_generate_pack_set_metadata (const gchar *full_path)
 
 	/* check for NULL values */
 	if (full_path == NULL) {
-		pk_warning (_("Could not find a valid metadata file"));
+		egg_warning (_("Could not find a valid metadata file"));
 		goto out;
 	}
 
@@ -245,7 +247,7 @@ pk_generate_pack_set_metadata (const gchar *full_path)
 	/* convert to text */
 	data = g_key_file_to_data (file, NULL, &error);
 	if (data == NULL) {
-		pk_warning ("failed to convert to text: %s", error->message);
+		egg_warning ("failed to convert to text: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -253,7 +255,7 @@ pk_generate_pack_set_metadata (const gchar *full_path)
 	/* save contents */
 	ret = g_file_set_contents (full_path, data, -1, &error);
 	if (!ret) {
-		pk_warning ("failed to save file: %s", error->message);
+		egg_warning ("failed to save file: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -289,7 +291,7 @@ pk_generate_pack_archive_add_file (struct archive *arch, const gchar *filename, 
 		*error = g_error_new (1, 0, "file not found %s", filename);
 		goto out;
 	}
-	pk_debug ("stat(%s), size=%lu bytes\n", filename, st.st_size);
+	egg_debug ("stat(%s), size=%lu bytes\n", filename, st.st_size);
 
 	/* create new entry */
 	entry = archive_entry_new ();
@@ -320,7 +322,7 @@ pk_generate_pack_archive_add_file (struct archive *arch, const gchar *filename, 
 	while (len > 0) {
 		wrote = archive_write_data (arch, buff, len);
 		if (wrote != len)
-			pk_warning("wrote %i instead of %i\n", wrote, len);
+			egg_warning("wrote %i instead of %i\n", wrote, len);
 		len = read (fd, buff, sizeof (buff));
 	}
 	ret = TRUE;
@@ -414,14 +416,14 @@ pk_generate_pack_scan_dir (const gchar *directory)
 
 	/* check for NULL values */
 	if (directory == NULL) {
-		pk_warning ("failed to get directory");
+		egg_warning ("failed to get directory");
 		goto out;
 	}
 
 	/* try and open the directory */
 	dir = g_dir_open (directory, 0, NULL);
 	if (dir == NULL) {
-		pk_warning ("failed to get directory for %s", directory);
+		egg_warning ("failed to get directory for %s", directory);
 		goto out;
 	}
 
@@ -463,7 +465,7 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	/* resolve package */
 	package_id = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, &error_local);
 	if (package_id == NULL) {
-		pk_warning ("failed to resolve: %s", error_local->message);
+		egg_warning ("failed to resolve: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -472,7 +474,7 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	package_ids = pk_package_ids_from_id (package_id);
 	ret = pk_generate_pack_download_only (client, package_ids, directory);
 	if (!ret) {
-		pk_warning ("failed to download main package: %s", error_local->message);
+		egg_warning ("failed to download main package: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -480,15 +482,15 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	/* get depends */
 	ret = pk_client_reset (client, &error_local);
 	if (!ret) {
-		pk_warning ("failed to reset: %s", error_local->message);
+		egg_warning ("failed to reset: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
 
-	pk_debug ("Getting depends for %s", package_id);
+	egg_debug ("Getting depends for %s", package_id);
 	ret = pk_client_get_depends (client, PK_FILTER_ENUM_NONE, package_ids, TRUE, &error_local);
 	if (!ret) {
-		pk_warning ("failed to get depends: %s", error_local->message);
+		egg_warning ("failed to get depends: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -500,7 +502,7 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	/* remove some deps */
 	ret = pk_generate_pack_exclude_packages (list, package_list);
 	if (!ret) {
-		pk_warning ("failed to exclude packages");
+		egg_warning ("failed to exclude packages");
 		goto out;
 	}
 
@@ -533,21 +535,21 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 
 	/* failed to get deps */
 	if (!ret) {
-		pk_warning ("failed to download deps of package: %s", package_id);
+		egg_warning ("failed to download deps of package: %s", package_id);
 		goto out;
 	}
 
 	/* find packages that were downloaded */
 	file_array = pk_generate_pack_scan_dir (directory);
 	if (file_array == NULL) {
-		pk_warning ("failed to scan directory: %s", directory);
+		egg_warning ("failed to scan directory: %s", directory);
 		goto out;
 	}
 
 	/* generate pack file */
 	ret = pk_generate_pack_create (pack_filename, file_array, &error_local);
 	if (!ret) {
-		pk_warning ("failed to create archive: %s", error_local->message);
+		egg_warning ("failed to create archive: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -609,7 +611,7 @@ libst_generate_pack (LibSelfTest *test)
 	libst_title (test, "test perhaps resolve gitk");
 	retval = pk_client_reset(client, &error);
 	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, "gitk;1.5.5.1-1.fc9;i386;installed", &error);
-	if (file != NULL && pk_strequal (file, "gitk;1.5.5.1-1.fc9;i386;installed"))
+	if (file != NULL && egg_strequal (file, "gitk;1.5.5.1-1.fc9;i386;installed"))
 		libst_success (test, NULL);
 	else
 		libst_failed (test, "got: %s", file);

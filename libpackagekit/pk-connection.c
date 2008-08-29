@@ -41,9 +41,9 @@
 #endif /* HAVE_UNISTD_H */
 
 #include <glib/gi18n.h>
-#include <pk-dbus-monitor.h>
+#include <egg-dbus-monitor.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-connection.h"
 
@@ -56,7 +56,7 @@
  **/
 struct _PkConnectionPrivate
 {
-	PkDbusMonitor			*monitor;
+	EggDbusMonitor			*monitor;
 };
 
 enum {
@@ -78,7 +78,7 @@ G_DEFINE_TYPE (PkConnection, pk_connection, G_TYPE_OBJECT)
 gboolean
 pk_connection_valid (PkConnection *connection)
 {
-	return pk_dbus_monitor_is_connected (connection->priv->monitor);
+	return egg_dbus_monitor_is_connected (connection->priv->monitor);
 }
 
 /**
@@ -124,9 +124,9 @@ pk_connection_class_init (PkConnectionClass *klass)
  * pk_connection_connection_changed_cb:
  **/
 static void
-pk_connection_connection_changed_cb (PkDbusMonitor *pk_dbus_monitor, gboolean connected, PkConnection *connection)
+pk_connection_connection_changed_cb (EggDbusMonitor *egg_dbus_monitor, gboolean connected, PkConnection *connection)
 {
-	pk_debug ("emit connection-changed: %i", connected);
+	egg_debug ("emit connection-changed: %i", connected);
 	g_signal_emit (connection , signals [CONNECTION_CHANGED], 0, connected);
 }
 
@@ -137,12 +137,12 @@ static void
 pk_connection_init (PkConnection *connection)
 {
 	connection->priv = PK_CONNECTION_GET_PRIVATE (connection);
-	connection->priv->monitor = pk_dbus_monitor_new ();
+	connection->priv->monitor = egg_dbus_monitor_new ();
 	g_signal_connect (connection->priv->monitor, "connection-changed",
 			  G_CALLBACK (pk_connection_connection_changed_cb), connection);
 
 	/* hardcode to PackageKit */
-	pk_dbus_monitor_assign (connection->priv->monitor, PK_DBUS_MONITOR_SYSTEM, PK_DBUS_SERVICE);
+	egg_dbus_monitor_assign (connection->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, PK_DBUS_SERVICE);
 }
 
 /**
