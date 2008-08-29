@@ -87,6 +87,14 @@ class PackageKitCache(apt.cache.Cache):
     Enhanced version of the apt.cache.Cache class which supports some features
     which can only be found in the consolidate branch of python-apt
     """
+    def __iter__(self):
+        """
+        Let the cache behave like a sorted list of packages
+        """
+        for pkgname in sorted(self._dict.keys()):
+            yield self._dict[pkgname]
+        raise StopIteration
+
     def isVirtualPackage(self, name):
         """ 
         Return True if the package of the given name is a virtual package
