@@ -10,6 +10,7 @@ libpk_backend_apt_la_CFLAGS = $(PK_PLUGIN_CFLAGS)
 dbusinstancedir = $(LIBEXECDIR)
 dbusinstance_DATA =                                     \
         aptDBUSBackend.py                               \
+        debfile.py					\
         $(NULL)
 
 EXTRA_DIST =                                            \
