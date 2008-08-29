@@ -23,12 +23,9 @@
 import warnings
 warnings.filterwarnings("ignore", "apt API not stable yet", FutureWarning)
 import apt_inst, apt_pkg
-import apt
 import sys
 import os
 from gettext import gettext as _
-from apt.cache import Cache
-from aptDBUSBackend import DpkgInstallProgress
 
 # Constants for comparing the local package file with the version in the cache
 (VERSION_NONE,
@@ -214,7 +211,7 @@ class DebPackage(object):
         WARNING: This method will is deprecated. Please use the 
         attribute DebPackage.depends instead.
         """
-        return self.depends
+        return self.conflicts
 
     def conflicts(self):
         """
@@ -507,6 +504,8 @@ class DscSrcPackage(DebPackage):
         return self._satisfyDepends(self.depends)
 
 if __name__ == "__main__":
+    from cache import Cache
+    from progress import DpkgInstallProgress
 
     cache = Cache()
 
