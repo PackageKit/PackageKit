@@ -1646,7 +1646,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         Return the packagekit group corresponding to the package's section
         """
-        section = pkg.section
+        section = pkg.section.split("/")[-1]
         if section == "admin":
             return GROUP_ADMIN_TOOLS
         elif section == "base":
@@ -1665,7 +1665,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return GROUP_SYSTEM
         elif section == "games":
             return GROUP_GAMES
-        elif section == "GNOME":
+        elif section == "gnome":
             return GROUP_DESKTOP_GNOME
         elif section == "graphics":
             return GROUP_GRAPHICS
@@ -1677,7 +1677,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return GROUP_DESKTOP_KDE
         elif section == "libdevel":
             return GROUP_PROGRAMMING
-        elif section == "lib":
+        elif section == "libs":
             return GROUP_SYSTEM
         elif section == "mail":
             return GROUP_INTERNET
@@ -1720,6 +1720,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         elif section == "translations":
             return GROUP_LOCALIZATION
         else:
+            pklog.debug("Unkown package section %s of %s" % (pkg.section,
+                                                             pkg.name))
             return GROUP_UNKNOWN
 
 
