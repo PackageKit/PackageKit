@@ -779,7 +779,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.error(ERROR_REPO_CONFIGURATION_ERROR,str(e))
         except yum.Errors.YumBaseError,e:
-            self.error(ERROR_UNKNOWN,str(e))
+            self.error(ERROR_UNKNOWN,"cannot refresh cache: %s" % str(e))
 
         # update the comps groups too
         self.comps.refresh()
@@ -1089,6 +1089,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 message = self._format_msgs(ye.value)
                 if message.find ("conflicts with file") != -1:
                     self.error(ERROR_FILE_CONFLICTS,message)
+                if message.find ("rpm_check_debug vs depsolve") != -1:
+                    self.error(ERROR_PACKAGE_CONFLICTS,message)
                 else:
                     self.error(ERROR_TRANSACTION_ERROR,message)
 
@@ -1397,7 +1399,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             try:
                 self.yumbase.getKeyForPackage(pkg,askcb = lambda x,y,z: True)
             except yum.Errors.YumBaseError,e:
-                self.error(ERROR_UNKNOWN,str(e))
+                self.error(ERROR_UNKNOWN,"cannot install signature: %s" % str(e))
             except:
                 self.error(ERROR_GPG_FAILURE,"Error importing GPG Key for %s" % pkg)
 
