@@ -81,24 +81,12 @@ os.putenv("APT_LISTCHANGES_FRONTEND", "none")
 gobject.threads_init()
 dbus.glib.threads_init()
 
-def debug_exception(type, value, tb):
-    """
-    Provides an interactive debugging session on unhandled exceptions
-    See http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/65287
-    """
-    if hasattr(sys, 'ps1') or not sys.stderr.isatty() or \
-       not sys.stdin.isatty() or not sys.stdout.isatty() or type==SyntaxError:
-        # Calls the default handler in interactive mode, if output is·
-        # redirected or on syntax errors
-        sys.__excepthook__(type, value, tb)
-    else:
-       import traceback, pdb
-       traceback.print_exception(type, value, tb)
-       print
-       pdb.pm()
-
 
 class PackageKitCache(apt.cache.Cache):
+    """
+    Enhanced version of the apt.cache.Cache class which supports some features
+    which can only be found in the consolidate branch of python-apt
+    """
     def isVirtualPackage(self, name):
         """ 
         Return True if the package of the given name is a virtual package
@@ -151,7 +139,7 @@ class PackageKitCache(apt.cache.Cache):
 
 class DpkgInstallProgress(apt.progress.InstallProgress):
     """
-    Progress handler for a local Debian package installation
+    Class to initiate and monitor installation of local package files with dpkg
     """
     def run(self, filename):
         """
@@ -270,6 +258,8 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         #FIXME: use the Message method to notify the user
         self._backend.error(ERROR_UNKNOWN,
                             "Medium change needed")
+
+
 class PackageKitInstallProgress(apt.progress.InstallProgress):
     '''
     Handle the installation and removal process. Bits taken from
@@ -303,7 +293,6 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         return pid
 
     def updateInterface(self):
-        #pklog.debug("Updating interface")
         apt.progress.InstallProgress.updateInterface(self)
         try:
             pklog.debug("%s" % os.read(self.master_fd, 512))
@@ -311,7 +300,8 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
             pklog.debug("ioerror: %s" % e)
         # we timed out, send ctrl-c
         if self.last_activity + self.timeout < time.time():
-            pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
+            pklog.critical("no activity for %s time sending ctrl-c" \
+                           % self.timeout)
             os.write(self.master_fd, chr(3))
 
     def conffile(self, current, new):
@@ -319,36 +309,36 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         i = os.write(self.master_fd, "n\n")
         pklog.debug("wrote n, send %i bytes" % i)
         self.conffile_prompts.add(new)
-    
+
     def finishUpdate(self):
         pklog.debug("finishUpdate()")
         if self.conffile_prompts:
-            self._backend.Message(MESSAGE_CONFIG_FILES_CHANGED, "The following conffile prompts were found and need investiagtion: %s" % "\n".join(self.conffile_prompts))
+            self._backend.Message(MESSAGE_CONFIG_FILES_CHANGED, 
+                                  "The following conffile prompts were found "
+                                  "and need investiagtion: %s" % \
+                                  "\n".join(self.conffile_prompts))
 
 
 class PackageKitDpkgInstallProgress(DpkgInstallProgress,
                                     PackageKitInstallProgress):
+    """
+    Class to integrate the progress of core dpkg operations into PackageKit
+    """
     def run(self, filename):
         return DpkgInstallProgress.run(self, filename)
 
     def updateInterface(self):
-        #pklog.debug("Updating interface")
         DpkgInstallProgress.updateInterface(self)
-       # pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
-       # os.write(self.master_fd, 3)
         try:
             pklog.debug("%s" % os.read(self.master_fd, 512))
         except Exception, e:
             pklog.debug("ioerror: %s" % e)
         # we timed out, send ctrl-c
         if self.last_activity + self.timeout < time.time():
-            pklog.critical("no activity for %s time sending ctrl-c" % self.timeout)
+            pklog.critical("no activity for %s time sending "
+                           "ctrl-c" % self.timeout)
             os.write(self.master_fd, chr(3))
 
-
-def sigquit(signum, frame):
-    pklog.error("Was killed")
-    sys.exit(1)
 
 class PackageKitAptBackend(PackageKitBaseBackend):
     '''
@@ -1724,6 +1714,27 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             return GROUP_UNKNOWN
 
+
+def sigquit(signum, frame):
+    pklog.error("Was killed")
+    sys.exit(1)
+
+def debug_exception(type, value, tb):
+    """
+    Provides an interactive debugging session on unhandled exceptions
+    See http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/65287
+    """
+    if hasattr(sys, 'ps1') or not sys.stderr.isatty() or \
+       not sys.stdin.isatty() or not sys.stdout.isatty() or type==SyntaxError:
+        # Calls the default handler in interactive mode, if output is·
+        # redirected or on syntax errors
+        sys.__excepthook__(type, value, tb)
+    else:
+       import traceback, pdb
+       traceback.print_exception(type, value, tb)
+       print
+       pdb.pm()
+
 def takeover():
     """
     Exit the currently running backend
@@ -1787,4 +1798,3 @@ if __name__ == '__main__':
     main()
 
 # vim: ts=4 et sts=4
-
