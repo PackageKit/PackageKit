@@ -1062,6 +1062,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
              msgs = msgs.split('\n')
         text = ";".join(msgs)
         text = self._truncate(text, 1024);
+        text = text.replace(";Please report this error in bugzilla","")
         text = text.replace("Missing Dependency: ","")
         text = text.replace(" (installed)","")
         return text
