@@ -177,6 +177,15 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 	pk_backend_dbus_get_files (dbus, package_ids);
 }
 
+/**
+ * backend_get_distro_upgrades:
+ *  */
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+	pk_backend_dbus_get_distro_upgrades (dbus);
+}
+
 
 /**
  * backend_get_details:
@@ -308,7 +317,7 @@ PK_BACKEND_OPTIONS (
 	backend_download_packages,		/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
-	NULL,					/* get_distro_upgrades */
+	backend_get_distro_upgrades,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,					/* get_repo_list */
