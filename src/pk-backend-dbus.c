@@ -149,6 +149,22 @@ pk_backend_dbus_details_cb (DBusGProxy *proxy, const gchar *package_id,
 }
 
 /**
+ * pk_backend_dbus_distro_upgrade_cb:
+ **/
+static void
+pk_backend_dbus_distro_upgrade_cb (DBusGProxy *proxy,
+			           const gchar *type,
+				   const gchar *name,
+				   const gchar *summary,
+				   PkBackendDbus *backend_dbus)
+{
+	egg_debug ("got signal");
+	pk_backend_distro_upgrade (backend_dbus->priv->backend,
+			           pk_distro_upgrade_enum_from_text (type),
+			           name, summary);
+}
+
+/**
  * pk_backend_dbus_files_cb:
  **/
 static void
@@ -343,6 +359,8 @@ pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
 					G_CALLBACK (pk_backend_dbus_repo_signature_required_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "EulaRequired",
 					G_CALLBACK (pk_backend_dbus_eula_required_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "DistroUpgrade",
+					G_CALLBACK (pk_backend_dbus_distro_upgrade_cb), backend_dbus);
 	return TRUE;
 }
 
@@ -501,6 +519,9 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	dbus_g_proxy_add_signal (proxy, "EulaRequired",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "DistroUpgrade",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_INVALID);
 
 	/* add callbacks */
 	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
@@ -533,6 +554,8 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				     G_CALLBACK (pk_backend_dbus_repo_signature_required_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "EulaRequired",
 				     G_CALLBACK (pk_backend_dbus_eula_required_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "DistroUpgrade",
+				     G_CALLBACK (pk_backend_dbus_distro_upgrade_cb), backend_dbus, NULL);
 
 	backend_dbus->priv->proxy = proxy;
 
@@ -693,6 +716,38 @@ pk_backend_dbus_refresh_cache (PkBackendDbus *backend_dbus, gboolean force)
 	}
 	return ret;
 }
+
+/**
+ * pk_backend_dbus_get_distro_upgrades
+ **/
+gboolean
+pk_backend_dbus_get_distro_upgrades (PkBackendDbus *backend_dbus)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
+	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, 
+			         "GetDistroUpgrades", &error, 
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		egg_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, 
+				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
+	}
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
+}
+
 
 /**
  * pk_backend_dbus_update_system:
