@@ -67,6 +67,14 @@ else:
         pklog.debug("Use XAPIAN for the search")
         XAPIAN_SUPPORT = True
 
+# Check if update-manager-core is installed to get aware of the latest distro releases
+try:
+    from UpdateManager.Core.MetaRelease import MetaReleaseCore
+except ImportError:
+    META_RELEASE_SUPPORT = False
+else:
+    META_RELEASE_SUPPORT = True
+
 # Set a timeout for the changelog download
 socket.setdefaulttimeout(2)
 
@@ -497,6 +505,43 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if self._is_package_visible(r, filters) == True:
                 self._emit_package(r)
 
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
+    def doGetDistroUpgrades(self):
+        '''
+        Implement the {backend}-get-distro-upgrades functionality
+        '''
+        pklog.info("Get distro upgrades")
+        self.StatusChanged(STATUS_INFO)
+        self.AllowCancel(False)
+        self.NoPercentageUpdates()
+
+        if META_RELEASE_SUPPORT == False:
+            if self._cache.has_key("update-manager-core") and \
+               self._cache["update-manager-core"].isInstalled == False:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please install the package update-manager-core to get notified "
+                               "of the latest distribution releases.")
+            else:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please make sure that update-manager-core is"
+                               "correctly installed.")
+            self.Finished(EXIT_KILLED)
+            return
+
+        #FIXME Evil to start the download during init
+        meta_release = MetaReleaseCore(False, False)
+        #FIXME: should use a lock
+        while meta_release.downloading:
+                time.sleep(1)
+        #FIXME: Add support for description
+        if meta_release.new_dist != None:
+            self.DistroUpgrade("stable", 
+                               "%s %s" % (meta_release.new_dist.name, 
+                                          meta_release_new_dist.version), 
+                               "The latest stable release")
         self.Finished(EXIT_SUCCESS)
 
     @threaded
