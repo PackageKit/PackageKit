@@ -1711,7 +1711,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     def _get_package_description(self, pkg):
         """
-        Return the formated long description
+        Return the formated long description according to the Debian policy
+        (Chapter 5.6.13).
+        See http://www.debian.org/doc/debian-policy/ch-controlfields.html
+        for more information.
         """
         if not pkg._lookupRecord():
             return ""
@@ -1729,19 +1732,32 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for i in range(len(lines)):
             # Skip the first line, since its a duplication of the summary
             if i == 0: continue
-            line = lines[i].strip()
-            # Replace all empty lines by line breaks
-            if line == ".":
-                desc += "\n"
+            raw_line = lines[i]
+            if raw_line.strip() == ".":
+                # The line is just line break
+                if desc.endswith("\n"):
+                    desc += "\n"
                 continue
-            # Use dots for lists
-            p = re.compile(r'^(\s|\t)*(\*|0|-)',re.MULTILINE)
-            line = p.sub(ur'\n\u2022', line)
-            # Use line breaks only for abstracts
-            if desc == "" or desc[-1] == "\n":
-                desc += line
+            elif raw_line.startswith("  "):
+                # The line should be displayed verbatim without word wrapping
+                if not desc.endswith("\n"):
+                    line = "\n%s\n" % raw_line[2:]
+                else:
+                    line = "%s\n" % raw_line[2:]
+            elif raw_line.startswith(" "):
+                # The line is part of a paragraph.
+                if desc.endswith("\n") or desc == "":
+                    # Skip the leading white space
+                    line = raw_line[1:]
+                else:
+                    line = raw_line
             else:
-                desc += " " + line
+                pkglog.debug("invalid line %s in description for %s:\n%s" % \
+                             (i, pkg.name, pkg.rawDescription))
+            # Use dots for lists
+            line = re.sub(r"^(\s*)(\*|0|o|-) ", ur"\1\u2022 ", line, 1)
+            # Add current line to the description
+            desc += line
         return desc
 
 
