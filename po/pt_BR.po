@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-08-28 01:24+0000\n"
-"PO-Revision-Date: 2008-08-28 01:05-0300\n"
+"PO-Revision-Date: 2008-08-30 00:28-0300\n"
 "Last-Translator: Igor Pires Soares <igor@projetofedora.org>\n"
 "Language-Team: Brazilian Portuguese <fedora-trans-pt_br@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -284,7 +284,7 @@ msgstr "Você precisa especificar o nome do conjunto e os pacotes a serem inclu�
 
 #: ../client/pk-generate-pack-main.c:117
 msgid "Invalid name for the service pack, Specify a name with .servicepack extension\n"
-msgstr "Nome inválido para o conjunto de atualizações. Especifique um nome com a extensão .servicepack\n"
+msgstr "Nome inválido para o pacote de serviços. Especifique um nome com a extensão .servicepack\n"
 
 #: ../client/pk-generate-pack-main.c:129
 msgid "A pack with the same name already exists, do you want to overwrite it?"
@@ -407,7 +407,7 @@ msgstr "Catálogo do PackageKit"
 
 #: ../data/packagekit-pack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr "Conjunto de Atualizações do PackageKit"
+msgstr "Pacote de serviços do PackageKit"
 
 #: ../src/pk-main.c:83
 msgid "Startup failed due to security policies on this machine."
