@@ -348,6 +348,19 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("RepoSignatureRequired (%s,%s,%s,%s,%s,%s,%s,%s)" %
                    (id,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type))
 
+    @PKSignalHouseKeeper
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='sss')
+    def DistroUpgrade(self, type, name, summary):
+        '''
+        send 'distro-upgrade' signal:
+        @param type:   The type of distro upgrade (e.g. stable or unstable)
+        @param name: Short name of the distribution e.g. Dapper Drake 6.06 LTS
+        @param summary: Multi-line description of the release
+        '''
+        pklog.info("DistroUpgrade (%s,%s,%s)" % (type, name, summary))
+
+
 
 #
 # Methods ( client -> engine -> backend )
@@ -728,6 +741,23 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.doGetFiles(package_ids)
 
     def doGetFiles(self,package_ids):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='',out_signature='')
+    def GetDistroUpgrades(self):
+        '''
+        Implement the {backend}-get-distro-upgrades functionality
+        '''
+        pklog.info("GetDistroUpgrades()")
+        self.doGetDistroUpgrades()
+
+    def doGetDistroUpgrades(self):
         '''
         Should be replaced in the corresponding backend sub class
         '''

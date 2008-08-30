@@ -135,6 +135,7 @@ gboolean	 pk_backend_dbus_get_updates		(PkBackendDbus		*backend_dbus,
 							 PkBitfield	 filters);
 gboolean	 pk_backend_dbus_set_name		(PkBackendDbus		*backend_dbus,
 							 const gchar		*service);
+gboolean	 pk_backend_dbus_get_distro_upgrades	(PkBackendDbus		*backend_dbus);
 
 G_END_DECLS
 
