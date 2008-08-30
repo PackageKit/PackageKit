@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-08-28 01:24+0000\n"
-"PO-Revision-Date: 2008-08-30 00:28-0300\n"
+"PO-Revision-Date: 2008-08-30 11:14-0300\n"
 "Last-Translator: Igor Pires Soares <igor@projetofedora.org>\n"
 "Language-Team: Brazilian Portuguese <fedora-trans-pt_br@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -280,7 +280,7 @@ msgstr "Defina o caminho do arquivo com a lista de pacotes/dependências a serem
 
 #: ../client/pk-generate-pack-main.c:111
 msgid "You need to specify the pack name and packages to be packed\n"
-msgstr "Você precisa especificar o nome do conjunto e os pacotes a serem incluídos\n"
+msgstr "Você precisa especificar o nome do pacote de serviços e os pacotes a serem incluídos\n"
 
 #: ../client/pk-generate-pack-main.c:117
 msgid "Invalid name for the service pack, Specify a name with .servicepack extension\n"
@@ -288,7 +288,7 @@ msgstr "Nome inválido para o pacote de serviços. Especifique um nome com a ext
 
 #: ../client/pk-generate-pack-main.c:129
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "Um conjunto com o mesmo nome já existe, você deseja sobrescrevê-lo?"
+msgstr "Um pacote de serviços com o mesmo nome já existe, você deseja sobrescrevê-lo?"
 
 #: ../client/pk-generate-pack-main.c:142
 msgid "Failed to create directory"
@@ -296,7 +296,7 @@ msgstr "Falha ao criar o diretório"
 
 #: ../client/pk-generate-pack-main.c:149
 msgid "Failed to create pack"
-msgstr "Falha ao criar o conjunto"
+msgstr "Falha ao criar o pacote de serviços"
 
 #: ../client/pk-import-desktop.c:279
 #: ../client/pk-import-specspo.c:177
