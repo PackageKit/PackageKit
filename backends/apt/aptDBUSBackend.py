@@ -1735,7 +1735,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             raw_line = lines[i]
             if raw_line.strip() == ".":
                 # The line is just line break
-                if desc.endswith("\n"):
+                if not desc.endswith("\n"):
                     desc += "\n"
                 continue
             elif raw_line.startswith("  "):
@@ -1752,6 +1752,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 else:
                     line = raw_line
             else:
+                line = raw_line
                 pkglog.debug("invalid line %s in description for %s:\n%s" % \
                              (i, pkg.name, pkg.rawDescription))
             # Use dots for lists
