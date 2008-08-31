@@ -67,7 +67,16 @@ else:
         pklog.debug("Use XAPIAN for the search")
         XAPIAN_SUPPORT = True
 
-# Check if update-manager-core is installed to get aware of the latest distro releases
+# SoftwareProperties is required to proivde information about repositories
+try:
+    import softwareproperties.SoftwareProperties
+except ImportError:
+    REPOS_SUPPORT = False
+else:
+    REPOS_SUPPORT = True
+
+# Check if update-manager-core is installed to get aware of the
+# latest distro releases
 try:
     from UpdateManager.Core.MetaRelease import MetaReleaseCore
 except ImportError:
@@ -745,6 +754,77 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
         self.PercentageChanged(100)
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
+    def doGetRepoList(self, filters):
+        '''
+        Implement the {backend}-get-repo-list functionality
+
+        FIXME: should we use the abstration of software-properties or provide
+               low level access using pure aptsources?
+        '''
+        pklog.info("Getting repository list: %s" % filters)
+        self.StatusChanged(STATUS_INFO)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        if REPOS_SUPPORT == False:
+            if self._cache.has_key("python-software-properties") and \
+               self._cache["python-software-properties"].isInstalled == False:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please install the package "
+                               "python-software-properties to handle repositories")
+            else:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please make sure that python-software-properties is"
+                               "correctly installed.")
+            self.Finished(EXIT_KILLED)
+            return
+        filter_list = filters.split(";")
+        repos = softwareproperties.SoftwareProperties.SoftwareProperties()
+        # Emit distro components as virtual repositories
+        for comp in repos.distro.source_template.components:
+            repo_id = "%s_comp_%s" % (repos.distro.id, comp.name)
+            description = "%s %s - %s (%s)" % (repos.distro.id,
+                                               repos.distro.release,
+                                               comp.get_description(),
+                                               comp.name)
+            #FIXME: There is no inconsitent state in PackageKit
+            enabled = repos.get_comp_download_state(comp)[0]
+            if not FILTER_DEVELOPMENT in filter_list:
+                self.RepoDetail(repo_id, description, enabled)
+        # Emit distro's virtual update repositories
+        for template in repos.distro.source_template.children:
+            repo_id = "%s_child_%s" % (repos.distro.id, template.name)
+            description = "%s %s - %s (%s)" % (repos.distro.id,
+                                               repos.distro.release,
+                                               template.description,
+                                               template.name)
+            #FIXME: There is no inconsitent state in PackageKit
+            enabled = repos.get_comp_child_state(comp)[0]
+            if not FILTER_DEVELOPMENT in filter_list:
+                self.RepoDetail(repo_id, description, enabled)
+        # Emit distro's virtual source code repositoriy
+        if not FILTER_NOT_DEVELOPMENT in filter_list:
+            repo_id = "%s_source" % repos.distro.id
+            enabled = repos.get_source_code_state()
+            #FIXME: no translation :(
+            description = "%s %s - Source code" % (repos.distro.id, 
+                                                   repos.distro.release)
+            self.RepoDetail(repo_id, description, enabled)
+        # Emit third party repositories
+        for source in repos.get_isv_sources():
+            #FIXME: There isn't any inconsistent state in PackageKit
+            if FILTER_NOT_DEVELOPMENT in filter_list and \
+               source.type in ("deb-src", "rpm-src"):
+                continue
+            enabled = not source.disabled
+            # Remove markups from the description
+            description = re.sub(r"</?b>", "", repos.render_source(source))
+            repo_id = "isv_%s_%s" % (source.uri, source.dist)
+            repo_id.join(map(lambda c: "_%s" % c, source.comps))
+            self.RepoDetail(repo_id, description, enabled)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
