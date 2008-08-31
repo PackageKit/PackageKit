@@ -587,7 +587,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Report packages that are upgradable but cannot be upgraded
         for missed in updates:
              self._emit_package(self._cache[missed], INFO_BLOCKED)
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -819,7 +819,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         # Setup the fetcher
         self._check_init(prange=(0,10))
-        self._cache._depcache.Init()
+        self._cache.clear()
         progress = PackageKitFetchProgress(self, prange=(10,90))
         fetcher = apt_pkg.GetAcquire(progress)
         pm = apt_pkg.GetPackageManager(self._cache._depcache)
@@ -843,7 +843,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Download 
         pm.GetArchives(fetcher, list, recs)
         res = fetcher.Run()
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.PercentageChanged(95)
         # Copy files from cache to final destination
         for item in fetcher.Items:
@@ -933,7 +933,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,10))
-        self._cache._depcache.Init()
+        self._cache.clear()
         dependencies = []
         packages = []
         # Collect all dependencies which need to be installed
@@ -1089,7 +1089,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         # Mark all packages for installation
-        self._cache._depcache.Init()
+        self._cache.clear()
         pkgs = []
         for id in ids:
             if self._is_canceled(): return
@@ -1130,7 +1130,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
         # Clean up
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -1149,7 +1149,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pkgs = []
 
         # Mark all packages for installation
-        self._cache._depcache.Init()
+        self._cache.clear()
         for id in ids:
             if self._is_canceled(): return
             pkg = self._find_package_by_id(id)
@@ -1187,7 +1187,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
         # Clean up
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
