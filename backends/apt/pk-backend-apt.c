@@ -270,6 +270,15 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 }
 
 /**
+ *  * pk_backend_get_repo_list:
+ *   */
+static void
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+{
+	        pk_backend_dbus_get_repo_list (dbus, filters);
+}
+
+/**
  *  * pk_backend_get_requires:
  *   */
 static void
@@ -320,7 +329,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_distro_upgrades,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
-	NULL,					/* get_repo_list */
+	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
