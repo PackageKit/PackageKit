@@ -794,7 +794,7 @@ pk_backend_dbus_repo_enable (PkBackendDbus *backend_dbus, const gchar *rid, gboo
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RepoEnable", &error,
 				 G_TYPE_STRING, rid,
-				 G_TYPE_STRING, enabled,
+				 G_TYPE_BOOLEAN, enabled,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		egg_warning ("%s", error->message);
