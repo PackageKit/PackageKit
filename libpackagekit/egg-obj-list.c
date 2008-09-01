@@ -134,19 +134,19 @@ egg_obj_list_add (EggObjList *list, const gpointer obj)
 /**
  * egg_obj_list_index:
  * @list: a valid #EggObjList instance
- * @id: A #EggPackageId of the item to match
+ * @index: the element to return
  *
  * Gets an object from the list
  **/
 const gpointer
-egg_obj_list_index (EggObjList *list, guint i)
+egg_obj_list_index (EggObjList *list, guint index)
 {
 	gpointer obj;
 
 	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), NULL);
 
-	obj = g_ptr_array_index (list->priv->array, i);
-	return obj;
+	obj = g_ptr_array_index (list->priv->array, index);
+	return (const gpointer) obj;
 }
 
 /**
