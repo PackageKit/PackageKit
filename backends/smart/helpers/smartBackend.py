@@ -550,11 +550,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     systemchannel = None # unfortunately package strings depend on system
 
     def _splitpackage(self, package):
-        if isinstance(package, smart.backends.rpm.base.RPMPackage):
+        from smart.backends.rpm.base import RPMPackage
+        from smart.backends.deb.base import DebPackage, DEBARCH
+        from smart.backends.slack.base import SlackPackage
+        if isinstance(package, RPMPackage):
             version, arch = package.version.split('@')
-        elif isinstance(package, smart.backends.deb.base.DebPackage):
+        elif isinstance(package, DebPackage):
             version, arch = package.version, DEBARCH
-        elif isinstance(package, smart.backends.slack.base.SlackPackage):
+        elif isinstance(package, SlackPackage):
             ver, arch, rel = package.version.rsplit('-')
             version = "%s-%s" % (ver, rel)
         else:
