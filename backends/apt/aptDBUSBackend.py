@@ -67,7 +67,16 @@ else:
         pklog.debug("Use XAPIAN for the search")
         XAPIAN_SUPPORT = True
 
-# Check if update-manager-core is installed to get aware of the latest distro releases
+# SoftwareProperties is required to proivde information about repositories
+try:
+    import softwareproperties.SoftwareProperties
+except ImportError:
+    REPOS_SUPPORT = False
+else:
+    REPOS_SUPPORT = True
+
+# Check if update-manager-core is installed to get aware of the
+# latest distro releases
 try:
     from UpdateManager.Core.MetaRelease import MetaReleaseCore
 except ImportError:
@@ -356,6 +365,14 @@ class PackageKitDpkgInstallProgress(DpkgInstallProgress,
             os.write(self.master_fd, chr(3))
 
 
+class PackageKitSoftwareProperties(softwareproperties.SoftwareProperties.SoftwareProperties):
+    """
+    Helper class to fix a siily bug in python-software-properties
+    """
+    def set_modified_sourceslist(self):
+        self.save_sourceslist()
+
+
 class PackageKitAptBackend(PackageKitBaseBackend):
     '''
     PackageKit backend for apt
@@ -587,7 +604,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Report packages that are upgradable but cannot be upgraded
         for missed in updates:
              self._emit_package(self._cache[missed], INFO_BLOCKED)
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -749,6 +766,151 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    def doGetRepoList(self, filters):
+        '''
+        Implement the {backend}-get-repo-list functionality
+
+        FIXME: should we use the abstration of software-properties or provide
+               low level access using pure aptsources?
+        '''
+        pklog.info("Getting repository list: %s" % filters)
+        self.StatusChanged(STATUS_INFO)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        if REPOS_SUPPORT == False:
+            if self._cache.has_key("python-software-properties") and \
+               self._cache["python-software-properties"].isInstalled == False:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please install the package "
+                               "python-software-properties to handle repositories")
+            else:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please make sure that python-software-properties is"
+                               "correctly installed.")
+            self.Finished(EXIT_KILLED)
+            return
+        filter_list = filters.split(";")
+        repos = PackageKitSoftwareProperties()
+        # Emit distro components as virtual repositories
+        for comp in repos.distro.source_template.components:
+            repo_id = "%s_comp_%s" % (repos.distro.id, comp.name)
+            description = "%s %s - %s (%s)" % (repos.distro.id,
+                                               repos.distro.release,
+                                               comp.get_description(),
+                                               comp.name)
+            #FIXME: There is no inconsitent state in PackageKit
+            enabled = repos.get_comp_download_state(comp)[0]
+            if not FILTER_DEVELOPMENT in filter_list:
+                self.RepoDetail(repo_id, description, enabled)
+        # Emit distro's virtual update repositories
+        for template in repos.distro.source_template.children:
+            repo_id = "%s_child_%s" % (repos.distro.id, template.name)
+            description = "%s %s - %s (%s)" % (repos.distro.id,
+                                               repos.distro.release,
+                                               template.description,
+                                               template.name)
+            #FIXME: There is no inconsitent state in PackageKit
+            enabled = repos.get_comp_child_state(template)[0]
+            if not FILTER_DEVELOPMENT in filter_list:
+                self.RepoDetail(repo_id, description, enabled)
+        # Emit distro's virtual source code repositoriy
+        if not FILTER_NOT_DEVELOPMENT in filter_list:
+            repo_id = "%s_source" % repos.distro.id
+            enabled = repos.get_source_code_state()
+            #FIXME: no translation :(
+            description = "%s %s - Source code" % (repos.distro.id, 
+                                                   repos.distro.release)
+            self.RepoDetail(repo_id, description, enabled)
+        # Emit third party repositories
+        for source in repos.get_isv_sources():
+            #FIXME: There isn't any inconsistent state in PackageKit
+            if FILTER_NOT_DEVELOPMENT in filter_list and \
+               source.type in ("deb-src", "rpm-src"):
+                continue
+            enabled = not source.disabled
+            # Remove markups from the description
+            description = re.sub(r"</?b>", "", repos.render_source(source))
+            repo_id = "isv_%s_%s" % (source.uri, source.dist)
+            repo_id.join(map(lambda c: "_%s" % c, source.comps))
+            self.RepoDetail(repo_id, description, enabled)
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
+    def doRepoEnable(self, repo_id, enable):
+        '''
+        Implement the {backend}-repo-enable functionality
+
+        FIXME: should we use the abstration of software-properties or provide
+               low level access using pure aptsources?
+        '''
+        pklog.info("Enabling repository: %s %s" % (repo_id, enable))
+        self.StatusChanged(STATUS_RUNNING)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        if REPOS_SUPPORT == False:
+            if self._cache.has_key("python-software-properties") and \
+               self._cache["python-software-properties"].isInstalled == False:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please install the package "
+                               "python-software-properties to handle repositories")
+            else:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please make sure that python-software-properties is"
+                               "correctly installed.")
+            self.Finished(EXIT_KILLED)
+            return
+        repos = PackageKitSoftwareProperties()
+
+        found = False
+        # Check if the repo_id matches a distro component, e.g. main
+        if repo_id.startswith("%s_comp_" % repos.distro.id):
+            for comp in repos.distro.source_template.components:
+                if repo_id == "%s_comp_%s" % (repos.distro.id, comp.name):
+                    if enable == repos.get_comp_download_state(comp)[0]:
+                        pklog.debug("Repository is already enabled")
+                        pass
+                    if enable == True:
+                        repos.enable_component(comp.name)
+                    else:
+                        repos.disable_component(comp.name)
+                    found = True
+                    break
+        # Check if the repo_id matches a distro child repository, e.g. hardy-updates
+        elif repo_id.startswith("%s_child_" % repos.distro.id):
+            for template in repos.distro.source_template.children:
+                if repo_id == "%s_child_%s" % (repos.distro.id, template.name):
+                    if enable == repos.get_comp_child_state(template)[0]:
+                        pklog.debug("Repository is already enabled")
+                        pass
+                    elif enable == True:
+                        repos.enable_child_source(template)
+                    else:
+                        repos.disable_child_source(template)
+                    found = True
+                    break
+        # Check if the repo_id matches an isv repository
+        elif repo_id.startswith("isv_"):
+            for source in repos.get_isv_sources():
+                source_id = "isv_%s_%s" % (source.uri, source.dist)
+                source_id.join(map(lambda c: "_%s" % c, source.comps))
+                if repo_id == source_id:
+                    if source.disabled == enable:
+                        source.disabled = not enable
+                        repos.save_sourceslist()
+                    else:
+                        pklog.debug("Repository is already enabled")
+                    found = True
+                    break
+        if found == False:
+            self.ErrorCode(ERROR_REPO_NOT_AVAILABLE,
+                           "The repository of the id %s isn't available" % repo_id)
+            self.Finished(EXIT_FAILED)
+            return
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
     def doUpdatePackages(self, ids):
         '''
         Implement the {backend}-update functionality
@@ -819,7 +981,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         # Setup the fetcher
         self._check_init(prange=(0,10))
-        self._cache._depcache.Init()
+        self._cache.clear()
         progress = PackageKitFetchProgress(self, prange=(10,90))
         fetcher = apt_pkg.GetAcquire(progress)
         pm = apt_pkg.GetPackageManager(self._cache._depcache)
@@ -843,7 +1005,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Download 
         pm.GetArchives(fetcher, list, recs)
         res = fetcher.Run()
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.PercentageChanged(95)
         # Copy files from cache to final destination
         for item in fetcher.Items:
@@ -933,7 +1095,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,10))
-        self._cache._depcache.Init()
+        self._cache.clear()
         dependencies = []
         packages = []
         # Collect all dependencies which need to be installed
@@ -1089,7 +1251,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         # Mark all packages for installation
-        self._cache._depcache.Init()
+        self._cache.clear()
         pkgs = []
         for id in ids:
             if self._is_canceled(): return
@@ -1130,7 +1292,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
         # Clean up
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -1149,7 +1311,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pkgs = []
 
         # Mark all packages for installation
-        self._cache._depcache.Init()
+        self._cache.clear()
         for id in ids:
             if self._is_canceled(): return
             pkg = self._find_package_by_id(id)
@@ -1187,7 +1349,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
         # Clean up
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
     @threaded

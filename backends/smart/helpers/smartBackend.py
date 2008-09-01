@@ -290,6 +290,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if self._passes_filters(package, filters):
                 self._show_package(package)
 
+    @needs_cache
+    def what_provides(self, filters, provides_type, search):
+        self.status(STATUS_QUERY)
+        # FIXME: provides_type is not used (== PROVIDES_ANY)
+        providers = self.ctrl.getCache().getProvides(search)
+        for provider in providers:
+            for package in provider.packages:
+                if self._passes_filters(package, filters):
+                    self._show_package(package)
+
     def refresh_cache(self):
         self.status(STATUS_REFRESH_CACHE)
         self.ctrl.rebuildSysConfChannels()
@@ -523,6 +533,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 smart.sysconf.remove(("channels", repoid, "disabled"))
             else:
                 smart.sysconf.set(("channels", repoid, "disabled"), "yes")
+            self.ctrl.saveSysConf()
+        else:
+            self.error(ERROR_REPO_NOT_FOUND, "repo %s was not found" % repoid)
+
+    def repo_set_data(self, repoid, param, value):
+        self.status(STATUS_INFO)
+        if smart.sysconf.has(("channels", repoid)):
+            smart.sysconf.set(("channels", repoid, param), value)
             self.ctrl.saveSysConf()
         else:
             self.error(ERROR_REPO_NOT_FOUND, "repo %s was not found" % repoid)
