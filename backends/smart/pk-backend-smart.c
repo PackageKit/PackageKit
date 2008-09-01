@@ -385,6 +385,20 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 	}
 }
 
+/**
+ * pk_backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+{
+	gchar *filters_text;
+	const gchar *provides_text;
+	provides_text = pk_provides_enum_to_text (provides);
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "what-provides.py", filters_text, provides_text, search, NULL);
+	g_free (filters_text);
+}
+
 PK_BACKEND_OPTIONS (
 	"SMART",					/* description */
 	"James Bowes <jbowes@dangerouslyinc.com>",	/* author */
@@ -419,5 +433,5 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* service_pack */
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
-	NULL						/* what_provides */
+	backend_what_provides				/* what_provides */
 );
