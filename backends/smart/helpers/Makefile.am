@@ -18,6 +18,7 @@ dist_helper_DATA = 			\
 	repo-enable.py			\
 	resolve.py			\
 	search-name.py			\
+	search-file.py			\
 	search-group.py			\
 	search-details.py		\
 	smartBackend.py			\
