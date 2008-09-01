@@ -25,6 +25,7 @@ dist_helper_DATA = 			\
 	update-packages.py		\
 	update-system.py		\
 	download-packages.py		\
+	what-provides.py		\
 	$(NULL)
 
 install-data-hook:
