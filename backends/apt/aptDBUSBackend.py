@@ -365,6 +365,14 @@ class PackageKitDpkgInstallProgress(DpkgInstallProgress,
             os.write(self.master_fd, chr(3))
 
 
+class PackageKitSoftwareProperties(softwareproperties.SoftwareProperties.SoftwareProperties):
+    """
+    Helper class to fix a siily bug in python-software-properties
+    """
+    def set_modified_sourceslist(self):
+        self.save_sourceslist()
+
+
 class PackageKitAptBackend(PackageKitBaseBackend):
     '''
     PackageKit backend for apt
@@ -782,7 +790,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_KILLED)
             return
         filter_list = filters.split(";")
-        repos = softwareproperties.SoftwareProperties.SoftwareProperties()
+        repos = PackageKitSoftwareProperties()
         # Emit distro components as virtual repositories
         for comp in repos.distro.source_template.components:
             repo_id = "%s_comp_%s" % (repos.distro.id, comp.name)
@@ -802,7 +810,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                template.description,
                                                template.name)
             #FIXME: There is no inconsitent state in PackageKit
-            enabled = repos.get_comp_child_state(comp)[0]
+            enabled = repos.get_comp_child_state(template)[0]
             if not FILTER_DEVELOPMENT in filter_list:
                 self.RepoDetail(repo_id, description, enabled)
         # Emit distro's virtual source code repositoriy
@@ -825,6 +833,80 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             repo_id = "isv_%s_%s" % (source.uri, source.dist)
             repo_id.join(map(lambda c: "_%s" % c, source.comps))
             self.RepoDetail(repo_id, description, enabled)
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
+    def doRepoEnable(self, repo_id, enable):
+        '''
+        Implement the {backend}-repo-enable functionality
+
+        FIXME: should we use the abstration of software-properties or provide
+               low level access using pure aptsources?
+        '''
+        pklog.info("Enabling repository: %s %s" % (repo_id, enable))
+        self.StatusChanged(STATUS_RUNNING)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        if REPOS_SUPPORT == False:
+            if self._cache.has_key("python-software-properties") and \
+               self._cache["python-software-properties"].isInstalled == False:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please install the package "
+                               "python-software-properties to handle repositories")
+            else:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please make sure that python-software-properties is"
+                               "correctly installed.")
+            self.Finished(EXIT_KILLED)
+            return
+        repos = PackageKitSoftwareProperties()
+
+        found = False
+        # Check if the repo_id matches a distro component, e.g. main
+        if repo_id.startswith("%s_comp_" % repos.distro.id):
+            for comp in repos.distro.source_template.components:
+                if repo_id == "%s_comp_%s" % (repos.distro.id, comp.name):
+                    if enable == repos.get_comp_download_state(comp)[0]:
+                        pklog.debug("Repository is already enabled")
+                        pass
+                    if enable == True:
+                        repos.enable_component(comp.name)
+                    else:
+                        repos.disable_component(comp.name)
+                    found = True
+                    break
+        # Check if the repo_id matches a distro child repository, e.g. hardy-updates
+        elif repo_id.startswith("%s_child_" % repos.distro.id):
+            for template in repos.distro.source_template.children:
+                if repo_id == "%s_child_%s" % (repos.distro.id, template.name):
+                    if enable == repos.get_comp_child_state(template)[0]:
+                        pklog.debug("Repository is already enabled")
+                        pass
+                    elif enable == True:
+                        repos.enable_child_source(template)
+                    else:
+                        repos.disable_child_source(template)
+                    found = True
+                    break
+        # Check if the repo_id matches an isv repository
+        elif repo_id.startswith("isv_"):
+            for source in repos.get_isv_sources():
+                source_id = "isv_%s_%s" % (source.uri, source.dist)
+                source_id.join(map(lambda c: "_%s" % c, source.comps))
+                if repo_id == source_id:
+                    if source.disabled == enable:
+                        source.disabled = not enable
+                        repos.save_sourceslist()
+                    else:
+                        pklog.debug("Repository is already enabled")
+                    found = True
+                    break
+        if found == False:
+            self.ErrorCode(ERROR_REPO_NOT_AVAILABLE,
+                           "The repository of the id %s isn't available" % repo_id)
+            self.Finished(EXIT_FAILED)
+            return
         self.Finished(EXIT_SUCCESS)
 
     @threaded

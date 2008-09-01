@@ -314,6 +314,16 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	        pk_backend_dbus_what_provides (dbus, filters, provides, search);
 }
 
+/**
+ *  * pk_backend_repo_enable
+ *   */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enable )
+{
+	        pk_backend_dbus_repo_enable (dbus, repo_id, enable);
+}
+
+
 
 PK_BACKEND_OPTIONS (
 	"Apt",					/* description */
@@ -338,7 +348,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
-	NULL,					/* repo_enable */
+	backend_repo_enable,			/* repo_enable */
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
