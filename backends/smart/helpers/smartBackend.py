@@ -537,6 +537,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_REPO_NOT_FOUND, "repo %s was not found" % repoid)
 
+    def repo_set_data(self, repoid, param, value):
+        self.status(STATUS_INFO)
+        if smart.sysconf.has(("channels", repoid)):
+            smart.sysconf.set(("channels", repoid, param), value)
+            self.ctrl.saveSysConf()
+        else:
+            self.error(ERROR_REPO_NOT_FOUND, "repo %s was not found" % repoid)
+
     systemchannel = None # unfortunately package strings depend on system
 
     def _splitpackage(self, package):

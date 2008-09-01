@@ -386,6 +386,15 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 }
 
 /**
+ * pk_backend_repo_set_data:
+ */
+static void
+backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
+{
+	pk_backend_spawn_helper (spawn, "repo-set-data.py", rid, parameter, value, NULL);
+}
+
+/**
  * pk_backend_what_provides:
  */
 static void
@@ -423,7 +432,7 @@ PK_BACKEND_OPTIONS (
 	backend_refresh_cache,				/* refresh_cache */
 	backend_remove_packages,			/* remove_packages */
 	backend_repo_enable,				/* repo_enable */
-	NULL,						/* repo_set_data */
+	backend_repo_set_data,				/* repo_set_data */
 	backend_resolve,				/* resolve */
 	NULL,						/* rollback */
 	backend_search_details,				/* search_details */
