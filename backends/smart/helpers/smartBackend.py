@@ -524,7 +524,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             enabled = 'true'
             if channel.has_key('disabled') and channel['disabled'] == 'yes':
                 enabled = 'false'
-            self.repo_detail(alias, name, enabled)
+            channel['alias'] = alias
+            if self._channel_passes_filters(channel, filters):
+                self.repo_detail(alias, name, enabled)
 
     def repo_enable(self, repoid, enable):
         self.status(STATUS_INFO)
@@ -630,6 +632,23 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     packages.append(pkg)
 
         return packages
+
+    def _channel_passes_filters(self, channel, filters):
+        filterlist = filters.split(';')
+        if FILTER_NOT_DEVELOPMENT in filterlist:
+            if channel['type'] == 'rpm-md':
+                repo = channel['alias']
+                if repo.endswith('-debuginfo'):
+                    return False
+                if repo.endswith('-testing'):
+                    return False
+                if repo.endswith('-debug'):
+                    return False
+                if repo.endswith('-development'):
+                    return False
+                if repo.endswith('-source'):
+                    return False
+        return True   
 
     def _passes_filters(self, package, filters):
         filterlist = filters.split(';')
