@@ -244,6 +244,22 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 self._show_package(package)
 
     @needs_cache
+    def search_file(self, filters, searchstring):
+        self.status(STATUS_QUERY)
+        packages = self.ctrl.getCache().getPackages()
+        for package in packages:
+            if self._passes_filters(package, filters):
+                # FIXME: Only installed packages have path lists.
+                paths = []
+                for loader in package.loaders:
+                    info = loader.getInfo(package)
+                    paths = info.getPathList()
+                    if len(paths) > 0:
+                        break
+                if searchstring in paths:
+                    self._show_package(package)
+
+    @needs_cache
     def search_group(self, filters, searchstring):
         self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
