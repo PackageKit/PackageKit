@@ -244,6 +244,22 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 self._show_package(package)
 
     @needs_cache
+    def search_file(self, filters, searchstring):
+        self.status(STATUS_QUERY)
+        packages = self.ctrl.getCache().getPackages()
+        for package in packages:
+            if self._passes_filters(package, filters):
+                # FIXME: Only installed packages have path lists.
+                paths = []
+                for loader in package.loaders:
+                    info = loader.getInfo(package)
+                    paths = info.getPathList()
+                    if len(paths) > 0:
+                        break
+                if searchstring in paths:
+                    self._show_package(package)
+
+    @needs_cache
     def search_group(self, filters, searchstring):
         self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
@@ -273,6 +289,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             if self._passes_filters(package, filters):
                 self._show_package(package)
+
+    @needs_cache
+    def what_provides(self, filters, provides_type, search):
+        self.status(STATUS_QUERY)
+        # FIXME: provides_type is not used (== PROVIDES_ANY)
+        providers = self.ctrl.getCache().getProvides(search)
+        for provider in providers:
+            for package in provider.packages:
+                if self._passes_filters(package, filters):
+                    self._show_package(package)
 
     def refresh_cache(self):
         self.status(STATUS_REFRESH_CACHE)
@@ -507,6 +533,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 smart.sysconf.remove(("channels", repoid, "disabled"))
             else:
                 smart.sysconf.set(("channels", repoid, "disabled"), "yes")
+            self.ctrl.saveSysConf()
+        else:
+            self.error(ERROR_REPO_NOT_FOUND, "repo %s was not found" % repoid)
+
+    def repo_set_data(self, repoid, param, value):
+        self.status(STATUS_INFO)
+        if smart.sysconf.has(("channels", repoid)):
+            smart.sysconf.set(("channels", repoid, param), value)
             self.ctrl.saveSysConf()
         else:
             self.error(ERROR_REPO_NOT_FOUND, "repo %s was not found" % repoid)

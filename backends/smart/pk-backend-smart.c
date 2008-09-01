@@ -294,6 +294,18 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 }
 
 /**
+ * pk_backend_search_file:
+ */
+static void
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "search-file.py", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
+/**
  * pk_backend_search_group:
  */
 static void
@@ -373,6 +385,29 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 	}
 }
 
+/**
+ * pk_backend_repo_set_data:
+ */
+static void
+backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
+{
+	pk_backend_spawn_helper (spawn, "repo-set-data.py", rid, parameter, value, NULL);
+}
+
+/**
+ * pk_backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+{
+	gchar *filters_text;
+	const gchar *provides_text;
+	provides_text = pk_provides_enum_to_text (provides);
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "what-provides.py", filters_text, provides_text, search, NULL);
+	g_free (filters_text);
+}
+
 PK_BACKEND_OPTIONS (
 	"SMART",					/* description */
 	"James Bowes <jbowes@dangerouslyinc.com>",	/* author */
@@ -397,15 +432,15 @@ PK_BACKEND_OPTIONS (
 	backend_refresh_cache,				/* refresh_cache */
 	backend_remove_packages,			/* remove_packages */
 	backend_repo_enable,				/* repo_enable */
-	NULL,						/* repo_set_data */
+	backend_repo_set_data,				/* repo_set_data */
 	backend_resolve,				/* resolve */
 	NULL,						/* rollback */
 	backend_search_details,				/* search_details */
-	NULL,						/* search_file */
+	backend_search_file,				/* search_file */
 	backend_search_group,				/* search_group */
 	backend_search_name,				/* search_name */
 	NULL,						/* service_pack */
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
-	NULL						/* what_provides */
+	backend_what_provides				/* what_provides */
 );
