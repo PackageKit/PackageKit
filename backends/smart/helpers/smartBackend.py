@@ -551,12 +551,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def _splitpackage(self, package):
         from smart.backends.rpm.base import RPMPackage
-        from smart.backends.deb.base import DebPackage, DEBARCH
+        from smart.backends.deb.base import DebPackage
         from smart.backends.slack.base import SlackPackage
         if isinstance(package, RPMPackage):
             version, arch = package.version.split('@')
         elif isinstance(package, DebPackage):
-            version, arch = package.version, DEBARCH
+            version, arch = package.version, smart.backends.deb.base.DEBARCH
         elif isinstance(package, SlackPackage):
             ver, arch, rel = package.version.rsplit('-')
             version = "%s-%s" % (ver, rel)
