@@ -95,6 +95,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         smart.initPlugins()
         smart.initPsyco()
 
+        self._package_list = []
+
     def status(self, state):
         PackageKitBaseBackend.status(self, state)
         self._status = state
@@ -206,7 +208,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def get_updates(self, filter):
+    def get_updates(self, filters):
         cache = self.ctrl.getCache()
 
         trans = smart.transaction.Transaction(cache,
@@ -222,7 +224,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for (package, op) in trans.getChangeSet().items():
             if op == smart.transaction.INSTALL:
                 status = self._get_status(package)
-                self._show_package(package, status)
+                self._add_package(package, status)
+        self._post_process_package_list(filters)
+        self._show_package_list()
 
     @needs_cache
     def resolve(self, filters, packagename):
@@ -230,7 +234,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         ratio, results, suggestions = self.ctrl.search(packagename)
         for result in results:
             if self._package_passes_filters(result, filters):
-                self._show_package(result)
+                self._add_package(result)
+        self._post_process_package_list(filters)
+        self._show_package_list()
 
     @needs_cache
     def search_name(self, filters, packagename):
@@ -242,7 +248,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         for package in packages:
             if self._package_passes_filters(package, filters):
-                self._show_package(package)
+                self._add_package(package)
+        self._post_process_package_list(filters)
+        self._show_package_list()
 
     @needs_cache
     def search_file(self, filters, searchstring):
@@ -258,7 +266,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     if len(paths) > 0:
                         break
                 if searchstring in paths:
-                    self._show_package(package)
+                    self._add_package(package)
+        self._post_process_package_list(filters)
+        self._show_package_list()
 
     @needs_cache
     def search_group(self, filters, searchstring):
@@ -271,7 +281,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 if group in self.GROUPS:
                     group = self.GROUPS[group]
                     if searchstring in group:
-                        self._show_package(package)
+                        self._add_package(package)
+        self._post_process_package_list(filters)
+        self._show_package_list()
 
     @needs_cache
     def search_details(self, filters, searchstring):
@@ -281,7 +293,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if self._package_passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
                 if searchstring in info.getDescription():
-                    self._show_package(package)
+                    self._add_package(package)
 
     @needs_cache
     def get_packages(self, filters):
@@ -290,6 +302,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             if self._package_passes_filters(package, filters):
                 self._show_package(package)
+        self._post_process_package_list(filters)
+        self._show_package_list()
 
     @needs_cache
     def what_provides(self, filters, provides_type, search):
@@ -299,7 +313,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for provider in providers:
             for package in provider.packages:
                 if self._package_passes_filters(package, filters):
-                    self._show_package(package)
+                    self._add_package(package)
+        self._post_process_package_list(filters)
+        self._show_package_list()
 
     def refresh_cache(self):
         self.status(STATUS_REFRESH_CACHE)
@@ -598,20 +614,24 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         return (ratio, results, suggestions)
 
-    def _show_package(self, package, status=None):
+    def _add_package(self, package, status=None):
         if not status:
             if package.installed:
                 status = INFO_INSTALLED
             else:
                 status = INFO_AVAILABLE
-        name, version, arch = self._splitpackage(package)
-        for loader in package.loaders:
-            channel = loader.getChannel()
-            if package.installed and not channel.getType().endswith('-sys'):
-                continue
-            info = loader.getInfo(package)
-            self.package(pkpackage.get_package_id(name, version, arch,
-                channel.getAlias()), status, info.getSummary())
+        self._package_list.append((package, status))
+
+    def _show_package_list(self, filters=None):
+        for package,status in self._package_list:
+            name, version, arch = self._splitpackage(package)
+            for loader in package.loaders:
+                channel = loader.getChannel()
+                if package.installed and not channel.getType().endswith('-sys'):
+                    continue
+                info = loader.getInfo(package)
+                self.package(pkpackage.get_package_id(name, version, arch,
+                    channel.getAlias()), status, info.getSummary())
 
     def _get_status(self, package):
         flags = smart.pkgconf.testAllFlags(package)
@@ -726,3 +746,19 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                                    "filter %s not supported" % filter)
                         return False
         return True
+
+    def _do_newest_filtering(self, package_list):
+        newest = {}
+        for package,status in package_list:
+            name, version, arch = self._splitpackage(package)
+            key = (name, arch)
+            if key in newest and package <= newest[key]:
+                continue
+            newest[key] = (package,status)
+        return newest.values()
+
+    def _post_process_package_list(self, filters):
+        filterlist = filters.split(';')
+        if FILTER_NEWEST in filterlist:
+            self._package_list = self._do_newest_filtering(self._package_list)
+
