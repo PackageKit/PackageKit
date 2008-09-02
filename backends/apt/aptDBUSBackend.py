@@ -1828,7 +1828,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     "Please use http://launchpad.net/ubuntu/+source/%s/%s/" \
                     "+changelog\n" \
                     "until the changes become available or try again " \
-                    "later." % (srcpkg, srcver),
+                    "later." % (src_pkg, src_ver),
         except IOError, httplib.BadStatusLine:
                 return "Failed to download the list of changes.\nPlease " \
                         "check your Internet connection."
