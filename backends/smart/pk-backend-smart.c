@@ -89,9 +89,10 @@ backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_FILTER_ENUM_INSTALLED,
-	/* FIXME: These depend on a newer Smart API: */
+		PK_FILTER_ENUM_NEWEST,
 		PK_FILTER_ENUM_GUI,
 		PK_FILTER_ENUM_DEVELOPMENT,
+	/* FIXME: These depend on a newer Smart API: */
 		PK_FILTER_ENUM_FREE,
 		-1);
 }
