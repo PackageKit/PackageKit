@@ -57,7 +57,8 @@ class PackageKitSmartInterface(Interface):
 
     def getProgress(self, obj, hassub=False):
         self._progress.setHasSub(hassub)
-        self._progress.setFetcherMode(isinstance(obj, Fetcher))
+        fetcher = isinstance(obj, Fetcher) and obj or None
+        self._progress.setFetcher(fetcher)
         return self._progress
 
 class PackageKitSmartProgress(Progress):
@@ -66,11 +67,13 @@ class PackageKitSmartProgress(Progress):
         Progress.__init__(self)
         self._hassub = hassub
         self._backend = backend
+        self._lasturl = None
         self._oldstatus = None
         self._oldcancel = None
-            
-    def setFetcherMode(self, flag):
-        if flag:
+
+    def setFetcher(self, fetcher):
+        self._fetcher = fetcher
+        if fetcher:
             self._oldstatus = self._backend._status
             self._backend.status(STATUS_DOWNLOAD)
             self._backend.allow_cancel(True)
@@ -86,6 +89,24 @@ class PackageKitSmartProgress(Progress):
 
     def expose(self, topic, percent, subkey, subtopic, subpercent, data, done):
         self._backend.percentage(percent)
+        if self.getHasSub() and subkey:
+            # unfortunately Progress doesn't provide the current package
+            if self._fetcher and subtopic != self._lasturl:
+                packages = self._backend._packagesdict
+                for package in packages:
+                    for loader in package.loaders:
+                        info = loader.getInfo(package)
+                        for url in info.getURLs():
+                            # account for progress url from current mirror
+                            url = str(self._fetcher.getItem(url).getURL())
+                            if subtopic == url:
+                                self._backend._show_package(package)
+                self._lasturl = subtopic
+            elif isinstance(subkey, smart.cache.Package):
+                self._backend._show_package(subkey)
+            elif type(subkey) is tuple and len(subkey):
+                if isinstance(subkey[0], smart.cache.PackageInfo):
+                     self._backend._show_package(subkey[0].getPackage())
 
 class PackageKitSmartBackend(PackageKitBaseBackend):
 
@@ -101,6 +122,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         smart.initPsyco()
 
         self._package_list = []
+        self._packagesdict = None
 
     def status(self, state):
         PackageKitBaseBackend.status(self, state)
@@ -136,6 +158,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_INSTALL)
+        self._packagesdict = trans.getChangeSet()
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -158,6 +181,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_INSTALL)
+        self._packagesdict = trans.getChangeSet()
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -186,6 +210,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_REMOVE)
+        self._packagesdict = trans.getChangeSet()
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -207,6 +232,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_UPDATE)
+        self._packagesdict = trans.getChangeSet()
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -221,6 +247,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(PK_STATUS_ENUM_DOWNLOAD)
         self.allow_cancel(True)
+        self._packagesdict = packages
         self.ctrl.downloadPackages(packages, targetdir=directory)
 
     @needs_cache
@@ -238,6 +265,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_UPDATE)
+        self._packagesdict = trans.getChangeSet()
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
@@ -674,6 +702,11 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         return (ratio, results, suggestions)
 
     def _add_package(self, package, status=None):
+        if not status:
+            if package.installed:
+                status = INFO_INSTALLED
+            else:
+                status = INFO_AVAILABLE
         self._package_list.append((package, status))
 
     def _show_package_list(self):
@@ -682,10 +715,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def _show_package(self, package, status=None):
         if not status:
-            if package.installed:
-                status = INFO_INSTALLED
+            if self._status == STATUS_DOWNLOAD:
+                status = INFO_DOWNLOADING
+            elif self._status == STATUS_INSTALL:
+                status = INFO_INSTALLING
+            elif self._status == STATUS_UPDATE:
+                status = INFO_UPDATING
+            elif self._status == STATUS_REMOVE:
+                status = INFO_REMOVING
             else:
-                status = INFO_AVAILABLE
+                status = INFO_UNKNOWN
         name, version, arch = self._splitpackage(package)
         for loader in package.loaders:
             channel = loader.getChannel()
