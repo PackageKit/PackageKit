@@ -15,6 +15,7 @@ dist_helper_DATA = 			\
 	get-details.py			\
 	get-repo-list.py		\
 	get-packages.py			\
+	get-distro-upgrades.py		\
 	repo-enable.py			\
 	repo-set-data.py		\
 	get-update-detail.py		\
