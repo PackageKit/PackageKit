@@ -56,7 +56,7 @@ class DebPackage(object):
         " open given debfile "
         self.filename = filename
         if not apt_inst.arCheckMember(open(self.filename), "debian-binary"):
-            raise NoDebArchiveException, _("This is not a valid DEB archive, missing '%s' member" % "debian-binary")
+            raise NoDebArchiveException, "This is not a valid DEB archive, missing '%s' member" % "debian-binary"
         control = apt_inst.debExtractControl(open(self.filename))
         self._sections = apt_pkg.ParseSection(control)
         self.pkgname = self._sections["Package"]
@@ -77,7 +77,7 @@ class DebPackage(object):
                     apt_inst.debExtract(open(self.filename), extract_cb, member)
                     break
                 except SystemError, e:
-                    return [_("List of files for '%s'could not be read" % self.filename)]
+                    return ["List of files for '%s'could not be read" % self.filename]
         return files
     filelist = property(filelist)
 
@@ -149,7 +149,7 @@ class DebPackage(object):
             or_str += dep[0]
             if dep != or_group[len(or_group)-1]:
                 or_str += "|"
-        self._failureString += _("Dependency is not satisfiable: %s\n" % or_str)
+        self._failureString +="Dependency is not satisfiable: %s\n" % or_str
         return False
 
     def _checkSinglePkgConflict(self, pkgname, ver, oper):
@@ -170,7 +170,7 @@ class DebPackage(object):
         #print "oper: %s " % oper
         if (pkgver and apt_pkg.CheckDep(pkgver,oper,ver) and 
             not self.replacesRealPkg(pkgname, oper, ver)):
-            self._failureString += _("Conflicts with the installed package '%s'" % cand.name)
+            self._failureString += "Conflicts with the installed package '%s'" % cand.name
             return True
         return False
 
@@ -349,13 +349,13 @@ class DebPackage(object):
         arch = self._sections["Architecture"]
         if  arch != "all" and arch != apt_pkg.Config.Find("APT::Architecture"):
             self._dbg(1,"ERROR: Wrong architecture dude!")
-            self._failureString = _("Wrong architecture '%s'" % arch)
+            self._failureString = "Wrong architecture '%s'" % arch
             return False
 
         # check version
         res = self.compareToVersionInCache()
         if res == VERSION_OUTDATED: # the deb is older than the installed
-            self._failureString = _("A later version is already installed")
+            self._failureString = "A later version is already installed"
             return False
 
         # FIXME: this sort of error handling sux
@@ -376,7 +376,7 @@ class DebPackage(object):
             return False
 
         if self._cache._depcache.BrokenCount > 0:
-            self._failureString = _("Failed to satisfy all dependencies (broken cache)")
+            self._failureString = "Failed to satisfy all dependencies (broken cache)"
             # clean the cache again
             self._cache.clear()
             return False
@@ -403,7 +403,7 @@ class DebPackage(object):
                 try:
                     self._cache[pkg].markInstall(fromUser=False)
                 except SystemError, e:
-                    self._failureString = _("Cannot install '%s'" % pkg)
+                    self._failureString = "Cannot install '%s'" % pkg
                     self._cache.clear()
                     return False
         return True
@@ -488,16 +488,14 @@ class DscSrcPackage(DebPackage):
             # we are at the end 
             if line.startswith("-----BEGIN PGP SIGNATURE-"):
                 break
-        s = _("Install Build-Dependencies for "
-              "source package '%s' that builds %s\n"
-              ) % (self.pkgName, " ".join(self.binaries))
+        s = "Install Build-Dependencies for source package '%s' that builds %s\n" % (self.pkgName, " ".join(self.binaries))
         self._sections["Description"] = s
         
     def checkDeb(self):
         if not self.checkConflicts():
             for pkgname in self._installedConflicts:
                 if self._cache[pkgname]._pkg.Essential:
-                    raise Exception, _("A essential package would be removed")
+                    raise Exception, "A essential package would be removed"
                 self._cache[pkgname].markDelete()
         # FIXME: a additional run of the checkConflicts()
         #        after _satisfyDepends() should probably be done
