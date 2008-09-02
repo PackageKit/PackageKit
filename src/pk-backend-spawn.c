@@ -95,6 +95,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	PkRestartEnum restart_enum;
 	PkSigTypeEnum sig_type;
 	PkUpdateStateEnum update_state_enum;
+	PkDistroUpgradeEnum distro_upgrade_enum;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
@@ -355,6 +356,24 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		ret = pk_backend_repo_signature_required (backend_spawn->priv->backend, sections[1],
 							  sections[2], sections[3], sections[4],
 							  sections[5], sections[6], sections[7], sig_type);
+		goto out;
+	} else if (egg_strequal (command, "distro-upgrade")) {
+
+		if (size != 4) {
+			egg_warning ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+
+		distro_upgrade_enum = pk_distro_upgrade_enum_from_text (sections[1]);
+		if (distro_upgrade_enum == PK_DISTRO_UPGRADE_ENUM_UNKNOWN) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+					    "distro upgrade enum not recognised, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
+
+		ret = pk_backend_distro_upgrade (backend_spawn->priv->backend, distro_upgrade_enum, sections[2], sections[3]);
 		goto out;
 	} else {
 		egg_warning ("invalid command '%s'", command);
