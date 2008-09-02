@@ -158,6 +158,15 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_get_distro_upgrades:
+ */
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+	pk_backend_spawn_helper (spawn, "get-distro-upgrades.py", NULL);
+}
+
+/**
  * backend_get_files:
  */
 static void
@@ -441,7 +450,7 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 
 PK_BACKEND_OPTIONS (
 	"YUM",					/* description */
-	"Tim Lauridsen <timlau@fedoraproject.org>",	/* author */
+	"Tim Lauridsen <timlau@fedoraproject.org>, Richard Hughes <richard@hughsie.com>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
@@ -450,7 +459,7 @@ PK_BACKEND_OPTIONS (
 	backend_download_packages,		/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
-	NULL,					/* get_distro_upgrades */
+	backend_get_distro_upgrades,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */

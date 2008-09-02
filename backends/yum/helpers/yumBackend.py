@@ -48,6 +48,7 @@ import os.path
 import tarfile
 import tempfile
 import shutil
+import ConfigParser
 
 from yumDirect import *
 from yumFilter import *
@@ -1213,6 +1214,71 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return INFO_ENHANCEMENT
         else:
             return INFO_UNKNOWN
+
+    def get_distro_upgrades(self):
+        '''
+        Implement the {backend}-get-distro-upgrades functionality
+        '''
+        self._check_init()
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_QUERY)
+
+        # is preupgrade installed?
+        pkgs = self.yumbase.rpmdb.searchNevra(name='preupgrade')
+        if len(pkgs) == 0:
+            #install preupgrade
+            pkgs = self.yumbase.pkgSack.searchNevra(name='preupgrade')
+            if len(pkgs) == 0:
+                self.error(ERROR_PACKAGE_NOT_FOUND,"Could not find upgrade preupgrade package in any enabled repos")
+            elif len(pkgs) == 1:
+                txmbr = self.yumbase.install(po=pkgs[0])
+                if txmbr:
+                    self._runYumTransaction()
+            else:
+                self.error(ERROR_INTERNAL_ERROR,"not one update possibility")
+        elif len(pkgs) == 1:
+            # check if there are any updates to the preupgrade package
+            po = pkgs[0]
+            pkgs = self.yumbase.pkgSack.returnNewestByName(name='kernel')
+            if pkgs:
+                newest = pkgs[0]
+                if newest.EVR > po.EVR:
+                    # need to update preupgrade package
+                    txmbr = self.yumbase.update(po=pkgs[0])
+                    if txmbr:
+                        self._runYumTransaction()
+        else:
+            self.error(ERROR_INTERNAL_ERROR,"more than one preupgrade package installed")
+
+        # parse the releases file
+        config = ConfigParser.ConfigParser()
+        config.read('/usr/share/preupgrade/releases.list')
+
+        # find the newest release
+        newest = None
+        last_version = 0;
+        for section in config.sections():
+            # we only care about stable versions
+            if config.has_option(section,'stable') and config.getboolean(section,'stable'):
+                version = config.getfloat(section,'version')
+                if (version > last_version):
+                    newest = section
+                    last_version = version
+
+        # got no valid data
+        if not newest:
+            self.error(ERROR_FAILED_CONFIG_PARSING,"could not get latest distro data")
+
+        # are we already on the latest version
+        present_version = self.yumbase.conf.yumvar['releasever']
+        if (present_version >= last_version):
+            return
+
+        # if we have an upgrade candidate then pass back data to daemon
+        tok = newest.split(" ")
+        name = "%s-%s" % (tok[0].lower(),tok[1])
+        self.distro_upgrade(DISTRO_UPGRADE_STABLE, name, newest)
 
     def get_updates(self,filters):
         '''
