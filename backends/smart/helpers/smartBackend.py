@@ -108,9 +108,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             ratio, results, suggestions = self._search_packageid(packageid)
             packages.extend(self._process_search_results(results))
 
-        available = [package for package in packages if not package.installed]
+        available = []
+        for package in packages:
+            if package.installed:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                           'Package %s is already installed' % package)
+            else:
+                available.append(package)
         if len(available) < 1:
             return
+
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyInstall)
         for package in available:
@@ -148,9 +155,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             ratio, results, suggestions = self._search_packageid(packageid)
             packages.extend(self._process_search_results(results))
 
-        installed = [package for package in packages if package.installed]
+        installed = []
+        for package in packages:
+            if not package.installed:
+                self.error(ERROR_PACKAGE_NOT_INSTALLED,
+                           'Package %s is not installed' % package)
+            else:
+                installed.append(package)
         if len(installed) < 1:
             return
+
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyRemove)
         for package in installed:
