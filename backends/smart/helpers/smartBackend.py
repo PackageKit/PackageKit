@@ -244,8 +244,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if len(packages) < 1:
             return
 
-        self.allow_cancel(False)
-        self.status(PK_STATUS_ENUM_DOWNLOAD)
+        self.status(PK_STATUS_DOWNLOAD)
         self.allow_cancel(True)
         self._packagesdict = packages
         self.ctrl.downloadPackages(packages, targetdir=directory)
@@ -773,7 +772,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     return False
                 if repo.endswith('-source'):
                     return False
-        return True   
+        return True
 
     def _package_is_graphical(self, package):
         from smart.backends.rpm.base import RPMPackage
