@@ -41,6 +41,7 @@ def needs_cache(func):
         # Updating cache...    ########## [100%]
         #
         obj.status(STATUS_REQUEST) # ???
+        obj.allow_cancel(True)
         obj.ctrl.reloadChannels()
         result = func(obj, *args, **kwargs)
         obj.ctrl.saveSysConf()
@@ -66,17 +67,20 @@ class PackageKitSmartProgress(Progress):
         self._hassub = hassub
         self._backend = backend
         self._oldstatus = None
+        self._oldcancel = None
             
     def setFetcherMode(self, flag):
         if flag:
             self._oldstatus = self._backend._status
             self._backend.status(STATUS_DOWNLOAD)
+            self._backend.allow_cancel(True)
             self._backend.percentage(0)
 
     def stop(self):
         Progress.stop(self)
         if self._oldstatus:
             self._backend.percentage(100)
+            self._backend.allow_cancel(self._oldcancel)
             self._backend.status(self._oldstatus)
             self._oldstatus = None
 
@@ -86,6 +90,7 @@ class PackageKitSmartProgress(Progress):
 class PackageKitSmartBackend(PackageKitBaseBackend):
 
     _status = STATUS_UNKNOWN
+    _cancel = False
 
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
@@ -100,6 +105,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def status(self, state):
         PackageKitBaseBackend.status(self, state)
         self._status = state
+
+    def allow_cancel(self, allow):
+        PackageKitBaseBackend.allow_cancel(self, allow)
+        self._cancel = allow
 
     @needs_cache
     def install_packages(self, packageids):
@@ -122,6 +131,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 smart.transaction.PolicyInstall)
         for package in available:
             trans.enqueue(package, smart.transaction.INSTALL)
+
+        self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_INSTALL)
@@ -143,6 +154,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                                 'Package %s is already installed' % package)
                     trans.enqueue(package, smart.transaction.INSTALL)
 
+        self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_INSTALL)
@@ -169,6 +181,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 smart.transaction.PolicyRemove)
         for package in installed:
             trans.enqueue(package, smart.transaction.REMOVE)
+
+        self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_REMOVE)
@@ -188,6 +202,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 smart.transaction.PolicyUpgrade)
         for package in installed:
             trans.enqueue(package, smart.transaction.UPGRADE)
+
+        self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_UPDATE)
@@ -199,10 +215,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
             packages.extend(self._process_search_results(results))
-
         if len(packages) < 1:
             return
+
+        self.allow_cancel(False)
         self.status(PK_STATUS_ENUM_DOWNLOAD)
+        self.allow_cancel(True)
         self.ctrl.downloadPackages(packages, targetdir=directory)
 
     @needs_cache
@@ -216,6 +234,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if package.installed:
                 trans.enqueue(package, smart.transaction.UPGRADE)
 
+        self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_UPDATE)
@@ -232,6 +251,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if package.installed:
                 trans.enqueue(package, smart.transaction.UPGRADE)
 
+        self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
         self.status(STATUS_INFO)
@@ -245,6 +265,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def resolve(self, filters, packagename):
         self.status(STATUS_QUERY)
+        self.allow_cancel(True)
         ratio, results, suggestions = self.ctrl.search(packagename)
         for result in results:
             if self._package_passes_filters(result, filters):
@@ -256,6 +277,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def search_name(self, filters, packagename):
         globbed = "*%s*" % packagename
         self.status(STATUS_QUERY)
+        self.allow_cancel(True)
         ratio, results, suggestions = self.ctrl.search(globbed)
 
         packages = self._process_search_results(results)
@@ -269,6 +291,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def search_file(self, filters, searchstring):
         self.status(STATUS_QUERY)
+        self.allow_cancel(True)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
@@ -287,6 +310,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def search_group(self, filters, searchstring):
         self.status(STATUS_QUERY)
+        self.allow_cancel(True)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
@@ -302,6 +326,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def search_details(self, filters, searchstring):
         self.status(STATUS_QUERY)
+        self.allow_cancel(True)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
@@ -312,6 +337,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def get_packages(self, filters):
         self.status(STATUS_QUERY)
+        self.allow_cancel(True)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
@@ -322,6 +348,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def what_provides(self, filters, provides_type, search):
         self.status(STATUS_QUERY)
+        self.allow_cancel(True)
         # FIXME: provides_type is not used (== PROVIDES_ANY)
         providers = self.ctrl.getCache().getProvides(search)
         for provider in providers:
@@ -333,6 +360,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def refresh_cache(self):
         self.status(STATUS_REFRESH_CACHE)
+        self.allow_cancel(True)
         self.ctrl.rebuildSysConfChannels()
         self.ctrl.reloadChannels(None, caching=smart.const.NEVER)
         self.ctrl.saveSysConf()
