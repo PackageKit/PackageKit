@@ -566,6 +566,23 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     systemchannel = None # unfortunately package strings depend on system
 
+    def _machine(self):
+        import os
+        machine = os.uname()[-1]
+        if machine == "Power Macintosh": #<sigh>
+            machine = "ppc"
+        return machine
+
+    def _samearch(self, arch1, arch2):
+        if arch1 == arch2:
+            return True
+        if arch1 == 'noarch' or arch2 == 'noarch':
+            return True
+        x86 = re.compile(r'i[3456]86')
+        if x86.search(arch1) and x86.search(arch2):
+            return True
+        return False
+
     def _splitpackage(self, package):
         from smart.backends.rpm.base import RPMPackage
         from smart.backends.deb.base import DebPackage
@@ -578,11 +595,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             ver, arch, rel = package.version.rsplit('-')
             version = "%s-%s" % (ver, rel)
         else:
-            import os
-            machine = os.uname()[-1]
-            if machine == "Power Macintosh": #<sigh>
-                machine = "ppc"
-            version, arch = package.version, machine
+            version, arch = package.version, self._machine()
         return package.name, version, arch
 
     def _joinpackage(self, name, version, arch):
@@ -715,6 +728,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             loader = package.loaders.keys()[0]
             info = loader.getInfo(package)
             for filter in filterlist:
+                if filter in (FILTER_ARCH, FILTER_NOT_ARCH):
+                    name, version, arch = self._splitpackage(package)
+                    same = self._samearch(arch, self._machine())
+                    if filter == FILTER_ARCH and not same:
+                        return False
+                    if filter == FILTER_NOT_ARCH and same:
+                        return False
                 if filter in (FILTER_GUI, FILTER_NOT_GUI):
                     graphical = self._package_is_graphical(package)
                     if graphical is None: # tristate boolean
