@@ -102,6 +102,16 @@ class PackageKitBaseBackend:
         print >> sys.stdout,"package\t%s\t%s\t%s" % (status,id,summary)
         sys.stdout.flush()
 
+    def distro_upgrade(self,dtype,name,summary):
+        '''
+        send 'distro-upgrade' signal
+        @param dtype: the enumerated DISTRO_UPGRADE_* string
+        @param name: The distro name, e.g. "fedora-9"
+        @param summary: The localised distribution name and description
+        '''
+        print >> sys.stdout,"distro-upgrade\t%s\t%s\t%s" % (dtype,name,summary)
+        sys.stdout.flush()
+
     def status(self,state):
         '''
         send 'status' signal
@@ -347,6 +357,13 @@ class PackageKitBaseBackend:
     def get_updates(self,filter):
         '''
         Implement the {backend}-get-updates functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def get_distro_upgrades(self):
+        '''
+        Implement the {backend}-get-distro-upgrades functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
