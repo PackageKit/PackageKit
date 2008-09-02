@@ -674,23 +674,26 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         return (ratio, results, suggestions)
 
     def _add_package(self, package, status=None):
+        self._package_list.append((package, status))
+
+    def _show_package_list(self):
+        for package,status in self._package_list:
+            self._show_package(package, status)
+
+    def _show_package(self, package, status=None):
         if not status:
             if package.installed:
                 status = INFO_INSTALLED
             else:
                 status = INFO_AVAILABLE
-        self._package_list.append((package, status))
-
-    def _show_package_list(self, filters=None):
-        for package,status in self._package_list:
-            name, version, arch = self._splitpackage(package)
-            for loader in package.loaders:
-                channel = loader.getChannel()
-                if package.installed and not channel.getType().endswith('-sys'):
-                    continue
-                info = loader.getInfo(package)
-                self.package(pkpackage.get_package_id(name, version, arch,
-                    channel.getAlias()), status, info.getSummary())
+        name, version, arch = self._splitpackage(package)
+        for loader in package.loaders:
+            channel = loader.getChannel()
+            if package.installed and not channel.getType().endswith('-sys'):
+                continue
+            info = loader.getInfo(package)
+            self.package(pkpackage.get_package_id(name, version, arch,
+                channel.getAlias()), status, info.getSummary())
 
     def _get_status(self, package):
         flags = smart.pkgconf.testAllFlags(package)
