@@ -28,6 +28,7 @@ from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         ERROR_PACKAGE_DOWNLOAD_FAILED
 from packagekit.package import PackagekitPackage
 from packagekit.enums import *
+import re
 
 # Global vars
 pkpackage = PackagekitPackage()
@@ -228,7 +229,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
         ratio, results, suggestions = self.ctrl.search(packagename)
         for result in results:
-            if self._passes_filters(result, filters):
+            if self._package_passes_filters(result, filters):
                 self._show_package(result)
 
     @needs_cache
@@ -240,7 +241,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = self._process_search_results(results)
 
         for package in packages:
-            if self._passes_filters(package, filters):
+            if self._package_passes_filters(package, filters):
                 self._show_package(package)
 
     @needs_cache
@@ -248,7 +249,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
-            if self._passes_filters(package, filters):
+            if self._package_passes_filters(package, filters):
                 # FIXME: Only installed packages have path lists.
                 paths = []
                 for loader in package.loaders:
@@ -264,7 +265,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
-            if self._passes_filters(package, filters):
+            if self._package_passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
                 group = info.getGroup()
                 if group in self.GROUPS:
@@ -277,7 +278,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
-            if self._passes_filters(package, filters):
+            if self._package_passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
                 if searchstring in info.getDescription():
                     self._show_package(package)
@@ -287,7 +288,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
-            if self._passes_filters(package, filters):
+            if self._package_passes_filters(package, filters):
                 self._show_package(package)
 
     @needs_cache
@@ -297,7 +298,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         providers = self.ctrl.getCache().getProvides(search)
         for provider in providers:
             for package in provider.packages:
-                if self._passes_filters(package, filters):
+                if self._package_passes_filters(package, filters):
                     self._show_package(package)
 
     def refresh_cache(self):
@@ -486,7 +487,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                             providers[package] = True
 
             for package in providers.keys():
-                if self._passes_filters(package, filters):
+                if self._package_passes_filters(package, filters):
                     self._show_package(package)
 
     @needs_cache
@@ -511,7 +512,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                             requirers[package] = True
 
             for package in requirers.keys():
-                if self._passes_filters(package, filters):
+                if self._package_passes_filters(package, filters):
                     self._show_package(package)
 
     def get_repo_list(self, filters):
@@ -653,7 +654,38 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     return False
         return True   
 
-    def _passes_filters(self, package, filters):
+    def _package_is_graphical(self, package):
+        from smart.backends.rpm.base import RPMPackage
+        from smart.backends.deb.base import DebPackage
+        if isinstance(package, RPMPackage):
+            regex = re.compile(r'(qt)|(gtk)')
+            for required in package.requires:
+                for provider in required.providedby:
+                    for package in provider.packages:
+                        if regex.search(package.name):
+                            return True
+            return False
+        elif isinstance(package, DebPackage):
+            group = package.getGroup().split('/')[-1].lower()
+            return group in ['x11', 'gnome', 'kde']
+        else:
+            return None
+
+    def _package_is_development(self, package):
+        from smart.backends.rpm.base import RPMPackage
+        from smart.backends.deb.base import DebPackage
+        if isinstance(package, RPMPackage):
+            regex = re.compile(r'(-devel)|(-dgb)|(-static)')
+            return bool(regex.search(package.name))
+        elif isinstance(package, DebPackage):
+            group = package.getGroup().split('/')[-1].lower()
+            return package.name.endswith("-dev") or \
+                   package.name.endswith("-dbg") or \
+                   group in ['devel', 'libdevel']
+        else:
+            return None
+
+    def _package_passes_filters(self, package, filters):
         filterlist = filters.split(';')
         if FILTER_NOT_INSTALLED in filterlist and package.installed:
             return False
@@ -664,30 +696,20 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             info = loader.getInfo(package)
             for filter in filterlist:
                 if filter in (FILTER_GUI, FILTER_NOT_GUI):
-                    if hasattr(info, 'isGraphical'):
-                        graphical = info.isGraphical()
-                        if graphical is None: # tristate boolean
-                            return None
-                        if filter == FILTER_GUI and graphical:
-                            return False
-                        if filter == FILTER_NOT_GUI and graphical:
-                            return False
-                    else:
-                        self.error(ERROR_FILTER_INVALID, \
-                                   "filter %s not supported" % filter)
+                    graphical = self._package_is_graphical(package)
+                    if graphical is None: # tristate boolean
+                        return None
+                    if filter == FILTER_GUI and not graphical:
+                        return False
+                    if filter == FILTER_NOT_GUI and graphical:
                         return False
                 if filter in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
-                    if hasattr(info, 'isDevelopment'):
-                        development = info.isDevelopment()
-                        if development is None: # tristate boolean
-                            return None
-                        if filter == FILTER_DEVELOPMENT and development:
-                            return False
-                        if filter == FILTER_NOT_DEVELOPMENT and development:
-                            return False
-                    else:
-                        self.error(ERROR_FILTER_INVALID, \
-                                   "filter %s not supported" % filter)
+                    development = self._package_is_development(package)
+                    if development is None: # tristate boolean
+                        return None
+                    if filter == FILTER_DEVELOPMENT and not development:
+                        return False
+                    if filter == FILTER_NOT_DEVELOPMENT and development:
                         return False
                 if filter in (FILTER_FREE, FILTER_NOT_FREE):
                     if hasattr(info, 'getLicense'):
