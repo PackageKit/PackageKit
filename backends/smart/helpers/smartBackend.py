@@ -315,7 +315,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
-                self._show_package(package)
+                self._add_package(package)
         self._post_process_package_list(filters)
         self._show_package_list()
 
@@ -518,7 +518,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             for package in providers.keys():
                 if self._package_passes_filters(package, filters):
-                    self._show_package(package)
+                    self._add_package(package)
+            self._post_process_package_list(filters)
+            self._show_package_list()
 
     @needs_cache
     def get_requires(self, filters, packageids, recursive_text):
@@ -543,7 +545,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             for package in requirers.keys():
                 if self._package_passes_filters(package, filters):
-                    self._show_package(package)
+                    self._add_package(package)
+            self._post_process_package_list(filters)
+            self._show_package_list()
 
     def get_repo_list(self, filters):
         self.status(STATUS_INFO)
