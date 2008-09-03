@@ -567,6 +567,28 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-update functionality
         '''
+        def succeeds_security_update(pkg):
+            """
+            Return True if an update succeeds a previous security update
+
+            An example would be a package with version 1.1 in the security
+            archive and 1.1.1 in the archive of proposed updates or the
+            same version in both archives.
+            """
+            inst_ver = pkg._pkg.CurrentVer
+            for ver in pkg._pkg.VersionList:
+                # Skip versions which are not later
+                if inst_ver and \
+                   apt_pkg.VersionCompare(ver.VerStr, inst_ver.VerStr) <= 0:
+                       continue
+                for(verFileIter, index) in ver.FileList:
+                    if verFileIter.Origin in ["Debian", "Ubuntu"] and \
+                       (verFileIter.Archive.endswith("-security") or \
+                        verFileIter.Label == "Debian-Security"):
+                            indexfile = pkg._list.FindIndex(verFileIter)
+                            if indexfile and indexfile.IsTrusted:
+                                return True
+            return False
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
         self.StatusChanged(STATUS_INFO)
@@ -593,6 +615,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 if origin in ["Debian", "Ubuntu"] and trusted == True:
                     if archive.endswith("-security") or \
                        label == "Debian-Security":
+                        info = INFO_SECURITY
+                    elif succeeds_security_update(pkg):
+                        pklog.debug("Update of %s succeeds a security "
+                                    "update. Raising its priority." % pkg.name)
                         info = INFO_SECURITY
                     elif archive.endswith("-backports"):
                         info = INFO_ENHANCEMENT
