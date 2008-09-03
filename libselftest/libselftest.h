@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -25,17 +25,7 @@
 #include <glib.h>
 #include <string.h>
 
-typedef struct
-{
-	guint		 total;
-	guint		 succeeded;
-	gboolean	 started;
-	gchar		*type;
-	GTimer		*timer;
-	GMainLoop	*loop;
-	guint		 hang_loop_id;
-	gpointer	 user_data;
-} LibSelfTest;
+typedef struct LibSelfTest LibSelfTest;
 
 gboolean	 libst_start		(LibSelfTest *test, const gchar *name);
 void		 libst_end		(LibSelfTest *test);
