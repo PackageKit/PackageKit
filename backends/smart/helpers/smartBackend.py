@@ -240,7 +240,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if len(packages) < 1:
             return
 
-        self.status(PK_STATUS_DOWNLOAD)
+        self.status(STATUS_DOWNLOAD)
         self.allow_cancel(True)
         self._packagesdict = packages
         self.ctrl.downloadPackages(packages, targetdir=directory)
