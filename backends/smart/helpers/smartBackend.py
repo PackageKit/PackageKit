@@ -463,7 +463,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def get_details(self, packageids):
         self.status(STATUS_INFO)
-        obj.allow_cancel(True)
+        self.allow_cancel(True)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -521,7 +521,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     @needs_cache
     def get_files(self, packageids):
         self.status(STATUS_INFO)
-        obj.allow_cancel(True)
+        self.allow_cancel(True)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -552,7 +552,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def get_depends(self, filters, packageids, recursive_text):
         recursive = self._text_to_boolean(recursive_text)
         self.status(STATUS_INFO)
-        obj.allow_cancel(True)
+        self.allow_cancel(True)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -580,7 +580,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def get_requires(self, filters, packageids, recursive_text):
         recursive = self._text_to_boolean(recursive_text)
         self.status(STATUS_INFO)
-        obj.allow_cancel(True)
+        self.allow_cancel(True)
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
 
@@ -606,7 +606,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def get_repo_list(self, filters):
         self.status(STATUS_INFO)
-        obj.allow_cancel(True)
+        self.allow_cancel(True)
         channels = smart.sysconf.get("channels", ())
         for alias in channels:
             channel = smart.sysconf.get(("channels", alias))
@@ -621,7 +621,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def repo_enable(self, repoid, enable):
         self.status(STATUS_INFO)
-        obj.allow_cancel(True)
+        self.allow_cancel(True)
         if smart.sysconf.has(("channels", repoid)):
             if enable == "true":
                 smart.sysconf.remove(("channels", repoid, "disabled"))
@@ -633,7 +633,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def repo_set_data(self, repoid, param, value):
         self.status(STATUS_INFO)
-        obj.allow_cancel(True)
+        self.allow_cancel(True)
         if smart.sysconf.has(("channels", repoid)):
             smart.sysconf.set(("channels", repoid, param), value)
             self.ctrl.saveSysConf()
