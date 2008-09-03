@@ -266,6 +266,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        if not trans:
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE,
+                       "No interesting upgrades available.")
+            return
         self.status(STATUS_UPDATE)
         self._packagesdict = trans.getChangeSet()
         self.ctrl.commitTransaction(trans, confirm=False)
