@@ -85,7 +85,7 @@ typedef enum {
  * status of what sort of thing is happening
  * Icons that change to represent the current status of the transaction will
  * use these constants
- * If you add to these, make sure you add filenames in pk-watch also
+ * If you add to these, make sure you add filenames in gpk-watch.c also
  *
  * A typical transaction will do:
  * - schedule task
@@ -126,6 +126,7 @@ typedef enum {
 	PK_STATUS_ENUM_DOWNLOAD_GROUP,
 	PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO,
 	PK_STATUS_ENUM_REPACKAGING,
+	PK_STATUS_ENUM_LOADING_CACHE,
 	PK_STATUS_ENUM_UNKNOWN
 } PkStatusEnum;
 

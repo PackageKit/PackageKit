@@ -80,6 +80,7 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_DOWNLOAD_GROUP,		"download-group"},
 	{PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO,	"download-updateinfo"},
 	{PK_STATUS_ENUM_REPACKAGING,		"repackaging"},
+	{PK_STATUS_ENUM_LOADING_CACHE,		"loading-cache"},
 	{0, NULL}
 };
 
