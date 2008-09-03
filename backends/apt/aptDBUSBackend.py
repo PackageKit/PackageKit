@@ -1240,7 +1240,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.AllowCancel(False)
 
-        #FIXME: Support candidates
         for name in names:
             pkg = None
             if self._cache.has_key(name):
