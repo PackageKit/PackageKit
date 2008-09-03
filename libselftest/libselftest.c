@@ -28,6 +28,9 @@
 
 #include "libselftest.h"
 
+/**
+ * libst_init:
+ **/
 void
 libst_init (LibSelfTest *test)
 {
@@ -35,13 +38,14 @@ libst_init (LibSelfTest *test)
 	test->succeeded = 0;
 	test->type = NULL;
 	test->started = FALSE;
-	test->class = CLASS_AUTO;
-	test->level = LEVEL_ALL;
 	test->timer = g_timer_new ();
 	test->loop = g_main_loop_new (NULL, FALSE);
 	test->hang_loop_id = 0;
 }
 
+/**
+ * libst_loopquit:
+ **/
 void
 libst_loopquit (LibSelfTest *test)
 {
@@ -53,6 +57,9 @@ libst_loopquit (LibSelfTest *test)
 	g_main_loop_quit (test->loop);
 }
 
+/**
+ * libst_hang_check:
+ **/
 static gboolean
 libst_hang_check (gpointer data)
 {
@@ -61,6 +68,9 @@ libst_hang_check (gpointer data)
 	return FALSE;
 }
 
+/**
+ * libst_loopwait:
+ **/
 void
 libst_loopwait (LibSelfTest *test, guint timeout)
 {
@@ -68,6 +78,9 @@ libst_loopwait (LibSelfTest *test, guint timeout)
 	g_main_loop_run (test->loop);
 }
 
+/**
+ * libst_loopcheck:
+ **/
 void
 libst_loopcheck (LibSelfTest *test)
 {
@@ -80,18 +93,27 @@ libst_loopcheck (LibSelfTest *test)
 	}
 }
 
+/**
+ * libst_set_user_data:
+ **/
 void
 libst_set_user_data (LibSelfTest *test, gpointer user_data)
 {
 	test->user_data = user_data;
 }
 
+/**
+ * libst_get_user_data:
+ **/
 gpointer
 libst_get_user_data (LibSelfTest *test)
 {
 	return test->user_data;
 }
 
+/**
+ * libst_finish:
+ **/
 gint
 libst_finish (LibSelfTest *test)
 {
@@ -111,7 +133,11 @@ libst_finish (LibSelfTest *test)
 	return retval;
 }
 
-/* returns ms */
+/**
+ * libst_elapsed:
+ *
+ * Returns ms
+ **/
 guint
 libst_elapsed (LibSelfTest *test)
 {
@@ -120,27 +146,25 @@ libst_elapsed (LibSelfTest *test)
 	return (guint) (time * 1000.0f);
 }
 
+/**
+ * libst_start:
+ **/
 gboolean
-libst_start (LibSelfTest *test, const gchar *name, LibSelfTestClass class)
+libst_start (LibSelfTest *test, const gchar *name)
 {
-	if (class == CLASS_AUTO && test->class == CLASS_MANUAL) {
-		return FALSE;
-	}
-	if (class == CLASS_MANUAL && test->class == CLASS_AUTO) {
-		return FALSE;
-	}
 	if (test->started == TRUE) {
 		g_print ("Not ended test! Cannot start!\n");
 		exit (1);
 	}
 	test->type = g_strdup (name);
 	test->started = TRUE;
-	if (test->level == LEVEL_NORMAL) {
-		g_print ("%s...", test->type);
-	}
+	g_print ("%s...", test->type);
 	return TRUE;
 }
 
+/**
+ * libst_end:
+ **/
 void
 libst_end (LibSelfTest *test)
 {
@@ -148,9 +172,7 @@ libst_end (LibSelfTest *test)
 		g_print ("Not started test! Cannot finish!\n");
 		exit (1);
 	}
-	if (test->level == LEVEL_NORMAL) {
-		g_print ("OK\n");
-	}
+	g_print ("OK\n");
 
 	/* disable hang check */
 	if (test->hang_loop_id != 0) {
@@ -162,6 +184,9 @@ libst_end (LibSelfTest *test)
 	g_free (test->type);
 }
 
+/**
+ * libst_title:
+ **/
 void
 libst_title (LibSelfTest *test, const gchar *format, ...)
 {
@@ -171,52 +196,54 @@ libst_title (LibSelfTest *test, const gchar *format, ...)
 	/* reset the value libst_elapsed replies with */
 	g_timer_reset (test->timer);
 
-	if (test->level == LEVEL_ALL) {
-		va_start (args, format);
-		g_vasprintf (&va_args_buffer, format, args);
-		va_end (args);
-		g_print ("> check #%u\t%s: \t%s...", test->total+1, test->type, va_args_buffer);
-		g_free(va_args_buffer);
-	}
+	va_start (args, format);
+	g_vasprintf (&va_args_buffer, format, args);
+	va_end (args);
+	g_print ("> check #%u\t%s: \t%s...", test->total+1, test->type, va_args_buffer);
+	g_free(va_args_buffer);
+
 	test->total++;
 }
 
+/**
+ * libst_success:
+ **/
 void
 libst_success (LibSelfTest *test, const gchar *format, ...)
 {
 	va_list args;
 	gchar *va_args_buffer = NULL;
-	if (test->level == LEVEL_ALL) {
-		if (format == NULL) {
-			g_print ("...OK\n");
-			goto finish;
-		}
-		va_start (args, format);
-		g_vasprintf (&va_args_buffer, format, args);
-		va_end (args);
-		g_print ("...OK [%s]\n", va_args_buffer);
-		g_free(va_args_buffer);
+
+	if (format == NULL) {
+		g_print ("...OK\n");
+		goto finish;
 	}
+	va_start (args, format);
+	g_vasprintf (&va_args_buffer, format, args);
+	va_end (args);
+	g_print ("...OK [%s]\n", va_args_buffer);
+	g_free(va_args_buffer);
 finish:
 	test->succeeded++;
 }
 
+/**
+ * libst_failed:
+ **/
 void
 libst_failed (LibSelfTest *test, const gchar *format, ...)
 {
 	va_list args;
 	gchar *va_args_buffer = NULL;
-	if (test->level == LEVEL_ALL || test->level == LEVEL_NORMAL) {
-		if (format == NULL) {
-			g_print ("FAILED\n");
-			goto failed;
-		}
-		va_start (args, format);
-		g_vasprintf (&va_args_buffer, format, args);
-		va_end (args);
-		g_print ("FAILED [%s]\n", va_args_buffer);
-		g_free(va_args_buffer);
+	if (format == NULL) {
+		g_print ("FAILED\n");
+		goto failed;
 	}
+	va_start (args, format);
+	g_vasprintf (&va_args_buffer, format, args);
+	va_end (args);
+	g_print ("FAILED [%s]\n", va_args_buffer);
+	g_free(va_args_buffer);
 failed:
 	exit (1);
 }

@@ -562,9 +562,8 @@ libst_transaction_db (LibSelfTest *test)
 	guint value;
 	gboolean ret;
 
-	if (libst_start (test, "PkTransactionDb", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkTransactionDb"))
 		return;
-	}
 
 	/* don't do these when doing make distcheck */
 #ifndef PK_IS_DEVELOPER
@@ -577,9 +576,9 @@ libst_transaction_db (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set the correct time");
 	ret = pk_transaction_db_action_time_reset (db, PK_ROLE_ENUM_REFRESH_CACHE);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed to reset value");
 	}
 

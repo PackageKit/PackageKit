@@ -583,9 +583,8 @@ libst_generate_pack (LibSelfTest *test)
 	gchar *src;
 	gchar **package_ids;
 
-	if (libst_start (test, "PkGeneratePack", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkGeneratePack"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get client");
@@ -599,9 +598,9 @@ libst_generate_pack (LibSelfTest *test)
 	libst_title (test, "test perhaps resolve NULL");
 	retval = pk_client_reset (client, &error);
 	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, NULL, &error);
-	if (file == NULL) {
+	if (file == NULL)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed to resolve %s", error->message);
 		g_error_free (error);
 	}

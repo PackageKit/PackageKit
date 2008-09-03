@@ -165,9 +165,8 @@ egg_strlen (const gchar *text, guint len)
 	guint i;
 
 	/* common case */
-	if (text == NULL || text[0] == '\0') {
+	if (text == NULL || text[0] == '\0')
 		return 0;
-	}
 
 	/* only count up to len */
 	for (i=1; i<len; i++) {

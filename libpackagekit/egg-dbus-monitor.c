@@ -70,14 +70,12 @@ egg_dbus_monitor_name_owner_changed_cb (DBusGProxy *proxy, const gchar *name,
 	guint prev_len;
 
 	g_return_if_fail (EGG_IS_DBUS_MONITOR (monitor));
-	if (monitor->priv->proxy == NULL) {
+	if (monitor->priv->proxy == NULL)
 		return;
-	}
 
 	/* not us */
-	if (strcmp (name, monitor->priv->service) != 0) {
+	if (strcmp (name, monitor->priv->service) != 0)
 		return;
-	}
 
 	/* ITS4: ignore, not used for allocation */
 	new_len = strlen (new);
@@ -99,9 +97,8 @@ egg_dbus_monitor_name_owner_changed_cb (DBusGProxy *proxy, const gchar *name,
 	/* something --> something (we've replaced the old process) */
 	if (prev_len != 0 && new_len != 0) {
 		/* only send this to the prev client */
-		if (strcmp (monitor->priv->unique_name, prev) == 0) {
+		if (strcmp (monitor->priv->unique_name, prev) == 0)
 			g_signal_emit (monitor, signals [EGG_DBUS_MONITOR_CONNECTION_REPLACED], 0);
-		}
 		return;
 	}
 }
@@ -135,11 +132,11 @@ egg_dbus_monitor_assign (EggDbusMonitor *monitor, EggDbusMonitorType bus_type, c
 	monitor->priv->bus_type = bus_type;
 
 	/* connect to correct bus */
-	if (bus_type == EGG_DBUS_MONITOR_SESSION) {
+	if (bus_type == EGG_DBUS_MONITOR_SESSION)
 		monitor->priv->connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
-	} else {
+	else
 		monitor->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
-	}
+
 	if (error != NULL) {
 		egg_warning ("Cannot connect to bus: %s", error->message);
 		g_error_free (error);
@@ -163,9 +160,8 @@ egg_dbus_monitor_assign (EggDbusMonitor *monitor, EggDbusMonitorType bus_type, c
 
 	/* coldplug */
 	connected = egg_dbus_monitor_is_connected (monitor);
-	if (connected) {
+	if (connected)
 		g_signal_emit (monitor, signals [EGG_DBUS_MONITOR_CONNECTION_CHANGED], 0, TRUE);
-	}
 
 	/* save this for the replaced check */
 	conn = dbus_g_connection_get_connection (monitor->priv->connection);
@@ -249,9 +245,8 @@ egg_dbus_monitor_finalize (GObject *object)
 	monitor = EGG_DBUS_MONITOR (object);
 
 	g_return_if_fail (monitor->priv != NULL);
-	if (monitor->priv->proxy != NULL) {
+	if (monitor->priv->proxy != NULL)
 		g_object_unref (monitor->priv->proxy);
-	}
 
 	G_OBJECT_CLASS (egg_dbus_monitor_parent_class)->finalize (object);
 }

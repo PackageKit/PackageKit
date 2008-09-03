@@ -318,16 +318,15 @@ libst_bitfield (LibSelfTest *test)
 	guint value;
 	PkBitfield values;
 
-	if (libst_start (test, "PkBitfield", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkBitfield"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "check we can convert filter bitfield to text (none)");
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NONE));
-	if (egg_strequal (text, "none")) {
+	if (egg_strequal (text, "none"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "text was %s", text);
 	}
 	g_free (text);
@@ -335,9 +334,9 @@ libst_bitfield (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check we can convert filter bitfield to text (single)");
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT));
-	if (egg_strequal (text, "~devel")) {
+	if (egg_strequal (text, "~devel"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "text was %s", text);
 	}
 	g_free (text);
@@ -347,9 +346,9 @@ libst_bitfield (LibSelfTest *test)
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 					   pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 					   pk_bitfield_value (PK_FILTER_ENUM_NEWEST));
-	if (egg_strequal (text, "~devel;gui;newest")) {
+	if (egg_strequal (text, "~devel;gui;newest"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "text was %s", text);
 	}
 	g_free (text);
@@ -357,18 +356,18 @@ libst_bitfield (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check we can convert filter text to bitfield (none)");
 	filter = pk_filter_bitfield_from_text ("none");
-	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NONE)) {
+	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NONE))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "filter was %i", filter);
 	}
 
 	/************************************************************/
 	libst_title (test, "check we can convert filter text to bitfield (single)");
 	filter = pk_filter_bitfield_from_text ("~devel");
-	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "filter was %i", filter);
 	}
 
@@ -377,9 +376,9 @@ libst_bitfield (LibSelfTest *test)
 	filter = pk_filter_bitfield_from_text ("~devel;gui;newest");
 	if (filter == (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 		       pk_bitfield_value (PK_FILTER_ENUM_GUI) |
-		       pk_bitfield_value (PK_FILTER_ENUM_NEWEST))) {
+		       pk_bitfield_value (PK_FILTER_ENUM_NEWEST)))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "filter was %i", filter);
 	}
 
@@ -391,9 +390,9 @@ libst_bitfield (LibSelfTest *test)
 	pk_bitfield_add (filter, PK_FILTER_ENUM_NOT_FREE);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_text (filter);
-	if (egg_strequal (text, "gui;~free;newest")) {
+	if (egg_strequal (text, "gui;~free;newest"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "text was %s", text);
 	}
 	g_free (text);
@@ -403,15 +402,15 @@ libst_bitfield (LibSelfTest *test)
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 		 pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 		 pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
-	if (pk_bitfield_contain (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+	if (pk_bitfield_contain (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "wrong boolean");
 	}
 	libst_title (test, "check we can test enum false-presence");
-	if (!pk_bitfield_contain (filter, PK_FILTER_ENUM_FREE)) {
+	if (!pk_bitfield_contain (filter, PK_FILTER_ENUM_FREE))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "wrong boolean");
 	}
 
@@ -420,9 +419,9 @@ libst_bitfield (LibSelfTest *test)
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_text (filter);
-	if (egg_strequal (text, "none")) {
+	if (egg_strequal (text, "none"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "text was %s", text);
 	}
 	g_free (text);
@@ -431,9 +430,9 @@ libst_bitfield (LibSelfTest *test)
 	libst_title (test, "bitfield from enums");
 	values = pk_bitfield_from_enums (PK_ROLE_ENUM_SEARCH_GROUP, PK_ROLE_ENUM_SEARCH_DETAILS, -1);
 	if (values == (pk_bitfield_value (PK_ROLE_ENUM_SEARCH_DETAILS) |
-		       pk_bitfield_value (PK_ROLE_ENUM_SEARCH_GROUP))) {
+		       pk_bitfield_value (PK_ROLE_ENUM_SEARCH_GROUP)))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "returned bitfield %i", values);
 	}
 
@@ -442,27 +441,27 @@ libst_bitfield (LibSelfTest *test)
 	values = pk_bitfield_value (PK_ROLE_ENUM_SEARCH_DETAILS) |
 		 pk_bitfield_value (PK_ROLE_ENUM_SEARCH_GROUP);
 	value = pk_bitfield_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, -1);
-	if (value == -1) {
+	if (value == -1)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "returned priority %i when should be missing", value);
 	}
 
 	/************************************************************/
 	libst_title (test, "priority check first");
 	value = pk_bitfield_contain_priority (values, PK_ROLE_ENUM_SEARCH_GROUP, -1);
-	if (value == PK_ROLE_ENUM_SEARCH_GROUP) {
+	if (value == PK_ROLE_ENUM_SEARCH_GROUP)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "returned wrong value; %i", value);
 	}
 
 	/************************************************************/
 	libst_title (test, "priority check second, correct");
 	value = pk_bitfield_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, PK_ROLE_ENUM_SEARCH_GROUP, -1);
-	if (value == PK_ROLE_ENUM_SEARCH_GROUP) {
+	if (value == PK_ROLE_ENUM_SEARCH_GROUP)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "returned wrong value; %i", value);
 	}
 

@@ -375,18 +375,16 @@ libst_catalog (LibSelfTest *test)
 	gchar *path;
 	guint size;
 
-	if (libst_start (test, "PkCatalog", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkCatalog"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get catalog");
 	catalog = pk_catalog_new ();
-	if (catalog != NULL) {
+	if (catalog != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "process the files getting non-null");
@@ -395,20 +393,18 @@ libst_catalog (LibSelfTest *test)
 	list = pk_catalog_process_files (catalog, filenames);
 	g_free (path);
 	g_strfreev (filenames);
-	if (list != NULL) {
+	if (list != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "have we got packages?");
 	size = pk_package_list_get_size (list);
 	if (size > 0) {
 		libst_success (test, "%i packages", size);
-	} else {
+	} else
 		libst_failed (test, NULL);
-	}
 	g_object_unref (list);
 	g_object_unref (catalog);
 
