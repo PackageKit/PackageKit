@@ -36,11 +36,7 @@ pkpackage = PackagekitPackage()
 def needs_cache(func):
     """ Load smart's channels, and save the cache when done. """
     def cache_wrap(obj, *args, **kwargs):
-        # Smart's usual output is: (delocalized)
-        # Loading cache...
-        # Updating cache...    ########## [100%]
-        #
-        obj.status(STATUS_REQUEST) # ???
+        obj.status(STATUS_LOADING_CACHE)
         obj.allow_cancel(True)
         obj.ctrl.reloadChannels()
         result = func(obj, *args, **kwargs)
