@@ -14,10 +14,6 @@ TODO:
  * Blacklist packages requiring input on the terminal and try to change
    the Debian policy in the long run. Way of automation?
  
- * Allow to inject alternative apt.package.Package classes into the
-   cache to support PackageKit and distribution specific needs
-   (e.g. when is a package called free or supported)
-
  * Allow to reinject debtags into the search results to get 
    similar software which not matches on the search terms
 
@@ -25,6 +21,4 @@ TODO:
    the xapian database to also make use of it in search group and 
    search name (do we want this?)
 
- * Group mapping: Are there any derivates with additional sections? We need
-   additional groups for doc, science and electronics
-
+ * Test and think about packages from cdroms
