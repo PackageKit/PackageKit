@@ -192,6 +192,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if not package.installed:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            'Package %s is not installed' % package)
+            elif package.essential:
+                self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                           'Package %s cannot be removed' % package)
             else:
                 installed.append(package)
         if len(installed) < 1:
