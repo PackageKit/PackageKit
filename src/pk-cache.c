@@ -153,26 +153,26 @@ pk_cache_new (void)
 #include <libselftest.h>
 
 void
-libst_cache (LibSelfTest *test)
+egg_test_cache (EggTest *test)
 {
 	PkCache *cache;
 	gchar *text;
 	gint value;
 
-	if (!libst_start (test, "PkCache"))
+	if (!egg_test_start (test, "PkCache"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	egg_test_title (test, "get an instance");
 	cache = pk_cache_new ();
 	if (cache != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	g_object_unref (cache);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

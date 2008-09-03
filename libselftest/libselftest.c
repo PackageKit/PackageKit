@@ -28,7 +28,7 @@
 
 #include "libselftest.h"
 
-struct LibSelfTest {
+struct EggTest {
 	guint		 total;
 	guint		 succeeded;
 	gboolean	 started;
@@ -40,10 +40,10 @@ struct LibSelfTest {
 };
 
 /**
- * libst_init:
+ * egg_test_init:
  **/
 void
-libst_init (LibSelfTest *test)
+egg_test_init (EggTest *test)
 {
 	test->total = 0;
 	test->succeeded = 0;
@@ -55,10 +55,10 @@ libst_init (LibSelfTest *test)
 }
 
 /**
- * libst_loopquit:
+ * egg_test_loop_quit:
  **/
 void
-libst_loopquit (LibSelfTest *test)
+egg_test_loop_quit (EggTest *test)
 {
 	/* disable the loop watch */
 	if (test->hang_loop_id != 0) {
@@ -69,64 +69,64 @@ libst_loopquit (LibSelfTest *test)
 }
 
 /**
- * libst_hang_check:
+ * egg_test_hang_check:
  **/
 static gboolean
-libst_hang_check (gpointer data)
+egg_test_hang_check (gpointer data)
 {
-	LibSelfTest *test = (LibSelfTest *) data;
+	EggTest *test = (EggTest *) data;
 	g_main_loop_quit (test->loop);
 	return FALSE;
 }
 
 /**
- * libst_loopwait:
+ * egg_test_loop_wait:
  **/
 void
-libst_loopwait (LibSelfTest *test, guint timeout)
+egg_test_loop_wait (EggTest *test, guint timeout)
 {
-	test->hang_loop_id = g_timeout_add (timeout, libst_hang_check, test);
+	test->hang_loop_id = g_timeout_add (timeout, egg_test_hang_check, test);
 	g_main_loop_run (test->loop);
 }
 
 /**
- * libst_loopcheck:
+ * egg_test_loop_check:
  **/
 void
-libst_loopcheck (LibSelfTest *test)
+egg_test_loop_check (EggTest *test)
 {
-	guint elapsed = libst_elapsed (test);
-	libst_title (test, "did we timeout out of the loop");
+	guint elapsed = egg_test_elapsed (test);
+	egg_test_title (test, "did we timeout out of the loop");
 	if (test->hang_loop_id == 0) {
-		libst_success (test, "loop blocked for %ims", elapsed);
+		egg_test_success (test, "loop blocked for %ims", elapsed);
 	} else {
-		libst_failed (test, "hangcheck saved us after %ims", elapsed);
+		egg_test_failed (test, "hangcheck saved us after %ims", elapsed);
 	}
 }
 
 /**
- * libst_set_user_data:
+ * egg_test_set_user_data:
  **/
 void
-libst_set_user_data (LibSelfTest *test, gpointer user_data)
+egg_test_set_user_data (EggTest *test, gpointer user_data)
 {
 	test->user_data = user_data;
 }
 
 /**
- * libst_get_user_data:
+ * egg_test_get_user_data:
  **/
 gpointer
-libst_get_user_data (LibSelfTest *test)
+egg_test_get_user_data (EggTest *test)
 {
 	return test->user_data;
 }
 
 /**
- * libst_finish:
+ * egg_test_finish:
  **/
 gint
-libst_finish (LibSelfTest *test)
+egg_test_finish (EggTest *test)
 {
 	gint retval;
 	g_print ("test passes (%u/%u) : ", test->succeeded, test->total);
@@ -145,12 +145,12 @@ libst_finish (LibSelfTest *test)
 }
 
 /**
- * libst_elapsed:
+ * egg_test_elapsed:
  *
  * Returns ms
  **/
 guint
-libst_elapsed (LibSelfTest *test)
+egg_test_elapsed (EggTest *test)
 {
 	gdouble time;
 	time = g_timer_elapsed (test->timer, NULL);
@@ -158,10 +158,10 @@ libst_elapsed (LibSelfTest *test)
 }
 
 /**
- * libst_start:
+ * egg_test_start:
  **/
 gboolean
-libst_start (LibSelfTest *test, const gchar *name)
+egg_test_start (EggTest *test, const gchar *name)
 {
 	if (test->started == TRUE) {
 		g_print ("Not ended test! Cannot start!\n");
@@ -174,10 +174,10 @@ libst_start (LibSelfTest *test, const gchar *name)
 }
 
 /**
- * libst_end:
+ * egg_test_end:
  **/
 void
-libst_end (LibSelfTest *test)
+egg_test_end (EggTest *test)
 {
 	if (test->started == FALSE) {
 		g_print ("Not started test! Cannot finish!\n");
@@ -196,15 +196,15 @@ libst_end (LibSelfTest *test)
 }
 
 /**
- * libst_title:
+ * egg_test_title:
  **/
 void
-libst_title (LibSelfTest *test, const gchar *format, ...)
+egg_test_title (EggTest *test, const gchar *format, ...)
 {
 	va_list args;
 	gchar *va_args_buffer = NULL;
 
-	/* reset the value libst_elapsed replies with */
+	/* reset the value egg_test_elapsed replies with */
 	g_timer_reset (test->timer);
 
 	va_start (args, format);
@@ -217,10 +217,10 @@ libst_title (LibSelfTest *test, const gchar *format, ...)
 }
 
 /**
- * libst_success:
+ * egg_test_success:
  **/
 void
-libst_success (LibSelfTest *test, const gchar *format, ...)
+egg_test_success (EggTest *test, const gchar *format, ...)
 {
 	va_list args;
 	gchar *va_args_buffer = NULL;
@@ -239,10 +239,10 @@ finish:
 }
 
 /**
- * libst_failed:
+ * egg_test_failed:
  **/
 void
-libst_failed (LibSelfTest *test, const gchar *format, ...)
+egg_test_failed (EggTest *test, const gchar *format, ...)
 {
 	va_list args;
 	gchar *va_args_buffer = NULL;
@@ -260,10 +260,10 @@ failed:
 }
 
 /**
- * libst_get_data_file:
+ * egg_test_get_data_file:
  **/
 gchar *
-libst_get_data_file (const gchar *filename)
+egg_test_get_data_file (const gchar *filename)
 {
 	gboolean ret;
 	gchar *full;

@@ -494,25 +494,25 @@ pk_transaction_list_new (void)
 #include "pk-backend-internal.h"
 
 /**
- * libst_transaction_list_finished_cb:
+ * egg_test_transaction_list_finished_cb:
  **/
 static void
-libst_transaction_list_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time, LibSelfTest *test)
+egg_test_transaction_list_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time, EggTest *test)
 {
-	libst_loopquit (test);
+	egg_test_loop_quit (test);
 }
 
 /**
- * libst_transaction_list_delay_cb:
+ * egg_test_transaction_list_delay_cb:
  **/
 static void
-libst_transaction_list_delay_cb (LibSelfTest *test)
+egg_test_transaction_list_delay_cb (EggTest *test)
 {
-	libst_loopquit (test);
+	egg_test_loop_quit (test);
 }
 
 void
-libst_transaction_list (LibSelfTest *test)
+egg_test_transaction_list (EggTest *test)
 {
 	PkTransactionList *tlist;
 	gboolean ret;
@@ -521,90 +521,90 @@ libst_transaction_list (LibSelfTest *test)
 	gchar **array;
 	PkTransactionItem *item;
 
-	if (!libst_start (test, "PkTransactionList"))
+	if (!egg_test_start (test, "PkTransactionList"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get a transaction list object");
+	egg_test_title (test, "get a transaction list object");
 	tlist = pk_transaction_list_new ();
 	if (tlist != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "make sure we get a valid tid");
+	egg_test_title (test, "make sure we get a valid tid");
 	tid = pk_transaction_id_generate ();
 	if (tid != NULL) {
-		libst_success (test, "got tid %s", tid);
+		egg_test_success (test, "got tid %s", tid);
 	} else {
-		libst_failed (test, "failed to get tid");
+		egg_test_failed (test, "failed to get tid");
 	}
 
 	/************************************************************/
-	libst_title (test, "make sure we get a valid tid");
+	egg_test_title (test, "make sure we get a valid tid");
 	ret = pk_transaction_list_create (tlist, tid);
 	if (ret) {
-		libst_success (test, "created transaction %s", tid);
+		egg_test_success (test, "created transaction %s", tid);
 	} else {
-		libst_failed (test, "failed to create transaction");
+		egg_test_failed (test, "failed to create transaction");
 	}
 
 	/************************************************************/
-	libst_title (test, "get from db");
+	egg_test_title (test, "get from db");
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL &&
 	    egg_strequal (item->tid, tid) &&
 	    item->transaction != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "could not find in db");
+		egg_test_failed (test, "could not find in db");
 	}
 
 	/************************************************************/
-	libst_title (test, "get size one we have in queue");
+	egg_test_title (test, "get size one we have in queue");
 	size = pk_transaction_list_get_size (tlist);
 	if (size == 1)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "size %i", size);
+		egg_test_failed (test, "size %i", size);
 	}
 
 	/************************************************************/
-	libst_title (test, "get transactions in progress");
+	egg_test_title (test, "get transactions in progress");
 	array = pk_transaction_list_get_array (tlist);
 	size = g_strv_length (array);
 	if (size == 0)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "size %i", size);
+		egg_test_failed (test, "size %i", size);
 	}
 
 	/************************************************************/
-	libst_title (test, "add again the same tid (should fail)");
+	egg_test_title (test, "add again the same tid (should fail)");
 	ret = pk_transaction_list_create (tlist, tid);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "added the same tid twice");
+		egg_test_failed (test, "added the same tid twice");
 	}
 
 	/************************************************************/
-	libst_title (test, "remove without ever committing");
+	egg_test_title (test, "remove without ever committing");
 	ret = pk_transaction_list_remove (tlist, tid);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed to remove");
+		egg_test_failed (test, "failed to remove");
 	}
 
 	/************************************************************/
-	libst_title (test, "get size none we have in queue");
+	egg_test_title (test, "get size none we have in queue");
 	size = pk_transaction_list_get_size (tlist);
 	if (size == 0)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "size %i", size);
+		egg_test_failed (test, "size %i", size);
 	}
 
 	/* get a new tid */
@@ -612,130 +612,130 @@ libst_transaction_list (LibSelfTest *test)
 	tid = pk_transaction_id_generate ();
 
 	/************************************************************/
-	libst_title (test, "create another item");
+	egg_test_title (test, "create another item");
 	ret = pk_transaction_list_create (tlist, tid);
 	if (ret) {
-		libst_success (test, "created transaction %s", tid);
+		egg_test_success (test, "created transaction %s", tid);
 	} else {
-		libst_failed (test, "failed to create transaction");
+		egg_test_failed (test, "failed to create transaction");
 	}
 
 	/************************************************************/
 	PkBackend *backend;
 	backend = pk_backend_new ();
-	libst_title (test, "try to load a valid backend");
+	egg_test_title (test, "try to load a valid backend");
 	ret = pk_backend_set_name (backend, "dummy");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "lock an valid backend");
+	egg_test_title (test, "lock an valid backend");
 	ret = pk_backend_lock (backend);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed to lock");
+		egg_test_failed (test, "failed to lock");
 	}
 
 	/************************************************************/
-	libst_title (test, "get from db");
+	egg_test_title (test, "get from db");
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL &&
 	    egg_strequal (item->tid, tid) &&
 	    item->transaction != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "could not find in db");
+		egg_test_failed (test, "could not find in db");
 	}
 
 	g_signal_connect (item->transaction, "finished",
-				G_CALLBACK (libst_transaction_list_finished_cb), test);
+				G_CALLBACK (egg_test_transaction_list_finished_cb), test);
 
 	pk_transaction_get_updates (item->transaction, "none", NULL);
 
 	/************************************************************/
-	libst_title (test, "get present role");
+	egg_test_title (test, "get present role");
 	ret = pk_transaction_list_role_present (tlist, PK_ROLE_ENUM_GET_UPDATES);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "did not get role");
+		egg_test_failed (test, "did not get role");
 	}
 
 	/************************************************************/
-	libst_title (test, "get non-present role");
+	egg_test_title (test, "get non-present role");
 	ret = pk_transaction_list_role_present (tlist, PK_ROLE_ENUM_SEARCH_NAME);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got missing role");
+		egg_test_failed (test, "got missing role");
 	}
 
 	/************************************************************/
-	libst_title (test, "get size one we have in queue");
+	egg_test_title (test, "get size one we have in queue");
 	size = pk_transaction_list_get_size (tlist);
 	if (size == 1)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "size %i", size);
+		egg_test_failed (test, "size %i", size);
 	}
 
 	/************************************************************/
-	libst_title (test, "get transactions in progress");
+	egg_test_title (test, "get transactions in progress");
 	array = pk_transaction_list_get_array (tlist);
 	size = g_strv_length (array);
 	if (size == 1)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "size %i", size);
+		egg_test_failed (test, "size %i", size);
 	}
 
 	/* wait for Finished */
-	libst_loopwait (test, 2000);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, 2000);
+	egg_test_loop_check (test);
 
 	/************************************************************/
-	libst_title (test, "get size one we have in queue");
+	egg_test_title (test, "get size one we have in queue");
 	size = pk_transaction_list_get_size (tlist);
 	if (size == 1)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "size %i", size);
+		egg_test_failed (test, "size %i", size);
 	}
 
 	/************************************************************/
-	libst_title (test, "get transactions in progress (none)");
+	egg_test_title (test, "get transactions in progress (none)");
 	array = pk_transaction_list_get_array (tlist);
 	size = g_strv_length (array);
 	if (size == 0)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "size %i", size);
+		egg_test_failed (test, "size %i", size);
 	}
 
 	/************************************************************/
-	libst_title (test, "remove already removed");
+	egg_test_title (test, "remove already removed");
 	ret = pk_transaction_list_remove (tlist, tid);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "tried to remove");
+		egg_test_failed (test, "tried to remove");
 	}
 
 	/* wait for Cleanup */
-	g_timeout_add_seconds (5, (GSourceFunc) libst_transaction_list_delay_cb, test);
-	libst_loopwait (test, 6000);
-	libst_loopcheck (test);
+	g_timeout_add_seconds (5, (GSourceFunc) egg_test_transaction_list_delay_cb, test);
+	egg_test_loop_wait (test, 6000);
+	egg_test_loop_check (test);
 
 	/************************************************************/
-	libst_title (test, "make sure queue empty");
+	egg_test_title (test, "make sure queue empty");
 	size = pk_transaction_list_get_size (tlist);
 	if (size == 0)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "size %i", size);
+		egg_test_failed (test, "size %i", size);
 	}
 
 	g_free (tid);
@@ -743,7 +743,7 @@ libst_transaction_list (LibSelfTest *test)
 	g_object_unref (tlist);
 	g_object_unref (backend);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

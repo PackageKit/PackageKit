@@ -838,50 +838,50 @@ pk_engine_new (void)
 #include <libselftest.h>
 
 void
-libst_engine (LibSelfTest *test)
+egg_test_engine (EggTest *test)
 {
 	gboolean ret;
 	PkEngine *engine;
 	PkBackend *backend;
 
-	if (!libst_start (test, "PkEngine"))
+	if (!egg_test_start (test, "PkEngine"))
 		return;
 
 	/* don't do these when doing make distcheck */
 #ifndef PK_IS_DEVELOPER
-	libst_end (test);
+	egg_test_end (test);
 	return;
 #endif
 
 	/************************************************************/
-	libst_title (test, "get a backend instance");
+	egg_test_title (test, "get a backend instance");
 	backend = pk_backend_new ();
 	if (backend != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/* set the type, as we have no pk-main doing this for us */
 	/************************************************************/
-	libst_title (test, "set the backend name");
+	egg_test_title (test, "set the backend name");
 	ret = pk_backend_set_name (backend, "dummy");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get an engine instance");
+	egg_test_title (test, "get an engine instance");
 	engine = pk_engine_new ();
 	if (engine != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	g_object_unref (backend);
 	g_object_unref (engine);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

@@ -496,58 +496,58 @@ pk_task_list_new (void)
 static gboolean finished = FALSE;
 
 static void
-libst_task_list_finished_cb (PkTaskList *tlist, PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
+egg_test_task_list_finished_cb (PkTaskList *tlist, PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 	finished = TRUE;
-	libst_loopquit (test);
+	egg_test_loop_quit (test);
 }
 
 void
-libst_task_list (LibSelfTest *test)
+egg_test_task_list (EggTest *test)
 {
 	PkTaskList *tlist;
 	PkClient *client;
 	gboolean ret;
 	GError *error = NULL;
 
-	if (!libst_start (test, "PkTaskList"))
+	if (!egg_test_start (test, "PkTaskList"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get client");
+	egg_test_title (test, "get client");
 	tlist = pk_task_list_new ();
 	if (tlist != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_signal_connect (tlist, "finished",
-			  G_CALLBACK (libst_task_list_finished_cb), test);
+			  G_CALLBACK (egg_test_task_list_finished_cb), test);
 
 	/************************************************************/
-	libst_title (test, "search for power");
+	egg_test_title (test, "search for power");
 	client = pk_client_new ();
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
-		libst_failed (test, "failed: %s", error->message);
+		egg_test_failed (test, "failed: %s", error->message);
 		g_error_free (error);
 	}
-	libst_loopwait (test, 5000);
-	libst_success (test, NULL);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "we finished?");
+	egg_test_title (test, "we finished?");
 	if (finished)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "not finished");
+		egg_test_failed (test, "not finished");
 	}
 
 	g_object_unref (tlist);
 	g_object_unref (client);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

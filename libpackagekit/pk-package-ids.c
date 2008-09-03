@@ -207,10 +207,10 @@ pk_package_ids_to_text (gchar **package_ids, const gchar *delimiter)
 #include <libselftest.h>
 
 /**
- * libst_package_ids_va_list:
+ * egg_test_package_ids_va_list:
  **/
 static gchar **
-libst_package_ids_va_list (const gchar *package_id_first, ...)
+egg_test_package_ids_va_list (const gchar *package_id_first, ...)
 {
 	va_list args;
 	gchar **package_ids;
@@ -225,76 +225,76 @@ libst_package_ids_va_list (const gchar *package_id_first, ...)
 
 
 void
-libst_package_ids (LibSelfTest *test)
+egg_test_package_ids (EggTest *test)
 {
 	gboolean ret;
 	gchar *text;
 	gchar **package_ids;
 	guint size;
 
-	if (!libst_start (test, "PkPackageIds"))
+	if (!egg_test_start (test, "PkPackageIds"))
 		return;
 
 	/************************************************************
 	 ****************          IDENTS          ******************
 	 ************************************************************/
 
-	libst_title (test, "parse va_list");
-	package_ids = libst_package_ids_va_list ("foo;0.0.1;i386;fedora", "bar;0.1.1;noarch;livna", NULL);
+	egg_test_title (test, "parse va_list");
+	package_ids = egg_test_package_ids_va_list ("foo;0.0.1;i386;fedora", "bar;0.1.1;noarch;livna", NULL);
 	if (package_ids != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "correct size");
+	egg_test_title (test, "correct size");
 	size = pk_package_ids_size (package_ids);
 	if (size == 2)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "verify");
+	egg_test_title (test, "verify");
 	ret = pk_package_ids_check (package_ids);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "first correct");
+	egg_test_title (test, "first correct");
 	ret = pk_package_id_equal_strings (package_ids[0], "foo;0.0.1;i386;fedora");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "second correct");
+	egg_test_title (test, "second correct");
 	ret = pk_package_id_equal_strings (package_ids[1], "bar;0.1.1;noarch;livna");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "print");
+	egg_test_title (test, "print");
 	ret = pk_package_ids_print (package_ids);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "to text");
+	egg_test_title (test, "to text");
 	text = pk_package_ids_to_text (package_ids, "\t");
 	if (egg_strequal (text, "foo;0.0.1;i386;fedora\tbar;0.1.1;noarch;livna"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

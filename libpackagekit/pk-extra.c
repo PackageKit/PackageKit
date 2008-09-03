@@ -670,7 +670,7 @@ pk_extra_new (void)
 #include <glib/gstdio.h>
 
 void
-libst_extra (LibSelfTest *test)
+egg_test_extra (EggTest *test)
 {
 	PkExtra *extra;
 	const gchar *text;
@@ -680,176 +680,176 @@ libst_extra (LibSelfTest *test)
 	const gchar *summary = NULL;
 	guint i;
 
-	if (!libst_start (test, "PkExtra"))
+	if (!egg_test_start (test, "PkExtra"))
 		return;
 
 	g_unlink ("extra.db");
 
 	/************************************************************/
-	libst_title (test, "get extra");
+	egg_test_title (test, "get extra");
 	extra = pk_extra_new ();
 	if (extra != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set database");
+	egg_test_title (test, "set database");
 	ret = pk_extra_set_database (extra, "extra.db");
 	if (ret) {
-		libst_success (test, "%ims", libst_elapsed (test));
+		egg_test_success (test, "%ims", egg_test_elapsed (test));
 	} else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set database (again)");
+	egg_test_title (test, "set database (again)");
 	ret = pk_extra_set_database (extra, "angry.db");
 	if (ret == FALSE) {
-		libst_success (test, "%ims", libst_elapsed (test));
+		egg_test_success (test, "%ims", egg_test_elapsed (test));
 	} else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set locale explicit en");
+	egg_test_title (test, "set locale explicit en");
 	ret = pk_extra_set_locale (extra, "en");
 	if (ret) {
-		libst_success (test, "%ims", libst_elapsed (test));
+		egg_test_success (test, "%ims", egg_test_elapsed (test));
 	} else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check locale base");
+	egg_test_title (test, "check locale base");
 	if (extra->priv->locale_base == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get locale");
+	egg_test_title (test, "get locale");
 	text = pk_extra_get_locale (extra);
 	if (egg_strequal (text, "en"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "locale was %s", text);
+		egg_test_failed (test, "locale was %s", text);
 	}
 
 	/************************************************************/
-	libst_title (test, "insert localised data");
+	egg_test_title (test, "insert localised data");
 	ret = pk_extra_set_data_locale (extra, "gnome-power-manager", "Power manager for the GNOME's desktop");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed!");
+		egg_test_failed (test, "failed!");
 	}
 
 	/************************************************************/
-	libst_title (test, "retrieve localised data");
+	egg_test_title (test, "retrieve localised data");
 	summary = pk_extra_get_summary (extra, "gnome-power-manager");
 	if (summary != NULL) {
-		libst_success (test, "%s", summary);
+		egg_test_success (test, "%s", summary);
 	} else {
-		libst_failed (test, "failed!");
+		egg_test_failed (test, "failed!");
 	}
 
 	/************************************************************/
-	libst_title (test, "set locale implicit en_GB");
+	egg_test_title (test, "set locale implicit en_GB");
 	ret = pk_extra_set_locale (extra, "en_GB");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check locale base");
+	egg_test_title (test, "check locale base");
 	if (egg_strequal (extra->priv->locale_base, "en"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "retrieve localised data2");
+	egg_test_title (test, "retrieve localised data2");
 	summary = pk_extra_get_summary (extra, "gnome-power-manager");
 	if (summary != NULL) {
-		libst_success (test, "%s", summary);
+		egg_test_success (test, "%s", summary);
 	} else {
-		libst_failed (test, "failed!");
+		egg_test_failed (test, "failed!");
 	}
 
 	/************************************************************/
-	libst_title (test, "insert package data");
+	egg_test_title (test, "insert package data");
 	ret = pk_extra_set_data_package (extra, "gnome-power-manager", "gpm-main.png", "gnome-power-manager");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed!");
+		egg_test_failed (test, "failed!");
 	}
 
 	/************************************************************/
-	libst_title (test, "retrieve package data");
+	egg_test_title (test, "retrieve package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-power-manager");
 	exec = pk_extra_get_exec (extra, "gnome-power-manager");
 	if (egg_strequal (icon, "gpm-main.png")) {
-		libst_success (test, "%s:%s", icon, exec);
+		egg_test_success (test, "%s:%s", icon, exec);
 	} else {
-		libst_failed (test, "%s:%s", icon, exec);
+		egg_test_failed (test, "%s:%s", icon, exec);
 	}
 
 	/************************************************************/
-	libst_title (test, "insert new package data");
+	egg_test_title (test, "insert new package data");
 	ret = pk_extra_set_data_package (extra, "gnome-power-manager", "gpm-prefs.png", "gnome-power-preferences");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed!");
+		egg_test_failed (test, "failed!");
 	}
 
 	/************************************************************/
-	libst_title (test, "retrieve new package data");
+	egg_test_title (test, "retrieve new package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-power-manager");
 	exec = pk_extra_get_exec (extra, "gnome-power-manager");
 	if (egg_strequal (icon, "gpm-prefs.png") &&
 	    egg_strequal (exec, "gnome-power-preferences")) {
-		libst_success (test, "%s:%s", icon, exec);
+		egg_test_success (test, "%s:%s", icon, exec);
 	} else {
-		libst_failed (test, "%s:%s", icon, exec);
+		egg_test_failed (test, "%s:%s", icon, exec);
 	}
 
 	/************************************************************/
-	libst_title (test, "retrieve missing package data");
+	egg_test_title (test, "retrieve missing package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-moo-manager");
 	exec = pk_extra_get_exec (extra, "gnome-moo-manager");
 	if (icon == NULL && exec == NULL) {
-		libst_success (test, "passed");
+		egg_test_success (test, "passed");
 	} else {
-		libst_failed (test, "%s:%s", icon, exec);
+		egg_test_failed (test, "%s:%s", icon, exec);
 	}
 
 	/************************************************************/
-	libst_title (test, "do lots of loops");
+	egg_test_title (test, "do lots of loops");
 	for (i=0;i<250;i++) {
 		summary = pk_extra_get_summary (extra, "gnome-power-manager");
 		if (summary == NULL) {
-			libst_failed (test, "failed to get good!");
+			egg_test_failed (test, "failed to get good!");
 		}
 		summary = pk_extra_get_summary (extra, "gnome-moo-manager");
 		if (summary != NULL) {
-			libst_failed (test, "failed to not get bad 2!");
+			egg_test_failed (test, "failed to not get bad 2!");
 		}
 		summary = pk_extra_get_summary (extra, "gnome-moo-manager");
 		if (summary != NULL) {
-			libst_failed (test, "failed to not get bad 3!");
+			egg_test_failed (test, "failed to not get bad 3!");
 		}
 		summary = pk_extra_get_summary (extra, "gnome-moo-manager");
 		if (summary != NULL) {
-			libst_failed (test, "failed to not get bad 4!");
+			egg_test_failed (test, "failed to not get bad 4!");
 		}
 	}
-	libst_success (test, "%i get_summary loops completed in %ims", i*5, libst_elapsed (test));
+	egg_test_success (test, "%i get_summary loops completed in %ims", i*5, egg_test_elapsed (test));
 
 	g_object_unref (extra);
 	g_unlink ("extra.db");
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

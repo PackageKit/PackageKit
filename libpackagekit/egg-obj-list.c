@@ -413,26 +413,26 @@ egg_obj_list_new (void)
 #include <libselftest.h>
 
 void
-libst_obj_list (LibSelfTest *test)
+egg_test_obj_list (EggTest *test)
 {
 	EggObjList *list;
 	gchar *text;
 	gint value;
 
-	if (!libst_start (test, "EggObjList"))
+	if (!egg_test_start (test, "EggObjList"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	egg_test_title (test, "get an instance");
 	list = egg_obj_list_new ();
 	if (list != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	g_object_unref (list);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

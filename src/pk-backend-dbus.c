@@ -1629,9 +1629,9 @@ static guint number_packages = 0;
  * pk_backend_dbus_test_finished_cb:
  **/
 static void
-pk_backend_dbus_test_finished_cb (PkBackend *backend, PkExitEnum exit, LibSelfTest *test)
+pk_backend_dbus_test_finished_cb (PkBackend *backend, PkExitEnum exit, EggTest *test)
 {
-	libst_loopquit (test);
+	egg_test_loop_quit (test);
 }
 
 /**
@@ -1651,54 +1651,54 @@ pk_backend_dbus_test_cancel_cb (gpointer data)
 {
 	gboolean ret;
 	guint elapsed;
-	LibSelfTest *test = (LibSelfTest *) data;
-	PkBackendDbus *backend_dbus = PK_BACKEND_DBUS (libst_get_user_data (test));
+	EggTest *test = (EggTest *) data;
+	PkBackendDbus *backend_dbus = PK_BACKEND_DBUS (egg_test_get_user_data (test));
 
 	/* save time */
-	libst_set_user_data (test, GINT_TO_POINTER (libst_elapsed (test)));
+	egg_test_set_user_data (test, GINT_TO_POINTER (egg_test_elapsed (test)));
 
 	/************************************************************/
-	libst_title (test, "cancel");
+	egg_test_title (test, "cancel");
 	ret = pk_backend_dbus_cancel (backend_dbus);
-	elapsed = libst_elapsed (test);
+	elapsed = egg_test_elapsed (test);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we didnt take too long");
+	egg_test_title (test, "check we didnt take too long");
 	if (elapsed < 1000) {
-		libst_success (test, "elapsed = %ims", elapsed);
+		egg_test_success (test, "elapsed = %ims", elapsed);
 	} else {
-		libst_failed (test, "elapsed = %ims", elapsed);
+		egg_test_failed (test, "elapsed = %ims", elapsed);
 	}
 	return FALSE;
 }
 
 void
-libst_backend_dbus (LibSelfTest *test)
+egg_test_backend_dbus (EggTest *test)
 {
 	PkBackendDbus *backend_dbus;
 	gboolean ret;
 	guint elapsed;
 
-	if (!libst_start (test, "PkBackendDbus"))
+	if (!egg_test_start (test, "PkBackendDbus"))
 		return;
 
 	/* don't do these when doing make distcheck */
 #ifndef PK_IS_DEVELOPER
-	libst_end (test);
+	egg_test_end (test);
 	return;
 #endif
 
 	/************************************************************/
-	libst_title (test, "get an backend_dbus");
+	egg_test_title (test, "get an backend_dbus");
 	backend_dbus = pk_backend_dbus_new ();
 	if (backend_dbus != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/* so we can spin until we finish */
 	g_signal_connect (backend_dbus->priv->backend, "finished",
@@ -1712,49 +1712,49 @@ libst_backend_dbus (LibSelfTest *test)
 	ret = pk_backend_lock (backend_dbus->priv->backend);
 
 	/************************************************************/
-	libst_title (test, "set the name and activate");
+	egg_test_title (test, "set the name and activate");
 	ret = pk_backend_dbus_set_name (backend_dbus, "org.freedesktop.PackageKitTestBackend");
-	elapsed = libst_elapsed (test);
+	elapsed = egg_test_elapsed (test);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we actually did something and didn't fork");
+	egg_test_title (test, "check we actually did something and didn't fork");
 	if (elapsed >= 1) {
-		libst_success (test, "elapsed = %ims", elapsed);
+		egg_test_success (test, "elapsed = %ims", elapsed);
 	} else {
-		libst_failed (test, "elapsed = %ims", elapsed);
+		egg_test_failed (test, "elapsed = %ims", elapsed);
 	}
 
 	/************************************************************/
-	libst_title (test, "search by name");
+	egg_test_title (test, "search by name");
 	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
-	elapsed = libst_elapsed (test);
+	elapsed = egg_test_elapsed (test);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we forked and didn't block");
+	egg_test_title (test, "check we forked and didn't block");
 	if (elapsed < 100) {
-		libst_success (test, "elapsed = %ims", elapsed);
+		egg_test_success (test, "elapsed = %ims", elapsed);
 	} else {
-		libst_failed (test, "elapsed = %ims", elapsed);
+		egg_test_failed (test, "elapsed = %ims", elapsed);
 	}
 
 	/* wait for finished */
-	libst_loopwait (test, 5000);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_loop_check (test);
 
 	/************************************************************/
-	libst_title (test, "test number of packages");
+	egg_test_title (test, "test number of packages");
 	if (number_packages == 3)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "wrong number of packages %i, expected 3", number_packages);
+		egg_test_failed (test, "wrong number of packages %i, expected 3", number_packages);
 	}
 
 	/* reset number_packages */
@@ -1762,23 +1762,23 @@ libst_backend_dbus (LibSelfTest *test)
 	number_packages = 0;
 
 	/************************************************************/
-	libst_title (test, "search by name again");
+	egg_test_title (test, "search by name again");
 	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/* wait for finished */
-	libst_loopwait (test, 5000);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_loop_check (test);
 
 	/************************************************************/
-	libst_title (test, "test number of packages again");
+	egg_test_title (test, "test number of packages again");
 	if (number_packages == 3)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "wrong number of packages %i, expected 3", number_packages);
+		egg_test_failed (test, "wrong number of packages %i, expected 3", number_packages);
 	}
 
 	/* reset number_packages */
@@ -1786,39 +1786,39 @@ libst_backend_dbus (LibSelfTest *test)
 	number_packages = 0;
 
 	/************************************************************/
-	libst_title (test, "search by name");
+	egg_test_title (test, "search by name");
 	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/* schedule a cancel */
-	libst_set_user_data (test, backend_dbus);
+	egg_test_set_user_data (test, backend_dbus);
 	g_timeout_add (1500, pk_backend_dbus_test_cancel_cb, test);
 
 	/************************************************************/
-	libst_title (test, "wait for cancel");
+	egg_test_title (test, "wait for cancel");
 	/* wait for finished */
-	libst_loopwait (test, 5000);
-	libst_loopcheck (test);
-	libst_success (test, NULL);
-	elapsed = GPOINTER_TO_UINT (libst_get_user_data (test));
+	egg_test_loop_wait (test, 5000);
+	egg_test_loop_check (test);
+	egg_test_success (test, NULL);
+	elapsed = GPOINTER_TO_UINT (egg_test_get_user_data (test));
 
 	/************************************************************/
-	libst_title (test, "check we waited correct time");
+	egg_test_title (test, "check we waited correct time");
 	if (elapsed < 1600 && elapsed > 1400) {
-		libst_success (test, "waited %ims", elapsed);
+		egg_test_success (test, "waited %ims", elapsed);
 	} else {
-		libst_failed (test, "waited %ims", elapsed);
+		egg_test_failed (test, "waited %ims", elapsed);
 	}
 
 	/************************************************************/
-	libst_title (test, "test number of packages");
+	egg_test_title (test, "test number of packages");
 	if (number_packages == 2)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "wrong number of packages %i, expected 2", number_packages);
+		egg_test_failed (test, "wrong number of packages %i, expected 2", number_packages);
 	}
 
 	/* needed to avoid an error */
@@ -1826,7 +1826,7 @@ libst_backend_dbus (LibSelfTest *test)
 
 	g_object_unref (backend_dbus);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

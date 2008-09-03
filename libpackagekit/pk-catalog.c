@@ -367,7 +367,7 @@ pk_catalog_new (void)
 #include <libselftest.h>
 
 void
-libst_catalog (LibSelfTest *test)
+egg_test_catalog (EggTest *test)
 {
 	PkCatalog *catalog;
 	PkPackageList *list;
@@ -375,40 +375,40 @@ libst_catalog (LibSelfTest *test)
 	gchar *path;
 	guint size;
 
-	if (!libst_start (test, "PkCatalog"))
+	if (!egg_test_start (test, "PkCatalog"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get catalog");
+	egg_test_title (test, "get catalog");
 	catalog = pk_catalog_new ();
 	if (catalog != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "process the files getting non-null");
-	path = libst_get_data_file ("test.catalog");
+	egg_test_title (test, "process the files getting non-null");
+	path = egg_test_get_data_file ("test.catalog");
 	filenames = g_strsplit (path, " ", 0);
 	list = pk_catalog_process_files (catalog, filenames);
 	g_free (path);
 	g_strfreev (filenames);
 	if (list != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "have we got packages?");
+	egg_test_title (test, "have we got packages?");
 	size = pk_package_list_get_size (list);
 	if (size > 0) {
-		libst_success (test, "%i packages", size);
+		egg_test_success (test, "%i packages", size);
 	} else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_object_unref (list);
 	g_object_unref (catalog);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

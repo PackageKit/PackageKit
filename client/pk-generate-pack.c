@@ -571,7 +571,7 @@ out:
 #include <libselftest.h>
 
 void
-libst_generate_pack (LibSelfTest *test)
+egg_test_generate_pack (EggTest *test)
 {
 	PkClient *client = NULL;
 	gboolean ret;
@@ -583,141 +583,141 @@ libst_generate_pack (LibSelfTest *test)
 	gchar *src;
 	gchar **package_ids;
 
-	if (!libst_start (test, "PkGeneratePack"))
+	if (!egg_test_start (test, "PkGeneratePack"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get client");
+	egg_test_title (test, "get client");
 	client = pk_client_new ();
 	if (client != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test perhaps resolve NULL");
+	egg_test_title (test, "test perhaps resolve NULL");
 	retval = pk_client_reset (client, &error);
 	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, NULL, &error);
 	if (file == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed to resolve %s", error->message);
+		egg_test_failed (test, "failed to resolve %s", error->message);
 		g_error_free (error);
 	}
 	g_free (file);
 
 	/************************************************************/
-	libst_title (test, "test perhaps resolve gitk");
+	egg_test_title (test, "test perhaps resolve gitk");
 	retval = pk_client_reset(client, &error);
 	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, "gitk;1.5.5.1-1.fc9;i386;installed", &error);
 	if (file != NULL && egg_strequal (file, "gitk;1.5.5.1-1.fc9;i386;installed"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, "got: %s", file);
+		egg_test_failed (test, "got: %s", file);
 	g_free (file);
 
 	/************************************************************/
-	libst_title (test, "download only NULL");
+	egg_test_title (test, "download only NULL");
 	ret = pk_generate_pack_download_only (client, NULL, NULL);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "download only gitk");
+	egg_test_title (test, "download only gitk");
 	package_ids = pk_package_ids_from_id ("gitk;1.5.5.1-1.fc9;i386;installed");
 	ret = pk_generate_pack_download_only (client, package_ids, "/tmp");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_strfreev (package_ids);
 	g_object_unref (client);
 
 	/************************************************************/
-	libst_title (test, "exclude NULL");
+	egg_test_title (test, "exclude NULL");
 	list = pk_package_list_new ();
 	ret = pk_generate_pack_exclude_packages (list, NULL);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "exclude /var/lib/PackageKit/package-list.txt");
+	egg_test_title (test, "exclude /var/lib/PackageKit/package-list.txt");
 	list = pk_package_list_new ();
 	ret = pk_generate_pack_exclude_packages (list, "/var/lib/PackageKit/package-list.txt");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_object_unref (list);
 
 	/************************************************************/
-	libst_title (test, "exclude false.txt");
+	egg_test_title (test, "exclude false.txt");
 	list = pk_package_list_new ();
 	ret = pk_generate_pack_exclude_packages (list, "/media/USB/false.txt");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_object_unref (list);
 
 	/************************************************************/
-	libst_title (test, "metadata NULL");
+	egg_test_title (test, "metadata NULL");
 	ret = pk_generate_pack_set_metadata (NULL);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "metadata /tmp/metadata.conf");
+	egg_test_title (test, "metadata /tmp/metadata.conf");
 	ret = pk_generate_pack_set_metadata ("/tmp/metadata.conf");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_remove ("/tmp/metadata.conf");
 
 	/************************************************************/
-	libst_title (test, "scandir NULL");
+	egg_test_title (test, "scandir NULL");
 	file_array = pk_generate_pack_scan_dir (NULL);
 	if (file_array == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "scandir /tmp");
+	egg_test_title (test, "scandir /tmp");
 	file_array = pk_generate_pack_scan_dir ("/tmp");
 	if (file_array != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "generate pack /tmp/gitk.servicepack gitk");
+	egg_test_title (test, "generate pack /tmp/gitk.servicepack gitk");
 	file_array = g_ptr_array_new ();
 	src = g_build_filename ("/tmp", "gitk-1.5.5.1-1.fc9.i386.rpm", NULL);
 	g_ptr_array_add (file_array, src);
 	ret = pk_generate_pack_create ("/tmp/gitk.servicepack",file_array, &error);
 	if (!ret) {
 		if (error != NULL) {
-			libst_failed (test, "failed to create pack %s" , error->message);
+			egg_test_failed (test, "failed to create pack %s" , error->message);
 			g_error_free (error);
 		} else {
-			libst_failed (test, "could not set error");
+			egg_test_failed (test, "could not set error");
 		}
 	} else {
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	}
 	if (file_array != NULL)
 		g_ptr_array_free (file_array, TRUE);
 	g_remove ("/tmp/gitk.servicepack");
 
 	/************************************************************/
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif

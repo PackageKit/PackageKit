@@ -213,24 +213,24 @@ pk_notify_new (void)
 #include <libselftest.h>
 
 void
-libst_notify (LibSelfTest *test)
+egg_test_notify (EggTest *test)
 {
 	PkNotify *notify;
 
-	if (!libst_start (test, "PkNotify"))
+	if (!egg_test_start (test, "PkNotify"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	egg_test_title (test, "get an instance");
 	notify = pk_notify_new ();
 	if (notify != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	g_object_unref (notify);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

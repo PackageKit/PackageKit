@@ -3691,139 +3691,139 @@ pk_transaction_new (void)
 #include <libselftest.h>
 
 void
-libst_transaction (LibSelfTest *test)
+egg_test_transaction (EggTest *test)
 {
 	PkTransaction *transaction = NULL;
 	gboolean ret;
 	const gchar *temp;
 	GError *error = NULL;
 
-	if (!libst_start (test, "PkTransaction"))
+	if (!egg_test_start (test, "PkTransaction"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get PkTransaction object");
+	egg_test_title (test, "get PkTransaction object");
 	transaction = pk_transaction_new ();
 	if (transaction != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************
 	 ****************          FILTERS         ******************
 	 ************************************************************/
 	temp = NULL;
-	libst_title (test, "test a fail filter (null)");
+	egg_test_title (test, "test a fail filter (null)");
 	ret = pk_transaction_filter_check (temp, &error);
 	if (ret == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "passed the filter '%s'", temp);
+		egg_test_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "";
-	libst_title (test, "test a fail filter ()");
+	egg_test_title (test, "test a fail filter ()");
 	ret = pk_transaction_filter_check (temp, &error);
 	if (ret == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "passed the filter '%s'", temp);
+		egg_test_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = ";";
-	libst_title (test, "test a fail filter (;)");
+	egg_test_title (test, "test a fail filter (;)");
 	ret = pk_transaction_filter_check (temp, &error);
 	if (ret == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "passed the filter '%s'", temp);
+		egg_test_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "moo";
-	libst_title (test, "test a fail filter (invalid)");
+	egg_test_title (test, "test a fail filter (invalid)");
 	ret = pk_transaction_filter_check (temp, &error);
 	if (ret == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "passed the filter '%s'", temp);
+		egg_test_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "moo;foo";
-	libst_title (test, "test a fail filter (invalid, multiple)");
+	egg_test_title (test, "test a fail filter (invalid, multiple)");
 	ret = pk_transaction_filter_check (temp, &error);
 	if (ret == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "passed the filter '%s'", temp);
+		egg_test_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "gui;;";
-	libst_title (test, "test a fail filter (valid then zero length)");
+	egg_test_title (test, "test a fail filter (valid then zero length)");
 	ret = pk_transaction_filter_check (temp, &error);
 	if (ret == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "passed the filter '%s'", temp);
+		egg_test_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "none";
-	libst_title (test, "test a pass filter (none)");
+	egg_test_title (test, "test a pass filter (none)");
 	ret = pk_transaction_filter_check (temp, &error);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the filter '%s'", temp);
+		egg_test_failed (test, "failed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "gui";
-	libst_title (test, "test a pass filter (single)");
+	egg_test_title (test, "test a pass filter (single)");
 	ret = pk_transaction_filter_check (temp, &error);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the filter '%s'", temp);
+		egg_test_failed (test, "failed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "devel;~gui";
-	libst_title (test, "test a pass filter (multiple)");
+	egg_test_title (test, "test a pass filter (multiple)");
 	ret = pk_transaction_filter_check (temp, &error);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the filter '%s'", temp);
+		egg_test_failed (test, "failed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "~gui;~installed";
-	libst_title (test, "test a pass filter (multiple2)");
+	egg_test_title (test, "test a pass filter (multiple2)");
 	ret = pk_transaction_filter_check (temp, &error);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the filter '%s'", temp);
+		egg_test_failed (test, "failed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
 
 	g_object_unref (transaction);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

@@ -413,19 +413,19 @@ guint finished_count = 0;
  * pk_test_finished_cb:
  **/
 static void
-pk_test_finished_cb (PkSpawn *spawn, PkExitEnum exit, LibSelfTest *test)
+pk_test_finished_cb (PkSpawn *spawn, PkExitEnum exit, EggTest *test)
 {
 	egg_debug ("spawn exit=%i", exit);
 	mexit = exit;
 	finished_count++;
-	libst_loopquit (test);
+	egg_test_loop_quit (test);
 }
 
 /**
  * pk_test_stdout_cb:
  **/
 static void
-pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, LibSelfTest *test)
+pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, EggTest *test)
 {
 	egg_debug ("stdout '%s'", line);
 	stdout_count++;
@@ -440,7 +440,7 @@ cancel_cb (gpointer data)
 }
 
 static void
-new_spawn_object (LibSelfTest *test, PkSpawn **pspawn)
+new_spawn_object (EggTest *test, PkSpawn **pspawn)
 {
 	if (*pspawn != NULL) {
 		g_object_unref (*pspawn);
@@ -453,7 +453,7 @@ new_spawn_object (LibSelfTest *test, PkSpawn **pspawn)
 }
 
 void
-libst_spawn (LibSelfTest *test)
+egg_test_spawn (EggTest *test)
 {
 	PkSpawn *spawn = NULL;
 	gboolean ret;
@@ -461,81 +461,81 @@ libst_spawn (LibSelfTest *test)
 	gchar **argv;
 	gchar **envp;
 
-	if (!libst_start (test, "PkSpawn"))
+	if (!egg_test_start (test, "PkSpawn"))
 		return;
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
 
 	/************************************************************/
-	libst_title (test, "make sure return error for missing file");
+	egg_test_title (test, "make sure return error for missing file");
 	mexit = BAD_EXIT;
 	argv = g_strsplit ("pk-spawn-test-xxx.sh", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_strfreev (argv);
 	if (ret == FALSE) {
-		libst_success (test, "failed to run invalid file");
+		egg_test_success (test, "failed to run invalid file");
 	} else {
-		libst_failed (test, "ran incorrect file");
+		egg_test_failed (test, "ran incorrect file");
 	}
 
 	/************************************************************/
-	libst_title (test, "make sure finished wasn't called");
+	egg_test_title (test, "make sure finished wasn't called");
 	if (mexit == BAD_EXIT)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "Called finish for bad file!");
+		egg_test_failed (test, "Called finish for bad file!");
 	}
 
 	/************************************************************/
-	libst_title (test, "make sure run correct helper");
+	egg_test_title (test, "make sure run correct helper");
 	mexit = -1;
-	path = libst_get_data_file ("pk-spawn-test.sh");
+	path = egg_test_get_data_file ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret) {
-		libst_success (test, "ran correct file");
+		egg_test_success (test, "ran correct file");
 	} else {
-		libst_failed (test, "did not run helper");
+		egg_test_failed (test, "did not run helper");
 	}
 
 	/* wait for finished */
-	libst_loopwait (test, 10000);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, 10000);
+	egg_test_loop_check (test);
 
 	/************************************************************/
-	libst_title (test, "make sure finished okay");
+	egg_test_title (test, "make sure finished okay");
 	if (mexit == PK_EXIT_ENUM_SUCCESS)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "finish was okay!");
+		egg_test_failed (test, "finish was okay!");
 	}
 
 	/************************************************************/
-	libst_title (test, "make sure finished was called only once");
+	egg_test_title (test, "make sure finished was called only once");
 	if (finished_count == 1)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "finish was called %i times!", finished_count);
+		egg_test_failed (test, "finish was called %i times!", finished_count);
 	}
 
 	/************************************************************/
-	libst_title (test, "make sure we got the right stdout data");
+	egg_test_title (test, "make sure we got the right stdout data");
 	if (stdout_count == 4+11) {
-		libst_success (test, "correct stdout count");
+		egg_test_success (test, "correct stdout count");
 	} else {
-		libst_failed (test, "wrong stdout count %i", stdout_count);
+		egg_test_failed (test, "wrong stdout count %i", stdout_count);
 	}
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
 
 	/************************************************************/
-	libst_title (test, "make sure we set the proxy");
+	egg_test_title (test, "make sure we set the proxy");
 	mexit = -1;
-	path = libst_get_data_file ("pk-spawn-proxy.sh");
+	path = egg_test_get_data_file ("pk-spawn-proxy.sh");
 	argv = g_strsplit (path, " ", 0);
 	envp = g_strsplit ("http_proxy=username:password@server:port "
 			   "ftp_proxy=username:password@server:port", " ", 0);
@@ -543,91 +543,91 @@ libst_spawn (LibSelfTest *test)
 	g_free (path);
 	g_strfreev (argv);
 	if (ret) {
-		libst_success (test, "ran correct file");
+		egg_test_success (test, "ran correct file");
 	} else {
-		libst_failed (test, "did not run helper");
+		egg_test_failed (test, "did not run helper");
 	}
 
 	/* wait for finished */
-	libst_loopwait (test, 10000);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, 10000);
+	egg_test_loop_check (test);
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
 
 	/************************************************************/
-	libst_title (test, "make sure run correct helper, and kill it");
+	egg_test_title (test, "make sure run correct helper, and kill it");
 	mexit = BAD_EXIT;
-	path = libst_get_data_file ("pk-spawn-test.sh");
+	path = egg_test_get_data_file ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "did not run helper");
+		egg_test_failed (test, "did not run helper");
 	}
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
 	/* wait for finished */
-	libst_loopwait (test, 5000);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_loop_check (test);
 
 	/************************************************************/
-	libst_title (test, "make sure finished in SIGKILL");
+	egg_test_title (test, "make sure finished in SIGKILL");
 	if (mexit == PK_EXIT_ENUM_KILLED)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "finish %i!", mexit);
+		egg_test_failed (test, "finish %i!", mexit);
 	}
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
 
 	/************************************************************/
-	libst_title (test, "make sure run correct helper, and quit it");
+	egg_test_title (test, "make sure run correct helper, and quit it");
 	mexit = BAD_EXIT;
-	path = libst_get_data_file ("pk-spawn-test-sigquit.sh");
+	path = egg_test_get_data_file ("pk-spawn-test-sigquit.sh");
 	argv = g_strsplit (path, " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "did not run helper");
+		egg_test_failed (test, "did not run helper");
 	}
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
 	/* wait for finished */
-	libst_loopwait (test, 2000);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, 2000);
+	egg_test_loop_check (test);
 
 	/************************************************************/
-	libst_title (test, "make sure finished in SIGQUIT");
+	egg_test_title (test, "make sure finished in SIGQUIT");
 	if (mexit == PK_EXIT_ENUM_CANCELLED)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "finish %i!", mexit);
+		egg_test_failed (test, "finish %i!", mexit);
 	}
 
 	/************************************************************/
-	libst_title (test, "run lots of data for profiling");
-	path = libst_get_data_file ("pk-spawn-test-profiling.sh");
+	egg_test_title (test, "run lots of data for profiling");
+	path = egg_test_get_data_file ("pk-spawn-test-profiling.sh");
 	argv = g_strsplit (path, " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "did not run profiling helper");
+		egg_test_failed (test, "did not run profiling helper");
 	}
 
 	g_object_unref (spawn);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

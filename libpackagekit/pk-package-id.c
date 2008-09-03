@@ -366,7 +366,7 @@ pk_package_id_equal_strings (const gchar *pid1, const gchar *pid2)
 #include <libselftest.h>
 
 void
-libst_package_id (LibSelfTest *test)
+egg_test_package_id (EggTest *test)
 {
 	gboolean ret;
 	gchar *text;
@@ -375,257 +375,257 @@ libst_package_id (LibSelfTest *test)
 	PkPackageId *id2;
 	gchar **array;
 
-	if (!libst_start (test, "PkPackageId"))
+	if (!egg_test_start (test, "PkPackageId"))
 		return;
 
 	/************************************************************
 	 ****************          id           ******************
 	 ************************************************************/
 
-	libst_title (test, "id build");
+	egg_test_title (test, "id build");
 	text = pk_package_id_build ("moo", "0.0.1", "i386", "fedora");
 	if (egg_strequal (text, "moo;0.0.1;i386;fedora"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_free (text);
 
-	libst_title (test, "pid equal pass (same)");
+	egg_test_title (test, "pid equal pass (same)");
 	ret = pk_package_id_equal_strings ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "pid equal pass (different)");
+	egg_test_title (test, "pid equal pass (different)");
 	ret = pk_package_id_equal_strings ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get an id object");
+	egg_test_title (test, "get an id object");
 	id = pk_package_id_new ();
 	if (id != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test id freeing early");
+	egg_test_title (test, "test id freeing early");
 	ret = pk_package_id_free (id);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "parse incorrect package_id from string (empty)");
+	egg_test_title (test, "parse incorrect package_id from string (empty)");
 	temp = "";
 	id = pk_package_id_new_from_string (temp);
 	if (id == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "passed an invalid string '%s'", temp);
+		egg_test_failed (test, "passed an invalid string '%s'", temp);
 	}
 
 	/************************************************************/
-	libst_title (test, "parse incorrect package_id from string (not enough)");
+	egg_test_title (test, "parse incorrect package_id from string (not enough)");
 	temp = "moo;0.0.1;i386";
 	id = pk_package_id_new_from_string (temp);
 	if (id == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "passed an invalid string '%s'", temp);
+		egg_test_failed (test, "passed an invalid string '%s'", temp);
 	}
 
 	/************************************************************/
-	libst_title (test, "parse package_id from string");
+	egg_test_title (test, "parse package_id from string");
 	id = pk_package_id_new_from_string ("moo;0.0.1;i386;fedora");
 	if (id != NULL &&
 	    egg_strequal (id->name, "moo") &&
 	    egg_strequal (id->arch, "i386") &&
 	    egg_strequal (id->data, "fedora") &&
 	    egg_strequal (id->version, "0.0.1"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test copying");
+	egg_test_title (test, "test copying");
 	id2 = pk_package_id_copy (id);
 	if (id2 != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test id building with valid data");
+	egg_test_title (test, "test id building with valid data");
 	text = pk_package_id_to_string (id2);
 	if (egg_strequal (text, "moo;0.0.1;i386;fedora"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "package_id is '%s'", text);
+		egg_test_failed (test, "package_id is '%s'", text);
 	}
 	g_free (text);
 	pk_package_id_free (id);
 	pk_package_id_free (id2);
 
 	/************************************************************/
-	libst_title (test, "parse short package_id from string");
+	egg_test_title (test, "parse short package_id from string");
 	id = pk_package_id_new_from_string ("moo;0.0.1;;");
 	if (id != NULL &&
 	    egg_strequal (id->name, "moo") &&
 	    egg_strequal (id->version, "0.0.1") &&
 	    id->data == NULL &&
 	    id->arch == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	pk_package_id_free (id);
 
-	libst_title (test, "id equal pass (same)");
+	egg_test_title (test, "id equal pass (same)");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 3);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_title (test, "id equal pass (parts==match)");
+	egg_test_title (test, "id equal pass (parts==match)");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 4);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_title (test, "id equal pass (different)");
+	egg_test_title (test, "id equal pass (different)");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data", 4, 3);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_title (test, "id equal fail1");
+	egg_test_title (test, "id equal fail1");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.2;x64;fedora", 4, 3);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_title (test, "id equal fail2");
+	egg_test_title (test, "id equal fail2");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "gnome;0.0.2;i386;fedora", 4, 3);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_title (test, "id equal fail3");
+	egg_test_title (test, "id equal fail3");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 3);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_title (test, "id equal fail (match too high)");
+	egg_test_title (test, "id equal fail (match too high)");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 5);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************
 	 ****************          splitting         ****************
 	 ************************************************************/
-	libst_title (test, "test pass 1");
+	egg_test_title (test, "test pass 1");
 	array = pk_strsplit ("foo", 1);
 	if (array != NULL &&
 	    egg_strequal (array[0], "foo"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got %s", array[0]);
+		egg_test_failed (test, "got %s", array[0]);
 	}
 	g_strfreev (array);
 
 	/************************************************************/
-	libst_title (test, "test pass 2");
+	egg_test_title (test, "test pass 2");
 	array = pk_strsplit ("foo;moo", 2);
 	if (array != NULL &&
 	    egg_strequal (array[0], "foo") &&
 	    egg_strequal (array[1], "moo"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got %s, %s", array[0], array[1]);
+		egg_test_failed (test, "got %s, %s", array[0], array[1]);
 	}
 	g_strfreev (array);
 
 	/************************************************************/
-	libst_title (test, "test pass 3");
+	egg_test_title (test, "test pass 3");
 	array = pk_strsplit ("foo;moo;bar", 3);
 	if (array != NULL &&
 	    egg_strequal (array[0], "foo") &&
 	    egg_strequal (array[1], "moo") &&
 	    egg_strequal (array[2], "bar"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+		egg_test_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
 	}
 	g_strfreev (array);
 
 	/************************************************************/
-	libst_title (test, "test on real packageid");
+	egg_test_title (test, "test on real packageid");
 	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;", 4);
 	if (array != NULL &&
 	    egg_strequal (array[0], "kde-i18n-csb") &&
 	    egg_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") &&
 	    egg_strequal (array[2], "all") &&
 	    egg_strequal (array[3], ""))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+		egg_test_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
 	}
 	g_strfreev (array);
 
 	/************************************************************/
-	libst_title (test, "test on short packageid");
+	egg_test_title (test, "test on short packageid");
 	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;;", 4);
 	if (array != NULL &&
 	    egg_strequal (array[0], "kde-i18n-csb") &&
 	    egg_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") &&
 	    egg_strequal (array[2], "") &&
 	    egg_strequal (array[3], ""))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+		egg_test_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
 	}
 	g_strfreev (array);
 
 	/************************************************************/
-	libst_title (test, "test fail under");
+	egg_test_title (test, "test fail under");
 	array = pk_strsplit ("foo;moo", 1);
 	if (array == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test fail over");
+	egg_test_title (test, "test fail over");
 	array = pk_strsplit ("foo;moo", 3);
 	if (array == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test fail missing first");
+	egg_test_title (test, "test fail missing first");
 	array = pk_strsplit (";moo", 2);
 	if (array == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

@@ -573,7 +573,7 @@ pk_package_list_new (void)
 #include <libselftest.h>
 
 void
-libst_package_list (LibSelfTest *test)
+egg_test_package_list (EggTest *test)
 {
 	PkPackageList *plist;
 	gchar *text;
@@ -586,97 +586,97 @@ libst_package_list (LibSelfTest *test)
 	gchar *r2_text;
 	PkPackageId *id;
 
-	if (!libst_start (test, "PkPackageList"))
+	if (!egg_test_start (test, "PkPackageList"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "create");
+	egg_test_title (test, "create");
 	plist = pk_package_list_new ();
 	if (plist != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "add entry");
+	egg_test_title (test, "add entry");
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, id, "GNOME!");
 	pk_package_id_free (id);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check not exists");
+	egg_test_title (test, "check not exists");
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	ret = pk_package_list_contains (plist, "liferea;1.23;i386;data");
 	if (ret == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check exists");
+	egg_test_title (test, "check exists");
 	ret = pk_package_list_contains (plist, "gnome;1.23;i386;data");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check exists different data");
+	egg_test_title (test, "check exists different data");
 	ret = pk_package_list_contains (plist, "gnome;1.23;i386;fedora");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "add entry");
+	egg_test_title (test, "add entry");
 	text = pk_package_list_to_string (plist);
 	if (egg_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "get string incorrect '%s'", text);
+		egg_test_failed (test, "get string incorrect '%s'", text);
 	}
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "add entry with NULL summary");
+	egg_test_title (test, "add entry with NULL summary");
 	id = pk_package_id_new_from_string ("nosummary;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, id, NULL);
 	pk_package_id_free (id);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "could not add NULL summary");
+		egg_test_failed (test, "could not add NULL summary");
 	}
 	g_object_unref (plist);
 
 	plist = pk_package_list_new ();
 
 	/************************************************************/
-	libst_title (test, "add entries");
+	egg_test_title (test, "add entries");
 	id = pk_package_id_new_from_string ("def;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, id, "zed");
 	pk_package_id_free (id);
 	if (!ret)
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	id = pk_package_id_new_from_string ("abc;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, id, "fed");
 	pk_package_id_free (id);
 	if (!ret)
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	id = pk_package_id_new_from_string ("ghi;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_ENHANCEMENT, id, "aed");
 	pk_package_id_free (id);
 	if (!ret)
-		libst_failed (test, NULL);
-	libst_success (test, NULL);
+		egg_test_failed (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "sort by package_id");
+	egg_test_title (test, "sort by package_id");
 	ret = pk_package_list_sort (plist);
 	r0 = pk_package_list_get_obj (plist, 0);
 	r1 = pk_package_list_get_obj (plist, 1);
@@ -687,13 +687,13 @@ libst_package_list (LibSelfTest *test)
 	if (egg_strequal (r0_text, "abc;1.23;i386;data") &&
 	    egg_strequal (r1_text, "def;1.23;i386;data") &&
 	    egg_strequal (r2_text, "ghi;1.23;i386;data"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
+		egg_test_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
 	}
 
 	/************************************************************/
-	libst_title (test, "sort by summary");
+	egg_test_title (test, "sort by summary");
 	ret = pk_package_list_sort_summary (plist);
 	r0 = pk_package_list_get_obj (plist, 0);
 	r1 = pk_package_list_get_obj (plist, 1);
@@ -701,13 +701,13 @@ libst_package_list (LibSelfTest *test)
 	if (egg_strequal (r0->summary, "aed") &&
 	    egg_strequal (r1->summary, "fed") &&
 	    egg_strequal (r2->summary, "zed"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
+		egg_test_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
 	}
 
 	/************************************************************/
-	libst_title (test, "sort by severity");
+	egg_test_title (test, "sort by severity");
 	ret = pk_package_list_sort_info (plist);
 	r0 = pk_package_list_get_obj (plist, 0);
 	r1 = pk_package_list_get_obj (plist, 1);
@@ -715,9 +715,9 @@ libst_package_list (LibSelfTest *test)
 	if (r0->info == PK_INFO_ENUM_SECURITY &&
 	    r1->info == PK_INFO_ENUM_BUGFIX &&
 	    r2->info == PK_INFO_ENUM_ENHANCEMENT)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
+		egg_test_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
 	}
 
 	g_object_unref (plist);
@@ -737,7 +737,7 @@ libst_package_list (LibSelfTest *test)
 	pk_package_id_free (id);
 
 	/************************************************************/
-	libst_title (test, "sort by package_id then priority (should not mess up previous sort)");
+	egg_test_title (test, "sort by package_id then priority (should not mess up previous sort)");
 	pk_package_list_sort (plist);
 	pk_package_list_sort_info (plist);
 	r0 = pk_package_list_get_obj (plist, 0);
@@ -749,14 +749,14 @@ libst_package_list (LibSelfTest *test)
 	if (egg_strequal (r0_text, "abc;1.23;i386;data") &&
 	    egg_strequal (r1_text, "def;1.23;i386;data") &&
 	    egg_strequal (r2_text, "ghi;1.23;i386;data"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
+		egg_test_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
 	}
 
 	g_object_unref (plist);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 
