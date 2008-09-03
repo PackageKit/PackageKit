@@ -28,6 +28,17 @@
 
 #include "libselftest.h"
 
+struct LibSelfTest {
+	guint		 total;
+	guint		 succeeded;
+	gboolean	 started;
+	gchar		*type;
+	GTimer		*timer;
+	GMainLoop	*loop;
+	guint		 hang_loop_id;
+	gpointer	 user_data;
+};
+
 /**
  * libst_init:
  **/
