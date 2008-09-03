@@ -1241,18 +1241,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
 
         for name in names:
-            pkg = None
             if self._cache.has_key(name):
-                pkg = self._cache[name]
-                if not self._is_package_visible(pkg, filters):
-                    pkg = None
-            if pkg:
-                self._emit_package(pkg)
-                self.Finished(EXIT_SUCCESS)
+                self._emit_visible_package(filters, self._cache[name])
             else:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                                "Package name %s could not be resolved" % name)
                 self.Finished(EXIT_FAILED)
+                return
+        self.Finished(EXIT_SUCCESS)
 
     @threaded
     def doGetDepends(self, filter, ids, recursive=False):
@@ -1614,6 +1610,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 info = INFO_AVAILABLE
         summary = pkg.summary
         self.Package(info, id, summary)
+
+    def _emit_visible_package(self, filters, pkg, info=None):
+        """
+        Filter and emit a package
+        """
+        if self._is_package_visible(pkg, filters):
+            self._emit_package(pkg, info)
 
     def _emit_visible_packages(self, filters, pkgs, info=None):
         """
