@@ -914,23 +914,23 @@ pk_control_new (void)
 #include <libselftest.h>
 
 void
-libst_control (LibSelfTest *test)
+egg_test_control (EggTest *test)
 {
 	PkControl *control;
 
-	if (!libst_start (test, "PkControl"))
+	if (!egg_test_start (test, "PkControl"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get control");
+	egg_test_title (test, "get control");
 	control = pk_control_new ();
 	if (control != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_object_unref (control);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

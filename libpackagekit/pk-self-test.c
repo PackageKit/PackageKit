@@ -27,47 +27,47 @@
 #include <egg-debug.h>
 
 /* prototypes */
-void libst_package_id (LibSelfTest *test);
-void libst_package_ids (LibSelfTest *test);
-void libst_package_obj (LibSelfTest *test);
-void libst_package_list (LibSelfTest *test);
-void libst_enum (LibSelfTest *test);
-void libst_bitfield (LibSelfTest *test);
-void libst_common (LibSelfTest *test);
-void libst_enum_list (LibSelfTest *test);
-void libst_extra (LibSelfTest *test);
-void libst_client (LibSelfTest *test);
-void libst_control (LibSelfTest *test);
-void libst_task_list (LibSelfTest *test);
-void libst_catalog (LibSelfTest *test);
-void libst_update_detail (LibSelfTest *test);
-void libst_details (LibSelfTest *test);
+void egg_test_package_id (EggTest *test);
+void egg_test_package_ids (EggTest *test);
+void egg_test_package_obj (EggTest *test);
+void egg_test_package_list (EggTest *test);
+void egg_test_enum (EggTest *test);
+void egg_test_bitfield (EggTest *test);
+void egg_test_common (EggTest *test);
+void egg_test_enum_list (EggTest *test);
+void egg_test_extra (EggTest *test);
+void egg_test_client (EggTest *test);
+void egg_test_control (EggTest *test);
+void egg_test_task_list (EggTest *test);
+void egg_test_catalog (EggTest *test);
+void egg_test_update_detail (EggTest *test);
+void egg_test_details (EggTest *test);
 
 int
 main (int argc, char **argv)
 {
-	LibSelfTest test;
+	EggTest test;
 
 	g_type_init ();
-	libst_init (&test);
+	egg_test_init (&test);
 	egg_debug_init (TRUE);
 
 	/* tests go here */
-	libst_common (&test);
-	libst_package_id (&test);
-	libst_package_ids (&test);
-	libst_package_obj (&test);
-	libst_package_list (&test);
-	libst_enum (&test);
-	libst_bitfield (&test);
-	libst_extra (&test);
-	libst_client (&test);
-	libst_catalog (&test);
-	libst_control (&test);
-	libst_task_list (&test);
-	libst_update_detail (&test);
-	libst_details (&test);
+	egg_test_common (&test);
+	egg_test_package_id (&test);
+	egg_test_package_ids (&test);
+	egg_test_package_obj (&test);
+	egg_test_package_list (&test);
+	egg_test_enum (&test);
+	egg_test_bitfield (&test);
+	egg_test_extra (&test);
+	egg_test_client (&test);
+	egg_test_catalog (&test);
+	egg_test_control (&test);
+	egg_test_task_list (&test);
+	egg_test_update_detail (&test);
+	egg_test_details (&test);
 
-	return (libst_finish (&test));
+	return (egg_test_finish (&test));
 }
 

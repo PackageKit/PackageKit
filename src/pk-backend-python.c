@@ -1210,12 +1210,12 @@ pk_backend_python_new (void)
 #include <libselftest.h>
 
 void
-libst_backend_python (LibSelfTest *test)
+egg_test_backend_python (EggTest *test)
 {
-	if (!libst_start (test, "PkBackendPython"))
+	if (!egg_test_start (test, "PkBackendPython"))
 		return;
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

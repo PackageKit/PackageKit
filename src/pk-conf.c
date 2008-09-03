@@ -217,65 +217,65 @@ pk_conf_new (void)
 #include <libselftest.h>
 
 void
-libst_conf (LibSelfTest *test)
+egg_test_conf (EggTest *test)
 {
 	PkConf *conf;
 	gchar *text;
 	gint value;
 
-	if (!libst_start (test, "PkConf"))
+	if (!egg_test_start (test, "PkConf"))
 		return;
 
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	egg_test_title (test, "get an instance");
 	conf = pk_conf_new ();
 	if (conf != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get the default backend");
+	egg_test_title (test, "get the default backend");
 	text = pk_conf_get_string (conf, "DefaultBackend");
 	if (text != PK_CONF_VALUE_STRING_MISSING) {
-		libst_success (test, "got default backend '%s'", text);
+		egg_test_success (test, "got default backend '%s'", text);
 	} else {
-		libst_failed (test, "got NULL!");
+		egg_test_failed (test, "got NULL!");
 	}
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "get a string that doesn't exist");
+	egg_test_title (test, "get a string that doesn't exist");
 	text = pk_conf_get_string (conf, "FooBarBaz");
 	if (text == PK_CONF_VALUE_STRING_MISSING) {
-		libst_success (test, "got NULL", text);
+		egg_test_success (test, "got NULL", text);
 	} else {
-		libst_failed (test, "got return value '%s'", text);
+		egg_test_failed (test, "got return value '%s'", text);
 	}
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "get the shutdown timeout");
+	egg_test_title (test, "get the shutdown timeout");
 	value = pk_conf_get_int (conf, "ShutdownTimeout");
 	if (value != PK_CONF_VALUE_INT_MISSING) {
-		libst_success (test, "got ShutdownTimeout '%i'", value);
+		egg_test_success (test, "got ShutdownTimeout '%i'", value);
 	} else {
-		libst_failed (test, "got %i", value);
+		egg_test_failed (test, "got %i", value);
 	}
 
 	/************************************************************/
-	libst_title (test, "get an int that doesn't exist");
+	egg_test_title (test, "get an int that doesn't exist");
 	value = pk_conf_get_int (conf, "FooBarBaz");
 	if (value == PK_CONF_VALUE_INT_MISSING) {
-		libst_success (test, "got %i", value);
+		egg_test_success (test, "got %i", value);
 	} else {
-		libst_failed (test, "got return value '%i'", value);
+		egg_test_failed (test, "got return value '%i'", value);
 	}
 
 	g_object_unref (conf);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

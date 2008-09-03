@@ -28,20 +28,20 @@
 #include <egg-debug.h>
 
 /* prototypes */
-void libst_generate_pack (LibSelfTest *test);
+void egg_test_generate_pack (EggTest *test);
 
 int
 main (int argc, char **argv)
 {
-	LibSelfTest test;
+	EggTest test;
 
 	g_type_init ();
-	libst_init (&test);
+	egg_test_init (&test);
 	egg_debug_init (TRUE);
 
 	/* tests go here */
-	libst_generate_pack (&test);
+	egg_test_generate_pack (&test);
 	
-	return (libst_finish (&test));
+	return (egg_test_finish (&test));
 }
 

@@ -2057,9 +2057,9 @@ pk_backend_test_message_cb (PkBackend *backend, PkMessageEnum message, const gch
  * pk_backend_test_finished_cb:
  **/
 static void
-pk_backend_test_finished_cb (PkBackend *backend, PkExitEnum exit, LibSelfTest *test)
+pk_backend_test_finished_cb (PkBackend *backend, PkExitEnum exit, EggTest *test)
 {
-	libst_loopquit (test);
+	egg_test_loop_quit (test);
 }
 
 /**
@@ -2068,8 +2068,8 @@ pk_backend_test_finished_cb (PkBackend *backend, PkExitEnum exit, LibSelfTest *t
 static void
 pk_backend_test_watch_file_cb (PkBackend *backend, gpointer data)
 {
-	LibSelfTest *test = (LibSelfTest *) data;
-	libst_loopquit (test);
+	EggTest *test = (EggTest *) data;
+	egg_test_loop_quit (test);
 }
 
 static gboolean
@@ -2088,7 +2088,7 @@ pk_backend_test_func_immediate_false (PkBackend *backend)
 }
 
 void
-libst_backend (LibSelfTest *test)
+egg_test_backend (EggTest *test)
 {
 	PkBackend *backend;
 	gchar *text;
@@ -2098,357 +2098,357 @@ libst_backend (LibSelfTest *test)
 	guint data_uint;
 	gboolean data_bool;
 
-	if (!libst_start (test, "PkBackend"))
+	if (!egg_test_start (test, "PkBackend"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get an backend");
+	egg_test_title (test, "get an backend");
 	backend = pk_backend_new ();
 	if (backend != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set a blank string");
+	egg_test_title (test, "set a blank string");
 	ret = pk_backend_set_string (backend, "dave2", "");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set a ~bool");
+	egg_test_title (test, "set a ~bool");
 	ret = pk_backend_set_bool (backend, "roger2", FALSE);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set a zero uint");
+	egg_test_title (test, "set a zero uint");
 	ret = pk_backend_set_uint (backend, "linda2", 0);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get a blank string");
+	egg_test_title (test, "get a blank string");
 	data_string = pk_backend_get_string (backend, "dave2");
 	if (egg_strequal (data_string, ""))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "data was %s", data_string);
+		egg_test_failed (test, "data was %s", data_string);
 	}
 
 	/************************************************************/
-	libst_title (test, "get a ~bool");
+	egg_test_title (test, "get a ~bool");
 	data_bool = pk_backend_get_bool (backend, "roger2");
 	if (!data_bool)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "data was %i", data_bool);
+		egg_test_failed (test, "data was %i", data_bool);
 	}
 
 	/************************************************************/
-	libst_title (test, "get a zero uint");
+	egg_test_title (test, "get a zero uint");
 	data_uint = pk_backend_get_uint (backend, "linda2");
 	if (data_uint == 0)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "data was %i", data_uint);
+		egg_test_failed (test, "data was %i", data_uint);
 	}
 
 	/************************************************************/
-	libst_title (test, "set a string");
+	egg_test_title (test, "set a string");
 	ret = pk_backend_set_string (backend, "dave", "ania");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set a bool");
+	egg_test_title (test, "set a bool");
 	ret = pk_backend_set_bool (backend, "roger", TRUE);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set a uint");
+	egg_test_title (test, "set a uint");
 	ret = pk_backend_set_uint (backend, "linda", 999);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get a string");
+	egg_test_title (test, "get a string");
 	data_string = pk_backend_get_string (backend, "dave");
 	if (egg_strequal (data_string, "ania"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "data was %s", data_string);
+		egg_test_failed (test, "data was %s", data_string);
 	}
 
 	/************************************************************/
-	libst_title (test, "get a bool");
+	egg_test_title (test, "get a bool");
 	data_bool = pk_backend_get_bool (backend, "roger");
 	if (data_bool)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "data was %i", data_bool);
+		egg_test_failed (test, "data was %i", data_bool);
 	}
 
 	/************************************************************/
-	libst_title (test, "get a uint");
+	egg_test_title (test, "get a uint");
 	data_uint = pk_backend_get_uint (backend, "linda");
 	if (data_uint == 999)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "data was %i", data_uint);
+		egg_test_failed (test, "data was %i", data_uint);
 	}
 
 	/************************************************************/
-	libst_title (test, "create a config file");
+	egg_test_title (test, "create a config file");
 	filename = "/tmp/dave";
 	ret = g_file_set_contents (filename, "foo", -1, NULL);
 	if (ret) {
-		libst_success (test, "set contents");
+		egg_test_success (test, "set contents");
 	} else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set up a watch file on a config file");
+	egg_test_title (test, "set up a watch file on a config file");
 	ret = pk_backend_watch_file (backend, filename, pk_backend_test_watch_file_cb, test);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "eula valid");
+		egg_test_failed (test, "eula valid");
 	}
 
 	/************************************************************/
-	libst_title (test, "change the config file");
+	egg_test_title (test, "change the config file");
 	ret = g_file_set_contents (filename, "bar", -1, NULL);
 	if (ret) {
-		libst_success (test, "set contents");
+		egg_test_success (test, "set contents");
 	} else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/* wait for config file change */
-	libst_loopwait (test, 2000);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, 2000);
+	egg_test_loop_check (test);
 
 	/************************************************************/
-	libst_title (test, "delete the config file");
+	egg_test_title (test, "delete the config file");
 	ret = g_unlink (filename);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	g_signal_connect (backend, "message", G_CALLBACK (pk_backend_test_message_cb), NULL);
 	g_signal_connect (backend, "finished", G_CALLBACK (pk_backend_test_finished_cb), test);
 
 	/************************************************************/
-	libst_title (test, "get eula that does not exist");
+	egg_test_title (test, "get eula that does not exist");
 	ret = pk_backend_is_eula_valid (backend, "license_foo");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "eula valid");
+		egg_test_failed (test, "eula valid");
 	}
 
 	/************************************************************/
-	libst_title (test, "accept eula");
+	egg_test_title (test, "accept eula");
 	ret = pk_backend_accept_eula (backend, "license_foo");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "eula was not accepted");
+		egg_test_failed (test, "eula was not accepted");
 	}
 
 	/************************************************************/
-	libst_title (test, "get eula that does exist");
+	egg_test_title (test, "get eula that does exist");
 	ret = pk_backend_is_eula_valid (backend, "license_foo");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "eula valid");
+		egg_test_failed (test, "eula valid");
 	}
 
 	/************************************************************/
-	libst_title (test, "accept eula (again)");
+	egg_test_title (test, "accept eula (again)");
 	ret = pk_backend_accept_eula (backend, "license_foo");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "eula was accepted twice");
+		egg_test_failed (test, "eula was accepted twice");
 	}
 
 	/************************************************************/
-	libst_title (test, "get backend name");
+	egg_test_title (test, "get backend name");
 	text = pk_backend_get_name (backend);
 	if (text == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "invalid name %s (test suite needs to unref backend?)", text);
+		egg_test_failed (test, "invalid name %s (test suite needs to unref backend?)", text);
 	}
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "load an invalid backend");
+	egg_test_title (test, "load an invalid backend");
 	ret = pk_backend_set_name (backend, "invalid");
 	if (ret == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "try to load a valid backend");
+	egg_test_title (test, "try to load a valid backend");
 	ret = pk_backend_set_name (backend, "dummy");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "load an valid backend again");
+	egg_test_title (test, "load an valid backend again");
 	ret = pk_backend_set_name (backend, "dummy");
 	if (ret == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "loaded twice");
+		egg_test_failed (test, "loaded twice");
 	}
 
 	/************************************************************/
-	libst_title (test, "lock an valid backend");
+	egg_test_title (test, "lock an valid backend");
 	ret = pk_backend_lock (backend);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed to lock");
+		egg_test_failed (test, "failed to lock");
 	}
 
 	/************************************************************/
-	libst_title (test, "lock a backend again");
+	egg_test_title (test, "lock a backend again");
 	ret = pk_backend_lock (backend);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "locked twice should succeed");
+		egg_test_failed (test, "locked twice should succeed");
 	}
 
 	/************************************************************/
-	libst_title (test, "check we are out of init");
+	egg_test_title (test, "check we are out of init");
 	if (backend->priv->during_initialize == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "not out of init");
+		egg_test_failed (test, "not out of init");
 	}
 
 	/************************************************************/
-	libst_title (test, "get backend name");
+	egg_test_title (test, "get backend name");
 	text = pk_backend_get_name (backend);
 	if (egg_strequal(text, "dummy"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "invalid name %s", text);
+		egg_test_failed (test, "invalid name %s", text);
 	}
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "unlock an valid backend");
+	egg_test_title (test, "unlock an valid backend");
 	ret = pk_backend_unlock (backend);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed to unlock");
+		egg_test_failed (test, "failed to unlock");
 	}
 
 	/************************************************************/
-	libst_title (test, "unlock an valid backend again");
+	egg_test_title (test, "unlock an valid backend again");
 	ret = pk_backend_unlock (backend);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "unlocked twice, should succeed");
+		egg_test_failed (test, "unlocked twice, should succeed");
 	}
 
 	/************************************************************/
-	libst_title (test, "check we are not finished");
+	egg_test_title (test, "check we are not finished");
 	if (backend->priv->finished == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "we did not clear finish!");
+		egg_test_failed (test, "we did not clear finish!");
 	}
 
 	/************************************************************/
-	libst_title (test, "check we have no error");
+	egg_test_title (test, "check we have no error");
 	if (backend->priv->set_error == FALSE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "an error has already been set");
+		egg_test_failed (test, "an error has already been set");
 	}
 
 	/************************************************************/
-	libst_title (test, "lock again");
+	egg_test_title (test, "lock again");
 	ret = pk_backend_lock (backend);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed to unlock");
+		egg_test_failed (test, "failed to unlock");
 	}
 
 	/************************************************************/
-	libst_title (test, "wait for a thread to return true");
+	egg_test_title (test, "wait for a thread to return true");
 	ret = pk_backend_thread_create (backend, pk_backend_test_func_true);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "wait for a thread failed");
+		egg_test_failed (test, "wait for a thread failed");
 	}
 
 	/* wait for Finished */
-	libst_loopwait (test, 2000);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, 2000);
+	egg_test_loop_check (test);
 
 	/* reset */
 	pk_backend_reset (backend);
 
 	/************************************************************/
-	libst_title (test, "wait for a thread to return false (straight away)");
+	egg_test_title (test, "wait for a thread to return false (straight away)");
 	ret = pk_backend_thread_create (backend, pk_backend_test_func_immediate_false);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "returned false!");
+		egg_test_failed (test, "returned false!");
 	}
 
 	/* wait for Finished */
-	libst_loopwait (test, PK_BACKEND_FINISHED_TIMEOUT_GRACE + 100);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, PK_BACKEND_FINISHED_TIMEOUT_GRACE + 100);
+	egg_test_loop_check (test);
 
 	/************************************************************/
 	pk_backend_reset (backend);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* wait for finished */
-	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 200);
-	libst_loopcheck (test);
+	egg_test_loop_wait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 200);
+	egg_test_loop_check (test);
 
-	libst_title (test, "check we enforce finished after error_code");
+	egg_test_title (test, "check we enforce finished after error_code");
 	if (number_messages == 1)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "we messaged %i times!", number_messages);
+		egg_test_failed (test, "we messaged %i times!", number_messages);
 	}
 
 	g_object_unref (backend);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

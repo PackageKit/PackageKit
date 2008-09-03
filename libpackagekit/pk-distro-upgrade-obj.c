@@ -112,12 +112,12 @@ pk_distro_upgrade_obj_free (PkDistroUpgradeObj *obj)
 #include <libselftest.h>
 
 void
-libst_distro_upgrade (LibSelfTest *test)
+egg_test_distro_upgrade (EggTest *test)
 {
 	gboolean ret;
 	PkDistroUpgradeObj *obj;
 
-	if (!libst_start (test, "PkDistroUpgradeObj"))
+	if (!egg_test_start (test, "PkDistroUpgradeObj"))
 		return;
 
 	/************************************************************
@@ -125,22 +125,22 @@ libst_distro_upgrade (LibSelfTest *test)
 	 ************************************************************/
 
 	/************************************************************/
-	libst_title (test, "get an upgrade object");
+	egg_test_title (test, "get an upgrade object");
 	obj = pk_distro_upgrade_obj_new ();
 	if (obj != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test upgrade");
+	egg_test_title (test, "test upgrade");
 	ret = pk_distro_upgrade_obj_free (obj);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

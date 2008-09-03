@@ -185,23 +185,23 @@ pk_file_monitor_new (void)
 #include <libselftest.h>
 
 void
-libst_file_monitor (LibSelfTest *test)
+egg_test_file_monitor (EggTest *test)
 {
 	PkFileMonitor *file_monitor;
 
-	if (!libst_start (test, "PkFileMonitor"))
+	if (!egg_test_start (test, "PkFileMonitor"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get a file_monitor");
+	egg_test_title (test, "get a file_monitor");
 	file_monitor = pk_file_monitor_new ();
 	if (file_monitor != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_object_unref (file_monitor);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

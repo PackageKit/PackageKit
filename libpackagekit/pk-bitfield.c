@@ -311,79 +311,79 @@ out:
 #include <libselftest.h>
 
 void
-libst_bitfield (LibSelfTest *test)
+egg_test_bitfield (EggTest *test)
 {
 	gchar *text;
 	PkBitfield filter;
 	guint value;
 	PkBitfield values;
 
-	if (!libst_start (test, "PkBitfield"))
+	if (!egg_test_start (test, "PkBitfield"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "check we can convert filter bitfield to text (none)");
+	egg_test_title (test, "check we can convert filter bitfield to text (none)");
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NONE));
 	if (egg_strequal (text, "none"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "text was %s", text);
+		egg_test_failed (test, "text was %s", text);
 	}
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "check we can convert filter bitfield to text (single)");
+	egg_test_title (test, "check we can convert filter bitfield to text (single)");
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT));
 	if (egg_strequal (text, "~devel"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "text was %s", text);
+		egg_test_failed (test, "text was %s", text);
 	}
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "check we can convert filter bitfield to text (plural)");
+	egg_test_title (test, "check we can convert filter bitfield to text (plural)");
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 					   pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 					   pk_bitfield_value (PK_FILTER_ENUM_NEWEST));
 	if (egg_strequal (text, "~devel;gui;newest"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "text was %s", text);
+		egg_test_failed (test, "text was %s", text);
 	}
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "check we can convert filter text to bitfield (none)");
+	egg_test_title (test, "check we can convert filter text to bitfield (none)");
 	filter = pk_filter_bitfield_from_text ("none");
 	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NONE))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "filter was %i", filter);
+		egg_test_failed (test, "filter was %i", filter);
 	}
 
 	/************************************************************/
-	libst_title (test, "check we can convert filter text to bitfield (single)");
+	egg_test_title (test, "check we can convert filter text to bitfield (single)");
 	filter = pk_filter_bitfield_from_text ("~devel");
 	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "filter was %i", filter);
+		egg_test_failed (test, "filter was %i", filter);
 	}
 
 	/************************************************************/
-	libst_title (test, "check we can convert filter text to bitfield (plural)");
+	egg_test_title (test, "check we can convert filter text to bitfield (plural)");
 	filter = pk_filter_bitfield_from_text ("~devel;gui;newest");
 	if (filter == (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 		       pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 		       pk_bitfield_value (PK_FILTER_ENUM_NEWEST)))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "filter was %i", filter);
+		egg_test_failed (test, "filter was %i", filter);
 	}
 
 	/************************************************************/
-	libst_title (test, "check we can add / remove bitfield");
+	egg_test_title (test, "check we can add / remove bitfield");
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 		 pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 		 pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
@@ -391,81 +391,81 @@ libst_bitfield (LibSelfTest *test)
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_text (filter);
 	if (egg_strequal (text, "gui;~free;newest"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "text was %s", text);
+		egg_test_failed (test, "text was %s", text);
 	}
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "check we can test enum presence");
+	egg_test_title (test, "check we can test enum presence");
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 		 pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 		 pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
 	if (pk_bitfield_contain (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "wrong boolean");
+		egg_test_failed (test, "wrong boolean");
 	}
-	libst_title (test, "check we can test enum false-presence");
+	egg_test_title (test, "check we can test enum false-presence");
 	if (!pk_bitfield_contain (filter, PK_FILTER_ENUM_FREE))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "wrong boolean");
+		egg_test_failed (test, "wrong boolean");
 	}
 
 	/************************************************************/
-	libst_title (test, "check we can add / remove bitfield to nothing");
+	egg_test_title (test, "check we can add / remove bitfield to nothing");
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_text (filter);
 	if (egg_strequal (text, "none"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "text was %s", text);
+		egg_test_failed (test, "text was %s", text);
 	}
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "bitfield from enums");
+	egg_test_title (test, "bitfield from enums");
 	values = pk_bitfield_from_enums (PK_ROLE_ENUM_SEARCH_GROUP, PK_ROLE_ENUM_SEARCH_DETAILS, -1);
 	if (values == (pk_bitfield_value (PK_ROLE_ENUM_SEARCH_DETAILS) |
 		       pk_bitfield_value (PK_ROLE_ENUM_SEARCH_GROUP)))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "returned bitfield %i", values);
+		egg_test_failed (test, "returned bitfield %i", values);
 	}
 
 	/************************************************************/
-	libst_title (test, "priority check missing");
+	egg_test_title (test, "priority check missing");
 	values = pk_bitfield_value (PK_ROLE_ENUM_SEARCH_DETAILS) |
 		 pk_bitfield_value (PK_ROLE_ENUM_SEARCH_GROUP);
 	value = pk_bitfield_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, -1);
 	if (value == -1)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "returned priority %i when should be missing", value);
+		egg_test_failed (test, "returned priority %i when should be missing", value);
 	}
 
 	/************************************************************/
-	libst_title (test, "priority check first");
+	egg_test_title (test, "priority check first");
 	value = pk_bitfield_contain_priority (values, PK_ROLE_ENUM_SEARCH_GROUP, -1);
 	if (value == PK_ROLE_ENUM_SEARCH_GROUP)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "returned wrong value; %i", value);
+		egg_test_failed (test, "returned wrong value; %i", value);
 	}
 
 	/************************************************************/
-	libst_title (test, "priority check second, correct");
+	egg_test_title (test, "priority check second, correct");
 	value = pk_bitfield_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, PK_ROLE_ENUM_SEARCH_GROUP, -1);
 	if (value == PK_ROLE_ENUM_SEARCH_GROUP)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "returned wrong value; %i", value);
+		egg_test_failed (test, "returned wrong value; %i", value);
 	}
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

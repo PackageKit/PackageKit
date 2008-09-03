@@ -152,34 +152,34 @@ pk_transaction_id_generate (void)
 #include <libselftest.h>
 
 void
-libst_transaction_id (LibSelfTest *test)
+egg_test_transaction_id (EggTest *test)
 {
 	gchar *tid;
 	gboolean ret;
 
-	if (!libst_start (test, "PkTransactionId"))
+	if (!egg_test_start (test, "PkTransactionId"))
 		return;
 
 	/************************************************************
 	 ****************          IDENT           ******************
 	 ************************************************************/
-	libst_title (test, "get an tid object");
+	egg_test_title (test, "get an tid object");
 	tid = pk_transaction_id_generate ();
 	if (tid != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_free (tid);
 
 	/************************************************************/
-	libst_title (test, "tid equal pass (same)");
+	egg_test_title (test, "tid equal pass (same)");
 	ret = pk_transaction_id_equal ("/34_1234def_r23", "/34_1234def_r23");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

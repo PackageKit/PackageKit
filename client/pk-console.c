@@ -1765,65 +1765,65 @@ out:
 #include <libselftest.h>
 
 void
-libst_console (LibSelfTest *test)
+egg_test_console (EggTest *test)
 {
 	gchar *text_safe;
 
-	if (!libst_start (test, "PkConsole"))
+	if (!egg_test_start (test, "PkConsole"))
 		return;
 
 	/************************************************************
 	 ****************         Padding          ******************
 	 ************************************************************/
-	libst_title (test, "pad smaller");
+	egg_test_title (test, "pad smaller");
 	text_safe = pk_strpad ("richard", 10);
 	if (egg_strequal (text_safe, "richard   "))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the padd '%s'", text_safe);
+		egg_test_failed (test, "failed the padd '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "pad NULL");
+	egg_test_title (test, "pad NULL");
 	text_safe = pk_strpad (NULL, 10);
 	if (egg_strequal (text_safe, "          "))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the padd '%s'", text_safe);
+		egg_test_failed (test, "failed the padd '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "pad nothing");
+	egg_test_title (test, "pad nothing");
 	text_safe = pk_strpad ("", 10);
 	if (egg_strequal (text_safe, "          "))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the padd '%s'", text_safe);
+		egg_test_failed (test, "failed the padd '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "pad over");
+	egg_test_title (test, "pad over");
 	text_safe = pk_strpad ("richardhughes", 10);
 	if (egg_strequal (text_safe, "richardhughes"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the padd '%s'", text_safe);
+		egg_test_failed (test, "failed the padd '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "pad zero");
+	egg_test_title (test, "pad zero");
 	text_safe = pk_strpad ("rich", 0);
 	if (egg_strequal (text_safe, "rich"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the padd '%s'", text_safe);
+		egg_test_failed (test, "failed the padd '%s'", text_safe);
 	}
 	g_free (text_safe);
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

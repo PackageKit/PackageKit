@@ -1004,191 +1004,191 @@ pk_license_enum_to_text (PkLicenseEnum license)
 #include <libselftest.h>
 
 void
-libst_enum (LibSelfTest *test)
+egg_test_enum (EggTest *test)
 {
 	const gchar *string;
 	PkRoleEnum role_value;
 	guint i;
 
-	if (!libst_start (test, "PkEnum"))
+	if (!egg_test_start (test, "PkEnum"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "find role_value");
+	egg_test_title (test, "find role_value");
 	role_value = pk_enum_find_value (enum_role, "search-file");
 	if (role_value == PK_ROLE_ENUM_SEARCH_FILE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "find string");
+	egg_test_title (test, "find string");
 	string = pk_enum_find_string (enum_role, PK_ROLE_ENUM_SEARCH_FILE);
 	if (egg_strequal (string, "search-file"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "find value");
+	egg_test_title (test, "find value");
 	role_value = pk_role_enum_from_text ("search-file");
 	if (role_value == PK_ROLE_ENUM_SEARCH_FILE)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "find string");
+	egg_test_title (test, "find string");
 	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
 	if (egg_strequal (string, "search-file"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the role bitfield");
+	egg_test_title (test, "check we convert all the role bitfield");
 	for (i=1; i<=PK_ROLE_ENUM_UNKNOWN; i++) {
 		string = pk_role_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the status bitfield");
+	egg_test_title (test, "check we convert all the status bitfield");
 	for (i=1; i<=PK_STATUS_ENUM_UNKNOWN; i++) {
 		string = pk_status_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the exit bitfield");
+	egg_test_title (test, "check we convert all the exit bitfield");
 	for (i=0; i<=PK_EXIT_ENUM_UNKNOWN; i++) {
 		string = pk_exit_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the filter bitfield");
+	egg_test_title (test, "check we convert all the filter bitfield");
 	for (i=0; i<=PK_FILTER_ENUM_UNKNOWN; i++) {
 		string = pk_filter_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the restart bitfield");
+	egg_test_title (test, "check we convert all the restart bitfield");
 	for (i=0; i<=PK_RESTART_ENUM_UNKNOWN; i++) {
 		string = pk_restart_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the error_code bitfield");
+	egg_test_title (test, "check we convert all the error_code bitfield");
 	for (i=0; i<=PK_ERROR_ENUM_UNKNOWN; i++) {
 		string = pk_error_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the group bitfield");
+	egg_test_title (test, "check we convert all the group bitfield");
 	for (i=1; i<=PK_GROUP_ENUM_UNKNOWN; i++) {
 		string = pk_group_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the freq bitfield");
+	egg_test_title (test, "check we convert all the freq bitfield");
 	for (i=0; i<=PK_FREQ_ENUM_UNKNOWN; i++) {
 		string = pk_freq_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the update bitfield");
+	egg_test_title (test, "check we convert all the update bitfield");
 	for (i=0; i<=PK_UPDATE_ENUM_UNKNOWN; i++) {
 		string = pk_update_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the info bitfield");
+	egg_test_title (test, "check we convert all the info bitfield");
 	for (i=1; i<=PK_INFO_ENUM_UNKNOWN; i++) {
 		string = pk_info_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the sig_type bitfield");
+	egg_test_title (test, "check we convert all the sig_type bitfield");
 	for (i=0; i<=PK_SIGTYPE_ENUM_UNKNOWN; i++) {
 		string = pk_sig_type_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the upgrade bitfield");
+	egg_test_title (test, "check we convert all the upgrade bitfield");
 	for (i=0; i<=PK_DISTRO_UPGRADE_ENUM_UNKNOWN; i++) {
 		string = pk_distro_upgrade_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the license bitfield");
+	egg_test_title (test, "check we convert all the license bitfield");
 	for (i=0; i<=PK_LICENSE_ENUM_UNKNOWN; i++) {
 		string = pk_license_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

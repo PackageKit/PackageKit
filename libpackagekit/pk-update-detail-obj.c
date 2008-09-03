@@ -149,12 +149,12 @@ pk_update_detail_obj_free (PkUpdateDetailObj *obj)
 #include <libselftest.h>
 
 void
-libst_update_detail (LibSelfTest *test)
+egg_test_update_detail (EggTest *test)
 {
 	gboolean ret;
 	PkUpdateDetailObj *obj;
 
-	if (!libst_start (test, "PkUpdateDetailObj"))
+	if (!egg_test_start (test, "PkUpdateDetailObj"))
 		return;
 
 	/************************************************************
@@ -162,22 +162,22 @@ libst_update_detail (LibSelfTest *test)
 	 ************************************************************/
 
 	/************************************************************/
-	libst_title (test, "get an detail object");
+	egg_test_title (test, "get an detail object");
 	obj = pk_update_detail_obj_new ();
 	if (obj != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test detail");
+	egg_test_title (test, "test detail");
 	ret = pk_update_detail_obj_free (obj);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

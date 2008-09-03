@@ -172,7 +172,7 @@ out:
 #include <libselftest.h>
 
 void
-libst_package_obj (LibSelfTest *test)
+egg_test_package_obj (EggTest *test)
 {
 	PkPackageObj *obj1;
 	PkPackageObj *obj2;
@@ -181,83 +181,83 @@ libst_package_obj (LibSelfTest *test)
 	PkPackageId *id;
 	gchar *text;
 
-	if (!libst_start (test, "PkPackageObj"))
+	if (!egg_test_start (test, "PkPackageObj"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "add entry");
+	egg_test_title (test, "add entry");
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	obj1 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, id, "GNOME!");
 	if (obj1 != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	pk_package_id_free (id);
 
 	/************************************************************/
-	libst_title (test, "add entry");
+	egg_test_title (test, "add entry");
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, id, "GNOME foo!");
 	if (obj2 != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	pk_package_id_free (id);
 
 	/************************************************************/
-	libst_title (test, "copy entry");
+	egg_test_title (test, "copy entry");
 	obj3 = pk_package_obj_copy (obj2);
 	if (obj3 != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check equal");
+	egg_test_title (test, "check equal");
 	ret = pk_package_obj_equal (obj1, obj3);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	pk_package_obj_free (obj2);
 	pk_package_obj_free (obj3);
 
 	/************************************************************/
-	libst_title (test, "add entry");
+	egg_test_title (test, "add entry");
 	id = pk_package_id_new_from_string ("gnome-do;1.23;i386;data");
 	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, id, "GNOME doo!");
 	if (obj2 != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check !equal");
+	egg_test_title (test, "check !equal");
 	ret = pk_package_obj_equal (obj1, obj2);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check to string");
+	egg_test_title (test, "check to string");
 	text = pk_package_obj_to_string (obj1);
 	if (egg_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got %s", text);
+		egg_test_failed (test, "got %s", text);
 	}
 
 	/************************************************************/
-	libst_title (test, "check from string");
+	egg_test_title (test, "check from string");
 	obj3 = pk_package_obj_from_string (text);
 	if (obj3->info == PK_INFO_ENUM_INSTALLED &&
 	    pk_package_id_equal (obj3->id, obj1->id) &&
 	    egg_strequal (obj3->summary, "GNOME!"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got incorrect data %s,%s,%s",
+		egg_test_failed (test, "got incorrect data %s,%s,%s",
 			      pk_info_enum_to_text (obj3->info),
 			      pk_package_id_to_string (obj3->id),
 			      obj3->summary);
@@ -268,7 +268,7 @@ libst_package_obj (LibSelfTest *test)
 	pk_package_obj_free (obj2);
 	g_free (text);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

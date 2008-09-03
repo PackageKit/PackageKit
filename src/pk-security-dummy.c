@@ -119,7 +119,7 @@ pk_security_new (void)
 #include <libselftest.h>
 
 void
-libst_security (LibSelfTest *test)
+egg_test_security (EggTest *test)
 {
 	return;
 }

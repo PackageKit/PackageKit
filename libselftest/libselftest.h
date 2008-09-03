@@ -19,28 +19,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __LIBSELFTEST_H
-#define __LIBSELFTEST_H
+#ifndef __EGG_TEST_H
+#define __EGG_TEST_H
 
 #include <glib.h>
 #include <string.h>
 
-typedef struct LibSelfTest LibSelfTest;
+typedef struct EggTest EggTest;
 
-gboolean	 libst_start		(LibSelfTest *test, const gchar *name);
-void		 libst_end		(LibSelfTest *test);
-void		 libst_title		(LibSelfTest *test, const gchar *format, ...);
-void		 libst_success		(LibSelfTest *test, const gchar *format, ...);
-void		 libst_failed		(LibSelfTest *test, const gchar *format, ...);
-void		 libst_init		(LibSelfTest *test);
-gint		 libst_finish		(LibSelfTest *test);
-guint		 libst_elapsed		(LibSelfTest *test);
-void		 libst_loopquit		(LibSelfTest *test);
-void		 libst_loopwait		(LibSelfTest *test, guint timeout);
-void		 libst_loopcheck	(LibSelfTest *test);
-void		 libst_set_user_data	(LibSelfTest *test, gpointer user_data);
-gpointer	 libst_get_user_data	(LibSelfTest *test);
-gchar		*libst_get_data_file	(const gchar *filename);
+gboolean	 egg_test_start			(EggTest *test, const gchar *name);
+void		 egg_test_end			(EggTest *test);
+void		 egg_test_title			(EggTest *test, const gchar *format, ...);
+void		 egg_test_success		(EggTest *test, const gchar *format, ...);
+void		 egg_test_failed		(EggTest *test, const gchar *format, ...);
+void		 egg_test_init			(EggTest *test);
+gint		 egg_test_finish		(EggTest *test);
+guint		 egg_test_elapsed		(EggTest *test);
+void		 egg_test_loop_quit		(EggTest *test);
+void		 egg_test_loop_wait		(EggTest *test, guint timeout);
+void		 egg_test_loop_check		(EggTest *test);
+void		 egg_test_set_user_data		(EggTest *test, gpointer user_data);
+gpointer	 egg_test_get_user_data		(EggTest *test);
+gchar		*egg_test_get_data_file		(const gchar *filename);
 
-#endif	/* __LIBSELFTEST_H */
+#endif	/* __EGG_TEST_H */
 

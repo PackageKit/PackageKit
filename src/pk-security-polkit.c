@@ -339,70 +339,70 @@ pk_security_new (void)
 #include <libselftest.h>
 
 void
-libst_security (LibSelfTest *test)
+egg_test_security (EggTest *test)
 {
 	PkSecurity *security;
 	const gchar *action;
 	gboolean ret;
 	gchar *error;
 
-	if (!libst_start (test, "PkSecurity"))
+	if (!egg_test_start (test, "PkSecurity"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	egg_test_title (test, "get an instance");
 	security = pk_security_new ();
 	if (security != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check connection");
+	egg_test_title (test, "check connection");
 	if (security->priv->connection != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check PolKit context");
+	egg_test_title (test, "check PolKit context");
 	if (security->priv->pk_context != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "map valid role to action");
+	egg_test_title (test, "map valid role to action");
 	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES);
 	if (egg_strequal (action, "org.freedesktop.packagekit.system-update")) {
-		libst_success (test, NULL, error);
+		egg_test_success (test, NULL, error);
 	} else {
-		libst_failed (test, "did not get correct action '%s'", action);
+		egg_test_failed (test, "did not get correct action '%s'", action);
 	}
 
 	/************************************************************/
-	libst_title (test, "map invalid role to action");
+	egg_test_title (test, "map invalid role to action");
 	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_SEARCH_NAME);
 	if (action == NULL) {
-		libst_success (test, NULL, error);
+		egg_test_success (test, NULL, error);
 	} else {
-		libst_failed (test, "did not get correct action '%s'", action);
+		egg_test_failed (test, "did not get correct action '%s'", action);
 	}
 
 	/************************************************************/
-	libst_title (test, "get the default backend");
+	egg_test_title (test, "get the default backend");
 	error = NULL;
 	ret = pk_security_action_is_allowed (security, ":0", FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	if (ret == FALSE) {
-		libst_success (test, "did not authenticate update-package, error '%s'", error);
+		egg_test_success (test, "did not authenticate update-package, error '%s'", error);
 	} else {
-		libst_failed (test, "authenticated update-package!");
+		egg_test_failed (test, "authenticated update-package!");
 	}
 	g_free (error);
 
 	g_object_unref (security);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

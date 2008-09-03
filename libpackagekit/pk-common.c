@@ -485,7 +485,7 @@ pk_va_list_to_argv_test (const gchar *first_element, ...)
 }
 
 void
-libst_common (LibSelfTest *test)
+egg_test_common (EggTest *test)
 {
 	gboolean ret;
 	gchar **array;
@@ -497,447 +497,447 @@ libst_common (LibSelfTest *test)
 	gchar *present;
 	guint seconds;
 
-	if (!libst_start (test, "PkCommon"))
+	if (!egg_test_start (test, "PkCommon"))
 		return;
 
 	/************************************************************
 	 ****************        test distro-id        **************
 	 ************************************************************/
-	libst_title (test, "get distro id");
+	egg_test_title (test, "get distro id");
 	text_safe = pk_get_distro_id ();
 	if (text_safe != NULL) {
-		libst_success (test, "distro_id=%s", text_safe);
+		egg_test_success (test, "distro_id=%s", text_safe);
 	} else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "egg_strequal same argument");
+	egg_test_title (test, "egg_strequal same argument");
 	temp = "dave";
 	if (egg_strequal (temp, temp))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "incorrect ret when both same");
+		egg_test_failed (test, "incorrect ret when both same");
 	}
 
 	/************************************************************/
-	libst_title (test, "egg_strequal both const");
+	egg_test_title (test, "egg_strequal both const");
 	if (egg_strequal ("dave", "dave"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "incorrect ret when both same");
+		egg_test_failed (test, "incorrect ret when both same");
 	}
 
 	/************************************************************
 	 ****************      splitting va_list       **************
 	 ************************************************************/
-	libst_title (test, "va_list_to_argv single");
+	egg_test_title (test, "va_list_to_argv single");
 	array = pk_va_list_to_argv_test ("richard", NULL);
 	if (egg_strequal (array[0], "richard") &&
 	    array[1] == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "incorrect array '%s'", array[0]);
+		egg_test_failed (test, "incorrect array '%s'", array[0]);
 	}
 	g_strfreev (array);
 
 	/************************************************************/
-	libst_title (test, "va_list_to_argv triple");
+	egg_test_title (test, "va_list_to_argv triple");
 	array = pk_va_list_to_argv_test ("richard", "phillip", "hughes", NULL);
 	if (egg_strequal (array[0], "richard") &&
 	    egg_strequal (array[1], "phillip") &&
 	    egg_strequal (array[2], "hughes") &&
 	    array[3] == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
+		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
 	}
 	g_strfreev (array);
 
 	/************************************************************/
-	libst_title (test, "va_list_to_argv triple with space first");
+	egg_test_title (test, "va_list_to_argv triple with space first");
 	array = pk_va_list_to_argv_test ("richard|phillip", "hughes", NULL);
 	if (egg_strequal (array[0], "richard") &&
 	    egg_strequal (array[1], "phillip") &&
 	    egg_strequal (array[2], "hughes") &&
 	    array[3] == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
+		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
 	}
 	g_strfreev (array);
 
 	/************************************************************/
-	libst_title (test, "va_list_to_argv triple with space second");
+	egg_test_title (test, "va_list_to_argv triple with space second");
 	array = pk_va_list_to_argv_test ("richard", "phillip|hughes", NULL);
 	if (egg_strequal (array[0], "richard") &&
 	    egg_strequal (array[1], "phillip") &&
 	    egg_strequal (array[2], "hughes") &&
 	    array[3] == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
+		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
 	}
 	g_strfreev (array);
 
 	/************************************************************
 	 ****************        validate text         **************
 	 ************************************************************/
-	libst_title (test, "validate correct char 1");
+	egg_test_title (test, "validate correct char 1");
 	ret = pk_strvalidate_char ('a');
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "validate correct char 2");
+	egg_test_title (test, "validate correct char 2");
 	ret = pk_strvalidate_char ('~');
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "validate incorrect char");
+	egg_test_title (test, "validate incorrect char");
 	ret = pk_strvalidate_char ('$');
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "validate incorrect text");
+	egg_test_title (test, "validate incorrect text");
 	ret = pk_strvalidate ("richard$hughes");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "validate correct text");
+	egg_test_title (test, "validate correct text");
 	ret = pk_strvalidate ("richardhughes");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************
 	 ****************          Zero            ******************
 	 ************************************************************/
 	temp = NULL;
-	libst_title (test, "test strzero (null)");
+	egg_test_title (test, "test strzero (null)");
 	ret = egg_strzero (NULL);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed null");
+		egg_test_failed (test, "failed null");
 	}
 
 	/************************************************************/
-	libst_title (test, "test strzero (null first char)");
+	egg_test_title (test, "test strzero (null first char)");
 	ret = egg_strzero ("");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed null");
+		egg_test_failed (test, "failed null");
 	}
 
 	/************************************************************/
-	libst_title (test, "test strzero (long string)");
+	egg_test_title (test, "test strzero (long string)");
 	ret = egg_strzero ("Richard");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "zero length word!");
+		egg_test_failed (test, "zero length word!");
 	}
 
 	/************************************************************/
-	libst_title (test, "id strcmp pass");
+	egg_test_title (test, "id strcmp pass");
 	ret = egg_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "id strcmp fail");
+	egg_test_title (test, "id strcmp fail");
 	ret = egg_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************
 	 ****************          strlen          ******************
 	 ************************************************************/
-	libst_title (test, "strlen bigger");
+	egg_test_title (test, "strlen bigger");
 	length = egg_strlen ("123456789", 20);
 	if (length == 9)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the strlen %i", length);
+		egg_test_failed (test, "failed the strlen %i", length);
 	}
 
 	/************************************************************/
-	libst_title (test, "strlen smaller");
+	egg_test_title (test, "strlen smaller");
 	length = egg_strlen ("123456789", 5);
 	if (length == 5)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the strlen %i", length);
+		egg_test_failed (test, "failed the strlen %i", length);
 	}
 
 	/************************************************************/
-	libst_title (test, "strlen correct");
+	egg_test_title (test, "strlen correct");
 	length = egg_strlen ("123456789", 9);
 	if (length == 9)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the strlen %i", length);
+		egg_test_failed (test, "failed the strlen %i", length);
 	}
 
 	/************************************************************
 	 ****************         Replace          ******************
 	 ************************************************************/
-	libst_title (test, "replace start");
+	egg_test_title (test, "replace start");
 	text_safe = egg_strreplace ("richard\nhughes", "r", "e");
 	if (egg_strequal (text_safe, "eichaed\nhughes"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the replace '%s'", text_safe);
+		egg_test_failed (test, "failed the replace '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "replace none");
+	egg_test_title (test, "replace none");
 	text_safe = egg_strreplace ("richard\nhughes", "dave", "e");
 	if (egg_strequal (text_safe, "richard\nhughes"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the replace '%s'", text_safe);
+		egg_test_failed (test, "failed the replace '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "replace end");
+	egg_test_title (test, "replace end");
 	text_safe = egg_strreplace ("richard\nhughes", "s", "e");
 	if (egg_strequal (text_safe, "richard\nhughee"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the replace '%s'", text_safe);
+		egg_test_failed (test, "failed the replace '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "replace unicode");
+	egg_test_title (test, "replace unicode");
 	text_safe = egg_strreplace ("richard\n- hughes", "\n- ", "\n• ");
 	if (egg_strequal (text_safe, "richard\n• hughes"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the replace '%s'", text_safe);
+		egg_test_failed (test, "failed the replace '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************
 	 ****************       REPLACE CHARS      ******************
 	 ************************************************************/
-	libst_title (test, "test replace unsafe (okay)");
+	egg_test_title (test, "test replace unsafe (okay)");
 	text_safe = pk_strsafe ("Richard Hughes");
 	if (egg_strequal (text_safe, "Richard Hughes"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "test replace UTF8 unsafe (okay)");
+	egg_test_title (test, "test replace UTF8 unsafe (okay)");
 	text_safe = pk_strsafe ("Gölas");
 	if (egg_strequal (text_safe, "Gölas"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "test replace unsafe (one invalid)");
+	egg_test_title (test, "test replace unsafe (one invalid)");
 	text_safe = pk_strsafe ("Richard\tHughes");
 	if (egg_strequal (text_safe, "Richard Hughes"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "test replace unsafe (one invalid 2)");
+	egg_test_title (test, "test replace unsafe (one invalid 2)");
 	text_safe = pk_strsafe ("Richard\"Hughes\"");
 	if (egg_strequal (text_safe, "Richard Hughes "))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************/
-	libst_title (test, "test replace unsafe (multiple invalid)");
+	egg_test_title (test, "test replace unsafe (multiple invalid)");
 	text_safe = pk_strsafe (" Richard\"Hughes\"");
 	if (egg_strequal (text_safe, " Richard Hughes "))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
 
 	/************************************************************
 	 **************       Check for numbers      ****************
 	 ************************************************************/
-	libst_title (test, "check number valid");
+	egg_test_title (test, "check number valid");
 	ret = egg_strnumber ("123");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check number valid");
+	egg_test_title (test, "check number valid");
 	ret = egg_strnumber ("-123");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check number zero");
+	egg_test_title (test, "check number zero");
 	ret = egg_strnumber ("0");
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check number oversize");
+	egg_test_title (test, "check number oversize");
 	ret = egg_strnumber ("123456891234");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check number NULL");
+	egg_test_title (test, "check number NULL");
 	ret = egg_strnumber (NULL);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check number blank");
+	egg_test_title (test, "check number blank");
 	ret = egg_strnumber ("");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check number not negative");
+	egg_test_title (test, "check number not negative");
 	ret = egg_strnumber ("503-");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check number positive");
+	egg_test_title (test, "check number positive");
 	ret = egg_strnumber ("+503");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check number random chars");
+	egg_test_title (test, "check number random chars");
 	ret = egg_strnumber ("dave");
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************
 	 **************        Convert numbers       ****************
 	 ************************************************************/
-	libst_title (test, "convert valid number");
+	egg_test_title (test, "convert valid number");
 	ret = egg_strtoint ("234", &value);
 	if (ret && value == 234)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "value is %i", value);
+		egg_test_failed (test, "value is %i", value);
 	}
 
 	/************************************************************/
-	libst_title (test, "convert negative valid number");
+	egg_test_title (test, "convert negative valid number");
 	ret = egg_strtoint ("-234", &value);
 	if (ret && value == -234)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "value is %i", value);
+		egg_test_failed (test, "value is %i", value);
 	}
 
 	/************************************************************/
-	libst_title (test, "don't convert invalid number");
+	egg_test_title (test, "don't convert invalid number");
 	ret = egg_strtoint ("dave", &value);
 	if (ret == FALSE && value == 0)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "value is %i", value);
+		egg_test_failed (test, "value is %i", value);
 	}
 
 	/************************************************************/
-	libst_title (test, "convert valid uint number");
+	egg_test_title (test, "convert valid uint number");
 	ret = egg_strtouint ("234", &uvalue);
 	if (ret && uvalue == 234)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "value is %i", uvalue);
+		egg_test_failed (test, "value is %i", uvalue);
 	}
 
 	/************************************************************/
-	libst_title (test, "convert invalid uint number");
+	egg_test_title (test, "convert invalid uint number");
 	ret = egg_strtouint ("-234", &uvalue);
 	if (ret == FALSE && uvalue == 0)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "value is %i", uvalue);
+		egg_test_failed (test, "value is %i", uvalue);
 	}
 
 	/************************************************************
 	 **************            iso8601           ****************
 	 ************************************************************/
-	libst_title (test, "get present iso8601");
+	egg_test_title (test, "get present iso8601");
 	present = pk_iso8601_present ();
 	if (present != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "present is NULL");
+		egg_test_failed (test, "present is NULL");
 	}
 
 	g_usleep (2000000);
 
 	/************************************************************/
-	libst_title (test, "get difference in iso8601");
+	egg_test_title (test, "get difference in iso8601");
 	seconds = pk_iso8601_difference (present);
 	if (seconds == 2)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "seconds is wrong, %i", seconds);
+		egg_test_failed (test, "seconds is wrong, %i", seconds);
 	}
 
 	/************************************************************/
 	g_free (present);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

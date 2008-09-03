@@ -556,46 +556,46 @@ pk_transaction_db_new (void)
 #include <libselftest.h>
 
 void
-libst_transaction_db (LibSelfTest *test)
+egg_test_transaction_db (EggTest *test)
 {
 	PkTransactionDb *db;
 	guint value;
 	gboolean ret;
 
-	if (!libst_start (test, "PkTransactionDb"))
+	if (!egg_test_start (test, "PkTransactionDb"))
 		return;
 
 	/* don't do these when doing make distcheck */
 #ifndef PK_IS_DEVELOPER
-	libst_end (test);
+	egg_test_end (test);
 	return;
 #endif
 
 	db = pk_transaction_db_new ();
 
 	/************************************************************/
-	libst_title (test, "set the correct time");
+	egg_test_title (test, "set the correct time");
 	ret = pk_transaction_db_action_time_reset (db, PK_ROLE_ENUM_REFRESH_CACHE);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "failed to reset value");
+		egg_test_failed (test, "failed to reset value");
 	}
 
 	g_usleep (2*1000*1000);
 
 	/************************************************************/
-	libst_title (test, "do we get the correct time");
+	egg_test_title (test, "do we get the correct time");
 	value = pk_transaction_db_action_time_since (db, PK_ROLE_ENUM_REFRESH_CACHE);
 	if (value > 1 && value <= 4) {
-		libst_success (test, "failed to get correct time");
+		egg_test_success (test, "failed to get correct time");
 	} else {
-		libst_failed (test, "failed to get correct time, %i", value);
+		egg_test_failed (test, "failed to get correct time, %i", value);
 	}
 
 	g_object_unref (db);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

@@ -124,31 +124,31 @@ pk_details_obj_free (PkDetailsObj *obj)
 #include <libselftest.h>
 
 void
-libst_details (LibSelfTest *test)
+egg_test_details (EggTest *test)
 {
 	gboolean ret;
 	PkDetailsObj *obj;
 
-	if (!libst_start (test, "PkDetailsObj"))
+	if (!egg_test_start (test, "PkDetailsObj"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get an details object");
+	egg_test_title (test, "get an details object");
 	obj = pk_details_obj_new ();
 	if (obj != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test details");
+	egg_test_title (test, "test details");
 	ret = pk_details_obj_free (obj);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

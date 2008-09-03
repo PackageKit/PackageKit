@@ -4075,7 +4075,7 @@ static gboolean reset_okay = FALSE;
 static guint clone_packages = 0;
 
 static void
-libst_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
+egg_test_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
 	finished = TRUE;
 	/* this is actually quite common */
@@ -4083,7 +4083,7 @@ libst_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, LibS
 }
 
 static void
-libst_client_finished2_cb (PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
+egg_test_client_finished2_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
 	GError *error = NULL;
 	/* this is supported */
@@ -4095,19 +4095,19 @@ libst_client_finished2_cb (PkClient *client, PkExitEnum exit, guint runtime, Lib
 }
 
 static void
-libst_client_copy_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
+egg_test_client_copy_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
-	libst_loopquit (test);
+	egg_test_loop_quit (test);
 }
 
 static void
-libst_client_copy_package_cb (PkClient *client, const PkPackageObj *obj, LibSelfTest *test)
+egg_test_client_copy_package_cb (PkClient *client, const PkPackageObj *obj, EggTest *test)
 {
 	clone_packages++;
 }
 
 void
-libst_client (LibSelfTest *test)
+egg_test_client (EggTest *test)
 {
 	PkClient *client;
 	PkClient *client_copy;
@@ -4120,162 +4120,162 @@ libst_client (LibSelfTest *test)
 	gchar *file;
 	PkPackageList *list;
 
-	if (!libst_start (test, "PkClient"))
+	if (!egg_test_start (test, "PkClient"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "test resolve NULL");
+	egg_test_title (test, "test resolve NULL");
 	file = pk_resolve_local_path (NULL);
 	if (file == NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test resolve /etc/hosts");
+	egg_test_title (test, "test resolve /etc/hosts");
 	file = pk_resolve_local_path ("/etc/hosts");
 	if (file != NULL && egg_strequal (file, "/etc/hosts"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got: %s", file);
+		egg_test_failed (test, "got: %s", file);
 	}
 	g_free (file);
 
 	/************************************************************/
-	libst_title (test, "test resolve /etc/../etc/hosts");
+	egg_test_title (test, "test resolve /etc/../etc/hosts");
 	file = pk_resolve_local_path ("/etc/../etc/hosts");
 	if (file != NULL && egg_strequal (file, "/etc/hosts"))
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got: %s", file);
+		egg_test_failed (test, "got: %s", file);
 	}
 	g_free (file);
 
 	/************************************************************/
-	libst_title (test, "get client");
+	egg_test_title (test, "get client");
 	client = pk_client_new ();
 	if (client != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "reset client, unused");
+	egg_test_title (test, "reset client, unused");
 	ret = pk_client_reset (client, NULL);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/* check use after finalise */
 	g_signal_connect (client, "finished",
-			  G_CALLBACK (libst_client_finished_cb), test);
+			  G_CALLBACK (egg_test_client_finished_cb), test);
 
 	/* run the method */
 	pk_client_set_synchronous (client, TRUE, NULL);
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
 
 	/************************************************************/
-	libst_title (test, "we finished?");
+	egg_test_title (test, "we finished?");
 	if (!ret) {
-		libst_failed (test, "not correct return value");
+		egg_test_failed (test, "not correct return value");
 	} else if (!finished) {
-		libst_failed (test, "not finished");
+		egg_test_failed (test, "not finished");
 	} else {
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	}
 
 	/************************************************************/
-	libst_title (test, "get new client so we can test resets in ::Finished()");
+	egg_test_title (test, "get new client so we can test resets in ::Finished()");
 	client = pk_client_new ();
 	if (client != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/* check reset during finalise when sync */
 	pk_client_set_synchronous (client, TRUE, NULL);
 	g_signal_connect (client, "finished",
-			  G_CALLBACK (libst_client_finished2_cb), test);
+			  G_CALLBACK (egg_test_client_finished2_cb), test);
 
 	/************************************************************/
-	libst_title (test, "search name sync, with a reset in finalise");
+	egg_test_title (test, "search name sync, with a reset in finalise");
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check reset failed");
+	egg_test_title (test, "check reset failed");
 	if (!reset_okay) {
-		libst_success (test, "failed to reset in finished as sync");
+		egg_test_success (test, "failed to reset in finished as sync");
 	} else {
-		libst_failed (test, "reset in finished when sync");
+		egg_test_failed (test, "reset in finished when sync");
 	}
 
 	g_object_unref (client);
 
 	/************************************************************/
-	libst_title (test, "get new client");
+	egg_test_title (test, "get new client");
 	client = pk_client_new ();
 	if (client != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 	pk_client_set_synchronous (client, TRUE, NULL);
 	pk_client_set_use_buffer (client, TRUE, NULL);
 
 	/************************************************************/
-	libst_title (test, "reset client #1");
+	egg_test_title (test, "reset client #1");
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		libst_failed (test, "failed to reset: %s", error->message);
+		egg_test_failed (test, "failed to reset: %s", error->message);
 		g_error_free (error);
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "reset client #2");
+	egg_test_title (test, "reset client #2");
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		libst_failed (test, "failed to reset: %s", error->message);
+		egg_test_failed (test, "failed to reset: %s", error->message);
 		g_error_free (error);
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get updates");
+	egg_test_title (test, "get updates");
 	ret = pk_client_get_updates (client, PK_FILTER_ENUM_NONE, &error);
 	if (!ret) {
-		libst_failed (test, "failed to get updates: %s", error->message);
+		egg_test_failed (test, "failed to get updates: %s", error->message);
 		g_error_free (error);
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get updates (without reset) with null error");
+	egg_test_title (test, "get updates (without reset) with null error");
 	ret = pk_client_get_updates (client, PK_FILTER_ENUM_NONE, NULL);
 	if (!ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got updates with no reset (no description possible)");
+		egg_test_failed (test, "got updates with no reset (no description possible)");
 	}
 
 	/************************************************************/
-	libst_title (test, "reset client #2");
+	egg_test_title (test, "reset client #2");
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		libst_failed (test, "failed to reset: %s", error->message);
+		egg_test_failed (test, "failed to reset: %s", error->message);
 		g_error_free (error);
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "search for power");
+	egg_test_title (test, "search for power");
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
-		libst_failed (test, "failed: %s", error->message);
+		egg_test_failed (test, "failed: %s", error->message);
 		g_error_free (error);
 	}
 
@@ -4284,21 +4284,21 @@ libst_client (LibSelfTest *test)
 	size = pk_package_list_get_size (list);
 	g_object_unref (list);
 	if (size == 0) {
-		libst_failed (test, "failed: to get any results");
+		egg_test_failed (test, "failed: to get any results");
 	}
-	libst_success (test, "search name with %i entries", size);
+	egg_test_success (test, "search name with %i entries", size);
 
 	/************************************************************/
-	libst_title (test, "do lots of loops");
+	egg_test_title (test, "do lots of loops");
 	for (i=0;i<5;i++) {
 		ret = pk_client_reset (client, &error);
 		if (!ret) {
-			libst_failed (test, "failed: to reset: %s", error->message);
+			egg_test_failed (test, "failed: to reset: %s", error->message);
 			g_error_free (error);
 		}
 		ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 		if (!ret) {
-			libst_failed (test, "failed to search: %s", error->message);
+			egg_test_failed (test, "failed to search: %s", error->message);
 			g_error_free (error);
 		}
 		/* check we got the same results */
@@ -4306,61 +4306,61 @@ libst_client (LibSelfTest *test)
 		size_new = pk_package_list_get_size (list);
 		g_object_unref (list);
 		if (size != size_new) {
-			libst_failed (test, "old size %i, new size %", size, size_new);
+			egg_test_failed (test, "old size %i, new size %", size, size_new);
 		}
 	}
-	libst_success (test, "%i search name loops completed in %ims", i, libst_elapsed (test));
+	egg_test_success (test, "%i search name loops completed in %ims", i, egg_test_elapsed (test));
 	g_object_unref (client);
 
 	/************************************************************/
-	libst_title (test, "try to clone");
+	egg_test_title (test, "try to clone");
 
 	/* set up the source */
 	client = pk_client_new ();
 	g_signal_connect (client, "finished",
-			  G_CALLBACK (libst_client_copy_finished_cb), test);
+			  G_CALLBACK (egg_test_client_copy_finished_cb), test);
 	/* set up the copy */
 	client_copy = pk_client_new ();
 	g_signal_connect (client_copy, "package",
-			  G_CALLBACK (libst_client_copy_package_cb), test);
+			  G_CALLBACK (egg_test_client_copy_package_cb), test);
 
 	/* search with the source */
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
-		libst_failed (test, "failed: %s", error->message);
+		egg_test_failed (test, "failed: %s", error->message);
 		g_error_free (error);
 	}
 
 	/* get the tid */
 	tid = pk_client_get_tid (client);
 	if (tid == NULL) {
-		libst_failed (test, "failed to get tid");
+		egg_test_failed (test, "failed to get tid");
 	}
 
 	/* set the tid on the copy */
 	ret = pk_client_set_tid (client_copy, tid, &error);
 	if (!ret) {
-		libst_failed (test, "failed to set tid: %s", error->message);
+		egg_test_failed (test, "failed to set tid: %s", error->message);
 		g_error_free (error);
 		error = NULL;
 	}
 
-	libst_loopwait (test, 5000);
+	egg_test_loop_wait (test, 5000);
 	if (clone_packages != size_new) {
-		libst_failed (test, "failed to get correct number of packages: %i", clone_packages);
+		egg_test_failed (test, "failed to get correct number of packages: %i", clone_packages);
 	}
-	libst_success (test, "cloned in %i", libst_elapsed (test));
+	egg_test_success (test, "cloned in %i", egg_test_elapsed (test));
 
 	/************************************************************/
-	libst_title (test, "cancel a finished task");
+	egg_test_title (test, "cancel a finished task");
 	ret = pk_client_cancel (client, &error);
 	if (ret) {
 		if (error != NULL) {
-			libst_failed (test, "error set and retval true");
+			egg_test_failed (test, "error set and retval true");
 		}
-		libst_success (test, "did not cancel finished task");
+		egg_test_success (test, "did not cancel finished task");
 	} else {
-		libst_failed (test, "error %s", error->message);
+		egg_test_failed (test, "error %s", error->message);
 		g_error_free (error);
 	}
 
@@ -4368,42 +4368,42 @@ libst_client (LibSelfTest *test)
 	g_object_unref (client_copy);
 
 	/************************************************************/
-	libst_title (test, "set a made up TID");
+	egg_test_title (test, "set a made up TID");
 	client = pk_client_new ();
 	ret = pk_client_set_tid (client, "/made_up_tid", &error);
 	if (ret) {
 		if (error != NULL) {
-			libst_failed (test, "error set and retval true");
+			egg_test_failed (test, "error set and retval true");
 		}
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	} else {
 		if (error == NULL) {
-			libst_failed (test, "error not set and retval false");
+			egg_test_failed (test, "error not set and retval false");
 		}
-		libst_failed (test, "error %s", error->message);
+		egg_test_failed (test, "error %s", error->message);
 		g_error_free (error);
 		error = NULL;
 	}
 
 	/************************************************************/
-	libst_title (test, "cancel a non running task");
+	egg_test_title (test, "cancel a non running task");
 	ret = pk_client_cancel (client, &error);
 	if (ret) {
 		if (error != NULL) {
-			libst_failed (test, "error set and retval true");
+			egg_test_failed (test, "error set and retval true");
 		}
-		libst_success (test, "did not cancel non running task");
+		egg_test_success (test, "did not cancel non running task");
 	} else {
 		if (error == NULL) {
-			libst_failed (test, "error not set and retval false");
+			egg_test_failed (test, "error not set and retval false");
 		}
-		libst_failed (test, "error %s", error->message);
+		egg_test_failed (test, "error %s", error->message);
 		g_error_free (error);
 		error = NULL;
 	}
 	g_object_unref (client);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

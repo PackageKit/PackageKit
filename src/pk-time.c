@@ -352,72 +352,72 @@ pk_time_new (void)
 #include <libselftest.h>
 
 void
-libst_time (LibSelfTest *test)
+egg_test_time (EggTest *test)
 {
 	PkTime *time = NULL;
 	gboolean ret;
 	guint value;
 
-	if (!libst_start (test, "PkTime"))
+	if (!egg_test_start (test, "PkTime"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get PkTime object");
+	egg_test_title (test, "get PkTime object");
 	time = pk_time_new ();
 	if (time != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get elapsed correctly at startup");
+	egg_test_title (test, "get elapsed correctly at startup");
 	value = pk_time_get_elapsed (time);
 	if (value < 10) {
-		libst_success (test, "elapsed at startup %i", value);
+		egg_test_success (test, "elapsed at startup %i", value);
 	} else {
-		libst_failed (test, "elapsed at startup %i", value);
+		egg_test_failed (test, "elapsed at startup %i", value);
 	}
 
 	/************************************************************/
-	libst_title (test, "ignore remaining correctly");
+	egg_test_title (test, "ignore remaining correctly");
 	value = pk_time_get_remaining (time);
 	if (value == 0)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got %i, not zero!", value);
+		egg_test_failed (test, "got %i, not zero!", value);
 	}
 
 	/************************************************************/
 	g_usleep (1000*1000);
 
 	/************************************************************/
-	libst_title (test, "get elapsed correctly");
+	egg_test_title (test, "get elapsed correctly");
 	value = pk_time_get_elapsed (time);
 	if (value > 900 && value < 1100) {
-		libst_success (test, "elapsed ~1000ms: %i", value);
+		egg_test_success (test, "elapsed ~1000ms: %i", value);
 	} else {
-		libst_failed (test, "elapsed not ~1000ms: %i", value);
+		egg_test_failed (test, "elapsed not ~1000ms: %i", value);
 	}
 
 	/************************************************************/
-	libst_title (test, "ignore remaining correctly when not enough entries");
+	egg_test_title (test, "ignore remaining correctly when not enough entries");
 	value = pk_time_get_remaining (time);
 	if (value == 0)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got %i, not zero!", value);
+		egg_test_failed (test, "got %i, not zero!", value);
 	}
 
 	/************************************************************/
-	libst_title (test, "make sure we can add data");
+	egg_test_title (test, "make sure we can add data");
 	ret = pk_time_add_data (time, 10);
 	if (ret)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "make sure we can get remaining correctly");
+	egg_test_title (test, "make sure we can get remaining correctly");
 	value = 20;
 	while (value < 60) {
 		time->priv->time_offset += 2000;
@@ -426,9 +426,9 @@ libst_time (LibSelfTest *test)
 	}
 	value = pk_time_get_remaining (time);
 	if (value > 9 && value < 11)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got %i", value);
+		egg_test_failed (test, "got %i", value);
 	}
 
 	/* reset */
@@ -436,7 +436,7 @@ libst_time (LibSelfTest *test)
 	time = pk_time_new ();
 
 	/************************************************************/
-	libst_title (test, "make sure we can do long times");
+	egg_test_title (test, "make sure we can do long times");
 	value = 10;
 	pk_time_add_data (time, 0);
 	while (value < 60) {
@@ -446,15 +446,15 @@ libst_time (LibSelfTest *test)
 	}
 	value = pk_time_get_remaining (time);
 	if (value > 1199 && value < 1201)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else {
-		libst_failed (test, "got %i", value);
+		egg_test_failed (test, "got %i", value);
 	}
 
 
 	g_object_unref (time);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

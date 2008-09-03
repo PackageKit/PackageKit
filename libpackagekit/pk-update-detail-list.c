@@ -189,36 +189,36 @@ pk_update_detail_list_new (void)
 #include <libselftest.h>
 
 void
-libst_update_detail_list (LibSelfTest *test)
+egg_test_update_detail_list (EggTest *test)
 {
 	PkUpdateDetailList *list;
 	gchar *text;
 	gint value;
 
-	if (!libst_start (test, "PkUpdateDetailList"))
+	if (!egg_test_start (test, "PkUpdateDetailList"))
 		return;
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	egg_test_title (test, "get an instance");
 	list = pk_update_detail_list_new ();
 	if (list != NULL)
-		libst_success (test, NULL);
+		egg_test_success (test, NULL);
 	else
-		libst_failed (test, NULL);
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get the default backend");
+	egg_test_title (test, "get the default backend");
 	text = pk_update_detail_list_get_string (list, "DefaultBackend");
 	if (text != PK_UPDATE_DETAIL_LIST_VALUE_STRING_MISSING) {
-		libst_success (test, "got default backend '%s'", text);
+		egg_test_success (test, "got default backend '%s'", text);
 	} else {
-		libst_failed (test, "got NULL!");
+		egg_test_failed (test, "got NULL!");
 	}
 	g_free (text);
 
 	g_object_unref (list);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

@@ -25,49 +25,49 @@
 #include <egg-debug.h>
 
 /* prototypes */
-void libst_conf (LibSelfTest *test);
-void libst_inhibit (LibSelfTest *test);
-void libst_spawn (LibSelfTest *test);
-void libst_transaction_list (LibSelfTest *test);
-void libst_transaction_db (LibSelfTest *test);
-void libst_security (LibSelfTest *test);
-void libst_time (LibSelfTest *test);
-void libst_backend (LibSelfTest *test);
-void libst_backend_spawn (LibSelfTest *test);
-void libst_backend_dbus (LibSelfTest *test);
-void libst_file_monitor (LibSelfTest *test);
-void libst_engine (LibSelfTest *test);
+void egg_test_conf (EggTest *test);
+void egg_test_inhibit (EggTest *test);
+void egg_test_spawn (EggTest *test);
+void egg_test_transaction_list (EggTest *test);
+void egg_test_transaction_db (EggTest *test);
+void egg_test_security (EggTest *test);
+void egg_test_time (EggTest *test);
+void egg_test_backend (EggTest *test);
+void egg_test_backend_spawn (EggTest *test);
+void egg_test_backend_dbus (EggTest *test);
+void egg_test_file_monitor (EggTest *test);
+void egg_test_engine (EggTest *test);
 
 int
 main (int argc, char **argv)
 {
-	LibSelfTest test;
+	EggTest test;
 
 	if (! g_thread_supported ()) {
 		g_thread_init (NULL);
 	}
 	g_type_init ();
-	libst_init (&test);
+	egg_test_init (&test);
 	egg_debug_init (TRUE);
 
 	/* components */
-	libst_file_monitor (&test);
-	libst_security (&test);
-	libst_time (&test);
-	libst_conf (&test);
-	libst_inhibit (&test);
-	libst_spawn (&test);
-	libst_transaction_list (&test);
-	libst_transaction_db (&test);
+	egg_test_file_monitor (&test);
+	egg_test_security (&test);
+	egg_test_time (&test);
+	egg_test_conf (&test);
+	egg_test_inhibit (&test);
+	egg_test_spawn (&test);
+	egg_test_transaction_list (&test);
+	egg_test_transaction_db (&test);
 
 	/* backend stuff */
-	libst_backend (&test);
-	libst_backend_spawn (&test);
-	libst_backend_dbus (&test);
+	egg_test_backend (&test);
+	egg_test_backend_spawn (&test);
+	egg_test_backend_dbus (&test);
 
 	/* system */
-	libst_engine (&test);
+	egg_test_engine (&test);
 
-	return (libst_finish (&test));
+	return (egg_test_finish (&test));
 }
 
