@@ -89,6 +89,8 @@ class PackageKitSmartProgress(Progress):
             # unfortunately Progress doesn't provide the current package
             if self._fetcher and subtopic != self._lasturl:
                 packages = self._backend._packagesdict
+                if not packages:
+                    return
                 for package in packages:
                     for loader in package.loaders:
                         info = loader.getInfo(package)
