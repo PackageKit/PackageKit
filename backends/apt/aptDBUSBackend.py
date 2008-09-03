@@ -1933,7 +1933,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             s = unicode(pkg._records.LongDesc,"utf-8")
         except UnicodeDecodeError,e:
-            s = "Invalid unicode in description for '%s' (%s)") % (pkg.name,e)
+            s = "Invalid unicode in description for '%s' (%s)" % (pkg.name, e)
         lines = string.split(s, "\n")
         for i in range(len(lines)):
             # Skip the first line, since its a duplication of the summary
