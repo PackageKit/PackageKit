@@ -245,6 +245,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._packagesdict = packages
         self.ctrl.downloadPackages(packages, targetdir=directory)
 
+        pkgpath = self.ctrl.fetchPackages(packages, targetdir=directory)
+        for package,files in pkgpath.iteritems():
+            self.files(package, ";".join(files))
+
     @needs_cache
     def update_system(self):
         cache = self.ctrl.getCache()
