@@ -497,9 +497,8 @@ libst_common (LibSelfTest *test)
 	gchar *present;
 	guint seconds;
 
-	if (libst_start (test, "PkCommon", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkCommon"))
 		return;
-	}
 
 	/************************************************************
 	 ****************        test distro-id        **************
@@ -508,25 +507,24 @@ libst_common (LibSelfTest *test)
 	text_safe = pk_get_distro_id ();
 	if (text_safe != NULL) {
 		libst_success (test, "distro_id=%s", text_safe);
-	} else {
+	} else
 		libst_failed (test, NULL);
-	}
 	g_free (text_safe);
 
 	/************************************************************/
 	libst_title (test, "egg_strequal same argument");
 	temp = "dave";
-	if (egg_strequal (temp, temp)) {
+	if (egg_strequal (temp, temp))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "incorrect ret when both same");
 	}
 
 	/************************************************************/
 	libst_title (test, "egg_strequal both const");
-	if (egg_strequal ("dave", "dave")) {
+	if (egg_strequal ("dave", "dave"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "incorrect ret when both same");
 	}
 
@@ -536,9 +534,9 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "va_list_to_argv single");
 	array = pk_va_list_to_argv_test ("richard", NULL);
 	if (egg_strequal (array[0], "richard") &&
-	    array[1] == NULL) {
+	    array[1] == NULL)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "incorrect array '%s'", array[0]);
 	}
 	g_strfreev (array);
@@ -549,9 +547,9 @@ libst_common (LibSelfTest *test)
 	if (egg_strequal (array[0], "richard") &&
 	    egg_strequal (array[1], "phillip") &&
 	    egg_strequal (array[2], "hughes") &&
-	    array[3] == NULL) {
+	    array[3] == NULL)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
 	}
 	g_strfreev (array);
@@ -562,9 +560,9 @@ libst_common (LibSelfTest *test)
 	if (egg_strequal (array[0], "richard") &&
 	    egg_strequal (array[1], "phillip") &&
 	    egg_strequal (array[2], "hughes") &&
-	    array[3] == NULL) {
+	    array[3] == NULL)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
 	}
 	g_strfreev (array);
@@ -575,9 +573,9 @@ libst_common (LibSelfTest *test)
 	if (egg_strequal (array[0], "richard") &&
 	    egg_strequal (array[1], "phillip") &&
 	    egg_strequal (array[2], "hughes") &&
-	    array[3] == NULL) {
+	    array[3] == NULL)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
 	}
 	g_strfreev (array);
@@ -587,47 +585,42 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "validate correct char 1");
 	ret = pk_strvalidate_char ('a');
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "validate correct char 2");
 	ret = pk_strvalidate_char ('~');
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "validate incorrect char");
 	ret = pk_strvalidate_char ('$');
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "validate incorrect text");
 	ret = pk_strvalidate ("richard$hughes");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "validate correct text");
 	ret = pk_strvalidate ("richardhughes");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************
 	 ****************          Zero            ******************
@@ -635,74 +628,72 @@ libst_common (LibSelfTest *test)
 	temp = NULL;
 	libst_title (test, "test strzero (null)");
 	ret = egg_strzero (NULL);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed null");
 	}
 
 	/************************************************************/
 	libst_title (test, "test strzero (null first char)");
 	ret = egg_strzero ("");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed null");
 	}
 
 	/************************************************************/
 	libst_title (test, "test strzero (long string)");
 	ret = egg_strzero ("Richard");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "zero length word!");
 	}
 
 	/************************************************************/
 	libst_title (test, "id strcmp pass");
 	ret = egg_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "id strcmp fail");
 	ret = egg_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************
 	 ****************          strlen          ******************
 	 ************************************************************/
 	libst_title (test, "strlen bigger");
 	length = egg_strlen ("123456789", 20);
-	if (length == 9) {
+	if (length == 9)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the strlen %i", length);
 	}
 
 	/************************************************************/
 	libst_title (test, "strlen smaller");
 	length = egg_strlen ("123456789", 5);
-	if (length == 5) {
+	if (length == 5)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the strlen %i", length);
 	}
 
 	/************************************************************/
 	libst_title (test, "strlen correct");
 	length = egg_strlen ("123456789", 9);
-	if (length == 9) {
+	if (length == 9)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the strlen %i", length);
 	}
 
@@ -711,9 +702,9 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "replace start");
 	text_safe = egg_strreplace ("richard\nhughes", "r", "e");
-	if (egg_strequal (text_safe, "eichaed\nhughes")) {
+	if (egg_strequal (text_safe, "eichaed\nhughes"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the replace '%s'", text_safe);
 	}
 	g_free (text_safe);
@@ -721,9 +712,9 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "replace none");
 	text_safe = egg_strreplace ("richard\nhughes", "dave", "e");
-	if (egg_strequal (text_safe, "richard\nhughes")) {
+	if (egg_strequal (text_safe, "richard\nhughes"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the replace '%s'", text_safe);
 	}
 	g_free (text_safe);
@@ -731,9 +722,9 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "replace end");
 	text_safe = egg_strreplace ("richard\nhughes", "s", "e");
-	if (egg_strequal (text_safe, "richard\nhughee")) {
+	if (egg_strequal (text_safe, "richard\nhughee"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the replace '%s'", text_safe);
 	}
 	g_free (text_safe);
@@ -741,9 +732,9 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "replace unicode");
 	text_safe = egg_strreplace ("richard\n- hughes", "\n- ", "\n• ");
-	if (egg_strequal (text_safe, "richard\n• hughes")) {
+	if (egg_strequal (text_safe, "richard\n• hughes"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the replace '%s'", text_safe);
 	}
 	g_free (text_safe);
@@ -753,9 +744,9 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "test replace unsafe (okay)");
 	text_safe = pk_strsafe ("Richard Hughes");
-	if (egg_strequal (text_safe, "Richard Hughes")) {
+	if (egg_strequal (text_safe, "Richard Hughes"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
@@ -763,9 +754,9 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test replace UTF8 unsafe (okay)");
 	text_safe = pk_strsafe ("Gölas");
-	if (egg_strequal (text_safe, "Gölas")) {
+	if (egg_strequal (text_safe, "Gölas"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
@@ -773,9 +764,9 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test replace unsafe (one invalid)");
 	text_safe = pk_strsafe ("Richard\tHughes");
-	if (egg_strequal (text_safe, "Richard Hughes")) {
+	if (egg_strequal (text_safe, "Richard Hughes"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
@@ -783,9 +774,9 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test replace unsafe (one invalid 2)");
 	text_safe = pk_strsafe ("Richard\"Hughes\"");
-	if (egg_strequal (text_safe, "Richard Hughes ")) {
+	if (egg_strequal (text_safe, "Richard Hughes "))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
@@ -793,9 +784,9 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test replace unsafe (multiple invalid)");
 	text_safe = pk_strsafe (" Richard\"Hughes\"");
-	if (egg_strequal (text_safe, " Richard Hughes ")) {
+	if (egg_strequal (text_safe, " Richard Hughes "))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
@@ -805,128 +796,119 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "check number valid");
 	ret = egg_strnumber ("123");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check number valid");
 	ret = egg_strnumber ("-123");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check number zero");
 	ret = egg_strnumber ("0");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check number oversize");
 	ret = egg_strnumber ("123456891234");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check number NULL");
 	ret = egg_strnumber (NULL);
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check number blank");
 	ret = egg_strnumber ("");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check number not negative");
 	ret = egg_strnumber ("503-");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check number positive");
 	ret = egg_strnumber ("+503");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check number random chars");
 	ret = egg_strnumber ("dave");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************
 	 **************        Convert numbers       ****************
 	 ************************************************************/
 	libst_title (test, "convert valid number");
 	ret = egg_strtoint ("234", &value);
-	if (ret && value == 234) {
+	if (ret && value == 234)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "value is %i", value);
 	}
 
 	/************************************************************/
 	libst_title (test, "convert negative valid number");
 	ret = egg_strtoint ("-234", &value);
-	if (ret && value == -234) {
+	if (ret && value == -234)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "value is %i", value);
 	}
 
 	/************************************************************/
 	libst_title (test, "don't convert invalid number");
 	ret = egg_strtoint ("dave", &value);
-	if (ret == FALSE && value == 0) {
+	if (ret == FALSE && value == 0)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "value is %i", value);
 	}
 
 	/************************************************************/
 	libst_title (test, "convert valid uint number");
 	ret = egg_strtouint ("234", &uvalue);
-	if (ret && uvalue == 234) {
+	if (ret && uvalue == 234)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "value is %i", uvalue);
 	}
 
 	/************************************************************/
 	libst_title (test, "convert invalid uint number");
 	ret = egg_strtouint ("-234", &uvalue);
-	if (ret == FALSE && uvalue == 0) {
+	if (ret == FALSE && uvalue == 0)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "value is %i", uvalue);
 	}
 
@@ -935,9 +917,9 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "get present iso8601");
 	present = pk_iso8601_present ();
-	if (present != NULL) {
+	if (present != NULL)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "present is NULL");
 	}
 
@@ -946,9 +928,9 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get difference in iso8601");
 	seconds = pk_iso8601_difference (present);
-	if (seconds == 2) {
+	if (seconds == 2)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "seconds is wrong, %i", seconds);
 	}
 

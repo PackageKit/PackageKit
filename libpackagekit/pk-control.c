@@ -918,18 +918,16 @@ libst_control (LibSelfTest *test)
 {
 	PkControl *control;
 
-	if (libst_start (test, "PkControl", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkControl"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get control");
 	control = pk_control_new ();
-	if (control != NULL) {
+	if (control != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 	g_object_unref (control);
 
 	libst_end (test);

@@ -1010,45 +1010,40 @@ libst_enum (LibSelfTest *test)
 	PkRoleEnum role_value;
 	guint i;
 
-	if (libst_start (test, "PkEnum", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkEnum"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "find role_value");
 	role_value = pk_enum_find_value (enum_role, "search-file");
-	if (role_value == PK_ROLE_ENUM_SEARCH_FILE) {
+	if (role_value == PK_ROLE_ENUM_SEARCH_FILE)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "find string");
 	string = pk_enum_find_string (enum_role, PK_ROLE_ENUM_SEARCH_FILE);
-	if (egg_strequal (string, "search-file")) {
+	if (egg_strequal (string, "search-file"))
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "find value");
 	role_value = pk_role_enum_from_text ("search-file");
-	if (role_value == PK_ROLE_ENUM_SEARCH_FILE) {
+	if (role_value == PK_ROLE_ENUM_SEARCH_FILE)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "find string");
 	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
-	if (egg_strequal (string, "search-file")) {
+	if (egg_strequal (string, "search-file"))
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check we convert all the role bitfield");

@@ -1661,11 +1661,10 @@ pk_backend_dbus_test_cancel_cb (gpointer data)
 	libst_title (test, "cancel");
 	ret = pk_backend_dbus_cancel (backend_dbus);
 	elapsed = libst_elapsed (test);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check we didnt take too long");
@@ -1684,9 +1683,8 @@ libst_backend_dbus (LibSelfTest *test)
 	gboolean ret;
 	guint elapsed;
 
-	if (libst_start (test, "PkBackendDbus", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkBackendDbus"))
 		return;
-	}
 
 	/* don't do these when doing make distcheck */
 #ifndef PK_IS_DEVELOPER
@@ -1697,11 +1695,10 @@ libst_backend_dbus (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get an backend_dbus");
 	backend_dbus = pk_backend_dbus_new ();
-	if (backend_dbus != NULL) {
+	if (backend_dbus != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/* so we can spin until we finish */
 	g_signal_connect (backend_dbus->priv->backend, "finished",
@@ -1718,11 +1715,10 @@ libst_backend_dbus (LibSelfTest *test)
 	libst_title (test, "set the name and activate");
 	ret = pk_backend_dbus_set_name (backend_dbus, "org.freedesktop.PackageKitTestBackend");
 	elapsed = libst_elapsed (test);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check we actually did something and didn't fork");
@@ -1736,11 +1732,10 @@ libst_backend_dbus (LibSelfTest *test)
 	libst_title (test, "search by name");
 	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
 	elapsed = libst_elapsed (test);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check we forked and didn't block");
@@ -1756,9 +1751,9 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test number of packages");
-	if (number_packages == 3) {
+	if (number_packages == 3)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "wrong number of packages %i, expected 3", number_packages);
 	}
 
@@ -1769,11 +1764,10 @@ libst_backend_dbus (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "search by name again");
 	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/* wait for finished */
 	libst_loopwait (test, 5000);
@@ -1781,9 +1775,9 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test number of packages again");
-	if (number_packages == 3) {
+	if (number_packages == 3)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "wrong number of packages %i, expected 3", number_packages);
 	}
 
@@ -1794,11 +1788,10 @@ libst_backend_dbus (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "search by name");
 	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/* schedule a cancel */
 	libst_set_user_data (test, backend_dbus);
@@ -1822,9 +1815,9 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test number of packages");
-	if (number_packages == 2) {
+	if (number_packages == 2)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "wrong number of packages %i, expected 2", number_packages);
 	}
 

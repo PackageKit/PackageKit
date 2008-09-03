@@ -232,9 +232,8 @@ libst_package_ids (LibSelfTest *test)
 	gchar **package_ids;
 	guint size;
 
-	if (libst_start (test, "PkPackageIds", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkPackageIds"))
 		return;
-	}
 
 	/************************************************************
 	 ****************          IDENTS          ******************
@@ -242,65 +241,58 @@ libst_package_ids (LibSelfTest *test)
 
 	libst_title (test, "parse va_list");
 	package_ids = libst_package_ids_va_list ("foo;0.0.1;i386;fedora", "bar;0.1.1;noarch;livna", NULL);
-	if (package_ids != NULL) {
+	if (package_ids != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "correct size");
 	size = pk_package_ids_size (package_ids);
-	if (size == 2) {
+	if (size == 2)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "verify");
 	ret = pk_package_ids_check (package_ids);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "first correct");
 	ret = pk_package_id_equal_strings (package_ids[0], "foo;0.0.1;i386;fedora");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "second correct");
 	ret = pk_package_id_equal_strings (package_ids[1], "bar;0.1.1;noarch;livna");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "print");
 	ret = pk_package_ids_print (package_ids);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "to text");
 	text = pk_package_ids_to_text (package_ids, "\t");
-	if (egg_strequal (text, "foo;0.0.1;i386;fedora\tbar;0.1.1;noarch;livna")) {
+	if (egg_strequal (text, "foo;0.0.1;i386;fedora\tbar;0.1.1;noarch;livna"))
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	libst_end (test);
 }

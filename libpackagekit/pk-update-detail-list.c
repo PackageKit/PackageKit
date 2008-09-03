@@ -195,18 +195,16 @@ libst_update_detail_list (LibSelfTest *test)
 	gchar *text;
 	gint value;
 
-	if (libst_start (test, "PkUpdateDetailList", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkUpdateDetailList"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get an instance");
 	list = pk_update_detail_list_new ();
-	if (list != NULL) {
+	if (list != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "get the default backend");

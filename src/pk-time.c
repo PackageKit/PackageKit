@@ -358,18 +358,16 @@ libst_time (LibSelfTest *test)
 	gboolean ret;
 	guint value;
 
-	if (libst_start (test, "PkTime", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkTime"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get PkTime object");
 	time = pk_time_new ();
-	if (time != NULL) {
+	if (time != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "get elapsed correctly at startup");
@@ -383,9 +381,9 @@ libst_time (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "ignore remaining correctly");
 	value = pk_time_get_remaining (time);
-	if (value == 0) {
+	if (value == 0)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "got %i, not zero!", value);
 	}
 
@@ -404,20 +402,19 @@ libst_time (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "ignore remaining correctly when not enough entries");
 	value = pk_time_get_remaining (time);
-	if (value == 0) {
+	if (value == 0)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "got %i, not zero!", value);
 	}
 
 	/************************************************************/
 	libst_title (test, "make sure we can add data");
 	ret = pk_time_add_data (time, 10);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "make sure we can get remaining correctly");
@@ -428,9 +425,9 @@ libst_time (LibSelfTest *test)
 		value += 10;
 	}
 	value = pk_time_get_remaining (time);
-	if (value > 9 && value < 11) {
+	if (value > 9 && value < 11)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "got %i", value);
 	}
 
@@ -448,9 +445,9 @@ libst_time (LibSelfTest *test)
 		value += 10;
 	}
 	value = pk_time_get_remaining (time);
-	if (value > 1199 && value < 1201) {
+	if (value > 1199 && value < 1201)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "got %i", value);
 	}
 

@@ -159,18 +159,16 @@ libst_cache (LibSelfTest *test)
 	gchar *text;
 	gint value;
 
-	if (libst_start (test, "PkCache", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkCache"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get an instance");
 	cache = pk_cache_new ();
-	if (cache != NULL) {
+	if (cache != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	g_object_unref (cache);
 

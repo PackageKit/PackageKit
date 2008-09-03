@@ -461,9 +461,8 @@ libst_spawn (LibSelfTest *test)
 	gchar **argv;
 	gchar **envp;
 
-	if (libst_start (test, "PkSpawn", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkSpawn"))
 		return;
-	}
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
@@ -482,9 +481,9 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished wasn't called");
-	if (mexit == BAD_EXIT) {
+	if (mexit == BAD_EXIT)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "Called finish for bad file!");
 	}
 
@@ -508,17 +507,17 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished okay");
-	if (mexit == PK_EXIT_ENUM_SUCCESS) {
+	if (mexit == PK_EXIT_ENUM_SUCCESS)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "finish was okay!");
 	}
 
 	/************************************************************/
 	libst_title (test, "make sure finished was called only once");
-	if (finished_count == 1) {
+	if (finished_count == 1)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "finish was called %i times!", finished_count);
 	}
 
@@ -564,9 +563,9 @@ libst_spawn (LibSelfTest *test)
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not run helper");
 	}
 
@@ -577,9 +576,9 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished in SIGKILL");
-	if (mexit == PK_EXIT_ENUM_KILLED) {
+	if (mexit == PK_EXIT_ENUM_KILLED)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "finish %i!", mexit);
 	}
 
@@ -594,9 +593,9 @@ libst_spawn (LibSelfTest *test)
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not run helper");
 	}
 
@@ -607,9 +606,9 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished in SIGQUIT");
-	if (mexit == PK_EXIT_ENUM_CANCELLED) {
+	if (mexit == PK_EXIT_ENUM_CANCELLED)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "finish %i!", mexit);
 	}
 
@@ -620,9 +619,9 @@ libst_spawn (LibSelfTest *test)
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not run profiling helper");
 	}
 

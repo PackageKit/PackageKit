@@ -680,71 +680,65 @@ libst_extra (LibSelfTest *test)
 	const gchar *summary = NULL;
 	guint i;
 
-	if (libst_start (test, "PkExtra", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkExtra"))
 		return;
-	}
 
 	g_unlink ("extra.db");
 
 	/************************************************************/
 	libst_title (test, "get extra");
 	extra = pk_extra_new ();
-	if (extra != NULL) {
+	if (extra != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "set database");
 	ret = pk_extra_set_database (extra, "extra.db");
 	if (ret) {
 		libst_success (test, "%ims", libst_elapsed (test));
-	} else {
+	} else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "set database (again)");
 	ret = pk_extra_set_database (extra, "angry.db");
 	if (ret == FALSE) {
 		libst_success (test, "%ims", libst_elapsed (test));
-	} else {
+	} else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "set locale explicit en");
 	ret = pk_extra_set_locale (extra, "en");
 	if (ret) {
 		libst_success (test, "%ims", libst_elapsed (test));
-	} else {
+	} else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check locale base");
-	if (extra->priv->locale_base == NULL) {
+	if (extra->priv->locale_base == NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "get locale");
 	text = pk_extra_get_locale (extra);
-	if (egg_strequal (text, "en")) {
+	if (egg_strequal (text, "en"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "locale was %s", text);
 	}
 
 	/************************************************************/
 	libst_title (test, "insert localised data");
 	ret = pk_extra_set_data_locale (extra, "gnome-power-manager", "Power manager for the GNOME's desktop");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed!");
 	}
 
@@ -760,19 +754,17 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set locale implicit en_GB");
 	ret = pk_extra_set_locale (extra, "en_GB");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check locale base");
-	if (egg_strequal (extra->priv->locale_base, "en")) {
+	if (egg_strequal (extra->priv->locale_base, "en"))
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "retrieve localised data2");
@@ -786,9 +778,9 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "insert package data");
 	ret = pk_extra_set_data_package (extra, "gnome-power-manager", "gpm-main.png", "gnome-power-manager");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed!");
 	}
 
@@ -805,9 +797,9 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "insert new package data");
 	ret = pk_extra_set_data_package (extra, "gnome-power-manager", "gpm-prefs.png", "gnome-power-preferences");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed!");
 	}
 

@@ -512,18 +512,16 @@ libst_task_list (LibSelfTest *test)
 	gboolean ret;
 	GError *error = NULL;
 
-	if (libst_start (test, "PkTaskList", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkTaskList"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get client");
 	tlist = pk_task_list_new ();
-	if (tlist != NULL) {
+	if (tlist != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 	g_signal_connect (tlist, "finished",
 			  G_CALLBACK (libst_task_list_finished_cb), test);
 
@@ -540,9 +538,9 @@ libst_task_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "we finished?");
-	if (finished) {
+	if (finished)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "not finished");
 	}
 

@@ -301,18 +301,16 @@ libst_inhibit (LibSelfTest *test)
 	PkInhibit *inhibit;
 	gboolean ret;
 
-	if (libst_start (test, "PkInhibit", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkInhibit"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get an instance");
 	inhibit = pk_inhibit_new ();
-	if (inhibit != NULL) {
+	if (inhibit != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check we have a connection");

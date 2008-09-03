@@ -189,18 +189,16 @@ libst_file_monitor (LibSelfTest *test)
 {
 	PkFileMonitor *file_monitor;
 
-	if (libst_start (test, "PkFileMonitor", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkFileMonitor"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get a file_monitor");
 	file_monitor = pk_file_monitor_new ();
-	if (file_monitor != NULL) {
+	if (file_monitor != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 	g_object_unref (file_monitor);
 
 	libst_end (test);

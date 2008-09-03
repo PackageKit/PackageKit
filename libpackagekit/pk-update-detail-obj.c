@@ -154,9 +154,8 @@ libst_update_detail (LibSelfTest *test)
 	gboolean ret;
 	PkUpdateDetailObj *obj;
 
-	if (libst_start (test, "PkUpdateDetailObj", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkUpdateDetailObj"))
 		return;
-	}
 
 	/************************************************************
 	 ****************          IDENT           ******************
@@ -165,20 +164,18 @@ libst_update_detail (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get an detail object");
 	obj = pk_update_detail_obj_new ();
-	if (obj != NULL) {
+	if (obj != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "test detail");
 	ret = pk_update_detail_obj_free (obj);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	libst_end (test);
 }

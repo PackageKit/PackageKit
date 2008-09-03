@@ -1212,9 +1212,8 @@ pk_backend_python_new (void)
 void
 libst_backend_python (LibSelfTest *test)
 {
-	if (libst_start (test, "PkBackendPython", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkBackendPython"))
 		return;
-	}
 
 	libst_end (test);
 }

@@ -419,18 +419,16 @@ libst_obj_list (LibSelfTest *test)
 	gchar *text;
 	gint value;
 
-	if (libst_start (test, "EggObjList", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "EggObjList"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get an instance");
 	list = egg_obj_list_new ();
-	if (list != NULL) {
+	if (list != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	g_object_unref (list);
 

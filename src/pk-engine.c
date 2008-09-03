@@ -844,9 +844,8 @@ libst_engine (LibSelfTest *test)
 	PkEngine *engine;
 	PkBackend *backend;
 
-	if (libst_start (test, "PkEngine", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkEngine"))
 		return;
-	}
 
 	/* don't do these when doing make distcheck */
 #ifndef PK_IS_DEVELOPER
@@ -857,30 +856,27 @@ libst_engine (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get a backend instance");
 	backend = pk_backend_new ();
-	if (backend != NULL) {
+	if (backend != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/* set the type, as we have no pk-main doing this for us */
 	/************************************************************/
 	libst_title (test, "set the backend name");
 	ret = pk_backend_set_name (backend, "dummy");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "get an engine instance");
 	engine = pk_engine_new ();
-	if (engine != NULL) {
+	if (engine != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	g_object_unref (backend);
 	g_object_unref (engine);

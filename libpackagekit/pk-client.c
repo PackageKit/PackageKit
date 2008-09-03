@@ -4120,25 +4120,23 @@ libst_client (LibSelfTest *test)
 	gchar *file;
 	PkPackageList *list;
 
-	if (libst_start (test, "PkClient", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkClient"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "test resolve NULL");
 	file = pk_resolve_local_path (NULL);
-	if (file == NULL) {
+	if (file == NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "test resolve /etc/hosts");
 	file = pk_resolve_local_path ("/etc/hosts");
-	if (file != NULL && egg_strequal (file, "/etc/hosts")) {
+	if (file != NULL && egg_strequal (file, "/etc/hosts"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "got: %s", file);
 	}
 	g_free (file);
@@ -4146,9 +4144,9 @@ libst_client (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test resolve /etc/../etc/hosts");
 	file = pk_resolve_local_path ("/etc/../etc/hosts");
-	if (file != NULL && egg_strequal (file, "/etc/hosts")) {
+	if (file != NULL && egg_strequal (file, "/etc/hosts"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "got: %s", file);
 	}
 	g_free (file);
@@ -4156,20 +4154,18 @@ libst_client (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get client");
 	client = pk_client_new ();
-	if (client != NULL) {
+	if (client != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "reset client, unused");
 	ret = pk_client_reset (client, NULL);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/* check use after finalise */
 	g_signal_connect (client, "finished",
@@ -4192,11 +4188,10 @@ libst_client (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get new client so we can test resets in ::Finished()");
 	client = pk_client_new ();
-	if (client != NULL) {
+	if (client != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/* check reset during finalise when sync */
 	pk_client_set_synchronous (client, TRUE, NULL);
@@ -4206,11 +4201,10 @@ libst_client (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "search name sync, with a reset in finalise");
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check reset failed");
@@ -4225,11 +4219,10 @@ libst_client (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get new client");
 	client = pk_client_new ();
-	if (client != NULL) {
+	if (client != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 	pk_client_set_synchronous (client, TRUE, NULL);
 	pk_client_set_use_buffer (client, TRUE, NULL);
 
@@ -4263,9 +4256,9 @@ libst_client (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get updates (without reset) with null error");
 	ret = pk_client_get_updates (client, PK_FILTER_ENUM_NONE, NULL);
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "got updates with no reset (no description possible)");
 	}
 

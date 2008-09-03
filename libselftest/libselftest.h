@@ -25,29 +25,11 @@
 #include <glib.h>
 #include <string.h>
 
-typedef enum
-{
-	CLASS_ALL,
-	CLASS_AUTO,
-	CLASS_MANUAL,
-	CLASS_LAST
-} LibSelfTestClass;
-
-typedef enum
-{
-	LEVEL_QUIET,
-	LEVEL_NORMAL,
-	LEVEL_ALL,
-	LEVEL_LAST
-} LibSelfTestLevel;
-
 typedef struct
 {
 	guint		 total;
 	guint		 succeeded;
 	gboolean	 started;
-	LibSelfTestClass class;
-	LibSelfTestLevel level;
 	gchar		*type;
 	GTimer		*timer;
 	GMainLoop	*loop;
@@ -55,7 +37,7 @@ typedef struct
 	gpointer	 user_data;
 } LibSelfTest;
 
-gboolean	 libst_start		(LibSelfTest *test, const gchar *name, LibSelfTestClass class);
+gboolean	 libst_start		(LibSelfTest *test, const gchar *name);
 void		 libst_end		(LibSelfTest *test);
 void		 libst_title		(LibSelfTest *test, const gchar *format, ...);
 void		 libst_success		(LibSelfTest *test, const gchar *format, ...);
