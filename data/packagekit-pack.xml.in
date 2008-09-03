@@ -2,7 +2,7 @@
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/x-pack">
     <_comment>PackageKit Service Pack</_comment>
-    <glob pattern="*.pack"/>
+    <glob pattern="*.servicepack"/>
     <generic-icon name="package-x-generic"/>
   </mime-type>
 </mime-info>
