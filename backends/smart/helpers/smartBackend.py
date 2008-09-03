@@ -376,7 +376,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def what_provides(self, filters, provides_type, search):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        # FIXME: provides_type is not used (== PROVIDES_ANY)
+        if provides_type != PROVIDES_ANY:
+            self.error(ERROR_NOT_SUPPORTED,
+                       "provide %s not supported" % provides_type)
+            return
         providers = self.ctrl.getCache().getProvides(search)
         for provider in providers:
             for package in provider.packages:
