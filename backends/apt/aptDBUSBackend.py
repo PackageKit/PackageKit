@@ -735,6 +735,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_UNKNOWN, "System update failed")
             self.Finished(EXIT_FAILED)
             return
+        self._check_restart_required()
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
@@ -789,6 +790,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN, "%s is still installed" % p)
                 self.Finished(EXIT_FAILED)
                 return
+        self._check_restart_required()
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
@@ -987,6 +989,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN, "%s was not updated" % p)
                 self.Finished(EXIT_FAILED)
                 return
+        self._check_restart_required()
         pklog.debug("Sending success signal")
         self.Finished(EXIT_SUCCESS)
 
@@ -1107,6 +1110,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN, "%s was not installed" % p)
                 self.Finished(EXIT_FAILED)
                 return
+        self._check_restart_required()
         pklog.debug("Sending success signal")
         self.Finished(EXIT_SUCCESS)
 
@@ -1173,6 +1177,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
+        self._check_restart_required()
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
@@ -1997,6 +2002,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # Add current line to the description
             desc += line
         return desc
+
+    def _check_restart_required(self):
+        """
+        Emits the RestartRequired signal if it is the case.
+
+        This is a quite silly implementation, since most postinst
+        scripts require an installed update-notifier
+        """
+        pklog.debug("Checking for required restart ...")
+        if os.path.exists("/var/run/restart-required"):
+            self.RestartRequired(RESTART_SYSTEM, "")
 
 
 def sigquit(signum, frame):
