@@ -300,6 +300,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         self.conffile_prompts = set()
         # insanly long timeout to be able to kill hanging maintainer scripts
         self.timeout = 10*60
+        self.start_time = None
 
     def statusChange(self, pkg, percent, status):
         progress = self.pstart + percent/100 * (self.pend - self.pstart)
@@ -309,8 +310,9 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         pklog.debug("PM status: %s" % status)
 
     def startUpdate(self):
-        self._backend.StatusChanged(STATUS_INSTALL)
+        self._backend.StatusChanged(STATUS_COMMIT)
         self.last_activity = time.time()
+        self.start_time = time.time()
 
     def fork(self):
         pklog.debug("fork()")
@@ -342,6 +344,10 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
                                   "The following conffile prompts were found "
                                   "and need investiagtion: %s" % \
                                   "\n".join(self.conffile_prompts))
+        # Check for required restarts
+        if os.path.exists("/var/run/restart-required") and \
+           os.path.getmtime("/var/run/restart-required") > self.start_time:
+            self._backend.RequireRestart(RESTART_SYSTEM, "")
 
 
 class PackageKitDpkgInstallProgress(DpkgInstallProgress,
@@ -591,7 +597,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return False
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
-        self.StatusChanged(STATUS_INFO)
+        self.StatusChanged(STATUS_QUERY)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self._check_init(progress=False)
@@ -661,7 +667,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             update_text = ""
             #FIXME: Replace this method with the python-apt one as soon as the
             #       consolidate branch gets merged
+            self.StatusChanged(STATUS_DOWNLOAD_CHANGELOG)
             changelog = self._get_changelog(pkg)
+            self.StatusChanged(STATUS_INFO)
             state = ""
             issued = ""
             updated = ""
@@ -676,7 +684,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-get-details functionality
         '''
         pklog.info("Get details of %s" % pkg_ids)
-        self.StatusChanged(STATUS_INFO)
+        self.StatusChanged(STATUS_DEP_RESOLVE)
         self.NoPercentageUpdates()
         self.AllowCancel(True)
         self._check_init(progress=False)
@@ -945,7 +953,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
-        self.StatusChanged(STATUS_RUNNING)
         pkgs=[]
         for id in ids:
             pkg = self._find_package_by_id(id)
@@ -1125,6 +1132,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         dependencies = []
         packages = []
         # Collect all dependencies which need to be installed
+        self.StatusChanged(STATUS_DEP_RESOLVE)
         for path in full_paths:
             deb = debfile.DebPackage(path, self._cache)
             packages.append(deb)
@@ -1238,20 +1246,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.AllowCancel(False)
 
-        #FIXME: Support candidates
         for name in names:
-            pkg = None
             if self._cache.has_key(name):
-                pkg = self._cache[name]
-                if not self._is_package_visible(pkg, filters):
-                    pkg = None
-            if pkg:
-                self._emit_package(pkg)
-                self.Finished(EXIT_SUCCESS)
+                self._emit_visible_package(filters, self._cache[name])
             else:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                                "Package name %s could not be resolved" % name)
                 self.Finished(EXIT_FAILED)
+                return
+        self.Finished(EXIT_SUCCESS)
 
     @threaded
     def doGetDepends(self, filter, ids, recursive=False):
@@ -1330,7 +1333,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: recursive is not yet implemented
         if recursive == True:
             pklog.warn("Recursive dependencies are not implemented")
-        self.StatusChanged(STATUS_INFO)
+        self.StatusChanged(STATUS_DEP_RESOLVE)
         self.NoPercentageUpdates()
         self._check_init(progress=False)
         self.AllowCancel(True)
@@ -1412,7 +1415,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             else:
                 return db
 
-        self.StatusChanged(STATUS_INFO)
+        self.StatusChanged(STATUS_QUERY)
         self.NoPercentageUpdates()
         self._check_init(progress=False)
         self.AllowCancel(False)
@@ -1477,6 +1480,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Emit the Files signal which includes the files included in a package
         Apt only supports this for installed packages
         """
+        self.StatusChanged(STATUS_INFO)
         for id in package_ids:
             pkg = self._find_package_by_id(id)
             if pkg == None:
@@ -1516,7 +1520,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         (Re)Open the APT cache
         '''
         pklog.debug("Open APT cache")
-        self.StatusChanged(STATUS_REFRESH_CACHE)
+        self.StatusChanged(STATUS_LOADING_CACHE)
         try:
             self._cache = PackageKitCache(PackageKitOpProgress(self, prange,
                                                                progress))
@@ -1612,6 +1616,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 info = INFO_AVAILABLE
         summary = pkg.summary
         self.Package(info, id, summary)
+
+    def _emit_visible_package(self, filters, pkg, info=None):
+        """
+        Filter and emit a package
+        """
+        if self._is_package_visible(pkg, filters):
+            self._emit_package(pkg, info)
 
     def _emit_visible_packages(self, filters, pkgs, info=None):
         """
