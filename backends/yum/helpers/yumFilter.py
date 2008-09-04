@@ -19,7 +19,7 @@
 
 # imports
 from packagekit.backend import *
-from packagekit.package import *
+from packagekit.package import PackagekitPackage
 from yumDirect import *
 
 import yum
