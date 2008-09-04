@@ -552,11 +552,11 @@ pk_transaction_db_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_transaction_db (EggTest *test)
+pk_transaction_db_test (EggTest *test)
 {
 	PkTransactionDb *db;
 	guint value;

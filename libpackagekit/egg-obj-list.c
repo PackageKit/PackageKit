@@ -409,15 +409,13 @@ egg_obj_list_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef EGG_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
 egg_test_obj_list (EggTest *test)
 {
 	EggObjList *list;
-	gchar *text;
-	gint value;
 
 	if (!egg_test_start (test, "EggObjList"))
 		return;

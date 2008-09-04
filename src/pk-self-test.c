@@ -21,53 +21,53 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <libselftest.h>
+#include "egg-test.h"
 #include <egg-debug.h>
 
 /* prototypes */
-void egg_test_conf (EggTest *test);
-void egg_test_inhibit (EggTest *test);
-void egg_test_spawn (EggTest *test);
-void egg_test_transaction_list (EggTest *test);
-void egg_test_transaction_db (EggTest *test);
-void egg_test_security (EggTest *test);
-void egg_test_time (EggTest *test);
-void egg_test_backend (EggTest *test);
-void egg_test_backend_spawn (EggTest *test);
-void egg_test_backend_dbus (EggTest *test);
-void egg_test_file_monitor (EggTest *test);
-void egg_test_engine (EggTest *test);
+void pk_conf_test (EggTest *test);
+void pk_inhibit_test (EggTest *test);
+void pk_spawn_test (EggTest *test);
+void pk_transaction_list_test (EggTest *test);
+void pk_transaction_db_test (EggTest *test);
+void pk_security_test (EggTest *test);
+void pk_time_test (EggTest *test);
+void pk_backend_test (EggTest *test);
+void pk_backend_test_spawn (EggTest *test);
+void pk_backend_test_dbus (EggTest *test);
+void pk_file_monitor_test (EggTest *test);
+void pk_engine_test (EggTest *test);
 
 int
 main (int argc, char **argv)
 {
-	EggTest test;
+	EggTest *test;
 
 	if (! g_thread_supported ()) {
 		g_thread_init (NULL);
 	}
 	g_type_init ();
-	egg_test_init (&test);
+	test = egg_test_init ();
 	egg_debug_init (TRUE);
 
 	/* components */
-	egg_test_file_monitor (&test);
-	egg_test_security (&test);
-	egg_test_time (&test);
-	egg_test_conf (&test);
-	egg_test_inhibit (&test);
-	egg_test_spawn (&test);
-	egg_test_transaction_list (&test);
-	egg_test_transaction_db (&test);
+	pk_file_monitor_test (test);
+	pk_security_test (test);
+	pk_time_test (test);
+	pk_conf_test (test);
+	pk_inhibit_test (test);
+	pk_spawn_test (test);
+	pk_transaction_list_test (test);
+	pk_transaction_db_test (test);
 
 	/* backend stuff */
-	egg_test_backend (&test);
-	egg_test_backend_spawn (&test);
-	egg_test_backend_dbus (&test);
+	pk_backend_test (test);
+	pk_backend_test_spawn (test);
+	pk_backend_test_dbus (test);
 
 	/* system */
-	egg_test_engine (&test);
+	pk_engine_test (test);
 
-	return (egg_test_finish (&test));
+	return (egg_test_finish (test));
 }
 

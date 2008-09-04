@@ -489,30 +489,30 @@ pk_transaction_list_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 #include "pk-backend-internal.h"
 
 /**
- * egg_test_transaction_list_finished_cb:
+ * pk_transaction_list_test_finished_cb:
  **/
 static void
-egg_test_transaction_list_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time, EggTest *test)
+pk_transaction_list_test_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time, EggTest *test)
 {
 	egg_test_loop_quit (test);
 }
 
 /**
- * egg_test_transaction_list_delay_cb:
+ * pk_transaction_list_test_delay_cb:
  **/
 static void
-egg_test_transaction_list_delay_cb (EggTest *test)
+pk_transaction_list_test_delay_cb (EggTest *test)
 {
 	egg_test_loop_quit (test);
 }
 
 void
-egg_test_transaction_list (EggTest *test)
+pk_transaction_list_test (EggTest *test)
 {
 	PkTransactionList *tlist;
 	gboolean ret;
@@ -651,7 +651,7 @@ egg_test_transaction_list (EggTest *test)
 	}
 
 	g_signal_connect (item->transaction, "finished",
-				G_CALLBACK (egg_test_transaction_list_finished_cb), test);
+				G_CALLBACK (pk_transaction_list_test_finished_cb), test);
 
 	pk_transaction_get_updates (item->transaction, "none", NULL);
 
@@ -725,7 +725,7 @@ egg_test_transaction_list (EggTest *test)
 	}
 
 	/* wait for Cleanup */
-	g_timeout_add_seconds (5, (GSourceFunc) egg_test_transaction_list_delay_cb, test);
+	g_timeout_add_seconds (5, (GSourceFunc) pk_transaction_list_test_delay_cb, test);
 	egg_test_loop_wait (test, 6000);
 	egg_test_loop_check (test);
 

@@ -401,8 +401,8 @@ pk_spawn_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 #define BAD_EXIT 999
 
 PkExitEnum mexit = BAD_EXIT;
@@ -453,7 +453,7 @@ new_spawn_object (EggTest *test, PkSpawn **pspawn)
 }
 
 void
-egg_test_spawn (EggTest *test)
+pk_spawn_test (EggTest *test)
 {
 	PkSpawn *spawn = NULL;
 	gboolean ret;

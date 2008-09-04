@@ -203,14 +203,14 @@ pk_package_ids_to_text (gchar **package_ids, const gchar *delimiter)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 /**
- * egg_test_package_ids_va_list:
+ * pk_package_id_tests_va_list:
  **/
 static gchar **
-egg_test_package_ids_va_list (const gchar *package_id_first, ...)
+pk_package_id_tests_va_list (const gchar *package_id_first, ...)
 {
 	va_list args;
 	gchar **package_ids;
@@ -225,7 +225,7 @@ egg_test_package_ids_va_list (const gchar *package_id_first, ...)
 
 
 void
-egg_test_package_ids (EggTest *test)
+pk_package_id_tests (EggTest *test)
 {
 	gboolean ret;
 	gchar *text;
@@ -240,7 +240,7 @@ egg_test_package_ids (EggTest *test)
 	 ************************************************************/
 
 	egg_test_title (test, "parse va_list");
-	package_ids = egg_test_package_ids_va_list ("foo;0.0.1;i386;fedora", "bar;0.1.1;noarch;livna", NULL);
+	package_ids = pk_package_id_tests_va_list ("foo;0.0.1;i386;fedora", "bar;0.1.1;noarch;livna", NULL);
 	if (package_ids != NULL)
 		egg_test_success (test, NULL);
 	else

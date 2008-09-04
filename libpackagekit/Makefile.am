@@ -7,15 +7,10 @@ INCLUDES = \
 	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/libpackagekit				\
-	-I$(top_srcdir)/libselftest				\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"		\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
-
-SELFTEST_LIBS =							\
-	$(top_builddir)/libselftest/libselftest.la		\
-	$(NULL)
 
 lib_LTLIBRARIES =						\
 	libpackagekit.la					\
@@ -97,12 +92,6 @@ libpackagekit_la_LIBADD =					\
 	$(SQLITE_LIBS)						\
 	$(NULL)
 
-if PK_BUILD_TESTS
-libpackagekit_la_LIBADD +=					\
-	$(SELFTEST_LIBS)					\
-	$(NULL)
-endif
-
 libpackagekit_la_LDFLAGS =					\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
 	-export-dynamic						\
@@ -110,12 +99,14 @@ libpackagekit_la_LDFLAGS =					\
 	-export-symbols-regex '^pk_.*'				\
 	$(NULL)
 
-if PK_BUILD_TESTS
+if EGG_BUILD_TESTS
 check_PROGRAMS =						\
 	pk-self-test
 
 pk_self_test_SOURCES =						\
 	$(libpackagekit_la_SOURCES)				\
+	egg-test.h						\
+	egg-test.c						\
 	pk-self-test.c						\
 	$(NULL)
 
@@ -127,7 +118,7 @@ pk_self_test_LDADD =						\
 	$(SQLITE_LIBS)						\
 	$(NULL)
 
-pk_self_test_CFLAGS = $(AM_CFLAGS)
+pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS)
 
 TESTS = pk-self-test
 endif
@@ -147,27 +138,9 @@ pk-marshal.c: pk-marshal.list
 pk-marshal.h: pk-marshal.list
 	@GLIB_GENMARSHAL@ $< --prefix=pk_marshal --header > $@
 
-if PK_BUILD_GCOV
-clean-gcov:
-	rm -f *.gcov *.gcda
-gcov: clean-gcov all check
-	$(top_srcdir)/tools/create-coverage-report.sh libpackagekit $(filter %.c,$(libpackagekit_la_SOURCES)) > gcov.txt
-endif
-
-if PK_BUILD_GPROF
-clean-gprof:
-	rm -f *.out
-gprof: clean-gprof all check
-	gprof .libs/pk-self-test > gprof.txt
-endif
-
 CLEANFILES = $(BUILT_SOURCES)
 
 clean-local:
 	rm -f *~
-	rm -f *.gcno
-	rm -f *.out
-	rm -f gcov.txt
-	rm -f gprof.txt
 	rm -f $(CLEANFILES)
 

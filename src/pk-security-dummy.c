@@ -115,11 +115,11 @@ pk_security_new (void)
 	return PK_SECURITY (security);
 }
 
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_security (EggTest *test)
+pk_security_test (EggTest *test)
 {
 	return;
 }

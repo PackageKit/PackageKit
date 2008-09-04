@@ -185,11 +185,11 @@ pk_update_detail_list_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_update_detail_list (EggTest *test)
+pk_update_detail_test_list (EggTest *test)
 {
 	PkUpdateDetailList *list;
 	gchar *text;
@@ -205,16 +205,6 @@ egg_test_update_detail_list (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "get the default backend");
-	text = pk_update_detail_list_get_string (list, "DefaultBackend");
-	if (text != PK_UPDATE_DETAIL_LIST_VALUE_STRING_MISSING) {
-		egg_test_success (test, "got default backend '%s'", text);
-	} else {
-		egg_test_failed (test, "got NULL!");
-	}
-	g_free (text);
 
 	g_object_unref (list);
 

@@ -1620,8 +1620,8 @@ pk_backend_dbus_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 static guint number_packages = 0;
 
@@ -1677,7 +1677,7 @@ pk_backend_dbus_test_cancel_cb (gpointer data)
 }
 
 void
-egg_test_backend_dbus (EggTest *test)
+pk_backend_test_dbus (EggTest *test)
 {
 	PkBackendDbus *backend_dbus;
 	gboolean ret;

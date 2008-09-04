@@ -834,11 +834,11 @@ pk_engine_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_engine (EggTest *test)
+pk_engine_test (EggTest *test)
 {
 	gboolean ret;
 	PkEngine *engine;

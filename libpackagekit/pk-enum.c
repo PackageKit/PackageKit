@@ -1000,11 +1000,11 @@ pk_license_enum_to_text (PkLicenseEnum license)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_enum (EggTest *test)
+pk_enum_test (EggTest *test)
 {
 	const gchar *string;
 	PkRoleEnum role_value;

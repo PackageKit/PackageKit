@@ -120,11 +120,11 @@ pk_details_obj_free (PkDetailsObj *obj)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_details (EggTest *test)
+pk_details_test (EggTest *test)
 {
 	gboolean ret;
 	PkDetailsObj *obj;

@@ -7,10 +7,6 @@ PK_LIBS =						\
 	$(top_builddir)/libpackagekit/libpackagekit.la	\
 	$(NULL)
 
-SELFTEST_LIBS =						\
-	$(top_builddir)/libselftest/libselftest.la	\
-	$(NULL)
-
 INCLUDES =						\
 	$(GIO_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
@@ -31,7 +27,6 @@ INCLUDES =						\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
 	-I$(top_srcdir)/libpackagekit			\
-	-I$(top_srcdir)/libselftest			\
 	$(NULL)
 
 pkbackendincludedir=$(includedir)/packagekit-backend
@@ -132,7 +127,6 @@ packagekitd_LDADD =					\
 	$(PK_LIBS)					\
 	$(PYTHON_LIBS)					\
 	$(POLKIT_LIBS)					\
-	$(SELFTEST_LIBS)				\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\
 	$(NULL)
@@ -172,13 +166,15 @@ pk-interface-transaction.h: pk-interface-transaction.xml
 		--output=pk-interface-transaction.h	\
 		$(srcdir)/pk-interface-transaction.xml
 
-if PK_BUILD_TESTS
+if EGG_BUILD_TESTS
 
 check_PROGRAMS =					\
 	pk-self-test
 
 pk_self_test_SOURCES =					\
 	pk-self-test.c					\
+	egg-test.h					\
+	egg-test.c					\
 	$(shared_SOURCES)				\
 	$(NULL)
 
@@ -186,7 +182,6 @@ pk_self_test_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(GMODULE_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(SELFTEST_LIBS)				\
 	$(SQLITE_LIBS)					\
 	$(LIBNM_LIBS)					\
 	$(PK_LIBS)					\
@@ -195,21 +190,9 @@ pk_self_test_LDADD =					\
 	$(ARCHIVE_LIBS)					\
 	$(NULL)
 
+pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS)
+
 TESTS = pk-self-test
-endif
-
-if PK_BUILD_GCOV
-clean-gcov:
-	rm -f *.gcov *.gcda
-gcov: clean-gcov all check
-	$(top_srcdir)/tools/create-coverage-report.sh packagekit $(filter %.c,$(packagekitd_SOURCES)) > gcov.txt
-endif
-
-if PK_BUILD_GPROF
-clean-gprof:
-	rm -f *.out
-gprof: clean-gprof all check
-	gprof .libs/pk-self-test > gprof.txt
 endif
 
 install-data-hook:
@@ -227,17 +210,7 @@ EXTRA_DIST =						\
 
 clean-local:
 	rm -f *~
-	rm -f *.out
-	rm -f *.gcda
-	rm -f *.gcno
-	rm -f gcov.txt
-	rm -f gprof.txt
 	rm -f pk-marshal.c pk-marshal.h
 
 CLEANFILES = *~ $(BUILT_SOURCES)
-
-MAINTAINERCLEANFILES =					\
-	*~			      			\
-	Makefile.in					\
-	$(NULL)
 

@@ -686,8 +686,8 @@ pk_backend_spawn_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 static GMainLoop *loop;
 static guint number_packages = 0;
@@ -713,7 +713,7 @@ pk_backend_spawn_test_package_cb (PkBackend *backend, PkInfoEnum info,
 }
 
 void
-egg_test_backend_spawn (EggTest *test)
+pk_backend_test_spawn (EggTest *test)
 {
 	PkBackendSpawn *backend_spawn;
 	PkBackend *backend;

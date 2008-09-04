@@ -467,8 +467,8 @@ pk_va_list_to_argv (const gchar *string_first, va_list *args)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 static gchar **
 pk_va_list_to_argv_test (const gchar *first_element, ...)
@@ -485,7 +485,7 @@ pk_va_list_to_argv_test (const gchar *first_element, ...)
 }
 
 void
-egg_test_common (EggTest *test)
+pk_common_test (EggTest *test)
 {
 	gboolean ret;
 	gchar **array;

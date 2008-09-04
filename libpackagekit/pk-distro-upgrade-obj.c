@@ -108,8 +108,8 @@ pk_distro_upgrade_obj_free (PkDistroUpgradeObj *obj)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
 egg_test_distro_upgrade (EggTest *test)

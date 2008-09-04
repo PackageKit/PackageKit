@@ -24,24 +24,24 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <libselftest.h>
-#include <egg-debug.h>
+#include "egg-test.h"
+#include "egg-debug.h"
 
 /* prototypes */
-void egg_test_generate_pack (EggTest *test);
+void pk_genpack_test (EggTest *test);
 
 int
 main (int argc, char **argv)
 {
-	EggTest test;
+	EggTest *test;
 
 	g_type_init ();
-	egg_test_init (&test);
+	test = egg_test_init ();
 	egg_debug_init (TRUE);
 
 	/* tests go here */
-	egg_test_generate_pack (&test);
+	pk_genpack_test (test);
 	
-	return (egg_test_finish (&test));
+	return (egg_test_finish (test));
 }
 

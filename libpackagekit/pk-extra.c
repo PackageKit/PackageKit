@@ -665,12 +665,12 @@ pk_extra_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 #include <glib/gstdio.h>
 
 void
-egg_test_extra (EggTest *test)
+pk_extra_test (EggTest *test)
 {
 	PkExtra *extra;
 	const gchar *text;

@@ -569,11 +569,11 @@ pk_package_list_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_package_list (EggTest *test)
+pk_package_list_test (EggTest *test)
 {
 	PkPackageList *plist;
 	gchar *text;
