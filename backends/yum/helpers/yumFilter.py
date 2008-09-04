@@ -28,14 +28,13 @@ import re
 
 GUI_KEYS = re.compile(r'(qt)|(gtk)')
 
-class YumFilter(object):
+class YumFilter(object,PackagekitPackage):
 
     def __init__(self,fltlist="none"):
         ''' connect to all enabled repos '''
         self.fltlist = fltlist
         self.package_list = [] #we can't do emitting as found if we are post-processing
         self.installed_nevra = []
-        self.pkpackage = PackagekitPackage()
 
     def add_installed(self,pkgs):
         ''' add a list of packages that are already installed '''
@@ -202,7 +201,7 @@ class YumFilter(object):
         else:
             wantFree = False
 
-        isFree = self.pkpackage.check_license_field(pkg.license)
+        isFree = self.check_license_field(pkg.license)
 
         return isFree == wantFree
 
