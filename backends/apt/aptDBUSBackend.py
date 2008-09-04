@@ -300,6 +300,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         self.conffile_prompts = set()
         # insanly long timeout to be able to kill hanging maintainer scripts
         self.timeout = 10*60
+        self.start_time = None
 
     def statusChange(self, pkg, percent, status):
         progress = self.pstart + percent/100 * (self.pend - self.pstart)
@@ -311,6 +312,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
     def startUpdate(self):
         self._backend.StatusChanged(STATUS_COMMIT)
         self.last_activity = time.time()
+        self.start_time = time.time()
 
     def fork(self):
         pklog.debug("fork()")
@@ -342,6 +344,10 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
                                   "The following conffile prompts were found "
                                   "and need investiagtion: %s" % \
                                   "\n".join(self.conffile_prompts))
+        # Check for required restarts
+        if os.path.exists("/var/run/restart-required") and \
+           os.path.getmtime("/var/run/restart-required") > self.start_time:
+            self._backend.RequireRestart(RESTART_SYSTEM, "")
 
 
 class PackageKitDpkgInstallProgress(DpkgInstallProgress,
@@ -735,7 +741,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_UNKNOWN, "System update failed")
             self.Finished(EXIT_FAILED)
             return
-        self._check_restart_required()
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
@@ -790,7 +795,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN, "%s is still installed" % p)
                 self.Finished(EXIT_FAILED)
                 return
-        self._check_restart_required()
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
@@ -989,7 +993,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN, "%s was not updated" % p)
                 self.Finished(EXIT_FAILED)
                 return
-        self._check_restart_required()
         pklog.debug("Sending success signal")
         self.Finished(EXIT_SUCCESS)
 
@@ -1110,7 +1113,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN, "%s was not installed" % p)
                 self.Finished(EXIT_FAILED)
                 return
-        self._check_restart_required()
         pklog.debug("Sending success signal")
         self.Finished(EXIT_SUCCESS)
 
@@ -1177,7 +1179,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
-        self._check_restart_required()
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
@@ -2002,17 +2003,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # Add current line to the description
             desc += line
         return desc
-
-    def _check_restart_required(self):
-        """
-        Emits the RestartRequired signal if it is the case.
-
-        This is a quite silly implementation, since most postinst
-        scripts require an installed update-notifier
-        """
-        pklog.debug("Checking for required restart ...")
-        if os.path.exists("/var/run/restart-required"):
-            self.RestartRequired(RESTART_SYSTEM, "")
 
 
 def sigquit(signum, frame):
