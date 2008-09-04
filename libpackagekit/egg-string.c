@@ -225,7 +225,6 @@ egg_strreplace (const gchar *text, const gchar *find, const gchar *replace)
 	return retval;
 }
 
-
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
