@@ -17,7 +17,7 @@
 # Copyright (C) 2008
 #    Richard Hughes <richard@hughsie.com>
 
-from packagekit.backend import *
+from packagekit.backend import PackageKitEnum
 
 class PackagekitPackage:
 
