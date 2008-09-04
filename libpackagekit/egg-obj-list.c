@@ -163,10 +163,9 @@ egg_obj_list_print (EggObjList *list)
 	for (i=0; i<array->len; i++) {
 		obj = g_ptr_array_index (array, i);
 		text = func_to_string (obj);
-		g_print ("%s\n", text);
+		g_print ("(%i)\t%s\n", i, text);
 		g_free (text);
 	}
-	list->len = 0;
 }
 
 /**
