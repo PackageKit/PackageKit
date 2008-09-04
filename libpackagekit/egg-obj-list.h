@@ -74,7 +74,11 @@ gboolean	 egg_obj_list_from_file		(EggObjList		*list,
 						 const gchar		*filename);
 void		 egg_obj_list_add		(EggObjList		*list,
 						 const gpointer		 data);
-const gpointer	 egg_obj_list_index		(EggObjList		*list,
+gboolean	 egg_obj_list_remove		(EggObjList		*list,
+						 const gpointer		 data);
+gboolean	 egg_obj_list_remove_index	(EggObjList		*list,
+						 guint			 index);
+const gpointer	 egg_obj_list_index		(const EggObjList	*list,
 						 guint			 index);
 
 G_END_DECLS

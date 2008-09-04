@@ -191,6 +191,61 @@ egg_obj_list_add (EggObjList *list, const gpointer obj)
 }
 
 /**
+ * egg_obj_list_remove:
+ * @list: a valid #EggObjList instance
+ * @obj: a valid #gpointer object
+ *
+ * Return value: TRUE is we removed something
+ *
+ * Removes an item from a list
+ **/
+gboolean
+egg_obj_list_remove (EggObjList *list, const gpointer obj)
+{
+	gboolean ret;
+	gpointer obj_new;
+
+	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), FALSE);
+	g_return_val_if_fail (obj != NULL, FALSE);
+	g_return_val_if_fail (list->priv->func_free != NULL, FALSE);
+
+	/* the pointers point to the same thing */
+	obj_new = (gpointer) obj;
+	ret = g_ptr_array_remove (list->priv->array, obj_new);
+	if (!ret)
+		return FALSE;
+	list->priv->func_free (obj_new);
+	list->len = list->priv->array->len;
+	return TRUE;
+}
+
+/**
+ * egg_obj_list_remove_index:
+ * @list: a valid #EggObjList instance
+ * @index: the number to remove
+ *
+ * Return value: TRUE is we removed something
+ *
+ * Removes an item from a list
+ **/
+gboolean
+egg_obj_list_remove_index (EggObjList *list, guint index)
+{
+	gpointer obj;
+
+	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), FALSE);
+	g_return_val_if_fail (list->priv->func_free != NULL, FALSE);
+
+	/* get the object */
+	obj = g_ptr_array_remove_index (list->priv->array, index);
+	if (obj == NULL)
+		return FALSE;
+	list->priv->func_free (obj);
+	list->len = list->priv->array->len;
+	return TRUE;
+}
+
+/**
  * egg_obj_list_to_file:
  * @list: a valid #EggObjList instance
  * @filename: a filename
@@ -324,7 +379,7 @@ out:
  * Gets an object from the list
  **/
 const gpointer
-egg_obj_list_index (EggObjList *list, guint index)
+egg_obj_list_index (const EggObjList *list, guint index)
 {
 	gpointer obj;
 
@@ -412,7 +467,7 @@ egg_obj_list_new (void)
 #include "egg-test.h"
 
 void
-egg_test_obj_list (EggTest *test)
+egg_obj_list_test (EggTest *test)
 {
 	EggObjList *list;
 
@@ -432,4 +487,3 @@ egg_test_obj_list (EggTest *test)
 	egg_test_end (test);
 }
 #endif
-
