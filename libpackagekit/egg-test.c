@@ -26,7 +26,7 @@
 #include <glib-object.h>
 #include <glib/gprintf.h>
 
-#include "libselftest.h"
+#include "egg-test.h"
 
 struct EggTest {
 	guint		 total;
@@ -42,9 +42,11 @@ struct EggTest {
 /**
  * egg_test_init:
  **/
-void
-egg_test_init (EggTest *test)
+EggTest *
+egg_test_init ()
 {
+	EggTest *test;
+	test = g_new (EggTest, 1);
 	test->total = 0;
 	test->succeeded = 0;
 	test->type = NULL;
@@ -52,6 +54,7 @@ egg_test_init (EggTest *test)
 	test->timer = g_timer_new ();
 	test->loop = g_main_loop_new (NULL, FALSE);
 	test->hang_loop_id = 0;
+	return test;
 }
 
 /**
@@ -140,6 +143,7 @@ egg_test_finish (EggTest *test)
 
 	g_timer_destroy (test->timer);
 	g_main_loop_unref (test->loop);
+	g_free (test);
 
 	return retval;
 }
@@ -147,7 +151,7 @@ egg_test_finish (EggTest *test)
 /**
  * egg_test_elapsed:
  *
- * Returns ms
+ * Returns: time in ms
  **/
 guint
 egg_test_elapsed (EggTest *test)

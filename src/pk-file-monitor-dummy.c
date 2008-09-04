@@ -129,11 +129,11 @@ pk_file_monitor_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_file_monitor (EggTest *test)
+pk_file_monitor_test (EggTest *test)
 {
 	PkFileMonitor *file_monitor;
 

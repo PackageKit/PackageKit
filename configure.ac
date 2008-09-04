@@ -231,9 +231,9 @@ dnl - Build self tests
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
 	      enable_tests=$enableval,enable_tests=$DEVELOPMENT_RELEASE)
-AM_CONDITIONAL(PK_BUILD_TESTS, test x$enable_tests = xyes)
+AM_CONDITIONAL(EGG_BUILD_TESTS, test x$enable_tests = xyes)
 if test x$enable_tests = xyes; then
-	AC_DEFINE(PK_BUILD_TESTS,1,[Build test code])
+	AC_DEFINE(EGG_BUILD_TESTS,1,[Build test code])
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -574,7 +574,6 @@ data/org.freedesktop.PackageKitTestBackend.conf
 data/org.freedesktop.PackageKitYumBackend.conf
 data/org.freedesktop.PackageKitAptBackend.conf
 data/tests/Makefile
-libselftest/Makefile
 libpackagekit/Makefile
 policy/Makefile
 src/Makefile

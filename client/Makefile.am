@@ -16,11 +16,6 @@ INCLUDES =						\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
 	-I$(top_srcdir)/libpackagekit			\
-	-I$(top_srcdir)/libselftest			\
-	$(NULL)
-
-SELFTEST_LIBS =						\
-	$(top_builddir)/libselftest/libselftest.la	\
 	$(NULL)
 
 PK_LIBS =						\
@@ -53,7 +48,6 @@ pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
-	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 pkmon_SOURCES =						\
@@ -66,7 +60,6 @@ pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
-	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 pkgenpack_SOURCES =					\
@@ -86,7 +79,6 @@ pkgenpack_LDADD = 					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
-	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 pk_generate_package_list_SOURCES =			\
@@ -114,7 +106,6 @@ pk_import_desktop_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
-	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 pk_import_specspo_SOURCES =				\
@@ -133,7 +124,7 @@ pk_import_specspo_LDADD =				\
 	$(PK_LIBS)					\
 	$(NULL)
 
-if PK_BUILD_TESTS
+if EGG_BUILD_TESTS
 
 check_PROGRAMS =					\
 	pk-self-test
@@ -143,6 +134,8 @@ pk_self_test_SOURCES =					\
 	egg-debug.h					\
 	egg-string.c					\
 	egg-string.h					\
+	egg-test.c					\
+	egg-test.h					\
 	pk-self-test.c					\
 	pk-generate-pack.c				\
 	pk-tools-common.c				\
@@ -158,16 +151,14 @@ pk_self_test_LDADD =					\
 	$(PK_LIBS)					\
 	$(NULL)
 
+pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS)
+
 TESTS = pk-self-test
 endif
 
 clean-local:
 	rm -f *~
 	rm -f *.out
-	rm -f *.gcno
-	rm -f *.gcda
-	rm -f gcov.txt
-	rm -f gprof.txt
 
 CLEANFILES = $(BUILT_SOURCES)
 

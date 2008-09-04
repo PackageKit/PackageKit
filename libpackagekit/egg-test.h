@@ -32,7 +32,7 @@ void		 egg_test_end			(EggTest *test);
 void		 egg_test_title			(EggTest *test, const gchar *format, ...);
 void		 egg_test_success		(EggTest *test, const gchar *format, ...);
 void		 egg_test_failed		(EggTest *test, const gchar *format, ...);
-void		 egg_test_init			(EggTest *test);
+EggTest		*egg_test_init			(void);
 gint		 egg_test_finish		(EggTest *test);
 guint		 egg_test_elapsed		(EggTest *test);
 void		 egg_test_loop_quit		(EggTest *test);

@@ -490,13 +490,13 @@ pk_task_list_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 static gboolean finished = FALSE;
 
 static void
-egg_test_task_list_finished_cb (PkTaskList *tlist, PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
+pk_task_list_test_finished_cb (PkTaskList *tlist, PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
@@ -505,7 +505,7 @@ egg_test_task_list_finished_cb (PkTaskList *tlist, PkClient *client, PkExitEnum 
 }
 
 void
-egg_test_task_list (EggTest *test)
+pk_task_list_test (EggTest *test)
 {
 	PkTaskList *tlist;
 	PkClient *client;
@@ -523,7 +523,7 @@ egg_test_task_list (EggTest *test)
 	else
 		egg_test_failed (test, NULL);
 	g_signal_connect (tlist, "finished",
-			  G_CALLBACK (egg_test_task_list_finished_cb), test);
+			  G_CALLBACK (pk_task_list_test_finished_cb), test);
 
 	/************************************************************/
 	egg_test_title (test, "search for power");

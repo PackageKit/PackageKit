@@ -362,11 +362,11 @@ pk_package_id_equal_strings (const gchar *pid1, const gchar *pid2)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_package_id (EggTest *test)
+pk_package_id_test (EggTest *test)
 {
 	gboolean ret;
 	gchar *text;

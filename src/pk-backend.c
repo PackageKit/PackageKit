@@ -2037,8 +2037,8 @@ pk_backend_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 #include <glib/gstdio.h>
 
 static guint number_messages = 0;
@@ -2088,7 +2088,7 @@ pk_backend_test_func_immediate_false (PkBackend *backend)
 }
 
 void
-egg_test_backend (EggTest *test)
+pk_backend_test (EggTest *test)
 {
 	PkBackend *backend;
 	gchar *text;

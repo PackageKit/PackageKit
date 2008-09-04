@@ -8,7 +8,6 @@ SUBDIRS = 						\
 	etc						\
 	man						\
 	data						\
-	libselftest					\
 	libpackagekit					\
 	src						\
 	client						\

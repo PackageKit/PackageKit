@@ -1206,11 +1206,11 @@ pk_backend_python_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_backend_python (EggTest *test)
+pk_backend_test_python (EggTest *test)
 {
 	if (!egg_test_start (test, "PkBackendPython"))
 		return;

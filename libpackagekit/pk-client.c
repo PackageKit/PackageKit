@@ -4066,8 +4066,8 @@ void init()
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 #include <glib/gstdio.h>
 
 static gboolean finished = FALSE;
@@ -4075,7 +4075,7 @@ static gboolean reset_okay = FALSE;
 static guint clone_packages = 0;
 
 static void
-egg_test_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
+pk_client_test_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
 	finished = TRUE;
 	/* this is actually quite common */
@@ -4083,7 +4083,7 @@ egg_test_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, E
 }
 
 static void
-egg_test_client_finished2_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
+pk_client_test_finished2_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
 	GError *error = NULL;
 	/* this is supported */
@@ -4095,19 +4095,19 @@ egg_test_client_finished2_cb (PkClient *client, PkExitEnum exit, guint runtime, 
 }
 
 static void
-egg_test_client_copy_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
+pk_client_test_copy_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
 	egg_test_loop_quit (test);
 }
 
 static void
-egg_test_client_copy_package_cb (PkClient *client, const PkPackageObj *obj, EggTest *test)
+pk_client_test_copy_package_cb (PkClient *client, const PkPackageObj *obj, EggTest *test)
 {
 	clone_packages++;
 }
 
 void
-egg_test_client (EggTest *test)
+pk_client_test (EggTest *test)
 {
 	PkClient *client;
 	PkClient *client_copy;
@@ -4169,7 +4169,7 @@ egg_test_client (EggTest *test)
 
 	/* check use after finalise */
 	g_signal_connect (client, "finished",
-			  G_CALLBACK (egg_test_client_finished_cb), test);
+			  G_CALLBACK (pk_client_test_finished_cb), test);
 
 	/* run the method */
 	pk_client_set_synchronous (client, TRUE, NULL);
@@ -4196,7 +4196,7 @@ egg_test_client (EggTest *test)
 	/* check reset during finalise when sync */
 	pk_client_set_synchronous (client, TRUE, NULL);
 	g_signal_connect (client, "finished",
-			  G_CALLBACK (egg_test_client_finished2_cb), test);
+			  G_CALLBACK (pk_client_test_finished2_cb), test);
 
 	/************************************************************/
 	egg_test_title (test, "search name sync, with a reset in finalise");
@@ -4318,11 +4318,11 @@ egg_test_client (EggTest *test)
 	/* set up the source */
 	client = pk_client_new ();
 	g_signal_connect (client, "finished",
-			  G_CALLBACK (egg_test_client_copy_finished_cb), test);
+			  G_CALLBACK (pk_client_test_copy_finished_cb), test);
 	/* set up the copy */
 	client_copy = pk_client_new ();
 	g_signal_connect (client_copy, "package",
-			  G_CALLBACK (egg_test_client_copy_package_cb), test);
+			  G_CALLBACK (pk_client_test_copy_package_cb), test);
 
 	/* search with the source */
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);

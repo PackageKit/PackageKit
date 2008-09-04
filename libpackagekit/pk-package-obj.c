@@ -168,11 +168,11 @@ out:
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_package_obj (EggTest *test)
+pk_package_obj_test (EggTest *test)
 {
 	PkPackageObj *obj1;
 	PkPackageObj *obj2;

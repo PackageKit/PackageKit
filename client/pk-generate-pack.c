@@ -567,11 +567,11 @@ out:
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-egg_test_generate_pack (EggTest *test)
+pk_genpack_test (EggTest *test)
 {
 	PkClient *client = NULL;
 	gboolean ret;

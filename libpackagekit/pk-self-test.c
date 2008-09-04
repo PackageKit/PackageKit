@@ -23,51 +23,51 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <libselftest.h>
-#include <egg-debug.h>
+#include "egg-test.h"
+#include "egg-debug.h"
 
 /* prototypes */
-void egg_test_package_id (EggTest *test);
-void egg_test_package_ids (EggTest *test);
-void egg_test_package_obj (EggTest *test);
-void egg_test_package_list (EggTest *test);
-void egg_test_enum (EggTest *test);
-void egg_test_bitfield (EggTest *test);
-void egg_test_common (EggTest *test);
-void egg_test_enum_list (EggTest *test);
-void egg_test_extra (EggTest *test);
-void egg_test_client (EggTest *test);
-void egg_test_control (EggTest *test);
-void egg_test_task_list (EggTest *test);
-void egg_test_catalog (EggTest *test);
-void egg_test_update_detail (EggTest *test);
-void egg_test_details (EggTest *test);
+void pk_package_id_test (EggTest *test);
+void pk_package_id_tests (EggTest *test);
+void pk_package_obj_test (EggTest *test);
+void pk_package_list_test (EggTest *test);
+void pk_enum_test (EggTest *test);
+void pk_bitfield_test (EggTest *test);
+void pk_common_test (EggTest *test);
+void pk_enum_test_list (EggTest *test);
+void pk_extra_test (EggTest *test);
+void pk_client_test (EggTest *test);
+void pk_control_test (EggTest *test);
+void pk_task_list_test (EggTest *test);
+void pk_catalog_test (EggTest *test);
+void pk_update_detail_test (EggTest *test);
+void pk_details_test (EggTest *test);
 
 int
 main (int argc, char **argv)
 {
-	EggTest test;
+	EggTest *test;
 
 	g_type_init ();
-	egg_test_init (&test);
+	test = egg_test_init ();
 	egg_debug_init (TRUE);
 
 	/* tests go here */
-	egg_test_common (&test);
-	egg_test_package_id (&test);
-	egg_test_package_ids (&test);
-	egg_test_package_obj (&test);
-	egg_test_package_list (&test);
-	egg_test_enum (&test);
-	egg_test_bitfield (&test);
-	egg_test_extra (&test);
-	egg_test_client (&test);
-	egg_test_catalog (&test);
-	egg_test_control (&test);
-	egg_test_task_list (&test);
-	egg_test_update_detail (&test);
-	egg_test_details (&test);
+	pk_common_test (test);
+	pk_package_id_test (test);
+	pk_package_id_tests (test);
+	pk_package_obj_test (test);
+	pk_package_list_test (test);
+	pk_enum_test (test);
+	pk_bitfield_test (test);
+	pk_extra_test (test);
+	pk_client_test (test);
+	pk_catalog_test (test);
+	pk_control_test (test);
+	pk_task_list_test (test);
+	pk_update_detail_test (test);
+	pk_details_test (test);
 
-	return (egg_test_finish (&test));
+	return (egg_test_finish (test));
 }
 
