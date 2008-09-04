@@ -157,30 +157,27 @@ libst_transaction_id (LibSelfTest *test)
 	gchar *tid;
 	gboolean ret;
 
-	if (libst_start (test, "PkTransactionId", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkTransactionId"))
 		return;
-	}
 
 	/************************************************************
 	 ****************          IDENT           ******************
 	 ************************************************************/
 	libst_title (test, "get an tid object");
 	tid = pk_transaction_id_generate ();
-	if (tid != NULL) {
+	if (tid != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 	g_free (tid);
 
 	/************************************************************/
 	libst_title (test, "tid equal pass (same)");
 	ret = pk_transaction_id_equal ("/34_1234def_r23", "/34_1234def_r23");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	libst_end (test);
 }

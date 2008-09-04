@@ -346,34 +346,30 @@ libst_security (LibSelfTest *test)
 	gboolean ret;
 	gchar *error;
 
-	if (libst_start (test, "PkSecurity", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkSecurity"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get an instance");
 	security = pk_security_new ();
-	if (security != NULL) {
+	if (security != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check connection");
-	if (security->priv->connection != NULL) {
+	if (security->priv->connection != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "check PolKit context");
-	if (security->priv->pk_context != NULL) {
+	if (security->priv->pk_context != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "map valid role to action");

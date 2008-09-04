@@ -89,6 +89,8 @@ class PackageKitSmartProgress(Progress):
             # unfortunately Progress doesn't provide the current package
             if self._fetcher and subtopic != self._lasturl:
                 packages = self._backend._packagesdict
+                if not packages:
+                    return
                 for package in packages:
                     for loader in package.loaders:
                         info = loader.getInfo(package)
@@ -192,6 +194,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if not package.installed:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            'Package %s is not installed' % package)
+            elif package.essential:
+                self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                           'Package %s cannot be removed' % package)
             else:
                 installed.append(package)
         if len(installed) < 1:
@@ -240,10 +245,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if len(packages) < 1:
             return
 
-        self.status(PK_STATUS_DOWNLOAD)
+        self.status(STATUS_DOWNLOAD)
         self.allow_cancel(True)
         self._packagesdict = packages
         self.ctrl.downloadPackages(packages, targetdir=directory)
+
+        pkgpath = self.ctrl.fetchPackages(packages, targetdir=directory)
+        for package,files in pkgpath.iteritems():
+            self.files(package, ";".join(files))
 
     @needs_cache
     def update_system(self):
@@ -259,6 +268,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
+        if not trans:
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE,
+                       "No interesting upgrades available.")
+            return
         self.status(STATUS_UPDATE)
         self._packagesdict = trans.getChangeSet()
         self.ctrl.commitTransaction(trans, confirm=False)
@@ -372,7 +385,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def what_provides(self, filters, provides_type, search):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        # FIXME: provides_type is not used (== PROVIDES_ANY)
+        if provides_type != PROVIDES_ANY:
+            self.error(ERROR_NOT_SUPPORTED,
+                       "provide %s not supported" % provides_type)
+            return
         providers = self.ctrl.getCache().getProvides(search)
         for provider in providers:
             for package in provider.packages:

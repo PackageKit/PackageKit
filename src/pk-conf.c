@@ -223,19 +223,17 @@ libst_conf (LibSelfTest *test)
 	gchar *text;
 	gint value;
 
-	if (libst_start (test, "PkConf", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkConf"))
 		return;
-	}
 
 
 	/************************************************************/
 	libst_title (test, "get an instance");
 	conf = pk_conf_new ();
-	if (conf != NULL) {
+	if (conf != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "get the default backend");

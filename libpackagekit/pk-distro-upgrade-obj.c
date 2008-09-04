@@ -117,9 +117,8 @@ libst_distro_upgrade (LibSelfTest *test)
 	gboolean ret;
 	PkDistroUpgradeObj *obj;
 
-	if (libst_start (test, "PkDistroUpgradeObj", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkDistroUpgradeObj"))
 		return;
-	}
 
 	/************************************************************
 	 ****************          IDENT           ******************
@@ -128,20 +127,18 @@ libst_distro_upgrade (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get an upgrade object");
 	obj = pk_distro_upgrade_obj_new ();
-	if (obj != NULL) {
+	if (obj != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "test upgrade");
 	ret = pk_distro_upgrade_obj_free (obj);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	libst_end (test);
 }

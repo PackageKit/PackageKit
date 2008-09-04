@@ -2098,124 +2098,116 @@ libst_backend (LibSelfTest *test)
 	guint data_uint;
 	gboolean data_bool;
 
-	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkBackend"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get an backend");
 	backend = pk_backend_new ();
-	if (backend != NULL) {
+	if (backend != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "set a blank string");
 	ret = pk_backend_set_string (backend, "dave2", "");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "set a ~bool");
 	ret = pk_backend_set_bool (backend, "roger2", FALSE);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "set a zero uint");
 	ret = pk_backend_set_uint (backend, "linda2", 0);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "get a blank string");
 	data_string = pk_backend_get_string (backend, "dave2");
-	if (egg_strequal (data_string, "")) {
+	if (egg_strequal (data_string, ""))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "data was %s", data_string);
 	}
 
 	/************************************************************/
 	libst_title (test, "get a ~bool");
 	data_bool = pk_backend_get_bool (backend, "roger2");
-	if (!data_bool) {
+	if (!data_bool)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "data was %i", data_bool);
 	}
 
 	/************************************************************/
 	libst_title (test, "get a zero uint");
 	data_uint = pk_backend_get_uint (backend, "linda2");
-	if (data_uint == 0) {
+	if (data_uint == 0)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "data was %i", data_uint);
 	}
 
 	/************************************************************/
 	libst_title (test, "set a string");
 	ret = pk_backend_set_string (backend, "dave", "ania");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "set a bool");
 	ret = pk_backend_set_bool (backend, "roger", TRUE);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "set a uint");
 	ret = pk_backend_set_uint (backend, "linda", 999);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "get a string");
 	data_string = pk_backend_get_string (backend, "dave");
-	if (egg_strequal (data_string, "ania")) {
+	if (egg_strequal (data_string, "ania"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "data was %s", data_string);
 	}
 
 	/************************************************************/
 	libst_title (test, "get a bool");
 	data_bool = pk_backend_get_bool (backend, "roger");
-	if (data_bool) {
+	if (data_bool)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "data was %i", data_bool);
 	}
 
 	/************************************************************/
 	libst_title (test, "get a uint");
 	data_uint = pk_backend_get_uint (backend, "linda");
-	if (data_uint == 999) {
+	if (data_uint == 999)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "data was %i", data_uint);
 	}
 
@@ -2225,16 +2217,15 @@ libst_backend (LibSelfTest *test)
 	ret = g_file_set_contents (filename, "foo", -1, NULL);
 	if (ret) {
 		libst_success (test, "set contents");
-	} else {
+	} else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "set up a watch file on a config file");
 	ret = pk_backend_watch_file (backend, filename, pk_backend_test_watch_file_cb, test);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "eula valid");
 	}
 
@@ -2243,9 +2234,8 @@ libst_backend (LibSelfTest *test)
 	ret = g_file_set_contents (filename, "bar", -1, NULL);
 	if (ret) {
 		libst_success (test, "set contents");
-	} else {
+	} else
 		libst_failed (test, NULL);
-	}
 
 	/* wait for config file change */
 	libst_loopwait (test, 2000);
@@ -2254,11 +2244,10 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "delete the config file");
 	ret = g_unlink (filename);
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	g_signal_connect (backend, "message", G_CALLBACK (pk_backend_test_message_cb), NULL);
 	g_signal_connect (backend, "finished", G_CALLBACK (pk_backend_test_finished_cb), test);
@@ -2266,45 +2255,45 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get eula that does not exist");
 	ret = pk_backend_is_eula_valid (backend, "license_foo");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "eula valid");
 	}
 
 	/************************************************************/
 	libst_title (test, "accept eula");
 	ret = pk_backend_accept_eula (backend, "license_foo");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "eula was not accepted");
 	}
 
 	/************************************************************/
 	libst_title (test, "get eula that does exist");
 	ret = pk_backend_is_eula_valid (backend, "license_foo");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "eula valid");
 	}
 
 	/************************************************************/
 	libst_title (test, "accept eula (again)");
 	ret = pk_backend_accept_eula (backend, "license_foo");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "eula was accepted twice");
 	}
 
 	/************************************************************/
 	libst_title (test, "get backend name");
 	text = pk_backend_get_name (backend);
-	if (text == NULL) {
+	if (text == NULL)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "invalid name %s (test suite needs to unref backend?)", text);
 	}
 	g_free (text);
@@ -2312,62 +2301,60 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "load an invalid backend");
 	ret = pk_backend_set_name (backend, "invalid");
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "try to load a valid backend");
 	ret = pk_backend_set_name (backend, "dummy");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "load an valid backend again");
 	ret = pk_backend_set_name (backend, "dummy");
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "loaded twice");
 	}
 
 	/************************************************************/
 	libst_title (test, "lock an valid backend");
 	ret = pk_backend_lock (backend);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed to lock");
 	}
 
 	/************************************************************/
 	libst_title (test, "lock a backend again");
 	ret = pk_backend_lock (backend);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "locked twice should succeed");
 	}
 
 	/************************************************************/
 	libst_title (test, "check we are out of init");
-	if (backend->priv->during_initialize == FALSE) {
+	if (backend->priv->during_initialize == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "not out of init");
 	}
 
 	/************************************************************/
 	libst_title (test, "get backend name");
 	text = pk_backend_get_name (backend);
-	if (egg_strequal(text, "dummy")) {
+	if (egg_strequal(text, "dummy"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "invalid name %s", text);
 	}
 	g_free (text);
@@ -2375,52 +2362,52 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "unlock an valid backend");
 	ret = pk_backend_unlock (backend);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed to unlock");
 	}
 
 	/************************************************************/
 	libst_title (test, "unlock an valid backend again");
 	ret = pk_backend_unlock (backend);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "unlocked twice, should succeed");
 	}
 
 	/************************************************************/
 	libst_title (test, "check we are not finished");
-	if (backend->priv->finished == FALSE) {
+	if (backend->priv->finished == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "we did not clear finish!");
 	}
 
 	/************************************************************/
 	libst_title (test, "check we have no error");
-	if (backend->priv->set_error == FALSE) {
+	if (backend->priv->set_error == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "an error has already been set");
 	}
 
 	/************************************************************/
 	libst_title (test, "lock again");
 	ret = pk_backend_lock (backend);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed to unlock");
 	}
 
 	/************************************************************/
 	libst_title (test, "wait for a thread to return true");
 	ret = pk_backend_thread_create (backend, pk_backend_test_func_true);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "wait for a thread failed");
 	}
 
@@ -2434,9 +2421,9 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false (straight away)");
 	ret = pk_backend_thread_create (backend, pk_backend_test_func_immediate_false);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "returned false!");
 	}
 
@@ -2453,9 +2440,9 @@ libst_backend (LibSelfTest *test)
 	libst_loopcheck (test);
 
 	libst_title (test, "check we enforce finished after error_code");
-	if (number_messages == 1) {
+	if (number_messages == 1)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "we messaged %i times!", number_messages);
 	}
 

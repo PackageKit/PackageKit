@@ -723,9 +723,8 @@ libst_backend_spawn (LibSelfTest *test)
 
 	loop = g_main_loop_new (NULL, FALSE);
 
-	if (libst_start (test, "PkBackendSpawn", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkBackendSpawn"))
 		return;
-	}
 
 	/* don't do these when doing make distcheck */
 #ifndef PK_IS_DEVELOPER
@@ -736,11 +735,10 @@ libst_backend_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get an backend_spawn");
 	backend_spawn = pk_backend_spawn_new ();
-	if (backend_spawn != NULL) {
+	if (backend_spawn != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/* private copy for unref testing */
 	backend = backend_spawn->priv->backend;
@@ -750,27 +748,27 @@ libst_backend_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get backend name");
 	text = pk_backend_spawn_get_name (backend_spawn);
-	if (text == NULL) {
+	if (text == NULL)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "invalid name %s", text);
 	}
 
 	/************************************************************/
 	libst_title (test, "set backend name");
 	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "invalid set name");
 	}
 
 	/************************************************************/
 	libst_title (test, "get backend name");
 	text = pk_backend_spawn_get_name (backend_spawn);
-	if (egg_strequal(text, "test_spawn")) {
+	if (egg_strequal(text, "test_spawn"))
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "invalid name %s", text);
 	}
 
@@ -783,117 +781,117 @@ libst_backend_spawn (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout Percentage1");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "percentage\t0");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout Percentage2");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "percentage\tbrian");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout Percentage3");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "percentage\t12345");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout Percentage4");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "percentage\t");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout Percentage5");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "percentage");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout Subpercentage");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "subpercentage\t17");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout NoPercentageUpdates");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "no-percentage-updates");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout failure");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "error\tnot-present-woohoo\tdescription text");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not detect incorrect enum");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout Status");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "status\tquery");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout RequireRestart");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tsystem\tdetails about the restart");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout RequireRestart");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tmooville\tdetails about the restart");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not detect incorrect enum");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout AllowUpdate1");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "allow-cancel\ttrue");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_stdout AllowUpdate2");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "allow-cancel\tbrian");
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
@@ -903,18 +901,18 @@ libst_backend_spawn (LibSelfTest *test)
 	libst_title (test, "test pk_backend_spawn_parse_common_out Package");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn,
 		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not validate correctly");
 	}
 
 	/************************************************************/
 	libst_title (test, "manually unlock as we have no engine");
 	ret = pk_backend_unlock (backend_spawn->priv->backend);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not unlock");
 	}
 
@@ -924,9 +922,9 @@ libst_backend_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test we unref'd all but one of the PkBackend instances");
 	refcount = G_OBJECT(backend)->ref_count;
-	if (refcount == 1) {
+	if (refcount == 1)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "refcount invalid %i", refcount);
 	}
 
@@ -936,9 +934,9 @@ libst_backend_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set backend name");
 	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "invalid set name");
 	}
 
@@ -957,9 +955,9 @@ libst_backend_spawn (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "test search-name.sh running");
 	ret = pk_backend_spawn_helper (backend_spawn, "search-name.sh", "none", "bar", NULL);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "cannot spawn search-name.sh");
 	}
 
@@ -968,18 +966,18 @@ libst_backend_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test number of packages");
-	if (number_packages == 2) {
+	if (number_packages == 2)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "wrong number of packages %i", number_packages);
 	}
 
 	/************************************************************/
 	libst_title (test, "manually unlock as we have no engine");
 	ret = pk_backend_unlock (backend_spawn->priv->backend);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not unlock");
 	}
 
@@ -989,9 +987,9 @@ libst_backend_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test we unref'd all but one of the PkBackend instances");
 	refcount = G_OBJECT(backend)->ref_count;
-	if (refcount == 1) {
+	if (refcount == 1)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "refcount invalid %i", refcount);
 	}
 

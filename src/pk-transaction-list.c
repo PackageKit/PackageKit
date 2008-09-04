@@ -521,18 +521,16 @@ libst_transaction_list (LibSelfTest *test)
 	gchar **array;
 	PkTransactionItem *item;
 
-	if (libst_start (test, "PkTransactionList", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkTransactionList"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get a transaction list object");
 	tlist = pk_transaction_list_new ();
-	if (tlist != NULL) {
+	if (tlist != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "make sure we get a valid tid");
@@ -557,18 +555,18 @@ libst_transaction_list (LibSelfTest *test)
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL &&
 	    egg_strequal (item->tid, tid) &&
-	    item->transaction != NULL) {
+	    item->transaction != NULL)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "could not find in db");
 	}
 
 	/************************************************************/
 	libst_title (test, "get size one we have in queue");
 	size = pk_transaction_list_get_size (tlist);
-	if (size == 1) {
+	if (size == 1)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "size %i", size);
 	}
 
@@ -576,36 +574,36 @@ libst_transaction_list (LibSelfTest *test)
 	libst_title (test, "get transactions in progress");
 	array = pk_transaction_list_get_array (tlist);
 	size = g_strv_length (array);
-	if (size == 0) {
+	if (size == 0)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "size %i", size);
 	}
 
 	/************************************************************/
 	libst_title (test, "add again the same tid (should fail)");
 	ret = pk_transaction_list_create (tlist, tid);
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "added the same tid twice");
 	}
 
 	/************************************************************/
 	libst_title (test, "remove without ever committing");
 	ret = pk_transaction_list_remove (tlist, tid);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed to remove");
 	}
 
 	/************************************************************/
 	libst_title (test, "get size none we have in queue");
 	size = pk_transaction_list_get_size (tlist);
-	if (size == 0) {
+	if (size == 0)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "size %i", size);
 	}
 
@@ -627,18 +625,17 @@ libst_transaction_list (LibSelfTest *test)
 	backend = pk_backend_new ();
 	libst_title (test, "try to load a valid backend");
 	ret = pk_backend_set_name (backend, "dummy");
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "lock an valid backend");
 	ret = pk_backend_lock (backend);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed to lock");
 	}
 
@@ -647,9 +644,9 @@ libst_transaction_list (LibSelfTest *test)
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL &&
 	    egg_strequal (item->tid, tid) &&
-	    item->transaction != NULL) {
+	    item->transaction != NULL)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "could not find in db");
 	}
 
@@ -661,27 +658,27 @@ libst_transaction_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get present role");
 	ret = pk_transaction_list_role_present (tlist, PK_ROLE_ENUM_GET_UPDATES);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "did not get role");
 	}
 
 	/************************************************************/
 	libst_title (test, "get non-present role");
 	ret = pk_transaction_list_role_present (tlist, PK_ROLE_ENUM_SEARCH_NAME);
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "got missing role");
 	}
 
 	/************************************************************/
 	libst_title (test, "get size one we have in queue");
 	size = pk_transaction_list_get_size (tlist);
-	if (size == 1) {
+	if (size == 1)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "size %i", size);
 	}
 
@@ -689,9 +686,9 @@ libst_transaction_list (LibSelfTest *test)
 	libst_title (test, "get transactions in progress");
 	array = pk_transaction_list_get_array (tlist);
 	size = g_strv_length (array);
-	if (size == 1) {
+	if (size == 1)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "size %i", size);
 	}
 
@@ -702,9 +699,9 @@ libst_transaction_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get size one we have in queue");
 	size = pk_transaction_list_get_size (tlist);
-	if (size == 1) {
+	if (size == 1)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "size %i", size);
 	}
 
@@ -712,18 +709,18 @@ libst_transaction_list (LibSelfTest *test)
 	libst_title (test, "get transactions in progress (none)");
 	array = pk_transaction_list_get_array (tlist);
 	size = g_strv_length (array);
-	if (size == 0) {
+	if (size == 0)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "size %i", size);
 	}
 
 	/************************************************************/
 	libst_title (test, "remove already removed");
 	ret = pk_transaction_list_remove (tlist, tid);
-	if (!ret) {
+	if (!ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "tried to remove");
 	}
 
@@ -735,9 +732,9 @@ libst_transaction_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "make sure queue empty");
 	size = pk_transaction_list_get_size (tlist);
-	if (size == 0) {
+	if (size == 0)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "size %i", size);
 	}
 

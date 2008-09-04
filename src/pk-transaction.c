@@ -3698,18 +3698,16 @@ libst_transaction (LibSelfTest *test)
 	const gchar *temp;
 	GError *error = NULL;
 
-	if (libst_start (test, "PkTransaction", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkTransaction"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get PkTransaction object");
 	transaction = pk_transaction_new ();
-	if (transaction != NULL) {
+	if (transaction != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************
 	 ****************          FILTERS         ******************
@@ -3717,9 +3715,9 @@ libst_transaction (LibSelfTest *test)
 	temp = NULL;
 	libst_title (test, "test a fail filter (null)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
@@ -3728,9 +3726,9 @@ libst_transaction (LibSelfTest *test)
 	temp = "";
 	libst_title (test, "test a fail filter ()");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
@@ -3739,9 +3737,9 @@ libst_transaction (LibSelfTest *test)
 	temp = ";";
 	libst_title (test, "test a fail filter (;)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
@@ -3750,9 +3748,9 @@ libst_transaction (LibSelfTest *test)
 	temp = "moo";
 	libst_title (test, "test a fail filter (invalid)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
@@ -3761,9 +3759,9 @@ libst_transaction (LibSelfTest *test)
 	temp = "moo;foo";
 	libst_title (test, "test a fail filter (invalid, multiple)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
@@ -3772,9 +3770,9 @@ libst_transaction (LibSelfTest *test)
 	temp = "gui;;";
 	libst_title (test, "test a fail filter (valid then zero length)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "passed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
@@ -3783,9 +3781,9 @@ libst_transaction (LibSelfTest *test)
 	temp = "none";
 	libst_title (test, "test a pass filter (none)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
@@ -3794,9 +3792,9 @@ libst_transaction (LibSelfTest *test)
 	temp = "gui";
 	libst_title (test, "test a pass filter (single)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
@@ -3805,9 +3803,9 @@ libst_transaction (LibSelfTest *test)
 	temp = "devel;~gui";
 	libst_title (test, "test a pass filter (multiple)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the filter '%s'", temp);
 	}
 	g_clear_error (&error);
@@ -3816,9 +3814,9 @@ libst_transaction (LibSelfTest *test)
 	temp = "~gui;~installed";
 	libst_title (test, "test a pass filter (multiple2)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else {
 		libst_failed (test, "failed the filter '%s'", temp);
 	}
 	g_clear_error (&error);

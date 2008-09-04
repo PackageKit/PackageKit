@@ -129,27 +129,24 @@ libst_details (LibSelfTest *test)
 	gboolean ret;
 	PkDetailsObj *obj;
 
-	if (libst_start (test, "PkDetailsObj", CLASS_AUTO) == FALSE) {
+	if (!libst_start (test, "PkDetailsObj"))
 		return;
-	}
 
 	/************************************************************/
 	libst_title (test, "get an details object");
 	obj = pk_details_obj_new ();
-	if (obj != NULL) {
+	if (obj != NULL)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	/************************************************************/
 	libst_title (test, "test details");
 	ret = pk_details_obj_free (obj);
-	if (ret) {
+	if (ret)
 		libst_success (test, NULL);
-	} else {
+	else
 		libst_failed (test, NULL);
-	}
 
 	libst_end (test);
 }
