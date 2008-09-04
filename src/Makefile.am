@@ -66,6 +66,8 @@ shared_SOURCES =					\
 	pk-notify.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
+	pk-update-detail-list.c				\
+	pk-update-detail-list.h				\
 	pk-file-monitor.h				\
 	pk-engine.h					\
 	pk-engine.c					\
