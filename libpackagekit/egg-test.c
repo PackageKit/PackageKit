@@ -173,7 +173,6 @@ egg_test_start (EggTest *test, const gchar *name)
 	}
 	test->type = g_strdup (name);
 	test->started = TRUE;
-	g_print ("%s...", test->type);
 	return TRUE;
 }
 

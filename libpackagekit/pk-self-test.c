@@ -27,6 +27,8 @@
 #include "egg-debug.h"
 
 /* prototypes */
+void egg_string_test (EggTest *test);
+void egg_obj_list_test (EggTest *test);
 void pk_package_id_test (EggTest *test);
 void pk_package_id_tests (EggTest *test);
 void pk_package_obj_test (EggTest *test);
@@ -53,6 +55,8 @@ main (int argc, char **argv)
 	egg_debug_init (TRUE);
 
 	/* tests go here */
+	egg_string_test (test);
+	egg_obj_list_test (test);
 	pk_common_test (test);
 	pk_package_id_test (test);
 	pk_package_id_tests (test);
