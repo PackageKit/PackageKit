@@ -61,6 +61,7 @@ static void     pk_spawn_finalize	(GObject       *object);
 struct PkSpawnPrivate
 {
 	gint			 child_pid;
+	gint			 stdin_fd;
 	gint			 stdout_fd;
 	guint			 poll_id;
 	guint			 kill_id;
@@ -177,6 +178,9 @@ pk_spawn_check_child (PkSpawn *spawn)
 	/* officially done, although no signal yet */
 	spawn->priv->finished = TRUE;
 
+	/* no longer valid */
+	spawn->priv->stdin_fd = -1;
+
 	/* if we are trying to kill this process, cancel the SIGKILL */
 	if (spawn->priv->kill_id != 0) {
 		g_source_remove (spawn->priv->kill_id);
@@ -260,6 +264,40 @@ pk_spawn_kill (PkSpawn *spawn)
 }
 
 /**
+ * pk_spawn_exit:
+ *
+ * Just write "exit" into the open fd and hope the backend does the right thing
+ *
+ **/
+gboolean
+pk_spawn_exit (PkSpawn *spawn)
+{
+	gint retval;
+	gint wrote;
+	const gchar *buffer;
+	guint length;
+
+	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
+
+	/* check if process has already gone */
+	if (spawn->priv->finished) {
+		egg_warning ("already finished, ignoring");
+		return FALSE;
+	}
+
+	/* write to the waiting process */
+	buffer = "exit\n";
+	length = strlen (buffer);
+	wrote = write (spawn->priv->stdin_fd, buffer, length);
+	if (wrote != length) {
+		egg_warning ("failed to write '%s'", buffer);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
  * pk_spawn_argv:
  * @argv: Can be generated using g_strsplit (command, " ", 0)
  * if there are no spaces in the filename
@@ -289,7 +327,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	ret = g_spawn_async_with_pipes (NULL, argv, envp,
 				 G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
 				 NULL, NULL, &spawn->priv->child_pid,
-				 NULL, /* stdin */
+				 &spawn->priv->stdin_fd,
 				 &spawn->priv->stdout_fd,
 				 NULL,
 				 NULL);
@@ -345,6 +383,7 @@ pk_spawn_init (PkSpawn *spawn)
 
 	spawn->priv->child_pid = -1;
 	spawn->priv->stdout_fd = -1;
+	spawn->priv->stdin_fd = -1;
 	spawn->priv->poll_id = 0;
 	spawn->priv->kill_id = 0;
 	spawn->priv->finished = FALSE;
