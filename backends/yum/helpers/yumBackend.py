@@ -904,7 +904,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     inst_files.append(os.path.join(tempdir, file))
 
         to_remove = []
-                    
+
         # remove files of packages that already exist
         for inst_file in inst_files:
             try:
@@ -925,7 +925,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             # More than one pkg to be installed, 1 or more are already installed
             inst_files.remove(inst_file)
             self.message(MESSAGE_PACKAGE_ALREADY_INSTALLED, '%s is already installed' % inst_file)
-            
+
         if len(inst_files) == 0:
             # More than one pkg to be installed, all of them already installed
             self.error(ERROR_ALL_PACKAGES_ALREADY_INSTALLED,
