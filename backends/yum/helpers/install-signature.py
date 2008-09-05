@@ -11,13 +11,8 @@
 
 import sys
 
-sigtype = sys.argv[1]
-key_id = sys.argv[2]
-package_id = sys.argv[3]
-
 from yumBackend import PackageKitYumBackend
-
-backend = PackageKitYumBackend(sys.argv[1:],lock=False)
-backend.install_signature(sigtype,key_id,package_id)
+backend = PackageKitYumBackend(sys.argv,lock=False)
+backend.run_command()
 sys.exit(0)
 

@@ -12,13 +12,8 @@
 
 import sys
 
-filters = sys.argv[1]
-provides_type = sys.argv[2]
-search = sys.argv[3]
-
 from yumBackend import PackageKitYumBackend
-
-backend = PackageKitYumBackend(sys.argv[1:],lock=False)
-backend.what_provides(filters, provides_type, search)
+backend = PackageKitYumBackend(sys.argv,lock=False)
+backend.run_command()
 sys.exit(0)
 
