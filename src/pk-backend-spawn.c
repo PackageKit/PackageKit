@@ -64,8 +64,6 @@ struct PkBackendSpawnPrivate
 	PkSpawn			*spawn;
 	PkBackend		*backend;
 	gchar			*name;
-	gulong			 signal_finished;
-	gulong			 signal_stdout;
 };
 
 G_DEFINE_TYPE (PkBackendSpawn, pk_backend_spawn, G_TYPE_OBJECT)
@@ -384,34 +382,12 @@ out:
 }
 
 /**
- * pk_backend_spawn_helper_delete:
- **/
-static gboolean
-pk_backend_spawn_helper_delete (PkBackendSpawn *backend_spawn)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	if (backend_spawn->priv->spawn == NULL) {
-		egg_warning ("spawn object not in use");
-		return FALSE;
-	}
-	egg_debug ("deleting spawn %p", backend_spawn->priv->spawn);
-	g_signal_handler_disconnect (backend_spawn->priv->spawn, backend_spawn->priv->signal_finished);
-	g_signal_handler_disconnect (backend_spawn->priv->spawn, backend_spawn->priv->signal_stdout);
-	g_object_unref (backend_spawn->priv->spawn);
-	backend_spawn->priv->spawn = NULL;
-	return TRUE;
-}
-
-/**
  * pk_backend_spawn_finished_cb:
  **/
 static void
 pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backend_spawn)
 {
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
-
-	egg_debug ("deleting spawn %p, exit %s", backend_spawn, pk_exit_enum_to_text (exit));
-	pk_backend_spawn_helper_delete (backend_spawn);
 
 	/* if we killed the process, set an error */
 	if (exit == PK_EXIT_ENUM_KILLED) {
@@ -420,11 +396,6 @@ pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *b
 				       "Process had to be killed to be cancelled");
 	}
 
-	if (FALSE && /*TODO: backend_spawn->priv->set_error == FALSE*/
-	    exit == PK_EXIT_ENUM_FAILED) {
-		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "Helper returned non-zero return value but did not set error");
-	}
 	pk_backend_finished (backend_spawn->priv->backend);
 }
 
@@ -442,29 +413,6 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 	if (!ret) {
 		egg_debug ("failed to parse '%s'", line);
 	}
-}
-
-/**
- * pk_backend_spawn_helper_new:
- **/
-static gboolean
-pk_backend_spawn_helper_new (PkBackendSpawn *backend_spawn)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-
-	if (backend_spawn->priv->spawn != NULL) {
-		egg_warning ("spawn object already in use");
-		return FALSE;
-	}
-	backend_spawn->priv->spawn = pk_spawn_new ();
-	egg_debug ("allocating spawn %p", backend_spawn->priv->spawn);
-	backend_spawn->priv->signal_finished =
-		g_signal_connect (backend_spawn->priv->spawn, "finished",
-				  G_CALLBACK (pk_backend_spawn_finished_cb), backend_spawn);
-	backend_spawn->priv->signal_stdout =
-		g_signal_connect (backend_spawn->priv->spawn, "stdout",
-				  G_CALLBACK (pk_backend_spawn_stdout_cb), backend_spawn);
-	return TRUE;
 }
 
 /**
@@ -554,11 +502,9 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	g_free (argv[0]);
 	argv[0] = g_strdup (filename);
 
-	pk_backend_spawn_helper_new (backend_spawn);
 	envp = pk_backend_spawn_get_envp (backend_spawn);
 	ret = pk_spawn_argv (backend_spawn->priv->spawn, argv, envp);
 	if (!ret) {
-		pk_backend_spawn_helper_delete (backend_spawn);
 		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 				       "Spawn of helper '%s' failed", argv[0]);
 		pk_backend_finished (backend_spawn->priv->backend);
@@ -599,11 +545,6 @@ gboolean
 pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-
-	if (backend_spawn->priv->spawn == NULL) {
-		egg_warning ("cannot kill missing process");
-		return FALSE;
-	}
 	pk_spawn_kill (backend_spawn->priv->spawn);
 	return TRUE;
 }
@@ -640,10 +581,9 @@ pk_backend_spawn_finalize (GObject *object)
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (object));
 
 	backend_spawn = PK_BACKEND_SPAWN (object);
-	if (backend_spawn->priv->spawn != NULL) {
-		pk_backend_spawn_helper_delete (backend_spawn);
-	}
+
 	g_free (backend_spawn->priv->name);
+	g_object_unref (backend_spawn->priv->spawn);
 	g_object_unref (backend_spawn->priv->backend);
 
 	G_OBJECT_CLASS (pk_backend_spawn_parent_class)->finalize (object);
@@ -667,9 +607,13 @@ static void
 pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 {
 	backend_spawn->priv = PK_BACKEND_SPAWN_GET_PRIVATE (backend_spawn);
-	backend_spawn->priv->spawn = NULL;
 	backend_spawn->priv->name = NULL;
 	backend_spawn->priv->backend = pk_backend_new ();
+	backend_spawn->priv->spawn = pk_spawn_new ();
+	g_signal_connect (backend_spawn->priv->spawn, "finished",
+			  G_CALLBACK (pk_backend_spawn_finished_cb), backend_spawn);
+	g_signal_connect (backend_spawn->priv->spawn, "stdout",
+			  G_CALLBACK (pk_backend_spawn_stdout_cb), backend_spawn);
 }
 
 /**
