@@ -347,7 +347,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	 *  - all of envp are the same (proxy and locale settings) */
 	if (spawn->priv->stdin_fd != -1) {
 		// TODO: envp is the same?
-		if (egg_strequal (spawn->priv->last_argv0, argv[0]) {
+		if (egg_strequal (spawn->priv->last_argv0, argv[0])) {
 			/* reuse instance */
 			//TODO: escape spaces
 			command = g_strjoinv (" ", &argv[1]);
@@ -358,7 +358,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 				return TRUE;
 			/* we failed, so fall on through to kill and respawn */
 		} else {
-			pk_debug ("argv or envp did not match, not reusing");
+			egg_debug ("argv or envp did not match, not reusing");
 		}
 		/* kill off existing instance */
 		egg_debug ("killing existing instance");
@@ -382,7 +382,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 
 	/* save this so we can check the dispatcher name */
 	g_strdup (spawn->priv->last_argv0);
-	spawn->priv->last_argv0 = g_strdup (argv0);
+	spawn->priv->last_argv0 = g_strdup (argv[0]);
 
 	/* install an idle handler to check if the child returnd successfully. */
 	fcntl (spawn->priv->stdout_fd, F_SETFL, O_NONBLOCK);
