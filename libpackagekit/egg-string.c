@@ -197,6 +197,42 @@ egg_strequal (const gchar *id1, const gchar *id2)
 }
 
 /**
+ * egg_strvequal:
+ * @id1: the first item of text to test
+ * @id2: the second item of text to test
+ *
+ * This function will check to see if the GStrv arrays are string equal
+ *
+ * Return value: %TRUE if the arrays are the same
+ **/
+gboolean
+egg_strvequal (gchar **id1, gchar **id2)
+{
+	guint i;
+	guint length1;
+	guint length2;
+
+	if (id1 == NULL || id2 == NULL) {
+		egg_debug ("GStrv compare invalid '%p' and '%p'", id1, id2);
+		return FALSE;
+	}
+
+	/* check different sizes */
+	length1 = g_strv_length (id1);
+	length2 = g_strv_length (id2);
+	if (length1 != length2)
+		return FALSE;
+
+	/* text equal each one */
+	for (i=0; i<length1; i++) {
+		if (!egg_strequal (id1[i], id2[i]))
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
  * egg_strreplace:
  * @text: The input text to make safe
  * @find: What to search for
@@ -240,26 +276,72 @@ egg_string_test (EggTest *test)
 	guint length;
 	gint value;
 	guint uvalue;
+	gchar **id1;
+	gchar **id2;
 
 	if (!egg_test_start (test, "EggString"))
 		return;
 
-	/************************************************************/
+	/************************************************************
+	 ****************       String equal       ******************
+	 ************************************************************/
 	egg_test_title (test, "egg_strequal same argument");
 	temp = "dave";
 	if (egg_strequal (temp, temp))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "incorrect ret when both same");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "egg_strequal both const");
 	if (egg_strequal ("dave", "dave"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "incorrect ret when both same");
-	}
+
+	/************************************************************
+	 ****************    String array equal    ******************
+	 ************************************************************/
+	egg_test_title (test, "egg_strvequal same argument");
+	id1 = g_strsplit ("the quick brown fox", " ", 0);
+	if (egg_strvequal (id1, id1))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "incorrect ret when both same");
+	g_strfreev (id1);
+
+	/************************************************************/
+	egg_test_title (test, "egg_strvequal same");
+	id1 = g_strsplit ("the quick brown fox", " ", 0);
+	id2 = g_strsplit ("the quick brown fox", " ", 0);
+	if (egg_strvequal (id1, id2))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "incorrect ret when both same");
+	g_strfreev (id1);
+	g_strfreev (id2);
+
+	/************************************************************/
+	egg_test_title (test, "egg_strvequal different lengths");
+	id1 = g_strsplit ("the quick brown", " ", 0);
+	id2 = g_strsplit ("the quick brown fox", " ", 0);
+	if (!egg_strvequal (id1, id2))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "incorrect ret when both same");
+	g_strfreev (id1);
+	g_strfreev (id2);
+
+	/************************************************************/
+	egg_test_title (test, "egg_strvequal different");
+	id1 = g_strsplit ("the quick brown fox", " ", 0);
+	id2 = g_strsplit ("richard hughes maintainer dude", " ", 0);
+	if (!egg_strvequal (id1, id2))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "same when different");
+	g_strfreev (id1);
+	g_strfreev (id2);
 
 	/************************************************************
 	 ****************          Zero            ******************
@@ -269,27 +351,24 @@ egg_string_test (EggTest *test)
 	ret = egg_strzero (NULL);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed null");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "test strzero (null first char)");
 	ret = egg_strzero ("");
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed null");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "test strzero (long string)");
 	ret = egg_strzero ("Richard");
 	if (!ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "zero length word!");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "id strcmp pass");
@@ -314,27 +393,24 @@ egg_string_test (EggTest *test)
 	length = egg_strlen ("123456789", 20);
 	if (length == 9)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the strlen %i", length);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "strlen smaller");
 	length = egg_strlen ("123456789", 5);
 	if (length == 5)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the strlen %i", length);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "strlen correct");
 	length = egg_strlen ("123456789", 9);
 	if (length == 9)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the strlen %i", length);
-	}
 
 	/************************************************************
 	 ****************         Replace          ******************
@@ -343,9 +419,8 @@ egg_string_test (EggTest *test)
 	text_safe = egg_strreplace ("richard\nhughes", "r", "e");
 	if (egg_strequal (text_safe, "eichaed\nhughes"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the replace '%s'", text_safe);
-	}
 	g_free (text_safe);
 
 	/************************************************************/
@@ -353,9 +428,8 @@ egg_string_test (EggTest *test)
 	text_safe = egg_strreplace ("richard\nhughes", "dave", "e");
 	if (egg_strequal (text_safe, "richard\nhughes"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the replace '%s'", text_safe);
-	}
 	g_free (text_safe);
 
 	/************************************************************/
@@ -363,9 +437,8 @@ egg_string_test (EggTest *test)
 	text_safe = egg_strreplace ("richard\nhughes", "s", "e");
 	if (egg_strequal (text_safe, "richard\nhughee"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the replace '%s'", text_safe);
-	}
 	g_free (text_safe);
 
 	/************************************************************/
@@ -373,9 +446,8 @@ egg_string_test (EggTest *test)
 	text_safe = egg_strreplace ("richard\n- hughes", "\n- ", "\n• ");
 	if (egg_strequal (text_safe, "richard\n• hughes"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the replace '%s'", text_safe);
-	}
 	g_free (text_safe);
 
 	/************************************************************
@@ -459,45 +531,40 @@ egg_string_test (EggTest *test)
 	ret = egg_strtoint ("234", &value);
 	if (ret && value == 234)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "value is %i", value);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "convert negative valid number");
 	ret = egg_strtoint ("-234", &value);
 	if (ret && value == -234)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "value is %i", value);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "don't convert invalid number");
 	ret = egg_strtoint ("dave", &value);
 	if (ret == FALSE && value == 0)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "value is %i", value);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "convert valid uint number");
 	ret = egg_strtouint ("234", &uvalue);
 	if (ret && uvalue == 234)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "value is %i", uvalue);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "convert invalid uint number");
 	ret = egg_strtouint ("-234", &uvalue);
 	if (ret == FALSE && uvalue == 0)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "value is %i", uvalue);
-	}
 
 	egg_test_end (test);
 }
