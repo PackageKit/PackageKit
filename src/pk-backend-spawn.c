@@ -443,7 +443,6 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		line = g_strdup_printf ("%s=%s", "http_proxy", value);
 		egg_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
-		g_free (line);
 	}
 	g_free (value);
 
@@ -453,7 +452,6 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		line = g_strdup_printf ("%s=%s", "ftp_proxy", value);
 		egg_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
-		g_free (line);
 	}
 	g_free (value);
 
@@ -463,11 +461,11 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		line = g_strdup_printf ("%s=%s", "LANG", value);
 		egg_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
-		g_free (line);
 	}
 	g_free (value);
 
 	envp = pk_ptr_array_to_argv (array);
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 	return envp;
 }
@@ -518,6 +516,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	}
 	g_free (filename);
 	g_strfreev (argv);
+	g_strfreev (envp);
 	return ret;
 }
 
