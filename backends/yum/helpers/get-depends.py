@@ -12,10 +12,6 @@
 import sys
 
 from yumBackend import PackageKitYumBackend
-filters = sys.argv[1]
-package = sys.argv[2]
-recursive = sys.argv[3]
-
-backend = PackageKitYumBackend(sys.argv[1:])
-backend.get_depends(filters, package.split('|'), recursive)
+backend = PackageKitYumBackend(sys.argv)
+backend.run_command()
 sys.exit(0)

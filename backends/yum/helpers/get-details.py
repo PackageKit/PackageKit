@@ -13,7 +13,6 @@
 import sys
 
 from yumBackend import PackageKitYumBackend
-package = sys.argv[1]
-backend = PackageKitYumBackend(sys.argv[1:])
-backend.get_details(package.split('|'))
+backend = PackageKitYumBackend(sys.argv)
+backend.run_command()
 sys.exit(0)
