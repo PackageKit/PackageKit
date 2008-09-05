@@ -23,5 +23,5 @@ while True:
         break
     args = line.split(' ')
     backend.dispatch_command(args[0],args[1:])
-sys.exit(0)    
+sys.exit(0)
 
