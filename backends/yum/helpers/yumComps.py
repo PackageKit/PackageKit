@@ -18,7 +18,7 @@
 #    Richard Hughes <richard@hughsie.com>
 
 from packagekit.enums import *
-from pysqlite2 import dbapi2 as sqlite
+import sqlite3 as sqlite
 
 groupMap = {
 'desktops;gnome-desktop'                      : GROUP_DESKTOP_GNOME,

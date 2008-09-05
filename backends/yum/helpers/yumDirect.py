@@ -18,7 +18,7 @@
 #    Richard Hughes <richard@hughsie.com>
 
 # imports
-from pysqlite2 import dbapi2 as sqlite
+import sqlite3 as sqlite
 import yum
 
 # simple object that we can use when we use sqlite directly
