@@ -148,6 +148,13 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		pk_backend_details (backend_spawn->priv->backend, sections[1], sections[2],
 					group, text, sections[5], package_size);
 		g_free (text);
+	} else if (egg_strequal (command, "finished")) {
+		if (size != 1) {
+			egg_warning ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		pk_backend_finished (backend_spawn->priv->backend);
 	} else if (egg_strequal (command, "files")) {
 		if (size != 3) {
 			egg_warning ("invalid command '%s'", command);
