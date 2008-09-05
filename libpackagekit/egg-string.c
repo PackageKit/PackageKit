@@ -203,7 +203,7 @@ egg_strequal (const gchar *id1, const gchar *id2)
  *
  * This function will check to see if the GStrv arrays are string equal
  *
- * Return value: %TRUE if the arrays are the same
+ * Return value: %TRUE if the arrays are the same, or are both %NULL
  **/
 gboolean
 egg_strvequal (gchar **id1, gchar **id2)
@@ -211,6 +211,9 @@ egg_strvequal (gchar **id1, gchar **id2)
 	guint i;
 	guint length1;
 	guint length2;
+
+	if (id1 == NULL && id2 == NULL)
+		return TRUE;
 
 	if (id1 == NULL || id2 == NULL) {
 		egg_debug ("GStrv compare invalid '%p' and '%p'", id1, id2);
