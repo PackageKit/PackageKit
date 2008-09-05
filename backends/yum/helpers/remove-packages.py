@@ -13,11 +13,7 @@
 import sys
 
 from yumBackend import PackageKitYumBackend
-
-allowdeps = sys.argv[1]
-packages = sys.argv[2:]
-
-backend = PackageKitYumBackend(sys.argv[1:])
-backend.remove_packages(allowdeps, packages)
+backend = PackageKitYumBackend(sys.argv)
+backend.run_command()
 sys.exit(0)
 

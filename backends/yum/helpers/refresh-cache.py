@@ -13,8 +13,6 @@
 import sys
 
 from yumBackend import PackageKitYumBackend
-
-backend = PackageKitYumBackend(sys.argv[1:])
-backend.refresh_cache()
-backend.unLock()
+backend = PackageKitYumBackend(sys.argv)
+backend.run_command()
 sys.exit(0)

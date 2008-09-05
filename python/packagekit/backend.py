@@ -397,11 +397,11 @@ class PackageKitBaseBackend:
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def download_packages(self,directory,packages):
-	'''
-	Implement the {backend}-download-packages functionality
-	Needed to be implemented in a sub class
-	'''
-	self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        '''
+        Implement the {backend}-download-packages functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def customTracebackHandler(self,tb):
         '''
@@ -413,6 +413,108 @@ class PackageKitBaseBackend:
         Overload this method if you what handle special Tracebacks
         '''
         return False
+        
+    def run_command(self):
+        '''
+        interprete the command from the calling args (self.cmds)
+        '''    
+        cmd = self.cmds[0].split('.')[0] # get the helper filename wo ext
+        if cmd == 'download-packages':
+            dir = self.cmds[1]
+            pkgs = self.cmds[2:]
+            self.download_packages(dir,pkgs)
+        elif cmd == 'get-depends':
+            filters = self.cmds[1]
+            pkgs = self.cmds[2].split('|')
+            recursive = self.cmds[3]
+            self.get_depends(filters,pkgs,recursive)           
+        elif cmd == 'get-details':
+            pkgs = self.cmds[1].split('|')
+            self.get_details(pkgs)
+        elif cmd == 'get-files':
+            pkgs = self.cmds[1].split('|')
+            self.get_files(pkgs)            
+        elif cmd == 'get-packages':
+            filters = self.cmds[1]
+            self.get_packages(filters)
+        elif cmd == 'get-repo-list':
+            filters = self.cmds[1]
+            self.get_repo_list(filters)                
+        elif cmd == 'get-requires':
+            filters = self.cmds[1]
+            pkgs = self.cmds[2].split('|')
+            recursive = self.cmds[3]
+            self.get_requires(filters,pkgs,recursive)                
+        elif cmd == 'get-update-detail':
+            pkgs = self.cmds[1].split('|')
+            self.get_update_detail(pkgs)
+        elif cmd == 'get-updates':
+            filters = self.cmds[1]
+            self.get_updates(filters)            
+        elif cmd == 'install-files':
+            trusted = self.cmds[1]
+            files_to_inst = self.cmds[2:]   
+            self.install_files(trusted,files_to_inst)         
+        elif cmd == 'install-packages':
+            pkgs = self.cmds[1:]
+            self.install_packages(pkgs)
+        elif cmd == 'install-signature':
+            sigtype = self.cmds[1]
+            key_id = self.cmds[2]
+            package_id = self.cmds[3]
+            self.install_signature(sigtype,key_id,package_id)
+        elif cmd == 'refresh-cache':
+            self.refresh_cache()
+        elif cmd == 'remove-packages':
+            allowdeps = self.cmds[1]
+            packages = self.cmds[2:]  
+            self.remove_packages(allowdeps,packages)          
+        elif cmd == 'repo-enable':
+            repoid = self.cmds[1]
+            state=self.cmds[2]
+            self.repo_enable(repoid,state)
+        elif cmd == 'repo-set-data':
+            repoid = self.cmds[1]
+            para = self.cmds[2]
+            value=self.cmds[3]      
+            self.repo_set_data(repoid,para,value)      
+        elif cmd == 'resolve':
+            filters = self.cmds[1]
+            packages = self.cmds[2:]        
+            self.resolve(filters,packages)    
+        elif cmd == 'search-details':
+            options = self.cmds[1]
+            searchterms = self.cmds[2]     
+            self.search_details(options,searchterms)       
+        elif cmd == 'search-file':
+            options = self.cmds[1]
+            searchterms = self.cmds[2]     
+            self.search_file(options,searchterms)
+        elif cmd == 'search-group':
+            options = self.cmds[1]
+            searchterms = self.cmds[2]     
+            self.search_group(options,searchterms)
+        elif cmd == 'search-name':
+            options = self.cmds[1]
+            searchterms = self.cmds[2]     
+            self.search_name(options,searchterms)
+        elif cmd == 'signature-install':
+            package = self.cmds[1]
+            self.repo_signature_install(package)
+        elif cmd == 'update-packages':
+            packages = self.cmds[1:]       
+            self.update_packages(packages) 
+        elif cmd == 'update-system':
+            self.update_system()
+        elif cmd == 'what-provides':
+            filters = self.cmds[1]
+            provides_type = self.cmds[2]
+            search = self.cmds[3]      
+            self.what_provides(filters,provides_type,search)      
+        else:
+            print "command %s is not known"
+        
+        
 
 def exceptionHandler(typ,value,tb,base):
     # Restore original exception handler

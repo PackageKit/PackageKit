@@ -13,8 +13,6 @@
 import sys
 
 from yumBackend import PackageKitYumBackend
-filters = sys.argv[1]
-
-backend = PackageKitYumBackend(sys.argv[1:],lock=False)
-backend.get_packages(filters)
+backend = PackageKitYumBackend(sys.argv,lock=False)
+backend.run_command()
 sys.exit(0)
