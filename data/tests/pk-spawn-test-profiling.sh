@@ -11,8 +11,8 @@ time=0.01
 for i in `seq 1 100`
 do
 	echo -e "percentage\t$i"
-	echo -e "package:availabletpolkit\tPolicyKit daemon"
-	echo -e "package:installed\tpolkit-gnome\tPolicyKit helper for GNOME"
+	echo -e "package\tavailable\tpolkit;0.0.1;i386;data\tPolicyKit daemon"
+	echo -e "package\tinstalled\tpolkit-gnome;0.0.1;i386;data\tPolicyKit helper for GNOME"
 	sleep ${time}
 done
 
