@@ -235,14 +235,11 @@ void
 egg_string_test (EggTest *test)
 {
 	gboolean ret;
-	gchar **array;
 	gchar *text_safe;
 	const gchar *temp;
 	guint length;
 	gint value;
 	guint uvalue;
-	gchar *present;
-	guint seconds;
 
 	if (!egg_test_start (test, "EggString"))
 		return;
@@ -378,58 +375,6 @@ egg_string_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else {
 		egg_test_failed (test, "failed the replace '%s'", text_safe);
-	}
-	g_free (text_safe);
-
-	/************************************************************
-	 ****************       REPLACE CHARS      ******************
-	 ************************************************************/
-	egg_test_title (test, "test replace unsafe (okay)");
-	text_safe = pk_strsafe ("Richard Hughes");
-	if (egg_strequal (text_safe, "Richard Hughes"))
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	}
-	g_free (text_safe);
-
-	/************************************************************/
-	egg_test_title (test, "test replace UTF8 unsafe (okay)");
-	text_safe = pk_strsafe ("Gölas");
-	if (egg_strequal (text_safe, "Gölas"))
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	}
-	g_free (text_safe);
-
-	/************************************************************/
-	egg_test_title (test, "test replace unsafe (one invalid)");
-	text_safe = pk_strsafe ("Richard\tHughes");
-	if (egg_strequal (text_safe, "Richard Hughes"))
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	}
-	g_free (text_safe);
-
-	/************************************************************/
-	egg_test_title (test, "test replace unsafe (one invalid 2)");
-	text_safe = pk_strsafe ("Richard\"Hughes\"");
-	if (egg_strequal (text_safe, "Richard Hughes "))
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	}
-	g_free (text_safe);
-
-	/************************************************************/
-	egg_test_title (test, "test replace unsafe (multiple invalid)");
-	text_safe = pk_strsafe (" Richard\"Hughes\"");
-	if (egg_strequal (text_safe, " Richard Hughes "))
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
 
