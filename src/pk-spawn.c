@@ -69,6 +69,7 @@ struct PkSpawnPrivate
 	PkExitEnum		 exit;
 	GString			*stdout_buf;
 	gchar			*last_argv0;
+	gchar			**last_envp;
 };
 
 enum {
@@ -347,7 +348,8 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	 *  - all of envp are the same (proxy and locale settings) */
 	if (spawn->priv->stdin_fd != -1) {
 		// TODO: envp is the same?
-		if (egg_strequal (spawn->priv->last_argv0, argv[0])) {
+		if (egg_strequal (spawn->priv->last_argv0, argv[0]) &&
+		    egg_strvequal (spawn->priv->last_envp, envp)) {
 			/* reuse instance */
 			//TODO: escape spaces
 			command = g_strjoinv (" ", &argv[1]);
@@ -383,6 +385,10 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	/* save this so we can check the dispatcher name */
 	g_strdup (spawn->priv->last_argv0);
 	spawn->priv->last_argv0 = g_strdup (argv[0]);
+
+	/* save this in case the proxy or locale changes */
+	g_strfreev (spawn->priv->last_envp);
+	spawn->priv->last_envp = g_strdupv (envp);
 
 	/* install an idle handler to check if the child returnd successfully. */
 	fcntl (spawn->priv->stdout_fd, F_SETFL, O_NONBLOCK);
@@ -434,6 +440,7 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->kill_id = 0;
 	spawn->priv->finished = FALSE;
 	spawn->priv->last_argv0 = NULL;
+	spawn->priv->last_envp = NULL;
 	spawn->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 
 	spawn->priv->stdout_buf = g_string_new ("");
@@ -470,6 +477,7 @@ pk_spawn_finalize (GObject *object)
 	/* free the buffers */
 	g_string_free (spawn->priv->stdout_buf, TRUE);
 	g_free (spawn->priv->last_argv0);
+	g_strfreev (spawn->priv->last_envp);
 
 	G_OBJECT_CLASS (pk_spawn_parent_class)->finalize (object);
 }
