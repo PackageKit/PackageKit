@@ -60,7 +60,7 @@ pk_desktop_get_name_for_file (const gchar *filename)
 		goto out;
 	}
 
-	ret = pk_client_search_file (client, PK_FILTER_ENUM_INSTALLED, filename, &error);
+	ret = pk_client_search_file (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), filename, &error);
 	if (!ret) {
 		egg_warning ("failed to search file: %s", error->message);
 		g_error_free (error);
