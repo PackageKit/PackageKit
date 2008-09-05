@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Licensed under the GNU General Public License Version 2
 #
 # This program is free software; you can redistribute it and/or modify
@@ -1780,3 +1781,17 @@ class PackageKitYumBase(yum.YumBase):
         '''
         # TODO: Add code here to send the RepoSignatureRequired signal
         return False
+
+def main():
+    backend = PackageKitYumBackend('',lock=True)
+    args = sys.argv[1:]
+    backend.dispatch_command(args[0],args[1:])
+    while True:
+        line = raw_input('')
+        if line == 'exit':
+            break
+        args = line.split(' ')
+        backend.dispatch_command(args[0],args[1:])
+
+if __name__ == "__main__":
+    main()
