@@ -632,7 +632,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         info = INFO_BUGFIX
                 if origin in ["Backports.org archive"] and trusted == True:
                         info = INFO_ENHANCEMENT
-                self._emit_package(pkg, info)
+                self._emit_package(pkg, info, force_candidate=True)
         # Report packages that are upgradable but cannot be upgraded
         for missed in updates:
              self._emit_package(self._cache[missed], INFO_BLOCKED)
@@ -658,7 +658,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
             # FIXME add some real data
-            updates = pkg_id
+            updates = self.get_id_from_package(pkg, force_candidate=False)
             obsoletes = ""
             vendor_url = ""
             bugzilla_url = ""
@@ -1588,27 +1588,34 @@ class PackageKitAptBackend(PackageKitBaseBackend):
              return True
         return False
  
-    def get_id_from_package(self, pkg, installed=False):
+    def get_id_from_package(self, pkg, force_candidate=False):
         '''
-        Return the id of the installation candidate of a core
-        apt package. If installed is set to True the id of the currently
-        installed package will be returned.
+        Return the packagekit id of package. By default this will be the 
+        installed version for installed packages and the candidate version
+        for not installed packages.
+
+        The force_candidate option will also report the id of the candidate
+        version for installed packages.
         '''
-        origin = ''
-        if installed == True and pkg.isInstalled:
-            pkgver = pkg.installedVersion
+        origin = ""
+        cand_origin = pkg.candidateOrigin
+        if not pkg.isInstalled or force_candidate:
+            version = pkg.candidateVersion
+            if cand_origin:
+                origin = cand_origin[0].label
         else:
-            pkgver = pkg.candidateVersion
-            if pkg.candidateOrigin:
-                origin = pkg.candidateOrigin[0].label
-        id = self._get_package_id(pkg.name, pkgver, pkg.architecture, origin)
+            version = pkg.installedVersion
+            if cand_origin and cand_origin[0].site != "" and \
+               pkg.installedVersion == pkg.candidateVersion:
+                origin = cand_origin[0].label
+        id = self._get_package_id(pkg.name, version, pkg.architecture, origin)
         return id
 
-    def _emit_package(self, pkg, info=None):
+    def _emit_package(self, pkg, info=None, force_candidate=False):
         '''
         Send the Package signal for a given apt package
         '''
-        id = self.get_id_from_package(pkg)
+        id = self.get_id_from_package(pkg, force_candidate)
         if info == None:
             if pkg.isInstalled:
                 info = INFO_INSTALLED
