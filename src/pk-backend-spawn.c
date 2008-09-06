@@ -397,6 +397,8 @@ out:
 static void
 pk_backend_spawn_exit_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backend_spawn)
 {
+	gboolean ret;
+
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
 	/* if we killed the process, set an error */
@@ -406,7 +408,10 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backe
 				       "Process had to be killed to be cancelled");
 	}
 
-	pk_backend_finished (backend_spawn->priv->backend);
+	/* only emit if not finished */
+	ret = pk_backend_is_finished (backend_spawn->priv->backend);
+	if (!ret)
+		pk_backend_finished (backend_spawn->priv->backend);
 }
 
 /**
@@ -565,6 +570,7 @@ static gboolean
 pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+	egg_debug ("closing dispatcher as idle");
 	pk_spawn_exit (backend_spawn->priv->spawn);
 	return FALSE;
 }
