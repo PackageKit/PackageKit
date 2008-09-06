@@ -149,7 +149,8 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	/* this shouldn't happen */
 	if (spawn->priv->finished) {
-		egg_error ("finished twice!");
+		egg_warning ("finished twice!");
+		return FALSE;
 	}
 
 	pk_spawn_read_fd_into_buffer (spawn->priv->stdout_fd, spawn->priv->stdout_buf);
@@ -160,10 +161,16 @@ pk_spawn_check_child (PkSpawn *spawn)
 		return TRUE;
 
 	/* disconnect the poll as there will be no more updates */
-	g_source_remove (spawn->priv->poll_id);
+	if (spawn->priv->poll_id > 0) {
+		g_source_remove (spawn->priv->poll_id);
+		spawn->priv->poll_id = 0;
+	}
 
-	/* child exited, display some information... */
+	/* child exited, close resources */
+	close (spawn->priv->stdin_fd);
 	close (spawn->priv->stdout_fd);
+	spawn->priv->stdin_fd = -1;
+	spawn->priv->stdout_fd = -1;
 
 	if (WEXITSTATUS (status) > 0) {
 		egg_warning ("Running fork failed with return value %d", WEXITSTATUS (status));
