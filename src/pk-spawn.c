@@ -118,9 +118,8 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 
 	/* split into lines - the last line may be incomplete */
 	lines = g_strsplit (string->str, "\n", 0);
-	if (lines == NULL) {
+	if (lines == NULL)
 		return FALSE;
-	}
 
 	/* find size */
 	size = g_strv_length (lines);
@@ -168,13 +167,11 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	if (WEXITSTATUS (status) > 0) {
 		egg_warning ("Running fork failed with return value %d", WEXITSTATUS (status));
-		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
+		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 			spawn->priv->exit = PK_EXIT_ENUM_FAILED;
-		}
 	} else {
 		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
 			spawn->priv->exit = PK_EXIT_ENUM_SUCCESS;
-		}
 	}
 
 	/* officially done, although no signal yet */
@@ -340,9 +337,11 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	}
 	for (i=0; i<len; i++)
 		egg_debug ("argv[%i] '%s'", i, argv[i]);
-	len = g_strv_length (envp);
-	for (i=0; i<len; i++)
-		egg_debug ("envp[%i] '%s'", i, envp[i]);
+	if (envp != NULL) {
+		len = g_strv_length (envp);
+		for (i=0; i<len; i++)
+			egg_debug ("envp[%i] '%s'", i, envp[i]);
+	}
 	spawn->priv->finished = FALSE;
 
 	/* we can reuse the dispatcher if:
@@ -510,10 +509,10 @@ guint stdout_count = 0;
 guint finished_count = 0;
 
 /**
- * pk_test_finished_cb:
+ * pk_test_exit_cb:
  **/
 static void
-pk_test_finished_cb (PkSpawn *spawn, PkExitEnum exit, EggTest *test)
+pk_test_exit_cb (PkSpawn *spawn, PkExitEnum exit, EggTest *test)
 {
 	egg_debug ("spawn exit=%i", exit);
 	mexit = exit;
@@ -546,8 +545,8 @@ new_spawn_object (EggTest *test, PkSpawn **pspawn)
 		g_object_unref (*pspawn);
 	}
 	*pspawn = pk_spawn_new ();
-	g_signal_connect (*pspawn, "finished",
-			  G_CALLBACK (pk_test_finished_cb), test);
+	g_signal_connect (*pspawn, "exit",
+			  G_CALLBACK (pk_test_exit_cb), test);
 	g_signal_connect (*pspawn, "stdout",
 			  G_CALLBACK (pk_test_stdout_cb), test);
 	stdout_count = 0;
