@@ -67,6 +67,7 @@ struct PkSpawnPrivate
 	guint			 kill_id;
 	gboolean		 finished;
 	PkExitEnum		 exit;
+	GMainLoop		*exit_loop;
 	GString			*stdout_buf;
 	gchar			*last_argv0;
 	gchar			**last_envp;
@@ -189,6 +190,10 @@ pk_spawn_check_child (PkSpawn *spawn)
 		g_source_remove (spawn->priv->kill_id);
 		spawn->priv->kill_id = 0;
 	}
+
+	/* are we waiting for a "exit" from the dispatcher? */
+	if (spawn->priv->exit_loop != NULL)
+		g_main_loop_quit (spawn->priv->exit_loop);
 
 	egg_debug ("emitting exit %i", spawn->priv->exit);
 	g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
@@ -371,6 +376,9 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 		/* kill off existing instance */
 		egg_debug ("killing existing instance");
 		pk_spawn_exit (spawn);
+
+		/* wait for the script to exit */
+		g_main_loop_run (spawn->priv->exit_loop);
 	}
 
 	/* create spawned object for tracking */
@@ -450,6 +458,7 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 
 	spawn->priv->stdout_buf = g_string_new ("");
+	spawn->priv->exit_loop = g_main_loop_new (NULL, FALSE);
 }
 
 /**
@@ -484,6 +493,7 @@ pk_spawn_finalize (GObject *object)
 	g_string_free (spawn->priv->stdout_buf, TRUE);
 	g_free (spawn->priv->last_argv0);
 	g_strfreev (spawn->priv->last_envp);
+	g_main_loop_unref (spawn->priv->exit_loop);
 
 	G_OBJECT_CLASS (pk_spawn_parent_class)->finalize (object);
 }
