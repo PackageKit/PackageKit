@@ -25,6 +25,7 @@
 #include <egg-debug.h>
 
 /* prototypes */
+void egg_string_test (EggTest *test);
 void pk_conf_test (EggTest *test);
 void pk_inhibit_test (EggTest *test);
 void pk_spawn_test (EggTest *test);
@@ -49,6 +50,9 @@ main (int argc, char **argv)
 	g_type_init ();
 	test = egg_test_init ();
 	egg_debug_init (TRUE);
+
+	/* egg */
+	egg_string_test (test);
 
 	/* components */
 	pk_file_monitor_test (test);
