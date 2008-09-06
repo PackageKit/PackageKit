@@ -199,8 +199,11 @@ pk_spawn_check_child (PkSpawn *spawn)
 	if (ret)
 		g_main_loop_quit (spawn->priv->exit_loop);
 
-	egg_debug ("emitting exit %s", pk_exit_enum_to_text (spawn->priv->exit));
-	g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
+	/* don't emit if we just closed an invalid dispatcher */
+	if (!ret) {
+		egg_debug ("emitting exit %s", pk_exit_enum_to_text (spawn->priv->exit));
+		g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
+	}
 
 	return FALSE;
 }
