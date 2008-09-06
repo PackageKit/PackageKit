@@ -188,7 +188,7 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-requires.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -213,7 +213,7 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "yumBackend.py", "get-packages.py", filters_text, NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "get-packages", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -290,7 +290,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "refresh-cache.py", NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "refresh-cache", NULL);
 }
 
 /**
