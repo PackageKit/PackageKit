@@ -1,3 +1,23 @@
+Version 0.2.5
+~~~~~~~~~~~~~~
+Released: 2008-09-06
+
+* Backends
+ - apt: Fix doResolve (Martin Pitt)
+ - yum: Fix up the GPG key handling as fingerprint is now a function (Richard Hughes)
+ - yum: Ship install-signature.py -- I can't work out how this was missed (Richard Hughes)
+ - yum: Don't always prefer the first package as this will be i386 on x64 (Richard Hughes)
+
+* Bugfixes:
+ - Match local files correctly so we don't try to resolve them (Richard Hughes)
+ - WhatProvides has a freeform search string that we don't check (Richard Hughes)
+ - Check for a zero destination in the unix network code. Fixes rh#453531 (Richard Hughes)
+ - Export libpackagekit with -export-dynamic. Fixes fd#16991 (Richard Hughes)
+ - Don't blacklist apostrophe characters. Fixes rh#459155 (Richard Hughes)
+ - Properly disconnect the handler so we don't crash the client (Richard Hughes)
+ - Don't corrupt envp when we pass it to the new executable (Richard Hughes)
+ - Fix udev firmware rule to call the correct script (Scott Reeves)
+
 Version 0.2.4
 ~~~~~~~~~~~~~~
 Released: 2008-07-30
