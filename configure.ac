@@ -560,7 +560,6 @@ backends/urpmi/helpers/perl_packagekit/Makefile
 backends/urpmi/helpers/urpmi_backend/Makefile
 backends/razor/Makefile
 backends/yum/Makefile
-backends/yum/helpers/Makefile
 backends/yum2/Makefile
 backends/yum2/helpers/Makefile
 backends/pisi/Makefile
