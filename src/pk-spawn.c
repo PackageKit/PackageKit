@@ -195,7 +195,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	if (spawn->priv->exit_loop != NULL)
 		g_main_loop_quit (spawn->priv->exit_loop);
 
-	egg_debug ("emitting exit %i", spawn->priv->exit);
+	egg_debug ("emitting exit %s", pk_exit_enum_to_text (spawn->priv->exit));
 	g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
 
 	return FALSE;
@@ -373,15 +373,18 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 				return TRUE;
 			/* we failed, so fall on through to kill and respawn */
 		}
+
 		/* kill off existing instance */
-		egg_debug ("killing existing instance");
+		egg_debug ("changing dispatcher (exit old instance)");
 		pk_spawn_exit (spawn);
 
 		/* wait for the script to exit */
 		g_main_loop_run (spawn->priv->exit_loop);
+		egg_debug ("old instance exited");
 	}
 
 	/* create spawned object for tracking */
+	egg_debug ("creating new instance of %s", argv[0]);
 	ret = g_spawn_async_with_pipes (NULL, argv, envp,
 				 G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
 				 NULL, NULL, &spawn->priv->child_pid,
