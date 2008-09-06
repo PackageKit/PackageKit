@@ -25,6 +25,11 @@ UseNetworkHeuristic=true
 # default=300
 ShutdownTimeout=300
 
+# Unlock the backend after this many seconds idle.
+#
+# default=5
+BackendShutdownTimeout=5
+
 # Default backend, as chosen in the configure script. This will be used where
 # no --backend="foo" option is given to the daemon.
 #
