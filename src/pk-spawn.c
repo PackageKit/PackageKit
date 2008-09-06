@@ -147,6 +147,7 @@ static gboolean
 pk_spawn_check_child (PkSpawn *spawn)
 {
 	int status;
+	gboolean ret;
 
 	/* this shouldn't happen */
 	if (spawn->priv->finished) {
@@ -158,6 +159,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf);
 
 	/* check if the child exited */
+	egg_debug ("polling child_pid=%i", spawn->priv->child_pid);
 	if (waitpid (spawn->priv->child_pid, &status, WNOHANG) != spawn->priv->child_pid)
 		return TRUE;
 
@@ -172,6 +174,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	close (spawn->priv->stdout_fd);
 	spawn->priv->stdin_fd = -1;
 	spawn->priv->stdout_fd = -1;
+	spawn->priv->child_pid = -1;
 
 	if (WEXITSTATUS (status) > 0) {
 		egg_warning ("Running fork failed with return value %d", WEXITSTATUS (status));
@@ -192,7 +195,8 @@ pk_spawn_check_child (PkSpawn *spawn)
 	}
 
 	/* are we waiting for a "exit" from the dispatcher? */
-	if (spawn->priv->exit_loop != NULL)
+	ret = g_main_loop_is_running (spawn->priv->exit_loop);
+	if (ret)
 		g_main_loop_quit (spawn->priv->exit_loop);
 
 	egg_debug ("emitting exit %s", pk_exit_enum_to_text (spawn->priv->exit));
@@ -351,7 +355,6 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 		for (i=0; i<len; i++)
 			egg_debug ("envp[%i] '%s'", i, envp[i]);
 	}
-	spawn->priv->finished = FALSE;
 
 	/* we can reuse the dispatcher if:
 	 *  - it's still running
@@ -384,6 +387,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	}
 
 	/* create spawned object for tracking */
+	spawn->priv->finished = FALSE;
 	egg_debug ("creating new instance of %s", argv[0]);
 	ret = g_spawn_async_with_pipes (NULL, argv, envp,
 				 G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
@@ -409,6 +413,10 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 
 	/* install an idle handler to check if the child returnd successfully. */
 	fcntl (spawn->priv->stdout_fd, F_SETFL, O_NONBLOCK);
+
+	/* sanity check */
+	if (spawn->priv->poll_id != 0)
+		egg_error ("trying to set timeout when already set");
 
 	/* poll quickly */
 	spawn->priv->poll_id = g_timeout_add (PK_SPAWN_POLL_DELAY, (GSourceFunc) pk_spawn_check_child, spawn);
