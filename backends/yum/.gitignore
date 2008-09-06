@@ -11,4 +11,6 @@ Makefile.in
 *.gcda
 *.gcno
 *.out
+*.pyc
+test
 
