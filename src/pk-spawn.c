@@ -289,8 +289,8 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 	}
 
 	/* buffer always has to have trailing newline */
+	egg_debug ("sending '%s'", command);
 	buffer = g_strdup_printf ("%s\n", command);
-	egg_debug ("sending '%s'", buffer);
 
 	/* write to the waiting process */
 	length = strlen (buffer);
@@ -340,6 +340,9 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	}
 	for (i=0; i<len; i++)
 		egg_debug ("argv[%i] '%s'", i, argv[i]);
+	len = g_strv_length (envp);
+	for (i=0; i<len; i++)
+		egg_debug ("envp[%i] '%s'", i, envp[i]);
 	spawn->priv->finished = FALSE;
 
 	/* we can reuse the dispatcher if:
@@ -347,9 +350,11 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	 *  - argv[0] (executable name is the same)
 	 *  - all of envp are the same (proxy and locale settings) */
 	if (spawn->priv->stdin_fd != -1) {
-		// TODO: envp is the same?
-		if (egg_strequal (spawn->priv->last_argv0, argv[0]) &&
-		    egg_strvequal (spawn->priv->last_envp, envp)) {
+		if (!egg_strequal (spawn->priv->last_argv0, argv[0])) {
+			egg_debug ("argv did not match, not reusing");
+		} else if (!egg_strvequal (spawn->priv->last_envp, envp)) {
+			egg_debug ("envp did not match, not reusing");
+		} else {
 			/* reuse instance */
 			//TODO: escape spaces
 			command = g_strjoinv (" ", &argv[1]);
@@ -359,8 +364,6 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 			if (ret)
 				return TRUE;
 			/* we failed, so fall on through to kill and respawn */
-		} else {
-			egg_debug ("argv or envp did not match, not reusing");
 		}
 		/* kill off existing instance */
 		egg_debug ("killing existing instance");
