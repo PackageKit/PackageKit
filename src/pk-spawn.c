@@ -184,9 +184,6 @@ pk_spawn_check_child (PkSpawn *spawn)
 	/* officially done, although no signal yet */
 	spawn->priv->finished = TRUE;
 
-	/* no longer valid */
-	spawn->priv->stdin_fd = -1;
-
 	/* if we are trying to kill this process, cancel the SIGKILL */
 	if (spawn->priv->kill_id != 0) {
 		g_source_remove (spawn->priv->kill_id);
