@@ -19,6 +19,11 @@ crondata_SCRIPTS = packagekit-background
 pmutilsdir = $(libdir)/pm-utils/sleep.d
 pmutils_DATA = 95packagekit
 
+if BACKEND_TYPE_APT
+aptconfdir = ${SYSCONFDIR}/apt.conf.d
+aptconf_DATA = 20packagekit
+endif
+
 @INTLTOOL_XML_RULE@
 mimedir = $(datadir)/mime/packages
 mime_in_files = 					\
@@ -78,6 +83,7 @@ EXTRA_DIST =						\
 	org.freedesktop.PackageKitYumBackend.conf.in	\
 	org.freedesktop.PackageKitAptBackend.conf.in	\
 	packagekit.pc.in				\
+	20packagekit					\
 	$(servicemain_in_files)				\
 	$(serviceyum_in_files)				\
 	$(servicetest_in_files)				\
