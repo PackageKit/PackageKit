@@ -67,6 +67,7 @@ struct PkBackendSpawnPrivate
 	gchar			*name;
 	guint			 kill_id;
 	PkConf			*conf;
+	gboolean		 finished;
 };
 
 G_DEFINE_TYPE (PkBackendSpawn, pk_backend_spawn, G_TYPE_OBJECT)
@@ -397,8 +398,6 @@ out:
 static void
 pk_backend_spawn_exit_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backend_spawn)
 {
-	gboolean ret;
-
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
 	/* if we killed the process, set an error */
@@ -409,9 +408,10 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backe
 	}
 
 	/* only emit if not finished */
-	ret = pk_backend_is_finished (backend_spawn->priv->backend);
-	if (!ret)
+	if (!backend_spawn->priv->finished) {
+		egg_error ("script exited without doing finished");
 		pk_backend_finished (backend_spawn->priv->backend);
+	}
 }
 
 /**
@@ -515,6 +515,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	g_free (argv[0]);
 	argv[0] = g_strdup (filename);
 
+	backend_spawn->priv->finished = FALSE;
 	envp = pk_backend_spawn_get_envp (backend_spawn);
 	ret = pk_spawn_argv (backend_spawn->priv->spawn, argv, envp);
 	if (!ret) {
@@ -584,6 +585,9 @@ pk_backend_spawn_finished_cb (PkBackend *backend, PkExitEnum exit, PkBackendSpaw
 	gint timeout;
 
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
+
+	/* we finished okay, so we don't need to emulate Finished() for a crashing script */
+	backend_spawn->priv->finished = TRUE;
 
 	if (backend_spawn->priv->kill_id > 0)
 		g_source_remove (backend_spawn->priv->kill_id);
@@ -669,6 +673,7 @@ pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 	backend_spawn->priv = PK_BACKEND_SPAWN_GET_PRIVATE (backend_spawn);
 	backend_spawn->priv->kill_id = 0;
 	backend_spawn->priv->name = NULL;
+	backend_spawn->priv->finished = FALSE;
 	backend_spawn->priv->conf = pk_conf_new ();
 	backend_spawn->priv->backend = pk_backend_new ();
 	g_signal_connect (backend_spawn->priv->backend, "finished",
