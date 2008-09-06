@@ -409,7 +409,7 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backe
 
 	/* only emit if not finished */
 	if (!backend_spawn->priv->finished) {
-		egg_error ("script exited without doing finished");
+		egg_debug ("script exited without doing finished");
 		pk_backend_finished (backend_spawn->priv->backend);
 	}
 }
