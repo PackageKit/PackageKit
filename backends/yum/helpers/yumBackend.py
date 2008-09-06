@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Licensed under the GNU General Public License Version 2
 #
 # This program is free software; you can redistribute it and/or modify
@@ -904,7 +905,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     inst_files.append(os.path.join(tempdir, file))
 
         to_remove = []
-                    
+
         # remove files of packages that already exist
         for inst_file in inst_files:
             try:
@@ -925,7 +926,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             # More than one pkg to be installed, 1 or more are already installed
             inst_files.remove(inst_file)
             self.message(MESSAGE_PACKAGE_ALREADY_INSTALLED, '%s is already installed' % inst_file)
-            
+
         if len(inst_files) == 0:
             # More than one pkg to be installed, all of them already installed
             self.error(ERROR_ALL_PACKAGES_ALREADY_INSTALLED,
@@ -1780,3 +1781,17 @@ class PackageKitYumBase(yum.YumBase):
         '''
         # TODO: Add code here to send the RepoSignatureRequired signal
         return False
+
+def main():
+    backend = PackageKitYumBackend('',lock=True)
+    args = sys.argv[1:]
+    backend.dispatch_command(args[0],args[1:])
+    while True:
+        line = raw_input('')
+        if line == 'exit':
+            break
+        args = line.split(' ')
+        backend.dispatch_command(args[0],args[1:])
+
+if __name__ == "__main__":
+    main()

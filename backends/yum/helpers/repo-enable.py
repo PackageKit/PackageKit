@@ -12,9 +12,7 @@
 import sys
 
 from yumBackend import PackageKitYumBackend
-repoid = sys.argv[1]
-state=sys.argv[2]
-backend = PackageKitYumBackend(sys.argv[2:])
-backend.repo_enable(repoid,state)
+backend = PackageKitYumBackend(sys.argv)
+backend.run_command()
 backend.unLock()
 sys.exit(0)
