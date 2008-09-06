@@ -73,7 +73,7 @@ struct PkSpawnPrivate
 };
 
 enum {
-	PK_SPAWN_FINISHED,
+	PK_SPAWN_EXIT,
 	PK_SPAWN_STDOUT,
 	PK_SPAWN_LAST_SIGNAL
 };
@@ -189,8 +189,8 @@ pk_spawn_check_child (PkSpawn *spawn)
 		spawn->priv->kill_id = 0;
 	}
 
-	egg_debug ("emitting finished %i", spawn->priv->exit);
-	g_signal_emit (spawn, signals [PK_SPAWN_FINISHED], 0, spawn->priv->exit);
+	egg_debug ("emitting exit %i", spawn->priv->exit);
+	g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
 
 	return FALSE;
 }
@@ -266,7 +266,7 @@ pk_spawn_kill (PkSpawn *spawn)
 }
 
 /**
- * pk_spawn_exit:
+ * pk_spawn_send_stdin:
  *
  * Just write "exit" into the open fd and hope the backend does the right thing
  *
@@ -413,8 +413,8 @@ pk_spawn_class_init (PkSpawnClass *klass)
 
 	object_class->finalize = pk_spawn_finalize;
 
-	signals [PK_SPAWN_FINISHED] =
-		g_signal_new ("finished",
+	signals [PK_SPAWN_EXIT] =
+		g_signal_new ("exit",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__INT,
 			      G_TYPE_NONE, 1, G_TYPE_INT);
