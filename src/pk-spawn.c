@@ -170,7 +170,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 			spawn->priv->exit = PK_EXIT_ENUM_FAILED;
 	} else {
-		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
+		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 			spawn->priv->exit = PK_EXIT_ENUM_SUCCESS;
 	}
 
