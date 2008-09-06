@@ -80,6 +80,7 @@ guint		 pk_backend_get_runtime			(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_ftp		(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);
 gchar		*pk_backend_get_locale			(PkBackend	*backend);
+gboolean	 pk_backend_is_finished			(PkBackend	*backend);
 
 /* signal helpers */
 gboolean	 pk_backend_finished			(PkBackend	*backend);

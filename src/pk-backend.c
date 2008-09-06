@@ -1661,6 +1661,16 @@ pk_backend_is_online (PkBackend *backend)
 }
 
 /**
+ * pk_backend_is_online:
+ **/
+gboolean
+pk_backend_is_finished (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	return backend->priv->finished;
+}
+
+/**
  * pk_backend_thread_create:
  **/
 gboolean
