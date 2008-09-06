@@ -310,6 +310,8 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         pklog.debug("PM status: %s" % status)
 
     def startUpdate(self):
+        # The apt system lock was set by _acquire_lock() before
+        apt_pkg.PkgSystemUnLock()
         self._backend.StatusChanged(STATUS_COMMIT)
         self.last_activity = time.time()
         self.start_time = time.time()
@@ -717,6 +719,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-update-system functionality
         '''
         pklog.info("Upgrading system")
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -751,6 +754,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-remove functionality
         '''
         pklog.info("Removing package(s): id %s" % ids)
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -950,6 +954,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-update functionality
         '''
         pklog.info("Updating package with id %s" % ids)
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1070,6 +1075,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         '''
         pklog.info("Installing package with id %s" % ids)
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1124,6 +1130,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Install local Debian package files
         '''
         pklog.info("Installing package files: %s" % full_paths)
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1189,6 +1196,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-refresh_cache functionality
         '''
         pklog.info("Refresh cache")
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_REFRESH_CACHE)
         self.last_action_time = time.time()
         self.AllowCancel(False);
@@ -1514,6 +1522,21 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             locale.setlocale("LANG", code)
 
     # Helpers
+
+    def _acquire_lock(self):
+        """
+        Emit an error message and return true if the apt system lock cannot
+        be acquired.
+        """
+        try:
+            apt_pkg.PkgSystemLock()
+        except SystemError:
+            self.ErrorCode(ERROR_CANNOT_GET_LOCK,
+                           "Only use one package management programme at the "
+                           "the same time.")
+            self.Finished(EXIT_FAILED)
+            return False
+        return True
 
     def _open_cache(self, prange=(0,100), progress=True):
         '''
