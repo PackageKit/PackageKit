@@ -504,6 +504,11 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
 		egg_debug ("local helper not found '%s'", filename);
 		g_free (filename);
+		filename = g_build_filename ("..", "backends", backend_spawn->priv->name, argv[0], NULL);
+	}
+	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
+		egg_debug ("local helper not found '%s'", filename);
+		g_free (filename);
 		filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend_spawn->priv->name, argv[0], NULL);
 	}
 #else
