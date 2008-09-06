@@ -3,63 +3,106 @@
 
 <chapter id="backend-spawn">
   <title>Spawned Backends</title>
-  <para>
-    If you do not have a C or C++ language binding, PackageKit executes
-    helper scripts written in pretty much any language.
-    It then watches the standard out and standard error and parses the
-    output into compiled backend commands.
-    This means a python library can be interfaced easily with a C backend.
-  </para>
-  <para>
-    Even when using helpers, a compiled backend stub is still used for
-    two reasons:
-  </para>
-  <itemizedlist>
-    <listitem>
-      <para>
-        It is still needed for the dlopen internally in PackageKit.
-      </para>
-    </listitem>
-    <listitem>
-      <para>
-        You can add cleverness in the C backend that you might not want to
-        do in the scripted backend, for example using a hashtable in C
-        rather than checking all the names in awk.
-      </para>
-    </listitem>
-  </itemizedlist>
-  <para>
-    Backends are typically open-programmable, which means we can define a
-    standard for what goes on stdin and stdout to try and maximise
-    the common code between the backends.
-    The following section will explain the convention used on
-    <literal>backends/conary</literal> and <literal>backends/yum</literal>.
-  </para>
-  <para>
-    If you are unable to write scripts that conform to these specifications
-    then just launch a PkSpawn object in the compiled helper with stdout
-    callbacks and then try to do screenscraping in the backend.
-    This screenscraping is least popular for obvious reasons.
-  </para>
-  <para>
-    Backends scripts are run with arguments and data is sent to standard out
-    and standard error asyncronously so that PackageKit can proxy this to DBUS.
-    A method has command line arguments seporated with tabs, and data is also
-    seporated with tabs.
-  </para>
-  <para>
-    It is important to flush the standard output after each output, else
-    Linux will helpfully buffer the output into more efficient size chunks.
-    If you do not flush, then there will be a long IPC delay.
-    Flushing can be achived in C using <literal>fflush</literal> or in python
-    using <literal>sys.stdout.flush()</literal>.
-  </para>
+  <sect1 id="backends-spawn-intro">
+    <title>Introduction</title>
+    <para>
+      If you do not have a C or C++ language binding, PackageKit executes
+      helper scripts written in pretty much any language.
+      It then watches the standard out and standard error and parses the
+      output into compiled backend commands.
+      This means a python library can be interfaced easily with a C backend.
+    </para>
+    <para>
+      Even when using helpers, a compiled backend stub is still used for
+      two reasons:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          It is still needed for the dlopen internally in PackageKit.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          You can add cleverness in the C backend that you might not want to
+          do in the scripted backend, for example using a hash table in C
+          rather than checking all the names in awk.
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      Backends are typically open-programmable, which means we can define a
+      standard for what goes on stdin and stdout to try and maximise
+      the common code between the backends.
+      The following section will explain the convention used on
+      <literal>backends/conary</literal> and <literal>backends/yum</literal>.
+    </para>
+    <para>
+      If you are unable to write scripts that conform to these specifications
+      then just launch a PkSpawn object in the compiled helper with stdout
+      callbacks and then try to do screenscraping in the backend.
+      This screen-scraping is least popular for obvious reasons.
+    </para>
+    <para>
+      Backends scripts are run with arguments and data is sent to standard out
+      and standard error asynchronously so that PackageKit can proxy this to DBUS.
+      A method has command line arguments separated with tabs, and data is also
+      separated with tabs.
+    </para>
+    <para>
+      It is important to flush the standard output after each output, else
+      Linux will helpfully buffer the output into more efficient size chunks.
+      If you do not flush, then there will be a long IPC delay.
+      Flushing can be achieved in C using <literal>fflush</literal> or in python
+      using <literal>sys.stdout.flush()</literal>.
+    </para>
+    <para>
+      There are two modes of operation for a spawned backend, a one shot mode and
+      a dispatcher mode.
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          The "one-shot" mode is where commands are executed
+          (e.g. <literal>search-name.py none power</literal>), which then
+          initialises the package backend, returns results and then exits.
+          This is obviously not ideal, as some backends like smart can take
+          several hundred ms to initialise, and this leads to a "laggy"
+          GUI applications.
+        </para>
+        <para>
+          This however is the easiest mode to implement, and the original one
+          supported by all versions of PackageKit.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          The "dispatcher" mode is where a command is used to startup the
+          backend, for instance <literal>yumBackend.py search-name none power</literal>
+          and then the backend then sits and waits for more standard input.
+          Further operations can be done on the loaded backend sending commands
+          to stdin, e.g. <literal>search-name none power</literal>.
+          If there are no more operations after a preset time (default 5 seconds)
+          then the backend is sent <literal>exit</literal> over stdin, and the
+          backend terminates.
+          The daemon will ensure the operations are serialised, and that backends
+          not sending <literal>finished</literal> are cleaned up properly.
+        </para>
+        <para>
+          This is quite easy to implement (see the end of yumBackend.py), and
+          is supported from PackageKit version 0.3.2.
+          The dispatcher mode does not have to implemented in python; any
+          language that can read from stdin can block and be used in this way.
+        </para>
+      </listitem>
+    </itemizedlist>
+  </sect1>
 
   <sect1 id="backends-spawn-methods">
     <title>Methods</title>
     <para>
-      The following methods are mapped from the helper to comand line programs
-      in the spawn helper.
+      The following method names are mapped from the helper to either
+      command line programs or a dispatcher in the spawn helper.
     </para>
     <informaltable>
       <tgroup cols="2">
@@ -72,83 +115,83 @@
         <tbody>
           <row>
             <entry>Search Name</entry>
-            <entry><literal>search-name.*</literal></entry>
+            <entry><literal>search-name</literal></entry>
           </row>
           <row>
             <entry>Search Group</entry>
-            <entry><literal>search-group.*</literal></entry>
+            <entry><literal>search-group</literal></entry>
           </row>
           <row>
             <entry>Search Details</entry>
-            <entry><literal>search-details.*</literal></entry>
+            <entry><literal>search-details</literal></entry>
           </row>
           <row>
             <entry>Search File</entry>
-            <entry><literal>search-file.*</literal></entry>
+            <entry><literal>search-file</literal></entry>
           </row>
           <row>
             <entry>Install Package</entry>
-            <entry><literal>install.*</literal></entry>
+            <entry><literal>install</literal></entry>
           </row>
           <row>
             <entry>Install File</entry>
-            <entry><literal>install-file.*</literal></entry>
+            <entry><literal>install-file</literal></entry>
           </row>
           <row>
             <entry>Remove Package</entry>
-            <entry><literal>remove.*</literal></entry>
+            <entry><literal>remove</literal></entry>
           </row>
           <row>
             <entry>Get Depends</entry>
-            <entry><literal>get-depends.*</literal></entry>
+            <entry><literal>get-depends</literal></entry>
           </row>
           <row>
             <entry>Resolve</entry>
-            <entry><literal>resolve.*</literal></entry>
+            <entry><literal>resolve</literal></entry>
           </row>
           <row>
             <entry>Get Requires</entry>
-            <entry><literal>get-requires.*</literal></entry>
+            <entry><literal>get-requires</literal></entry>
           </row>
           <row>
             <entry>Get Update Detail</entry>
-            <entry><literal>get-update-detail.*</literal></entry>
+            <entry><literal>get-update-detail</literal></entry>
           </row>
           <row>
             <entry>Get Details</entry>
-            <entry><literal>get-details.*</literal></entry>
+            <entry><literal>get-details</literal></entry>
           </row>
           <row>
             <entry>Get Files</entry>
-            <entry><literal>get-files.*</literal></entry>
+            <entry><literal>get-files</literal></entry>
           </row>
           <row>
             <entry>Update Package</entry>
-            <entry><literal>update.*</literal></entry>
+            <entry><literal>update</literal></entry>
           </row>
           <row>
             <entry>Update System</entry>
-            <entry><literal>update-system.*</literal></entry>
+            <entry><literal>update-system</literal></entry>
           </row>
           <row>
             <entry>Get Updates</entry>
-            <entry><literal>get-updates.*</literal></entry>
+            <entry><literal>get-updates</literal></entry>
           </row>
           <row>
             <entry>Refresh Cache</entry>
-            <entry><literal>refresh-cache.*</literal></entry>
+            <entry><literal>refresh-cache</literal></entry>
           </row>
           <row>
             <entry>Get Repo List</entry>
-            <entry><literal>get-repo-list.*</literal></entry>
+            <entry><literal>get-repo-list</literal></entry>
           </row>
           <row>
             <entry>Repo Enable</entry>
-            <entry><literal>repo-enable.*</literal></entry>
+            <entry><literal>repo-enable</literal></entry>
           </row>
           <row>
             <entry>Repo Set Data</entry>
-            <entry><literal>repo-set-data.*</literal></entry>
+            <entry><literal>repo-set-data</literal></entry>
           </row>
         </tbody>
       </tgroup>
