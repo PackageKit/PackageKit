@@ -55,6 +55,7 @@
 #include "pk-spawn.h"
 #include "pk-time.h"
 #include "pk-inhibit.h"
+#include "pk-conf.h"
 
 #define PK_BACKEND_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnPrivate))
 #define PK_BACKEND_SPAWN_PERCENTAGE_INVALID	101
@@ -64,6 +65,8 @@ struct PkBackendSpawnPrivate
 	PkSpawn			*spawn;
 	PkBackend		*backend;
 	gchar			*name;
+	guint			 kill_id;
+	PkConf			*conf;
 };
 
 G_DEFINE_TYPE (PkBackendSpawn, pk_backend_spawn, G_TYPE_OBJECT)
@@ -389,10 +392,10 @@ out:
 }
 
 /**
- * pk_backend_spawn_finished_cb:
+ * pk_backend_spawn_exit_cb:
  **/
 static void
-pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backend_spawn)
+pk_backend_spawn_exit_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backend_spawn)
 {
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
@@ -556,6 +559,41 @@ pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 }
 
 /**
+ * pk_backend_spawn_exit_timeout_cb:
+ **/
+static gboolean
+pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
+{
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+	pk_spawn_exit (backend_spawn->priv->spawn);
+	return FALSE;
+}
+
+/**
+ * pk_backend_spawn_finished_cb:
+ **/
+static void
+pk_backend_spawn_finished_cb (PkBackend *backend, PkExitEnum exit, PkBackendSpawn *backend_spawn)
+{
+	gint timeout;
+
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
+
+	if (backend_spawn->priv->kill_id > 0)
+		g_source_remove (backend_spawn->priv->kill_id);
+
+	/* get policy timeout */
+	timeout = pk_conf_get_int (backend_spawn->priv->conf, "BackendShutdownTimeout");
+	if (timeout == PK_CONF_VALUE_INT_MISSING) {
+		egg_warning ("using built in default value");
+		timeout = 5;
+	}
+
+	/* close down the dispatcher if it is still open after this much time */
+	backend_spawn->priv->kill_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_backend_spawn_exit_timeout_cb, backend_spawn);
+}
+
+/**
  * pk_backend_spawn_helper:
  **/
 gboolean
@@ -567,6 +605,12 @@ pk_backend_spawn_helper (PkBackendSpawn *backend_spawn, const gchar *first_eleme
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 	g_return_val_if_fail (first_element != NULL, FALSE);
 	g_return_val_if_fail (backend_spawn->priv->name != NULL, FALSE);
+
+	/* don't auto-kill this */
+	if (backend_spawn->priv->kill_id > 0) {
+		g_source_remove (backend_spawn->priv->kill_id);
+		backend_spawn->priv->kill_id = 0;
+	}
 
 	/* get the argument list */
 	va_start (args, first_element);
@@ -588,7 +632,11 @@ pk_backend_spawn_finalize (GObject *object)
 
 	backend_spawn = PK_BACKEND_SPAWN (object);
 
+	if (backend_spawn->priv->kill_id > 0)
+		g_source_remove (backend_spawn->priv->kill_id);
+
 	g_free (backend_spawn->priv->name);
+	g_object_unref (backend_spawn->priv->conf);
 	g_object_unref (backend_spawn->priv->spawn);
 	g_object_unref (backend_spawn->priv->backend);
 
@@ -613,11 +661,15 @@ static void
 pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 {
 	backend_spawn->priv = PK_BACKEND_SPAWN_GET_PRIVATE (backend_spawn);
+	backend_spawn->priv->kill_id = 0;
 	backend_spawn->priv->name = NULL;
+	backend_spawn->priv->conf = pk_conf_new ();
 	backend_spawn->priv->backend = pk_backend_new ();
-	backend_spawn->priv->spawn = pk_spawn_new ();
-	g_signal_connect (backend_spawn->priv->spawn, "finished",
+	g_signal_connect (backend_spawn->priv->backend, "finished",
 			  G_CALLBACK (pk_backend_spawn_finished_cb), backend_spawn);
+	backend_spawn->priv->spawn = pk_spawn_new ();
+	g_signal_connect (backend_spawn->priv->spawn, "exit",
+			  G_CALLBACK (pk_backend_spawn_exit_cb), backend_spawn);
 	g_signal_connect (backend_spawn->priv->spawn, "stdout",
 			  G_CALLBACK (pk_backend_spawn_stdout_cb), backend_spawn);
 }
