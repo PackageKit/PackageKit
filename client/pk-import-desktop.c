@@ -42,6 +42,9 @@
 static PkClient *client = NULL;
 static PkExtra *extra = NULL;
 
+/**
+ * pk_desktop_get_name_for_file:
+ **/
 static gchar *
 pk_desktop_get_name_for_file (const gchar *filename)
 {
@@ -78,7 +81,7 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	/* get the obj */
 	obj = pk_package_list_get_obj (list, 0);
 	if (obj == NULL) {
-		egg_error ("cannot get obj");
+		egg_warning ("cannot get obj");
 		goto out;
 	}
 
@@ -86,12 +89,14 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	name = g_strdup (obj->id->name);
 
 out:
-	if (list != NULL) {
+	if (list != NULL)
 		g_object_unref (list);
-	}
 	return name;
 }
 
+/**
+ * pk_import_get_locale:
+ **/
 static gchar *
 pk_import_get_locale (const gchar *buffer)
 {
@@ -99,15 +104,17 @@ pk_import_get_locale (const gchar *buffer)
 	gchar *locale;
 	gchar *result;
 	result = g_strrstr (buffer, "[");
-	if (result == NULL) {
+	if (result == NULL)
 		return NULL;
-	}
 	locale = g_strdup (result+1);
 	len = egg_strlen (locale, 20);
 	locale[len-1] = '\0';
 	return locale;
 }
 
+/**
+ * pk_desktop_process_desktop:
+ **/
 static void
 pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 {
@@ -128,8 +135,9 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 
 	key = g_key_file_new ();
 	ret = g_key_file_load_from_file (key, filename, G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
-	if (ret == FALSE) {
-		egg_error ("bad!!");
+	if (!ret) {
+		egg_warning ("cannot open desktop file %s", filename);
+		return;
 	}
 
 	/* get this specific locale list */
@@ -139,9 +147,8 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		if (g_str_has_prefix (key_array[i], "Name")) {
 			/* set the locale */
 			locale_temp = pk_import_get_locale (key_array[i]);
-			if (locale_temp != NULL) {
+			if (locale_temp != NULL)
 				g_ptr_array_add (locale_array, g_strdup (locale_temp));
-			}
 		}
 	}
 	g_strfreev (key_array);
@@ -169,13 +176,12 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 			pk_extra_set_locale (extra, locale);
 
 			/* save in order of priority */
-			if (comment != NULL) {
+			if (comment != NULL)
 				pk_extra_set_data_locale (extra, package_name, comment);
-			} else if (genericname != NULL) {
+			else if (genericname != NULL)
 				pk_extra_set_data_locale (extra, package_name, genericname);
-			} else {
+			else
 				pk_extra_set_data_locale (extra, package_name, name);
-			}
 			g_free (comment);
 			g_free (genericname);
 		}
@@ -195,6 +201,9 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	g_key_file_free (key);
 }
 
+/**
+ * pk_desktop_process_directory:
+ **/
 static void
 pk_desktop_process_directory (const gchar *directory)
 {
@@ -207,7 +216,8 @@ pk_desktop_process_directory (const gchar *directory)
 
 	dir = g_dir_open (directory, 0, NULL);
 	if (dir == NULL) {
-		egg_error ("not a valid desktop dir!");
+		egg_warning ("not a valid desktop dir!");
+		return;
 	}
 
 	pattern = g_pattern_spec_new ("*.desktop");
@@ -222,11 +232,10 @@ pk_desktop_process_directory (const gchar *directory)
 			package_name = pk_desktop_get_name_for_file (filename);
 
 			/* process the file */
-			if (package_name != NULL) {
+			if (package_name != NULL)
 				pk_desktop_process_desktop (package_name, filename);
-			} else {
+			else
 				g_print ("%s ignored, failed to get package name\n", filename);
-			}
 			g_free (package_name);
 			g_free (filename);
 		}
@@ -267,9 +276,8 @@ main (int argc, char *argv[])
 	egg_debug_init (verbose);
 
 	/* set defaults */
-	if (desktop_location == NULL) {
+	if (desktop_location == NULL)
 		desktop_location = PK_IMPORT_APPLICATIONSDIR;
-	}
 
 	client = pk_client_new ();
 	pk_client_set_use_buffer (client, TRUE, NULL);
