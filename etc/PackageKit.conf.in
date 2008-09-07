@@ -46,3 +46,17 @@ DefaultBackend=@defaultbackend@
 # ProxyHTTP=username:password@server.lan:8080
 # ProxyFTP=server.lan:21
 
+# Scan the desktop files when we do RefreshCache
+#
+# NOTE: Don't enable this for backends that are slow doing SearchFile()
+#
+# default=false
+RefreshCacheScanDesktopFiles=false
+
+# Update the package list when we RefreshCache
+#
+# NOTE: Don't enable this for backends that are slow doing GetPackages()
+#
+# default=false
+RefreshCacheUpdatePackageList=false
+
