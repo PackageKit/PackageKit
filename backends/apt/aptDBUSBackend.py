@@ -1534,13 +1534,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Exit()
             return
 
-    def _lock_cache(self):
-        '''
-        Lock the cache
-        '''
-        pklog.debug("Locking cache")
-        self._locked.acquire()
-
     def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
         """
         Commit changes to the cache and handle errors
@@ -1564,13 +1557,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             return True
         return False
-
-    def _unlock_cache(self):
-        '''
-        Unlock the cache
-        '''
-        pklog.debug("Releasing cache")
-        self._locked.release()
 
     def _check_init(self, prange=(0,10), progress=True):
         '''
