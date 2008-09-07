@@ -248,6 +248,7 @@ class PackageKitOpProgress(apt.progress.OpProgress):
         except:
             pklog.warning("An additional step to open the cache is required")
 
+
 class PackageKitFetchProgress(apt.progress.FetchProgress):
     '''
     Handle the package download process
@@ -286,6 +287,7 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
                               "Installing from CD-Rom (%s) is not "
                               "supported." % medium)
         return False
+
 
 class PackageKitInstallProgress(apt.progress.InstallProgress):
     '''
