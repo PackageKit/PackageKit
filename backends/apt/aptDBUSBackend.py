@@ -434,12 +434,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         for pkg in self._cache:
-            if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                               "The search was canceled")
-                self.Finished(EXIT_KILLED)
-                self._canceled.clear()
-                return
+            if self._check_canceled(): return False
             for installed_file in self._get_installed_files(pkg):
                 if filename in installed_file:
                     if self._is_package_visible(pkg, filters):
@@ -459,12 +454,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         for pkg in self._cache:
-            if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                               "The search was canceled")
-                self.Finished(EXIT_KILLED)
-                self._canceled.clear()
-                return
+            if self._check_canceled(): return False
             elif self._get_package_group(pkg) == group and \
                  self._is_package_visible(pkg, filters):
                 self._emit_package(pkg)
@@ -482,12 +472,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         for pkg in self._cache:
-            if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                               "The search was canceled")
-                self.Finished(EXIT_KILLED)
-                self._canceled.clear()
-                return
+            if self._check_canceled(): return False
             elif search in pkg.name and self._is_package_visible(pkg, filters):
                 self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
@@ -558,7 +543,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN,
                                "Please make sure that update-manager-core is"
                                "correctly installed.")
-            self.Finished(EXIT_KILLED)
+            self.Finished(EXIT_FAILED)
             return
 
         #FIXME Evil to start the download during init
@@ -612,12 +597,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         updates = filter(lambda p: self._cache[p].isUpgradable,
                          self._cache.keys())
         for pkg in self._cache.getChanges():
-            if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                               "Calculating updates was canceled")
-                self.Finished(EXIT_KILLED)
-                self._canceled.clear()
-                return
+            if self._check_canceled(): return False
             else:
                 updates.remove(pkg.name)
                 info = INFO_NORMAL
@@ -814,7 +794,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN,
                                "Please make sure that python-software-properties is"
                                "correctly installed.")
-            self.Finished(EXIT_KILLED)
+            self.Finished(EXIT_FAILED)
             return
         filter_list = filters.split(";")
         repos = PackageKitSoftwareProperties()
@@ -885,7 +865,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN,
                                "Please make sure that python-software-properties is"
                                "correctly installed.")
-            self.Finished(EXIT_KILLED)
+            self.Finished(EXIT_FALIED)
             return
         repos = PackageKitSoftwareProperties()
 
@@ -1196,12 +1176,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         for pkg in self._cache:
-            if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                               "The search was canceled")
-                self.Finished(EXIT_KILLED)
-                self._canceled.clear()
-                return
+            if self._check_canceled(): return False
             elif self._is_package_visible(pkg, filters):
                 self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
@@ -1535,8 +1510,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
         except apt.cache.FetchCancelledException:
             self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
-            self.Finished(EXIT_KILLED)
+            self.Finished(EXIT_CANCELLED)
             self._canceled.clear()
         except:
             self._open_cache(prange=(95,100))
@@ -1564,8 +1538,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         corresponding error message and return True
         '''
         if self._canceled.isSet():
-             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "")
-             self.Finished(EXIT_KILLED)
+             self.Finished(EXIT_CANCELLED)
              self._canceled.clear()
              return True
         return False
