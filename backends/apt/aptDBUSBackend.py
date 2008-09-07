@@ -98,6 +98,8 @@ os.putenv("APT_LISTCHANGES_FRONTEND", "none")
 gobject.threads_init()
 dbus.glib.threads_init()
 
+class InstallTimeOutPKError(Exception):
+    pass
 
 class PackageKitCache(apt.cache.Cache):
     """
@@ -308,6 +310,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         self.start_time = None
 
     def statusChange(self, pkg, percent, status):
+        self.last_activity = time.time()
         progress = self.pstart + percent/100 * (self.pend - self.pstart)
         if self.pprev < progress:
             self._backend.PercentageChanged(int(progress))
@@ -337,6 +340,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
             pklog.critical("no activity for %s time sending ctrl-c" \
                            % self.timeout)
             os.write(self.master_fd, chr(3))
+            raise InstallTimeOutPKError
 
     def conffile(self, current, new):
         pklog.warning("Config file prompt: '%s' (sending no)" % current)
@@ -1512,6 +1516,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._open_cache(prange=(95,100))
             self.Finished(EXIT_CANCELLED)
             self._canceled.clear()
+        except InstallTimeOutPKError:
+            self._open_cache(prange=(95,100))
+            #FIXME: should provide more information
+            self.ErrorCode(ERROR_UNKNOWN,
+                           "Transaction was cancelled since the installation "
+                           "of a package hung.\n"
+                           "This can be caused by maintainer scripts which "
+                           "require input on the terminal.")
+            self.Finished(EXIT_KILLED)
         except:
             self._open_cache(prange=(95,100))
             self.ErrorCode(ERROR_UNKNOWN, "Applying changes failed")
