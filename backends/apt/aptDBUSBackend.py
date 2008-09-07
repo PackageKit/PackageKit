@@ -280,10 +280,12 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self._backend.AllowCancel(False)
 
     def mediaChange(self, medium, drive):
-        #FIXME: use the Message method to notify the user
-        self._backend.error(ERROR_UNKNOWN,
-                            "Medium change needed")
-
+        #FIXME: Raise an expcetion and handle it in _commit_changes
+        #       Strangly _commit_changes does not catch the expcetion
+        self._backend.Message(MESSAGE_UNKNOWN,
+                              "Installing from CD-Rom (%s) is not "
+                              "supported." % medium)
+        return False
 
 class PackageKitInstallProgress(apt.progress.InstallProgress):
     '''
