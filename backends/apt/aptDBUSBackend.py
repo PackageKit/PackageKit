@@ -524,14 +524,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             pklog.debug("Performing apt cache based search")
             for p in self._cache._dict.values():
-                if self._check_canceled("Search was canceled"): return
+                if self._check_canceled(): return
                 needle = search.strip().lower()
                 haystack = p.description.lower()
                 if p.name.find(needle) >= 0 or haystack.find(needle) >= 0:
                     results.append(p)
 
         for r in results:
-            if self._check_canceled("Search was canceled"): return
+            if self._check_canceled(): return
             if self._is_package_visible(r, filters) == True:
                 self._emit_package(r)
 
@@ -657,7 +657,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         self._check_init(progress=False)
         for pkg_id in pkg_ids:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pkg = self._find_package_by_id(pkg_id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -696,7 +696,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         self._check_init(progress=False)
         for pkg_id in pkg_ids:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pkg = self._find_package_by_id(pkg_id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -1010,7 +1010,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Mark installed packages for reinstallation and not installed packages
         # for installation without dependencies
         for id in ids:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -1028,7 +1028,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.PercentageChanged(95)
         # Copy files from cache to final destination
         for item in fetcher.Items:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pklog.debug("Download item: %s" % item)
             if (item.Status != item.StatDone and not item.StatIdle) or \
                 res == fetcher.ResultCancelled:
@@ -1264,7 +1264,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._cache.clear()
         pkgs = []
         for id in ids:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -1283,7 +1283,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkgs.append(pkg)
         # Check the status of the resulting changes
         for p in self._cache.getChanges():
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             if p in pkgs: continue
             if p.markedDelete:
                 # Packagekit policy forbids removing packages for installation
@@ -1323,7 +1323,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Mark all packages for installation
         self._cache.clear()
         for id in ids:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -1347,7 +1347,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
         # Check the status of the resulting changes
         for p in self._cache.getChanges():
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             if p.markedDelete:
                 if not p in pkgs and self._is_package_visible(p, filter):
                     self._emit_package(p)
@@ -1541,20 +1541,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.debug("Locking cache")
         self._locked.acquire()
 
-    def _is_canceled(self):
-        '''
-        Check if the current action was canceled. If so send the corresponding
-        error code.
-        '''
-        if self._canceled.isSet():
-            self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                           "The search was canceled")
-            self.Finished(EXIT_KILLED)
-            self._canceled.clear()
-            return True
-        else:
-            return False
-
     def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
         """
         Commit changes to the cache and handle errors
@@ -1596,13 +1582,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
            self._cache._depcache.BrokenCount > 0:
             self._open_cache(prange, progress)
 
-    def _check_canceled(self, msg):
+    def _check_canceled(self):
         '''
         Check if the current transaction was canceled. If so send the
         corresponding error message and return True
         '''
         if self._canceled.isSet():
-             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, msg)
+             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "")
              self.Finished(EXIT_KILLED)
              self._canceled.clear()
              return True
