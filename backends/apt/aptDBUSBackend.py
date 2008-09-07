@@ -1175,17 +1175,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init((0,10))
         try:
             self._cache.update(PackageKitFetchProgress(self, prange=(10,95)))
-        except apt.cache.FetchFailedException:
-            self.ErrorCode(ERROR_NO_NETWORK, "Download failed")
-            self.Finished(EXIT_FAILED)
-            return
-        except apt.cache.FetchCancelledException:
-            self._canceled.clear()
-            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
-            self.Finished(EXIT_KILLED)
-            return
         except Exception, e:
             self._open_cache(prange=(95,100))
+            if self._check_canceled(): return False
             self.ErrorCode(ERROR_UNKNOWN, "Refreshing cache failed: %s" % e)
             self.Finished(EXIT_FAILED)
             return
