@@ -169,6 +169,41 @@ egg_obj_list_print (EggObjList *list)
 }
 
 /**
+ * egg_obj_list_to_string:
+ * @list: a valid #EggObjList instance
+ *
+ * Converts the list to a newline delimited string
+ **/
+gchar *
+egg_obj_list_to_string (EggObjList *list)
+{
+	guint i;
+	gpointer obj;
+	GPtrArray *array;
+	gchar *text;
+	EggObjListToStringFunc func_to_string;
+	GString *string;
+
+	g_return_val_if_fail (list->priv->func_to_string != NULL, NULL);
+	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), NULL);
+
+	array = list->priv->array;
+	func_to_string = list->priv->func_to_string;
+	string = g_string_new ("");
+	for (i=0; i<array->len; i++) {
+		obj = g_ptr_array_index (array, i);
+		text = func_to_string (obj);
+		g_string_append_printf (string, "%s\n", text);
+		g_free (text);
+	}
+	/* remove trailing newline */
+	if (string->len != 0)
+		g_string_set_size (string, string->len-1);
+
+	return g_string_free (string, FALSE);
+}
+
+/**
  * egg_obj_list_add:
  * @list: a valid #EggObjList instance
  * @obj: a valid #gpointer object
@@ -188,6 +223,27 @@ egg_obj_list_add (EggObjList *list, const gpointer obj)
 	obj_new = list->priv->func_copy (obj);
 	g_ptr_array_add (list->priv->array, obj_new);
 	list->len = list->priv->array->len;
+}
+
+/**
+ * egg_package_list_add_list:
+ *
+ * Makes a deep copy of the list
+ **/
+void
+egg_package_list_add_list (EggObjList *list, const EggObjList *data)
+{
+	guint i;
+	gpointer obj;
+
+	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (EGG_IS_OBJ_LIST (data));
+
+	/* add data items to list */
+	for (i=0; i < data->len; i++) {
+		obj = egg_obj_list_index (data, i);
+		egg_obj_list_add (list, obj);
+	}
 }
 
 /**
