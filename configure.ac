@@ -45,13 +45,18 @@ GTK_DOC_CHECK(1.9)
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
+AM_PATH_PYTHON
+PYTHON_PACKAGE_DIR=${pythondir}/packagekit
+AC_SUBST(PYTHON_PACKAGE_DIR)
+
+
 dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
 if test "$GCC" = "yes"; then
 	CPPFLAGS="$CPPFLAGS -Wcast-align -Wno-uninitialized"
 	CPPFLAGS="$CPPFLAGS -Wall -Wformat-security -Wreturn-type"
-#	CPPFLAGS="$CPPFLAGS -Wall"
+#	CPPFLAGS="$CPPFLAGS -Werror"
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -119,7 +124,6 @@ else
 fi
 AM_CONDITIONAL(HAVE_ARCHIVE_H, test x$HAVE_ARCHIVE_H = xyes)
 
-
 dnl ---------------------------------------------------------------------------
 dnl - xsltproc
 dnl ---------------------------------------------------------------------------
@@ -165,33 +169,6 @@ if test "$DOCBOOK2MAN" = "no" ; then
 	AC_MSG_WARN([docbook2man not found, will not be able to build man documentation])
 	fi
 AM_CONDITIONAL(HAVE_DOCBOOK2MAN, [test "$DOCBOOK2MAN" != "no"])
-
-AM_PATH_PYTHON([2.3],[],[have_python=no])
-if test "x$PYTHON" = "x:"; then
-	have_python=no
-fi
-
-PY_PREFIX=`$PYTHON -c 'import sys ; print sys.prefix'`
-PY_EXEC_PREFIX=`$PYTHON -c 'import sys ; print sys.exec_prefix'`
-PYTHON_LIBS="-lpython$PYTHON_VERSION"
-if test -d $PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION ; then
-	PYTHON_LIB_LOC="-L$PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION/config"
-	PYTHON_MAKEFILE="$PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION/config/Makefile"
-else
-	PYTHON_LIB_LOC="-L$PY_EXEC_PREFIX/lib/python$PYTHON_VERSION/config"
-	PYTHON_MAKEFILE="$PY_EXEC_PREFIX/lib/python$PYTHON_VERSION/config/Makefile"
-fi
-PYTHON_CFLAGS="-I$PY_PREFIX/include/python$PYTHON_VERSION"
-PYTHON_LOCALMODLIBS=`sed -n -e 's/^LOCALMODLIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
-PYTHON_BASEMODLIBS=`sed -n -e 's/^BASEMODLIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
-PYTHON_OTHER_LIBS=`sed -n -e 's/^LIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
-PYTHON_EXTRA_LIBS="$PYTHON_LOCALMODLIBS $PYTHON_BASEMODLIBS $PYTHON_OTHER_LIBS"
-PYTHON_PACKAGE_DIR=${pythondir}/packagekit
-AC_SUBST([PYTHON_LIBS])
-AC_SUBST([PYTHON_LIB_LOC])
-AC_SUBST([PYTHON_CFLAGS])
-AC_SUBST([PYTHON_EXTRA_LIBS])
-AC_SUBST(PYTHON_PACKAGE_DIR)
 
 dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
@@ -304,7 +281,6 @@ AC_ARG_ENABLE(razor, AS_HELP_STRING([--enable-razor],[use the razor backend]),en
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
-AC_ARG_ENABLE(yum2, AS_HELP_STRING([--enable-yum2],[use the YUM DBUS backend]),enable_yum2=$enableval,enable_yum2=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
 
 # export to Makefile.am's
@@ -320,7 +296,6 @@ AM_CONDITIONAL(BACKEND_TYPE_RAZOR, [test x$enable_razor = xyes], [using Razor ba
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART backend])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes], [using URPMI backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
-AM_CONDITIONAL(BACKEND_TYPE_YUM2, [test x$enable_yum2 = xyes], [using YUM DBUS backend])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes], [using Zypp backend])
 
 if test x$enable_gcov = xyes; then
@@ -560,8 +535,6 @@ backends/urpmi/helpers/perl_packagekit/Makefile
 backends/urpmi/helpers/urpmi_backend/Makefile
 backends/razor/Makefile
 backends/yum/Makefile
-backends/yum2/Makefile
-backends/yum2/helpers/Makefile
 backends/pisi/Makefile
 backends/pisi/helpers/Makefile
 backends/poldek/Makefile
@@ -599,7 +572,7 @@ echo "
         Security framework:        ${with_security_framework}
         Networking stack:          ${with_networking_stack}
         GIO support:               ${with_gio}
-        Browser Plugin: 	   ${build_browser_plugin}
+        Browser plugin:            ${build_browser_plugin}
 
         Backends:
         ALPM backend:              ${enable_alpm}
@@ -614,7 +587,6 @@ echo "
         SMART backend:             ${enable_smart}
         URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
-        YUM2 backend:              ${enable_yum2}
         Zypp backend:              ${enable_zypp}
         Default backend:           ${with_default_backend}
 "
