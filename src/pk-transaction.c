@@ -67,6 +67,7 @@
 #include "pk-backend-internal.h"
 #include "pk-inhibit.h"
 #include "pk-update-detail-list.h"
+#include "pk-conf.h"
 #include "pk-cache.h"
 #include "pk-notify.h"
 #include "pk-security.h"
@@ -93,6 +94,7 @@ struct PkTransactionPrivate
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkCache			*cache;
+	PkConf			*conf;
 	PkUpdateDetailList	*update_detail_list;
 	PkNotify		*notify;
 	PkSecurity		*security;
@@ -473,9 +475,12 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend, PkDistroUpgradeEnum type,
 static void
 pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *transaction)
 {
+	gboolean ret;
+	GError *error = NULL;
 	const gchar *exit_text;
 	guint time;
 	gchar *packages;
+	gchar *command;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -558,6 +563,37 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
+
+	/* do some optional extra actions when we've finished refreshing the cache */
+	if (transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		/* asynchronously generate the package list
+		 * NOTE: we can't do this in process as it uses PkClient */
+		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageList");
+		if (ret) {
+			command = g_build_filename (LIBEXECDIR, "pk-generate-package-list", NULL);
+			egg_debug ("running helper %s", command);
+			ret = g_spawn_command_line_async (command, &error);
+			if (!ret) {
+				egg_warning ("failed to execute %s: %s", command, error->message);
+				g_error_free (error);
+			}
+			g_free (command);
+		}
+
+		/* refresh the desktop icon cache
+		 * NOTE: we can't do this in process as it uses PkClient */
+		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
+		if (ret) {
+			command = g_build_filename (LIBEXECDIR, "pk-import-desktop", NULL);
+			egg_debug ("running helper %s", command);
+			ret = g_spawn_command_line_async (command, &error);
+			if (!ret) {
+				egg_warning ("failed to execute %s: %s", command, error->message);
+				g_error_free (error);
+			}
+			g_free (command);
+		}
+	}
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	exit_text = pk_exit_enum_to_text (exit);
@@ -3613,6 +3649,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->backend = pk_backend_new ();
 	transaction->priv->security = pk_security_new ();
 	transaction->priv->cache = pk_cache_new ();
+	transaction->priv->conf = pk_conf_new ();
 	transaction->priv->update_detail_list = pk_update_detail_list_new ();
 	transaction->priv->notify = pk_notify_new ();
 	transaction->priv->inhibit = pk_inhibit_new ();
@@ -3657,6 +3694,7 @@ pk_transaction_finalize (GObject *object)
 
 	/* remove any inhibit, it's okay to call this function when it's not needed */
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
+	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->cache);
 	g_object_unref (transaction->priv->update_detail_list);
 	g_object_unref (transaction->priv->inhibit);

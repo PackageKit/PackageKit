@@ -21,6 +21,7 @@ INCLUDES =						\
 	-DPREFIX=\""$(prefix)"\" 			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
 	-DLIBDIR=\""$(libdir)"\" 			\
+	-DLIBEXECDIR=\""$(libexecdir)"\" 		\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" 		\
