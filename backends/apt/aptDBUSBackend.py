@@ -260,16 +260,17 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self.pend = prange[1]
         self.pprev = None
 
-    # FetchProgress callbacks
     def pulse(self):
+        apt.progress.FetchProgress.pulse(self)
+        # Strange, but we seem to need this to detect a cancel immediately
+        time.sleep(0.01)
         if self._backend._canceled.isSet():
             return False
-        percent = ((self.currentBytes + self.currentItems)*100.0)/float(self.totalBytes+self.totalItems)
-        progress = int(self.pstart + percent/100 * (self.pend - self.pstart))
+        progress = int(self.pstart + self.percent/100 * \
+                       (self.pend - self.pstart))
         if self.pprev < progress:
             self._backend.PercentageChanged(progress)
             self.pprev = progress
-        apt.progress.FetchProgress.pulse(self)
         return True
 
     def start(self):
