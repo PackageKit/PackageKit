@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Licensed under the GNU General Public License Version 2
 #
 # This program is free software; you can redistribute it and/or modify
@@ -29,6 +30,7 @@ from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
 from packagekit.package import PackagekitPackage
 from packagekit.enums import *
 import re
+import sys
 
 # Global vars
 pkpackage = PackagekitPackage()
@@ -36,11 +38,14 @@ pkpackage = PackagekitPackage()
 def needs_cache(func):
     """ Load smart's channels, and save the cache when done. """
     def cache_wrap(obj, *args, **kwargs):
-        obj.status(STATUS_LOADING_CACHE)
-        obj.allow_cancel(True)
-        obj.ctrl.reloadChannels()
+        if not obj._cacheloaded:
+            obj.status(STATUS_LOADING_CACHE)
+            obj.allow_cancel(True)
+            obj.ctrl.reloadChannels()
         result = func(obj, *args, **kwargs)
-        obj.ctrl.saveSysConf()
+        if not obj._cacheloaded:
+            obj.ctrl.saveSysConf()
+            obj._cacheloaded = True
         return result
     return cache_wrap
 
@@ -113,6 +118,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
+        self._cacheloaded = False
 
         self.ctrl = smart.init()
         smart.iface.object = PackageKitSmartInterface(self.ctrl, self)
@@ -183,7 +189,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def remove_packages(self, packageids):
+    def remove_packages(self, allow_deps, packageids):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -888,3 +894,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if FILTER_NEWEST in filterlist:
             self._package_list = self._do_newest_filtering(self._package_list)
 
+def main():
+    backend = PackageKitSmartBackend('')
+    args = sys.argv[1:]
+    backend.dispatch_command(args[0],args[1:])
+    while True:
+        line = raw_input('')
+        if line == 'exit':
+            break
+        args = line.split(' ')
+        backend.dispatch_command(args[0],args[1:])
+
+if __name__ == "__main__":
+    main()
