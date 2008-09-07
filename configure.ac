@@ -304,7 +304,6 @@ AC_ARG_ENABLE(razor, AS_HELP_STRING([--enable-razor],[use the razor backend]),en
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
-AC_ARG_ENABLE(yum2, AS_HELP_STRING([--enable-yum2],[use the YUM DBUS backend]),enable_yum2=$enableval,enable_yum2=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
 
 # export to Makefile.am's
@@ -320,7 +319,6 @@ AM_CONDITIONAL(BACKEND_TYPE_RAZOR, [test x$enable_razor = xyes], [using Razor ba
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART backend])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes], [using URPMI backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
-AM_CONDITIONAL(BACKEND_TYPE_YUM2, [test x$enable_yum2 = xyes], [using YUM DBUS backend])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes], [using Zypp backend])
 
 if test x$enable_gcov = xyes; then
@@ -560,8 +558,6 @@ backends/urpmi/helpers/perl_packagekit/Makefile
 backends/urpmi/helpers/urpmi_backend/Makefile
 backends/razor/Makefile
 backends/yum/Makefile
-backends/yum2/Makefile
-backends/yum2/helpers/Makefile
 backends/pisi/Makefile
 backends/pisi/helpers/Makefile
 backends/poldek/Makefile
@@ -599,7 +595,7 @@ echo "
         Security framework:        ${with_security_framework}
         Networking stack:          ${with_networking_stack}
         GIO support:               ${with_gio}
-        Browser Plugin: 	   ${build_browser_plugin}
+        Browser plugin:            ${build_browser_plugin}
 
         Backends:
         ALPM backend:              ${enable_alpm}
@@ -614,7 +610,6 @@ echo "
         SMART backend:             ${enable_smart}
         URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
-        YUM2 backend:              ${enable_yum2}
         Zypp backend:              ${enable_zypp}
         Default backend:           ${with_default_backend}
 "
