@@ -1000,7 +1000,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         # Setup the fetcher
         self._check_init(prange=(0,10))
-        self._cache.clear()
         progress = PackageKitFetchProgress(self, prange=(10,90))
         fetcher = apt_pkg.GetAcquire(progress)
         pm = apt_pkg.GetPackageManager(self._cache._depcache)
@@ -1108,7 +1107,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,10))
-        self._cache.clear()
         dependencies = []
         packages = []
         # Collect all dependencies which need to be installed
@@ -1261,7 +1259,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         # Mark all packages for installation
-        self._cache.clear()
         pkgs = []
         for id in ids:
             if self._check_canceled(): return
@@ -1321,7 +1318,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pkgs = []
 
         # Mark all packages for installation
-        self._cache.clear()
         for id in ids:
             if self._check_canceled(): return
             pkg = self._find_package_by_id(id)
@@ -1567,6 +1563,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if not isinstance(self._cache, apt.cache.Cache) or \
            self._cache._depcache.BrokenCount > 0:
             self._open_cache(prange, progress)
+        else:
+            self._cache.clear()
 
     def _check_canceled(self):
         '''
