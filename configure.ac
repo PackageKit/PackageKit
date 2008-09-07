@@ -45,13 +45,18 @@ GTK_DOC_CHECK(1.9)
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
+AM_PATH_PYTHON
+PYTHON_PACKAGE_DIR=${pythondir}/packagekit
+AC_SUBST(PYTHON_PACKAGE_DIR)
+
+
 dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
 if test "$GCC" = "yes"; then
 	CPPFLAGS="$CPPFLAGS -Wcast-align -Wno-uninitialized"
 	CPPFLAGS="$CPPFLAGS -Wall -Wformat-security -Wreturn-type"
-#	CPPFLAGS="$CPPFLAGS -Wall"
+#	CPPFLAGS="$CPPFLAGS -Werror"
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -119,7 +124,6 @@ else
 fi
 AM_CONDITIONAL(HAVE_ARCHIVE_H, test x$HAVE_ARCHIVE_H = xyes)
 
-
 dnl ---------------------------------------------------------------------------
 dnl - xsltproc
 dnl ---------------------------------------------------------------------------
@@ -165,33 +169,6 @@ if test "$DOCBOOK2MAN" = "no" ; then
 	AC_MSG_WARN([docbook2man not found, will not be able to build man documentation])
 	fi
 AM_CONDITIONAL(HAVE_DOCBOOK2MAN, [test "$DOCBOOK2MAN" != "no"])
-
-AM_PATH_PYTHON([2.3],[],[have_python=no])
-if test "x$PYTHON" = "x:"; then
-	have_python=no
-fi
-
-PY_PREFIX=`$PYTHON -c 'import sys ; print sys.prefix'`
-PY_EXEC_PREFIX=`$PYTHON -c 'import sys ; print sys.exec_prefix'`
-PYTHON_LIBS="-lpython$PYTHON_VERSION"
-if test -d $PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION ; then
-	PYTHON_LIB_LOC="-L$PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION/config"
-	PYTHON_MAKEFILE="$PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION/config/Makefile"
-else
-	PYTHON_LIB_LOC="-L$PY_EXEC_PREFIX/lib/python$PYTHON_VERSION/config"
-	PYTHON_MAKEFILE="$PY_EXEC_PREFIX/lib/python$PYTHON_VERSION/config/Makefile"
-fi
-PYTHON_CFLAGS="-I$PY_PREFIX/include/python$PYTHON_VERSION"
-PYTHON_LOCALMODLIBS=`sed -n -e 's/^LOCALMODLIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
-PYTHON_BASEMODLIBS=`sed -n -e 's/^BASEMODLIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
-PYTHON_OTHER_LIBS=`sed -n -e 's/^LIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
-PYTHON_EXTRA_LIBS="$PYTHON_LOCALMODLIBS $PYTHON_BASEMODLIBS $PYTHON_OTHER_LIBS"
-PYTHON_PACKAGE_DIR=${pythondir}/packagekit
-AC_SUBST([PYTHON_LIBS])
-AC_SUBST([PYTHON_LIB_LOC])
-AC_SUBST([PYTHON_CFLAGS])
-AC_SUBST([PYTHON_EXTRA_LIBS])
-AC_SUBST(PYTHON_PACKAGE_DIR)
 
 dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
