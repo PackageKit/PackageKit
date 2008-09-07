@@ -726,24 +726,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(prange=(0,5))
         try:
             self._cache.upgrade(distUpgrade=False)
-            self._cache.commit(PackageKitFetchProgress(self, prange=(5,50)),
-                               PackageKitInstallProgress(self, prange=(50,95)))
-        except apt.cache.FetchFailedException:
-            self._open_cache()
-            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED, "Download failed")
-            self.Finished(EXIT_FAILED)
-            return
-        except apt.cache.FetchCancelledException:
-            self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
-            self.Finished(EXIT_KILLED)
-            self._canceled.clear()
-            return
         except:
-            self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_UNKNOWN, "System update failed")
+            self._cache.clear()
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
+                           "Failed to upgrade the system.")
             self.Finished(EXIT_FAILED)
             return
+        if not self._commit_changes(): return False
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
@@ -785,14 +774,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN, "Removal of %s failed" % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
-        try:
-            self._cache.commit(PackageKitFetchProgress(self, prange=(10,10)),
-                               PackageKitInstallProgress(self, prange=(10,90)))
-        except:
-            self._open_cache(prange=(90,99))
-            self.ErrorCode(ERROR_UNKNOWN, "Removal failed")
-            self.Finished(EXIT_FAILED)
-            return
+        if not self._commit_changes(fetch_range=(10,10),
+                                    install_range=(10,90)):
+            return False
         self._open_cache(prange=(90,99))
         for p in pkgs:
             if self._cache.has_key(p) and self._cache[p].isInstalled:
@@ -980,15 +964,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                               "update" % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
-        try:
-            self._cache.commit(PackageKitFetchProgress(self, prange=(10,50)),
-                               PackageKitInstallProgress(self, prange=(50,90)))
-        except Exception, e:
-            pklog.warning("Exception during commit(): %s" % e)
-            self._open_cache(prange=(90,100))
-            self.ErrorCode(ERROR_UNKNOWN, "Update failed")
-            self.Finished(EXIT_FAILED)
-            return
+        if not self._commit_changes(): return False
         self._open_cache(prange=(90,100))
         self.PercentageChanged(100)
         pklog.debug("Checking success of operation")
@@ -1102,15 +1078,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                               "installation: %s" % (pkg.name,e))
                 self.Finished(EXIT_FAILED)
                 return
-        try:
-            self._cache.commit(PackageKitFetchProgress(self, prange=(10,50)),
-                               PackageKitInstallProgress(self, prange=(50,90)))
-        except Exception, e:
-            pklog.warning("exception %s during commit()" % e)
-            self._open_cache(prange=(90,100))
-            self.ErrorCode(ERROR_UNKNOWN, "Installation failed")
-            self.Finished(EXIT_FAILED)
-            return
+        if not self._commit_changes(): return False
         self._open_cache(prange=(90,100))
         self.PercentageChanged(100)
         pklog.debug("Checking success of operation")
@@ -1151,8 +1119,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pklog.debug("Changes: Install %s, Remove %s, Unauthenticated "
                         "%s" % (install, remove, unauthenticated))
             if len(remove) > 0:
-                self.ErrorCode(ERROR_UNKNOWN, "Remove the following packages "
-                                              "before: %s" % remove)
+                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED, 
+                               "Remove the following packages "
+                               "before: %s" % remove)
                 self.Finished(EXIT_FAILED)
                 return
             dependencies.extend(install)
@@ -1160,13 +1129,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             for dep in dependencies:
                 self._cache[dep].markInstall()
-            self._cache.commit(PackageKitFetchProgress(self, prange=(10,25)),
-                               PackageKitInstallProgress(self, prange=(25,50)))
         except:
-            self._open_cache(prange=(90,99))
-            self.ErrorCode(ERROR_UNKNOWN, "Failed to install dependecies")
+            self._cache.clear()
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED, "")
             self.Finished(EXIT_FAILED)
             return
+        if not self._commit_changes((10,25), (25,50)): return False
         # Install the Debian package files
         for deb in packages:
             try:
@@ -1581,7 +1549,31 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return True
         else:
             return False
- 
+
+    def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
+        """
+        Commit changes to the cache and handle errors
+        """
+        try:
+            self._cache.commit(PackageKitFetchProgress(self, fetch_range), 
+                               PackageKitInstallProgress(self, install_range))
+        except apt.cache.FetchFailedException:
+            self._open_cache(prange=(95,100))
+            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED, "Download failed")
+            self.Finished(EXIT_FAILED)
+        except apt.cache.FetchCancelledException:
+            self._open_cache(prange=(95,100))
+            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
+            self.Finished(EXIT_KILLED)
+            self._canceled.clear()
+        except:
+            self._open_cache(prange=(95,100))
+            self.ErrorCode(ERROR_UNKNOWN, "Applying changes failed")
+            self.Finished(EXIT_FAILED)
+        else:
+            return True
+        return False
+
     def _unlock_cache(self):
         '''
         Unlock the cache
