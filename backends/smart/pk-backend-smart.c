@@ -27,6 +27,12 @@
 
 static PkBackendSpawn *spawn;
 
+#if 0
+#define BACKEND(x)	x ".py"
+#else
+#define BACKEND(x)	"smartBackend.py", x
+#endif
+
 /**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
@@ -130,7 +136,7 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "download-packages.py", directory, package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("download-packages"), directory, package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -144,7 +150,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("get-depends"), filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -157,7 +163,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "get-details.py", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("get-details"), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -169,7 +175,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "get-files.py", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("get-files"), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -183,7 +189,7 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-requires.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("get-requires"), filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -196,7 +202,7 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("get-updates"), filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -208,7 +214,7 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-packages.py", filters_text, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("get-packages"), filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -229,7 +235,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("install-packages"), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -243,7 +249,7 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 
 	/* send the complete list as stdin */
 	full_paths_temp = pk_package_ids_to_text (full_paths, "|");
-	pk_backend_spawn_helper (spawn, "install-files.py", pk_backend_bool_to_text (trusted), full_paths_temp, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("install-files"), pk_backend_bool_to_text (trusted), full_paths_temp, NULL);
 	g_free (full_paths_temp);
 }
 
@@ -260,7 +266,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "refresh-cache.py", NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("refresh-cache"), NULL);
 }
 
 /**
@@ -274,7 +280,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	/* FIXME: Use allow_deps and autoremove */
-	pk_backend_spawn_helper (spawn, "remove-packages.py", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("remove-packages"), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -288,7 +294,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 	gchar *package_ids_temp;
 	filters_text = pk_filter_bitfield_to_text (filters);
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("resolve"), filters_text, package_ids_temp, NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -301,7 +307,7 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "search-details.py", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("search-details"), filters_text, search, NULL);
 	g_free (filters_text);
 }
 
@@ -313,7 +319,7 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "search-file.py", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("search-file"), filters_text, search, NULL);
 	g_free (filters_text);
 }
 
@@ -325,7 +331,7 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *searc
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "search-group.py", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("search-group"), filters_text, search, NULL);
 	g_free (filters_text);
 }
 
@@ -337,7 +343,7 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "search-name.py", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("search-name"), filters_text, search, NULL);
 	g_free (filters_text);
 }
 
@@ -359,7 +365,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "update-packages.py", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("update-packages"), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -369,7 +375,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_update_system (PkBackend *backend)
 {
-	pk_backend_spawn_helper (spawn, "update-system.py", NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("update-system"), NULL);
 }
 
 /**
@@ -380,7 +386,7 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-repo-list.py", filters_text, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("get-repo-list"), filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -391,9 +397,9 @@ static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	if (enabled == TRUE) {
-		pk_backend_spawn_helper (spawn, "repo-enable.py", rid, "true", NULL);
+		pk_backend_spawn_helper (spawn, BACKEND("repo-enable"), rid, "true", NULL);
 	} else {
-		pk_backend_spawn_helper (spawn, "repo-enable.py", rid, "false", NULL);
+		pk_backend_spawn_helper (spawn, BACKEND("repo-enable"), rid, "false", NULL);
 	}
 }
 
@@ -403,7 +409,7 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
-	pk_backend_spawn_helper (spawn, "repo-set-data.py", rid, parameter, value, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("repo-set-data"), rid, parameter, value, NULL);
 }
 
 /**
@@ -416,7 +422,7 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	const gchar *provides_text;
 	provides_text = pk_provides_enum_to_text (provides);
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "what-provides.py", filters_text, provides_text, search, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("what-provides"), filters_text, provides_text, search, NULL);
 	g_free (filters_text);
 }
 
