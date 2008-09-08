@@ -219,6 +219,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-name functionality
         '''
         self._check_init(lazy_cache=True)
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
 
@@ -232,6 +233,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-details functionality
         '''
         self._check_init(lazy_cache=True)
+        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
 
@@ -247,7 +250,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init(lazy_cache=True)
         self.allow_cancel(True)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
-        self.yumbase.conf.cache = 1 # Only look in cache.
+        self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
         self.status(STATUS_QUERY)
         package_list = [] #we can't do emitting as found if we are post-processing
         fltlist = filters.split(';')
@@ -297,7 +300,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
-        self.yumbase.conf.cache = 1 # Only look in cache.
+        self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
 
         package_list = [] #we can't do emitting as found if we are post-processing
         fltlist = filters.split(';')
@@ -322,11 +325,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-file functionality
         '''
         self._check_init(lazy_cache=True)
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
 
-        #self.yumbase.conf.cache = 1 # Only look in cache.
+        #self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
 
@@ -351,6 +355,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-what-provides functionality
         '''
         self._check_init(lazy_cache=True)
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
@@ -377,6 +382,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-download-packages functionality
         '''
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.status(STATUS_DOWNLOAD)
         percentage = 0;
@@ -502,6 +508,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Print a list of requires for a given package
         '''
         self._check_init(lazy_cache=True)
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -676,6 +683,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Print a list of depends for a given package
         '''
         self._check_init(lazy_cache=True)
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -724,6 +732,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-update-system functionality
         '''
         self._check_init(lazy_cache=True)
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_RUNNING)
@@ -795,7 +804,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_cancel(True);
         self.percentage(None)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
-        self.yumbase.conf.cache = 1 # Only look in cache.
+        self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
         self.status(STATUS_QUERY)
 
         fltlist = filters.split(';')
@@ -824,6 +833,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         This will only work with yum 3.2.4 or higher
         '''
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
@@ -864,6 +874,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 return
 
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
@@ -1023,6 +1034,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         This will only work with yum 3.2.4 or higher
         '''
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(False);
         self.percentage(0)
         self.status(STATUS_RUNNING)
@@ -1131,6 +1143,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Needed to be implemented in a sub class
         '''
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(False);
         self.percentage(0)
         self.status(STATUS_RUNNING)
@@ -1156,6 +1169,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Print a detailed details for a given package
         '''
         self._check_init(lazy_cache=True)
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -1179,6 +1193,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def get_files(self,package_ids):
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -1221,6 +1236,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-get-distro-upgrades functionality
         '''
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
@@ -1287,6 +1303,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param filters: package types to show
         '''
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -1318,6 +1335,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-repo-enable functionality
         '''
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.status(STATUS_INFO)
         try:
             repo = self.yumbase.repos.getRepo(repoid)
@@ -1349,6 +1367,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-get-repo-list functionality
         '''
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.status(STATUS_INFO)
 
         for repo in self.yumbase.repos.repos.values():
@@ -1456,6 +1475,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-get-update_detail functionality
         '''
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -1474,6 +1494,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-repo-set-data functionality
         '''
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         # Get the repo
         repo = self.yumbase.repos.getRepo(repoid)
         if repo:
@@ -1487,6 +1508,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def install_signature(self,sigtype,key_id,package):
         self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
