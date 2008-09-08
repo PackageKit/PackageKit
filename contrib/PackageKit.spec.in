@@ -1,7 +1,7 @@
 %define glib2_version           2.16.1
 %define dbus_version            0.90
 %define dbus_glib_version       0.70
-%define policykit_version       0.7
+%define policykit_version       0.8
 %define alphatag                #ALPHATAG#
 
 %{!?python_sitelib: %define python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
