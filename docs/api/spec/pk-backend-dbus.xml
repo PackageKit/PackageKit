@@ -26,7 +26,7 @@
   <para>
     Again, like the helper backends described above, a compiled
     backend stub is needed. An example of a DBUS backend written
-    in python can be found in <literal>backends/yum2</literal>,
+    in python can be found in <literal>backends/apt</literal>,
     along with a compiled stub written in C.
   </para>
 </chapter>

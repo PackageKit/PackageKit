@@ -117,7 +117,7 @@ using PackageKit.
 %setup -q
 
 %build
-%configure --enable-yum --enable-yum2 --with-default-backend=yum --disable-local
+%configure --enable-yum --with-default-backend=yum --disable-local
 
 make %{?_smp_mflags}
 
