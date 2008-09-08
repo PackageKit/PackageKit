@@ -1,3 +1,93 @@
+Version 0.3.2
+~~~~~~~~~~~~~~
+Released: 2008-09-08
+
+Notes:
+ - This is the first release with the dispatcher functionality that allows
+   backend reuse. This speeds up packagekitd to native speeds when doing
+   repeated similar transactions from the same session and locale.
+
+Translations:
+ - Updated Spanish translation (Domingo Becker)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Polish translation (Piotr Drąg)
+ - Updated Finnish translation (Ville-Pekka Vainio)
+
+New Features:
+ - Allow the engine to reuse the backend as a dispatcher (Richard Hughes, Tim Lauridsen)
+ - Optionally auto-run pk-generate-package-list and pk-import-desktop (Richard Hughes)
+ - Unexport generic functions libpackagekit to avoid pollution (Richard Hughes)
+
+Bugfixes:
+ - Fix pkcon to treat the filters as bitfields, not enums (Richard Hughes)
+ - Check the install_files input before we process it. Fixes fd#17350 (Richard Hughes)
+ - Add another error enum for package conflicts (Richard Hughes)
+ - Add instructions for getting PackageKit on Ubuntu (Dimitris Symeonidis)
+ - Add the new status enum LOADING_CACHE (Richard Hughes)
+ - Fix pk-import-desktop so that it uses a valid bitfield, not just an enum (Richard Hughes)
+ - Spawned backends are allowed to call finished manually (Richard Hughes)
+ - Don't corrupt envp when we pass it to the new executable (Richard Hughes)
+ - Allow the backend to force the dispatcher to close after a timeout (Richard Hughes)
+ - Wait for the previous dispatcher to finish exiting before we try to launch the new one (Richard Hughes)
+ - Fix the dispatcher when called from different user sessions or locales (Richard Hughes)
+ - Remove pk-backend-python and the complicated interpretor stuff (Richard Hughes)
+ - Give a warning if a package is already installed, and a proper error if all
+   packages in the transaction are already installed. Fixes rh#459870 (Robin Norwood)
+ - Fix udev firmware rule to call the correct script (Scott Reeves)
+ - Rename the mime extension so we match service packs (Shishir Goyal)
+ - Fix the python enum converter to allow underscores in the value names (Sebastian Heinlein)
+ - Add support for distro upgrades to the dbus backend (Sebastian Heinlein)
+
+Backends:
+ - apt: Implement SearchFile (Sebastian Heinlein)
+ - apt: Implement the free filter (Sebastian Heinlein)
+ - apt: Handle the candidate origin to not break on obsolete packages (Sebastian Heinlein)
+ - apt: Add a custom cache class based on python-apt's consolidate branch (Sebastian Heinlein)
+ - apt: Import latest debfile from python-apt's consolidate branch (Sebastian Heinlein)
+ - apt: The __iter__ now uses a sorted list of the package names (Sebastian Heinlein)
+ - apt: Fix section to group mapping for non-main packages (Sebastian Heinlein)
+ - apt: Implement GetDistroUpgrades (Sebastian Heinlein)
+ - apt: Implement GetRepoList (Sebastian Heinlein)
+ - apt: Implement RepoEnable (Sebastian Heinlein)
+ - apt: Updates which succeed a security update as a security update (Sebastian Heinlein)
+ - apt: Acquire the system lock before making any invasive changes (Sebastian Heinlein)
+ - apt: Fail correctly if installing from cdrom (Sebastian Heinlein)
+ - apt: Detect a cancel in the cache refreshing correctly (Sebastian Heinlein)
+ - apt: Use the correct names if we fail to get the changelog. Fixes fd#17406 (Richard Hughes)
+ - apt: Remove the localised error descriptions (Richard Hughes)
+ - smart: Allow for multiple packages (Anders F Bjorklund)
+ - smart: Add get_packages (Anders F Bjorklund)
+ - smart: Add RPM/DEB groups (Anders F Bjorklund)
+ - smart: Add get_requires (Anders F Bjorklund)
+ - smart: Add basic status reports (Anders F Bjorklund)
+ - smart: Add more filters, graphical/development/license (Anders F Bjorklund)
+ - smart: Use filters for depends/requires (Anders F Bjorklund)
+ - smart: Make packageid work for deb/slack channels (Anders F Bjorklund)
+ - smart: Add search_file (Anders F Bjorklund)
+ - smart: Add what_provides (Anders F Bjorklund)
+ - smart: Add repo_set_data (Anders F Bjorklund)
+ - smart: Do graphical/development filtering (Anders F Bjorklund)
+ - smart: Add newest filtering (Anders F Bjorklund)
+ - smart: Fix packages/depends/requires bug with post filters (Anders F Bjorklund)
+ - smart: Allow cancel - killing backend (Anders F Bjorklund)
+ - smart: Show package for download/install (Anders F Bjorklund)
+ - smart: Don't forget the files signal in smart download (Anders F Bjorklund)
+ - smart: Don't remove essential packages (Anders F Bjorklund)
+ - smart: Avoid bombing out for smart progress updates without packages (Anders F Bjorklund)
+ - smart: Optionally allow backend to use dispatcher (Anders F Bjorklund)
+ - yum: Use inheritence insted of declaring a helper class (Tim Lauridsen)
+ - yum: Cleanup imports (Tim Lauridsen)
+ - yum: Use the sqlite3 build into python-2.5 (Tim Lauridsen)
+ - yum: Add dispatcher script for future improvement of the backend (Tim Lauridsen)
+ - yum: Let the yum backend use the new multiple command dispatcher (Tim Lauridsen)
+ - yum: Don't always prefer the first package returned from returnNewestByNameArch()
+        as this will be i386 on x64 which is wrong on multiarch (Richard Hughes)
+ - yum: Use the new PACKAGE_CONFLICTS error enum. Fixes rh#459914 (Richard Hughes)
+ - yum: Add GetDistroUpgrades support using the preupgrade package (Richard Hughes)
+ - yum: Never set self.yumbase.conf.cache = 1 to fix the dispatcher (Richard Hughes)
+ - yum2: Remove the yum2 plugin now we have a fast dispatcher (Richard Hughes)
+ - zypp: Updated pk-matrix (Stefan Haas)
+
 Version 0.3.1
 ~~~~~~~~~~~~~~
 Released: 2008-08-27
