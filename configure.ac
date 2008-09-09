@@ -56,7 +56,7 @@ dnl ---------------------------------------------------------------------------
 if test "$GCC" = "yes"; then
 	CPPFLAGS="$CPPFLAGS -Wcast-align -Wno-uninitialized"
 	CPPFLAGS="$CPPFLAGS -Wall -Wformat-security -Wreturn-type"
-#	CPPFLAGS="$CPPFLAGS -Werror"
+	CPPFLAGS="$CPPFLAGS -Werror"
 fi
 
 dnl ---------------------------------------------------------------------------
