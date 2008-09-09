@@ -3,6 +3,7 @@ dist_udevrules_DATA = 51-packagekit-firmware.rules
 
 install-data-hook:
 	if test -w $(DESTDIR)/; then \
+		mkdir $(DESTDIR)/var/run/PackageKit/udev; \
 		mkdir -p $(DESTDIR)/lib/udev; \
 		cp $(top_srcdir)/contrib/udev/packagekit-firmware.sh $(DESTDIR)/lib/udev; \
 	fi

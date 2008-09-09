@@ -68,6 +68,7 @@
 #include "pk-inhibit.h"
 #include "pk-update-detail-list.h"
 #include "pk-conf.h"
+#include "pk-shared.h"
 #include "pk-cache.h"
 #include "pk-notify.h"
 #include "pk-security.h"
@@ -478,9 +479,8 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	gboolean ret;
 	GError *error = NULL;
 	const gchar *exit_text;
-	const gchar *filename;
+	gchar *filename;
 	guint time;
-	gint retval;
 	gchar *packages;
 	gchar *command;
 
@@ -595,13 +595,14 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 			}
 			g_free (command);
 		}
-		/* clear the firmware interface file */
-		filename = "/var/run/PackageKit/udev-firmware";
-		if (g_file_test (filename, G_FILE_TEST_EXISTS)) {
-			retval = g_unlink (filename);
-			if (retval != 0)
-				egg_warning ("failed to delete %s", filename);
-		}
+
+		/* clear the firmware requests directory */
+		filename = g_build_filename (LOCALSTATEDIR, "run", "PackageKit", "udev", NULL);
+		egg_debug ("clearing udev firmware requests at %s", filename);
+		ret = pk_directory_remove_contents (filename);
+		if (!ret)
+			egg_warning ("failed to clear %s", filename);
+		g_free (filename);
 	}
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */

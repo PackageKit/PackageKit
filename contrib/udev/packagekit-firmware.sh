@@ -11,8 +11,9 @@
 FIRMWARE_DIR="/lib/firmware"
 
 if [ ! -e "$FIRMWARE_DIR/$FIRMWARE" ]; then
-	# we've need firmware
-	echo "$FIRMWARE_DIR/$FIRMWARE" > /var/run/PackageKit/udev-firmware
+	# we've need firmware that doesn't exist
+	fn=`mktemp -u -p /var/run/PackageKit/udev firmware-XXXXXXXX`
+	echo "$FIRMWARE_DIR/$FIRMWARE" > $fn
 fi
 
 exit 0
