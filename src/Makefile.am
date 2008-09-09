@@ -54,6 +54,8 @@ shared_SOURCES =					\
 	pk-security.h					\
 	pk-network.c					\
 	pk-network.h					\
+	pk-shared.c					\
+	pk-shared.h					\
 	pk-network-nm.h					\
 	pk-network-unix.c				\
 	pk-network-unix.h				\
