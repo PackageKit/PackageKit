@@ -382,12 +382,13 @@ class PackageKitDpkgInstallProgress(DpkgInstallProgress,
             os.write(self.master_fd, chr(3))
 
 
-class PackageKitSoftwareProperties(softwareproperties.SoftwareProperties.SoftwareProperties):
-    """
-    Helper class to fix a siily bug in python-software-properties
-    """
-    def set_modified_sourceslist(self):
-        self.save_sourceslist()
+if REPOS_SUPPORT == True:
+    class PackageKitSoftwareProperties(softwareproperties.SoftwareProperties.SoftwareProperties):
+        """
+        Helper class to fix a siily bug in python-software-properties
+        """
+        def set_modified_sourceslist(self):
+            self.save_sourceslist()
 
 
 class PackageKitAptBackend(PackageKitBaseBackend):
