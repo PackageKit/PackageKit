@@ -20,6 +20,7 @@ Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: PackageKit-libs = %{version}-%{release}
 Requires: yum-packagekit = %{version}-%{release}
+Requires: udev-packagekit = %{version}-%{release}
 Requires: PackageKit-yum = %{version}-%{release}
 Requires: shared-mime-info
 Requires: python-sqlite2
