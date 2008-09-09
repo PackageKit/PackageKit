@@ -478,7 +478,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	gboolean ret;
 	GError *error = NULL;
 	const gchar *exit_text;
+	const gchar *filename;
 	guint time;
+	gint retval;
 	gchar *packages;
 	gchar *command;
 
@@ -592,6 +594,13 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 				g_error_free (error);
 			}
 			g_free (command);
+		}
+		/* clear the firmware interface file */
+		filename = "/var/run/PackageKit/udev-firmware";
+		if (g_file_test (filename, G_FILE_TEST_EXISTS)) {
+			retval = g_unlink (filename);
+			if (retval != 0)
+				egg_warning ("failed to delete %s", filename);
 		}
 	}
 
