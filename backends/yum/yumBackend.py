@@ -788,7 +788,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.percentage(100)
 
         except yum.Errors.RepoError,e:
-            self.error(ERROR_REPO_CONFIGURATION_ERROR,str(e))
+                message = self._format_msgs(e.value)
+                if message.find ("No more mirrors to try") != -1:
+                    self.error(ERROR_FILE_NO_MORE_MIRRORS_TO_TRY,message)
+                else:
+                    self.error(ERROR_REPO_CONFIGURATION_ERROR,message)
         except yum.Errors.YumBaseError,e:
             self.error(ERROR_UNKNOWN,"cannot refresh cache: %s" % str(e))
 
