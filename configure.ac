@@ -55,7 +55,8 @@ dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
 if test "$GCC" = "yes"; then
 	CPPFLAGS="$CPPFLAGS -Wcast-align -Wno-uninitialized"
-	CPPFLAGS="$CPPFLAGS -Wall -Wformat-security -Wreturn-type"
+	CPPFLAGS="$CPPFLAGS -Wall -Wreturn-type"
+#	CPPFLAGS="$CPPFLAGS -Wformat-security"
 	CPPFLAGS="$CPPFLAGS -Werror"
 fi
 
