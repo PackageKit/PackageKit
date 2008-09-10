@@ -141,6 +141,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
+            if not results:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
             packages.extend(self._process_search_results(results))
 
         available = []
@@ -193,6 +197,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
+            if not results:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
             packages.extend(self._process_search_results(results))
 
         installed = []
@@ -739,10 +747,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             pkg = "%s-%s" % (name, version)
         return pkg
 
-    def _search_packageid(self, packageid):
+    def _string_packageid(self, packageid):
         idparts = packageid.split(';')
         # note: currently you can only search in channels native to system
         packagestring = self._joinpackage(idparts[0], idparts[1], idparts[2])
+        return packagestring
+
+    def _search_packageid(self, packageid):
+        packagestring = self._string_packageid(packageid)
         ratio, results, suggestions = self.ctrl.search(packagestring)
 
         return (ratio, results, suggestions)
