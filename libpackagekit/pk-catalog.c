@@ -174,12 +174,18 @@ pk_catalog_process_type (PkCatalog *catalog)
 		/* do the actions */
 		if (mode == PK_CATALOG_PROGRESS_PACKAGES) {
 			packages = pk_package_ids_from_id (package);
-			ret = pk_client_resolve (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, packages, &error);
+			ret = pk_client_resolve (catalog->priv->client,
+						 pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						 packages, &error);
 			g_strfreev (packages);
 		} else if (mode == PK_CATALOG_PROGRESS_FILES) {
-			ret = pk_client_search_file (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, package, &error);
+			ret = pk_client_search_file (catalog->priv->client,
+						     pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						     package, &error);
 		} else if (mode == PK_CATALOG_PROGRESS_PROVIDES) {
-			ret = pk_client_what_provides (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, 0, package, &error);
+			ret = pk_client_what_provides (catalog->priv->client,
+						      pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						      PK_PROVIDES_ENUM_ANY, package, &error);
 		}
 		if (!ret) {
 			egg_warning ("method failed: %s", error->message);
