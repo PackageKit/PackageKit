@@ -570,6 +570,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             return True
         return False
 
+    def _best_package_from_list(self, package_list):
+        for installed in (True, False):
+            best = None
+            for package in package_list:
+                if not best or package > best:
+                    best = package
+            if best:
+                return best
+        return None
+
     @needs_cache
     def get_depends(self, filters, packageids, recursive_text):
         recursive = self._text_to_boolean(recursive_text)
@@ -584,15 +594,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 return
 
             package = packages[0]
+            original = package
 
-            providers = {}
+            extras = {}
             for required in package.requires:
+                providers = {}
                 for provider in required.providedby:
                     for package in provider.packages:
                         if not providers.has_key(package):
                             providers[package] = True
+                package = self._best_package_from_list(providers.keys())
+                if package and not extras.has_key(package):
+                    extras[package] = True
 
-            for package in providers.keys():
+            del extras[original]
+            for package in extras.keys():
                 if self._package_passes_filters(package, filters):
                     self._add_package(package)
             self._post_process_package_list(filters)
@@ -612,15 +628,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 return
 
             package = packages[0]
+            original = package
 
-            requirers = {}
+            extras = {}
             for provided in package.provides:
+                requirers = {}
                 for requirer in provided.requiredby:
                     for package in requirer.packages:
                         if not requirers.has_key(package):
                             requirers[package] = True
+                package = self._best_package_from_list(requirers.keys())
+                if package and not extras.has_key(package):
+                    extras[package] = True
 
-            for package in requirers.keys():
+            del extras[original]
+            for package in extras.keys():
                 if self._package_passes_filters(package, filters):
                     self._add_package(package)
             self._post_process_package_list(filters)
