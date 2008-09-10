@@ -40,7 +40,21 @@
 static void
 pk_monitor_task_list_changed_cb (PkTaskList *tlist, gpointer data)
 {
-	pk_task_list_print (tlist);
+	guint i;
+	PkTaskListItem *item;
+	guint length;
+
+	length = pk_task_list_get_size (tlist);
+	g_print ("Tasks:\n");
+	if (length == 0) {
+		g_print ("[none]\n");
+		return;
+	}
+	for (i=0; i<length; i++) {
+		item = pk_task_list_get_item (tlist, i);
+		g_print ("#%i\t%s\t%s (%s)\t%s\n", i+1, item->tid, pk_role_enum_to_text (item->role),
+			 pk_status_enum_to_text (item->status), item->text);
+	}
 }
 
 /**

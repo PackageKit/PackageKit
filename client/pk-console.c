@@ -545,7 +545,6 @@ pk_console_perhaps_resolve (PkClient *client, PkBitfield filter, const gchar *pa
 
 	/* we need to resolve it */
 	packages = pk_package_ids_from_id (package);
-egg_warning ("%s: %i", packages[0], filter);
 	ret = pk_client_resolve (client_task, filter, packages, error);
 	g_strfreev (packages);
 	if (!ret) {

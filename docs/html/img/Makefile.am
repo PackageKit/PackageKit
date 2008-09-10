@@ -9,6 +9,7 @@ IMAGE_FILES =					\
 	large-preferences-system.png		\
 	large-system-users.png			\
 	packagekit.png				\
+	pk-web-plugin.png			\
 	pk-update-bugfix.png			\
 	pk-update-enhancement.png		\
 	pk-update-high.png			\

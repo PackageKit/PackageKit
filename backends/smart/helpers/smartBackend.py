@@ -141,6 +141,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
+            if not results:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
             packages.extend(self._process_search_results(results))
 
         available = []
@@ -193,6 +197,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
+            if not results:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
             packages.extend(self._process_search_results(results))
 
         installed = []
@@ -570,6 +578,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             return True
         return False
 
+    def _best_package_from_list(self, package_list):
+        for installed in (True, False):
+            best = None
+            for package in package_list:
+                if not best or package > best:
+                    best = package
+            if best:
+                return best
+        return None
+
     @needs_cache
     def get_depends(self, filters, packageids, recursive_text):
         recursive = self._text_to_boolean(recursive_text)
@@ -584,15 +602,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 return
 
             package = packages[0]
+            original = package
 
-            providers = {}
+            extras = {}
             for required in package.requires:
+                providers = {}
                 for provider in required.providedby:
                     for package in provider.packages:
                         if not providers.has_key(package):
                             providers[package] = True
+                package = self._best_package_from_list(providers.keys())
+                if package and not extras.has_key(package):
+                    extras[package] = True
 
-            for package in providers.keys():
+            del extras[original]
+            for package in extras.keys():
                 if self._package_passes_filters(package, filters):
                     self._add_package(package)
             self._post_process_package_list(filters)
@@ -612,15 +636,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 return
 
             package = packages[0]
+            original = package
 
-            requirers = {}
+            extras = {}
             for provided in package.provides:
+                requirers = {}
                 for requirer in provided.requiredby:
                     for package in requirer.packages:
                         if not requirers.has_key(package):
                             requirers[package] = True
+                package = self._best_package_from_list(requirers.keys())
+                if package and not extras.has_key(package):
+                    extras[package] = True
 
-            for package in requirers.keys():
+            del extras[original]
+            for package in extras.keys():
                 if self._package_passes_filters(package, filters):
                     self._add_package(package)
             self._post_process_package_list(filters)
@@ -717,10 +747,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             pkg = "%s-%s" % (name, version)
         return pkg
 
-    def _search_packageid(self, packageid):
+    def _string_packageid(self, packageid):
         idparts = packageid.split(';')
         # note: currently you can only search in channels native to system
         packagestring = self._joinpackage(idparts[0], idparts[1], idparts[2])
+        return packagestring
+
+    def _search_packageid(self, packageid):
+        packagestring = self._string_packageid(packageid)
         ratio, results, suggestions = self.ctrl.search(packagestring)
 
         return (ratio, results, suggestions)
