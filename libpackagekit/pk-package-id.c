@@ -152,18 +152,14 @@ pk_package_id_new_from_string (const gchar *package_id)
 
 	/* create new object */
 	id = pk_package_id_new ();
-	if (egg_strzero (sections[0]) == FALSE) {
+	if (!egg_strzero (sections[0]))
 		id->name = g_strdup (sections[0]);
-	}
-	if (egg_strzero (sections[1]) == FALSE) {
+	if (!egg_strzero (sections[1]))
 		id->version = g_strdup (sections[1]);
-	}
-	if (egg_strzero (sections[2]) == FALSE) {
+	if (!egg_strzero (sections[2]))
 		id->arch = g_strdup (sections[2]);
-	}
-	if (egg_strzero (sections[3]) == FALSE) {
+	if (!egg_strzero (sections[3]))
 		id->data = g_strdup (sections[3]);
-	}
 	g_strfreev (sections);
 	return id;
 }
@@ -218,9 +214,12 @@ pk_package_id_copy (const PkPackageId *id)
 gchar *
 pk_package_id_to_string (const PkPackageId *id)
 {
-	return g_strdup_printf ("%s;%s;%s;%s",
-				id->name, id->version,
-				id->arch, id->data);
+	g_return_val_if_fail (id != NULL, NULL);
+	g_return_val_if_fail (id->name != NULL, NULL);
+	return g_strdup_printf ("%s;%s;%s;%s", id->name,
+				id->version != NULL ? id->version : "",
+				id->arch != NULL ? id->arch : "",
+				id->data != NULL ? id->data : "");
 }
 
 /**
@@ -237,11 +236,10 @@ pk_package_id_build (const gchar *name, const gchar *version,
 		     const gchar *arch, const gchar *data)
 {
 	g_return_val_if_fail (name != NULL, NULL);
-	g_return_val_if_fail (version != NULL, NULL);
-	g_return_val_if_fail (arch != NULL, NULL);
-	g_return_val_if_fail (data != NULL, NULL);
-
-	return g_strdup_printf ("%s;%s;%s;%s", name, version, arch, data);
+	return g_strdup_printf ("%s;%s;%s;%s", name,
+				version != NULL ? version : "",
+				arch != NULL ? arch : "",
+				data != NULL ? data : "");
 }
 
 /**
@@ -382,12 +380,20 @@ pk_package_id_test (EggTest *test)
 	 ****************          id           ******************
 	 ************************************************************/
 
-	egg_test_title (test, "id build");
+	egg_test_title (test, "id build valid");
 	text = pk_package_id_build ("moo", "0.0.1", "i386", "fedora");
 	if (egg_strequal (text, "moo;0.0.1;i386;fedora"))
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
+	g_free (text);
+
+	egg_test_title (test, "id build partial");
+	text = pk_package_id_build ("moo", NULL, NULL, NULL);
+	if (egg_strequal (text, "moo;;;"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got '%s', expected '%s'", text, "moo;;;");
 	g_free (text);
 
 	egg_test_title (test, "pid equal pass (same)");
@@ -441,6 +447,7 @@ pk_package_id_test (EggTest *test)
 		egg_test_failed (test, "passed an invalid string '%s'", temp);
 	}
 
+
 	/************************************************************/
 	egg_test_title (test, "parse package_id from string");
 	id = pk_package_id_new_from_string ("moo;0.0.1;i386;fedora");
@@ -472,6 +479,18 @@ pk_package_id_test (EggTest *test)
 	g_free (text);
 	pk_package_id_free (id);
 	pk_package_id_free (id2);
+
+	/************************************************************/
+	egg_test_title (test, "test id building with partial data");
+	id = pk_package_id_new_from_string ("moo;;;");
+	text = pk_package_id_to_string (id);
+	if (egg_strequal (text, "moo;;;"))
+		egg_test_success (test, NULL);
+	else {
+		egg_test_failed (test, "package_id is '%s', should be '%s'", text, "moo;;;");
+	}
+	g_free (text);
+	pk_package_id_free (id);
 
 	/************************************************************/
 	egg_test_title (test, "parse short package_id from string");
