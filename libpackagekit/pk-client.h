@@ -249,7 +249,7 @@ gboolean	 pk_client_get_requires			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_what_provides		(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 PkProvidesEnum	 provides,
 							 const gchar	*search,
 							 GError		**error)
