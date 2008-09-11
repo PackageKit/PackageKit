@@ -517,7 +517,7 @@ pk_backend_get_pointer (PkBackend *backend, const gchar *key)
 	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
 	if (value == NULL) {
 		egg_warning ("not set data for %s", key);
-		return FALSE;
+		return NULL;
 	}
 	return value-1;
 }
