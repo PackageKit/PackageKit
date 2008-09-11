@@ -317,12 +317,14 @@ pk_generate_pack_archive_add_file (struct archive *arch, const gchar *filename, 
 		goto out;
 	}
 
-	/* write data to archive -- how come no convenience function? */
+	/* ITS4: ignore, buffer statically preallocated  */
 	len = read (fd, buff, sizeof (buff));
+	/* write data to archive -- how come no convenience function? */
 	while (len > 0) {
 		wrote = archive_write_data (arch, buff, len);
 		if (wrote != len)
 			egg_warning("wrote %i instead of %i\n", wrote, len);
+		/* ITS4: ignore, buffer statically preallocated  */
 		len = read (fd, buff, sizeof (buff));
 	}
 	ret = TRUE;
