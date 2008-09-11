@@ -235,6 +235,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
+            if not results:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
             packages.extend(self._process_search_results(results))
 
         installed = [package for package in packages if package.installed]
@@ -257,6 +261,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
+            if not results:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
             packages.extend(self._process_search_results(results))
         if len(packages) < 1:
             return
