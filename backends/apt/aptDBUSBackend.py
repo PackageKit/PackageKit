@@ -828,7 +828,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Emit distro's virtual source code repositoriy
         if not FILTER_NOT_DEVELOPMENT in filter_list:
             repo_id = "%s_source" % repos.distro.id
-            enabled = repos.get_source_code_state()
+            #FIXME: should inconsistent state be disabled?
+            enabled = repos.get_source_code_state() or False
             #FIXME: no translation :(
             description = "%s %s - Source code" % (repos.distro.id, 
                                                    repos.distro.release)
