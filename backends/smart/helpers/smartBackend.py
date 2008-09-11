@@ -138,6 +138,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.allow_cancel(self, allow)
         self._cancel = allow
 
+    def reset(self):
+        self._package_list = []
+
     @needs_cache
     def install_packages(self, packageids):
         packages = []
@@ -983,6 +986,7 @@ def main():
         line = raw_input('')
         if line == 'exit':
             break
+        backend.reset()
         args = line.split(' ')
         backend.dispatch_command(args[0],args[1:])
 
