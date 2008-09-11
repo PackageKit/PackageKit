@@ -122,19 +122,12 @@ pk_update_detail_list_get_obj (PkUpdateDetailList *list, const PkPackageId *id)
 static void
 pk_update_detail_list_finalize (GObject *object)
 {
-	guint i;
-	guint len;
-	PkUpdateDetailObj *obj;
 	PkUpdateDetailList *list;
 	g_return_if_fail (PK_IS_UPDATE_DETAIL_LIST (object));
 	list = PK_UPDATE_DETAIL_LIST (object);
 
 	/* free the list */
-	len = list->priv->array->len;
-	for (i=0; i<len; i++) {
-		obj = (PkUpdateDetailObj *) g_ptr_array_index (list->priv->array, i);
-		pk_update_detail_obj_free (obj);
-	}
+	g_ptr_array_foreach (list->priv->array, (GFunc) pk_update_detail_obj_free, NULL);
 	g_ptr_array_free (list->priv->array, FALSE);
 
 	G_OBJECT_CLASS (pk_update_detail_list_parent_class)->finalize (object);

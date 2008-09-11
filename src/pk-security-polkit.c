@@ -194,9 +194,8 @@ pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
 	/* get the dbus sender */
 	pk_result = pk_security_can_do_action (security, dbus_sender, policy);
 	if (pk_result != POLKIT_RESULT_YES) {
-		if (error_detail != NULL) {
+		if (error_detail != NULL)
 			*error_detail = g_strdup_printf ("%s %s", policy, polkit_result_to_string_representation (pk_result));
-		}
 		return FALSE;
 	}
 	return TRUE;
@@ -251,9 +250,8 @@ pk_security_io_add_watch (PolKitContext *pk_context, int fd)
 	guint id = 0;
 	GIOChannel *channel;
 	channel = g_io_channel_unix_new (fd);
-	if (channel == NULL) {
+	if (channel == NULL)
 		return id;
-	}
 	id = g_io_add_watch (channel, G_IO_IN, pk_security_io_watch_have_data, pk_context);
 	if (id == 0) {
 		g_io_channel_unref (channel);
@@ -282,7 +280,7 @@ pk_security_io_remove_watch (PolKitContext *pk_context, int watch_id)
 static void
 pk_security_init (PkSecurity *security)
 {
-	PolKitError *egg_error;
+	PolKitError *pk_error;
 	polkit_bool_t retval;
 	DBusError dbus_error;
 
@@ -308,11 +306,11 @@ pk_security_init (PkSecurity *security)
 					       pk_security_io_add_watch,
 					       pk_security_io_remove_watch);
 
-	egg_error = NULL;
-	retval = polkit_context_init (security->priv->pk_context, &egg_error);
+	pk_error = NULL;
+	retval = polkit_context_init (security->priv->pk_context, &pk_error);
 	if (retval == FALSE) {
-		egg_warning ("Could not init PolicyKit context: %s", polkit_error_get_error_message (egg_error));
-		polkit_error_free (egg_error);
+		egg_warning ("Could not init PolicyKit context: %s", polkit_error_get_error_message (pk_error));
+		polkit_error_free (pk_error);
 	}
 }
 
@@ -374,30 +372,27 @@ pk_security_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "map valid role to action");
 	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	if (egg_strequal (action, "org.freedesktop.packagekit.system-update")) {
+	if (egg_strequal (action, "org.freedesktop.packagekit.system-update"))
 		egg_test_success (test, NULL, error);
-	} else {
+	else
 		egg_test_failed (test, "did not get correct action '%s'", action);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "map invalid role to action");
 	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_SEARCH_NAME);
-	if (action == NULL) {
+	if (action == NULL)
 		egg_test_success (test, NULL, error);
-	} else {
+	else
 		egg_test_failed (test, "did not get correct action '%s'", action);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "get the default backend");
 	error = NULL;
 	ret = pk_security_action_is_allowed (security, ":0", FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		egg_test_success (test, "did not authenticate update-package, error '%s'", error);
-	} else {
+	else
 		egg_test_failed (test, "authenticated update-package!");
-	}
 	g_free (error);
 
 	g_object_unref (security);
