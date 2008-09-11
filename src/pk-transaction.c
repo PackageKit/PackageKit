@@ -1069,6 +1069,7 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 
 	if (transaction->priv->tid != NULL) {
 		egg_warning ("changing a tid -- why?");
+		return FALSE;
 	}
 	g_free (transaction->priv->tid);
 	transaction->priv->tid = g_strdup (tid);
