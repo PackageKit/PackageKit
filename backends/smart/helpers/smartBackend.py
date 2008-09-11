@@ -320,8 +320,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         for (package, op) in trans.getChangeSet().items():
             if op == smart.transaction.INSTALL:
-                status = self._get_status(package)
-                self._add_package(package, status)
+                if self._package_passes_filters(package, filters):
+                    status = self._get_status(package)
+                    self._add_package(package, status)
         self._post_process_package_list(filters)
         self._show_package_list()
 
