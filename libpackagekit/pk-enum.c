@@ -251,6 +251,7 @@ static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_SCIENCE,			"science"},
 	{PK_GROUP_ENUM_DOCUMENTATION,		"documentation"},
 	{PK_GROUP_ENUM_ELECTRONICS,		"electronics"},
+	{PK_GROUP_ENUM_META_PACKAGES,		"meta-packages"},
 	{0, NULL}
 };
 
