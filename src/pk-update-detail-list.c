@@ -128,7 +128,7 @@ pk_update_detail_list_finalize (GObject *object)
 
 	/* free the list */
 	g_ptr_array_foreach (list->priv->array, (GFunc) pk_update_detail_obj_free, NULL);
-	g_ptr_array_free (list->priv->array, FALSE);
+	g_ptr_array_free (list->priv->array, TRUE);
 
 	G_OBJECT_CLASS (pk_update_detail_list_parent_class)->finalize (object);
 }
