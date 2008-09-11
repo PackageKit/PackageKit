@@ -803,8 +803,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if package.installed and not channel.getType().endswith('-sys'):
                 continue
             info = loader.getInfo(package)
-            self.package(pkpackage.get_package_id(name, version, arch,
-                channel.getAlias()), status, info.getSummary())
+            if package.installed:
+                data = 'installed'
+            elif isinstance(channel, smart.channel.FileChannel):
+                data = 'local'
+            else:
+                data = channel.getAlias()
+            self.package(pkpackage.get_package_id(name, version, arch, data),
+                status, info.getSummary())
 
     def _get_status(self, package):
         flags = smart.pkgconf.testAllFlags(package)
