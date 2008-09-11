@@ -101,9 +101,11 @@ class PackageKitSmartProgress(Progress):
                         info = loader.getInfo(package)
                         for url in info.getURLs():
                             # account for progress url from current mirror
-                            url = str(self._fetcher.getItem(url).getURL())
-                            if subtopic == url:
-                                self._backend._show_package(package)
+                            item = self._fetcher.getItem(url)
+                            if item:
+                                url = str(item.getURL())
+                                if subtopic == url:
+                                    self._backend._show_package(package)
                 self._lasturl = subtopic
             elif isinstance(subkey, smart.cache.Package):
                 self._backend._show_package(subkey)
