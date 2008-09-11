@@ -131,7 +131,10 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_spawn_helper (spawn, "get-details.pl", package_ids[0], NULL);
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "get-details.pl", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -173,7 +176,10 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_spawn_helper (spawn, "get-update-detail.pl", package_ids[0], NULL);
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "get-update-detail.pl", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -257,10 +263,13 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 static void
 backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-requires.pl", filters_text, package_ids[0], pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "get-requires.pl", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
+	g_free (package_ids_temp);
 }
 
 /**
