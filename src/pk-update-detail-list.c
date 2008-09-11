@@ -192,8 +192,6 @@ void
 pk_update_detail_test_list (EggTest *test)
 {
 	PkUpdateDetailList *list;
-	gchar *text;
-	gint value;
 
 	if (!egg_test_start (test, "PkUpdateDetailList"))
 		return;
