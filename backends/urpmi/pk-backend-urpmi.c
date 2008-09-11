@@ -131,7 +131,10 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_spawn_helper (spawn, "get-details.pl", package_ids[0], NULL);
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "get-details.pl", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
