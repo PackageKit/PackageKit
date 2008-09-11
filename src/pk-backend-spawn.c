@@ -51,7 +51,6 @@
 #include "pk-backend-internal.h"
 #include "pk-backend-spawn.h"
 #include "pk-marshal.h"
-#include "pk-enum.h"
 #include "pk-spawn.h"
 #include "pk-time.h"
 #include "pk-inhibit.h"
