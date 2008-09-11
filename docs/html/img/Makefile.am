@@ -34,6 +34,7 @@ IMAGE_FILES =					\
 	gpk-updates-warning.png			\
 	gpk-waiting.png				\
 	gpk-remove-confirm.png			\
+	gpk-distro-upgrade-notify.png		\
 	$(NULL)
 
 EXTRA_DIST = 					\
