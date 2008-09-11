@@ -53,7 +53,7 @@ cross-architecture API.
 %package yum
 Summary: PackageKit YUM backend
 Group: System Environment/Libraries
-Requires: yum >= 3.2.6
+Requires: yum >= 3.2.19
 Requires: %{name} = %{version}-%{release}
 
 %description yum
