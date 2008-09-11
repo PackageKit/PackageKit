@@ -303,9 +303,12 @@ static void
 backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
+	gchar *package_ids_temp;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "resolve.pl", filters_text, package_ids[0], NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "resolve.pl", filters_text, package_ids_temp, NULL);
 	g_free (filters_text);
+	g_free (package_ids_temp);
 }
 
 /**
