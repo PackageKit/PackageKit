@@ -21,7 +21,6 @@
 # imports
 from packagekit.backend import *
 from packagekit.package import PackagekitPackage
-from yumDirect import *
 
 import yum
 import rpmUtils
@@ -161,10 +160,7 @@ class YumFilter(object,PackagekitPackage):
             wantInstalled = True
         else:
             wantInstalled = False
-        if isinstance(pkg,PackageObjectSimple):
-            isInstalled = False
-        else:
-            isInstalled = pkg.repo.id == 'installed'
+        isInstalled = pkg.repo.id == 'installed'
         return isInstalled == wantInstalled
 
     def _do_gui_filtering(self,flt,pkg):
