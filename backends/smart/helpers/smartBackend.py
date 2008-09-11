@@ -542,7 +542,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 if pkgsize:
                     break
             if not pkgsize:
-                pkgsize = "unknown"
+                pkgsize = 0
 
             if hasattr(info, 'getLicense'):
                 license = info.getLicense()
