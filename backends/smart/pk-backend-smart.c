@@ -98,6 +98,7 @@ backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_ARCH,
 		PK_FILTER_ENUM_GUI,
 		PK_FILTER_ENUM_DEVELOPMENT,
+		PK_FILTER_ENUM_BASENAME,
 	/* FIXME: These depend on a newer Smart API: */
 		PK_FILTER_ENUM_FREE,
 		-1);
