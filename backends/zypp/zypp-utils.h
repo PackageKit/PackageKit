@@ -88,6 +88,11 @@ gboolean zypp_is_changeable_media (const zypp::Url &url);
  */
 zypp::ResPool zypp_build_pool (gboolean include_local);
 
+/**  
+* check and warns the user that a repository may be outdated  
+*/  
+void warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool);  
+
 /**
  * Build and return a ResPool that contains only the local resolvables.
  */

@@ -630,6 +630,9 @@ backend_get_updates_thread (PkBackend *backend)
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
 
+	// check if the repositories may be dead (feature #301904)  
+	 warn_outdated_repos(backend, pool);
+
 	// get all Packages and Patches for Update
 	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
 	//std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();

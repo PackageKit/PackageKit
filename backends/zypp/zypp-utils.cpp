@@ -48,6 +48,7 @@
 #include <zypp/target/rpm/RpmHeader.h>
 #include <zypp/target/rpm/librpmDb.h>
 #include <zypp/base/LogControl.h>
+#include <zypp/base/String.h>
 
 #include <zypp/base/Logger.h>
 
@@ -190,6 +191,27 @@ zypp_build_pool (gboolean include_local)
 	}
 
 	return zypp->pool ();
+}
+
+void  
+warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool)  
+{  
+	zypp::Repository repoobj;  
+	zypp::ResPool::repository_iterator it;  
+	for ( it = pool.knownRepositoriesBegin();  
+		it != pool.knownRepositoriesEnd();  
+		++it )  
+	{  
+		zypp::Repository repo(*it);  
+		if ( repo.maybeOutdated() )  
+		{  
+			// warn the user  
+			pk_backend_message (backend,
+					PK_MESSAGE_ENUM_BROKEN_MIRROR,
+					zypp::str::form("The repository %s seems to be outdated. You may want to try another mirror.",
+					repo.alias().c_str()).c_str() );
+		}  
+	}  
 }
 
 zypp::ResPool
