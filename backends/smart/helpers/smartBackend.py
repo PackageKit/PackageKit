@@ -101,9 +101,11 @@ class PackageKitSmartProgress(Progress):
                         info = loader.getInfo(package)
                         for url in info.getURLs():
                             # account for progress url from current mirror
-                            url = str(self._fetcher.getItem(url).getURL())
-                            if subtopic == url:
-                                self._backend._show_package(package)
+                            item = self._fetcher.getItem(url)
+                            if item:
+                                url = str(item.getURL())
+                                if subtopic == url:
+                                    self._backend._show_package(package)
                 self._lasturl = subtopic
             elif isinstance(subkey, smart.cache.Package):
                 self._backend._show_package(subkey)
@@ -233,6 +235,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
+            if not results:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
             packages.extend(self._process_search_results(results))
 
         installed = [package for package in packages if package.installed]
@@ -255,6 +261,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
+            if not results:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
             packages.extend(self._process_search_results(results))
         if len(packages) < 1:
             return
@@ -537,13 +547,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if hasattr(info, 'getLicense'):
                 license = info.getLicense()
             else:
-                license = "unknown"
+                license = LICENSE_UNKNOWN
 
             group = info.getGroup()
             if group in self.GROUPS:
                 group = self.GROUPS[group]
             else:
-                group = "unknown"
+                group = GROUP_UNKNOWN
 
             self.details(packageid, license, group, description, url,
                     pkgsize)

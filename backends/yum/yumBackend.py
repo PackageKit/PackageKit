@@ -256,7 +256,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         fltlist = filters.split(';')
 
         # use direct access for speed
-        direct = YumDirectSQL(self.yumbase)
+        #direct = YumDirectSQL(self.yumbase)
         pkgfilter = YumFilter(fltlist)
 
         # get the packagelist for this group
@@ -273,11 +273,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if FILTER_INSTALLED not in fltlist:
             # ideally we want to use pkgSack.searchNames, but it's broken with
             # 'too many SQL variables' when you pass it lots of packages
-            #pkgs = self.yumbase.pkgSack.searchNames(names=all_packages)
-            #pkgfilter.add_available(pkgs)
-            for package in all_packages:
-                pkgs = direct.resolve(package)
-                pkgfilter.add_available(pkgs)
+            pkgs = self.yumbase.pkgSack.searchNames(names=all_packages)
+            pkgfilter.add_available(pkgs)
+            #for package in all_packages:
+            #    pkgs = direct.resolve(package)
+            #    pkgfilter.add_available(pkgs)
 
         # we couldn't do this when generating the list
         package_list = pkgfilter.post_process()
@@ -286,7 +286,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._show_package_list(package_list)
 
         # close all the databases
-        direct.close()
+        #direct.close()
         self.percentage(100)
 
     @handle_repo_error
