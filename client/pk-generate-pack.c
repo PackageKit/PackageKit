@@ -380,6 +380,7 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	/* completed all okay */
 	ret = TRUE;
 out:
+	g_free (metadata_filename);
 	/* delete each filename */
 	for (i=0; i<file_array->len; i++) {
 		src = (const gchar *) g_ptr_array_index (file_array, i);
@@ -561,8 +562,10 @@ out:
 	if (list != NULL)
 		g_object_unref (list);
 	g_free (package_id);
-	if (file_array != NULL)
+	if (file_array != NULL) {
+		g_ptr_array_foreach (file_array, (GFunc) g_free, NULL);
 		g_ptr_array_free (file_array, TRUE);
+	}
 	return ret;
 }
 
@@ -704,7 +707,7 @@ pk_genpack_test (EggTest *test)
 	file_array = g_ptr_array_new ();
 	src = g_build_filename ("/tmp", "gitk-1.5.5.1-1.fc9.i386.rpm", NULL);
 	g_ptr_array_add (file_array, src);
-	ret = pk_generate_pack_create ("/tmp/gitk.servicepack",file_array, &error);
+	ret = pk_generate_pack_create ("/tmp/gitk.servicepack", file_array, &error);
 	if (!ret) {
 		if (error != NULL) {
 			egg_test_failed (test, "failed to create pack %s" , error->message);
@@ -712,11 +715,13 @@ pk_genpack_test (EggTest *test)
 		} else {
 			egg_test_failed (test, "could not set error");
 		}
-	} else {
+	} else
 		egg_test_success (test, NULL);
-	}
-	if (file_array != NULL)
+
+	if (file_array != NULL) {
+		g_ptr_array_foreach (file_array, (GFunc) g_free, NULL);
 		g_ptr_array_free (file_array, TRUE);
+	}
 	g_remove ("/tmp/gitk.servicepack");
 
 	/************************************************************/

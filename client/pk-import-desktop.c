@@ -187,6 +187,7 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		}
 		g_free (name);
 	}
+	g_ptr_array_foreach (locale_array, (GFunc) g_free, NULL);
 	g_ptr_array_free (locale_array, TRUE);
 	g_free (name_unlocalised);
 	g_print ("]\n");

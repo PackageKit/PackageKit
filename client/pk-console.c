@@ -687,8 +687,8 @@ out:
 	g_strfreev (package_ids);
 	g_strfreev (files);
 	g_ptr_array_foreach (array_files, (GFunc) g_free, NULL);
-	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
 	g_ptr_array_free (array_files, TRUE);
+	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
 	g_ptr_array_free (array_packages, TRUE);
 	return ret;
 }
@@ -873,6 +873,7 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 
 out:
 	g_strfreev (package_ids);
+	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
 	g_ptr_array_free (array_packages, TRUE);
 	return ret;
 }
