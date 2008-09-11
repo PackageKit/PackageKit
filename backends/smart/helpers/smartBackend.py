@@ -809,8 +809,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 data = 'local'
             else:
                 data = channel.getAlias()
+            summary = info.getSummary()
             self.package(pkpackage.get_package_id(name, version, arch, data),
-                status, info.getSummary())
+                status, summary)
 
     def _get_status(self, package):
         flags = smart.pkgconf.testAllFlags(package)
