@@ -56,7 +56,7 @@ pk_package_obj_new (PkInfoEnum info, const PkPackageId *id, const gchar *summary
 {
 	PkPackageObj *obj;
 
-	g_return_val_if_fail (id != NULL, FALSE);
+	g_return_val_if_fail (id != NULL, NULL);
 
 	obj = g_new0 (PkPackageObj, 1);
 	obj->info = info;

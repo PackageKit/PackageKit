@@ -330,9 +330,8 @@ pk_extra_get_summary (PkExtra *extra, const gchar *package)
 
 	/* super quick if exists in cache */
 	obj = g_hash_table_lookup (extra->priv->hash_locale, package);
-	if (obj == NULL) {
-		return FALSE;
-	}
+	if (obj == NULL)
+		return NULL;
 	return obj->summary;
 }
 
@@ -352,9 +351,8 @@ pk_extra_get_icon_name (PkExtra *extra, const gchar *package)
 
 	/* super quick if exists in cache */
 	obj = g_hash_table_lookup (extra->priv->hash_package, package);
-	if (obj == NULL) {
-		return FALSE;
-	}
+	if (obj == NULL)
+		return NULL;
 	return obj->icon_name;
 }
 
@@ -374,9 +372,8 @@ pk_extra_get_exec (PkExtra *extra, const gchar *package)
 
 	/* super quick if exists in cache */
 	obj = g_hash_table_lookup (extra->priv->hash_package, package);
-	if (obj == NULL) {
-		return FALSE;
-	}
+	if (obj == NULL)
+		return NULL;
 	return obj->exec;
 }
 
