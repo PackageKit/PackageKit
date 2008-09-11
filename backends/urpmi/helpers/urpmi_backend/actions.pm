@@ -232,12 +232,12 @@ sub perform_file_search {
 
 sub perform_requires_search {
 
-  my ($urpm, $pkg, $recursive_option) = @_;
+  my ($urpm, $pkgnames, $recursive_option) = @_;
 
   my (@properties, %requires, %properties, $dep);
   my %requested;
   urpm::select::search_packages($urpm, 
-    \%requested, [ $pkg->name ], 
+    \%requested, $pkgnames, 
     use_provides => 0,
     fuzzy => 0,
     all => 0
