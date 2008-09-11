@@ -80,16 +80,15 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 	}
 
 	/* make key */
-	if (distro_id_part == NULL) {
+	if (distro_id_part == NULL)
 		key = g_strdup (catalog->priv->type);
-	} else {
+	else
 		key = g_strdup_printf ("%s(%s)", catalog->priv->type, distro_id_part);
-	}
 	data = g_key_file_get_string (catalog->priv->file, PK_CATALOG_FILE_HEADER, key, NULL);
 	g_free (key);
 
 	/* we have no key of this name */
-	if (egg_strzero (data))
+	if (data == NULL)
 		return FALSE;
 
 	/* split using the three delimiters */
@@ -204,6 +203,7 @@ pk_catalog_process_type (PkCatalog *catalog)
 	}
 
 	g_strfreev (parts);
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 	return ret;
 }

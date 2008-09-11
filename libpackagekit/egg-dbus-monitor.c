@@ -243,6 +243,8 @@ egg_dbus_monitor_finalize (GObject *object)
 	monitor = EGG_DBUS_MONITOR (object);
 
 	g_return_if_fail (monitor->priv != NULL);
+
+	g_free (monitor->priv->service);
 	if (monitor->priv->proxy != NULL)
 		g_object_unref (monitor->priv->proxy);
 

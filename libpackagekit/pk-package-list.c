@@ -185,6 +185,7 @@ pk_package_list_to_argv (PkPackageList *plist)
 
 	/* convert to argv */
 	package_ids = pk_ptr_array_to_argv (array);
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 
 	return package_ids;
@@ -547,7 +548,7 @@ pk_package_list_finalize (GObject *object)
 	g_return_if_fail (plist->priv != NULL);
 
 	/* removed any cached packages */
-	pk_package_list_clear (plist);
+	g_ptr_array_foreach (plist->priv->array, (GFunc) pk_package_obj_free, NULL);
 	g_ptr_array_free (plist->priv->array, TRUE);
 
 	G_OBJECT_CLASS (pk_package_list_parent_class)->finalize (object);
@@ -585,6 +586,8 @@ pk_package_list_test (EggTest *test)
 	gchar *r1_text;
 	gchar *r2_text;
 	PkPackageId *id;
+	guint size;
+	gchar **argv;
 
 	if (!egg_test_start (test, "PkPackageList"))
 		return;
@@ -598,6 +601,14 @@ pk_package_list_test (EggTest *test)
 		egg_test_failed (test, NULL);
 
 	/************************************************************/
+	egg_test_title (test, "make sure size is zero");
+	size = pk_package_list_get_size (plist);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size: %i", size);
+
+	/************************************************************/
 	egg_test_title (test, "add entry");
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, id, "GNOME!");
@@ -608,10 +619,30 @@ pk_package_list_test (EggTest *test)
 		egg_test_failed (test, NULL);
 
 	/************************************************************/
+	egg_test_title (test, "make sure size is one");
+	size = pk_package_list_get_size (plist);
+	if (size == 1)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size: %i", size);
+
+	/************************************************************/
+	egg_test_title (test, "make sure argv is correct");
+	argv = pk_package_list_to_argv (plist);
+	if (argv != NULL &&
+	    egg_strequal (argv[0], "gnome;1.23;i386;data") &&
+	    argv[1] == NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "list: %s", argv[0]);
+	g_strfreev (argv);
+
+	/************************************************************/
 	egg_test_title (test, "check not exists");
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	ret = pk_package_list_contains (plist, "liferea;1.23;i386;data");
-	if (ret == FALSE)
+	pk_package_id_free (id);
+	if (!ret)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
@@ -688,9 +719,11 @@ pk_package_list_test (EggTest *test)
 	    egg_strequal (r1_text, "def;1.23;i386;data") &&
 	    egg_strequal (r2_text, "ghi;1.23;i386;data"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
-	}
+	g_free (r0_text);
+	g_free (r1_text);
+	g_free (r2_text);
 
 	/************************************************************/
 	egg_test_title (test, "sort by summary");
@@ -750,9 +783,11 @@ pk_package_list_test (EggTest *test)
 	    egg_strequal (r1_text, "def;1.23;i386;data") &&
 	    egg_strequal (r2_text, "ghi;1.23;i386;data"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
-	}
+	g_free (r0_text);
+	g_free (r1_text);
+	g_free (r2_text);
 
 	g_object_unref (plist);
 

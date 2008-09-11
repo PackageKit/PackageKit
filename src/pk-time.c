@@ -325,7 +325,7 @@ pk_time_finalize (GObject *object)
 
 	time = PK_TIME (object);
 	g_return_if_fail (time->priv != NULL);
-	pk_time_free_data (time);
+	g_ptr_array_foreach (time->priv->array, (GFunc) g_free, NULL);
 	g_ptr_array_free (time->priv->array, TRUE);
 	g_timer_destroy (time->priv->timer);
 

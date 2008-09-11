@@ -460,6 +460,7 @@ pk_va_list_to_argv (const gchar *string_first, va_list *args)
 	array = pk_ptr_array_to_argv (ptr_array);
 
 	/* get rid of the array, and free the contents */
+	g_ptr_array_foreach (ptr_array, (GFunc) g_free, NULL);
 	g_ptr_array_free (ptr_array, TRUE);
 	return array;
 }

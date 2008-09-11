@@ -30,7 +30,7 @@
 void egg_string_test (EggTest *test);
 void egg_obj_list_test (EggTest *test);
 void pk_package_id_test (EggTest *test);
-void pk_package_id_tests (EggTest *test);
+void pk_package_ids_test (EggTest *test);
 void pk_package_obj_test (EggTest *test);
 void pk_package_list_test (EggTest *test);
 void pk_enum_test (EggTest *test);
@@ -59,7 +59,7 @@ main (int argc, char **argv)
 	egg_obj_list_test (test);
 	pk_common_test (test);
 	pk_package_id_test (test);
-	pk_package_id_tests (test);
+	pk_package_ids_test (test);
 	pk_package_obj_test (test);
 	pk_package_list_test (test);
 	pk_enum_test (test);

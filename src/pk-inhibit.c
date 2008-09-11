@@ -167,9 +167,8 @@ pk_inhibit_add (PkInhibit *inhibit, gpointer data)
 	}
 	g_ptr_array_add (inhibit->priv->array, data);
 	/* do inhibit */
-	if (inhibit->priv->array->len == 1) {
+	if (inhibit->priv->array->len == 1)
 		ret = pk_inhibit_lock (inhibit);
-	}
 	return ret;
 }
 
@@ -187,9 +186,8 @@ pk_inhibit_remove (PkInhibit *inhibit, gpointer data)
 	for (i=0; i<inhibit->priv->array->len; i++) {
 		if (g_ptr_array_index (inhibit->priv->array, i) == data) {
 			g_ptr_array_remove_index (inhibit->priv->array, i);
-			if (inhibit->priv->array->len == 0) {
+			if (inhibit->priv->array->len == 0)
 				ret = pk_inhibit_unlock (inhibit);
-			}
 			return ret;
 		}
 	}
@@ -212,10 +210,10 @@ pk_inhibit_finalize (GObject *object)
 	/* force an unlock if we are inhibited */
 	if (inhibit->priv->is_locked) {
 		ret = pk_inhibit_unlock (inhibit);
-		if (!ret) {
+		if (!ret)
 			egg_warning ("failed to unock on finalise!");
-		}
 	}
+	/* no need to free the data in the array */
 	g_ptr_array_free (inhibit->priv->array, TRUE);
 	g_object_unref (inhibit->priv->proxy);
 
@@ -314,92 +312,82 @@ pk_inhibit_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "check we have a connection");
-	if (inhibit->priv->proxy != NULL) {
+	if (inhibit->priv->proxy != NULL)
 		egg_test_success (test, "got proxy");
-	} else {
+	else
 		egg_test_failed (test, "could not get proxy");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "check we are not inhibited");
 	ret = pk_inhibit_locked (inhibit);
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		egg_test_success (test, "marked correctly");
-	} else {
+	else
 		egg_test_failed (test, "not marked correctly");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "add 123");
 	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (123));
-	if (ret) {
+	if (ret)
 		egg_test_success (test, "inhibited");
-	} else {
+	else
 		egg_test_failed (test, "could not inhibit");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "check we are inhibited");
 	ret = pk_inhibit_locked (inhibit);
-	if (ret) {
+	if (ret)
 		egg_test_success (test, "marked correctly");
-	} else {
+	else
 		egg_test_failed (test, "not marked correctly");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "add 123 (again)");
 	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (123));
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		egg_test_success (test, "correctly ignored second");
-	} else {
+	else
 		egg_test_failed (test, "added the same number twice");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "add 456");
 	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (456));
-	if (ret) {
+	if (ret)
 		egg_test_success (test, "inhibited");
-	} else {
+	else
 		egg_test_failed (test, "could not inhibit");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "remove 123");
 	ret = pk_inhibit_remove (inhibit, GUINT_TO_POINTER (123));
-	if (ret) {
+	if (ret)
 		egg_test_success (test, "removed first inhibit");
-	} else {
+	else
 		egg_test_failed (test, "could not remove inhibit");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "check we are still inhibited");
 	ret = pk_inhibit_locked (inhibit);
-	if (ret) {
+	if (ret)
 		egg_test_success (test, "marked correctly");
-	} else {
+	else
 		egg_test_failed (test, "not marked correctly");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "remove 456");
 	ret = pk_inhibit_remove (inhibit, GUINT_TO_POINTER (456));
-	if (ret) {
+	if (ret)
 		egg_test_success (test, "removed second inhibit");
-	} else {
+	else
 		egg_test_failed (test, "could not remove inhibit");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "check we are not inhibited");
 	ret = pk_inhibit_locked (inhibit);
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		egg_test_success (test, "marked correctly");
-	} else {
+	else
 		egg_test_failed (test, "not marked correctly");
-	}
 
 	g_object_unref (inhibit);
 

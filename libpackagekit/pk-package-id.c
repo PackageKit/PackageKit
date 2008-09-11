@@ -473,9 +473,8 @@ pk_package_id_test (EggTest *test)
 	text = pk_package_id_to_string (id2);
 	if (egg_strequal (text, "moo;0.0.1;i386;fedora"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "package_id is '%s'", text);
-	}
 	g_free (text);
 	pk_package_id_free (id);
 	pk_package_id_free (id2);
@@ -486,9 +485,8 @@ pk_package_id_test (EggTest *test)
 	text = pk_package_id_to_string (id);
 	if (egg_strequal (text, "moo;;;"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "package_id is '%s', should be '%s'", text, "moo;;;");
-	}
 	g_free (text);
 	pk_package_id_free (id);
 
