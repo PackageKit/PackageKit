@@ -156,9 +156,12 @@ static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-depends.pl", filters_text, package_ids[0], pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "get-depends.pl", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
+	g_free (package_ids_temp);
 }
 
 /**

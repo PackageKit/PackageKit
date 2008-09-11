@@ -31,11 +31,11 @@ use urpmi_backend::tools;
 use perl_packagekit::enums;
 use perl_packagekit::prints;
 
-# Two arguments (filter, package id)
-exit if($#ARGV != 2);
+# 3 arguments (filter, package id, recursive)
+$#ARGV == 2 or exit 1;
 
 my @filters = split(/;/, $ARGV[0]);
-my @pkgid = split(/;/, $ARGV[1]);
+my @pkgids = split(/\|/, $ARGV[1]);
 my $recursive_option = 0;
 
 # We force the recursive option
@@ -46,26 +46,27 @@ pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
 my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
 
+my @pkgnames;
+foreach (@pkgids) {
+  my @pkgid = split(/;/, $_);
+  push(@pkgnames, $pkgid[0]);
+}
+print join(" ", @pkgnames);
+print "\n";
 my %requested;
-my @names = (@pkgid[0]);
-my $results = urpm::select::search_packages($urpm, \%requested, \@names,
+my $results = urpm::select::search_packages($urpm, \%requested, \@pkgnames,
   fuzzy => 0,
   caseinsensitive => 0,
   all => 0
 );
 
-exit if !$results;
-my @requested_keys = keys %requested;
-my $package_id = pop @requested_keys;
-
-my %resolv_request = ();
-%resolv_request->{$package_id} = 1;
+$results or exit;
 
 my $empty_db = new URPM;
 my $state = {};
 $urpm->resolve_requested($empty_db,
   $state,
-  \%resolv_request,
+  \%requested,
 );
 
 my $db = open_rpm_db();
