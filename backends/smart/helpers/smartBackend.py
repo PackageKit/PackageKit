@@ -547,13 +547,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if hasattr(info, 'getLicense'):
                 license = info.getLicense()
             else:
-                license = "unknown"
+                license = LICENSE_UNKNOWN
 
             group = info.getGroup()
             if group in self.GROUPS:
                 group = self.GROUPS[group]
             else:
-                group = "unknown"
+                group = GROUP_UNKNOWN
 
             self.details(packageid, license, group, description, url,
                     pkgsize)
