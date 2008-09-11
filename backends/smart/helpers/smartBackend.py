@@ -359,9 +359,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
-                # FIXME: Only installed packages have path lists.
                 paths = []
                 for loader in package.loaders:
+                    channel = loader.getChannel()
+                    if package.installed and not \
+                       channel.getType().endswith('-sys'):
+                        continue
                     info = loader.getInfo(package)
                     paths = info.getPathList()
                     if len(paths) > 0:
