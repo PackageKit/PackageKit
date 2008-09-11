@@ -208,6 +208,37 @@ pk_transaction_list_remove_item_timeout (gpointer data)
 }
 
 /**
+ * pk_transaction_list_run_idle_cb:
+ **/
+static gboolean
+pk_transaction_list_run_idle_cb (PkTransactionItem *item)
+{
+	gboolean ret;
+
+	egg_debug ("actually running %s", item->tid);
+	ret = pk_transaction_run (item->transaction);
+	if (!ret)
+		egg_error ("failed to run transaction (fatal)");
+
+	/* never try to idle add this again */
+	return FALSE;
+}
+
+/**
+ * pk_transaction_list_run_item:
+ **/
+static void
+pk_transaction_list_run_item (PkTransactionList *tlist, PkTransactionItem *item)
+{
+	/* we set this here so that we don't try starting more than one */
+	egg_debug ("schedule idle running %s", item->tid);
+	item->running = TRUE;
+
+	/* add this idle, so that we don't have a deep out-of-order callchain */
+	g_idle_add ((GSourceFunc) pk_transaction_list_run_idle_cb, item);
+}
+
+/**
  * pk_transaction_list_transaction_finished_cb:
  **/
 static void
@@ -215,7 +246,6 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 {
 	guint i;
 	guint length;
-	gboolean ret;
 	PkTransactionItem *item;
 	PkTransactionFinished *finished;
 	const gchar *tid;
@@ -234,6 +264,7 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 	}
 
 	egg_debug ("transaction %s completed, marking finished", item->tid);
+	item->running = FALSE;
 	item->finished = TRUE;
 
 	/* we have changed what is running */
@@ -252,14 +283,8 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		if (item->committed &&
 		    !item->running &&
-		    !item->finished) {
-			egg_debug ("running %s", item->tid);
-			item->running = TRUE;
-			ret = pk_transaction_run (item->transaction);
-			/* only stop lookng if we run the job */
-			if (ret)
-				break;
-		}
+		    !item->finished)
+			pk_transaction_list_run_item (tlist, item);
 	}
 }
 
@@ -343,7 +368,6 @@ pk_transaction_list_number_running (PkTransactionList *tlist)
 gboolean
 pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 {
-	gboolean ret;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
@@ -363,15 +387,8 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
 	/* do the transaction now if we have no other in progress */
-	if (pk_transaction_list_number_running (tlist) == 0) {
-		egg_debug ("running %s", item->tid);
-		item->running = TRUE;
-		ret = pk_transaction_run (item->transaction);
-		if (!ret) {
-			egg_warning ("unable to start first job");
-			return FALSE;
-		}
-	}
+	if (pk_transaction_list_number_running (tlist) == 0)
+		pk_transaction_list_run_item (tlist, item);
 
 	return TRUE;
 }
@@ -575,7 +592,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_failed (test, "size %i", size);
 
 	/************************************************************/
-	egg_test_title (test, "get transactions in progress");
+	egg_test_title (test, "get transactions (committed, not finished) in progress");
 	array = pk_transaction_list_get_array (tlist);
 	size = g_strv_length (array);
 	if (size == 0)
@@ -648,8 +665,9 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_failed (test, "could not find in db");
 
 	g_signal_connect (item->transaction, "finished",
-				G_CALLBACK (pk_transaction_list_test_finished_cb), test);
+			  G_CALLBACK (pk_transaction_list_test_finished_cb), test);
 
+	/* this tests the run-on-commit action */
 	pk_transaction_get_updates (item->transaction, "none", NULL);
 
 	/************************************************************/
@@ -685,7 +703,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_failed (test, "size %i", size);
 
 	/************************************************************/
-	egg_test_title (test, "get transactions in progress");
+	egg_test_title (test, "get transactions (committed, not finished) in progress");
 	array = pk_transaction_list_get_array (tlist);
 	size = g_strv_length (array);
 	if (size == 1)
@@ -706,7 +724,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_failed (test, "size %i", size);
 
 	/************************************************************/
-	egg_test_title (test, "get transactions in progress (none)");
+	egg_test_title (test, "get transactions (committed, not finished) in progress (none)");
 	array = pk_transaction_list_get_array (tlist);
 	size = g_strv_length (array);
 	if (size == 0)
@@ -736,6 +754,156 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_failed (test, "size %i", size);
 
 	g_free (tid);
+
+	/************************************************************
+	 ****************  Chained transactions    ******************
+	 ************************************************************/
+
+	gchar *tid1;
+	gchar *tid2;
+	PkTransactionItem *item1;
+	PkTransactionItem *item2;
+
+	tid1 = pk_transaction_id_generate ();
+	tid2 = pk_transaction_id_generate ();
+
+	pk_transaction_list_create (tlist, tid1);
+	pk_transaction_list_create (tlist, tid2);
+
+	item1 = pk_transaction_list_get_from_tid (tlist, tid1);
+	item2 = pk_transaction_list_get_from_tid (tlist, tid2);
+
+	/************************************************************/
+	egg_test_title (test, "get both items in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 2)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	/************************************************************/
+	egg_test_title (test, "get transactions (committed, not finished) committed");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	g_signal_connect (item1->transaction, "finished",
+			  G_CALLBACK (pk_transaction_list_test_finished_cb), test);
+	g_signal_connect (item2->transaction, "finished",
+			  G_CALLBACK (pk_transaction_list_test_finished_cb), test);
+
+	/* this starts one action */
+	pk_transaction_get_updates (item1->transaction, "none", NULL);
+	/* this should be chained after the first action completes */
+	pk_transaction_search_name (item2->transaction, "none", "power", NULL);
+
+	/************************************************************/
+	egg_test_title (test, "get transactions (committed, not finished) in progress (both)");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 2)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	/* wait for first action */
+	egg_test_loop_wait (test, 6000);
+	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "get both items in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 2)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	/************************************************************/
+	egg_test_title (test, "get transactions (committed, not finished) (just one)");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 1)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	/************************************************************/
+	egg_test_title (test, "make sure item1 has correct flags");
+	if (item1->running == FALSE && item1->committed == TRUE && item1->finished == TRUE)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong flags: running[%i] committed[%i] finished[%i]",
+				 item1->running, item1->committed, item1->finished);
+
+	/************************************************************/
+	egg_test_title (test, "make sure item2 has correct flags");
+	if (item2->running == TRUE && item2->committed == TRUE && item2->finished == FALSE)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong flags: running[%i] committed[%i] finished[%i]",
+				 item2->running, item2->committed, item2->finished);
+
+	/* wait for second action */
+	egg_test_loop_wait (test, 6000);
+	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "get both items in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 2)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	/************************************************************/
+	egg_test_title (test, "get transactions (committed, not finished) in progress (neither)");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	/************************************************************/
+	egg_test_title (test, "make sure item1 has correct flags");
+	if (item1->running == FALSE && item1->committed == TRUE && item1->finished == TRUE)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong flags: running[%i] committed[%i] finished[%i]",
+				 item1->running, item1->committed, item1->finished);
+
+	/************************************************************/
+	egg_test_title (test, "make sure item2 has correct flags");
+	if (item2->running == FALSE && item2->committed == TRUE && item2->finished == TRUE)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong flags: running[%i] committed[%i] finished[%i]",
+				 item2->running, item2->committed, item2->finished);
+
+	/* wait for Cleanup */
+	g_timeout_add_seconds (5, (GSourceFunc) pk_transaction_list_test_delay_cb, test);
+	egg_test_loop_wait (test, 6000);
+	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "get both items in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	/************************************************************/
+	egg_test_title (test, "get transactions (committed, not finished) in progress (neither - again)");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
 
 	g_object_unref (tlist);
 	g_object_unref (backend);
