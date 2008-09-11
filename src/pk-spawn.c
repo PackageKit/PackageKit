@@ -148,6 +148,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 {
 	int status;
 	gboolean ret;
+	static guint limit_printing = 0;
 
 	/* this shouldn't happen */
 	if (spawn->priv->finished) {
@@ -158,8 +159,11 @@ pk_spawn_check_child (PkSpawn *spawn)
 	pk_spawn_read_fd_into_buffer (spawn->priv->stdout_fd, spawn->priv->stdout_buf);
 	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf);
 
+	/* Only print one in twenty times to avoid filling the screen */
+	if (limit_printing++ % 20 ==0)
+		egg_debug ("polling child_pid=%i (1/20)", spawn->priv->child_pid);
+
 	/* check if the child exited */
-	egg_debug ("polling child_pid=%i", spawn->priv->child_pid);
 	if (waitpid (spawn->priv->child_pid, &status, WNOHANG) != spawn->priv->child_pid)
 		return TRUE;
 

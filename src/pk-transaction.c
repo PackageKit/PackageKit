@@ -1069,6 +1069,7 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 
 	if (transaction->priv->tid != NULL) {
 		egg_warning ("changing a tid -- why?");
+		return FALSE;
 	}
 	g_free (transaction->priv->tid);
 	transaction->priv->tid = g_strdup (tid);
@@ -2171,10 +2172,9 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		return;
 	}
 
-	if (context != NULL) {
-		/* not set inside the test suite */
+	/* not set inside the test suite */
+	if (context != NULL)
 		dbus_g_method_return (context);
-	}
 }
 
 /**
@@ -3266,7 +3266,9 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
