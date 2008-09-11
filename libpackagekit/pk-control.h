@@ -54,7 +54,7 @@ typedef struct _PkControlClass		PkControlClass;
  */
 typedef enum
 {
-	PK_CONTROL_ERROR_FAILED,
+	PK_CONTROL_ERROR_FAILED
 } PkControlError;
 
 struct _PkControl
