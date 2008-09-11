@@ -2319,6 +2319,7 @@ pk_transaction_check_pack_distro_id (const gchar *full_path, gchar **failure)
 	const gchar *filename;
 	GError *error = NULL;
 
+	/* ITS4: ignore, the user has no control over the daemon envp  */
 	meta_src = g_build_filename (g_get_tmp_dir (), "meta", NULL);
 	ret = pk_transaction_archive_extract (full_path, meta_src, &error);
 	if (!ret) {
