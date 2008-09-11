@@ -37,17 +37,16 @@
 #include <glib/gstdio.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
+
 #include <pk-package-id.h>
 #include <pk-package-ids.h>
 #include <pk-package-list.h>
+#include <pk-common.h>
+#include <pk-network.h>
+#include <pk-enum.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
-
-#include <pk-common.h>
-#include <pk-network.h>
-#include <pk-package-list.h>
-#include <pk-enum.h>
 
 #include "pk-cache.h"
 #include "pk-shared.h"
