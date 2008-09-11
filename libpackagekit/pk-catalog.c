@@ -67,6 +67,7 @@ G_DEFINE_TYPE (PkCatalog, pk_catalog, G_TYPE_OBJECT)
 static gboolean
 pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar *distro_id_part)
 {
+	gchar *data;
 	gchar **list;
 	gchar *key;
 	guint len;
@@ -84,13 +85,15 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 	} else {
 		key = g_strdup_printf ("%s(%s)", catalog->priv->type, distro_id_part);
 	}
-	list = g_key_file_get_string_list (catalog->priv->file, PK_CATALOG_FILE_HEADER, key, NULL, NULL);
+	data = g_key_file_get_string (catalog->priv->file, PK_CATALOG_FILE_HEADER, key, NULL);
 	g_free (key);
 
 	/* we have no key of this name */
-	if (list == NULL) {
+	if (egg_strzero (data))
 		return FALSE;
-	}
+
+	/* split using the three delimiters */
+	list = g_strsplit_set (data, ";, ", 0);
 
 	/* add to array */
 	len = g_strv_length (list);
@@ -98,6 +101,7 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 		g_ptr_array_add (array, g_strdup (list[i]));
 	}
 	g_strfreev (list);
+	g_free (data);
 	return TRUE;
 }
 

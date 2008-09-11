@@ -309,8 +309,10 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 	egg_debug ("sending '%s'", command);
 	buffer = g_strdup_printf ("%s\n", command);
 
-	/* write to the waiting process */
+	/* ITS4: ignore, we generated this */
 	length = strlen (buffer);
+
+	/* write to the waiting process */
 	wrote = write (spawn->priv->stdin_fd, buffer, length);
 	if (wrote != length) {
 		egg_warning ("failed to write '%s'", buffer);
