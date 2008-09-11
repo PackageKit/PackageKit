@@ -138,6 +138,18 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 }
 
 /**
+ * pk_transaction_list_item_free:
+ **/
+void
+pk_transaction_list_item_free (PkTransactionItem *item)
+{
+	g_return_if_fail (item != NULL);
+	g_object_unref (item->transaction);
+	g_free (item->tid);
+	g_free (item);
+}
+
+/**
  * pk_transaction_list_remove_internal:
  **/
 gboolean
@@ -155,9 +167,7 @@ pk_transaction_list_remove_internal (PkTransactionList *tlist, PkTransactionItem
 		egg_warning ("could not remove %p as not present in list", item);
 		return FALSE;
 	}
-	g_object_unref (item->transaction);
-	g_free (item->tid);
-	g_free (item);
+	pk_transaction_list_item_free (item);
 
 	return TRUE;
 }
@@ -420,6 +430,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 	}
 	egg_debug ("%i transactions in list, %i active", length, parray->len);
 	array = pk_ptr_array_to_argv (parray);
+	g_ptr_array_foreach (parray, (GFunc) g_free, NULL);
 	g_ptr_array_free (parray, TRUE);
 
 	return array;
@@ -481,6 +492,7 @@ pk_transaction_list_finalize (GObject *object)
 
 	g_return_if_fail (tlist->priv != NULL);
 
+	g_ptr_array_foreach (tlist->priv->array, (GFunc) pk_transaction_list_item_free, NULL);
 	g_ptr_array_free (tlist->priv->array, TRUE);
 
 	G_OBJECT_CLASS (pk_transaction_list_parent_class)->finalize (object);
@@ -599,6 +611,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
 
 	/************************************************************/
 	egg_test_title (test, "add again the same tid (should fail)");
@@ -710,6 +723,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
 
 	/* wait for Finished */
 	egg_test_loop_wait (test, 2000);
@@ -731,6 +745,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
 
 	/************************************************************/
 	egg_test_title (test, "remove already removed");
@@ -773,6 +788,9 @@ pk_transaction_list_test (EggTest *test)
 	item1 = pk_transaction_list_get_from_tid (tlist, tid1);
 	item2 = pk_transaction_list_get_from_tid (tlist, tid2);
 
+	g_free (tid1);
+	g_free (tid2);
+
 	/************************************************************/
 	egg_test_title (test, "get both items in queue");
 	size = pk_transaction_list_get_size (tlist);
@@ -789,6 +807,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
 
 	g_signal_connect (item1->transaction, "finished",
 			  G_CALLBACK (pk_transaction_list_test_finished_cb), test);
@@ -808,6 +827,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
 
 	/* wait for first action */
 	egg_test_loop_wait (test, 6000);
@@ -829,6 +849,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
 
 	/************************************************************/
 	egg_test_title (test, "make sure item1 has correct flags");
@@ -866,6 +887,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
 
 	/************************************************************/
 	egg_test_title (test, "make sure item1 has correct flags");
@@ -904,6 +926,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
 
 	g_object_unref (tlist);
 	g_object_unref (backend);

@@ -56,7 +56,7 @@ pk_package_obj_new (PkInfoEnum info, const PkPackageId *id, const gchar *summary
 {
 	PkPackageObj *obj;
 
-	g_return_val_if_fail (id != NULL, FALSE);
+	g_return_val_if_fail (id != NULL, NULL);
 
 	obj = g_new0 (PkPackageObj, 1);
 	obj->info = info;
@@ -245,9 +245,8 @@ pk_package_obj_test (EggTest *test)
 	text = pk_package_obj_to_string (obj1);
 	if (egg_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "got %s", text);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "check from string");
@@ -266,6 +265,7 @@ pk_package_obj_test (EggTest *test)
 	pk_package_id_free (id);
 	pk_package_obj_free (obj1);
 	pk_package_obj_free (obj2);
+	pk_package_obj_free (obj3);
 	g_free (text);
 
 	egg_test_end (test);

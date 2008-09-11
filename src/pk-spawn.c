@@ -413,7 +413,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	}
 
 	/* save this so we can check the dispatcher name */
-	g_strdup (spawn->priv->last_argv0);
+	g_free (spawn->priv->last_argv0);
 	spawn->priv->last_argv0 = g_strdup (argv[0]);
 
 	/* save this in case the proxy or locale changes */
@@ -575,9 +575,8 @@ cancel_cb (gpointer data)
 static void
 new_spawn_object (EggTest *test, PkSpawn **pspawn)
 {
-	if (*pspawn != NULL) {
+	if (*pspawn != NULL)
 		g_object_unref (*pspawn);
-	}
 	*pspawn = pk_spawn_new ();
 	g_signal_connect (*pspawn, "exit",
 			  G_CALLBACK (pk_test_exit_cb), test);
@@ -591,6 +590,7 @@ pk_spawn_test (EggTest *test)
 {
 	PkSpawn *spawn = NULL;
 	gboolean ret;
+	gchar *file;
 	gchar *path;
 	gchar **argv;
 	gchar **envp;
@@ -610,19 +610,17 @@ pk_spawn_test (EggTest *test)
 	argv = g_strsplit ("pk-spawn-test-xxx.sh", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_strfreev (argv);
-	if (!ret) {
+	if (!ret)
 		egg_test_success (test, "failed to run invalid file");
-	} else {
+	else
 		egg_test_failed (test, "ran incorrect file");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "make sure finished wasn't called");
 	if (mexit == BAD_EXIT)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "Called finish for bad file!");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "make sure run correct helper");
@@ -632,11 +630,10 @@ pk_spawn_test (EggTest *test)
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
-	if (ret) {
+	if (ret)
 		egg_test_success (test, "ran correct file");
-	} else {
+	else
 		egg_test_failed (test, "did not run helper");
-	}
 
 	/* wait for finished */
 	egg_test_loop_wait (test, 10000);
@@ -646,25 +643,22 @@ pk_spawn_test (EggTest *test)
 	egg_test_title (test, "make sure finished okay");
 	if (mexit == PK_EXIT_ENUM_SUCCESS)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "finish was okay!");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "make sure finished was called only once");
 	if (finished_count == 1)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "finish was called %i times!", finished_count);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "make sure we got the right stdout data");
-	if (stdout_count == 4+11) {
+	if (stdout_count == 4+11)
 		egg_test_success (test, "correct stdout count");
-	} else {
+	else
 		egg_test_failed (test, "wrong stdout count %i", stdout_count);
-	}
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
@@ -681,11 +675,11 @@ pk_spawn_test (EggTest *test)
 	ret = pk_spawn_argv (spawn, argv, envp);
 	g_free (path);
 	g_strfreev (argv);
-	if (ret) {
+	g_strfreev (envp);
+	if (ret)
 		egg_test_success (test, "ran correct file");
-	} else {
+	else
 		egg_test_failed (test, "did not run helper");
-	}
 
 	/* wait for finished */
 	egg_test_loop_wait (test, 10000);
@@ -706,9 +700,8 @@ pk_spawn_test (EggTest *test)
 	g_strfreev (argv);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "did not run helper");
-	}
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
 	/* wait for finished */
@@ -719,9 +712,8 @@ pk_spawn_test (EggTest *test)
 	egg_test_title (test, "make sure finished in SIGKILL");
 	if (mexit == PK_EXIT_ENUM_KILLED)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "finish %i!", mexit);
-	}
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
@@ -736,9 +728,8 @@ pk_spawn_test (EggTest *test)
 	g_strfreev (argv);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "did not run helper");
-	}
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
 	/* wait for finished */
@@ -749,9 +740,8 @@ pk_spawn_test (EggTest *test)
 	egg_test_title (test, "make sure finished in SIGQUIT");
 	if (mexit == PK_EXIT_ENUM_CANCELLED)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "finish %i!", mexit);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "run lots of data for profiling");
@@ -762,9 +752,8 @@ pk_spawn_test (EggTest *test)
 	g_strfreev (argv);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "did not run profiling helper");
-	}
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
@@ -774,10 +763,11 @@ pk_spawn_test (EggTest *test)
 	 ************************************************************/
 	egg_test_title (test, "run the dispatcher");
 	mexit = BAD_EXIT;
-	path = egg_test_get_data_file ("pk-spawn-dispatcher.py");
-	path = g_strdup_printf ("%s search-name none power", path);
+	file = egg_test_get_data_file ("pk-spawn-dispatcher.py");
+	path = g_strdup_printf ("%s search-name none power", file);
 	argv = g_strsplit (path, " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
+	g_free (file);
 	g_free (path);
 	if (ret)
 		egg_test_success (test, NULL);
@@ -853,7 +843,6 @@ pk_spawn_test (EggTest *test)
 		egg_test_failed (test, "dispatcher closed twice");
 
 	g_strfreev (argv);
-
 	g_object_unref (spawn);
 
 	egg_test_end (test);

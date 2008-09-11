@@ -38,7 +38,6 @@
 
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
-#include <egg-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
@@ -1219,14 +1218,15 @@ out:
  * when not async.
  **/
 static gboolean
-pk_transaction_action_is_allowed (PkTransaction *transaction, const gchar *dbus_sender,
-				  gboolean trusted, PkRoleEnum role, GError **error)
+pk_transaction_action_is_allowed (PkTransaction *transaction, gboolean trusted, PkRoleEnum role, GError **error)
 {
 	gboolean ret;
 	gchar *error_detail;
 
+	g_return_val_if_fail (transaction->priv->dbus_name != NULL, FALSE);
+
 	/* use security model to get auth */
-	ret = pk_security_action_is_allowed (transaction->priv->security, dbus_sender, trusted, role, &error_detail);
+	ret = pk_security_action_is_allowed (transaction->priv->security, transaction->priv->dbus_name, trusted, role, &error_detail);
 	if (!ret) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
 		return FALSE;
@@ -1273,10 +1273,16 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	if (context != NULL) {
+		/* not set inside the test suite */
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
 	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_ACCEPT_EULA, &error);
-	g_free (sender);
+	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_ACCEPT_EULA, &error);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1368,6 +1374,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	gchar *package_ids_temp;
 	gchar *directory;
 	gint retval;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1410,7 +1417,9 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1457,6 +1466,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1495,7 +1505,9 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1526,6 +1538,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1557,7 +1570,9 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1585,6 +1600,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 {
 	gboolean ret;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1603,7 +1619,9 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1634,6 +1652,7 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1665,7 +1684,9 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1693,6 +1714,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 {
 	gboolean ret;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1718,7 +1740,9 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1812,6 +1836,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 {
 	gboolean ret;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1837,7 +1862,9 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1867,6 +1894,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1905,7 +1933,9 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1986,6 +2016,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	GPtrArray *array;
 	guint i;
 	guint len;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2020,7 +2051,9 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -2085,6 +2118,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	}
 
 out:
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 	dbus_g_method_return (context);
 }
@@ -2099,6 +2133,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	GError *error;
 	PkPackageList *updates_cache;
 	gchar *package_id;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2124,7 +2159,9 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -2411,19 +2448,19 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		}
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, trusted, PK_ROLE_ENUM_INSTALL_FILES, &error);
-	g_free (sender);
-	if (!ret) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	ret = pk_transaction_action_is_allowed (transaction, trusted, PK_ROLE_ENUM_INSTALL_FILES, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* save so we can run later */
@@ -2485,19 +2522,19 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
-	g_free (sender);
-	if (!ret) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* save so we can run later */
@@ -2562,19 +2599,19 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_INSTALL_SIGNATURE, &error);
-	g_free (sender);
-	if (!ret) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_INSTALL_SIGNATURE, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* save so we can run later */
@@ -2635,19 +2672,19 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_REFRESH_CACHE, &error);
-	g_free (sender);
-	if (!ret) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REFRESH_CACHE, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* we unref the update cache if it exists */
@@ -2711,19 +2748,19 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_REMOVE_PACKAGES, &error);
-	g_free (sender);
-	if (!ret) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REMOVE_PACKAGES, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* save so we can run later */
@@ -2779,20 +2816,19 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_REPO_ENABLE, &error);
-	g_free (sender);
-	if (!ret) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REPO_ENABLE, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* save so we can run later */
@@ -2849,19 +2885,19 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_REPO_SET_DATA, &error);
-	g_free (sender);
-	if (!ret) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REPO_SET_DATA, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* save so we can run later */
@@ -2895,6 +2931,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	gchar *packages_temp;
 	guint i;
 	guint length;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2934,7 +2971,9 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -2990,19 +3029,19 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_ROLLBACK, &error);
-	g_free (sender);
-	if (!ret) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_ROLLBACK, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* save so we can run later */
@@ -3031,6 +3070,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 {
 	gboolean ret;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3063,7 +3103,9 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -3093,6 +3135,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 {
 	gboolean ret;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3125,7 +3168,9 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -3155,6 +3200,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 {
 	gboolean ret;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3187,7 +3233,9 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -3217,6 +3265,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 {
 	gboolean ret;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3249,7 +3298,9 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -3355,19 +3406,19 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
-	g_free (sender);
-	if (!ret) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* save so we can run later */
@@ -3412,10 +3463,16 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	if (context != NULL) {
+		/* not set inside the test suite */
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
+	}
+
 	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
-	g_free (sender);
+	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -3427,12 +3484,6 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 				     "Already performing system update");
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 	}
 
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
@@ -3455,11 +3506,12 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
  **/
 void
 pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, const gchar *type,
-			 const gchar *search, DBusGMethodInvocation *context)
+			      const gchar *search, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	PkProvidesEnum provides;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3500,7 +3552,9 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	/* set the dbus name, so we can get the disconnect */
 	if (context != NULL) {
 		/* not set inside the test suite */
-		pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+		sender = dbus_g_method_get_sender (context);
+		pk_transaction_set_dbus_name (transaction, sender);
+		g_free (sender);
 	}
 
 	/* save so we can run later */
