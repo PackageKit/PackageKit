@@ -559,6 +559,14 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_failed (test, "could not find in db");
 
 	/************************************************************/
+	egg_test_title (test, "make sure item has correct flags");
+	if (item->running == FALSE && item->committed == FALSE && item->finished == FALSE)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong flags: running[%i] committed[%i] finished[%i]",
+				 item->running, item->committed, item->finished);
+
+	/************************************************************/
 	egg_test_title (test, "get size one we have in queue");
 	size = pk_transaction_list_get_size (tlist);
 	if (size == 1)
@@ -643,6 +651,14 @@ pk_transaction_list_test (EggTest *test)
 				G_CALLBACK (pk_transaction_list_test_finished_cb), test);
 
 	pk_transaction_get_updates (item->transaction, "none", NULL);
+
+	/************************************************************/
+	egg_test_title (test, "make sure item has correct flags");
+	if (item->running == TRUE && item->committed == TRUE && item->finished == FALSE)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong flags: running[%i] committed[%i] finished[%i]",
+				 item->running, item->committed, item->finished);
 
 	/************************************************************/
 	egg_test_title (test, "get present role");
