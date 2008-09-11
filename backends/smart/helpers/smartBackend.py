@@ -907,6 +907,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                         return False
                     if filter == FILTER_NOT_DEVELOPMENT and development:
                         return False
+                if filter in (FILTER_BASENAME, FILTER_NOT_BASENAME):
+                    if hasattr(info, 'getSource'):
+                        source = info.getSource()
+                        if not source:
+                            return None
+                        same = (package.name == source)
+                        if filter == FILTER_BASENAME and not same:
+                            return False
+                        if filter == FILTER_NOT_BASENAME and same:
+                            return False
                 if filter in (FILTER_FREE, FILTER_NOT_FREE):
                     if hasattr(info, 'getLicense'):
                         license = info.getLicense()
@@ -923,6 +933,31 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                         return False
         return True
 
+    def _package_has_basename(self, package):
+        from smart.backends.rpm.base import RPMPackage
+        from smart.backends.deb.base import DebPackage
+        if isinstance(package, RPMPackage):
+            if package.name.endswith("-devel") or \
+               package.name.endswith("-debuginfo") or \
+               package.name.endswith("-libs") or \
+               package.name.endswith("-static"):
+                return False
+            return True
+        elif isinstance(package, DebPackage):
+            if package.name.endswith("-dev") or \
+               package.name.endswith("-dbg"):
+                return False
+            return True
+        else:
+            return None
+
+    def _do_basename_filtering(self, package_list):
+        basename = {}
+        for package,status in package_list:
+            if self._package_has_basename(package):
+                basename[package] = (package,status)
+        return basename.values()
+
     def _do_newest_filtering(self, package_list):
         newest = {}
         for package,status in package_list:
@@ -935,6 +970,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def _post_process_package_list(self, filters):
         filterlist = filters.split(';')
+        if FILTER_BASENAME in filterlist:
+            self._package_list = self._do_basename_filtering(self._package_list)
         if FILTER_NEWEST in filterlist:
             self._package_list = self._do_newest_filtering(self._package_list)
 
