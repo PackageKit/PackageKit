@@ -635,7 +635,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 if package and not extras.has_key(package):
                     extras[package] = True
 
-            del extras[original]
+            if original in extras:
+                del extras[original]
             for package in extras.keys():
                 if self._package_passes_filters(package, filters):
                     self._add_package(package)
@@ -669,7 +670,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 if package and not extras.has_key(package):
                     extras[package] = True
 
-            del extras[original]
+            if original in extras:
+                del extras[original]
             for package in extras.keys():
                 if self._package_passes_filters(package, filters):
                     self._add_package(package)
