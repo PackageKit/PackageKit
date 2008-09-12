@@ -55,7 +55,6 @@ static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
-		PK_GROUP_ENUM_UNKNOWN,
 		PK_GROUP_ENUM_ACCESSIBILITY,
 		PK_GROUP_ENUM_ACCESSORIES,
 		PK_GROUP_ENUM_EDUCATION,
