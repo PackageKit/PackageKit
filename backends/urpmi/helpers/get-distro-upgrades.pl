@@ -2,6 +2,13 @@
 
 use strict;
 
+use lib;
+use File::Basename;
+
+BEGIN {
+  push @INC, dirname($0);
+}
+
 use perl_packagekit::prints;
 use perl_packagekit::enums;
 
