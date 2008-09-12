@@ -1,3 +1,14 @@
+#
+# Copyright (C) 2008 Aurelien Lefebvre <alefebvre@mandriva.com>
+#
+# Licensed under the GNU General Public License Version 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+
 package perl_packagekit::prints;
 
 use Exporter;
@@ -13,6 +24,7 @@ our @EXPORT = qw(
   pk_print_error
   pk_print_percentage
   pk_print_sub_percentage
+  pk_print_distro_upgrade
   );
 
 sub pk_print_package {
@@ -90,6 +102,11 @@ sub pk_print_percentage {
 sub pk_print_sub_percentage {
   my ($sub_percentage) = @_;
   printf("subpercentage\t%i\n", $sub_percentage);
+}
+
+sub pk_print_distro_upgrade {
+  my($dtype, $name, $summary) = @_;
+  printf("distro-upgrade\t%s\t%s\t%s\n", $dtype, $name, $summary);
 }
 
 1;

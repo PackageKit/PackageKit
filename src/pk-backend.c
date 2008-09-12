@@ -517,7 +517,7 @@ pk_backend_get_pointer (PkBackend *backend, const gchar *key)
 	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
 	if (value == NULL) {
 		egg_warning ("not set data for %s", key);
-		return FALSE;
+		return NULL;
 	}
 	return value-1;
 }
@@ -530,14 +530,21 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 {
 	gchar *path;
 	gchar *filename;
-
+#if PK_BUILD_LOCAL
+	const gchar *directory;
+#endif
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	g_return_val_if_fail (name != NULL, NULL);
 
 	filename = g_strdup_printf ("libpk_backend_%s.so", name);
 #if PK_BUILD_LOCAL
+	/* test_spawn, test_dbus, test_fail, etc. are in the 'test' folder */
+	directory = name;
+	if (g_str_has_prefix (name, "test_"))
+		directory = "test";
+
 	/* prefer the local version */
-	path = g_build_filename ("..", "backends", name, ".libs", filename, NULL);
+	path = g_build_filename ("..", "backends", directory, ".libs", filename, NULL);
 	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
 		egg_debug ("local backend not found '%s'", path);
 		g_free (path);
@@ -1365,6 +1372,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	/* check we have not already finished */
 	if (backend->priv->finished) {
 		egg_warning ("consistency error");
+		egg_debug_backtrace ();
 		return FALSE;
 	}
 
@@ -1513,6 +1521,7 @@ pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)
 		egg_warning ("already set exit status: old=%s, new=%s",
 			    pk_exit_enum_to_text (backend->priv->exit),
 			    pk_exit_enum_to_text (exit));
+		egg_debug_backtrace ();
 		return FALSE;
 	}
 

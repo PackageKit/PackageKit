@@ -687,8 +687,8 @@ out:
 	g_strfreev (package_ids);
 	g_strfreev (files);
 	g_ptr_array_foreach (array_files, (GFunc) g_free, NULL);
-	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
 	g_ptr_array_free (array_files, TRUE);
+	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
 	g_ptr_array_free (array_packages, TRUE);
 	return ret;
 }
@@ -873,6 +873,7 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 
 out:
 	g_strfreev (package_ids);
+	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
 	g_ptr_array_free (array_packages, TRUE);
 	return ret;
 }
@@ -1481,21 +1482,17 @@ main (int argc, char *argv[])
 	g_signal_connect (client_signature, "finished",
 			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
 
-	if (filter != NULL) {
+	if (filter != NULL)
 		filters = pk_filter_bitfield_from_text (filter);
-	}
-	egg_debug ("filter=%s, filters=%i", filter, filters);
+	egg_debug ("filter=%s, filters=%" PK_BITFIELD_FORMAT, filter, filters);
 
 	mode = argv[1];
-	if (argc > 2) {
+	if (argc > 2)
 		value = argv[2];
-	}
-	if (argc > 3) {
+	if (argc > 3)
 		details = argv[3];
-	}
-	if (argc > 4) {
+	if (argc > 4)
 		parameter = argv[4];
-	}
 
 	/* parse the big list */
 	if (strcmp (mode, "search") == 0) {

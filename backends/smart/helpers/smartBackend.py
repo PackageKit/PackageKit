@@ -101,9 +101,11 @@ class PackageKitSmartProgress(Progress):
                         info = loader.getInfo(package)
                         for url in info.getURLs():
                             # account for progress url from current mirror
-                            url = str(self._fetcher.getItem(url).getURL())
-                            if subtopic == url:
-                                self._backend._show_package(package)
+                            item = self._fetcher.getItem(url)
+                            if item:
+                                url = str(item.getURL())
+                                if subtopic == url:
+                                    self._backend._show_package(package)
                 self._lasturl = subtopic
             elif isinstance(subkey, smart.cache.Package):
                 self._backend._show_package(subkey)
@@ -135,6 +137,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def allow_cancel(self, allow):
         PackageKitBaseBackend.allow_cancel(self, allow)
         self._cancel = allow
+
+    def reset(self):
+        self._package_list = []
 
     @needs_cache
     def install_packages(self, packageids):
@@ -233,6 +238,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
+            if not results:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
             packages.extend(self._process_search_results(results))
 
         installed = [package for package in packages if package.installed]
@@ -255,6 +264,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
+            if not results:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
             packages.extend(self._process_search_results(results))
         if len(packages) < 1:
             return
@@ -307,8 +320,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         for (package, op) in trans.getChangeSet().items():
             if op == smart.transaction.INSTALL:
-                status = self._get_status(package)
-                self._add_package(package, status)
+                if self._package_passes_filters(package, filters):
+                    status = self._get_status(package)
+                    self._add_package(package, status)
         self._post_process_package_list(filters)
         self._show_package_list()
 
@@ -345,9 +359,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
-                # FIXME: Only installed packages have path lists.
                 paths = []
                 for loader in package.loaders:
+                    channel = loader.getChannel()
+                    if package.installed and not \
+                       channel.getType().endswith('-sys'):
+                        continue
                     info = loader.getInfo(package)
                     paths = info.getPathList()
                     if len(paths) > 0:
@@ -532,18 +549,18 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 if pkgsize:
                     break
             if not pkgsize:
-                pkgsize = "unknown"
+                pkgsize = 0
 
             if hasattr(info, 'getLicense'):
                 license = info.getLicense()
             else:
-                license = "unknown"
+                license = LICENSE_UNKNOWN
 
             group = info.getGroup()
             if group in self.GROUPS:
                 group = self.GROUPS[group]
             else:
-                group = "unknown"
+                group = GROUP_UNKNOWN
 
             self.details(packageid, license, group, description, url,
                     pkgsize)
@@ -789,8 +806,15 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if package.installed and not channel.getType().endswith('-sys'):
                 continue
             info = loader.getInfo(package)
-            self.package(pkpackage.get_package_id(name, version, arch,
-                channel.getAlias()), status, info.getSummary())
+            if package.installed:
+                data = 'installed'
+            elif isinstance(channel, smart.channel.FileChannel):
+                data = 'local'
+            else:
+                data = channel.getAlias()
+            summary = info.getSummary()
+            self.package(pkpackage.get_package_id(name, version, arch, data),
+                status, summary)
 
     def _get_status(self, package):
         flags = smart.pkgconf.testAllFlags(package)
@@ -897,6 +921,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                         return False
                     if filter == FILTER_NOT_DEVELOPMENT and development:
                         return False
+                if filter in (FILTER_BASENAME, FILTER_NOT_BASENAME):
+                    if hasattr(info, 'getSource'):
+                        source = info.getSource()
+                        if not source:
+                            return None
+                        same = (package.name == source)
+                        if filter == FILTER_BASENAME and not same:
+                            return False
+                        if filter == FILTER_NOT_BASENAME and same:
+                            return False
                 if filter in (FILTER_FREE, FILTER_NOT_FREE):
                     if hasattr(info, 'getLicense'):
                         license = info.getLicense()
@@ -913,6 +947,31 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                         return False
         return True
 
+    def _package_has_basename(self, package):
+        from smart.backends.rpm.base import RPMPackage
+        from smart.backends.deb.base import DebPackage
+        if isinstance(package, RPMPackage):
+            if package.name.endswith("-devel") or \
+               package.name.endswith("-debuginfo") or \
+               package.name.endswith("-libs") or \
+               package.name.endswith("-static"):
+                return False
+            return True
+        elif isinstance(package, DebPackage):
+            if package.name.endswith("-dev") or \
+               package.name.endswith("-dbg"):
+                return False
+            return True
+        else:
+            return None
+
+    def _do_basename_filtering(self, package_list):
+        basename = {}
+        for package,status in package_list:
+            if self._package_has_basename(package):
+                basename[package] = (package,status)
+        return basename.values()
+
     def _do_newest_filtering(self, package_list):
         newest = {}
         for package,status in package_list:
@@ -925,6 +984,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def _post_process_package_list(self, filters):
         filterlist = filters.split(';')
+        if FILTER_BASENAME in filterlist:
+            self._package_list = self._do_basename_filtering(self._package_list)
         if FILTER_NEWEST in filterlist:
             self._package_list = self._do_newest_filtering(self._package_list)
 
@@ -936,6 +997,7 @@ def main():
         line = raw_input('')
         if line == 'exit':
             break
+        backend.reset()
         args = line.split(' ')
         backend.dispatch_command(args[0],args[1:])
 

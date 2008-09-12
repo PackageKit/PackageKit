@@ -205,6 +205,56 @@ gpk_task_list_message_cb (PkClient *client, PkMessageEnum message, const gchar *
 }
 
 /**
+ * pk_task_list_item_free:
+ **/
+static void
+pk_task_list_item_free (PkTaskListItem *item)
+{
+	g_return_if_fail (item != NULL);
+	g_object_unref (item->monitor);
+	g_free (item->tid);
+	g_free (item->text);
+	g_free (item);
+}
+
+/**
+ * pk_task_list_item_create:
+ **/
+static PkTaskListItem *
+pk_task_list_item_create (PkTaskList *tlist, const gchar *tid)
+{
+	gboolean ret;
+	GError *error = NULL;
+	PkTaskListItem *item;
+
+	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), NULL);
+	g_return_val_if_fail (tid != NULL, NULL);
+
+	item = g_new0 (PkTaskListItem, 1);
+	item->tid = g_strdup (tid);
+	item->monitor = pk_client_new ();
+	g_signal_connect (item->monitor, "status-changed",
+			  G_CALLBACK (pk_task_list_status_changed_cb), tlist);
+	g_signal_connect (item->monitor, "finished",
+			  G_CALLBACK (gpk_task_list_finished_cb), tlist);
+	g_signal_connect (item->monitor, "error-code",
+			  G_CALLBACK (gpk_task_list_error_code_cb), tlist);
+	g_signal_connect (item->monitor, "message",
+			  G_CALLBACK (gpk_task_list_message_cb), tlist);
+	ret = pk_client_set_tid (item->monitor, tid, &error);
+	if (!ret) {
+		egg_error ("could not set tid: %s", error->message);
+		g_error_free (error);
+		pk_task_list_item_free (item);
+		return NULL;
+	}
+	pk_client_get_role (item->monitor, &item->role, &item->text, NULL);
+	pk_client_get_status (item->monitor, &item->status, NULL);
+
+	return item;
+}
+
+/**
  * pk_task_list_refresh:
  *
  * Not normally required, but force a refresh
@@ -217,8 +267,6 @@ pk_task_list_refresh (PkTaskList *tlist)
 	guint length;
 	const gchar *tid;
 	const gchar **array;
-	GError *error = NULL;
-	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
@@ -240,26 +288,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 		item = pk_task_list_find_existing_tid (tlist, tid);
 		if (item == NULL) {
 			egg_debug ("new job, have to create %s", tid);
-			item = g_new0 (PkTaskListItem, 1);
-			item->tid = g_strdup (tid);
-			item->monitor = pk_client_new ();
-			g_signal_connect (item->monitor, "status-changed",
-					  G_CALLBACK (pk_task_list_status_changed_cb), tlist);
-			g_signal_connect (item->monitor, "finished",
-					  G_CALLBACK (gpk_task_list_finished_cb), tlist);
-			g_signal_connect (item->monitor, "error-code",
-					  G_CALLBACK (gpk_task_list_error_code_cb), tlist);
-			g_signal_connect (item->monitor, "message",
-					  G_CALLBACK (gpk_task_list_message_cb), tlist);
-			ret = pk_client_set_tid (item->monitor, tid, &error);
-			if (!ret) {
-				egg_error ("could not set tid: %s", error->message);
-				g_error_free (error);
-				break;
-			}
-			pk_client_get_role (item->monitor, &item->role, &item->text, NULL);
-			pk_client_get_status (item->monitor, &item->status, NULL);
-
+			item = pk_task_list_item_create (tlist, tid);
 			/* add to watched array */
 			g_ptr_array_add (tlist->priv->task_list, item);
 		}
@@ -272,11 +301,8 @@ pk_task_list_refresh (PkTaskList *tlist)
 	for (i=0; i<tlist->priv->task_list->len; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
 		if (!item->valid) {
-			g_object_unref (item->monitor);
+			pk_task_list_item_free (item);
 			g_ptr_array_remove (tlist->priv->task_list, item);
-			g_free (item->tid);
-			g_free (item->text);
-			g_free (item);
 		}
 	}
 
@@ -317,7 +343,7 @@ pk_task_list_transaction_list_changed_cb (PkControl *control, PkTaskList *tlist)
 	/* for now, just refresh all the jobs. a little inefficient me thinks */
 	pk_task_list_refresh (tlist);
 	egg_debug ("emit changed");
-	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
+	g_signal_emit (tlist, signals [PK_TASK_LIST_CHANGED], 0);
 }
 
 /**
@@ -328,10 +354,10 @@ pk_task_list_connection_changed_cb (PkConnection *connection, gboolean connected
 {
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 	egg_debug ("connected=%i", connected);
-	if (connected) {
-		/* force a refresh so we have valid data*/
+
+	/* force a refresh so we have valid data */
+	if (connected)
 		pk_task_list_refresh (tlist);
-	}
 }
 
 /**
@@ -452,8 +478,6 @@ pk_task_list_init (PkTaskList *tlist)
 static void
 pk_task_list_finalize (GObject *object)
 {
-	guint i;
-	PkTaskListItem *item;
 	PkTaskList *tlist;
 
 	g_return_if_fail (object != NULL);
@@ -462,14 +486,7 @@ pk_task_list_finalize (GObject *object)
 	g_return_if_fail (tlist->priv != NULL);
 
 	/* remove all watches */
-	for (i=0; i<tlist->priv->task_list->len; i++) {
-		item = g_ptr_array_index (tlist->priv->task_list, i);
-		g_object_unref (item->monitor);
-		g_free (item->text);
-		g_ptr_array_remove (tlist->priv->task_list, item);
-		g_free (item);
-	}
-
+	g_ptr_array_foreach (tlist->priv->task_list, (GFunc) pk_task_list_item_free, NULL);
 	g_ptr_array_free (tlist->priv->task_list, TRUE);
 	g_object_unref (tlist->priv->control);
 

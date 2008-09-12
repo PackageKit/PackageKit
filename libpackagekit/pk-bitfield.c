@@ -57,9 +57,8 @@ pk_bitfield_contain_priority (PkBitfield values, gint value, ...)
 	gint retval = -1;
 
 	/* we must query at least one thing */
-	if (pk_bitfield_contain (values, value)) {
+	if (pk_bitfield_contain (values, value))
 		return value;
-	}
 
 	/* process the valist */
 	va_start (args, value);
@@ -125,10 +124,9 @@ pk_role_bitfield_to_text (PkBitfield roles)
 	guint i;
 
 	string = g_string_new ("");
-	for (i=0; i<PK_ROLE_ENUM_UNKNOWN; i++) {
-		if ((roles & pk_bitfield_value (i)) == 0) {
+	for (i=0; i<=PK_ROLE_ENUM_UNKNOWN; i++) {
+		if ((roles & pk_bitfield_value (i)) == 0)
 			continue;
-		}
 		g_string_append_printf (string, "%s;", pk_role_enum_to_text (i));
 	}
 	/* do we have a no bitfield? \n */
@@ -165,9 +163,8 @@ pk_role_bitfield_from_text (const gchar *roles)
 	}
 
 	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
+	for (i=0; i<length; i++)
 		roles_enum += pk_bitfield_value (pk_role_enum_from_text (split[i]));
-	}
 out:
 	g_strfreev (split);
 	return roles_enum;
@@ -188,10 +185,9 @@ pk_group_bitfield_to_text (PkBitfield groups)
 	guint i;
 
 	string = g_string_new ("");
-	for (i=0; i<PK_GROUP_ENUM_UNKNOWN; i++) {
-		if ((groups & pk_bitfield_value (i)) == 0) {
+	for (i=0; i<=PK_GROUP_ENUM_UNKNOWN; i++) {
+		if ((groups & pk_bitfield_value (i)) == 0)
 			continue;
-		}
 		g_string_append_printf (string, "%s;", pk_group_enum_to_text (i));
 	}
 	/* do we have a no bitfield? \n */
@@ -228,9 +224,8 @@ pk_group_bitfield_from_text (const gchar *groups)
 	}
 
 	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
+	for (i=0; i<length; i++)
 		groups_enum += pk_bitfield_value (pk_group_enum_from_text (split[i]));
-	}
 out:
 	g_strfreev (split);
 	return groups_enum;
@@ -251,15 +246,13 @@ pk_filter_bitfield_to_text (PkBitfield filters)
 	guint i;
 
 	/* shortcut */
-	if (filters == 0) {
+	if (filters == 0)
 		return g_strdup (pk_filter_enum_to_text (filters));
-	}
 
 	string = g_string_new ("");
-	for (i=0; i<PK_FILTER_ENUM_UNKNOWN; i++) {
-		if ((filters & pk_bitfield_value (i)) == 0) {
+	for (i=0; i<=PK_FILTER_ENUM_UNKNOWN; i++) {
+		if ((filters & pk_bitfield_value (i)) == 0)
 			continue;
-		}
 		g_string_append_printf (string, "%s;", pk_filter_enum_to_text (i));
 	}
 	/* do we have a 'none' filter? \n */
@@ -296,9 +289,8 @@ pk_filter_bitfield_from_text (const gchar *filters)
 	}
 
 	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
+	for (i=0; i<length; i++)
 		filters_enum += pk_bitfield_value (pk_filter_enum_from_text (split[i]));
-	}
 out:
 	g_strfreev (split);
 	return filters_enum;
@@ -326,9 +318,8 @@ pk_bitfield_test (EggTest *test)
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NONE));
 	if (egg_strequal (text, "none"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "text was %s", text);
-	}
 	g_free (text);
 
 	/************************************************************/
@@ -336,9 +327,8 @@ pk_bitfield_test (EggTest *test)
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT));
 	if (egg_strequal (text, "~devel"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "text was %s", text);
-	}
 	g_free (text);
 
 	/************************************************************/
@@ -348,9 +338,8 @@ pk_bitfield_test (EggTest *test)
 					   pk_bitfield_value (PK_FILTER_ENUM_NEWEST));
 	if (egg_strequal (text, "~devel;gui;newest"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "text was %s", text);
-	}
 	g_free (text);
 
 	/************************************************************/
@@ -358,18 +347,16 @@ pk_bitfield_test (EggTest *test)
 	filter = pk_filter_bitfield_from_text ("none");
 	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NONE))
 		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "filter was %i", filter);
-	}
+	else
+		egg_test_failed (test, "filter was %" PK_BITFIELD_FORMAT, filter);
 
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter text to bitfield (single)");
 	filter = pk_filter_bitfield_from_text ("~devel");
 	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT))
 		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "filter was %i", filter);
-	}
+	else
+		egg_test_failed (test, "filter was %" PK_BITFIELD_FORMAT, filter);
 
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter text to bitfield (plural)");
@@ -378,9 +365,8 @@ pk_bitfield_test (EggTest *test)
 		       pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 		       pk_bitfield_value (PK_FILTER_ENUM_NEWEST)))
 		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "filter was %i", filter);
-	}
+	else
+		egg_test_failed (test, "filter was %" PK_BITFIELD_FORMAT, filter);
 
 	/************************************************************/
 	egg_test_title (test, "check we can add / remove bitfield");
@@ -392,9 +378,8 @@ pk_bitfield_test (EggTest *test)
 	text = pk_filter_bitfield_to_text (filter);
 	if (egg_strequal (text, "gui;~free;newest"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "text was %s", text);
-	}
 	g_free (text);
 
 	/************************************************************/
@@ -404,15 +389,15 @@ pk_bitfield_test (EggTest *test)
 		 pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
 	if (pk_bitfield_contain (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "wrong boolean");
-	}
+
+	/************************************************************/
 	egg_test_title (test, "check we can test enum false-presence");
 	if (!pk_bitfield_contain (filter, PK_FILTER_ENUM_FREE))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "wrong boolean");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "check we can add / remove bitfield to nothing");
@@ -421,20 +406,72 @@ pk_bitfield_test (EggTest *test)
 	text = pk_filter_bitfield_to_text (filter);
 	if (egg_strequal (text, "none"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "text was %s", text);
-	}
 	g_free (text);
 
 	/************************************************************/
-	egg_test_title (test, "bitfield from enums");
+	egg_test_title (test, "role bitfield from enums (unknown)");
+	values = pk_bitfield_from_enums (PK_ROLE_ENUM_UNKNOWN, -1);
+	if (values == pk_bitfield_value (PK_ROLE_ENUM_UNKNOWN))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "returned bitfield %" PK_BITFIELD_FORMAT, values);
+
+	/************************************************************/
+	egg_test_title (test, "role bitfield from enums (random)");
 	values = pk_bitfield_from_enums (PK_ROLE_ENUM_SEARCH_GROUP, PK_ROLE_ENUM_SEARCH_DETAILS, -1);
 	if (values == (pk_bitfield_value (PK_ROLE_ENUM_SEARCH_DETAILS) |
 		       pk_bitfield_value (PK_ROLE_ENUM_SEARCH_GROUP)))
 		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "returned bitfield %i", values);
-	}
+	else
+		egg_test_failed (test, "returned bitfield %" PK_BITFIELD_FORMAT, values);
+
+	/************************************************************/
+	egg_test_title (test, "group bitfield from enums (unknown)");
+	values = pk_bitfield_from_enums (PK_GROUP_ENUM_UNKNOWN, -1);
+	if (values == pk_bitfield_value (PK_GROUP_ENUM_UNKNOWN))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "returned bitfield %" PK_BITFIELD_FORMAT, values);
+
+	/************************************************************/
+	egg_test_title (test, "group bitfield from enums (random)");
+	values = pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSIBILITY, -1);
+	if (values == (pk_bitfield_value (PK_GROUP_ENUM_ACCESSIBILITY)))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "returned bitfield %" PK_BITFIELD_FORMAT, values);
+
+	/************************************************************/
+	egg_test_title (test, "group bitfield to text (unknown)");
+	values = pk_bitfield_from_enums (PK_GROUP_ENUM_UNKNOWN, -1);
+	text = pk_group_bitfield_to_text (values);
+	if (egg_strequal (text, "unknown"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);
+	g_free (text);
+
+	/************************************************************/
+	egg_test_title (test, "group bitfield to text (first and last)");
+	values = pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSIBILITY, PK_GROUP_ENUM_UNKNOWN, -1);
+	text = pk_group_bitfield_to_text (values);
+	if (egg_strequal (text, "accessibility;unknown"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);
+	g_free (text);
+
+	/************************************************************/
+	egg_test_title (test, "group bitfield to text (random)");
+	values = pk_bitfield_from_enums (PK_GROUP_ENUM_UNKNOWN, PK_GROUP_ENUM_REPOS, -1);
+	text = pk_group_bitfield_to_text (values);
+	if (egg_strequal (text, "repos;unknown"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);
+	g_free (text);
 
 	/************************************************************/
 	egg_test_title (test, "priority check missing");
@@ -443,27 +480,24 @@ pk_bitfield_test (EggTest *test)
 	value = pk_bitfield_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, -1);
 	if (value == -1)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "returned priority %i when should be missing", value);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "priority check first");
 	value = pk_bitfield_contain_priority (values, PK_ROLE_ENUM_SEARCH_GROUP, -1);
 	if (value == PK_ROLE_ENUM_SEARCH_GROUP)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "returned wrong value; %i", value);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "priority check second, correct");
 	value = pk_bitfield_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, PK_ROLE_ENUM_SEARCH_GROUP, -1);
 	if (value == PK_ROLE_ENUM_SEARCH_GROUP)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "returned wrong value; %i", value);
-	}
 
 	egg_test_end (test);
 }

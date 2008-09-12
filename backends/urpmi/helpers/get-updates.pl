@@ -1,4 +1,14 @@
 #!/usr/bin/perl
+#
+# Copyright (C) 2008 Aurelien Lefebvre <alefebvre@mandriva.com>
+#
+# Licensed under the GNU General Public License Version 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
 
 use strict;
 
@@ -35,8 +45,7 @@ my %selected = %{$state->{selected} || {}};
 my @ask_unselect = urpm::select::unselected_packages($urpm, $state);
 my @to_remove = urpm::select::removed_packages($urpm, $state);
 my @to_install = @{$urpm->{depslist}}[sort { $a <=> $b } keys %{$state->{selected}}]; 
-my ($src, $binary) = partition { $_->arch eq 'src' } @to_install;
-@to_install = @$binary;
+@to_install = grep { $_->arch ne 'src' } @to_install;
 my $updates_descr = urpm::get_updates_description($urpm);
 
 foreach(@to_install) {

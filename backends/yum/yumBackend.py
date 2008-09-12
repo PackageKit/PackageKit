@@ -51,7 +51,6 @@ import tempfile
 import shutil
 import ConfigParser
 
-from yumDirect import *
 from yumFilter import *
 from yumComps import *
 
@@ -254,9 +253,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
         package_list = [] #we can't do emitting as found if we are post-processing
         fltlist = filters.split(';')
-
-        # use direct access for speed
-        direct = YumDirectSQL(self.yumbase)
         pkgfilter = YumFilter(fltlist)
 
         # get the packagelist for this group
@@ -271,13 +267,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # get available packages
         self.percentage(20)
         if FILTER_INSTALLED not in fltlist:
-            # ideally we want to use pkgSack.searchNames, but it's broken with
-            # 'too many SQL variables' when you pass it lots of packages
-            #pkgs = self.yumbase.pkgSack.searchNames(names=all_packages)
-            #pkgfilter.add_available(pkgs)
-            for package in all_packages:
-                pkgs = direct.resolve(package)
-                pkgfilter.add_available(pkgs)
+            pkgs = self.yumbase.pkgSack.searchNames(names=all_packages)
+            pkgfilter.add_available(pkgs)
 
         # we couldn't do this when generating the list
         package_list = pkgfilter.post_process()
@@ -285,8 +276,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(90)
         self._show_package_list(package_list)
 
-        # close all the databases
-        direct.close()
         self.percentage(100)
 
     @handle_repo_error
@@ -1382,11 +1371,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     self.repo_detail(repo.id,repo.name,'false')
 
     def _get_obsoleted(self,name):
-        obsoletes = self.yumbase.up.getObsoletesTuples(newest=1)
-        for (obsoleting,installed) in obsoletes:
-            if obsoleting[0] == name:
-                pkg =  self.yumbase.rpmdb.searchPkgTuple(installed)[0]
-                return self._pkg_to_id(pkg)
+        try:
+            obsoletes = self.yumbase.up.getObsoletesTuples(newest=1)
+            for (obsoleting,installed) in obsoletes:
+                if obsoleting[0] == name:
+                    pkg =  self.yumbase.rpmdb.searchPkgTuple(installed)[0]
+                    return self._pkg_to_id(pkg)
+        except:
+            pass # no obsolete data - fd#17528
         return ""
 
     def _get_updated(self,pkg):

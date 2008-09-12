@@ -356,9 +356,8 @@ pk_client_error_auth_obtain (GError *error)
 gchar *
 pk_client_get_tid (PkClient *client)
 {
-	if (client->priv->tid == NULL) {
+	if (client->priv->tid == NULL)
 		return NULL;
-	}
 	return g_strdup (client->priv->tid);
 }
 
@@ -4333,9 +4332,8 @@ pk_client_test (EggTest *test)
 
 	/* get the tid */
 	tid = pk_client_get_tid (client);
-	if (tid == NULL) {
+	if (tid == NULL)
 		egg_test_failed (test, "failed to get tid");
-	}
 
 	/* set the tid on the copy */
 	ret = pk_client_set_tid (client_copy, tid, &error);
@@ -4344,6 +4342,7 @@ pk_client_test (EggTest *test)
 		g_error_free (error);
 		error = NULL;
 	}
+	g_free (tid);
 
 	egg_test_loop_wait (test, 5000);
 	if (clone_packages != size_new) {

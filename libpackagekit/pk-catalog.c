@@ -67,6 +67,7 @@ G_DEFINE_TYPE (PkCatalog, pk_catalog, G_TYPE_OBJECT)
 static gboolean
 pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar *distro_id_part)
 {
+	gchar *data;
 	gchar **list;
 	gchar *key;
 	guint len;
@@ -79,18 +80,19 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 	}
 
 	/* make key */
-	if (distro_id_part == NULL) {
+	if (distro_id_part == NULL)
 		key = g_strdup (catalog->priv->type);
-	} else {
+	else
 		key = g_strdup_printf ("%s(%s)", catalog->priv->type, distro_id_part);
-	}
-	list = g_key_file_get_string_list (catalog->priv->file, PK_CATALOG_FILE_HEADER, key, NULL, NULL);
+	data = g_key_file_get_string (catalog->priv->file, PK_CATALOG_FILE_HEADER, key, NULL);
 	g_free (key);
 
 	/* we have no key of this name */
-	if (list == NULL) {
+	if (data == NULL)
 		return FALSE;
-	}
+
+	/* split using the three delimiters */
+	list = g_strsplit_set (data, ";, ", 0);
 
 	/* add to array */
 	len = g_strv_length (list);
@@ -98,6 +100,7 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 		g_ptr_array_add (array, g_strdup (list[i]));
 	}
 	g_strfreev (list);
+	g_free (data);
 	return TRUE;
 }
 
@@ -174,12 +177,18 @@ pk_catalog_process_type (PkCatalog *catalog)
 		/* do the actions */
 		if (mode == PK_CATALOG_PROGRESS_PACKAGES) {
 			packages = pk_package_ids_from_id (package);
-			ret = pk_client_resolve (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, packages, &error);
+			ret = pk_client_resolve (catalog->priv->client,
+						 pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						 packages, &error);
 			g_strfreev (packages);
 		} else if (mode == PK_CATALOG_PROGRESS_FILES) {
-			ret = pk_client_search_file (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, package, &error);
+			ret = pk_client_search_file (catalog->priv->client,
+						     pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						     package, &error);
 		} else if (mode == PK_CATALOG_PROGRESS_PROVIDES) {
-			ret = pk_client_what_provides (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, 0, package, &error);
+			ret = pk_client_what_provides (catalog->priv->client,
+						      pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						      PK_PROVIDES_ENUM_ANY, package, &error);
 		}
 		if (!ret) {
 			egg_warning ("method failed: %s", error->message);
@@ -194,6 +203,7 @@ pk_catalog_process_type (PkCatalog *catalog)
 	}
 
 	g_strfreev (parts);
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 	return ret;
 }

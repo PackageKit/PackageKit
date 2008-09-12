@@ -1,3 +1,14 @@
+#
+# Copyright (C) 2008 Aurelien Lefebvre <alefebvre@mandriva.com>
+#
+# Licensed under the GNU General Public License Version 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+
 package perl_packagekit::enums;
 
 use Exporter;
@@ -144,6 +155,10 @@ our @EXPORT = qw(
   PK_STATUS_ENUM_DOWNLOAD_GROUP 
   PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO 
 
+  PK_DISTRO_UPGRADE_ENUM_UNKNOWN
+  PK_DISTRO_UPGRADE_ENUM_STABLE
+  PK_DISTRO_UPGRADE_ENUM_UNSTABLE
+
   );
 
 use constant {
@@ -287,6 +302,9 @@ use constant {
   PK_STATUS_ENUM_DOWNLOAD_GROUP => "download-group",
   PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO => "download-updateinfo",
 
+  PK_DISTRO_UPGRADE_ENUM_UNKNOWN => "unknown",
+  PK_DISTRO_UPGRADE_ENUM_STABLE => "stable",
+  PK_DISTRO_UPGRADE_ENUM_UNSTABLE => "unstable",
 
 };
 

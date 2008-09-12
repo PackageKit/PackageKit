@@ -195,7 +195,9 @@ main (int argc, char *argv[])
 out:
 	g_object_unref (client);
 	g_object_unref (extra);
+	g_ptr_array_foreach (package_array, (GFunc) g_free, NULL);
 	g_ptr_array_free (package_array, TRUE);
+	g_ptr_array_foreach (locale_array, (GFunc) g_free, NULL);
 	g_ptr_array_free (locale_array, TRUE);
 
 	return 0;

@@ -1,0 +1,27 @@
+README:
+
+PackageKit installs missing firmware as it requested by udev: this is how
+the whole system is designed to work.
+
+Introduction:
+
+ 1. user plugs in hardware / boots computer
+ 2. udev gets the firmware request uevent
+ 3. 51-packagekit-firmware.rules udev rule gets matched, this executes
+    packagekit-firmware.sh
+ 4. This script searches for the firmware file, and if not found, creates a
+    file in /var/run/PackageKit/udev with a random name (e.g. firmware-a1abc1de3),
+    and echos the filename of the firmware into it
+ 5. Either the session tools are started by the user logging in, or there is an
+    inotify watch on this directory -- this prompts the session software to try
+    and find an installable package, and if so install it.
+    The session tools ignore any duplicate entries or files they searched for before.
+ 6. Every time a RefreshCache() method is called, the contents of
+    /var/run/PackageKit/udev are deleted -- this can also be cleared on shutdown
+    by editing the distro scripts if desired
+
+Notes:
+
+ * We create the random file name so that we do not overwrite an existing
+   firmware request as these rules could be run in parallel.
+

@@ -1,4 +1,14 @@
 #!/usr/bin/perl
+#
+# Copyright (C) 2008 Aurelien Lefebvre <alefebvre@mandriva.com>
+#
+# Licensed under the GNU General Public License Version 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
 
 use strict;
 
@@ -19,32 +29,28 @@ use perl_packagekit::enums;
 use perl_packagekit::prints;
 use MDK::Common;
 
-# One argument (package id)
-exit if($#ARGV != 0);
+# One argument (package ids)
+$#ARGV == 0 or exit 1;
 
 my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
 
-my $pkg = get_package_by_package_id($urpm, @ARGV[0]);
+my @pkgids = split(/\|/, $ARGV[0]);
 
-if(!$pkg) {
-  pk_print_error(PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Requested package was not found");
-  exit;
+foreach (@pkgids) {
+  print_package_update_details($urpm, $_);
 }
 
-my %requested;
-$requested{$pkg->id} = 1;
+sub print_package_update_details {
 
-if(!find_installed_version($pkg)) {
-  pk_print_error(PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "The selected package isn't installed on your system");
-}
-elsif(package_version_is_installed($pkg)) {
-  pk_print_error(PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED, "The selected package is already at the latest version");
-}
-else {
+  my ($urpm, $pkgid) = @_;
+  my $pkg = get_package_by_package_id($urpm, $pkgid);
+  $pkg or return;
+
+  my %requested;
+  $requested{$pkg->id} = 1;
   my $state = {};
   my $restart = urpm::select::resolve_dependencies($urpm, $state, \%requested);
-  my %selected = %{$state->{selected}};
   my @ask_unselect = urpm::select::unselected_packages($urpm, $state);
   my @to_remove = urpm::select::removed_packages($urpm, $state);
   my @to_install = @{$urpm->{depslist}}[sort { $a <=> $b } keys %{$state->{selected}}]; 
@@ -57,32 +63,19 @@ else {
     $desc = $updesc->{pre};
     $desc =~ s/\n/;/g;
   }
-
+  
   my @to_upgrade_pkids;
   foreach(@to_install) {
     my $pkid = get_installed_version_pkid($_);
     push @to_upgrade_pkids, $pkid if $pkid;
   }
-
-  if($restart) {
-    pk_print_update_detail(get_package_id($pkg),
-      join("^", @to_upgrade_pkids),
-      join("^", map(fullname_to_package_id($_), @to_remove)),
-      "http://qa.mandriva.com",
-      "http://qa.mandriva.com",
-      "http://qa.mandriva.com",
-      PK_RESTART_ENUM_SYSTEM,
-      $desc);
-  }
-  else {
-    pk_print_update_detail(get_package_id($pkg),
-      join("^", @to_upgrade_pkids),
-      join("^", map(fullname_to_package_id($_), @to_remove)),
-      "http://qa.mandriva.com",
-      "http://qa.mandriva.com",
-      "http://qa.mandriva.com",
-      PK_RESTART_ENUM_APPLICATION,
-      $desc);
-  }
-
+  
+  pk_print_update_detail(get_package_id($pkg),
+    join("^", @to_upgrade_pkids),
+    join("^", map(fullname_to_package_id($_), @to_remove)),
+    "http://qa.mandriva.com",
+    "http://qa.mandriva.com",
+    "http://qa.mandriva.com",
+    $restart ? PK_RESTART_ENUM_SYSTEM : PK_RESTART_ENUM_APPLICATION,
+    $desc);
 }
