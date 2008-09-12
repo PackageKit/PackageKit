@@ -395,12 +395,12 @@ out:
  * pk_backend_spawn_exit_cb:
  **/
 static void
-pk_backend_spawn_exit_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backend_spawn)
+pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit, PkBackendSpawn *backend_spawn)
 {
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
-	/* if we killed the process, set an error */
-	if (exit == PK_EXIT_ENUM_KILLED) {
+	/* if we force killed the process, set an error */
+	if (exit == PK_SPAWN_EXIT_TYPE_SIGKILL) {
 		/* we just call this failed, and set an error */
 		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_PROCESS_KILL,
 				       "Process had to be killed to be cancelled");

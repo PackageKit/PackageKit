@@ -48,6 +48,21 @@ typedef struct
 	GObjectClass	parent_class;
 } PkSpawnClass;
 
+/**
+ * PkSpawnExitType:
+ *
+ * How the spawned file exited
+ **/
+typedef enum {
+	PK_SPAWN_EXIT_TYPE_SUCCESS,		/* script run, without any problems */
+	PK_SPAWN_EXIT_TYPE_FAILED,		/* script failed to run */
+	PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED,	/* changed dispatcher, another started */
+	PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT,	/* we timed out, and exited the dispatcher instance */
+	PK_SPAWN_EXIT_TYPE_SIGQUIT,		/* we killed the instance (SIGQUIT) */
+	PK_SPAWN_EXIT_TYPE_SIGKILL,		/* we killed the instance (SIGKILL) */
+	PK_SPAWN_EXIT_TYPE_UNKNOWN
+} PkSpawnExitType;
+
 GType		 pk_spawn_get_type		  	(void) G_GNUC_CONST;
 PkSpawn		*pk_spawn_new				(void);
 
