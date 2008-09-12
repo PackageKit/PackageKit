@@ -14,7 +14,7 @@
 # Dispatched backend implementation progress
 #
 # get-depends                   DONE
-# get-details
+# get-details                   DONE
 # get-distro-upgrades
 # get-files
 # get-packages
@@ -52,6 +52,8 @@ use urpmi_backend::filters;
 use perl_packagekit::enums;
 use perl_packagekit::prints;
 
+use MDK::Common;
+
 BEGIN {
   push @INC, dirname($0);
 }
@@ -68,6 +70,9 @@ while(<STDIN>) {
   }
   elsif($command eq "get-depends") {
     get_depends($urpm, @args);
+  }
+  elsif($command eq "get-details") {
+    get_details($urpm, @args);
   }
 }
 
@@ -127,9 +132,25 @@ sub get_depends {
   _finished();
 }
 
+sub get_details {
+
+  my ($urpm, $packageids) = @_;
+  
+  my @packageidstab = split(/\|/, $packageids);
+  
+  pk_print_status(PK_STATUS_ENUM_QUERY);
+
+  foreach (@packageidstab) {
+    _print_package_details($urpm, $_);
+  }
+  _finished();
+}
+
 sub search_name {
 
   my ($urpm, $filters, $search_term) = @_;
+  
+  pk_print_status(PK_STATUS_ENUM_QUERY);
 
   my @filterstab = split(/;/, $filters);
   
@@ -138,7 +159,6 @@ sub search_name {
 
   my $db = open_rpm_db();
   $urpm->compute_installed_flags($db);
-  $db->close();
   
   # Here we display installed packages
   if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab)) {
@@ -172,4 +192,33 @@ sub search_name {
 
 sub _finished {
   pk_print_status(PK_STATUS_ENUM_FINISHED);
+}
+
+sub _print_package_details {
+
+  my ($urpm, $pkgid) = @_;
+  
+  my $pkg = get_package_by_package_id($urpm, $pkgid);
+  $pkg or return;
+
+  my $medium = pkg2medium($pkg, $urpm);
+  my $xml_info = 'info';
+  my $xml_info_file = urpm::media::any_xml_info($urpm, $medium, $xml_info, undef, undef);
+  
+  if(!$xml_info_file) {
+    pk_print_details(get_package_id($pkg), "N/A", $pkg->group, "N/A", "N/A", 0);
+    return;
+  }
+  
+  require urpm::xml_info;
+  require urpm::xml_info_pkg;
+  my $name = urpm_name($pkg);
+  my %nodes = eval { urpm::xml_info::get_nodes($xml_info, $xml_info_file, [ $name ]) };
+  my %xml_info_pkgs;
+  put_in_hash($xml_info_pkgs{$name} ||= {}, $nodes{$name});
+  my $description = $xml_info_pkgs{$name}{description};
+  $description =~ s/\n/;/g;
+  $description =~ s/\t/ /g;
+  
+  pk_print_details(get_package_id($pkg), "N/A", $pkg->group, ensure_utf8($description), "N/A", $pkg->size);
 }
