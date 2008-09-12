@@ -17,7 +17,7 @@
 # get-details                   DONE
 # get-distro-upgrades
 # get-files                     DONE
-# get-packages
+# get-packages                  DONE
 # get-requires
 # get-update-detail
 # get-updates
@@ -75,6 +75,9 @@ while(<STDIN>) {
   }
   elsif($command eq "get-files") {
     get_files($urpm, @args);
+  }
+  elsif($command eq "get-packages") {
+    get_packages($urpm, @args);
   }
 }
 
@@ -158,6 +161,36 @@ sub get_files {
     _print_package_files($urpm, $_);
   }
 
+}
+
+sub get_packages {
+
+  my ($urpm, $filters) = @_;
+  my @filterstab = split(/;/, $filters);
+  
+  my $db = open_rpm_db();
+  $urpm->compute_installed_flags($db);
+  
+  # Here we display installed packages
+  if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab)) {
+    $db->traverse(sub {
+        my ($pkg) = @_;
+        if(filter($pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+          pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
+        }
+      });
+  }
+  
+  # Here are package which can be installed
+  if(not grep(/^${\FILTER_INSTALLED}$/, @filterstab)) {
+    foreach my $pkg(@{$urpm->{depslist}}) {
+      if($pkg->flag_upgrade) {
+        if(filter($pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+          pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
+        }
+      }  
+    }
+  }
 }
 
 sub search_name {
