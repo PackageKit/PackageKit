@@ -1371,11 +1371,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     self.repo_detail(repo.id,repo.name,'false')
 
     def _get_obsoleted(self,name):
-        obsoletes = self.yumbase.up.getObsoletesTuples(newest=1)
-        for (obsoleting,installed) in obsoletes:
-            if obsoleting[0] == name:
-                pkg =  self.yumbase.rpmdb.searchPkgTuple(installed)[0]
-                return self._pkg_to_id(pkg)
+        try:
+            obsoletes = self.yumbase.up.getObsoletesTuples(newest=1)
+            for (obsoleting,installed) in obsoletes:
+                if obsoleting[0] == name:
+                    pkg =  self.yumbase.rpmdb.searchPkgTuple(installed)[0]
+                    return self._pkg_to_id(pkg)
+        except:
+            pass # no obsolete data - fd#17528
         return ""
 
     def _get_updated(self,pkg):
