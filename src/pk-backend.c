@@ -1365,6 +1365,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	/* check we have not already finished */
 	if (backend->priv->finished) {
 		egg_warning ("consistency error");
+		egg_debug_backtrace ();
 		return FALSE;
 	}
 
@@ -1513,6 +1514,7 @@ pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)
 		egg_warning ("already set exit status: old=%s, new=%s",
 			    pk_exit_enum_to_text (backend->priv->exit),
 			    pk_exit_enum_to_text (exit));
+		egg_debug_backtrace ();
 		return FALSE;
 	}
 
