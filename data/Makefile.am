@@ -19,6 +19,9 @@ crondata_SCRIPTS = packagekit-background
 pmutilsdir = $(libdir)/pm-utils/sleep.d
 pmutils_DATA = 95packagekit
 
+upgradescriptdir = $(datadir)/PackageKit
+upgradescript_SCRIPTS = pk-upgrade-distro.sh
+
 if BACKEND_TYPE_APT
 aptconfdir = ${SYSCONFDIR}/apt.conf.d
 aptconf_DATA = 20packagekit
@@ -82,6 +85,7 @@ EXTRA_DIST =						\
 	$(mime_in_files)				\
 	$(localcache_DATA)				\
 	$(database_DATA)				\
+	$(upgradescript_SCRIPTS)			\
 	$(NULL)
 
 clean-local:
