@@ -488,6 +488,9 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	gchar *filename;
 	gchar **argv;
 	gchar **envp;
+#if PK_BUILD_LOCAL
+  const gchar *directory;
+#endif
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
@@ -500,11 +503,15 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 
 #if PK_BUILD_LOCAL
 	/* prefer the local version */
-	filename = g_build_filename ("..", "backends", backend_spawn->priv->name, "helpers", argv[0], NULL);
+  directory = backend_spawn->priv->name;
+  if (g_str_has_prefix (directory, "test_"))
+      directory = "test";
+
+	filename = g_build_filename ("..", "backends", directory, "helpers", argv[0], NULL);
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
 		egg_debug ("local helper not found '%s'", filename);
 		g_free (filename);
-		filename = g_build_filename ("..", "backends", backend_spawn->priv->name, argv[0], NULL);
+		filename = g_build_filename ("..", "backends", directory, argv[0], NULL);
 	}
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
 		egg_debug ("local helper not found '%s'", filename);

@@ -41,6 +41,7 @@ while(<DISTRIB_FILE>) {
   my %distrib = parse_line($_);
   push(@distribs, \%distrib);
 }
+close(DISTRIB_FILE);
 
 my $distrib;
 foreach (@distribs) {
