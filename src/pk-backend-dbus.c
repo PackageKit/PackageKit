@@ -152,15 +152,15 @@ pk_backend_dbus_details_cb (DBusGProxy *proxy, const gchar *package_id,
  **/
 static void
 pk_backend_dbus_distro_upgrade_cb (DBusGProxy *proxy,
-			           const gchar *type,
+				   const gchar *type,
 				   const gchar *name,
 				   const gchar *summary,
 				   PkBackendDbus *backend_dbus)
 {
 	egg_debug ("got signal");
 	pk_backend_distro_upgrade (backend_dbus->priv->backend,
-			           pk_distro_upgrade_enum_from_text (type),
-			           name, summary);
+				   pk_distro_upgrade_enum_from_text (type),
+				   name, summary);
 }
 
 /**
@@ -589,9 +589,8 @@ pk_backend_dbus_kill (PkBackendDbus *backend_dbus)
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -617,9 +616,8 @@ pk_backend_dbus_cancel (PkBackendDbus *backend_dbus)
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -648,9 +646,8 @@ pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, PkBitfield filters)
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
@@ -680,9 +677,8 @@ pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus, PkBitfield filters)
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
@@ -710,9 +706,8 @@ pk_backend_dbus_refresh_cache (PkBackendDbus *backend_dbus, gboolean force)
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -730,20 +725,19 @@ pk_backend_dbus_get_distro_upgrades (PkBackendDbus *backend_dbus)
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, 
-			         "GetDistroUpgrades", &error, 
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy,
+				 "GetDistroUpgrades", &error,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		egg_warning ("%s", error->message);
-		pk_backend_error_code (backend_dbus->priv->backend, 
+		pk_backend_error_code (backend_dbus->priv->backend,
 				       PK_ERROR_ENUM_INTERNAL_ERROR,
 				       error->message);
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -770,9 +764,8 @@ pk_backend_dbus_update_system (PkBackendDbus *backend_dbus)
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -801,9 +794,8 @@ pk_backend_dbus_repo_enable (PkBackendDbus *backend_dbus, const gchar *rid, gboo
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -836,9 +828,8 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -869,9 +860,8 @@ pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkBitfield filters, gchar 
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
@@ -900,9 +890,8 @@ pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -933,9 +922,8 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, PkBitfield filters, co
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
@@ -967,9 +955,8 @@ pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, PkBitfield filters,
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
@@ -1001,9 +988,8 @@ pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, PkBitfield filters, c
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
@@ -1035,9 +1021,8 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, PkBitfield filters, co
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
@@ -1070,9 +1055,8 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkBitfield filters, gc
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
@@ -1105,9 +1089,8 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkBitfield filters, g
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
@@ -1137,9 +1120,8 @@ pk_backend_dbus_get_packages (PkBackendDbus *backend_dbus, PkBitfield filters)
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
@@ -1150,29 +1132,28 @@ pk_backend_dbus_get_packages (PkBackendDbus *backend_dbus, PkBitfield filters)
 gboolean
 pk_backend_dbus_download_packages (PkBackendDbus *backend_dbus, gchar **package_ids, const gchar *directory)
 {
-        gboolean ret;
-        GError *error = NULL;
+	gboolean ret;
+	GError *error = NULL;
 
-        g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
-        g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
+	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	 g_return_val_if_fail (package_ids != NULL, FALSE);
 
-        /* new sync method call */
-        pk_backend_dbus_time_reset (backend_dbus);
-        ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "DownloadPackages", &error,
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "DownloadPackages", &error,
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_STRING, directory,
- 	                         G_TYPE_INVALID, G_TYPE_INVALID);
-        if (error != NULL) {
-                egg_warning ("%s", error->message);
-                pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
-                pk_backend_finished (backend_dbus->priv->backend);
-                g_error_free (error);
-        }
-        if (ret) {
-                pk_backend_dbus_time_check (backend_dbus);
-        }
-        return ret;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		egg_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
+	}
+	if (ret)
+		pk_backend_dbus_time_check (backend_dbus);
+	return ret;
 }
 
 
@@ -1200,9 +1181,8 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, gchar **package_
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -1230,9 +1210,8 @@ pk_backend_dbus_get_details (PkBackendDbus *backend_dbus, gchar **package_ids)
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -1260,9 +1239,8 @@ pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, gchar **package_ids)
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -1292,9 +1270,8 @@ pk_backend_dbus_remove_packages (PkBackendDbus *backend_dbus, gchar **package_id
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -1322,9 +1299,8 @@ pk_backend_dbus_install_packages (PkBackendDbus *backend_dbus, gchar **package_i
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -1352,9 +1328,8 @@ pk_backend_dbus_update_packages (PkBackendDbus *backend_dbus, gchar **package_id
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -1383,9 +1358,8 @@ pk_backend_dbus_install_files (PkBackendDbus *backend_dbus, gboolean trusted, gc
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -1414,9 +1388,8 @@ pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -1452,9 +1425,8 @@ pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkBitfield filters,
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
-	if (ret) {
+	if (ret)
 		pk_backend_dbus_time_check (backend_dbus);
-	}
 	g_free (filters_text);
 	return ret;
 }
