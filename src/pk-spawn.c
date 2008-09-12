@@ -41,7 +41,6 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include <pk-enum.h>
 #include <pk-common.h>
 
 #include "egg-debug.h"
@@ -66,7 +65,8 @@ struct PkSpawnPrivate
 	guint			 poll_id;
 	guint			 kill_id;
 	gboolean		 finished;
-	PkExitEnum		 exit;
+	gboolean		 is_sending_exit;
+	PkSpawnExitType		 exit;
 	GMainLoop		*exit_loop;
 	GString			*stdout_buf;
 	gchar			*last_argv0;
@@ -182,11 +182,11 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	if (WEXITSTATUS (status) > 0) {
 		egg_warning ("Running fork failed with return value %d", WEXITSTATUS (status));
-		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN)
-			spawn->priv->exit = PK_EXIT_ENUM_FAILED;
+		if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
+			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_FAILED;
 	} else {
-		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN)
-			spawn->priv->exit = PK_EXIT_ENUM_SUCCESS;
+		if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
+			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SUCCESS;
 	}
 
 	/* officially done, although no signal yet */
@@ -200,14 +200,18 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	/* are we waiting for a "exit" from the dispatcher? */
 	ret = g_main_loop_is_running (spawn->priv->exit_loop);
-	if (ret)
+	if (ret) {
 		g_main_loop_quit (spawn->priv->exit_loop);
+		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED;
+	}
+
+	/* are we doing pk_spawn_exit */
+	if (spawn->priv->is_sending_exit)
+		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT;
 
 	/* don't emit if we just closed an invalid dispatcher */
-	if (!ret) {
-		egg_debug ("emitting exit %s", pk_exit_enum_to_text (spawn->priv->exit));
-		g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
-	}
+	egg_debug ("emitting exit %i", spawn->priv->exit);
+	g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
 
 	return FALSE;
 }
@@ -227,7 +231,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	}
 
 	/* we won't overwrite this if not unknown */
-	spawn->priv->exit = PK_EXIT_ENUM_KILLED;
+	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
 
 	egg_debug ("sending SIGKILL %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGKILL);
@@ -264,7 +268,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	}
 
 	/* we won't overwrite this if not unknown */
-	spawn->priv->exit = PK_EXIT_ENUM_CANCELLED;
+	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGQUIT;
 
 	egg_debug ("sending SIGQUIT %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGQUIT);
@@ -332,7 +336,10 @@ out:
 gboolean
 pk_spawn_exit (PkSpawn *spawn)
 {
-	return pk_spawn_send_stdin (spawn, "exit");
+	gboolean ret;
+	spawn->priv->is_sending_exit = TRUE;
+	ret = pk_spawn_send_stdin (spawn, "exit");
+	return ret;
 }
 
 /**
@@ -396,6 +403,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	}
 
 	/* create spawned object for tracking */
+	spawn->priv->is_sending_exit = FALSE;
 	spawn->priv->finished = FALSE;
 	egg_debug ("creating new instance of %s", argv[0]);
 	ret = g_spawn_async_with_pipes (NULL, argv, envp,
@@ -473,9 +481,10 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->poll_id = 0;
 	spawn->priv->kill_id = 0;
 	spawn->priv->finished = FALSE;
+	spawn->priv->is_sending_exit = FALSE;
 	spawn->priv->last_argv0 = NULL;
 	spawn->priv->last_envp = NULL;
-	spawn->priv->exit = PK_EXIT_ENUM_UNKNOWN;
+	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 
 	spawn->priv->stdout_buf = g_string_new ("");
 	spawn->priv->exit_loop = g_main_loop_new (NULL, FALSE);
@@ -538,7 +547,7 @@ pk_spawn_new (void)
 #include "egg-test.h"
 #define BAD_EXIT 999
 
-PkExitEnum mexit = BAD_EXIT;
+PkSpawnExitType mexit = BAD_EXIT;
 guint stdout_count = 0;
 guint finished_count = 0;
 
@@ -546,7 +555,7 @@ guint finished_count = 0;
  * pk_test_exit_cb:
  **/
 static void
-pk_test_exit_cb (PkSpawn *spawn, PkExitEnum exit, EggTest *test)
+pk_test_exit_cb (PkSpawn *spawn, PkSpawnExitType exit, EggTest *test)
 {
 	egg_debug ("spawn exit=%i", exit);
 	mexit = exit;
@@ -641,7 +650,7 @@ pk_spawn_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "make sure finished okay");
-	if (mexit == PK_EXIT_ENUM_SUCCESS)
+	if (mexit == PK_SPAWN_EXIT_TYPE_SUCCESS)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "finish was okay!");
@@ -710,7 +719,7 @@ pk_spawn_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "make sure finished in SIGKILL");
-	if (mexit == PK_EXIT_ENUM_KILLED)
+	if (mexit == PK_SPAWN_EXIT_TYPE_SIGKILL)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "finish %i!", mexit);
@@ -738,7 +747,7 @@ pk_spawn_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "make sure finished in SIGQUIT");
-	if (mexit == PK_EXIT_ENUM_CANCELLED)
+	if (mexit == PK_SPAWN_EXIT_TYPE_SIGQUIT)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "finish %i!", mexit);
@@ -833,6 +842,13 @@ pk_spawn_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "dispatcher still running");
+
+	/************************************************************/
+	egg_test_title (test, "did we get the right exit code");
+	if (mexit == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "finish %i!", mexit);
 
 	/************************************************************/
 	egg_test_title (test, "ask dispatcher to close (again)");
