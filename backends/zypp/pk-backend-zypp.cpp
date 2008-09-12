@@ -572,6 +572,54 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 static gboolean
+backend_get_distro_upgrades_thread(PkBackend *backend)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
+
+	// refresh the repos before checking for updates
+	if (!zypp_refresh_cache (backend, FALSE)) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	zypp::ResPool pool = zypp_build_pool (TRUE);
+	pk_backend_set_percentage (backend, 40);
+
+	// get all Packages and Patches for Update
+	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
+
+	pk_backend_set_percentage (backend, 80);
+
+	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
+	for (ci = cb; ci != ce; ++ci) {
+		zypp::ResObject::constPtr res = ci->resolvable();
+
+		if (zypp::isKind<zypp::Patch>(res)) {
+			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
+			if (patch->category () == "distupgrade")
+			{
+				// here emit a distupgrade available using the patch summary
+				pk_backend_distro_upgrade(backend,
+							PK_DISTRO_UPGRADE_ENUM_STABLE,
+							patch->name ().c_str (),
+							patch->summary ().c_str ());
+			}
+		}
+	}
+	return TRUE;
+}
+
+/**
+ * backend_get_distro_upgrades:
+ */
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+	pk_backend_thread_create (backend, backend_get_distro_upgrades_thread);
+}
+
+static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
 	gboolean force = pk_backend_get_bool(backend, "force");
@@ -665,6 +713,8 @@ backend_get_updates_thread (PkBackend *backend)
 				infoEnum = PK_INFO_ENUM_LOW;
 			}else if (patch->category () == "security") {
 				infoEnum = PK_INFO_ENUM_SECURITY;
+			}else if (patch->category () == "distupgrade") {
+				continue;
 			} else {
 				infoEnum = PK_INFO_ENUM_NORMAL;
 			}
@@ -1794,7 +1844,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
-	NULL,					/* get_distro_upgrades */
+	backend_get_distro_upgrades,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
