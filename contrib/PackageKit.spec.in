@@ -195,6 +195,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_datadir}/man/man1/*.1.gz
 %{_datadir}/PolicyKit/policy/*.policy
 %{_datadir}/mime/packages/packagekit-*.xml
+%{_datadir}/PackageKit/pk-upgrade-distro.sh
 %{_sbindir}/packagekitd
 %{_bindir}/pkmon
 %{_bindir}/pkcon
