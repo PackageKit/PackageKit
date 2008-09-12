@@ -20,7 +20,7 @@
 # get-packages                  DONE
 # get-requires                  DONE
 # get-update-detail             DONE
-# get-updates
+# get-updates                   DONE
 # install-packages
 # refresh-cache
 # remove-packages
@@ -85,6 +85,9 @@ while(<STDIN>) {
   }
   elsif($command eq "get-update-detail") {
     get_update_detail($urpm, @args);
+  }
+  elsif($command eq "get-updates") {
+    get_updates($urpm, @args);
   }
 }
 
@@ -242,6 +245,35 @@ sub get_update_detail {
   
   foreach (@packageidstab) {
     _print_package_update_details($urpm, $_);
+  }
+  _finished();
+}
+
+sub get_updates {
+
+  my ($urpm, $filters) = @_;
+  # Fix me
+  # Filter are to be implemented.
+  
+  pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
+
+  my $state = {};
+  my %requested;
+  my $restart = urpm::select::resolve_dependencies($urpm, $state, \%requested,
+    auto_select => 1);
+  
+  my %selected = %{$state->{selected} || {}};
+  my @ask_unselect = urpm::select::unselected_packages($urpm, $state);
+  my @to_remove = urpm::select::removed_packages($urpm, $state);
+  my @to_install = @{$urpm->{depslist}}[sort { $a <=> $b } keys %{$state->{selected}}]; 
+  @to_install = grep { $_->arch ne 'src' } @to_install;
+  my $updates_descr = urpm::get_updates_description($urpm);
+  
+  foreach(@to_install) {
+    my $updesc = $updates_descr->{URPM::pkg2media($urpm->{media}, $_)->{name}}{$_->name};
+    pk_print_package($updesc->{importance} eq "bugfix" ? INFO_BUGFIX :
+                        $updesc->{importance} eq "security" ? INFO_SECURITY :
+                        INFO_NORMAL, get_package_id($_), $_->summary);
   }
   _finished();
 }

@@ -50,13 +50,7 @@ my $updates_descr = urpm::get_updates_description($urpm);
 
 foreach(@to_install) {
   my $updesc = $updates_descr->{URPM::pkg2media($urpm->{media}, $_)->{name}}{$_->name};
-  if($updesc->{importance} eq "bugfix") {
-    pk_print_package(INFO_BUGFIX, get_package_id($_), $_->summary);
-  }
-  elsif($updesc->{importance} eq "security") {
-    pk_print_package(INFO_SECURITY, get_package_id($_), $_->summary);
-  }
-  else {
-    pk_print_package(INFO_NORMAL, get_package_id($_), $_->summary);
-  }
+  pk_print_package($updesc->{importance} eq "bugfix" ? INFO_BUGFIX :
+                      $updesc->{importance} eq "security" ? INFO_SECURITY :
+                      INFO_NORMAL, get_package_id($_), $_->summary);
 }
