@@ -437,8 +437,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     GROUPS = {
     # RPM
-    'Amusement/Games'                         : GROUP_GAMES,
-    'Amusement/Graphics'                      : GROUP_GRAPHICS,
+    'Amusements/Games'                        : GROUP_GAMES,
+    'Amusements/Graphics'                     : GROUP_GRAPHICS,
     'Applications/Archiving'                  : GROUP_OTHER,
     'Applications/Communications'             : GROUP_COMMUNICATION,
     'Applications/Databases'                  : GROUP_OTHER,
