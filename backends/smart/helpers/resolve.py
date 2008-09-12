@@ -13,7 +13,9 @@
 import sys
 import smartBackend
 
+filters = sys.argv[1]
+packages = sys.argv[2:]
 backend = smartBackend.PackageKitSmartBackend(sys.argv[2:])
-backend.resolve(sys.argv[1], sys.argv[2])
+backend.resolve(filters, packages)
 
 sys.exit()
