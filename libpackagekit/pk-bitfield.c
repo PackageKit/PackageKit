@@ -348,7 +348,7 @@ pk_bitfield_test (EggTest *test)
 	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NONE))
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "filter was %llu", filter);
+		egg_test_failed (test, "filter was %" PK_BITFIELD_FORMAT, filter);
 
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter text to bitfield (single)");
@@ -356,7 +356,7 @@ pk_bitfield_test (EggTest *test)
 	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT))
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "filter was %llu", filter);
+		egg_test_failed (test, "filter was %" PK_BITFIELD_FORMAT, filter);
 
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter text to bitfield (plural)");
@@ -366,7 +366,7 @@ pk_bitfield_test (EggTest *test)
 		       pk_bitfield_value (PK_FILTER_ENUM_NEWEST)))
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "filter was %llu", filter);
+		egg_test_failed (test, "filter was %" PK_BITFIELD_FORMAT, filter);
 
 	/************************************************************/
 	egg_test_title (test, "check we can add / remove bitfield");
@@ -416,7 +416,7 @@ pk_bitfield_test (EggTest *test)
 	if (values == pk_bitfield_value (PK_ROLE_ENUM_UNKNOWN))
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "returned bitfield %llu", values);
+		egg_test_failed (test, "returned bitfield %" PK_BITFIELD_FORMAT, values);
 
 	/************************************************************/
 	egg_test_title (test, "role bitfield from enums (random)");
@@ -425,7 +425,7 @@ pk_bitfield_test (EggTest *test)
 		       pk_bitfield_value (PK_ROLE_ENUM_SEARCH_GROUP)))
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "returned bitfield %llu", values);
+		egg_test_failed (test, "returned bitfield %" PK_BITFIELD_FORMAT, values);
 
 	/************************************************************/
 	egg_test_title (test, "group bitfield from enums (unknown)");
@@ -433,7 +433,7 @@ pk_bitfield_test (EggTest *test)
 	if (values == pk_bitfield_value (PK_GROUP_ENUM_UNKNOWN))
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "returned bitfield %llu", values);
+		egg_test_failed (test, "returned bitfield %" PK_BITFIELD_FORMAT, values);
 
 	/************************************************************/
 	egg_test_title (test, "group bitfield from enums (random)");
@@ -441,7 +441,7 @@ pk_bitfield_test (EggTest *test)
 	if (values == (pk_bitfield_value (PK_GROUP_ENUM_ACCESSIBILITY)))
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "returned bitfield %llu", values);
+		egg_test_failed (test, "returned bitfield %" PK_BITFIELD_FORMAT, values);
 
 	/************************************************************/
 	egg_test_title (test, "group bitfield to text (unknown)");
@@ -450,7 +450,7 @@ pk_bitfield_test (EggTest *test)
 	if (egg_strequal (text, "unknown"))
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "returned bitfield text %s (%llu)", text, values);
+		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);
 	g_free (text);
 
 	/************************************************************/
@@ -460,7 +460,7 @@ pk_bitfield_test (EggTest *test)
 	if (egg_strequal (text, "accessibility;unknown"))
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "returned bitfield text %s (%llu)", text, values);
+		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);
 	g_free (text);
 
 	/************************************************************/
@@ -470,7 +470,7 @@ pk_bitfield_test (EggTest *test)
 	if (egg_strequal (text, "repos;unknown"))
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "returned bitfield text %s (%llu)", text, values);
+		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);
 	g_free (text);
 
 	/************************************************************/

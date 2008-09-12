@@ -29,6 +29,7 @@
 G_BEGIN_DECLS
 
 typedef guint64 PkBitfield;
+#define PK_BITFIELD_FORMAT G_GUINT64_FORMAT
 
 /* convenience functions as it's easy to forget the bitwise operators */
 #define pk_bitfield_add(bitfield,enum)		do { ((bitfield) |= (pk_bitfield_value(enum))); } while (0)

@@ -1484,7 +1484,7 @@ main (int argc, char *argv[])
 
 	if (filter != NULL)
 		filters = pk_filter_bitfield_from_text (filter);
-	egg_debug ("filter=%s, filters=%llu", filter, filters);
+	egg_debug ("filter=%s, filters=%" PK_BITFIELD_FORMAT, filter, filters);
 
 	mode = argv[1];
 	if (argc > 2)
