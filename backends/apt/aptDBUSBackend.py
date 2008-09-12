@@ -956,6 +956,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
+        self._check_init(prange=(0,10))
         pkgs=[]
         for id in ids:
             pkg = self._find_package_by_id(id)
