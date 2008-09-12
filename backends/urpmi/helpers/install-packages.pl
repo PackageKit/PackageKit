@@ -29,8 +29,10 @@ use urpmi_backend::tools;
 # One or more arguments (Package ids)
 exit if($#ARGV < 0);
 
+my @packageidstab = split(/\|/, $ARGV[0]);
+
 my @names;
-foreach(@ARGV) {
+foreach(@packageidstab) {
   my @pkg_id = (split(/;/, $_));
   push @names, $pkg_id[0];
 }

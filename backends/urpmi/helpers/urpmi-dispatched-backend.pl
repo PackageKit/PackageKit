@@ -89,6 +89,9 @@ while(<STDIN>) {
   elsif($command eq "get-updates") {
     get_updates($urpm, @args);
   }
+  elsif($command eq "install-packages") {
+    install_packages($urpm, @args);
+  }
 }
 
 
@@ -276,6 +279,10 @@ sub get_updates {
                         INFO_NORMAL, get_package_id($_), $_->summary);
   }
   _finished();
+}
+
+sub install_packages {
+  # TODO
 }
 
 sub search_name {
