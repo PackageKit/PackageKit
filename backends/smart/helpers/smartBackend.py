@@ -283,6 +283,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def update_system(self):
+        self.status(STATUS_INFO)
         cache = self.ctrl.getCache()
 
         trans = smart.transaction.Transaction(cache,
@@ -305,6 +306,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def get_updates(self, filters):
+        self.status(STATUS_INFO)
         cache = self.ctrl.getCache()
 
         trans = smart.transaction.Transaction(cache,
