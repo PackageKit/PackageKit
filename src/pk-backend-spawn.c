@@ -65,6 +65,7 @@ struct PkBackendSpawnPrivate
 	PkBackend		*backend;
 	gchar			*name;
 	guint			 kill_id;
+	guint			 backend_finished_id;
 	PkConf			*conf;
 	gboolean		 finished;
 };
@@ -649,6 +650,7 @@ pk_backend_spawn_finalize (GObject *object)
 	if (backend_spawn->priv->kill_id > 0)
 		g_source_remove (backend_spawn->priv->kill_id);
 
+	g_signal_handler_disconnect (backend_spawn->priv->backend, backend_spawn->priv->backend_finished_id);
 	g_free (backend_spawn->priv->name);
 	g_object_unref (backend_spawn->priv->conf);
 	g_object_unref (backend_spawn->priv->spawn);
@@ -680,7 +682,8 @@ pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 	backend_spawn->priv->finished = FALSE;
 	backend_spawn->priv->conf = pk_conf_new ();
 	backend_spawn->priv->backend = pk_backend_new ();
-	g_signal_connect (backend_spawn->priv->backend, "finished",
+	backend_spawn->priv->backend_finished_id =
+		g_signal_connect (backend_spawn->priv->backend, "finished",
 			  G_CALLBACK (pk_backend_spawn_finished_cb), backend_spawn);
 	backend_spawn->priv->spawn = pk_spawn_new ();
 	g_signal_connect (backend_spawn->priv->spawn, "exit",
