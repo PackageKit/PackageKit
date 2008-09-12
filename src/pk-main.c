@@ -279,19 +279,16 @@ main (int argc, char *argv[])
 
 	/* Only timeout and close the mainloop if we have specified it
 	 * on the command line */
-	if (timed_exit) {
+	if (timed_exit)
 		g_timeout_add_seconds (20, (GSourceFunc) timed_exit_cb, loop);
-	}
 
 	/* only poll every 10 seconds when we are alive */
-	if (exit_idle_time != 0 && disable_timer == FALSE) {
+	if (exit_idle_time != 0 && !disable_timer)
 		g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, engine);
-	}
 
 	/* immediatly exit */
-	if (immediate_exit) {
+	if (immediate_exit)
 		g_timeout_add (50, (GSourceFunc) timed_exit_cb, loop);
-	}
 
 	g_main_loop_run (loop);
 	g_main_loop_unref (loop);

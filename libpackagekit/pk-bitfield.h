@@ -28,13 +28,13 @@
 
 G_BEGIN_DECLS
 
+typedef guint64 PkBitfield;
+
 /* convenience functions as it's easy to forget the bitwise operators */
 #define pk_bitfield_add(bitfield,enum)		do { ((bitfield) |= (pk_bitfield_value(enum))); } while (0)
 #define pk_bitfield_remove(bitfield,enum)	do { ((bitfield) &= ~(pk_bitfield_value(enum))); } while (0)
 #define pk_bitfield_contain(bitfield,enum)	(((bitfield) & (pk_bitfield_value(enum))) > 0)
-#define pk_bitfield_value(enum)			(1 << (enum))
-
-typedef guint PkBitfield;
+#define pk_bitfield_value(enum)			((PkBitfield) 1 << (enum))
 
 gint		 pk_bitfield_contain_priority		(PkBitfield	 values,
 							 gint		 value, ...);
