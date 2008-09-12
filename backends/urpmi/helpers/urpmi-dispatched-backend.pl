@@ -16,7 +16,7 @@
 # get-depends                   DONE
 # get-details                   DONE
 # get-distro-upgrades
-# get-files
+# get-files                     DONE
 # get-packages
 # get-requires
 # get-update-detail
@@ -31,7 +31,6 @@
 # search-name                   DONE
 # update-packages
 # update-system
-# urpmi-dispatched-backend
 #
 
 use strict;
@@ -73,6 +72,9 @@ while(<STDIN>) {
   }
   elsif($command eq "get-details") {
     get_details($urpm, @args);
+  }
+  elsif($command eq "get-files") {
+    get_files($urpm, @args);
   }
 }
 
@@ -144,6 +146,18 @@ sub get_details {
     _print_package_details($urpm, $_);
   }
   _finished();
+}
+
+sub get_files {
+  
+  my ($urpm, $packageids) = @_;
+  
+  my @packageidstab = split(/\|/, $packageids);
+  
+  foreach (@packageidstab) {
+    _print_package_files($urpm, $_);
+  }
+
 }
 
 sub search_name {
@@ -221,4 +235,25 @@ sub _print_package_details {
   $description =~ s/\t/ /g;
   
   pk_print_details(get_package_id($pkg), "N/A", $pkg->group, ensure_utf8($description), "N/A", $pkg->size);
+}
+
+sub _print_package_files {
+
+  my ($urpm, $pkgid) = @_;
+
+  my $pkg = get_package_by_package_id($urpm, $pkgid);
+  $pkg or return;
+  
+  my $medium = pkg2medium($pkg, $urpm);
+  my $xml_info = 'files';
+  my $xml_info_file = urpm::media::any_xml_info($urpm, $medium, $xml_info, undef, undef);
+  require urpm::xml_info;
+  require urpm::xml_info_pkg;
+  my $name = urpm_name($pkg);
+  my %nodes = eval { urpm::xml_info::get_nodes($xml_info, $xml_info_file, [ $name ]) };
+  my %xml_info_pkgs;
+  put_in_hash($xml_info_pkgs{$name} ||= {}, $nodes{$name});
+  my @files = map { chomp_($_) } split("\n", $xml_info_pkgs{$name}{files});
+  
+  pk_print_files(get_package_id($pkg), join(';', @files));
 }
