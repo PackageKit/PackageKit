@@ -327,13 +327,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._show_package_list()
 
     @needs_cache
-    def resolve(self, filters, packagename):
+    def resolve(self, filters, packages):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        ratio, results, suggestions = self.ctrl.search(packagename)
-        for result in results:
-            if self._package_passes_filters(result, filters):
-                self._add_package(result)
+        for packagename in packages:
+            ratio, results, suggestions = self.ctrl.search(packagename)
+            for result in results:
+                if self._package_passes_filters(result, filters):
+                    self._add_package(result)
         self._post_process_package_list(filters)
         self._show_package_list()
 
