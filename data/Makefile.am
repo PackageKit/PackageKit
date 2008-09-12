@@ -85,6 +85,7 @@ EXTRA_DIST =						\
 	$(mime_in_files)				\
 	$(localcache_DATA)				\
 	$(database_DATA)				\
+	$(upgradescript_SCRIPTS)			\
 	$(NULL)
 
 clean-local:
