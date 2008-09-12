@@ -19,7 +19,7 @@
 # get-files                     DONE
 # get-packages                  DONE
 # get-requires                  DONE
-# get-update-detail
+# get-update-detail             DONE
 # get-updates
 # install-packages
 # refresh-cache
@@ -82,6 +82,9 @@ while(<STDIN>) {
   }
   elsif($command eq "get-requires") {
     get_requires($urpm, @args);
+  }
+  elsif($command eq "get-update-detail") {
+    get_update_detail($urpm, @args);
   }
 }
 
@@ -230,6 +233,19 @@ sub get_requires {
   _finished();
 }
 
+sub get_update_detail {
+
+  my ($urpm, $packageids) = @_;
+  
+  pk_print_status(PK_STATUS_ENUM_QUERY);
+  my @packageidstab = split(/\|/, $packageids);
+  
+  foreach (@packageidstab) {
+    _print_package_update_details($urpm, $_);
+  }
+  _finished();
+}
+
 sub search_name {
 
   my ($urpm, $filters, $search_term) = @_;
@@ -326,4 +342,43 @@ sub _print_package_files {
   my @files = map { chomp_($_) } split("\n", $xml_info_pkgs{$name}{files});
   
   pk_print_files(get_package_id($pkg), join(';', @files));
+}
+
+sub _print_package_update_details {
+
+  my ($urpm, $pkgid) = @_;
+  my $pkg = get_package_by_package_id($urpm, $pkgid);
+  $pkg or return;
+
+  my %requested;
+  $requested{$pkg->id} = 1;
+  my $state = {};
+  my $restart = urpm::select::resolve_dependencies($urpm, $state, \%requested);
+  my @ask_unselect = urpm::select::unselected_packages($urpm, $state);
+  my @to_remove = urpm::select::removed_packages($urpm, $state);
+  my @to_install = @{$urpm->{depslist}}[sort { $a <=> $b } keys %{$state->{selected}}]; 
+  my ($src, $binary) = partition { $_->arch eq 'src' } @to_install;
+  @to_install = @$binary;
+  my $updates_descr = urpm::get_updates_description($urpm);
+  my $updesc = $updates_descr->{URPM::pkg2media($urpm->{media}, $pkg)->{name}}{$pkg->name};
+  my $desc;
+  if($updesc) {
+    $desc = $updesc->{pre};
+    $desc =~ s/\n/;/g;
+  }
+  
+  my @to_upgrade_pkids;
+  foreach(@to_install) {
+    my $pkid = get_installed_version_pkid($_);
+    push @to_upgrade_pkids, $pkid if $pkid;
+  }
+  
+  pk_print_update_detail(get_package_id($pkg),
+    join("^", @to_upgrade_pkids),
+    join("^", map(fullname_to_package_id($_), @to_remove)),
+    "http://qa.mandriva.com",
+    "http://qa.mandriva.com",
+    "http://qa.mandriva.com",
+    $restart ? PK_RESTART_ENUM_SYSTEM : PK_RESTART_ENUM_APPLICATION,
+    $desc);
 }
