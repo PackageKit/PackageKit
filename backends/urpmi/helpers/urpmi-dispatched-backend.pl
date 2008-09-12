@@ -142,7 +142,6 @@ sub get_details {
   my ($urpm, $packageids) = @_;
   
   my @packageidstab = split(/\|/, $packageids);
-  
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
   foreach (@packageidstab) {
@@ -156,17 +155,20 @@ sub get_files {
   my ($urpm, $packageids) = @_;
   
   my @packageidstab = split(/\|/, $packageids);
+  pk_print_status(PK_STATUS_ENUM_QUERY);
   
   foreach (@packageidstab) {
     _print_package_files($urpm, $_);
   }
-
+  _finished();
 }
 
 sub get_packages {
 
   my ($urpm, $filters) = @_;
   my @filterstab = split(/;/, $filters);
+  
+  pk_print_status(PK_STATUS_ENUM_QUERY);
   
   my $db = open_rpm_db();
   $urpm->compute_installed_flags($db);
@@ -191,6 +193,7 @@ sub get_packages {
       }  
     }
   }
+  _finished();
 }
 
 sub search_name {
