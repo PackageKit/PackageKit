@@ -18,7 +18,7 @@
 # get-distro-upgrades
 # get-files                     DONE
 # get-packages                  DONE
-# get-requires
+# get-requires                  DONE
 # get-update-detail
 # get-updates
 # install-packages
@@ -44,6 +44,7 @@ use urpm::media;
 use urpm::args;
 use urpm::select;
 
+use urpmi_backend::actions;
 use urpmi_backend::open_db;
 use urpmi_backend::tools;
 use urpmi_backend::filters;
@@ -78,6 +79,9 @@ while(<STDIN>) {
   }
   elsif($command eq "get-packages") {
     get_packages($urpm, @args);
+  }
+  elsif($command eq "get-requires") {
+    get_requires($urpm, @args);
   }
 }
 
@@ -191,6 +195,36 @@ sub get_packages {
           pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
         }
       }  
+    }
+  }
+  _finished();
+}
+
+sub get_requires {
+  
+  my ($urpm, $filters, $packageids, $recursive_option) = @_;
+  
+  my @filterstab = split(/;/, $filters);
+  my @packageidstab = split(/\|/, $packageids);
+  my $recursive = $recursive_option eq "yes" ? 1 : 0;
+  
+  my @pkgnames;
+  foreach (@packageidstab) {
+    my $pkg = get_package_by_package_id($urpm, $_);
+    $pkg and push(@pkgnames, $pkg->name);
+  }
+  
+  pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
+  my @requires = perform_requires_search($urpm, \@pkgnames, $recursive);
+  
+  foreach(@requires) {
+    if(filter($_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1 })) {
+      if(package_version_is_installed($_)) {
+        grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab) or pk_print_package(INFO_INSTALLED, get_package_id($_), $_->summary);
+      }
+      else {
+        grep(/^${\FILTER_INSTALLED}$/, @filterstab) or pk_print_package(INFO_AVAILABLE, get_package_id($_), $_->summary);
+      }
     }
   }
   _finished();
