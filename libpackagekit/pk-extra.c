@@ -106,7 +106,12 @@ pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, g
 		if (egg_strequal (col, "package") && value != NULL) {
 			package = g_strdup (argv[i]);
 		} else if (egg_strequal (col, "icon") && value != NULL) {
-			icon_name = g_strdup (argv[i]);
+			/* filter out icons that are not icon names, but files */
+			if (!egg_strzero (argv[i]) &&
+			    !g_str_has_suffix (argv[i], ".xpm") &&
+			    !g_str_has_suffix (argv[i], ".png") &&
+			    !g_str_has_suffix (argv[i], ".svg"))
+				icon_name = g_strdup (argv[i]);
 		} else if (egg_strequal (col, "exec") && value != NULL) {
 			exec = g_strdup (argv[i]);
 		}
