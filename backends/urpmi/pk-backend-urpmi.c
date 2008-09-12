@@ -347,6 +347,15 @@ backend_update_system (PkBackend *backend)
 	pk_backend_spawn_helper (spawn, "update-system.pl", NULL);
 }
 
+/**
+ * backend_get_distro_upgrades:
+ */
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+	pk_backend_spawn_helper (spawn, "get-distro-upgrades.pl", NULL);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -359,7 +368,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
-	NULL,					/* get_distro_upgrades */
+	backend_get_distro_upgrades,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,					/* get_repo_list */
