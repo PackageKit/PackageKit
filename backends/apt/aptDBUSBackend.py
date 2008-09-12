@@ -825,6 +825,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             enabled = repos.get_comp_child_state(template)[0]
             if not FILTER_DEVELOPMENT in filter_list:
                 self.RepoDetail(repo_id, description, enabled)
+        # Emit distro's cdrom sources
+        for source in repos.get_cdrom_sources():
+            if FILTER_NOT_DEVELOPMENT in filter_list and \
+               source.type in ("deb-src", "rpm-src"):
+                continue
+            enabled = not source.disabled
+            # Remove markups from the description
+            description = re.sub(r"</?b>", "", repos.render_source(source))
+            repo_id = "cdrom_%s_%s" % (source.uri, source.dist)
+            repo_id.join(map(lambda c: "_%s" % c, source.comps))
+            self.RepoDetail(repo_id, description, enabled)
         # Emit distro's virtual source code repositoriy
         if not FILTER_NOT_DEVELOPMENT in filter_list:
             repo_id = "%s_source" % repos.distro.id
@@ -836,7 +847,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.RepoDetail(repo_id, description, enabled)
         # Emit third party repositories
         for source in repos.get_isv_sources():
-            #FIXME: There isn't any inconsistent state in PackageKit
             if FILTER_NOT_DEVELOPMENT in filter_list and \
                source.type in ("deb-src", "rpm-src"):
                 continue
@@ -900,6 +910,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         repos.enable_child_source(template)
                     else:
                         repos.disable_child_source(template)
+                    found = True
+                    break
+        # Check if the repo_id matches a cdrom repository
+        elif repo_id.startswith("cdrom_"):
+            for source in repos.get_isv_sources():
+                source_id = "cdrom_%s_%s" % (source.uri, source.dist)
+                source_id.join(map(lambda c: "_%s" % c, source.comps))
+                if repo_id == source_id:
+                    if source.disabled == enable:
+                        source.disabled = not enable
+                        repos.save_sourceslist()
+                    else:
+                        pklog.debug("Repository is already enabled")
                     found = True
                     break
         # Check if the repo_id matches an isv repository
