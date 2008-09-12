@@ -22,6 +22,7 @@ dist_helper_DATA = 						\
 	resolve.pl									\
 	update-packages.pl					\
 	update-system.pl						\
+	get-distro-upgrades.pl						\
 	$(NULL)
 
 install-data-hook:

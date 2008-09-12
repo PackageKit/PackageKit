@@ -24,6 +24,7 @@ our @EXPORT = qw(
   pk_print_error
   pk_print_percentage
   pk_print_sub_percentage
+  pk_print_distro_upgrade
   );
 
 sub pk_print_package {
@@ -101,6 +102,11 @@ sub pk_print_percentage {
 sub pk_print_sub_percentage {
   my ($sub_percentage) = @_;
   printf("subpercentage\t%i\n", $sub_percentage);
+}
+
+sub pk_print_distro_upgrade {
+  my($dtype, $name, $summary) = @_;
+  printf("distro-upgrade\t%s\t%s\t%s\n", $dtype, $name, $summary);
 }
 
 1;
