@@ -283,6 +283,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def update_system(self):
+        self.status(STATUS_INFO)
         cache = self.ctrl.getCache()
 
         trans = smart.transaction.Transaction(cache,
@@ -305,6 +306,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def get_updates(self, filters):
+        self.status(STATUS_INFO)
         cache = self.ctrl.getCache()
 
         trans = smart.transaction.Transaction(cache,
@@ -327,13 +329,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._show_package_list()
 
     @needs_cache
-    def resolve(self, filters, packagename):
+    def resolve(self, filters, packages):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        ratio, results, suggestions = self.ctrl.search(packagename)
-        for result in results:
-            if self._package_passes_filters(result, filters):
-                self._add_package(result)
+        for packagename in packages:
+            ratio, results, suggestions = self.ctrl.search(packagename)
+            for result in results:
+                if self._package_passes_filters(result, filters):
+                    self._add_package(result)
         self._post_process_package_list(filters)
         self._show_package_list()
 
@@ -382,11 +385,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             if self._package_passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
-                group = info.getGroup()
-                if group in self.GROUPS:
-                    group = self.GROUPS[group]
-                    if searchstring in group:
-                        self._add_package(package)
+                group = self._get_group(info)
+                if searchstring in group:
+                    self._add_package(package)
         self._post_process_package_list(filters)
         self._show_package_list()
 
@@ -436,19 +437,19 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.saveSysConf()
 
     GROUPS = {
-    # RPM
+    # RPM (redhat)
     'Amusements/Games'                        : GROUP_GAMES,
     'Amusements/Graphics'                     : GROUP_GRAPHICS,
-    'Applications/Archiving'                  : GROUP_OTHER,
+    'Applications/Archiving'                  : GROUP_OTHER, ### FIXME
     'Applications/Communications'             : GROUP_COMMUNICATION,
-    'Applications/Databases'                  : GROUP_OTHER,
+    'Applications/Databases'                  : GROUP_OTHER, ### FIXME
     'Applications/Editors'                    : GROUP_PUBLISHING,
-    'Applications/Emulators'                  : GROUP_OTHER,
-    'Applications/Engineering'                : GROUP_OTHER,
-    'Applications/File'                       : GROUP_OTHER,
+    'Applications/Emulators'                  : GROUP_OTHER, ### FIXME
+    'Applications/Engineering'                : GROUP_OTHER, ### FIXME
+    'Applications/File'                       : GROUP_OTHER, ### FIXME
     'Applications/Internet'                   : GROUP_INTERNET,
     'Applications/Multimedia'                 : GROUP_MULTIMEDIA,
-    'Applications/Productivity'               : GROUP_OTHER,
+    'Applications/Productivity'               : GROUP_OTHER, ### FIXME
     'Applications/Publishing'                 : GROUP_PUBLISHING,
     'Applications/System'                     : GROUP_SYSTEM,
     'Applications/Text'                       : GROUP_PUBLISHING,
@@ -466,6 +467,46 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'User Interface/Desktops'                 : GROUP_DESKTOP_OTHER,
     'User Interface/X'                        : GROUP_DESKTOP_OTHER,
     'User Interface/X Hardware Support'       : GROUP_DESKTOP_OTHER,
+    # Yum
+    'Virtual'                                 : GROUP_META_PACKAGES,
+    'Virtual/Applications'                    : GROUP_META_PACKAGES,
+    'Virtual/Base System'                     : GROUP_META_PACKAGES,
+    'Virtual/Desktop Environments'            : GROUP_META_PACKAGES,
+    'Virtual/Development'                     : GROUP_META_PACKAGES,
+    'Virtual/Languages'                       : GROUP_META_PACKAGES,
+    'Virtual/Servers'                         : GROUP_META_PACKAGES,
+    # RPM (novell)
+    'Productivity/Archiving'                  : GROUP_OTHER, ### FIXME
+    'Productivity/Databases'                  : GROUP_OTHER, ### FIXME
+    'Productivity/Editors'                    : GROUP_PUBLISHING,
+    'Productivity/File utilities'             : GROUP_OTHER, ### FIXME
+    'Productivity/Graphics'                   : GROUP_GRAPHICS,
+    'Productivity/Multimedia'                 : GROUP_MULTIMEDIA,
+    'Productivity/Networking'                 : GROUP_NETWORK,
+    'Productivity/Office'                     : GROUP_OFFICE,
+    'Productivity/Other'                      : GROUP_OTHER,
+    'Productivity/Publishing'                 : GROUP_PUBLISHING,
+    'Productivity/Scientific'                 : GROUP_SCIENCE,
+    'Productivity/Security'                   : GROUP_SECURITY,
+    'Productivity/Text'                       : GROUP_PUBLISHING,
+    'System/Base'                             : GROUP_SYSTEM,
+    'System/Boot'                             : GROUP_SYSTEM,
+    'System/Kernel'                           : GROUP_SYSTEM,
+    'System/Libraries'                        : GROUP_SYSTEM,
+    'System/Shells'                           : GROUP_SYSTEM,
+    'System/GUI/GNOME'                        : GROUP_DESKTOP_GNOME,
+    'System/GUI/KDE'                          : GROUP_DESKTOP_KDE,
+    'System/GUI/Other'                        : GROUP_DESKTOP_OTHER,
+    'System/GUI/XFCE'                         : GROUP_DESKTOP_XFCE,
+    # YaST2
+#   'Virtual'                                 : GROUP_META_PACKAGES,
+    'Virtual/Base Technologies'               : GROUP_META_PACKAGES,
+    'Virtual/Desktop Functions'               : GROUP_META_PACKAGES,
+#   'Virtual/Development'                     : GROUP_META_PACKAGES,
+    'Virtual/GNOME Desktop'                   : GROUP_META_PACKAGES,
+    'Virtual/Graphical Environments'          : GROUP_META_PACKAGES,
+    'Virtual/KDE Desktop'                     : GROUP_META_PACKAGES,
+    'Virtual/Server Functions'                : GROUP_META_PACKAGES,
     # DEB
     "admin"                                   : GROUP_ADMIN_TOOLS,
     "base"                                    : GROUP_SYSTEM,
@@ -556,11 +597,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             else:
                 license = LICENSE_UNKNOWN
 
-            group = info.getGroup()
-            if group in self.GROUPS:
-                group = self.GROUPS[group]
-            else:
-                group = GROUP_UNKNOWN
+            group = self._get_group(info)
 
             self.details(packageid, license, group, description, url,
                     pkgsize)
@@ -632,7 +669,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 if package and not extras.has_key(package):
                     extras[package] = True
 
-            del extras[original]
+            if original in extras:
+                del extras[original]
             for package in extras.keys():
                 if self._package_passes_filters(package, filters):
                     self._add_package(package)
@@ -666,7 +704,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 if package and not extras.has_key(package):
                     extras[package] = True
 
-            del extras[original]
+            if original in extras:
+                del extras[original]
             for package in extras.keys():
                 if self._package_passes_filters(package, filters):
                     self._add_package(package)
@@ -733,15 +772,18 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         from smart.backends.deb.base import DebPackage
         from smart.backends.slack.base import SlackPackage
         if isinstance(package, RPMPackage):
+            name = package.name
             version, arch = package.version.split('@')
         elif isinstance(package, DebPackage):
+            name = package.name
             version, arch = package.version, smart.backends.deb.base.DEBARCH
         elif isinstance(package, SlackPackage):
+            name = package.name
             ver, arch, rel = package.version.rsplit('-')
             version = "%s-%s" % (ver, rel)
         else:
             version, arch = package.version, self._machine()
-        return package.name, version, arch
+        return name, version, arch
 
     def _joinpackage(self, name, version, arch):
         if not self.systemchannel:
@@ -815,6 +857,20 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             summary = info.getSummary()
             self.package(pkpackage.get_package_id(name, version, arch, data),
                 status, summary)
+
+    def _get_group(self, info):
+        group = info.getGroup()
+        if group in self.GROUPS:
+            group = self.GROUPS[group]
+        else:
+            while group.find('/') != -1:
+                group = group.rsplit('/', 1)[0]
+                if group in self.GROUPS:
+                    group = self.GROUPS[group]
+                    break
+            else:
+                group = GROUP_UNKNOWN
+        return group
 
     def _get_status(self, package):
         flags = smart.pkgconf.testAllFlags(package)
