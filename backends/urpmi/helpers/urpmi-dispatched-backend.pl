@@ -21,7 +21,7 @@
 # get-requires                  DONE
 # get-update-detail             DONE
 # get-updates                   DONE
-# install-packages
+# install-packages		DONE
 # refresh-cache
 # remove-packages
 # resolve
@@ -282,7 +282,27 @@ sub get_updates {
 }
 
 sub install_packages {
-  # TODO
+
+  my ($urpm, $packageids) = @_;
+
+  my @packageidstab = split(/\|/, $packageids);
+  
+  my @names;
+  foreach(@packageidstab) {
+    my @pkg_id = (split(/;/, $_));
+    push @names, $pkg_id[0];
+  }
+  
+  my %requested;
+  
+  urpm::select::search_packages($urpm, \%requested, \@names, 
+    fuzzy => 0, 
+    caseinsensitive => 0,
+    all => 0);
+  eval {
+    perform_installation($urpm, \%requested);
+  };
+  _finished();
 }
 
 sub search_name {
