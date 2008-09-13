@@ -440,16 +440,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     # RPM (redhat)
     'Amusements/Games'                        : GROUP_GAMES,
     'Amusements/Graphics'                     : GROUP_GRAPHICS,
-    'Applications/Archiving'                  : GROUP_OTHER,
+    'Applications/Archiving'                  : GROUP_OTHER, ### FIXME
     'Applications/Communications'             : GROUP_COMMUNICATION,
-    'Applications/Databases'                  : GROUP_OTHER,
+    'Applications/Databases'                  : GROUP_OTHER, ### FIXME
     'Applications/Editors'                    : GROUP_PUBLISHING,
-    'Applications/Emulators'                  : GROUP_OTHER,
-    'Applications/Engineering'                : GROUP_OTHER,
-    'Applications/File'                       : GROUP_OTHER,
+    'Applications/Emulators'                  : GROUP_OTHER, ### FIXME
+    'Applications/Engineering'                : GROUP_OTHER, ### FIXME
+    'Applications/File'                       : GROUP_OTHER, ### FIXME
     'Applications/Internet'                   : GROUP_INTERNET,
     'Applications/Multimedia'                 : GROUP_MULTIMEDIA,
-    'Applications/Productivity'               : GROUP_OTHER,
+    'Applications/Productivity'               : GROUP_OTHER, ### FIXME
     'Applications/Publishing'                 : GROUP_PUBLISHING,
     'Applications/System'                     : GROUP_SYSTEM,
     'Applications/Text'                       : GROUP_PUBLISHING,
@@ -476,10 +476,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Virtual/Languages'                       : GROUP_META_PACKAGES,
     'Virtual/Servers'                         : GROUP_META_PACKAGES,
     # RPM (novell)
-    'Productivity/Archiving'                  : GROUP_OTHER,
-    'Productivity/Databases'                  : GROUP_OTHER,
+    'Productivity/Archiving'                  : GROUP_OTHER, ### FIXME
+    'Productivity/Databases'                  : GROUP_OTHER, ### FIXME
     'Productivity/Editors'                    : GROUP_PUBLISHING,
-    'Productivity/File utilities'             : GROUP_OTHER,
+    'Productivity/File utilities'             : GROUP_OTHER, ### FIXME
     'Productivity/Graphics'                   : GROUP_GRAPHICS,
     'Productivity/Multimedia'                 : GROUP_MULTIMEDIA,
     'Productivity/Networking'                 : GROUP_NETWORK,
