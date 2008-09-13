@@ -437,7 +437,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.saveSysConf()
 
     GROUPS = {
-    # RPM
+    # RPM (redhat)
     'Amusements/Games'                        : GROUP_GAMES,
     'Amusements/Graphics'                     : GROUP_GRAPHICS,
     'Applications/Archiving'                  : GROUP_OTHER,
@@ -475,7 +475,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Virtual/Development'                     : GROUP_META_PACKAGES,
     'Virtual/Languages'                       : GROUP_META_PACKAGES,
     'Virtual/Servers'                         : GROUP_META_PACKAGES,
-    # RPM
+    # RPM (novell)
     'Productivity/Archiving'                  : GROUP_UNKNOWN,
     'Productivity/Databases'                  : GROUP_UNKNOWN,
     'Productivity/Editors'                    : GROUP_PUBLISHING,
