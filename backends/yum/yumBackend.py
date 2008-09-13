@@ -29,7 +29,7 @@ import re
 
 from packagekit.backend import *
 from packagekit.progress import *
-from packagekit.package import *
+from packagekit.package import PackagekitPackage
 import yum
 from urlgrabber.progress import BaseMeter,format_time,format_number
 from yum.rpmtrans import RPMBaseCallback
@@ -45,6 +45,7 @@ import types
 import signal
 import time
 import os.path
+import logging
 
 import tarfile
 import tempfile
@@ -57,7 +58,6 @@ from yumComps import *
 # Global vars
 yumbase = None
 progress = PackagekitProgress()  # Progress object to store the progress
-pkpackage = PackagekitPackage()
 
 MetaDataMap = {
     'repomd'        : STATUS_DOWNLOAD_REPOSITORY,
@@ -79,7 +79,7 @@ def sigquit(signum,frame):
         yumbase.doUnlock(YUM_PID_FILE)
     sys.exit(1)
 
-class PackageKitYumBackend(PackageKitBaseBackend):
+class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
     # Packages there require a reboot
     rebootpkgs = ("kernel","kernel-smp","kernel-xen-hypervisor","kernel-PAE",
@@ -241,6 +241,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
         self._do_search(searchlist,filters,key)
 
+    def _get_installed_from_names(self,name_list):
+        found = []
+        for package in name_list:
+            pkgs = self.yumbase.rpmdb.searchNevra(name=package)
+            found.extend(pkgs)
+        return found
+        
+    def _get_available_from_names(self,name_list):
+        return self.yumbase.pkgSack.searchNames(names=name_list)
+
     @handle_repo_error
     def search_group(self,filters,group_key):
         '''
@@ -260,15 +270,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # get installed packages
         self.percentage(10)
-        for package in all_packages:
-            pkgs = self.yumbase.rpmdb.searchNevra(name=package)
-            pkgfilter.add_installed(pkgs)
+        pkgfilter.add_installed(self._get_installed_from_names(all_packages))
 
         # get available packages
         self.percentage(20)
         if FILTER_INSTALLED not in fltlist:
-            pkgs = self.yumbase.pkgSack.searchNames(names=all_packages)
-            pkgfilter.add_available(pkgs)
+            pkgfilter.add_available(self._get_available_from_names(all_packages))
 
         # we couldn't do this when generating the list
         package_list = pkgfilter.post_process()
@@ -433,6 +440,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         (version,release) = tuple(idver.split('-'))
         return epoch,version,release
 
+    def _is_meta_package(self,id):
+        meta = None
+        if len(id.split(';')) > 1:
+            # Split up the id
+            (n,idver,a,d) = self.get_package_from_id(id)
+            if idver == 'meta' and a == 'meta' and d == 'meta':
+                meta = n
+        return meta
+               
     def _findPackage(self,id):
         '''
         find a package based on a package id (name;version;arch;repoid)
@@ -440,7 +456,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # is this an real id or just an name
         if len(id.split(';')) > 1:
             # Split up the id
-            (n,idver,a,d) = pkpackage.get_package_from_id(id)
+            (n,idver,a,d) = self.get_package_from_id(id)
             # get e,v,r from package id version
             e,v,r = self._getEVR(idver)
         else:
@@ -818,7 +834,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                 show = False
                         if show:
                             self._show_package(pkg,INFO_AVAILABLE)
-
+        
     @handle_repo_error
     def install_packages(self,package_ids):
         '''
@@ -833,16 +849,29 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         txmbrs = []
         already_warned = False
         for package in package_ids:
-            pkg,inst = self._findPackage(package)
-            if pkg and not inst:
-                repo = self.yumbase.repos.getRepo(pkg.repoid)
-                if not already_warned and not repo.gpgcheck:
-                    self.message(MESSAGE_UNTRUSTED_PACKAGE,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
-                    already_warned = True
-                txmbr = self.yumbase.install(po=pkg)
-                txmbrs.extend(txmbr)
-            if inst:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package %s is already installed" % pkg.name)
+            meta = self._is_meta_package(package)
+            if meta:
+                txmbr = self.yumbase.selectGroup(meta)
+                if not txmbr:
+                    self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"This Group %s is already installed" % meta)
+                for t in txmbr:
+                    repo = self.yumbase.repos.getRepo(t.po.repoid)
+                    if not already_warned and not repo.gpgcheck:
+                        self.message(MESSAGE_UNTRUSTED_PACKAGE,"The untrusted package %s will be installed from %s." % (t.po.name, repo))
+                        already_warned = True
+                    
+                txmbrs.extend(txmbr)   
+            else:           
+                pkg,inst = self._findPackage(package)
+                if pkg and not inst:
+                    repo = self.yumbase.repos.getRepo(pkg.repoid)
+                    if not already_warned and not repo.gpgcheck:
+                        self.message(MESSAGE_UNTRUSTED_PACKAGE,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
+                        already_warned = True
+                    txmbr = self.yumbase.install(po=pkg)
+                    txmbrs.extend(txmbr)
+                if inst:
+                    self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package %s is already installed" % pkg.name)
         if txmbrs:
             self._runYumTransaction()
         else:
@@ -1177,7 +1206,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def _show_details_pkg(self,pkg):
 
         pkgver = self._get_package_ver(pkg)
-        id = pkpackage.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
+        id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
         desc = pkg.description
         desc = desc.replace('\n\n',';')
         desc = desc.replace('\n',' ')
@@ -1205,7 +1234,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _pkg_to_id(self,pkg):
         pkgver = self._get_package_ver(pkg)
-        id = pkpackage.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
+        id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
         return id
 
     def _show_package(self,pkg,status):
@@ -1545,7 +1574,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.yumbase.repos.setCache(old_cache_setting)
 
     def _setup_yum(self):
-        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
+        self.yumbase._getConfig(errorlevel=-1,debuglevel=-1)     # Setup Yum Config
         self.yumbase.conf.throttle = "90%"                        # Set bandwidth throttle to 40%
         self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
         self.yumbase.repos.setProgressBar(self.dnlCallback)       # Setup the download callback class
@@ -1690,10 +1719,10 @@ class PackageKitCallback(RPMBaseCallback):
 
     def _showName(self,status):
         if type(self.curpkg) in types.StringTypes:
-            id = pkpackage.get_package_id(self.curpkg,'','','')
+            id = self.get_package_id(self.curpkg,'','','')
         else:
             pkgver = self.base._get_package_ver(self.curpkg)
-            id = pkpackage.get_package_id(self.curpkg.name,pkgver,self.curpkg.arch,self.curpkg.repo)
+            id = self.get_package_id(self.curpkg.name,pkgver,self.curpkg.arch,self.curpkg.repo)
         self.base.package(id,status,"")
 
     def event(self,package,action,te_current,te_total,ts_current,ts_total):
