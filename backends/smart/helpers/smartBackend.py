@@ -772,15 +772,18 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         from smart.backends.deb.base import DebPackage
         from smart.backends.slack.base import SlackPackage
         if isinstance(package, RPMPackage):
+            name = package.name
             version, arch = package.version.split('@')
         elif isinstance(package, DebPackage):
+            name = package.name
             version, arch = package.version, smart.backends.deb.base.DEBARCH
         elif isinstance(package, SlackPackage):
+            name = package.name
             ver, arch, rel = package.version.rsplit('-')
             version = "%s-%s" % (ver, rel)
         else:
             version, arch = package.version, self._machine()
-        return package.name, version, arch
+        return name, version, arch
 
     def _joinpackage(self, name, version, arch):
         if not self.systemchannel:
