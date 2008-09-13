@@ -47,4 +47,7 @@ urpm::select::search_packages($urpm, \%requested, \@names,
   caseinsensitive => 0,
   all => 0);
 
-perform_installation($urpm, \%requested);
+eval {
+  perform_installation($urpm, \%requested);
+};
+pk_print_status(PK_STATUS_ENUM_FINISHED);

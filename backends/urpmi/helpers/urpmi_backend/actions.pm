@@ -90,7 +90,7 @@ sub perform_installation {
       # Fix me
       # Display message to prevent that the installation cannot continue because some
       # packages has to be removed for others to be upgraded.
-      exit 0;
+      die;
     }
     # Else, it's ok.
     # Here we can display $list, which describe packages which has to be removed for
@@ -157,10 +157,9 @@ sub perform_installation {
       },
       bad_signature => sub {
         pk_print_error(PK_ERROR_ENUM_GPG_FAILURE, "Bad or missing GPG signatures");
-        pk_print_status(PK_STATUS_ENUM_FINISHED);
         undef $lock;
         undef $rpm_lock;
-        exit 1;
+        die;
       },
       ask_yes_or_no => sub {
         # Return 1 = Return Yes
@@ -173,7 +172,6 @@ sub perform_installation {
       completed => sub {
         undef $lock;
         undef $rpm_lock;
-        pk_print_status(PK_STATUS_ENUM_FINISHED);
       },
       post_download => sub {
         # Fix me !
