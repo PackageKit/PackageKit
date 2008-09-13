@@ -385,11 +385,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             if self._package_passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
-                group = info.getGroup()
-                if group in self.GROUPS:
-                    group = self.GROUPS[group]
-                    if searchstring in group:
-                        self._add_package(package)
+                group = self._get_group(info)
+                if searchstring in group:
+                    self._add_package(package)
         self._post_process_package_list(filters)
         self._show_package_list()
 
@@ -598,11 +596,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             else:
                 license = LICENSE_UNKNOWN
 
-            group = info.getGroup()
-            if group in self.GROUPS:
-                group = self.GROUPS[group]
-            else:
-                group = GROUP_UNKNOWN
+            group = self._get_group(info)
 
             self.details(packageid, license, group, description, url,
                     pkgsize)
@@ -859,6 +853,20 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             summary = info.getSummary()
             self.package(pkpackage.get_package_id(name, version, arch, data),
                 status, summary)
+
+    def _get_group(self, info):
+        group = info.getGroup()
+        if group in self.GROUPS:
+            group = self.GROUPS[group]
+        else:
+            while group.find('/') != -1:
+                group = group.rsplit('/', 1)[0]
+                if group in self.GROUPS:
+                    group = self.GROUPS[group]
+                    break
+            else:
+                group = GROUP_UNKNOWN
+        return group
 
     def _get_status(self, package):
         flags = smart.pkgconf.testAllFlags(package)
