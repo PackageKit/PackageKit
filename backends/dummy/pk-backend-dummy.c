@@ -30,6 +30,7 @@
 static guint _progress_percentage = 0;
 static gulong _signal_timeout = 0;
 static gchar **_package_ids;
+static const gchar *_search;
 static guint _package_current = 0;
 static gboolean _has_service_pack = FALSE;
 static gboolean _repo_enabled_local = FALSE;
@@ -807,19 +808,49 @@ backend_service_pack (PkBackend *backend, const gchar *location, gboolean enable
 }
 
 /**
+ * backend_what_provides_timeout:
+ */
+static gboolean
+backend_what_provides_timeout (gpointer data)
+{
+	PkBackend *backend = (PkBackend *) data;
+	if (_progress_percentage == 100) {
+		if (egg_strequal (_search, "gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)")) {
+			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+					    "gstreamer-plugins-bad;0.10.3-5.lvn;i386;available",
+					    "GStreamer streaming media framework \"bad\" plug-ins");
+		} else if (egg_strequal (_search, "gstreamer0.10(decoder-video/x-wma)(wmaversion=3)")) {
+			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+					    "gstreamer-plugins-flumpegdemux;0.10.15-5.lvn;i386;available",
+					    "MPEG demuxer for GStreamer");
+		} else {
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+					    "evince;0.9.3-5.fc8;i386;installed",
+					    "PDF Document viewer");
+			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+					    "scribus;1.3.4-1.fc8;i386;fedora",
+					    "Scribus is an desktop open source page layout program");
+		}
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+	_progress_percentage += 10;
+	pk_backend_set_percentage (backend, _progress_percentage);
+	return TRUE;
+}
+
+/**
  * backend_what_provides:
  */
 static void
 backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
 {
+	_progress_percentage = 0;
+	_search = search;
+	_signal_timeout = g_timeout_add (200, backend_what_provides_timeout, backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "evince;0.9.3-5.fc8;i386;installed",
-			    "PDF Document viewer");
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-			    "scribus;1.3.4-1.fc8;i386;fedora",
-			    "Scribus is an desktop open source page layout program");
-	pk_backend_finished (backend);
+	pk_backend_set_allow_cancel (backend, TRUE);
+	pk_backend_set_percentage (backend, _progress_percentage);
 }
 
 /**
