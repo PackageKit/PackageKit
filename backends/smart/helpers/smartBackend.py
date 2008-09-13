@@ -499,6 +499,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'System/GUI/Other'                        : GROUP_DESKTOP_OTHER,
     'System/GUI/XFCE'                         : GROUP_DESKTOP_XFCE,
     # YaST2
+#   'Virtual'                                 : GROUP_META_PACKAGES,
     'Virtual/Base Technologies'               : GROUP_META_PACKAGES,
     'Virtual/Desktop Functions'               : GROUP_META_PACKAGES,
 #   'Virtual/Development'                     : GROUP_META_PACKAGES,
