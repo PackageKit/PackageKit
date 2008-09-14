@@ -256,9 +256,19 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         Handle the special collection group
         """
         # Fixme: Add some real code.
-        colections = self.comps.get_meta_packages()
+        collections = self.comps.get_meta_packages()
+        self.percentage(20)
+
         show_avail = FILTER_INSTALLED not in fltlist
-        for col in colections:
+        step = int(800/len(collections))
+        print step
+        pct=20
+        i = 0
+        for col in collections:
+            i += 1
+            if i % 10 == 0:
+                pct += step
+                self.percentage(pct)
             id = "%s;meta;meta;meta" % col
             grp = self.yumbase.comps.return_group(col)
             if grp:
@@ -267,6 +277,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 else:
                     if show_avail:
                         self.package(id,INFO_AVAILABLE,grp.description)
+        self.percentage(100)
 
 
 
