@@ -477,13 +477,16 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         return epoch,version,release
 
     def _is_meta_package(self,id):
-        meta = None
+        grp = None
         if len(id.split(';')) > 1:
             # Split up the id
             (n,idver,a,d) = self.get_package_from_id(id)
             if idver == 'meta' and a == 'meta' and d == 'meta':
                 meta = n
-        return meta
+                grp = self.yumbase.comps.return_group(meta)
+                if not grp:
+                    self.error(ERROR_PACKAGE_NOT_FOUND,"The Group %s dont exist" % meta)
+        return grp
 
     def _findPackage(self,id):
         '''
@@ -492,7 +495,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         # Bailout if meta packages, just to be sure
         if self._is_meta_package(id):
             return None,False
-            
+
         # is this an real id or just an name
         if len(id.split(';')) > 1:
             # Split up the id
@@ -566,15 +569,12 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
         for package in package_ids:
             self.percentage(percentage)
-            meta = self._is_meta_package(package)
-            if meta:
-                grp = self.yumbase.comps.return_group(meta)
-                if not grp:
-                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"The Group %s dont exist" % meta)
+            grp = self._is_meta_package(package)
+            if grp:
                 if not grp.installed:
-                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"The Group %s is not installed" % meta)
+                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"The Group %s is not installed" % grp.groupid)
                 else:
-                    txmbr = self.yumbase.groupRemove(meta)
+                    txmbr = self.yumbase.groupRemove(grp.groupid)
                     rc,msgs =  self.yumbase.buildTransaction()
                     if rc !=2:
                         self.error(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
@@ -739,6 +739,25 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
         return deps_list
 
+    def _get_group_packages(self,grp):
+        '''
+        Get the packages there will be installed when a comps group
+        is installed
+        '''
+        if not grp.installed:
+            txmbrs = self.yumbase.selectGroup(grp.groupid)
+        else:
+            txmbrs = self.yumbase.groupRemove(grp.groupid)
+        pkgs = []
+        for t in txmbrs:
+            pkgs.append(t.po)
+        if not grp.installed:
+            self.yumbase.deselectGroup(grp.groupid)
+        else:
+            self.yumbase.groupUnremove(grp.groupid)
+        return pkgs
+
+
     def get_depends(self,filters,package_ids,recursive_text):
         '''
         Print a list of depends for a given package
@@ -761,13 +780,18 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         # resolve each package_id to a pkg object
         for package in package_ids:
             self.percentage(percentage)
-            name = package.split(';')[0]
-            pkg,inst = self._findPackage(package)
-            if pkg:
-                resolve_list.append(pkg)
+            grp = self._is_meta_package(package)
+            if grp:
+                pkgs = self._get_group_packages(grp)
+                resolve_list.extend(pkgs)
             else:
-                self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
-                break
+                name = package.split(';')[0]
+                pkg,inst = self._findPackage(package)
+                if pkg:
+                    resolve_list.append(pkg)
+                else:
+                    self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
+                    break
             percentage += bump
 
         # get the best deps
@@ -905,14 +929,11 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         txmbrs = []
         already_warned = False
         for package in package_ids:
-            meta = self._is_meta_package(package)
-            if meta:
-                grp = self.yumbase.comps.return_group(meta)
-                if not grp:
-                    self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The Group %s dont exist" % meta)
+            grp = self._is_meta_package(package)
+            if grp:
                 if grp.installed:
-                    self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"This Group %s is already installed" % meta)
-                txmbr = self.yumbase.selectGroup(meta)
+                    self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"This Group %s is already installed" % grp.groupid)
+                txmbr = self.yumbase.selectGroup(grp.groupid)
                 for t in txmbr:
                     repo = self.yumbase.repos.getRepo(t.po.repoid)
                     if not already_warned and not repo.gpgcheck:
@@ -1231,14 +1252,11 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
         txmbrs = []
         for package in package_ids:
-            meta = self._is_meta_package(package)
-            if meta:
-                grp = self.yumbase.comps.return_group(meta)
-                if not grp:
-                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"The Group %s dont exist" % meta)
+            grp = self._is_meta_package(package)
+            if grp:
                 if not grp.installed:
-                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"This Group %s is not installed" % meta)
-                txmbr = self.yumbase.groupRemove(meta)
+                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"This Group %s is not installed" % grp.groupid)
+                txmbr = self.yumbase.groupRemove(grp.groupid)
                 txmbrs.extend(txmbr)
             else:
                 pkg,inst = self._findPackage(package)
@@ -1788,10 +1806,10 @@ class PackageKitCallback(RPMBaseCallback):
 
     def _showName(self,status):
         if type(self.curpkg) in types.StringTypes:
-            id = self.get_package_id(self.curpkg,'','','')
+            id = self.base.get_package_id(self.curpkg,'','','')
         else:
             pkgver = self.base._get_package_ver(self.curpkg)
-            id = self.get_package_id(self.curpkg.name,pkgver,self.curpkg.arch,self.curpkg.repo)
+            id = self.base.get_package_id(self.curpkg.name,pkgver,self.curpkg.arch,self.curpkg.repo)
         self.base.package(id,status,"")
 
     def event(self,package,action,te_current,te_total,ts_current,ts_total):
