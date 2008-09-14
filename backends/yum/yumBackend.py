@@ -891,9 +891,12 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         for package in package_ids:
             meta = self._is_meta_package(package)
             if meta:
-                txmbr = self.yumbase.selectGroup(meta)
-                if not txmbr:
+                grp = self.yumbase.comps.return_group(meta)
+                if not grp:
+                    self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The Group %s dont exist" % meta)
+                if grp.installed:
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"This Group %s is already installed" % meta)
+                txmbr = self.yumbase.selectGroup(meta)
                 for t in txmbr:
                     repo = self.yumbase.repos.getRepo(t.po.repoid)
                     if not already_warned and not repo.gpgcheck:
@@ -1212,12 +1215,22 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
         txmbrs = []
         for package in package_ids:
-            pkg,inst = self._findPackage(package)
-            if pkg and inst:
-                txmbr = self.yumbase.remove(po=pkg)
+            meta = self._is_meta_package(package)
+            if meta:
+                grp = self.yumbase.comps.return_group(meta)
+                if not grp:
+                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"The Group %s dont exist" % meta)
+                if not grp.installed:
+                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"This Group %s is not installed" % meta)
+                txmbr = self.yumbase.groupRemove(meta)
                 txmbrs.extend(txmbr)
-            if pkg and not inst:
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,"The package %s is not installed" % pkg.name)
+            else:
+                pkg,inst = self._findPackage(package)
+                if pkg and inst:
+                    txmbr = self.yumbase.remove(po=pkg)
+                    txmbrs.extend(txmbr)
+                if pkg and not inst:
+                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"The package %s is not installed" % pkg.name)
         if txmbrs:
             if allowdep != 'yes':
                 self._runYumTransaction(removedeps=False)
