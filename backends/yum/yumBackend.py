@@ -100,6 +100,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 except yum.Errors.RepoError,e:
                     self.error(ERROR_NO_CACHE,str(e))
 
+
         return wrapper
 
     def __init__(self,args,lock=True):
@@ -179,7 +180,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
     def _get_nevra(self,pkg):
         ''' gets the NEVRA for a pkg '''
-        return "%s-%s:%s-%s.%s" % (pkg.name,pkg.epoch,pkg.version,pkg.release,pkg.arch);
+        return "%s-%s:%s-%s.%s" % (pkg.name,pkg.epoch,pkg.version,pkg.release,pkg.arch)
 
     def _do_meta_package_search(self,filters,key):
         grps = self.comps.get_meta_packages()
@@ -294,7 +295,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 if show_avail:
                     self.package(id,INFO_COLLECTION_AVAILABLE,grp.description)
 
-    @handle_repo_error
+    #@handle_repo_error
     def search_group(self,filters,group_key):
         '''
         Implement the {backend}-search-group functionality
@@ -316,6 +317,10 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
         # get the packagelist for this group
         all_packages = self.comps.get_package_list(group_key)
+
+        # group don't exits, just bail out
+        if not all_packages:
+            return
 
         # get installed packages
         self.percentage(10)
@@ -1753,7 +1758,7 @@ class DownloadCallback(BaseMeter):
         @param name: filename
         @param frac: Progress fracment (0 -> 1)
         @param fread: formated string containing BytesRead
-        @param ftime : formated string containing remaining or elapsed time
+        @param ftime: formated string containing remaining or elapsed time
         '''
         pct = int(frac*100)
         if name != self.oldName: # If this a new package
