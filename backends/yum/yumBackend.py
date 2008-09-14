@@ -203,7 +203,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         installed = []
         available = []
 
-        if FILTER_META_PACKAGES in fltlist:
+        if FILTER_COLLECTIONS in fltlist:
             self._do_meta_package_search(fltlist,key)
 
         for (pkg,values) in res:
