@@ -566,20 +566,36 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
         for package in package_ids:
             self.percentage(percentage)
-            pkg,inst = self._findPackage(package)
-            # FIXME: This is a hack, it simulates a removal of the
-            # package and return the transaction
-            if inst and pkg:
-                resolve_list.append(pkg)
-                txmbrs = self.yumbase.remove(po=pkg)
-                if txmbrs:
+            meta = self._is_meta_package(package)
+            if meta:
+                grp = self.yumbase.comps.return_group(meta)
+                if not grp:
+                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"The Group %s dont exist" % meta)
+                if not grp.installed:
+                    self.error(ERROR_PACKAGE_NOT_INSTALLED,"The Group %s is not installed" % meta)
+                else:
+                    txmbr = self.yumbase.groupRemove(meta)
                     rc,msgs =  self.yumbase.buildTransaction()
                     if rc !=2:
                         self.error(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
                     else:
                         for txmbr in self.yumbase.tsInfo:
-                            if pkg not in deps_list:
-                                deps_list.append(txmbr.po)
+                            deps_list.append(txmbr.po)
+            else:
+                pkg,inst = self._findPackage(package)
+                # FIXME: This is a hack, it simulates a removal of the
+                # package and return the transaction
+                if inst and pkg:
+                    resolve_list.append(pkg)
+                    txmbrs = self.yumbase.remove(po=pkg)
+                    if txmbrs:
+                        rc,msgs =  self.yumbase.buildTransaction()
+                        if rc !=2:
+                            self.error(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
+                        else:
+                            for txmbr in self.yumbase.tsInfo:
+                                if pkg not in deps_list:
+                                    deps_list.append(txmbr.po)
             percentage += bump
 
         # remove any of the original names
