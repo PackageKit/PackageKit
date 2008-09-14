@@ -818,12 +818,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         return (ratio, results, suggestions)
 
+    def _package_is_collection(self, package):
+        return package.name.startswith('^')
+
     def _add_package(self, package, status=None):
         if not status:
-            if package.installed:
-                status = INFO_INSTALLED
+            if self._package_is_collection(package):
+                if package.installed:
+                    status = INFO_COLLECTION_INSTALLED
+                else:
+                    status = INFO_COLLECTION_AVAILABLE
             else:
-                status = INFO_AVAILABLE
+                if package.installed:
+                    status = INFO_INSTALLED
+                else:
+                    status = INFO_AVAILABLE
         self._package_list.append((package, status))
 
     def _show_package_list(self):
@@ -916,9 +925,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 if repo.endswith('-source'):
                     return False
         return True
-
-    def _package_is_collection(self, package):
-        return package.name.startswith('^')
 
     def _package_is_graphical(self, package):
         from smart.backends.rpm.base import RPMPackage
