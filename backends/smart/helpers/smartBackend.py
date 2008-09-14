@@ -810,6 +810,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         idparts = packageid.split(';')
         # note: currently you can only search in channels native to system
         packagestring = self._joinpackage(idparts[0], idparts[1], idparts[2])
+        if packagestring.startswith('@'):
+            packagestring = packagestring.replace('@', '^', 1)
         return packagestring
 
     def _search_packageid(self, packageid):
@@ -855,7 +857,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         collection = False
         if name.startswith('^'):
             collection = True
-            # FIXME: replace ^
+            name = name.replace('^', '@', 1)
         for loader in package.loaders:
             channel = loader.getChannel()
             if package.installed and not channel.getType().endswith('-sys'):
