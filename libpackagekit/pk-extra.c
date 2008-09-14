@@ -36,6 +36,7 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
+#include <locale.h>
 
 #include <glib/gi18n.h>
 #include <sqlite3.h>
@@ -267,7 +268,7 @@ pk_extra_populate_package_cache (PkExtra *extra)
 /**
  * pk_extra_set_locale:
  * @extra: a valid #PkExtra instance
- * @locale: a correct locale
+ * @locale: a correct locale, or NULL if the session default should be used
  *
  * Return value: %TRUE if set correctly
  **/
@@ -276,16 +277,34 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 {
 	guint i;
 	guint len;
+	gchar *locale_default; /* does not need to be freed */
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
-	g_return_val_if_fail (locale != NULL, FALSE);
 
+	/* old locale no longer valid */
 	g_free (extra->priv->locale);
-	extra->priv->locale = g_strdup (locale);
-	extra->priv->locale_base = g_strdup (locale);
+	g_free (extra->priv->locale_base);
+	extra->priv->locale = NULL;
+	extra->priv->locale_base = NULL;
+
+	/* using hardcoded locale */
+	if (locale != NULL) {
+		extra->priv->locale = g_strdup (locale);
+	} else {
+		/* using default */
+		locale_default = setlocale (LC_ALL, NULL);
+		if (locale_default == NULL) {
+			egg_warning ("cannot find default locale");
+			return FALSE;
+		}
+		extra->priv->locale = g_strdup (locale_default);
+	}
+
+	/* copy as we modify */
+	extra->priv->locale_base = g_strdup (extra->priv->locale);
 
 	/* we only want the first section to compare */
-	len = egg_strlen (locale, 10);
+	len = egg_strlen (extra->priv->locale, 10);
 	for (i=0; i<len; i++) {
 		if (extra->priv->locale_base[i] == '_') {
 			extra->priv->locale_base[i] = '\0';
