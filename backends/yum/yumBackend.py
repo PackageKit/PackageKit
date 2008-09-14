@@ -247,9 +247,28 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             pkgs = self.yumbase.rpmdb.searchNevra(name=package)
             found.extend(pkgs)
         return found
-        
+
     def _get_available_from_names(self,name_list):
         return self.yumbase.pkgSack.searchNames(names=name_list)
+
+    def _handle_collections(self,fltlist):
+        """
+        Handle the special collection group
+        """
+        # Fixme: Add some real code.
+        colections = self.comps.get_meta_packages()
+        show_avail = FILTER_INSTALLED not in fltlist
+        for col in colections:
+            id = "%s;meta;meta;meta" % col
+            grp = self.yumbase.comps.return_group(col)
+            if grp:
+                if grp.installed:
+                    self.package(id,INFO_INSTALLED,grp.description)
+                else:
+                    if show_avail:
+                        self.package(id,INFO_AVAILABLE,grp.description)
+
+
 
     @handle_repo_error
     def search_group(self,filters,group_key):
@@ -264,6 +283,12 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         package_list = [] #we can't do emitting as found if we are post-processing
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
+
+        # Handle collections
+        # FIXME: add the right enum here
+        if group_key == GROUP_META_PACKAGES:
+            self._handle_collections(fltlist)
+            return
 
         # get the packagelist for this group
         all_packages = self.comps.get_package_list(group_key)
@@ -448,7 +473,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             if idver == 'meta' and a == 'meta' and d == 'meta':
                 meta = n
         return meta
-               
+
     def _findPackage(self,id):
         '''
         find a package based on a package id (name;version;arch;repoid)
@@ -834,7 +859,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                                 show = False
                         if show:
                             self._show_package(pkg,INFO_AVAILABLE)
-        
+
     @handle_repo_error
     def install_packages(self,package_ids):
         '''
@@ -859,9 +884,9 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                     if not already_warned and not repo.gpgcheck:
                         self.message(MESSAGE_UNTRUSTED_PACKAGE,"The untrusted package %s will be installed from %s." % (t.po.name, repo))
                         already_warned = True
-                    
-                txmbrs.extend(txmbr)   
-            else:           
+
+                txmbrs.extend(txmbr)
+            else:
                 pkg,inst = self._findPackage(package)
                 if pkg and not inst:
                     repo = self.yumbase.repos.getRepo(pkg.repoid)
