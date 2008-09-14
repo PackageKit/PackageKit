@@ -557,14 +557,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             packages = self._process_search_results(results)
 
-            if len(packages) != 1:
+            if len(packages) == 0:
                 return
+
+            channels = self._search_channels(packageid)
 
             package = packages[0]
             infos = []
             for loader in package.loaders:
+                if loader.getChannel() not in channels:
+                    continue
                 info = loader.getInfo(package)
                 infos.append(info)
+
+            if len(infos) != 1:
+                return
 
             infos.sort()
             info = infos[0]
@@ -820,6 +827,22 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         return (ratio, results, suggestions)
 
+    def _channel_is_local(self, channel):
+        return isinstance(channel, smart.channel.FileChannel)
+
+    def _search_channels(self, packageid):
+        idparts = packageid.split(';')
+        repoid = idparts[3]
+        if repoid == 'local':
+            channels = self.ctrl.getFileChannels()
+        else:
+            channels = self.ctrl.getChannels()
+            if repoid:
+                if repoid == 'installed':
+                    repoid = self.systemchannel
+                channels = [x for x in channels if x.getAlias() == repoid]
+        return channels
+
     def _package_is_collection(self, package):
         return package.name.startswith('^')
 
@@ -865,7 +888,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             info = loader.getInfo(package)
             if package.installed:
                 data = 'installed'
-            elif isinstance(channel, smart.channel.FileChannel):
+            elif self._channel_is_local(channel):
                 data = 'local'
             else:
                 data = channel.getAlias()
