@@ -843,6 +843,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             else:
                 status = INFO_UNKNOWN
         name, version, arch = self._splitpackage(package)
+        collection = False
+        if name.startswith('^'):
+            collection = True
+            # FIXME: replace ^
         for loader in package.loaders:
             channel = loader.getChannel()
             if package.installed and not channel.getType().endswith('-sys'):
@@ -913,6 +917,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     return False
         return True
 
+    def _package_is_collection(self, package):
+        return package.name.startswith('^')
+
     def _package_is_graphical(self, package):
         from smart.backends.rpm.base import RPMPackage
         from smart.backends.deb.base import DebPackage
@@ -960,6 +967,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     if filter == FILTER_ARCH and not same:
                         return False
                     if filter == FILTER_NOT_ARCH and same:
+                        return False
+                if filter in (FILTER_COLLECTIONS, FILTER_NOT_COLLECTIONS):
+                    collection = self._package_is_collection(package)
+                    if filter == FILTER_COLLECTIONS and not collection:
+                        return False
+                    if filter == FILTER_NOT_COLLECTIONS and collection:
                         return False
                 if filter in (FILTER_GUI, FILTER_NOT_GUI):
                     graphical = self._package_is_graphical(package)
