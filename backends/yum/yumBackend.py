@@ -273,13 +273,11 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             grp = self.yumbase.comps.return_group(col)
             if grp:
                 if grp.installed:
-                    self.package(id,INFO_INSTALLED,grp.description)
+                    self.package(id,INFO_COLLECTION_INSTALLED,grp.description)
                 else:
                     if show_avail:
-                        self.package(id,INFO_AVAILABLE,grp.description)
+                        self.package(id,INFO_COLLECTION_AVAILABLE,grp.description)
         self.percentage(100)
-
-
 
     @handle_repo_error
     def search_group(self,filters,group_key):
