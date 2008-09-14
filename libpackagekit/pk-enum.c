@@ -215,6 +215,8 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_ARCH,		"~arch"},
 	{PK_FILTER_ENUM_SOURCE,			"source"},
 	{PK_FILTER_ENUM_NOT_SOURCE,		"~source"},
+	{PK_FILTER_ENUM_META_PACKAGES,		"meta"},
+	{PK_FILTER_ENUM_NOT_META_PACKAGES,	"~meta"},
 	{0, NULL}
 };
 

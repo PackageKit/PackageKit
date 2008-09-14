@@ -181,6 +181,13 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         ''' gets the NEVRA for a pkg '''
         return "%s-%s:%s-%s.%s" % (pkg.name,pkg.epoch,pkg.version,pkg.release,pkg.arch);
 
+    def _do_meta_package_search(self,filters,key):
+        grps = self.comps.get_meta_packages()
+        for grpid in grps:
+            if key in grpid:
+                self._show_meta_package(grpid,filters)
+
+
     @handle_repo_error
     def _do_search(self,searchlist,filters,key):
         '''
@@ -195,6 +202,9 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         package_list = [] #we can't do emitting as found if we are post-processing
         installed = []
         available = []
+
+        if FILTER_META_PACKAGES in fltlist:
+            self._do_meta_package_search(fltlist,key)
 
         for (pkg,values) in res:
             if pkg.repo.id == 'installed':
@@ -259,7 +269,6 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         collections = self.comps.get_meta_packages()
         self.percentage(20)
 
-        show_avail = FILTER_INSTALLED not in fltlist
         step = int(800/len(collections))
         print step
         pct=20
@@ -269,16 +278,21 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             if i % 10 == 0:
                 pct += step
                 self.percentage(pct)
-            id = "%s;meta;meta;meta" % col
-            grp = self.yumbase.comps.return_group(col)
-            if grp:
-                if grp.installed:
-                    self.package(id,INFO_INSTALLED,grp.description)
-                else:
-                    if show_avail:
-                        self.package(id,INFO_AVAILABLE,grp.description)
+            self._show_meta_package(col,fltlist)
         self.percentage(100)
 
+    def _show_meta_package(self,grpid,fltlist=[]):
+        show_avail = FILTER_INSTALLED not in fltlist
+        show_inst = FILTER_NOT_INSTALLED not in fltlist
+        id = "%s;meta;meta;meta" % grpid
+        grp = self.yumbase.comps.return_group(grpid)
+        if grp:
+            if grp.installed:
+                if show_inst:
+                    self.package(id,INFO_INSTALLED,grp.description)
+            else:
+                if show_avail:
+                    self.package(id,INFO_AVAILABLE,grp.description)
 
 
     @handle_repo_error
