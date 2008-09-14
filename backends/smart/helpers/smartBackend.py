@@ -558,6 +558,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             packages = self._process_search_results(results)
 
             if len(packages) == 0:
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % package)
                 return
 
             channels = self._search_channels(packageid)
@@ -565,12 +567,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             package = packages[0]
             infos = []
             for loader in package.loaders:
-                if loader.getChannel() not in channels:
+                if channels and loader.getChannel() not in channels:
                     continue
                 info = loader.getInfo(package)
                 infos.append(info)
 
-            if len(infos) != 1:
+            if len(infos) == 0:
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s in other repo' % package)
                 return
 
             infos.sort()
@@ -835,12 +839,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         repoid = idparts[3]
         if repoid == 'local':
             channels = self.ctrl.getFileChannels()
-        else:
+        elif repoid:
+            if repoid == 'installed':
+                repoid = self.systemchannel
             channels = self.ctrl.getChannels()
-            if repoid:
-                if repoid == 'installed':
-                    repoid = self.systemchannel
-                channels = [x for x in channels if x.getAlias() == repoid]
+            channels = [x for x in channels if x.getAlias() == repoid]
+        else:
+            channels = None
         return channels
 
     def _package_is_collection(self, package):
