@@ -297,7 +297,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
         # Handle collections
         # FIXME: add the right enum here
-        if group_key == GROUP_META_PACKAGES:
+        if group_key == GROUP_COLLECTIONS:
             self._handle_collections(fltlist)
             return
 

@@ -468,13 +468,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'User Interface/X'                        : GROUP_DESKTOP_OTHER,
     'User Interface/X Hardware Support'       : GROUP_DESKTOP_OTHER,
     # Yum
-    'Virtual'                                 : GROUP_META_PACKAGES,
-    'Virtual/Applications'                    : GROUP_META_PACKAGES,
-    'Virtual/Base System'                     : GROUP_META_PACKAGES,
-    'Virtual/Desktop Environments'            : GROUP_META_PACKAGES,
-    'Virtual/Development'                     : GROUP_META_PACKAGES,
-    'Virtual/Languages'                       : GROUP_META_PACKAGES,
-    'Virtual/Servers'                         : GROUP_META_PACKAGES,
+    'Virtual'                                 : GROUP_COLLECTIONS,
+    'Virtual/Applications'                    : GROUP_COLLECTIONS,
+    'Virtual/Base System'                     : GROUP_COLLECTIONS,
+    'Virtual/Desktop Environments'            : GROUP_COLLECTIONS,
+    'Virtual/Development'                     : GROUP_COLLECTIONS,
+    'Virtual/Languages'                       : GROUP_COLLECTIONS,
+    'Virtual/Servers'                         : GROUP_COLLECTIONS,
     # RPM (novell)
     'Productivity/Archiving'                  : GROUP_OTHER, ### FIXME
     'Productivity/Databases'                  : GROUP_OTHER, ### FIXME
@@ -499,14 +499,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'System/GUI/Other'                        : GROUP_DESKTOP_OTHER,
     'System/GUI/XFCE'                         : GROUP_DESKTOP_XFCE,
     # YaST2
-#   'Virtual'                                 : GROUP_META_PACKAGES,
-    'Virtual/Base Technologies'               : GROUP_META_PACKAGES,
-    'Virtual/Desktop Functions'               : GROUP_META_PACKAGES,
-#   'Virtual/Development'                     : GROUP_META_PACKAGES,
-    'Virtual/GNOME Desktop'                   : GROUP_META_PACKAGES,
-    'Virtual/Graphical Environments'          : GROUP_META_PACKAGES,
-    'Virtual/KDE Desktop'                     : GROUP_META_PACKAGES,
-    'Virtual/Server Functions'                : GROUP_META_PACKAGES,
+#   'Virtual'                                 : GROUP_COLLECTIONS,
+    'Virtual/Base Technologies'               : GROUP_COLLECTIONS,
+    'Virtual/Desktop Functions'               : GROUP_COLLECTIONS,
+#   'Virtual/Development'                     : GROUP_COLLECTIONS,
+    'Virtual/GNOME Desktop'                   : GROUP_COLLECTIONS,
+    'Virtual/Graphical Environments'          : GROUP_COLLECTIONS,
+    'Virtual/KDE Desktop'                     : GROUP_COLLECTIONS,
+    'Virtual/Server Functions'                : GROUP_COLLECTIONS,
     # DEB
     "admin"                                   : GROUP_ADMIN_TOOLS,
     "base"                                    : GROUP_SYSTEM,
