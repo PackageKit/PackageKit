@@ -55,6 +55,7 @@ static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_COLLECTIONS,
 		PK_GROUP_ENUM_ADMIN_TOOLS,
 		PK_GROUP_ENUM_DESKTOP_GNOME,
 		PK_GROUP_ENUM_DESKTOP_KDE,
