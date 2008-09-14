@@ -185,33 +185,35 @@ groupMap = {
 
 class yumComps:
 
-    def __init__(self,yumbase):
+    def __init__(self,yumbase,db = None):
         self.yumbase = yumbase
         self.cursor = None
         self.connection = None
+        if not db:
+            db = '/var/cache/yum/packagekit-groups-V2.sqlite'
+        self.db = db
 
     def connect(self):
         ''' connect to database '''
-        database = '/var/cache/yum/packagekit-groups.sqlite'
         try:
             # will be created if it does not exist
-            self.connection = sqlite.connect(database)
+            self.connection = sqlite.connect(self.db)
             self.cursor = self.connection.cursor()
         except Exception, e:
-            print 'cannot connect to database %s: %s' % (database,str(e))
+            print 'cannot connect to database %s: %s' % (self.db,str(e))
             return False
 
         # test if we can get a group for a common package, create if fail
         try:
             self.cursor.execute('SELECT group_enum FROM groups WHERE name = ?;',['hal'])
         except Exception, e:
-            self.cursor.execute('CREATE TABLE groups (name TEXT,category TEXT,group_enum TEXT);')
+            self.cursor.execute('CREATE TABLE groups (name TEXT,category TEXT,groupid TEXT,group_enum TEXT,pkgtype Text);')
             self.refresh()
 
         return True
 
-    def _add_db(self,name,category,group):
-        self.cursor.execute('INSERT INTO groups values(?,?,?);',(name,category,group))
+    def _add_db(self,name,category,groupid,pkgroup,pkgtype):
+        self.cursor.execute('INSERT INTO groups values(?,?,?,?,?);',(name,category,groupid,pkgroup,pkgtype))
 
     def refresh(self,force=False):
         ''' get the data from yum (slow, REALLY SLOW) '''
@@ -220,8 +222,8 @@ class yumComps:
         if self.yumbase.comps.compscount == 0:
             return False
 
-	# delete old data else we get multiple entries
-	self.cursor.execute('DELETE FROM groups;')
+        # delete old data else we get multiple entries
+        self.cursor.execute('DELETE FROM groups;')
 
         # store to sqlite
         for category in cats:
@@ -242,11 +244,11 @@ class yumComps:
                     print 'unknown group enum',group_id
 
                 for package in group.mandatory_packages:
-                    self._add_db(package,group_id,group_enum)
+                    self._add_db(package,category.categoryid,group_name,group_enum,'mandatory')
                 for package in group.default_packages:
-                    self._add_db(package,group_id,group_enum)
+                    self._add_db(package,category.categoryid,group_name,group_enum,'default')
                 for package in group.optional_packages:
-                    self._add_db(package,group_id,group_enum)
+                    self._add_db(package,category.categoryid,group_name,group_enum,'optional')
 
         # write to disk
         self.connection.commit()
@@ -269,3 +271,41 @@ class yumComps:
 
         return group
 
+    def get_meta_packages(self):
+        metapkgs = set()
+        self.cursor.execute('SELECT groupid FROM groups')
+        for row in self.cursor:
+            metapkgs.add(row[0])
+        return list(metapkgs)
+
+
+
+    def get_meta_package_list(self,groupid):
+        ''' for a comps group, get the packagelist for this group (mandatory,default)'''
+        all_packages = [];
+        self.cursor.execute('SELECT name FROM groups WHERE groupid = ? AND ( pkgtype = "mandatory" OR pkgtype = "default");',[groupid])
+        for row in self.cursor:
+            all_packages.append(row[0])
+        return all_packages
+
+if __name__ == "__main__":
+    import yum
+    import os
+    yb = yum.YumBase()
+    db = "packagekit-groupsV2.sqlite"
+    comps = yumComps(yb,db)
+    comps.connect()
+    comps.refresh()
+    print "pk group system"
+    print 40 * "="
+    pkgs = comps.get_package_list('system')
+    print pkgs
+    print "comps group games"
+    print 40 * "="
+    pkgs = comps.get_meta_package_list('games')
+    print pkgs
+    print "comps group kde-desktop"
+    print 40 * "="
+    pkgs = comps.get_meta_package_list('kde-desktop')
+    print pkgs
+    os.unlink(db) # kill the db
