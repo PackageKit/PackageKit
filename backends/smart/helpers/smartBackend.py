@@ -558,8 +558,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             packages = self._process_search_results(results)
 
             if len(packages) == 0:
+                packagestring = self._string_packageid(packageid)
                 self.error(ERROR_PACKAGE_NOT_FOUND,
-                           'Package %s was not found' % package)
+                           'Package %s was not found' % packagestring)
                 return
 
             channels = self._search_channels(packageid)
@@ -622,17 +623,29 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             packages = self._process_search_results(results)
 
-            if len(packages) != 1:
+            if len(packages) == 0:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
                 return
+
+            channels = self._search_channels(packageid)
 
             package = packages[0]
             # FIXME: Only installed packages have path lists.
-            paths = []
+            paths = None
             for loader in package.loaders:
+                if channels and loader.getChannel() not in channels:
+                    continue
                 info = loader.getInfo(package)
                 paths = info.getPathList()
                 if len(paths) > 0:
                     break
+
+            if paths == None:
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s in other repo' % package)
+                return
 
             self.files(packageid, ";".join(paths))
 
