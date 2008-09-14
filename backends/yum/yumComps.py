@@ -270,6 +270,15 @@ class yumComps:
             group = row[0]
 
         return group
+        
+    def get_meta_packages(self):
+        metapkgs = set()
+        self.cursor.execute('SELECT groupid FROM groups')
+        for row in self.cursor:
+            metapkgs.add(row[0])
+        return list(metapkgs)    
+
+                
 
     def get_meta_package_list(self,groupid):
         ''' for a comps group, get the packagelist for this group (mandatory,default)'''
