@@ -278,22 +278,15 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             if i % 10 == 0:
                 pct += step
                 self.percentage(pct)
-            self._show_meta_package(col,fltlist)
+            id = "%s;meta;meta;meta" % col
+            grp = self.yumbase.comps.return_group(col)
+            if grp:
+                if grp.installed:
+                    self.package(id,INFO_COLLECTION_INSTALLED,grp.description)
+                else:
+                    if show_avail:
+                        self.package(id,INFO_COLLECTION_AVAILABLE,grp.description)
         self.percentage(100)
-
-    def _show_meta_package(self,grpid,fltlist=[]):
-        show_avail = FILTER_INSTALLED not in fltlist
-        show_inst = FILTER_NOT_INSTALLED not in fltlist
-        id = "%s;meta;meta;meta" % grpid
-        grp = self.yumbase.comps.return_group(grpid)
-        if grp:
-            if grp.installed:
-                if show_inst:
-                    self.package(id,INFO_INSTALLED,grp.description)
-            else:
-                if show_avail:
-                    self.package(id,INFO_AVAILABLE,grp.description)
-
 
     @handle_repo_error
     def search_group(self,filters,group_key):
