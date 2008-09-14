@@ -1609,11 +1609,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Send the Package signal for a given apt package
         '''
         id = self.get_id_from_package(pkg, force_candidate)
+        section = pkg.section.split("/")[-1]
         if info == None:
             if pkg.isInstalled:
-                info = INFO_INSTALLED
+                if section == "metapackages":
+                    info = INFO_COLLECTION_INSTALLED
+                else:
+                    info = INFO_INSTALLED
             else:
-                info = INFO_AVAILABLE
+                if section == "metapackages":
+                    info = INFO_COLLECTION_AVAILABLE
+                else:
+                    info = INFO_AVAILABLE
         summary = pkg.summary
         self.Package(info, id, summary)
 
@@ -1661,7 +1668,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 not self._is_package_not_free(pkg)) or \
                (filter == FILTER_GUI and not self._has_package_gui(pkg)) or \
                (filter == FILTER_NOT_GUI and self._has_package_gui(pkg)) or \
-               (filter == FILTER_DEVELOPMENT and not \
+               (filter == FILTER_COLLECTIONS and not \
+                self._is_package_collection(pkg)) or \
+               (filter == FILTER_NOT_COLLECTIONS and \
+                self._is_package_collection(pkg)) or\
+                (filter == FILTER_DEVELOPMENT and not \
                 self._is_package_devel(pkg)) or \
                (filter == FILTER_NOT_DEVELOPMENT and \
                 self._is_package_devel(pkg)):
@@ -1680,6 +1691,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 (candidate[0].origin == "Debian" and \
                  candidate[0].component in ["contrib", "non-free"])) and \
                candidate[0].trusted == True
+
+    def _is_package_collection(self, pkg):
+        """
+        Return True if the package is a metapackge
+        """
+        section = pkg.section.split("/")[-1]
+        return section == "metapackages"
 
     def _is_package_free(self, pkg):
         """
@@ -1948,6 +1966,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return GROUP_UNKNOWN
         elif section == "translations":
             return GROUP_LOCALIZATION
+        elif section == "metapackages":
+            return GROUP_COLLECTIONS
         else:
             pklog.debug("Unkown package section %s of %s" % (pkg.section,
                                                              pkg.name))
