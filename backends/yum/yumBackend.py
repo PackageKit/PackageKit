@@ -489,6 +489,10 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         '''
         find a package based on a package id (name;version;arch;repoid)
         '''
+        # Bailout if meta packages, just to be sure
+        if _is_meta_package(id):
+            return None,False
+            
         # is this an real id or just an name
         if len(id.split(';')) > 1:
             # Split up the id
