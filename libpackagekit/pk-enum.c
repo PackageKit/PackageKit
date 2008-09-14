@@ -215,6 +215,8 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_ARCH,		"~arch"},
 	{PK_FILTER_ENUM_SOURCE,			"source"},
 	{PK_FILTER_ENUM_NOT_SOURCE,		"~source"},
+	{PK_FILTER_ENUM_COLLECTIONS,		"collections"},
+	{PK_FILTER_ENUM_NOT_COLLECTIONS,	"~collections"},
 	{0, NULL}
 };
 
@@ -251,7 +253,7 @@ static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_SCIENCE,			"science"},
 	{PK_GROUP_ENUM_DOCUMENTATION,		"documentation"},
 	{PK_GROUP_ENUM_ELECTRONICS,		"electronics"},
-	{PK_GROUP_ENUM_META_PACKAGES,		"meta-packages"},
+	{PK_GROUP_ENUM_COLLECTIONS,		"collections"},
 	{0, NULL}
 };
 
@@ -297,6 +299,8 @@ static PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_REMOVING,			"removing"},
 	{PK_INFO_ENUM_CLEANUP,			"cleanup"},
 	{PK_INFO_ENUM_OBSOLETING,		"obsoleting"},
+	{PK_INFO_ENUM_COLLECTION_INSTALLED,	"collection-installed"},
+	{PK_INFO_ENUM_COLLECTION_AVAILABLE,	"collection-available"},
 	{0, NULL}
 };
 

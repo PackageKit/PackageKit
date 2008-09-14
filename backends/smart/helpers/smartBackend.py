@@ -468,13 +468,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'User Interface/X'                        : GROUP_DESKTOP_OTHER,
     'User Interface/X Hardware Support'       : GROUP_DESKTOP_OTHER,
     # Yum
-    'Virtual'                                 : GROUP_META_PACKAGES,
-    'Virtual/Applications'                    : GROUP_META_PACKAGES,
-    'Virtual/Base System'                     : GROUP_META_PACKAGES,
-    'Virtual/Desktop Environments'            : GROUP_META_PACKAGES,
-    'Virtual/Development'                     : GROUP_META_PACKAGES,
-    'Virtual/Languages'                       : GROUP_META_PACKAGES,
-    'Virtual/Servers'                         : GROUP_META_PACKAGES,
+    'Virtual'                                 : GROUP_COLLECTIONS,
+    'Virtual/Applications'                    : GROUP_COLLECTIONS,
+    'Virtual/Base System'                     : GROUP_COLLECTIONS,
+    'Virtual/Desktop Environments'            : GROUP_COLLECTIONS,
+    'Virtual/Development'                     : GROUP_COLLECTIONS,
+    'Virtual/Languages'                       : GROUP_COLLECTIONS,
+    'Virtual/Servers'                         : GROUP_COLLECTIONS,
     # RPM (novell)
     'Productivity/Archiving'                  : GROUP_OTHER, ### FIXME
     'Productivity/Databases'                  : GROUP_OTHER, ### FIXME
@@ -499,14 +499,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'System/GUI/Other'                        : GROUP_DESKTOP_OTHER,
     'System/GUI/XFCE'                         : GROUP_DESKTOP_XFCE,
     # YaST2
-#   'Virtual'                                 : GROUP_META_PACKAGES,
-    'Virtual/Base Technologies'               : GROUP_META_PACKAGES,
-    'Virtual/Desktop Functions'               : GROUP_META_PACKAGES,
-#   'Virtual/Development'                     : GROUP_META_PACKAGES,
-    'Virtual/GNOME Desktop'                   : GROUP_META_PACKAGES,
-    'Virtual/Graphical Environments'          : GROUP_META_PACKAGES,
-    'Virtual/KDE Desktop'                     : GROUP_META_PACKAGES,
-    'Virtual/Server Functions'                : GROUP_META_PACKAGES,
+#   'Virtual'                                 : GROUP_COLLECTIONS,
+    'Virtual/Base Technologies'               : GROUP_COLLECTIONS,
+    'Virtual/Desktop Functions'               : GROUP_COLLECTIONS,
+#   'Virtual/Development'                     : GROUP_COLLECTIONS,
+    'Virtual/GNOME Desktop'                   : GROUP_COLLECTIONS,
+    'Virtual/Graphical Environments'          : GROUP_COLLECTIONS,
+    'Virtual/KDE Desktop'                     : GROUP_COLLECTIONS,
+    'Virtual/Server Functions'                : GROUP_COLLECTIONS,
     # DEB
     "admin"                                   : GROUP_ADMIN_TOOLS,
     "base"                                    : GROUP_SYSTEM,
@@ -818,12 +818,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         return (ratio, results, suggestions)
 
+    def _package_is_collection(self, package):
+        return package.name.startswith('^')
+
     def _add_package(self, package, status=None):
         if not status:
-            if package.installed:
-                status = INFO_INSTALLED
+            if self._package_is_collection(package):
+                if package.installed:
+                    status = INFO_COLLECTION_INSTALLED
+                else:
+                    status = INFO_COLLECTION_AVAILABLE
             else:
-                status = INFO_AVAILABLE
+                if package.installed:
+                    status = INFO_INSTALLED
+                else:
+                    status = INFO_AVAILABLE
         self._package_list.append((package, status))
 
     def _show_package_list(self):
@@ -843,6 +852,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             else:
                 status = INFO_UNKNOWN
         name, version, arch = self._splitpackage(package)
+        collection = False
+        if name.startswith('^'):
+            collection = True
+            # FIXME: replace ^
         for loader in package.loaders:
             channel = loader.getChannel()
             if package.installed and not channel.getType().endswith('-sys'):
@@ -960,6 +973,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     if filter == FILTER_ARCH and not same:
                         return False
                     if filter == FILTER_NOT_ARCH and same:
+                        return False
+                if filter in (FILTER_COLLECTIONS, FILTER_NOT_COLLECTIONS):
+                    collection = self._package_is_collection(package)
+                    if filter == FILTER_COLLECTIONS and not collection:
+                        return False
+                    if filter == FILTER_NOT_COLLECTIONS and collection:
                         return False
                 if filter in (FILTER_GUI, FILTER_NOT_GUI):
                     graphical = self._package_is_graphical(package)
