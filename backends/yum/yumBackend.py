@@ -490,7 +490,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         find a package based on a package id (name;version;arch;repoid)
         '''
         # Bailout if meta packages, just to be sure
-        if _is_meta_package(id):
+        if self._is_meta_package(id):
             return None,False
             
         # is this an real id or just an name
@@ -1216,7 +1216,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             if pkg and inst:
                 txmbr = self.yumbase.remove(po=pkg)
                 txmbrs.extend(txmbr)
-            if not inst:
+            if pkg and not inst:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,"The package %s is not installed" % pkg.name)
         if txmbrs:
             if allowdep != 'yes':
