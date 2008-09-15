@@ -79,6 +79,7 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_SCIENCE,
 		PK_GROUP_ENUM_SYSTEM,
 		PK_GROUP_ENUM_UNKNOWN,
+		PK_GROUP_ENUM_COLLECTIONS,
 		-1);
 }
 
@@ -94,6 +95,7 @@ backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_DEVELOPMENT,
 		PK_FILTER_ENUM_SUPPORTED,
 		PK_FILTER_ENUM_FREE,
+		PK_FILTER_ENUM_COLLECTIONS,
 		-1);
 }
 
