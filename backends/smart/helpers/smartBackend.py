@@ -953,6 +953,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             package = info.getPackage().name
             if group == 'User Interface/X' and package.find('-fonts') != -1:
                 return GROUP_FONTS
+            if group == 'Applications/Productivity' and package.find('-langpack') != -1:
+                return GROUP_LOCALIZATION
             # FIXME: filter out gnome/xfce/kde from "System Environment" etc
             group = self.GROUPS[group]
         else:
