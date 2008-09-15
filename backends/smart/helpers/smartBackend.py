@@ -575,6 +575,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     "unknown"                                 : GROUP_UNKNOWN,
     "alien"                                   : GROUP_UNKNOWN,
     "translations"                            : GROUP_LOCALIZATION,
+    # APT
+    "metapackages"                            : GROUP_COLLECTIONS,
     # Slack
     "Slackware"                               : GROUP_UNKNOWN
     }
