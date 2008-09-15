@@ -524,8 +524,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Graphical desktop/KDE'                   : GROUP_DESKTOP_KDE,
     'Graphical desktop/Xfce'                  : GROUP_DESKTOP_XFCE,
     'Graphics'                                : GROUP_GRAPHICS,
-    'Monitoring'                              : GROUP_OTHER, ### FIXME
-    'Networking'                              : GROUP_NETWORK,
+    'Monitoring'                              : GROUP_NETWORK,
+    'Networking'                              : GROUP_INTERNET,
     'Office'                                  : GROUP_OFFICE,
     'Publishing'                              : GROUP_PUBLISHING,
     'Sciences'                                : GROUP_SCIENCE,
@@ -535,8 +535,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'System/Fonts'                            : GROUP_FONTS,
     'System/Internationalization'             : GROUP_LOCALIZATION,
     'Terminals'                               : GROUP_SYSTEM,
-    'Text tools'                              : GROUP_SYSTEM,
-    'Toys'                                    : GROUP_OTHER, ### FIXME
+    'Text tools'                              : GROUP_ACCESSORIES,
+    'Toys'                                    : GROUP_GAMES,
     'Video'                                   : GROUP_MULTIMEDIA,
     # DEB
     "admin"                                   : GROUP_ADMIN_TOOLS,
