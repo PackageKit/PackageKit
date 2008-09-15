@@ -28,12 +28,12 @@ use MDK::Common;
 use perl_packagekit::prints;
 
 # One argument (package ids)
-$#ARGV == 0 or exit 1;
+$#ARGV > -1 or exit 1;
 
 my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
 
-my @pkgids = split(/\|/, $ARGV[0]);
+my @pkgids = @ARGV;
 
 foreach (@pkgids) {
   print_package_details($urpm, $_);
