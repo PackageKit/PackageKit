@@ -947,6 +947,17 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self.package(pkpackage.get_package_id(name, version, arch, data),
                 status, summary)
 
+    def _package_in_requires(self, packagename, groupname):
+        groups = self.ctrl.getCache().getPackages(groupname)
+        if groups:
+            group = groups[0]
+            for required in group.requires:
+                for provider in required.providedby:
+                    for package in provider.packages:
+                        if package.name == packagename:
+                            return True
+        return False
+
     def _get_group(self, info):
         group = info.getGroup()
         if group in self.GROUPS:
@@ -955,7 +966,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 return GROUP_FONTS
             if group == 'Applications/Productivity' and package.find('-langpack') != -1:
                 return GROUP_LOCALIZATION
-            # FIXME: filter out gnome/xfce/kde from "System Environment" etc
+            if group == 'User Interface/Desktops':
+                if self._package_in_requires(package, "^gnome-desktop") \
+                or self._package_in_requires(package, "^gnome-desktop-optional"):
+                    return GROUP_DESKTOP_GNOME
+                if self._package_in_requires(package, "^kde-desktop") \
+                or self._package_in_requires(package, "^kde-desktop-optional"):
+                    return GROUP_DESKTOP_KDE
+                if self._package_in_requires(package, "^xfce-desktop") \
+                or self._package_in_requires(package, "^xfce-desktop-optional"):
+                    return GROUP_DESKTOP_XFCE
             group = self.GROUPS[group]
         else:
             while group.find('/') != -1:
