@@ -1187,6 +1187,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         if not self._commit_changes((10,25), (25,50)): return False
         # Install the Debian package files
+        if not self._acquire_lock(): return
         for deb in packages:
             try:
                 res = deb.install(PackageKitDpkgInstallProgress(self))
