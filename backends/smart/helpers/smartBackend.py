@@ -449,7 +449,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Applications/File'                       : GROUP_OTHER, ### FIXME
     'Applications/Internet'                   : GROUP_INTERNET,
     'Applications/Multimedia'                 : GROUP_MULTIMEDIA,
-    'Applications/Productivity'               : GROUP_OTHER, ### FIXME
+    'Applications/Productivity'               : GROUP_OFFICE,
     'Applications/Publishing'                 : GROUP_PUBLISHING,
     'Applications/System'                     : GROUP_SYSTEM,
     'Applications/Text'                       : GROUP_PUBLISHING,
