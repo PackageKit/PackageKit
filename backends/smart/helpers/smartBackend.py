@@ -499,7 +499,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Productivity/Security'                   : GROUP_SECURITY,
     'Productivity/Telephony'                  : GROUP_COMMUNICATION,
     'Productivity/Text'                       : GROUP_PUBLISHING,
-    'System'                                  : GROUP_SYSTEM,
     'System/Base'                             : GROUP_SYSTEM,
     'System/Daemons'                          : GROUP_SYSTEM,
     'System/Emulators'                        : GROUP_VIRTUALIZATION,
