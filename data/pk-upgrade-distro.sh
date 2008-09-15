@@ -11,12 +11,23 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
+DISTRO=""
+if [ -e /usr/bin/lsb_release ]; then
+	DISTRO=$(/usr/bin/lsb_release -is)
+fi
+
 # Fedora uses preupgrade
 if [ -e /etc/fedora-release ]; then
 	if [ -e /usr/bin/preupgrade ]; then
 		/usr/bin/preupgrade
 	else
 		xdg-open http://fedoraproject.org/en/get-fedora
+	fi
+elif [ "$DISTRO" = "Ubuntu" ]; then
+	if [ -e /usr/bin/do-release-upgrade ]; then
+		gksu "/usr/bin/do-release-upgrade -m desktop -f gtk -p"
+	else
+		xdg-open http://www.ubuntu.com/getubuntu
 	fi
 else
 	# do not dep on zenity in build scripts
