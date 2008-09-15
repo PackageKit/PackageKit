@@ -23,18 +23,21 @@ use urpm;
 use urpm::media;
 use urpm::select;
 
+use perl_packagekit::enums;
+use perl_packagekit::prints;
+
 use urpmi_backend::actions;
 use urpmi_backend::tools;
 
 # One or more arguments (Package ids)
 exit if($#ARGV < 0);
 
-my @packageidstab = split(/\|/, $ARGV[0]);
+my @pkgids = @ARGV;
 
 my @names;
-foreach(@packageidstab) {
-  my @pkg_id = (split(/;/, $_));
-  push @names, $pkg_id[0];
+foreach(@pkgids) {
+  my @pkgid = (split(/;/, $_));
+  push @names, $pkgid[0];
 }
 
 my $urpm = urpm->new_parse_cmdline;

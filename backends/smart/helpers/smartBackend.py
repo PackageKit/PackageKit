@@ -381,11 +381,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def search_group(self, filters, searchstring):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
+        filter_desktops = searchstring.find("desktop") != -1
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
-                group = self._get_group(info)
+                group = self._get_group(info, filter_desktops)
                 if searchstring in group:
                     self._add_package(package)
         self._post_process_package_list(filters)
@@ -444,12 +445,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Applications/Communications'             : GROUP_COMMUNICATION,
     'Applications/Databases'                  : GROUP_OTHER, ### FIXME
     'Applications/Editors'                    : GROUP_PUBLISHING,
-    'Applications/Emulators'                  : GROUP_OTHER, ### FIXME
+    'Applications/Emulators'                  : GROUP_VIRTUALIZATION,
     'Applications/Engineering'                : GROUP_OTHER, ### FIXME
     'Applications/File'                       : GROUP_OTHER, ### FIXME
     'Applications/Internet'                   : GROUP_INTERNET,
     'Applications/Multimedia'                 : GROUP_MULTIMEDIA,
-    'Applications/Productivity'               : GROUP_OTHER, ### FIXME
+    'Applications/Productivity'               : GROUP_OFFICE,
     'Applications/Publishing'                 : GROUP_PUBLISHING,
     'Applications/System'                     : GROUP_SYSTEM,
     'Applications/Text'                       : GROUP_PUBLISHING,
@@ -476,21 +477,31 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Virtual/Languages'                       : GROUP_COLLECTIONS,
     'Virtual/Servers'                         : GROUP_COLLECTIONS,
     # RPM (novell)
+    'Amusements/Teaching'                     : GROUP_EDUCATION,
+    'Amusements/Toys'                         : GROUP_GAMES,
+    'Hardware'                                : GROUP_SYSTEM,
     'Productivity/Archiving'                  : GROUP_OTHER, ### FIXME
+    'Productivity/Clustering'                 : GROUP_OTHER, ### FIXME
     'Productivity/Databases'                  : GROUP_OTHER, ### FIXME
     'Productivity/Editors'                    : GROUP_PUBLISHING,
     'Productivity/File utilities'             : GROUP_OTHER, ### FIXME
     'Productivity/Graphics'                   : GROUP_GRAPHICS,
+    'Productivity/Hamradio'                   : GROUP_COMMUNICATION,
     'Productivity/Multimedia'                 : GROUP_MULTIMEDIA,
     'Productivity/Networking'                 : GROUP_NETWORK,
+    'Productivity/Networking/Email'           : GROUP_INTERNET,
+    'Productivity/Networking/News'            : GROUP_INTERNET,
+    'Productivity/Networking/Web'             : GROUP_INTERNET,
     'Productivity/Office'                     : GROUP_OFFICE,
     'Productivity/Other'                      : GROUP_OTHER,
     'Productivity/Publishing'                 : GROUP_PUBLISHING,
     'Productivity/Scientific'                 : GROUP_SCIENCE,
     'Productivity/Security'                   : GROUP_SECURITY,
+    'Productivity/Telephony'                  : GROUP_COMMUNICATION,
     'Productivity/Text'                       : GROUP_PUBLISHING,
     'System/Base'                             : GROUP_SYSTEM,
-    'System/Boot'                             : GROUP_SYSTEM,
+    'System/Daemons'                          : GROUP_SYSTEM,
+    'System/Emulators'                        : GROUP_VIRTUALIZATION,
     'System/Kernel'                           : GROUP_SYSTEM,
     'System/Libraries'                        : GROUP_SYSTEM,
     'System/Shells'                           : GROUP_SYSTEM,
@@ -498,6 +509,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'System/GUI/KDE'                          : GROUP_DESKTOP_KDE,
     'System/GUI/Other'                        : GROUP_DESKTOP_OTHER,
     'System/GUI/XFCE'                         : GROUP_DESKTOP_XFCE,
+    'System/I18n'                             : GROUP_LOCALIZATION,
+    'System/Localization'                     : GROUP_LOCALIZATION,
+    'System/X11'                              : GROUP_DESKTOP_OTHER,
+    'System/X11/Fonts'                        : GROUP_FONTS,
     # YaST2
 #   'Virtual'                                 : GROUP_COLLECTIONS,
     'Virtual/Base Technologies'               : GROUP_COLLECTIONS,
@@ -516,7 +531,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Development'                             : GROUP_PROGRAMMING,
     'Editors'                                 : GROUP_PUBLISHING,
     'Education'                               : GROUP_EDUCATION,
-    'Emulators'                               : GROUP_OTHER, ### FIXME
+    'Emulators'                               : GROUP_VIRTUALIZATION,
     'File tools'                              : GROUP_OTHER, ### FIXME
     'Games'                                   : GROUP_GAMES,
     'Graphical desktop'                       : GROUP_DESKTOP_OTHER,
@@ -524,8 +539,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Graphical desktop/KDE'                   : GROUP_DESKTOP_KDE,
     'Graphical desktop/Xfce'                  : GROUP_DESKTOP_XFCE,
     'Graphics'                                : GROUP_GRAPHICS,
-    'Monitoring'                              : GROUP_OTHER, ### FIXME
-    'Networking'                              : GROUP_NETWORK,
+    'Monitoring'                              : GROUP_NETWORK,
+    'Networking'                              : GROUP_INTERNET,
     'Office'                                  : GROUP_OFFICE,
     'Publishing'                              : GROUP_PUBLISHING,
     'Sciences'                                : GROUP_SCIENCE,
@@ -535,8 +550,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'System/Fonts'                            : GROUP_FONTS,
     'System/Internationalization'             : GROUP_LOCALIZATION,
     'Terminals'                               : GROUP_SYSTEM,
-    'Text tools'                              : GROUP_SYSTEM,
-    'Toys'                                    : GROUP_OTHER, ### FIXME
+    'Text tools'                              : GROUP_ACCESSORIES,
+    'Toys'                                    : GROUP_GAMES,
     'Video'                                   : GROUP_MULTIMEDIA,
     # DEB
     "admin"                                   : GROUP_ADMIN_TOOLS,
@@ -575,6 +590,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     "unknown"                                 : GROUP_UNKNOWN,
     "alien"                                   : GROUP_UNKNOWN,
     "translations"                            : GROUP_LOCALIZATION,
+    # APT
+    "metapackages"                            : GROUP_COLLECTIONS,
     # Slack
     "Slackware"                               : GROUP_UNKNOWN
     }
@@ -945,9 +962,35 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self.package(pkpackage.get_package_id(name, version, arch, data),
                 status, summary)
 
-    def _get_group(self, info):
+    def _package_in_requires(self, packagename, groupname):
+        groups = self.ctrl.getCache().getPackages(groupname)
+        if groups:
+            group = groups[0]
+            for required in group.requires:
+                for provider in required.providedby:
+                    for package in provider.packages:
+                        if package.name == packagename:
+                            return True
+        return False
+
+    def _get_group(self, info, filter_desktops=True):
         group = info.getGroup()
         if group in self.GROUPS:
+            package = info.getPackage().name
+            if group == 'User Interface/X' and package.find('-fonts') != -1:
+                return GROUP_FONTS
+            if group == 'Applications/Productivity' and package.find('-langpack') != -1:
+                return GROUP_LOCALIZATION
+            if group == 'User Interface/Desktops' and filter_desktops:
+                if self._package_in_requires(package, "^gnome-desktop") \
+                or self._package_in_requires(package, "^gnome-desktop-optional"):
+                    return GROUP_DESKTOP_GNOME
+                if self._package_in_requires(package, "^kde-desktop") \
+                or self._package_in_requires(package, "^kde-desktop-optional"):
+                    return GROUP_DESKTOP_KDE
+                if self._package_in_requires(package, "^xfce-desktop") \
+                or self._package_in_requires(package, "^xfce-desktop-optional"):
+                    return GROUP_DESKTOP_XFCE
             group = self.GROUPS[group]
         else:
             while group.find('/') != -1:
