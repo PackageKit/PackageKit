@@ -98,6 +98,45 @@ os.putenv("APT_LISTCHANGES_FRONTEND", "none")
 gobject.threads_init()
 dbus.glib.threads_init()
 
+SECTION_GROUP_MAP = {
+    "admin" : GROUP_ADMIN_TOOLS,
+    "base" : GROUP_SYSTEM,
+    "comm" : GROUP_COMMUNICATION,
+    "devel" : GROUP_PROGRAMMING,
+    "doc" : GROUP_DOCUMENTATION,
+    "editors" : GROUP_PUBLISHING,
+    "electronics" : GROUP_ELECTRONICS,
+    "embedded" : GROUP_SYSTEM,
+    "games" : GROUP_GAMES,
+    "gnome" : GROUP_DESKTOP_GNOME,
+    "graphics" : GROUP_GRAPHICS,
+    "hamradio" : GROUP_COMMUNICATION,
+    "interpreters" : GROUP_PROGRAMMING,
+    "kde" : GROUP_DESKTOP_KDE,
+    "libdevel" : GROUP_PROGRAMMING,
+    "libs" : GROUP_SYSTEM,
+    "mail" : GROUP_INTERNET,
+    "math" : GROUP_SCIENCE,
+    "misc" : GROUP_OTHER,
+    "net" : GROUP_NETWORK,
+    "news" : GROUP_INTERNET,
+    "oldlibs" : GROUP_LEGACY,
+    "otherosfs" : GROUP_SYSTEM,
+    "perl" : GROUP_PROGRAMMING,
+    "python" : GROUP_PROGRAMMING,
+    "science" : GROUP_SCIENCE,
+    "shells" : GROUP_SYSTEM,
+    "sound" : GROUP_MULTIMEDIA,
+    "tex" : GROUP_PUBLISHING,
+    "text" : GROUP_PUBLISHING,
+    "utils" : GROUP_ACCESSORIES,
+    "web" : GROUP_INTERNET,
+    "x11" : GROUP_DESKTOP_OTHER,
+    "unknown" : GROUP_UNKNOWN,
+    "alien" : GROUP_UNKNOWN,
+    "translations" : GROUP_LOCALIZATION,
+    "metapackages" : GROUP_COLLECTIONS }
+ 
 class InstallTimeOutPKError(Exception):
     pass
 
@@ -1894,80 +1933,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Return the packagekit group corresponding to the package's section
         """
         section = pkg.section.split("/")[-1]
-        if section == "admin":
-            return GROUP_ADMIN_TOOLS
-        elif section == "base":
-            return GROUP_SYSTEM
-        elif section == "comm":
-            return GROUP_COMMUNICATION
-        elif section == "devel":
-            return GROUP_PROGRAMMING
-        elif section == "doc":
-            return GROUP_DOCUMENTATION
-        elif section == "editors":
-            return GROUP_PUBLISHING
-        elif section == "electronics":
-            return GROUP_ELECTRONICS
-        elif section == "embedded":
-            return GROUP_SYSTEM
-        elif section == "games":
-            return GROUP_GAMES
-        elif section == "gnome":
-            return GROUP_DESKTOP_GNOME
-        elif section == "graphics":
-            return GROUP_GRAPHICS
-        elif section == "hamradio":
-            return GROUP_COMMUNICATION
-        elif section == "interpreters":
-            return GROUP_PROGRAMMING
-        elif section == "kde":
-            return GROUP_DESKTOP_KDE
-        elif section == "libdevel":
-            return GROUP_PROGRAMMING
-        elif section == "libs":
-            return GROUP_SYSTEM
-        elif section == "mail":
-            return GROUP_INTERNET
-        elif section == "math":
-            return GROUP_SCIENCE
-        elif section == "misc":
-            return GROUP_OTHER
-        elif section == "net":
-            return GROUP_NETWORK
-        elif section == "news":
-            return GROUP_INTERNET
-        elif section == "oldlibs":
-            return GROUP_LEGACY
-        elif section == "otherosfs":
-            return GROUP_SYSTEM
-        elif section == "perl":
-            return GROUP_PROGRAMMING
-        elif section == "python":
-            return GROUP_PROGRAMMING
-        elif section == "science":
-            return GROUP_SCIENCE
-        elif section == "shells":
-            return GROUP_SYSTEM
-        elif section == "sound":
-            return GROUP_MULTIMEDIA
-        elif section == "tex":
-            return GROUP_PUBLISHING
-        elif section == "text":
-            return GROUP_PUBLISHING
-        elif section == "utils":
-            return GROUP_ACCESSORIES
-        elif section == "web":
-            return GROUP_INTERNET
-        elif section == "x11":
-            return GROUP_DESKTOP_OTHER
-        elif section == "unknown":
-            return GROUP_UNKNOWN
-        elif section == "alien":
-            return GROUP_UNKNOWN
-        elif section == "translations":
-            return GROUP_LOCALIZATION
-        elif section == "metapackages":
-            return GROUP_COLLECTIONS
+        if SECTION_GROUP_MAP.has_key(section):
+            return SECTION_GROUP_MAP[section]
         else:
             pklog.debug("Unkown package section %s of %s" % (pkg.section,
                                                              pkg.name))
