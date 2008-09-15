@@ -444,7 +444,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Applications/Communications'             : GROUP_COMMUNICATION,
     'Applications/Databases'                  : GROUP_OTHER, ### FIXME
     'Applications/Editors'                    : GROUP_PUBLISHING,
-    'Applications/Emulators'                  : GROUP_OTHER, ### FIXME
+    'Applications/Emulators'                  : GROUP_VIRTUALIZATION,
     'Applications/Engineering'                : GROUP_OTHER, ### FIXME
     'Applications/File'                       : GROUP_OTHER, ### FIXME
     'Applications/Internet'                   : GROUP_INTERNET,
@@ -491,6 +491,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Productivity/Text'                       : GROUP_PUBLISHING,
     'System/Base'                             : GROUP_SYSTEM,
     'System/Boot'                             : GROUP_SYSTEM,
+    'System/Emulators'                        : GROUP_VIRTUALIZATION,
     'System/Kernel'                           : GROUP_SYSTEM,
     'System/Libraries'                        : GROUP_SYSTEM,
     'System/Shells'                           : GROUP_SYSTEM,
@@ -516,7 +517,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Development'                             : GROUP_PROGRAMMING,
     'Editors'                                 : GROUP_PUBLISHING,
     'Education'                               : GROUP_EDUCATION,
-    'Emulators'                               : GROUP_OTHER, ### FIXME
+    'Emulators'                               : GROUP_VIRTUALIZATION,
     'File tools'                              : GROUP_OTHER, ### FIXME
     'Games'                                   : GROUP_GAMES,
     'Graphical desktop'                       : GROUP_DESKTOP_OTHER,
