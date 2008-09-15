@@ -204,8 +204,11 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         installed = []
         available = []
 
-        if FILTER_COLLECTIONS in fltlist:
+        if FILTER_NOT_COLLECTIONS not in fltlist:
             self._do_meta_package_search(fltlist,key)
+
+        if FILTER_COLLECTIONS in fltlist:
+            return
 
         for (pkg,values) in res:
             if pkg.repo.id == 'installed':
