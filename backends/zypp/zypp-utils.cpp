@@ -737,6 +737,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, emsg);
 			g_free (emsg);
+			zypp->resolver ()->setForceResolve (FALSE);
 			return FALSE;
 		}
         
@@ -823,6 +824,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 					emsg);
 
 			g_free (emsg);
+			zypp->resolver ()->setForceResolve (FALSE);
                         return FALSE;
                 }
 
