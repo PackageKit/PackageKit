@@ -98,6 +98,7 @@ os.putenv("APT_LISTCHANGES_FRONTEND", "none")
 gobject.threads_init()
 dbus.glib.threads_init()
 
+# Map Debian sections to the PackageKit group name space
 SECTION_GROUP_MAP = {
     "admin" : GROUP_ADMIN_TOOLS,
     "base" : GROUP_SYSTEM,
@@ -481,8 +482,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if self._check_canceled(): return False
             for installed_file in self._get_installed_files(pkg):
                 if filename in installed_file:
-                    if self._is_package_visible(pkg, filters):
-                        self._emit_package(pkg)
+                    self._emit_visible_package(filters, pkg)
                     continue
         self.Finished(EXIT_SUCCESS)
 
@@ -499,9 +499,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         for pkg in self._cache:
             if self._check_canceled(): return False
-            elif self._get_package_group(pkg) == group and \
-                 self._is_package_visible(pkg, filters):
-                self._emit_package(pkg)
+            elif self._get_package_group(pkg) == group:
+                self._emit_visible_package(filters, pkg)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -517,8 +516,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         for pkg in self._cache:
             if self._check_canceled(): return False
-            elif search in pkg.name and self._is_package_visible(pkg, filters):
-                self._emit_package(pkg)
+            elif search in pkg.name:
+                self._emit_visible_package(filters, pkg)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -561,8 +560,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         for r in results:
             if self._check_canceled(): return
-            if self._is_package_visible(r, filters) == True:
-                self._emit_package(r)
+            self._emit_visible_package(filters, r)
 
         self.Finished(EXIT_SUCCESS)
 
