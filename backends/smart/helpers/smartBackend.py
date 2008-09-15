@@ -449,7 +449,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Applications/File'                       : GROUP_OTHER, ### FIXME
     'Applications/Internet'                   : GROUP_INTERNET,
     'Applications/Multimedia'                 : GROUP_MULTIMEDIA,
-    'Applications/Productivity'               : GROUP_OTHER, ### FIXME
+    'Applications/Productivity'               : GROUP_OFFICE,
     'Applications/Publishing'                 : GROUP_PUBLISHING,
     'Applications/System'                     : GROUP_SYSTEM,
     'Applications/Text'                       : GROUP_PUBLISHING,
@@ -948,6 +948,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def _get_group(self, info):
         group = info.getGroup()
         if group in self.GROUPS:
+            package = info.getPackage().name
+            if group == 'User Interface/X' and package.find('-fonts') != -1:
+                return GROUP_FONTS
+            # FIXME: filter out gnome/xfce/kde from "System Environment" etc
             group = self.GROUPS[group]
         else:
             while group.find('/') != -1:
