@@ -123,10 +123,16 @@ static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "glib2;2.14.0;i386;fedora", "The GLib library");
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+
+	if (egg_strequal (package_ids[0], "scribus;1.3.4-1.fc8;i386;fedora")) {
+		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+				    "scribus-clipart;1.3.4-1.fc8;i386;fedora", "Clipart for scribus");
+	} else {
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+				    "glib2;2.14.0;i386;fedora", "The GLib library");
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+				    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+	}
 	pk_backend_finished (backend);
 }
 
@@ -419,12 +425,25 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 }
 
 /**
+ * backend_refresh_cache_timeout:
+ */
+static gboolean
+backend_install_files_timeout (gpointer data)
+{
+	PkBackend *backend = (PkBackend *) data;
+	pk_backend_finished (backend);
+	return FALSE;
+}
+
+/**
  * backend_install_files:
  */
 static void
 backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
-	pk_backend_finished (backend);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
+	pk_backend_set_percentage (backend, 101);
+	_signal_timeout = g_timeout_add (2000, backend_install_files_timeout, backend);
 }
 
 /**
