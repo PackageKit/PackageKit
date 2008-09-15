@@ -444,7 +444,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Applications/Communications'             : GROUP_COMMUNICATION,
     'Applications/Databases'                  : GROUP_OTHER, ### FIXME
     'Applications/Editors'                    : GROUP_PUBLISHING,
-    'Applications/Emulators'                  : GROUP_OTHER, ### FIXME
+    'Applications/Emulators'                  : GROUP_VIRTUALIZATION,
     'Applications/Engineering'                : GROUP_OTHER, ### FIXME
     'Applications/File'                       : GROUP_OTHER, ### FIXME
     'Applications/Internet'                   : GROUP_INTERNET,
@@ -476,21 +476,32 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Virtual/Languages'                       : GROUP_COLLECTIONS,
     'Virtual/Servers'                         : GROUP_COLLECTIONS,
     # RPM (novell)
+    'Amusements/Teaching'                     : GROUP_EDUCATION,
+    'Amusements/Toys'                         : GROUP_GAMES,
+    'Hardware'                                : GROUP_SYSTEM,
     'Productivity/Archiving'                  : GROUP_OTHER, ### FIXME
+    'Productivity/Clustering'                 : GROUP_OTHER, ### FIXME
     'Productivity/Databases'                  : GROUP_OTHER, ### FIXME
     'Productivity/Editors'                    : GROUP_PUBLISHING,
     'Productivity/File utilities'             : GROUP_OTHER, ### FIXME
     'Productivity/Graphics'                   : GROUP_GRAPHICS,
+    'Productivity/Hamradio'                   : GROUP_COMMUNICATION,
     'Productivity/Multimedia'                 : GROUP_MULTIMEDIA,
     'Productivity/Networking'                 : GROUP_NETWORK,
+    'Productivity/Networking/Email'           : GROUP_INTERNET,
+    'Productivity/Networking/News'            : GROUP_INTERNET,
+    'Productivity/Networking/Web'             : GROUP_INTERNET,
     'Productivity/Office'                     : GROUP_OFFICE,
     'Productivity/Other'                      : GROUP_OTHER,
     'Productivity/Publishing'                 : GROUP_PUBLISHING,
     'Productivity/Scientific'                 : GROUP_SCIENCE,
     'Productivity/Security'                   : GROUP_SECURITY,
+    'Productivity/Telephony'                  : GROUP_COMMUNICATION,
     'Productivity/Text'                       : GROUP_PUBLISHING,
+    'System'                                  : GROUP_SYSTEM,
     'System/Base'                             : GROUP_SYSTEM,
-    'System/Boot'                             : GROUP_SYSTEM,
+    'System/Daemons'                          : GROUP_SYSTEM,
+    'System/Emulators'                        : GROUP_VIRTUALIZATION,
     'System/Kernel'                           : GROUP_SYSTEM,
     'System/Libraries'                        : GROUP_SYSTEM,
     'System/Shells'                           : GROUP_SYSTEM,
@@ -498,6 +509,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'System/GUI/KDE'                          : GROUP_DESKTOP_KDE,
     'System/GUI/Other'                        : GROUP_DESKTOP_OTHER,
     'System/GUI/XFCE'                         : GROUP_DESKTOP_XFCE,
+    'System/I18n'                             : GROUP_LOCALIZATION,
+    'System/Localization'                     : GROUP_LOCALIZATION,
+    'System/X11'                              : GROUP_DESKTOP_OTHER,
+    'System/X11/Fonts'                        : GROUP_FONTS,
     # YaST2
 #   'Virtual'                                 : GROUP_COLLECTIONS,
     'Virtual/Base Technologies'               : GROUP_COLLECTIONS,
@@ -516,7 +531,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Development'                             : GROUP_PROGRAMMING,
     'Editors'                                 : GROUP_PUBLISHING,
     'Education'                               : GROUP_EDUCATION,
-    'Emulators'                               : GROUP_OTHER, ### FIXME
+    'Emulators'                               : GROUP_VIRTUALIZATION,
     'File tools'                              : GROUP_OTHER, ### FIXME
     'Games'                                   : GROUP_GAMES,
     'Graphical desktop'                       : GROUP_DESKTOP_OTHER,
