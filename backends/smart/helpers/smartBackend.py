@@ -507,6 +507,37 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Virtual/Graphical Environments'          : GROUP_COLLECTIONS,
     'Virtual/KDE Desktop'                     : GROUP_COLLECTIONS,
     'Virtual/Server Functions'                : GROUP_COLLECTIONS,
+    # RPM (mandriva)
+    'Accessibility'                           : GROUP_ACCESSIBILITY,
+    'Archiving'                               : GROUP_OTHER, ### FIXME
+    'Books'                                   : GROUP_DOCUMENTATION,
+    'Communications'                          : GROUP_COMMUNICATION,
+    'Databases'                               : GROUP_OTHER, ### FIXME
+    'Development'                             : GROUP_PROGRAMMING,
+    'Editors'                                 : GROUP_PUBLISHING,
+    'Education'                               : GROUP_EDUCATION,
+    'Emulators'                               : GROUP_OTHER, ### FIXME
+    'File tools'                              : GROUP_OTHER, ### FIXME
+    'Games'                                   : GROUP_GAMES,
+    'Graphical desktop'                       : GROUP_DESKTOP_OTHER,
+    'Graphical desktop/GNOME'                 : GROUP_DESKTOP_GNOME,
+    'Graphical desktop/KDE'                   : GROUP_DESKTOP_KDE,
+    'Graphical desktop/Xfce'                  : GROUP_DESKTOP_XFCE,
+    'Graphics'                                : GROUP_GRAPHICS,
+    'Monitoring'                              : GROUP_OTHER, ### FIXME
+    'Networking'                              : GROUP_NETWORK,
+    'Office'                                  : GROUP_OFFICE,
+    'Publishing'                              : GROUP_PUBLISHING,
+    'Sciences'                                : GROUP_SCIENCE,
+    'Shells'                                  : GROUP_SYSTEM,
+    'Sound'                                   : GROUP_MULTIMEDIA,
+    'System'                                  : GROUP_SYSTEM,
+    'System/Fonts'                            : GROUP_FONTS,
+    'System/Internationalization'             : GROUP_LOCALIZATION,
+    'Terminals'                               : GROUP_SYSTEM,
+    'Text tools'                              : GROUP_SYSTEM,
+    'Toys'                                    : GROUP_OTHER, ### FIXME
+    'Video'                                   : GROUP_MULTIMEDIA,
     # DEB
     "admin"                                   : GROUP_ADMIN_TOOLS,
     "base"                                    : GROUP_SYSTEM,
