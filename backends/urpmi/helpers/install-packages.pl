@@ -23,6 +23,9 @@ use urpm;
 use urpm::media;
 use urpm::select;
 
+use perl_packagekit::enums;
+use perl_packagekit::prints;
+
 use urpmi_backend::actions;
 use urpmi_backend::tools;
 
