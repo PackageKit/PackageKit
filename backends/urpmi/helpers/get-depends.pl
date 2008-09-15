@@ -31,12 +31,14 @@ use urpmi_backend::tools;
 use perl_packagekit::enums;
 use perl_packagekit::prints;
 
-# 3 arguments (filter, package id, recursive)
-$#ARGV == 2 or exit 1;
+# At least 3 arguments (filter, package ids, recursive)
+$#ARGV > 1 or exit 1;
 
 my @filters = split(/;/, $ARGV[0]);
-my @pkgids = split(/\|/, $ARGV[1]);
-my $recursive_option = 0;
+shift @ARGV;
+my $recursive_text = pop(@ARGV);
+my $recursive_option = $recursive_text eq "yes" ? 1 : 0;
+my @pkgids = @ARGV;
 
 # We force the recursive option
 $recursive_option = 1;
@@ -51,8 +53,7 @@ foreach (@pkgids) {
   my @pkgid = split(/;/, $_);
   push(@pkgnames, $pkgid[0]);
 }
-print join(" ", @pkgnames);
-print "\n";
+
 my %requested;
 my $results = urpm::select::search_packages($urpm, \%requested, \@pkgnames,
   fuzzy => 0,
