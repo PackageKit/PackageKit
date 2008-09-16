@@ -15,7 +15,7 @@
 #
 # get-depends                   DONE
 # get-details                   DONE
-# get-distro-upgrades
+# get-distro-upgrades           DONE
 # get-files                     DONE
 # get-packages                  DONE
 # get-requires                  DONE
@@ -30,7 +30,7 @@
 # search-group                  DONE
 # search-name                   DONE
 # update-packages               DONE
-# update-system
+# update-system                 DONE
 #
 
 use strict;
@@ -71,6 +71,9 @@ while(<STDIN>) {
   }
   elsif($command eq "get-details") {
     get_details($urpm, \@args);
+  }
+  elsif($command eq "get-distro-upgrades") {
+    get_distro_upgrades();
   }
   elsif($command eq "get-files") {
     get_files($urpm, \@args);
@@ -114,6 +117,9 @@ while(<STDIN>) {
   }
   elsif($command eq "update-packages") {
     update_packages($urpm, \@args);
+  }
+  elsif($command eq "update-system") {
+    update_system($urpm);
   }
 }
 
@@ -185,6 +191,48 @@ sub get_details {
   foreach (@packageidstab) {
     _print_package_details($urpm, $_);
   }
+  _finished();
+}
+
+sub get_distro_upgrades {
+
+  pk_print_status(PK_STATUS_ENUM_QUERY);
+
+  open(PRODUCT_FILE, "/etc/product.id");
+
+  my %product_id;
+  %product_id = _parse_line(<PRODUCT_FILE>);
+  close(PRODUCT_FILE);
+
+  my $distribfile_path = "/tmp/distrib.list";
+  _download_distrib_file($distribfile_path, \%product_id);
+
+  -f $distribfile_path or goto finished;
+
+  my @distribs;
+  open(DISTRIB_FILE, $distribfile_path);
+  while(<DISTRIB_FILE>) {
+    my %distrib = _parse_line($_);
+    push(@distribs, \%distrib);
+  }
+  close(DISTRIB_FILE);
+
+  my $distrib;
+  foreach (@distribs) {
+    if($_->{version} == $product_id{version}) {
+      $distrib = $_;
+    }
+  }
+
+  $distrib or goto finished;
+  @distribs = sort { $b->{release_date} <=> $a->{release_date} } @distribs;
+
+  my $newer_version = _get_newer_distrib($distrib->{version}, \@distribs);
+  $newer_version or goto finished;
+  pk_print_distro_upgrade(PK_DISTRO_UPGRADE_ENUM_STABLE, join(" ", "Mandriva", $product_id{product}, $newer_version->{version}), "");
+
+  unlink($distribfile_path);
+  finished:
   _finished();
 }
 
@@ -633,6 +681,15 @@ sub update_packages {
   _finished();
 }
 
+sub update_system {
+  
+  my ($urpm) = @_;
+  eval {
+    perform_installation($urpm, {}, auto_select => 1);
+  };
+  _finished();
+}
+
 sub _finished {
   pk_print_status(PK_STATUS_ENUM_FINISHED);
 }
@@ -724,4 +781,55 @@ sub _print_package_update_details {
     "http://qa.mandriva.com",
     $restart ? PK_RESTART_ENUM_SYSTEM : PK_RESTART_ENUM_APPLICATION,
     $desc);
+}
+
+sub _parse_line {
+  my ($line) = @_;
+  my %hash;
+  my @affects = split(/,/, $line);
+  foreach my $affect (@affects) {
+    my ($variable, $value) = split(/=/, $affect);
+    chomp($variable);
+    chomp($value);
+    $hash{$variable} = $value;
+  }
+  return %hash;
+}
+
+sub _download_distrib_file {
+
+  my ($outfile, $product_id) = @_;
+  
+  -x "/usr/bin/wget" or die "wget is missing\n";
+  
+  my $api_url = sprintf("http://api.mandriva.com/distributions/%s.%s.list?product=%s",
+                  lc($product_id->{type}),
+                  lc($product_id->{arch}),
+                  lc($product_id->{product}));
+  
+  my $wget_command = join(" ", 
+                          "/usr/bin/wget",
+                          "--quiet",
+                          "--output-document", $outfile,
+                          $api_url);
+  
+  my $wget_pid = open(my $wget, "$wget_command |");
+  close($wget);
+}
+
+sub _get_newer_distrib {
+
+  my ($installed_version, $distrib_list) = @_;
+  my $installed_distrib;
+  foreach (@$distrib_list) {
+    if($_->{version} == $installed_version) {
+      $installed_distrib = $_;
+    }
+  }
+  $installed_distrib or return;
+  foreach (@$distrib_list) {
+    if($installed_distrib->{release_date} < $_->{release_date}) {
+      return $_;
+    }
+  }
 }
