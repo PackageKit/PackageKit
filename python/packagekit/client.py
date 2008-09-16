@@ -9,6 +9,7 @@
 #
 # Synchronous PackageKit client wrapper API for Python.
 
+import os
 import gobject
 import dbus
 from enums import *
@@ -514,9 +515,9 @@ def polkit_auth_wrapper(fn, *args, **kwargs):
             # last words in message are privilege and auth result
             (priv, auth_result) = e.message.split()[-2:]
             if auth_result.startswith('auth_'):
-                pk_auth = dbus.Interface(dbus.SessionBus().get_object(
-                    'org.freedesktop.PolicyKit.AuthenticationAgent', '/', False),
-                    'org.freedesktop.PolicyKit.AuthenticationAgent')
+                pk_auth = dbus.SessionBus().get_object(
+                    'org.freedesktop.PolicyKit.AuthenticationAgent', '/', 'org.gnome.PolicyKit.AuthorizationManager.SingleInstance')
+
                 # TODO: provide xid
                 res = pk_auth.ObtainAuthorization(priv, dbus.UInt32(0),
                     dbus.UInt32(os.getpid()), timeout=300)
