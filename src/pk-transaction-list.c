@@ -429,7 +429,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 			g_ptr_array_add (parray, g_strdup (item->tid));
 	}
 	egg_debug ("%i transactions in list, %i active", length, parray->len);
-	array = pk_ptr_array_to_argv (parray);
+	array = pk_ptr_array_to_strv (parray);
 	g_ptr_array_foreach (parray, (GFunc) g_free, NULL);
 	g_ptr_array_free (parray, TRUE);
 

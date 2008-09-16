@@ -184,7 +184,7 @@ pk_package_list_to_argv (PkPackageList *plist)
 	}
 
 	/* convert to argv */
-	package_ids = pk_ptr_array_to_argv (array);
+	package_ids = pk_ptr_array_to_strv (array);
 	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 

@@ -65,9 +65,9 @@ gboolean	 pk_strvalidate				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_strsafe				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gchar		**pk_ptr_array_to_argv			(GPtrArray	*array)
+gchar		**pk_ptr_array_to_strv			(GPtrArray	*array)
 							 G_GNUC_WARN_UNUSED_RESULT;
-GPtrArray	*pk_argv_to_ptr_array			(gchar		**array)
+GPtrArray	*pk_strv_to_ptr_array			(gchar		**array)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		**pk_va_list_to_argv			(const gchar	*string_first,
 							 va_list	*args)

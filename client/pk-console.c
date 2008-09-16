@@ -644,7 +644,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 	/* any to process? */
 	if (array_packages->len > 0) {
 		/* convert to strv */
-		package_ids = pk_ptr_array_to_argv (array_packages);
+		package_ids = pk_ptr_array_to_strv (array_packages);
 
 		/* reset */
 		ret = pk_client_reset (client, error);
@@ -663,7 +663,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 	/* any to process? */
 	if (array_files->len > 0) {
 		/* convert to strv */
-		files = pk_ptr_array_to_argv (array_files);
+		files = pk_ptr_array_to_strv (array_files);
 
 		/* save for untrusted callback */
 		g_strfreev (files_cache);
@@ -747,7 +747,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	}
 
 	/* convert to strv */
-	package_ids = pk_ptr_array_to_argv (array);
+	package_ids = pk_ptr_array_to_strv (array);
 
 	/* are we dumb and can't check for requires? */
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
@@ -855,7 +855,7 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 	/* any to process? */
 	if (array_packages->len > 0) {
 		/* convert to strv */
-		package_ids = pk_ptr_array_to_argv (array_packages);
+		package_ids = pk_ptr_array_to_strv (array_packages);
 
 		/* reset */
 		ret = pk_client_reset (client, error);
