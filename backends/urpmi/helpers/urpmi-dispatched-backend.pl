@@ -27,7 +27,7 @@
 # resolve                       DONE
 # search-details                DONE
 # search-file                   DONE
-# search-group
+# search-group                  DONE
 # search-name                   DONE
 # update-packages
 # update-system
@@ -48,6 +48,7 @@ use urpmi_backend::actions;
 use urpmi_backend::open_db;
 use urpmi_backend::tools;
 use urpmi_backend::filters;
+use urpmi_backend::groups;
 
 use perl_packagekit::enums;
 use perl_packagekit::prints;
@@ -107,6 +108,9 @@ while(<STDIN>) {
   }
   elsif($command eq "search-file") {
     search_file($urpm, \@args);
+  }
+  elsif($command eq "search-group") {
+    search_group($urpm, \@args);
   }
 }
 
@@ -553,6 +557,42 @@ sub search_file {
       else {
         pk_print_package(INFO_AVAILABLE, get_package_id($p), ensure_utf8($p->summary));
       }
+    }
+  }
+  _finished();
+}
+
+sub search_group {
+
+  my ($urpm, $args) = @_;
+  my @filters = split(/;/, @{$args}[0]);
+  my $pk_group = @{$args}[1];
+  
+  pk_print_status(PK_STATUS_ENUM_QUERY);
+
+  my $db = open_rpm_db();
+  $urpm->compute_installed_flags($db);
+
+  if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filters)) {
+    $db->traverse(sub {
+        my ($pkg) = @_;
+        if(filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+          if(package_belongs_to_pk_group($pkg, $pk_group)) {
+            pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
+          }
+        }
+      });
+  }
+
+  if(not grep(/^${\FILTER_INSTALLED}$/, @filters)) {
+    foreach my $pkg(@{$urpm->{depslist}}) {
+      if($pkg->flag_upgrade) {
+        if(filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+          if(package_belongs_to_pk_group($pkg, $pk_group)) {
+            pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
+          }
+        }
+      }  
     }
   }
   _finished();
