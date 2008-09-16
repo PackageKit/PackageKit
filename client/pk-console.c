@@ -1409,7 +1409,7 @@ main (int argc, char *argv[])
 
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_new ();
-	roles = pk_control_get_actions (control);
+	roles = pk_control_get_actions (control, NULL);
 	summary = pk_console_get_summary (roles);
 
 	context = g_option_context_new ("PackageKit Console Program");
@@ -1693,7 +1693,7 @@ main (int argc, char *argv[])
 		ret = TRUE;
 
 	} else if (strcmp (mode, "get-filters") == 0) {
-		filters = pk_control_get_filters (control);
+		filters = pk_control_get_filters (control, NULL);
 		text = pk_filter_bitfield_to_text (filters);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
@@ -1703,7 +1703,7 @@ main (int argc, char *argv[])
 		ret = TRUE;
 
 	} else if (strcmp (mode, "get-groups") == 0) {
-		groups = pk_control_get_groups (control);
+		groups = pk_control_get_groups (control, NULL);
 		text = pk_group_bitfield_to_text (groups);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);

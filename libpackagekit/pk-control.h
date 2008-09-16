@@ -91,11 +91,16 @@ gboolean	 pk_control_allocate_transaction_id	(PkControl	*control,
 							 GError		**error);
 gboolean	 pk_control_set_proxy			(PkControl	*control,
 							 const gchar	*proxy_http,
-							 const gchar	*proxy_ftp);
-PkBitfield	 pk_control_get_actions			(PkControl	*control);
-PkBitfield pk_control_get_filters			(PkControl	*control);
-PkBitfield	 pk_control_get_groups			(PkControl	*control);
-PkNetworkEnum	 pk_control_get_network_state		(PkControl	*control);
+							 const gchar	*proxy_ftp,
+							 GError		**error);
+PkBitfield	 pk_control_get_actions			(PkControl	*control,
+							 GError		**error);
+PkBitfield	 pk_control_get_filters			(PkControl	*control,
+							 GError		**error);
+PkBitfield	 pk_control_get_groups			(PkControl	*control,
+							 GError		**error);
+PkNetworkEnum	 pk_control_get_network_state		(PkControl	*control,
+							 GError		**error);
 gboolean	 pk_control_get_backend_detail		(PkControl	*control,
 							 gchar		**name,
 							 gchar		**author,

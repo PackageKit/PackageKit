@@ -94,7 +94,7 @@ main (int argc, char *argv[])
 
 	/* are we dumb and can't check for depends? */
 	control = pk_control_new ();
-	roles = pk_control_get_actions (control);
+	roles = pk_control_get_actions (control, NULL);
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
 		g_print ("Please use a backend that supports GetDepends!\n");
 		goto out;
