@@ -1124,7 +1124,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                         self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
             except yum.Errors.InstallError,e:
                 self.error(ERROR_LOCAL_INSTALL_FAILED,str(e))
-	shutil.rmtree(tempdir)
+        shutil.rmtree(tempdir)
 
     def _check_local_file(self, pkg):
         """
@@ -1305,11 +1305,21 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         self.status(STATUS_INFO)
 
         for package in package_ids:
-            pkg,inst = self._findPackage(package)
-            if pkg:
-                self._show_details_pkg(pkg)
+            grp = self._is_meta_package(package)
+            if grp:
+                id = "%s;meta;meta;meta" % grp.groupid
+                desc = grp.description
+                desc = desc.replace('\n\n',';')
+                desc = desc.replace('\n',' ')
+                group = grp.name
+                self.details(id,"",group,desc,"",0)
+
             else:
-                self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
+                pkg,inst = self._findPackage(package)
+                if pkg:
+                    self._show_details_pkg(pkg)
+                else:
+                    self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
 
     def _show_details_pkg(self,pkg):
 

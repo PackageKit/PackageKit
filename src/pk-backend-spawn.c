@@ -472,7 +472,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	}
 	g_free (value);
 
-	envp = pk_ptr_array_to_argv (array);
+	envp = pk_ptr_array_to_strv (array);
 	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 	return envp;

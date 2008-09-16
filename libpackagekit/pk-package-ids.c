@@ -68,7 +68,7 @@ pk_package_ids_from_id (const gchar *package_id)
 gchar **
 pk_package_ids_from_array (GPtrArray *array)
 {
-	return pk_ptr_array_to_argv (array);
+	return pk_ptr_array_to_strv (array);
 }
 
 /**

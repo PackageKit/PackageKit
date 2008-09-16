@@ -386,7 +386,7 @@ struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestR
 				file.c_str (), requested.c_str (), found.c_str ());
 		gboolean ok = zypp_signature_required(_backend, file);
 
-		return ok;	
+		return ok;
 	}
 };
 

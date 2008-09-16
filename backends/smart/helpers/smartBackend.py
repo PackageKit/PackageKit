@@ -381,11 +381,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def search_group(self, filters, searchstring):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
+        filter_desktops = searchstring.find("desktop") != -1
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
-                group = self._get_group(info)
+                group = self._get_group(info, filter_desktops)
                 if searchstring in group:
                     self._add_package(package)
         self._post_process_package_list(filters)
@@ -498,7 +499,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     'Productivity/Security'                   : GROUP_SECURITY,
     'Productivity/Telephony'                  : GROUP_COMMUNICATION,
     'Productivity/Text'                       : GROUP_PUBLISHING,
-    'System'                                  : GROUP_SYSTEM,
     'System/Base'                             : GROUP_SYSTEM,
     'System/Daemons'                          : GROUP_SYSTEM,
     'System/Emulators'                        : GROUP_VIRTUALIZATION,
@@ -973,7 +973,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                             return True
         return False
 
-    def _get_group(self, info):
+    def _get_group(self, info, filter_desktops=True):
         group = info.getGroup()
         if group in self.GROUPS:
             package = info.getPackage().name
@@ -981,7 +981,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 return GROUP_FONTS
             if group == 'Applications/Productivity' and package.find('-langpack') != -1:
                 return GROUP_LOCALIZATION
-            if group == 'User Interface/Desktops':
+            if group == 'User Interface/Desktops' and filter_desktops:
                 if self._package_in_requires(package, "^gnome-desktop") \
                 or self._package_in_requires(package, "^gnome-desktop-optional"):
                     return GROUP_DESKTOP_GNOME
