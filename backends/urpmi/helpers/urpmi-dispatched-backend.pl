@@ -24,7 +24,7 @@
 # install-packages		DONE
 # refresh-cache                 DONE
 # remove-packages               DONE
-# resolve
+# resolve                       DONE
 # search-details
 # search-file
 # search-group
@@ -98,6 +98,9 @@ while(<STDIN>) {
   }
   elsif($command eq "remove-packages") {
     remove_packages($urpm, \@args);
+  }
+  elsif($command eq "resolve") {
+    resolve($urpm, \@args);
   }
 }
 
@@ -442,6 +445,46 @@ sub remove_packages {
   }
 
   $urpmi_lock->unlock;
+  _finished();
+}
+
+sub resolve {
+
+  my ($urpm, $args) = @_;
+
+  my @filters = split(/;/, @{$args}[0]);
+  shift @{$args};
+  my @patterns = @{$args};
+
+  pk_print_status(PK_STATUS_ENUM_QUERY);
+
+  my %requested;
+  urpm::select::search_packages($urpm, \%requested, \@patterns, 
+    fuzzy => 0, 
+    caseinsensitive => 0,
+    all => 0
+  );
+
+  my @requested_keys = keys %requested;
+  my $db = open_rpm_db();
+  $urpm->compute_installed_flags($db);
+
+  foreach (@requested_keys) {
+    my $pkg = @{$urpm->{depslist}}[$_];
+    ($_ && $pkg) or next;
+
+    # We exit the script if found package does not match with specified filters
+    filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1}) or next;
+
+    if($pkg->version."-".$pkg->release eq find_installed_version($pkg)) {
+      grep(/^${\FILTER_NOT_INSTALLED}$/, @filters) and next;
+      pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
+    }
+    else {
+      grep(/^${\FILTER_INSTALLED}$/, @filters) and next;
+      pk_print_package(INFO_AVAILABLE, get_package_id($pkg), $pkg->summary);
+    }
+  }
   _finished();
 }
 
