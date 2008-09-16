@@ -29,7 +29,7 @@
 # search-file                   DONE
 # search-group                  DONE
 # search-name                   DONE
-# update-packages
+# update-packages               DONE
 # update-system
 #
 
@@ -111,6 +111,9 @@ while(<STDIN>) {
   }
   elsif($command eq "search-group") {
     search_group($urpm, \@args);
+  }
+  elsif($command eq "update-packages") {
+    update_packages($urpm, \@args);
   }
 }
 
@@ -595,6 +598,38 @@ sub search_group {
       }  
     }
   }
+  _finished();
+}
+
+sub update_packages {
+
+  my ($urpm, $args) = @_;
+
+  my @names;
+  foreach(@{$args}) {
+    my @pkgid = split(/;/, $_);
+    push @names, $pkgid[0];
+  }
+
+  my $db = open_rpm_db();
+  $urpm->compute_installed_flags($db);
+
+  my %requested;
+
+  my @depslist = @{$urpm->{depslist}};
+  my $pkg = undef;
+  foreach my $depslistpkg (@depslist) {
+    foreach my $name (@names) {
+      if($depslistpkg->name =~ /^$name$/ && $depslistpkg->flag_upgrade) {
+        $requested{$depslistpkg->id} = 1;
+        goto tonext;
+      }
+    }
+    tonext:
+  }
+  eval {
+    perform_installation($urpm, \%requested);
+  };
   _finished();
 }
 
