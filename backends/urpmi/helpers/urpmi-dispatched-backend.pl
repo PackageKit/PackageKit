@@ -65,32 +65,32 @@ while(<STDIN>) {
   chomp($_);
   my @args = split (/ /, $_);
   my $command = shift(@args);
-  if($command eq "search-name") {
-    search_name($urpm, @args);
-  }
-  elsif($command eq "get-depends") {
-    get_depends($urpm, @args);
+  if($command eq "get-depends") {
+    get_depends($urpm, \@args);
   }
   elsif($command eq "get-details") {
-    get_details($urpm, @args);
+    get_details($urpm, \@args);
   }
   elsif($command eq "get-files") {
-    get_files($urpm, @args);
+    get_files($urpm, \@args);
   }
   elsif($command eq "get-packages") {
-    get_packages($urpm, @args);
+    get_packages($urpm, \@args);
   }
   elsif($command eq "get-requires") {
-    get_requires($urpm, @args);
+    get_requires($urpm, \@args);
   }
   elsif($command eq "get-update-detail") {
-    get_update_detail($urpm, @args);
+    get_update_detail($urpm, \@args);
   }
   elsif($command eq "get-updates") {
-    get_updates($urpm, @args);
+    get_updates($urpm, \@args);
   }
   elsif($command eq "install-packages") {
-    install_packages($urpm, @args);
+    install_packages($urpm, \@args);
+  }
+  elsif($command eq "search-name") {
+    search_name($urpm, \@args);
   }
 }
 
@@ -98,11 +98,13 @@ while(<STDIN>) {
 
 sub get_depends {
 
-  my ($urpm, $filters, $packageids, $recursive_option) = @_;
+  my ($urpm, $args) = @_;
   
-  my @filterstab = split(/;/, $filters);
-  my @packageidstab = split(/\|/, $packageids);
-  $recursive_option = 1;
+  my @filterstab = split(/;/, @{$args}[0]);
+  shift @{$args};
+  my $recursive_text = pop @{$args};
+  my $recursive_option = $recursive_text eq "yes" ? 1 : 0;
+  my @packageidstab = @{$args};
   
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
   
@@ -152,9 +154,9 @@ sub get_depends {
 
 sub get_details {
 
-  my ($urpm, $packageids) = @_;
+  my ($urpm, $args) = @_;
   
-  my @packageidstab = split(/\|/, $packageids);
+  my @packageidstab = @{$args};
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
   foreach (@packageidstab) {
@@ -165,9 +167,9 @@ sub get_details {
 
 sub get_files {
   
-  my ($urpm, $packageids) = @_;
+  my ($urpm, $args) = @_;
   
-  my @packageidstab = split(/\|/, $packageids);
+  my @packageidstab = @{$args};
   pk_print_status(PK_STATUS_ENUM_QUERY);
   
   foreach (@packageidstab) {
@@ -178,8 +180,8 @@ sub get_files {
 
 sub get_packages {
 
-  my ($urpm, $filters) = @_;
-  my @filterstab = split(/;/, $filters);
+  my ($urpm, $args) = @_;
+  my @filterstab = split(/;/, @{$args}[0]);
   
   pk_print_status(PK_STATUS_ENUM_QUERY);
   
@@ -211,11 +213,13 @@ sub get_packages {
 
 sub get_requires {
   
-  my ($urpm, $filters, $packageids, $recursive_option) = @_;
+  my ($urpm, $args) = @_;
   
-  my @filterstab = split(/;/, $filters);
-  my @packageidstab = split(/\|/, $packageids);
-  my $recursive = $recursive_option eq "yes" ? 1 : 0;
+  my @filterstab = split(/;/, @{$args}[0]);
+  shift @{$args};
+  my $recursive_text = pop @{$args};
+  my $recursive_option = $recursive_text eq "yes" ? 1 : 0;
+  my @packageidstab = @{$args};
   
   my @pkgnames;
   foreach (@packageidstab) {
@@ -224,7 +228,7 @@ sub get_requires {
   }
   
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
-  my @requires = perform_requires_search($urpm, \@pkgnames, $recursive);
+  my @requires = perform_requires_search($urpm, \@pkgnames, $recursive_option);
   
   foreach(@requires) {
     if(filter($_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1 })) {
@@ -241,10 +245,10 @@ sub get_requires {
 
 sub get_update_detail {
 
-  my ($urpm, $packageids) = @_;
+  my ($urpm, $args) = @_;
   
   pk_print_status(PK_STATUS_ENUM_QUERY);
-  my @packageidstab = split(/\|/, $packageids);
+  my @packageidstab = @{$args};
   
   foreach (@packageidstab) {
     _print_package_update_details($urpm, $_);
@@ -254,9 +258,10 @@ sub get_update_detail {
 
 sub get_updates {
 
-  my ($urpm, $filters) = @_;
+  my ($urpm, $args) = @_;
   # Fix me
   # Filter are to be implemented.
+  my $filters = @{$args}[0];
   
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
 
@@ -283,9 +288,9 @@ sub get_updates {
 
 sub install_packages {
 
-  my ($urpm, $packageids) = @_;
+  my ($urpm, $args) = @_;
 
-  my @packageidstab = split(/\|/, $packageids);
+  my @packageidstab = @{$args};
   
   my @names;
   foreach(@packageidstab) {
@@ -307,11 +312,12 @@ sub install_packages {
 
 sub search_name {
 
-  my ($urpm, $filters, $search_term) = @_;
+  my ($urpm, $args) = @_;
   
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
-  my @filterstab = split(/;/, $filters);
+  my @filterstab = split(/;/, @{$args}[0]);
+  my $search_term = @{$args}[1];
   
   my $basename_option = FILTER_BASENAME;
   $basename_option = grep(/$basename_option/, @filterstab);
