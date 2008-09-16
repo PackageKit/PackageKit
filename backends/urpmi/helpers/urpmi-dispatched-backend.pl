@@ -26,7 +26,7 @@
 # remove-packages               DONE
 # resolve                       DONE
 # search-details                DONE
-# search-file
+# search-file                   DONE
 # search-group
 # search-name                   DONE
 # update-packages
@@ -104,6 +104,9 @@ while(<STDIN>) {
   }
   elsif($command eq "search-details") {
     search_details($urpm, \@args);
+  }
+  elsif($command eq "search-file") {
+    search_file($urpm, \@args);
   }
 }
 
@@ -523,6 +526,33 @@ sub search_details {
           }
         }
       }  
+    }
+  }
+  _finished();
+}
+
+sub search_file {
+
+  my ($urpm, $args) = @_;
+  my @filters = split(/;/, @{$args}[0]);
+  my $search_term = @{$args}[1];
+
+  my %requested;
+
+  pk_print_status(PK_STATUS_ENUM_QUERY);
+
+  perform_file_search($urpm, \%requested, $search_term, fuzzy => 1);
+
+  foreach(keys %requested) {
+    my $p = @{$urpm->{depslist}}[$_];
+    if(filter($p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT=> 1, FILTER_GUI => 1})) {
+      my $version = find_installed_version($p);
+      if($version eq $p->version."-".$p->release) {
+        pk_print_package(INFO_INSTALLED, get_package_id($p), ensure_utf8($p->summary));
+      }
+      else {
+        pk_print_package(INFO_AVAILABLE, get_package_id($p), ensure_utf8($p->summary));
+      }
     }
   }
   _finished();
