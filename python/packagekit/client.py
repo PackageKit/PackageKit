@@ -415,6 +415,7 @@ class PackageKitClient:
         self._error_enum = enum
 
     def _h_finished(self, status, code):
+        self._finished_status = status
         self.main_loop.quit()
 
     def _h_progress(self, per, subper, el, rem):
@@ -460,15 +461,16 @@ class PackageKitClient:
         pk_xn.connect_to_signal('ErrorCode', self._h_error)
         pk_xn.connect_to_signal('Finished', self._h_finished)
         if action == "install":
-            pk_xn.InstallPackages(package_ids)
+           polkit_auth_wrapper(lambda : pk_xn.InstallPackages(package_ids))
         elif action == "remove":
-            pk_xn.RemovePackages(package_ids, allow_deps, auto_remove)
+            polkit_auth_wrapper(lambda : pk_xn.RemovePackages(package_ids, allow_deps, auto_remove))
         elif action == "update":
-            pk_xn.UpdatePackages(package_ids)
+            polkit_auth_wrapper(lambda : pk_xn.UpdatePackages(package_ids))
         self._wait()
         if self._error_enum:
             raise PackageKitError(self._error_enum)
         if self._finished_status != 'success':
+            print self._finished_status
             raise PackageKitError('internal-error')
 
     def _get_xn(self):
@@ -495,7 +497,7 @@ class PackageKitClient:
 
 #### PolicyKit authentication borrowed wrapper ##
 class PermissionDeniedByPolicy(dbus.DBusException):
-    _dbus_error_name = 'org.freedesktop.PackageKit.PermissionDeniedByPolicy'
+    _dbus_error_name = 'org.freedesktop.PackageKit.Transaction.RefusedByPolicy'
 
 
 def polkit_auth_wrapper(fn, *args, **kwargs):
@@ -518,11 +520,13 @@ def polkit_auth_wrapper(fn, *args, **kwargs):
                 # TODO: provide xid
                 res = pk_auth.ObtainAuthorization(priv, dbus.UInt32(0),
                     dbus.UInt32(os.getpid()), timeout=300)
+                print res
                 if res:
                     return fn(*args, **kwargs)
             raise PermissionDeniedByPolicy(priv + ' ' + auth_result)
         else:
             raise
+
 
 
 if __name__ == '__main__':

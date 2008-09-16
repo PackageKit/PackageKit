@@ -86,12 +86,14 @@ if __name__ == '__main__':
         print '---- InstallPackages() -----'
         pkg = pk.Resolve(FILTER_NOT_INSTALLED, 'yumex')
         if pkg:
+            print "Installing : %s " % pkg[0]['id']
             pk.InstallPackages(pkg[0]['id'], cb)
 
     if "remove-packages" in cmd:
         print '---- RemovePackages() -----'
-        pkg = pk.Resolve(FILTER_NOT_INSTALLED, 'yumex')
+        pkg = pk.Resolve(FILTER_INSTALLED, 'yumex')
         if pkg:
+            print "Removing : %s " % pkg[0]['id']
             pk.RemovePackages(pkg[0]['id'], cb)
 
 
