@@ -25,7 +25,7 @@
 # refresh-cache                 DONE
 # remove-packages               DONE
 # resolve                       DONE
-# search-details
+# search-details                DONE
 # search-file
 # search-group
 # search-name                   DONE
@@ -101,6 +101,9 @@ while(<STDIN>) {
   }
   elsif($command eq "resolve") {
     resolve($urpm, \@args);
+  }
+  elsif($command eq "search-details") {
+    search_details($urpm, \@args);
   }
 }
 
@@ -483,6 +486,43 @@ sub resolve {
     else {
       grep(/^${\FILTER_INSTALLED}$/, @filters) and next;
       pk_print_package(INFO_AVAILABLE, get_package_id($pkg), $pkg->summary);
+    }
+  }
+  _finished();
+}
+
+sub search_details {
+
+  my ($urpm, $args) = @_;
+  my @filters = split(/;/, @{$args}[0]);
+  shift @{$args};
+  my $search_term = pop @{$args};
+
+  pk_print_status(PK_STATUS_ENUM_QUERY);
+
+  my $db = open_rpm_db();
+  $urpm->compute_installed_flags($db);
+
+  if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filters)) {
+    $db->traverse(sub {
+        my ($pkg) = @_;
+        if(filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+          if($pkg->name =~ /$search_term/ || $pkg->summary =~ /$search_term/ || $pkg->url =~ /$search_term/) {
+            pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
+          }
+        }
+      });
+  }
+
+  if(not grep(/^${\FILTER_INSTALLED}$/, @filters)) {
+    foreach my $pkg(@{$urpm->{depslist}}) {
+      if($pkg->flag_upgrade) {
+        if(filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+          if($pkg->name =~ /$search_term/ || $pkg->summary =~ /$search_term/ || $pkg->url =~ /$search_term/) {
+            pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
+          }
+        }
+      }  
     }
   }
   _finished();
