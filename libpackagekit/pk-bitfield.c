@@ -323,6 +323,24 @@ pk_bitfield_test (EggTest *test)
 	g_free (text);
 
 	/************************************************************/
+	egg_test_title (test, "check we can invert a bit 1 -> 0");
+	values = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) | pk_bitfield_value (PK_FILTER_ENUM_NOT_NEWEST);
+	pk_bitfield_invert (values, PK_FILTER_ENUM_NOT_DEVELOPMENT);
+	if (values == pk_bitfield_value (PK_FILTER_ENUM_NOT_NEWEST))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "values were %" PK_BITFIELD_FORMAT, values);
+
+	/************************************************************/
+	egg_test_title (test, "check we can invert a bit 0 -> 1");
+	values = 0;
+	pk_bitfield_invert (values, PK_FILTER_ENUM_NOT_DEVELOPMENT);
+	if (values == pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "values were %" PK_BITFIELD_FORMAT, values);
+
+	/************************************************************/
 	egg_test_title (test, "check we can convert filter bitfield to text (single)");
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT));
 	if (egg_strequal (text, "~devel"))
