@@ -92,6 +92,10 @@ while(<STDIN>) {
   elsif($command eq "search-name") {
     search_name($urpm, \@args);
   }
+  elsif($command eq "refresh-cache") {
+    refresh_cache($urpm);
+    urpm::media::configure($urpm);
+  }
 }
 
 
@@ -353,6 +357,29 @@ sub search_name {
   }
 
   _finished();
+}
+
+sub refresh_cache {
+
+  my ($urpm) = @_;
+
+  $urpm->{fatal} = sub { 
+    pk_print_error(PK_ERROR_ENUM_TRANSACTION_ERROR, $_[1]."\n"); 
+    die;
+  };
+  my $urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 0);
+  urpm::media::read_config($urpm);
+
+  my @entries = map { $_->{name} } @{$urpm->{media}};
+  @entries == 0 and pk_print_error(PK_ERROR_ENUM_TRANSACTION_ERROR, "nothing to update (use urpmi.addmedia to add a media)\n");
+
+  my %options = ( all => 1 );
+  
+  eval {
+    my $ok = urpm::media::update_media($urpm, %options, quiet => 0);
+  };
+  _finished();
+
 }
 
 sub _finished {
