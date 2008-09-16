@@ -28,10 +28,11 @@ use urpmi_backend::filters;
 use perl_packagekit::enums;
 use perl_packagekit::prints;
 
-# Two arguments (filter and package name)
-$#ARGV == 1 or exit 1;
+# At least two arguments (filter and packages name)
+$#ARGV > 0 or exit 1;
 my @filters = split(/;/, $ARGV[0]);
-my @patterns = split(/\|/, $ARGV[1]);
+shift @ARGV;
+my @patterns = @ARGV;
 
 my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
