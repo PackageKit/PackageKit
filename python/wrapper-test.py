@@ -23,55 +23,76 @@ from packagekit.client import PackageKitClient
 from packagekit.enums import *
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        cmd = sys.argv[1:]
+    else:
+        cmd = 'all'
+
     pk = PackageKitClient()
 
-    #print '---- RefreshCache() -----'''
-    #print pk.RefreshCache()
+    if 'all' in cmd or "refresh-cache" in cmd:
+        print '---- RefreshCache() -----'''
+        print pk.RefreshCache()
 
-    print '---- Resolve() -----'
-    pkg = pk.Resolve(FILTER_NONE, ['yum'])
-    print pkg[0]
+    if 'all' in cmd or "resolve" in cmd:
+        print '---- Resolve() -----'
+        pkg = pk.Resolve(FILTER_NONE, 'yum')
+        if pkg:
+            print pkg
 
-    print '---- GetPackages() ----'
-    packages = pk.GetPackages(FILTER_INSTALLED)
-    i = 0
-    for pkg in packages:
-        i += 1
-        if i == 20:
-            break
-        (name,ver,arch,repo) = tuple(pkg['id'].split(";"))
-        p =  "%s-%s.%s" % (name,ver,arch)
-        print "%-40s : %s" % (p,pkg['summary'])
-        details = pk.GetDetails([pkg['id']])
-        print 79 *"-"
-        print details[0]['detail']
+    if 'all' in cmd or "get-packages" in cmd:
+        print '---- GetPackages() ----'
+        packages = pk.GetPackages(FILTER_INSTALLED)
+        i = 0
+        for pkg in packages:
+            i += 1
+            if i == 20:
+                break
+            (name,ver,arch,repo) = tuple(pkg['id'].split(";"))
+            p =  "%s-%s.%s" % (name,ver,arch)
+            print "%-40s : %s" % (p,pkg['summary'])
+            details = pk.GetDetails(pkg['id'])
+            print 79 *"-"
+            print details[0]['detail']
 
-    print '---- SearchFiles() ----'
-    print pk.SearchFile(FILTER_INSTALLED,"/usr/bin/yum")
+    if 'all' in cmd or "search-file" in cmd:
+        print '---- SearchFile() ----'
+        print pk.SearchFile(FILTER_INSTALLED,"/usr/bin/yum")
 
-    print '---- GetUpdates() ----'
-    print pk.GetUpdates(FILTER_INSTALLED)
+    if 'all' in cmd or "get-updates" in cmd:
+        print '---- GetUpdates() ----'
+        pkgs = pk.GetUpdates(FILTER_INSTALLED)
+        if pkgs: # We have updates
+            for p in pkgs:
+                print p['id']
+                print pk.GetUpdateDetail(p['id'])
 
-    print '---- SearchName() -----'
-    print pk.SearchName(FILTER_NOT_INSTALLED, 'coreutils')
-    print pk.SearchName(FILTER_INSTALLED, 'coreutils')
+    if 'all' in cmd or "search-name" in cmd:
+        print '---- SearchName() -----'
+        print pk.SearchName(FILTER_NOT_INSTALLED, 'coreutils')
+        print pk.SearchName(FILTER_INSTALLED, 'coreutils')
 
-    sys.exit(0)
 
     def cb(status, pc, spc, el, rem, c):
         print 'install pkg: %s, %i%%, cancel allowed: %s' % (status, pc, str(c))
         return True
         #return pc < 12
 
-    print '---- UpdateSystem() ----'
-    print pk.UpdateSystem()
+    if "updates-system" in cmd:
+        print '---- UpdateSystem() ----'
+        print pk.UpdateSystem()
 
-    print '---- InstallPackages() -----'
-    pk.InstallPackages(['pmount;0.9.17-2;i386;Ubuntu', 'quilt;0.46-6;all;Ubuntu'], cb)
+    if "install-packages" in cmd:
+        print '---- InstallPackages() -----'
+        pkg = pk.Resolve(FILTER_NOT_INSTALLED, 'yumex')
+        if pkg:
+            pk.InstallPackages(pkg[0]['id'], cb)
 
-
-    print '---- RemovePackages() -----'
-    pk.RemovePackages(['pmount;0.9.17-2;i386;Ubuntu', 'quilt;0.46-6;all;Ubuntu'], cb)
+    if "remove-packages" in cmd:
+        print '---- RemovePackages() -----'
+        pkg = pk.Resolve(FILTER_NOT_INSTALLED, 'yumex')
+        if pkg:
+            pk.RemovePackages(pkg[0]['id'], cb)
 
 
     pk.SuggestDaemonQuit()
