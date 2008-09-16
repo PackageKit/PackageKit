@@ -29,17 +29,19 @@ use urpmi_backend::filters;
 use perl_packagekit::enums;
 use perl_packagekit::prints;
 
-# 3 arguments
+# At least 3 arguments
 # (filter, package ids, and recursive option)
-$#ARGV == 2 or exit 1;
+$#ARGV > 1 or exit 1;
 
 my @filters = split(/;/, $ARGV[0]);
-my $recursive_option = $ARGV[2] eq "yes" ? 1 : 0;
+shift @ARGV;
+my $recursive_text = pop @ARGV;
+my $recursive_option = $recursive_text eq "yes" ? 1 : 0;
 
 my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
 
-my @pkgids = split(/\|/, $ARGV[1]);
+my @pkgids = @ARGV;
 my @pkgnames;
 foreach (@pkgids) {
   my $pkg = get_package_by_package_id($urpm, $_);
