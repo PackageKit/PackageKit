@@ -1,3 +1,105 @@
+Version 0.3.3
+~~~~~~~~~~~~~~
+Released: 2008-09-16
+
+Notes:
+ - This release fixes a serious bug where the daemon would sometimes stop
+   handling requests under heavy load.
+ - A new package type of Collection has been added that is designed to work
+   as an abstract package. It can be used to install or remove groups of packages.
+
+New Features:
+ - Add PK_INFO_ENUM_COLLECTION_INSTALLED and PK_INFO_ENUM_COLLECTION_AVAILABLE (Richard Hughes)
+ - Add pk-upgrade-distro.sh so we can actually do the distro upgrade action (Richard Hughes)
+ - Add support for running the Ubuntu dist upgrade tool (Sebastian Heinlein)
+ - Add PK_FILTER_ENUM_COLLECTIONS and PK_FILTER_ENUM_NOT_COLLECTIONS functionality (Tim Lauridsen)
+ - Add documentation about how the udev firmware loading stuff actually works (Richard Hughes)
+ - Added client Python API based on the packagekitwrapper.py (Tim Lauridsen)
+ - Python client API - many improvements (Tim Lauridsen)
+
+Bugfixes:
+ - Don't assume /bin/sh supports echo -e (James Westby)
+ - Complete handling of local backend directory for test (James Westby)
+ - When we have finished RefreshCache delete the udev file if it exists (Richard Hughes)
+ - Fix the race where firemware is requested by udev and and old file is overwritten (Richard Hughes)
+ - Actually print the transactions without using --verbose when using pkmon (Richard Hughes)
+ - Use a proper error enum when we have no more mirrors to try (Richard Hughes)
+ - Don't convert null sections of a package_id instead use an empty string (Richard Hughes)
+ - Turn off -Wformat-security as old gtk-doc generators break the build (Richard Hughes)
+ - Use a bitfield when searching for files in the catalog (Richard Hughes)
+ - Execute the pk_transaction_run handler in an idle callback (Richard Hughes)
+ - Allow the catalog list to be split with more than just ; chars (Richard Hughes)
+ - Fix up all the memory leaks found by the self tests in src and libpackagekit (Richard Hughes)
+ - Make PkBitfield a 64 bit type now we have 33 group enums (Richard Hughes)
+ - Emit custom exit status from PkSpawn so we can tell the exit status (Richard Hughes)
+ - Only return the icon name in PkExtra if it's an icon name, and not an actual icon (Richard Hughes)
+ - PkExtra is a singleton, so don't error out when we try to reuse it (Richard Hughes)
+ - Add GError parameters to all the public functions in PkControl that can fail (Richard Hughes)
+
+Backends:
+ - apt: Handle inconsistent source repo state (James Westby)
+ - apt: Only define the enhanced softwareproperties class if possible (Sebastian Heinlein)
+ - apt: Disable the sources list repository if it is inconsistent (Sebastian Heinlein)
+ - apt: Add missing support for cdrom sources (Sebastian Heinlein)
+ - apt: Check the cache at first in doUpdatePackages (Sebastian Heinlein)
+ - apt: Add support for collections. Based on the metapackages section (Sebastian Heinlein)
+ - apt: Use a dictonary for the section to group mapping (Sebastian Heinlein)
+ - apt: Make sure that we are can lock the pkg system before installing local packages (Sebastian Heinlein)
+ - apt: Fix path of the reboot-required stamp (Sebastian Heinlein)
+ - dummy: Make what-provides take some time, and also special case some codec names (Richard Hughes)
+ - dummy: Make install_files and get_depends a little smarter (Richard Hughes)
+ - smart: Only show the best requires/provides, and remove the package itself (Anders F Bjorklund)
+ - smart: Better error reporting for install/remove of non-existing package (Anders F Bjorklund)
+ - smart: Fix progress report bug that was stopping update_system (Anders F Bjorklund)
+ - smart: Add basename_filtering (Anders F Bjorklund)
+ - smart: Need to reset backend between runs, when using dispatching mode (Anders F Bjorklund)
+ - smart: Use filters for get_updates (Anders F Bjorklund)
+ - smart: Set special repo data for installed/local (Anders F Bjorklund)
+ - smart: Fix unicode decode errors by using a temporary variable (Anders F Bjorklund)
+ - smart: Avoid looking in external pathlists for installed packages (Anders F Bjorklund)
+ - smart: Send more status updates when using dispatcher (Anders F Bjorklund)
+ - smart: Avoid KeyError when no extra deps (Anders F Bjorklund)
+ - smart: Add yum/yast metapackages group (Anders F Bjorklund)
+ - smart: Add alternative groups from opensuse rpm (Anders F Bjorklund)
+ - smart: Search for rpm subgroups, if no group matches (Anders F Bjorklund)
+ - smart: Add collections_filtering (Anders F Bjorklund)
+ - smart: Set special status for collection packages (Anders F Bjorklund)
+ - smart: Report get_details error when package not found or in wrong channel (Anders F Bjorklund)
+ - smart: Report get_fileserror when package not found or in wrong channel (Anders F Bjorklund)
+ - smart: Add mandriva rpm groups (Anders F Bjorklund)
+ - smart: Sync smart groups with urpmi groups somewhat (Anders F Bjorklund)
+ - smart: Move emulators to virtualization (Anders F Bjorklund)
+ - smart: Add more rpm groups from opensuse (Anders F Bjorklund)
+ - urpmi: Warn the user when installation failed because of bad signatures (Aurelien Lefebvre)
+ - urpmi: Best error's handle in refresh-cache method (Aurelien Lefebvre)
+ - urpmi: get-detail method now supports package ids list (Aurelien Lefebvre)
+ - urpmi: get-update-details now supports package ids list argument (Aurelien Lefebvre)
+ - urpmi: get-requires now supports package ids list argument (Aurelien Lefebvre)
+ - urpmi: resolve now supports package ids list argument (Aurelien Lefebvre)
+ - urpmi: get-files now supports package ids list argument (Aurelien Lefebvre)
+ - urpmi: get-depends now supports package ids list argument (Aurelien Lefebvre)
+ - urpmi: get_distro_upgrades method implemented (Aurelien Lefebvre)
+ - urpmi: Start converting methods to a dispatched backend (Aurelien Lefebvre)
+ - urpmi: Added support for install-packages to install more than one package (Aurelien Lefebvre)
+ - yum: Disable the YumDirect code, it dont work (Tim Lauridsen)
+ - yum: Add some code to support metapackage installation (Tim Lauridsen)
+ - yum: More metapackage functionality (Tim Lauridsen)
+ - yum: Add some percentage to collections (Tim Lauridsen)
+ - yum: Remove-packages should not fail on meta package (Tim Lauridsen)
+ - yum: Make remove-packages handle meta packages (Tim Lauridsen)
+ - yum: Make get-requires handle meta packages (comps groups) (Tim Lauridsen)
+ - yum: Handle unknown group in search-group (Tim Lauridsen)
+ - yum: Make get-details work with meta-packages (comps groups) (Tim Lauridsen)
+ - yum: Now we depend on 3.2.19, rip out YumDirectSQL as we can use yum directly
+        rather than fumble about in the sqlite files (Richard Hughes)
+ - yum: Add a workaround when getObsoletesTuples fails, fixes fd#17528 (Richard Hughes)
+ - yum: Support the collections group (Richard Hughes)
+ - yum: Handle the collections filter like we do all the other filters (Richard Hughes)
+ - zypp: Update the repo location (Scott Reeves)
+ - zypp: Implement fate #301904 to warn for outdated repo (Stefan Haas)
+ - zypp: Added get_distro_upgrades (Stefan Haas)
+ - zypp: Reset force flag also if something fails (Stefan Haas)
+
 Version 0.3.2
 ~~~~~~~~~~~~~~
 Released: 2008-09-08
