@@ -468,6 +468,9 @@ class PackageKitBaseBackend:
             pkgs = args[0].split('|')
             self.get_update_detail(pkgs)
             self.finished();
+        elif cmd == 'get-distro-upgrades':
+            self.get_distro_upgrades()
+            self.finished();
         elif cmd == 'get-updates':
             filters = args[0]
             self.get_updates(filters)
@@ -549,9 +552,9 @@ class PackageKitBaseBackend:
             self.what_provides(filters,provides_type,search)
             self.finished();
         else:
-            print "command [%s] is not known" % cmd
-
-
+            errmsg = "command '%s' is not known" % cmd
+            self.error(ERROR_INTERNAL_ERROR,errmsg,exit=False)
+            self.finished();
 
 def exceptionHandler(typ,value,tb,base):
     # Restore original exception handler
@@ -567,7 +570,6 @@ def exceptionHandler(typ,value,tb,base):
             errmsg += '    %s;' % c
         # send the traceback to PackageKit
         base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
-
 
 def installExceptionHandler(base):
     sys.excepthook = lambda typ,value,tb: exceptionHandler(typ,value,tb,base)
