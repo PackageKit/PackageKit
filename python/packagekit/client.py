@@ -100,6 +100,31 @@ class PackageKitClient:
         self._wrapCall(pk_xn, method, {'Details' : details_cb})
         return result
 
+    def _wrapUpdateDetailsCall(self, pk_xn, method):
+        '''
+        Wraps a call which emits Finished, ErrorCode on completion and
+        Details for information returns a list of dicts with 'id',
+        'license', 'group', 'description', 'upstream_url', 'size'.keys
+        '''
+        result = []
+        details_cb =  lambda id, updates, obsoletes, vendor_url, bugzilla_url, \
+                             cve_url, restart, update_text, changelog, state, \
+                             issued, updated: result.append(
+        {"id" : id,
+         "updates"      : updates,
+         "obsoletes"    : obsoletes,
+         "vendor_url"   : vendor_url,
+         "bugzilla_url" : bugzilla_url,
+         "cve_url"      : cve_url,
+         "restart"      : restart,
+         "update_text"  : update_text,
+         "changelog"    : changelog,
+         "state"        : state,
+         "issued"       : issued,
+         "updated"      : updated})
+        self._wrapCall(pk_xn, method, {'UpdateDetail' : details_cb})
+        return result
+
     def _wrapReposCall(self, pk_xn, method):
         '''
         Wraps a call which emits Finished, ErrorCode and RepoDetail
@@ -134,19 +159,21 @@ class PackageKitClient:
         for all matches, where installed is a boolean and id and
         short_description are strings.
         '''
+        package = self._to_list(package) # Make sure we have a list
         xn = self._get_xn()
         return self._wrapPackageCall(xn, lambda : xn.Resolve(filter, package))
 
 
-    def GetDetails(self, package_id):
+    def GetDetails(self, package_ids):
         '''
-        Get details about a PackageKit package_id.
+        Get details about a PackageKit package_ids.
 
         Return dict with keys (id, license, group, description,
         upstream_url, size).
         '''
+        package_ids = self._to_list(package_ids) # Make sure we have a list
         xn = self._get_xn()
-        return self._wrapDetailsCall(xn, lambda : xn.GetDetails(package_id))
+        return self._wrapDetailsCall(xn, lambda : xn.GetDetails(package_ids))
 
     def SearchName(self, filter, name):
         '''
@@ -188,6 +215,7 @@ class PackageKitClient:
 
         On failure this throws a PackageKitError or a DBusException.
         '''
+        package_ids = self._to_list(package_ids) # Make sure we have a list
         self._doPackages(package_ids, progress_cb, 'install')
 
     def UpdatePackages(self, package_ids, progress_cb=None):
@@ -200,6 +228,7 @@ class PackageKitClient:
 
         On failure this throws a PackageKitError or a DBusException.
         '''
+        package_ids = self._to_list(package_ids) # Make sure we have a list
         self._doPackages(package_ids, progress_cb, 'update')
 
     def RemovePackages(self, package_ids, progress_cb=None, allow_deps=False,
@@ -215,6 +244,7 @@ class PackageKitClient:
 
         On failure this throws a PackageKitError or a DBusException.
         '''
+        package_ids = self._to_list(package_ids) # Make sure we have a list
         self._doPackages(package_ids, progress_cb, 'remove', allow_deps,
             auto_remove)
 
@@ -293,6 +323,7 @@ class PackageKitClient:
         '''
         Search for dependencies for packages
         '''
+        package_ids = self._to_list(package_ids) # Make sure we have a list
         xn = self._get_xn()
         return self._wrapPackageCall(xn,
                                      lambda : xn.GetDepends(filter,package_ids,recursive))
@@ -307,12 +338,18 @@ class PackageKitClient:
         '''
         Search for requirements for packages
         '''
+        package_ids = self._to_list(package_ids) # Make sure we have a list
         xn = self._get_xn()
         return self._wrapPackageCall(xn,
                                      lambda : xn.GetRequires(filter,package_ids,recursive))
 
     def GetUpdateDetail(self,package_ids):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
+        '''
+        Get details for updates
+        '''
+        package_ids = self._to_list(package_ids) # Make sure we have a list
+        xn = self._get_xn()
+        return self._wrapUpdateDetailsCall(xn, lambda : xn.GetUpdateDetail(package_ids))
 
     def GetDistroUpgrades(self):
         raise PackageKitError(ERROR_NOT_SUPPORTED)
@@ -320,7 +357,7 @@ class PackageKitClient:
     def InstallFiles(self,trusted,files):
         raise PackageKitError(ERROR_NOT_SUPPORTED)
 
-    def InstallSignatures(self.sig_type,key_id,package_id):
+    def InstallSignatures(self,sig_type,key_id,package_id):
         raise PackageKitError(ERROR_NOT_SUPPORTED)
 
     def RepoEnable(self,repo_id,enabled):
@@ -356,6 +393,12 @@ class PackageKitClient:
         '''convert 'unicode' to an encoded utf-8 byte string '''
         if isinstance(obj, unicode):
             obj = obj.encode('utf-8', errors)
+        return obj
+
+    def _to_list(self, obj, errors='replace'):
+        '''convert 'unicode' to an encoded utf-8 byte string '''
+        if isinstance(obj, str):
+            obj = [obj]
         return obj
 
     def _wait(self):
