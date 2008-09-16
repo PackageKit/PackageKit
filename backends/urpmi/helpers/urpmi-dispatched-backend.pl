@@ -22,8 +22,8 @@
 # get-update-detail             DONE
 # get-updates                   DONE
 # install-packages		DONE
-# refresh-cache
-# remove-packages
+# refresh-cache                 DONE
+# remove-packages               DONE
 # resolve
 # search-details
 # search-file
@@ -95,6 +95,9 @@ while(<STDIN>) {
   elsif($command eq "refresh-cache") {
     refresh_cache($urpm);
     urpm::media::configure($urpm);
+  }
+  elsif($command eq "remove-packages") {
+    remove_packages($urpm, \@args);
   }
 }
 
@@ -380,6 +383,66 @@ sub refresh_cache {
   };
   _finished();
 
+}
+
+sub remove_packages {
+
+  my ($urpm, $args) = @_;
+
+  my $notfound = 0;
+  my $notfound_callback = sub {
+    $notfound = 1;
+  };
+
+  my $urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 1);
+
+  my $allowdeps_text = shift @{$args};
+  my $allowdeps_option = $allowdeps_text eq "yes" ? 1 : 0;
+  my @packageidstab = @{$args};
+
+  my @names;
+  foreach(@packageidstab) {
+    my @pkg_id = (split(/;/, $_));
+    push @names, $pkg_id[0];
+  }
+
+  pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
+
+  my $state = {};
+  my @breaking_pkgs = ();
+  my @to_remove = urpm::select::find_packages_to_remove($urpm,
+    $state,
+    \@names,
+    callback_notfound => $notfound_callback,
+    callback_fuzzy => $notfound_callback,
+    callback_base => sub {
+      my $urpm = shift @_;
+      push @breaking_pkgs, @_;
+    }
+  );
+
+  if($notfound) {
+    pk_print_error(PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "Some selected packages are not installed on your system");
+  }
+  elsif(@breaking_pkgs) {
+    pk_print_error(PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, "Removing selected packages will break your system");
+  }
+  elsif(!$allowdeps_option && scalar(@to_remove) != scalar(@names)) {
+    pk_print_error(PK_ERROR_ENUM_TRANSACTION_ERROR, "Packages can't be removed because dependencies remove is forbidden");
+  }
+  else {
+    pk_print_status(PK_STATUS_ENUM_REMOVE);
+    urpm::install::install($urpm,
+      \@to_remove, {}, {},
+      callback_report_uninst => sub {
+        my @return = split(/ /, $_[0]);
+        pk_print_package(INFO_REMOVING, fullname_to_package_id($return[$#return]), "");
+      }
+    );
+  }
+
+  $urpmi_lock->unlock;
+  _finished();
 }
 
 sub _finished {
