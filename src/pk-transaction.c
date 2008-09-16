@@ -2102,7 +2102,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 
 	/* get the new list */
 	egg_debug ("%i more to process", array->len);
-	package_ids_new = pk_ptr_array_to_argv (array);
+	package_ids_new = pk_ptr_array_to_strv (array);
 
 	/* alter list */
 	g_strfreev (transaction->priv->cached_package_ids);

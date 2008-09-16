@@ -343,7 +343,7 @@ pk_strvalidate (const gchar *text)
 }
 
 /**
- * pk_ptr_array_to_argv:
+ * pk_ptr_array_to_strv:
  * @array: the GPtrArray of strings
  *
  * Form a composite string array of strings.
@@ -352,7 +352,7 @@ pk_strvalidate (const gchar *text)
  * Return value: the string array, or %NULL if invalid
  **/
 gchar **
-pk_ptr_array_to_argv (GPtrArray *array)
+pk_ptr_array_to_strv (GPtrArray *array)
 {
 	gchar **strv_array;
 	const gchar *value_temp;
@@ -373,7 +373,7 @@ pk_ptr_array_to_argv (GPtrArray *array)
 }
 
 /**
- * pk_argv_to_ptr_array:
+ * pk_strv_to_ptr_array:
  * @array: the gchar** array of strings
  *
  * Form a GPtrArray array of strings.
@@ -382,7 +382,7 @@ pk_ptr_array_to_argv (GPtrArray *array)
  * Return value: the string array, or %NULL if invalid
  **/
 GPtrArray *
-pk_argv_to_ptr_array (gchar **array)
+pk_strv_to_ptr_array (gchar **array)
 {
 	guint i;
 	guint length;
@@ -457,7 +457,7 @@ pk_va_list_to_argv (const gchar *string_first, va_list *args)
 	}
 
 	/* convert the array to a strv type */
-	array = pk_ptr_array_to_argv (ptr_array);
+	array = pk_ptr_array_to_strv (ptr_array);
 
 	/* get rid of the array, and free the contents */
 	g_ptr_array_foreach (ptr_array, (GFunc) g_free, NULL);
