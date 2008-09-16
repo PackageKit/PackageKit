@@ -88,10 +88,10 @@ gboolean zypp_is_changeable_media (const zypp::Url &url);
  */
 zypp::ResPool zypp_build_pool (gboolean include_local);
 
-/**  
-* check and warns the user that a repository may be outdated  
-*/  
-void warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool);  
+/**
+* check and warns the user that a repository may be outdated
+*/
+void warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool);
 
 /**
  * Build and return a ResPool that contains only the local resolvables.
@@ -140,7 +140,7 @@ zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
 gchar * zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable);
 
 /**
-  * Get the RepoInfo 
+  * Get the RepoInfo
   */
 zypp::RepoInfo
 zypp_get_Repository (PkBackend *backend, const gchar *alias);

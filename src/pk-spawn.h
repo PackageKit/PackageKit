@@ -33,7 +33,7 @@ G_BEGIN_DECLS
 #define PK_IS_SPAWN_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_SPAWN))
 #define PK_SPAWN_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_SPAWN, PkSpawnClass))
 #define PK_SPAWN_ERROR		(pk_spawn_error_quark ())
-#define PK_SPAWN_TYPE_ERROR	(pk_spawn_error_get_type ()) 
+#define PK_SPAWN_TYPE_ERROR	(pk_spawn_error_get_type ())
 
 typedef struct PkSpawnPrivate PkSpawnPrivate;
 
