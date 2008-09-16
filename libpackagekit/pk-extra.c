@@ -161,11 +161,10 @@ pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gc
 		col = col_name[i];
 		value = argv[i];
 		/* save the package name, and use it is the key */
-		if (egg_strequal (col, "package") && value != NULL) {
+		if (egg_strequal (col, "package") && value != NULL)
 			package = g_strdup (argv[i]);
-		} else if (egg_strequal (col, "summary") && value != NULL) {
+		else if (egg_strequal (col, "summary") && value != NULL)
 			summary = g_strdup (argv[i]);
-		}
 	}
 
 	/* sanity check */
@@ -530,7 +529,7 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 /**
  * pk_extra_set_database:
  * @extra: a valid #PkExtra instance
- * @filename: a valid database
+ * @filename: a valid database, or NULL to use the default or previously set value
  *
  * Return value: %TRUE if set correctly
  **/
@@ -544,15 +543,27 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 
+	/* already set? */
 	if (extra->priv->database != NULL) {
-		egg_warning ("cannot assign extra than once");
+		/* we don't care, just use the default */
+		if (filename == NULL) {
+			egg_debug ("continuing to use old database as we don't care");
+			return TRUE;
+		}
+		/* we care, but it's the same as last time */
+		if (egg_strequal (extra->priv->database, filename)) {
+			egg_debug ("continuing to use old database as same as before");
+			return TRUE;
+		}
+		/* bad */
+		egg_warning ("Using same PkExtra object with different databases: %s and %s",
+			     filename, extra->priv->database);
 		return FALSE;
 	}
 
 	/* if this is NULL, then assume default */
-	if (filename == NULL) {
+	if (filename == NULL)
 		filename = PK_EXTRA_DEFAULT_DATABASE_INTERNAL;
-	}
 
 	/* save for later */
 	extra->priv->database = g_strdup (filename);
@@ -717,25 +728,41 @@ pk_extra_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "set database");
 	ret = pk_extra_set_database (extra, "extra.db");
-	if (ret) {
+	if (ret)
 		egg_test_success (test, "%ims", egg_test_elapsed (test));
-	} else
+	else
 		egg_test_failed (test, NULL);
 
 	/************************************************************/
 	egg_test_title (test, "set database (again)");
 	ret = pk_extra_set_database (extra, "angry.db");
-	if (ret == FALSE) {
+	if (ret == FALSE)
 		egg_test_success (test, "%ims", egg_test_elapsed (test));
-	} else
+	else
+		egg_test_failed (test, NULL);
+
+	/************************************************************/
+	egg_test_title (test, "set database (same as original)");
+	ret = pk_extra_set_database (extra, "extra.db");
+	if (ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
+
+	/************************************************************/
+	egg_test_title (test, "set database (don't care)");
+	ret = pk_extra_set_database (extra, NULL);
+	if (ret)
+		egg_test_success (test, NULL);
+	else
 		egg_test_failed (test, NULL);
 
 	/************************************************************/
 	egg_test_title (test, "set locale explicit en");
 	ret = pk_extra_set_locale (extra, "en");
-	if (ret) {
+	if (ret)
 		egg_test_success (test, "%ims", egg_test_elapsed (test));
-	} else
+	else
 		egg_test_failed (test, NULL);
 
 	/************************************************************/
@@ -750,27 +777,25 @@ pk_extra_test (EggTest *test)
 	text = pk_extra_get_locale (extra);
 	if (egg_strequal (text, "en"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "locale was %s", text);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "insert localised data");
 	ret = pk_extra_set_data_locale (extra, "gnome-power-manager", "Power manager for the GNOME's desktop");
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed!");
-	}
+
 
 	/************************************************************/
 	egg_test_title (test, "retrieve localised data");
 	summary = pk_extra_get_summary (extra, "gnome-power-manager");
-	if (summary != NULL) {
+	if (summary != NULL)
 		egg_test_success (test, "%s", summary);
-	} else {
+	else
 		egg_test_failed (test, "failed!");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "set locale implicit en_GB");
@@ -790,80 +815,70 @@ pk_extra_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "retrieve localised data2");
 	summary = pk_extra_get_summary (extra, "gnome-power-manager");
-	if (summary != NULL) {
+	if (summary != NULL)
 		egg_test_success (test, "%s", summary);
-	} else {
+	else
 		egg_test_failed (test, "failed!");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "insert package data");
 	ret = pk_extra_set_data_package (extra, "gnome-power-manager", "gpm-main.png", "gnome-power-manager");
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed!");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "retrieve package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-power-manager");
 	exec = pk_extra_get_exec (extra, "gnome-power-manager");
-	if (egg_strequal (icon, "gpm-main.png")) {
+	if (egg_strequal (icon, "gpm-main.png"))
 		egg_test_success (test, "%s:%s", icon, exec);
-	} else {
+	else
 		egg_test_failed (test, "%s:%s", icon, exec);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "insert new package data");
 	ret = pk_extra_set_data_package (extra, "gnome-power-manager", "gpm-prefs.png", "gnome-power-preferences");
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed!");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "retrieve new package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-power-manager");
 	exec = pk_extra_get_exec (extra, "gnome-power-manager");
 	if (egg_strequal (icon, "gpm-prefs.png") &&
-	    egg_strequal (exec, "gnome-power-preferences")) {
+	    egg_strequal (exec, "gnome-power-preferences"))
 		egg_test_success (test, "%s:%s", icon, exec);
-	} else {
+	else
 		egg_test_failed (test, "%s:%s", icon, exec);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "retrieve missing package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-moo-manager");
 	exec = pk_extra_get_exec (extra, "gnome-moo-manager");
-	if (icon == NULL && exec == NULL) {
+	if (icon == NULL && exec == NULL)
 		egg_test_success (test, "passed");
-	} else {
+	else
 		egg_test_failed (test, "%s:%s", icon, exec);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "do lots of loops");
 	for (i=0;i<250;i++) {
 		summary = pk_extra_get_summary (extra, "gnome-power-manager");
-		if (summary == NULL) {
+		if (summary == NULL)
 			egg_test_failed (test, "failed to get good!");
-		}
 		summary = pk_extra_get_summary (extra, "gnome-moo-manager");
-		if (summary != NULL) {
+		if (summary != NULL)
 			egg_test_failed (test, "failed to not get bad 2!");
-		}
 		summary = pk_extra_get_summary (extra, "gnome-moo-manager");
-		if (summary != NULL) {
+		if (summary != NULL)
 			egg_test_failed (test, "failed to not get bad 3!");
-		}
 		summary = pk_extra_get_summary (extra, "gnome-moo-manager");
-		if (summary != NULL) {
+		if (summary != NULL)
 			egg_test_failed (test, "failed to not get bad 4!");
-		}
 	}
 	egg_test_success (test, "%i get_summary loops completed in %ims", i*5, egg_test_elapsed (test));
 
