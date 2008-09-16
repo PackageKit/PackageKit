@@ -16,6 +16,7 @@ packagekitpython_PYTHON =				\
 	pkdbus.py					\
 	progress.py					\
 	package.py					\
+	client.py					\
 	$(NULL)
 
 clean-local :
