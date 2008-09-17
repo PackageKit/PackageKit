@@ -288,7 +288,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
     def _show_meta_package(self,grpid,fltlist=[]):
         show_avail = FILTER_INSTALLED not in fltlist
         show_inst = FILTER_NOT_INSTALLED not in fltlist
-        id = "%s;meta;meta;meta" % grpid
+        id = "%s;;;meta" % grpid
         grp = self.yumbase.comps.return_group(grpid)
         if grp:
             if grp.installed:
@@ -501,12 +501,11 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         grp = None
         if len(id.split(';')) > 1:
             # Split up the id
-            (n,idver,a,d) = self.get_package_from_id(id)
-            if idver == 'meta' and a == 'meta' and d == 'meta':
-                meta = n
-                grp = self.yumbase.comps.return_group(meta)
+            (name,idver,a,repo) = self.get_package_from_id(id)
+            if repo == 'meta':
+                grp = self.yumbase.comps.return_group(name)
                 if not grp:
-                    self.error(ERROR_PACKAGE_NOT_FOUND,"The Group %s dont exist" % meta)
+                    self.error(ERROR_PACKAGE_NOT_FOUND,"The Group %s dont exist" % name)
         return grp
 
     def _findPackage(self,id):
@@ -1307,7 +1306,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         for package in package_ids:
             grp = self._is_meta_package(package)
             if grp:
-                id = "%s;meta;meta;meta" % grp.groupid
+                id = "%s;;;meta" % grp.groupid
                 desc = grp.description
                 desc = desc.replace('\n\n',';')
                 desc = desc.replace('\n',' ')
