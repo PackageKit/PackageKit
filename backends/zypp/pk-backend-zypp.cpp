@@ -1756,7 +1756,7 @@ backend_what_provides_thread (PkBackend *backend)
 
 
 		// solver run
-		zypp::ResPool pool = zypp::ResPool::instance ();
+		zypp::ResPool pool = zypp_build_pool(true);
 		zypp::Resolver solver(pool);
 
 		if (solver.resolvePool () == FALSE) {
