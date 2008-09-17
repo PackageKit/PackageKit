@@ -1397,7 +1397,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         elif len(pkgs) == 1:
             # check if there are any updates to the preupgrade package
             po = pkgs[0]
-            pkgs = self.yumbase.pkgSack.returnNewestByName(name='kernel')
+            pkgs = self.yumbase.pkgSack.returnNewestByName(name='preupgrade')
             if pkgs:
                 newest = pkgs[0]
                 if newest.EVR > po.EVR:
