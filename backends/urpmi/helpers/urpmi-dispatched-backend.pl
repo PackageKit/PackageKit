@@ -34,9 +34,14 @@
 #
 
 use strict;
+local $| = 1; # stdout autoflush
 
 use lib;
 use File::Basename;
+
+BEGIN {
+  push @INC, dirname($0);
+}
 
 use URPM;
 use urpm;
@@ -55,76 +60,87 @@ use perl_packagekit::prints;
 
 use MDK::Common;
 
-BEGIN {
-  push @INC, dirname($0);
-}
-
 my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
-  
+dispatch_command($urpm, \@ARGV);
+print "finished\n";
+
 while(<STDIN>) {
   chomp($_);
   my @args = split (/ /, $_);
-  my $command = shift(@args);
+  dispatch_command($urpm, \@args);
+  print "finished\n";
+}
+
+sub dispatch_command {
+
+  my ($urpm, $args) = @_;
+
+  my $command = shift(@{$args});
   if($command eq "get-depends") {
-    get_depends($urpm, \@args);
+    get_depends($urpm, $args);
   }
   elsif($command eq "get-details") {
-    get_details($urpm, \@args);
+    get_details($urpm, $args);
   }
   elsif($command eq "get-distro-upgrades") {
     get_distro_upgrades();
   }
   elsif($command eq "get-files") {
-    get_files($urpm, \@args);
+    get_files($urpm, $args);
   }
   elsif($command eq "get-packages") {
-    get_packages($urpm, \@args);
+    get_packages($urpm, $args);
   }
   elsif($command eq "get-requires") {
-    get_requires($urpm, \@args);
+    get_requires($urpm, $args);
   }
   elsif($command eq "get-update-detail") {
-    get_update_detail($urpm, \@args);
+    get_update_detail($urpm, $args);
   }
   elsif($command eq "get-updates") {
-    get_updates($urpm, \@args);
+    get_updates($urpm, $args);
   }
   elsif($command eq "install-packages") {
-    install_packages($urpm, \@args);
+    install_packages($urpm, $args);
+    urpm::media::configure($urpm);
   }
   elsif($command eq "search-name") {
-    search_name($urpm, \@args);
+    search_name($urpm, $args);
   }
   elsif($command eq "refresh-cache") {
     refresh_cache($urpm);
     urpm::media::configure($urpm);
   }
   elsif($command eq "remove-packages") {
-    remove_packages($urpm, \@args);
+    remove_packages($urpm, $args);
+    urpm::media::configure($urpm);
   }
   elsif($command eq "resolve") {
-    resolve($urpm, \@args);
+    resolve($urpm, $args);
   }
   elsif($command eq "search-details") {
-    search_details($urpm, \@args);
+    search_details($urpm, $args);
   }
   elsif($command eq "search-file") {
-    search_file($urpm, \@args);
+    search_file($urpm, $args);
   }
   elsif($command eq "search-group") {
-    search_group($urpm, \@args);
+    search_group($urpm, $args);
   }
   elsif($command eq "update-packages") {
-    update_packages($urpm, \@args);
+    update_packages($urpm, $args);
+    urpm::media::configure($urpm);
   }
   elsif($command eq "update-system") {
     update_system($urpm);
+    urpm::media::configure($urpm);
   }
+  elsif($command eq "exit") {
+    exit 0;
+  }
+  else {}
 }
-
-
-
 sub get_depends {
 
   my ($urpm, $args) = @_;
