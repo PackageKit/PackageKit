@@ -337,6 +337,15 @@ gboolean
 pk_spawn_exit (PkSpawn *spawn)
 {
 	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
+
+	/* check if already sending exit */
+	if (spawn->priv->is_sending_exit) {
+		egg_warning ("already sending exit, ignoring");
+		return FALSE;
+	}
+
 	spawn->priv->is_sending_exit = TRUE;
 	ret = pk_spawn_send_stdin (spawn, "exit");
 	return ret;
@@ -832,6 +841,14 @@ pk_spawn_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed to close dispatcher");
+
+	/************************************************************/
+	egg_test_title (test, "ask dispatcher to close (again, should be closing)");
+	ret = pk_spawn_exit (spawn);
+	if (!ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "attempted to close twice");
 
 	/* this may take a while */
 	egg_test_loop_wait (test, 100);
