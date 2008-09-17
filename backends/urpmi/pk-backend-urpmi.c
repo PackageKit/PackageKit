@@ -120,7 +120,7 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "search-name.pl", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-name", filters_text, search, NULL);
 	g_free (filters_text);
 }
 
@@ -132,7 +132,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "get-details.pl", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-details", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -144,7 +144,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "get-files.pl", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-files", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -158,7 +158,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-depends.pl", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-depends", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -171,7 +171,7 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-updates.pl", filters_text, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-updates", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -183,7 +183,7 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "get-update-detail.pl", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-update-detail", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -200,7 +200,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "refresh-cache.pl", NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "refresh-cache", NULL);
 }
 
 /**
@@ -220,7 +220,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "install-packages.pl", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "install-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -234,7 +234,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "remove-packages.pl", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "remove-packages", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -246,7 +246,7 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *searc
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "search-group.pl", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-group", filters_text, search, NULL);
 	g_free (filters_text);
 }
 
@@ -258,7 +258,7 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-packages.pl", filters_text, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-packages", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -272,7 +272,7 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-requires.pl", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -285,7 +285,7 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "search-details.pl", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-details", filters_text, search, NULL);
 	g_free (filters_text);
 }
 
@@ -297,7 +297,7 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "search-file.pl", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-file", filters_text, search, NULL);
 	g_free (filters_text);
 }
 
@@ -311,7 +311,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 	gchar *package_ids_temp;
 	filters_text = pk_filter_bitfield_to_text (filters);
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "resolve.pl", filters_text, package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "resolve", filters_text, package_ids_temp, NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -334,7 +334,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "update-packages.pl", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "update-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -344,7 +344,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_update_system (PkBackend *backend)
 {
-	pk_backend_spawn_helper (spawn, "update-system.pl", NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "update-system", NULL);
 }
 
 /**
@@ -353,7 +353,7 @@ backend_update_system (PkBackend *backend)
 static void
 backend_get_distro_upgrades (PkBackend *backend)
 {
-	pk_backend_spawn_helper (spawn, "get-distro-upgrades.pl", NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-distro-upgrades", NULL);
 }
 
 
