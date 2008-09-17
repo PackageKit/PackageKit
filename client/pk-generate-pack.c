@@ -531,7 +531,7 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 		}
 
 		/* convert to list of package_ids */
-		package_ids = pk_package_list_to_argv (list);
+		package_ids = pk_package_list_to_strv (list);
 		ret = pk_generate_pack_download_only (client, package_ids, directory);
 		g_strfreev (package_ids);
 	}
