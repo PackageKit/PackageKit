@@ -1758,6 +1758,7 @@ backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *pa
 static gboolean
 backend_what_provides_thread (PkBackend *backend)
 {
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	const gchar *search;
 	search = pk_backend_get_string (backend, "search");
 	zypp::Capability cap (search);
@@ -1787,17 +1788,8 @@ backend_what_provides_thread (PkBackend *backend)
 
 			gboolean hit = FALSE;
 
-			if (it->status ().isToBeUninstalled ()) {
-				status = PK_INFO_ENUM_REMOVING;
-				hit = TRUE;
-			}else if (it->status ().isToBeInstalled ()) {
-				status = PK_INFO_ENUM_INSTALLING;
-				hit = TRUE;
-			}else if (it->status ().isToBeUninstalledDueToUpgrade ()) {
-				status = PK_INFO_ENUM_UPDATING;
-				hit = TRUE;
-			}else if (it->status ().isToBeUninstalledDueToObsolete ()) {
-				status = PK_INFO_ENUM_OBSOLETING;
+			if (it->status ().isToBeInstalled ()) {
+				status = PK_INFO_ENUM_AVAILABLE;
 				hit = TRUE;
 			}
 
