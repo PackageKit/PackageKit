@@ -181,17 +181,15 @@ pk_conf_init (PkConf *conf)
 
 	conf->priv = PK_CONF_GET_PRIVATE (conf);
 	path = pk_conf_get_filename ();
-	if (path == NULL) {
+	if (path == NULL)
 		egg_error ("config file not found");
-	}
 	egg_debug ("using config file '%s'", path);
 	conf->priv->keyfile = g_key_file_new ();
 	ret = g_key_file_load_from_file (conf->priv->keyfile, path,
 					 G_KEY_FILE_NONE, NULL);
 	g_free (path);
-	if (!ret) {
+	if (!ret)
 		egg_error ("failed to parse config file!");
-	}
 }
 
 /**
@@ -226,7 +224,6 @@ pk_conf_test (EggTest *test)
 	if (!egg_test_start (test, "PkConf"))
 		return;
 
-
 	/************************************************************/
 	egg_test_title (test, "get an instance");
 	conf = pk_conf_new ();
@@ -238,40 +235,36 @@ pk_conf_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get the default backend");
 	text = pk_conf_get_string (conf, "DefaultBackend");
-	if (text != PK_CONF_VALUE_STRING_MISSING) {
+	if (text != PK_CONF_VALUE_STRING_MISSING)
 		egg_test_success (test, "got default backend '%s'", text);
-	} else {
+	else
 		egg_test_failed (test, "got NULL!");
-	}
 	g_free (text);
 
 	/************************************************************/
 	egg_test_title (test, "get a string that doesn't exist");
 	text = pk_conf_get_string (conf, "FooBarBaz");
-	if (text == PK_CONF_VALUE_STRING_MISSING) {
+	if (text == PK_CONF_VALUE_STRING_MISSING)
 		egg_test_success (test, "got NULL", text);
-	} else {
+	else
 		egg_test_failed (test, "got return value '%s'", text);
-	}
 	g_free (text);
 
 	/************************************************************/
 	egg_test_title (test, "get the shutdown timeout");
 	value = pk_conf_get_int (conf, "ShutdownTimeout");
-	if (value != PK_CONF_VALUE_INT_MISSING) {
+	if (value != PK_CONF_VALUE_INT_MISSING)
 		egg_test_success (test, "got ShutdownTimeout '%i'", value);
-	} else {
+	else
 		egg_test_failed (test, "got %i", value);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "get an int that doesn't exist");
 	value = pk_conf_get_int (conf, "FooBarBaz");
-	if (value == PK_CONF_VALUE_INT_MISSING) {
+	if (value == PK_CONF_VALUE_INT_MISSING)
 		egg_test_success (test, "got %i", value);
-	} else {
+	else
 		egg_test_failed (test, "got return value '%i'", value);
-	}
 
 	g_object_unref (conf);
 

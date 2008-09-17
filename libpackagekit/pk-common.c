@@ -61,9 +61,8 @@ pk_get_machine_type (void)
 	struct utsname buf;
 
 	retval = uname (&buf);
-	if (retval != 0) {
+	if (retval != 0)
 		return g_strdup ("unknown");
-	}
 	return g_strdup (buf.machine);
 }
 

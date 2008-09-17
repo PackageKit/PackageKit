@@ -1188,9 +1188,8 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATES;
@@ -1211,9 +1210,8 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1266,9 +1264,8 @@ pk_client_update_system (PkClient *client, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
@@ -1303,9 +1300,8 @@ pk_client_update_system (PkClient *client, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -1334,9 +1330,8 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_NAME;
@@ -1359,9 +1354,8 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1391,9 +1385,8 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_DETAILS;
@@ -1416,9 +1409,8 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1446,9 +1438,8 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_GROUP;
@@ -1471,9 +1462,8 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1501,9 +1491,8 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_FILE;
@@ -1526,9 +1515,8 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1569,9 +1557,8 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
@@ -1596,9 +1583,8 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1687,9 +1673,8 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_PACKAGES;
@@ -1710,9 +1695,8 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1786,9 +1770,8 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
@@ -1813,9 +1796,8 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1850,9 +1832,8 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_WHAT_PROVIDES;
@@ -1879,9 +1860,8 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1920,9 +1900,8 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
@@ -1941,9 +1920,8 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1970,9 +1948,8 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_ROLLBACK;
@@ -1991,9 +1968,8 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -2024,9 +2000,8 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_RESOLVE;
@@ -2049,9 +2024,8 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -2090,9 +2064,8 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DETAILS;
@@ -2111,9 +2084,8 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -2139,9 +2111,8 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
@@ -2158,9 +2129,8 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -2198,9 +2168,8 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_FILES;
@@ -2219,9 +2188,8 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -2292,9 +2260,8 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
@@ -2326,9 +2293,8 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2381,9 +2347,8 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REFRESH_CACHE;
@@ -2413,9 +2378,8 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2477,9 +2441,8 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
@@ -2509,9 +2472,8 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2578,9 +2540,8 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_SIGNATURE;
@@ -2611,9 +2572,8 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2675,9 +2635,8 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
@@ -2711,9 +2670,8 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2799,9 +2757,8 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* convert all the relative paths to absolute ones */
 	files = g_strdupv (files_rel);
@@ -2847,9 +2804,8 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	g_strfreev (files);
@@ -2876,9 +2832,8 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REPO_LIST;
@@ -2900,9 +2855,8 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	return ret;
 }
@@ -2952,9 +2906,8 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_ACCEPT_EULA;
@@ -2983,9 +2936,8 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -3038,9 +2990,8 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_ENABLE;
@@ -3069,9 +3020,8 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -3133,9 +3083,8 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_SET_DATA;
@@ -3164,9 +3113,8 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -3225,9 +3173,8 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
