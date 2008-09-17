@@ -96,6 +96,12 @@ if __name__ == '__main__':
             print "Removing : %s " % pkg[0]['id']
             pk.RemovePackages(pkg[0]['id'], cb)
 
+    if "download-packages" in cmd:
+        print '---- DownloadPackages() -----'
+        pkg = pk.Resolve(FILTER_NOT_INSTALLED, 'yumex')
+        if pkg:
+            print "Installing : %s " % pkg[0]['id']
+            print pk.DownloadPackages(pkg[0]['id'])
 
     pk.SuggestDaemonQuit()
 

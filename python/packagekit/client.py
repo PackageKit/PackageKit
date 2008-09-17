@@ -140,6 +140,19 @@ class PackageKitClient:
         self._wrapCall(pk_xn, method, {'RepoDetail' : repo_cb})
         return result
 
+    def _wrapFilesCall(self, pk_xn, method):
+        '''
+        Wraps a call which emits Finished, ErrorCode and Files
+        for information returns a list of dicts with 'id',
+        'files'
+        '''
+        result = []
+        files_cb = lambda id, files: result.append
+        ({'id' : str(id),
+          'files' : files.split(';')})
+        self._wrapCall(pk_xn, method, {'Files' : files_cb})
+        return result
+
 
     def SuggestDaemonQuit(self):
         '''Ask the PackageKit daemon to shutdown.'''
@@ -217,7 +230,8 @@ class PackageKitClient:
         On failure this throws a PackageKitError or a DBusException.
         '''
         package_ids = self._to_list(package_ids) # Make sure we have a list
-        self._doPackages(package_ids, progress_cb, 'install')
+        xn = self._get_xn()
+        self._doPackages( xn, lambda : xn.InstallPackages(package_ids), progress_cb)
 
     def UpdatePackages(self, package_ids, progress_cb=None):
         '''UPdate a list of package IDs.
@@ -230,7 +244,8 @@ class PackageKitClient:
         On failure this throws a PackageKitError or a DBusException.
         '''
         package_ids = self._to_list(package_ids) # Make sure we have a list
-        self._doPackages(package_ids, progress_cb, 'update')
+        xn = self._get_xn()
+        self._doPackages(xn, lambda : xn.UpdatePackages(package_ids), progress_cb)
 
     def RemovePackages(self, package_ids, progress_cb=None, allow_deps=False,
         auto_remove=True):
@@ -246,8 +261,8 @@ class PackageKitClient:
         On failure this throws a PackageKitError or a DBusException.
         '''
         package_ids = self._to_list(package_ids) # Make sure we have a list
-        self._doPackages(package_ids, progress_cb, 'remove', allow_deps,
-            auto_remove)
+        xn = self._get_xn()
+        self._doPackages(xn, lambda : xn.RemovePackages(package_ids, allow_deps, auto_remove), progress_cb)
 
     def RefreshCache(self, force=False):
         '''
@@ -318,7 +333,9 @@ class PackageKitClient:
         self._wrapPackageCall(xn, lambda : xn.UpdateSystem())
 
     def DownloadPackages(self,package_ids):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
+        package_ids = self._to_list(package_ids) # Make sure we have a list
+        xn = self._get_xn()
+        return self._wrapFilesCall(xn,lambda : xn.DownloadPackages(package_ids))
 
     def GetDepends(self,filter,package_ids,recursive=False):
         '''
@@ -330,10 +347,10 @@ class PackageKitClient:
                                      lambda : xn.GetDepends(filter,package_ids,recursive))
 
     def GetFiles(self,package_ids):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
+        package_ids = self._to_list(package_ids) # Make sure we have a list
+        xn = self._get_xn()
+        return self._wrapFilesCall(xn,lambda : xn.GetFiles(package_ids))
 
-    def GetRepoList(self,filter):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
 
     def GetRequires(self,filter,package_ids,recursive=False):
         '''
@@ -359,16 +376,22 @@ class PackageKitClient:
         raise PackageKitError(ERROR_NOT_SUPPORTED)
 
     def InstallSignatures(self,sig_type,key_id,package_id):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
-
-    def RepoEnable(self,repo_id,enabled):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
+        '''
+        Install packages signing keys used to validate packages
+        '''
+        xn = self._get_xn()
+        self._wrapBasicCall(xn, lambda : xn.InstallSignatures(sig_type,key_id,package_id))
 
     def RepoSetData(self,repo_id,parameter,value):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
+        '''
+        Change custom parameter in Repository Configuration
+        '''
+        xn = self._get_xn()
+        self._wrapBasicCall(xn, lambda : xn.RepoSetData(repo_id,parameter,value))
 
     def Rollback(self,transaction_id):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
+        xn = self._get_xn()
+        self._wrapBasicCall(xn, lambda : xn.Rollback(transaction_id))
 
     def WhatProvides(self,provide_type,search):
         '''
@@ -379,10 +402,12 @@ class PackageKitClient:
                                      lambda : xn.WhatProvides(provide_type,search))
 
     def SetLocale(self,code):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
+        xn = self._get_xn()
+        self._wrapBasicCall(xn, lambda : xn.SetLocale(code))
 
     def AcceptEula(self,eula_id):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
+        xn = self._get_xn()
+        self._wrapBasicCall(xn, lambda : xn.AcceptEula(eula_id))
 
 
 
@@ -446,32 +471,19 @@ class PackageKitClient:
                                                 (dbus.UInt32)(xid),
                                                 (dbus.UInt32)(os.getpid()))
 
-    def _doPackages(self, package_ids, progress_cb, action,
-        allow_deps=None, auto_remove=None):
+    def _doPackages(self, pk_xn, method, progress_cb):
         '''Shared implementation of InstallPackages,UpdatePackages and RemovePackages.'''
 
         self._status = None
         self._allow_cancel = False
 
-        pk_xn = self._get_xn()
         if progress_cb:
             pk_xn.connect_to_signal('StatusChanged', self._h_status)
             pk_xn.connect_to_signal('AllowCancel', self._h_allowcancel)
             pk_xn.connect_to_signal('ProgressChanged', self._h_progress)
             self._progress_cb = progress_cb
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        if action == "install":
-           polkit_auth_wrapper(lambda : pk_xn.InstallPackages(package_ids))
-        elif action == "remove":
-            polkit_auth_wrapper(lambda : pk_xn.RemovePackages(package_ids, allow_deps, auto_remove))
-        elif action == "update":
-            polkit_auth_wrapper(lambda : pk_xn.UpdatePackages(package_ids))
-        self._wait()
-        if self._error_enum:
-            raise PackageKitError(self._error_enum)
+        self._wrapBasicCall(pk_xn, method)
         if self._finished_status != 'success':
-            print self._finished_status
             raise PackageKitError('internal-error')
 
     def _get_xn(self):
