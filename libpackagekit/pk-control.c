@@ -591,7 +591,6 @@ pk_control_transaction_list_refresh (PkControl *control, GError **error)
 		g_strfreev (control->priv->array);
 		control->priv->array = NULL;
 	}
-	error = NULL;
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetTransactionList", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRV, &control->priv->array,
@@ -828,9 +827,8 @@ pk_control_init (PkControl *control)
 	/* get a connection to the engine object */
 	control->priv->proxy = dbus_g_proxy_new_for_name (control->priv->connection,
 							 PK_DBUS_SERVICE, PK_DBUS_PATH, PK_DBUS_INTERFACE);
-	if (control->priv->proxy == NULL) {
+	if (control->priv->proxy == NULL)
 		egg_error ("Cannot connect to PackageKit.");
-	}
 
 	dbus_g_proxy_add_signal (control->priv->proxy, "TransactionListChanged",
 				 G_TYPE_STRV, G_TYPE_INVALID);
