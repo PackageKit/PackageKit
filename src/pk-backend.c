@@ -848,7 +848,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	if (status == PK_STATUS_ENUM_WAIT) {
 		egg_warning ("backend tried to WAIT, only the runner should set this value");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "backends shouldn't use STATUS_WAIT");
+				    "%s shouldn't use STATUS_WAIT", pk_role_enum_to_text (backend->priv->role));
 		return FALSE;
 	}
 
@@ -856,7 +856,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	if (status == PK_STATUS_ENUM_SETUP && backend->priv->status != PK_STATUS_ENUM_WAIT) {
 		egg_warning ("backend tried to SETUP, but should be in WAIT");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Tried to SETUP when not in WAIT");
+				    "%s to SETUP when not in WAIT", pk_role_enum_to_text (backend->priv->role));
 		return FALSE;
 	}
 
@@ -1548,14 +1548,14 @@ pk_backend_finished (PkBackend *backend)
 	/* are we trying to finish in init? */
 	if (backend->priv->during_initialize) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "You can't call pk_backend_finished in backend_initialize!");
+				    "%s can't call pk_backend_finished in backend_initialize!", role_text);
 		return FALSE;
 	}
 
 	/* check we have not already finished */
 	if (backend->priv->finished) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Backends cannot request Finished more than once!");
+				    "%s cannot request Finished more than once!", role_text);
 		return FALSE;
 	}
 
@@ -1566,7 +1566,7 @@ pk_backend_finished (PkBackend *backend)
 	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	     backend->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Backends should send a Package() for this role!");
+				    "Backends should send a Package() for %s!", role_text);
 	}
 
 	/* if we set an error code notifier, clear */

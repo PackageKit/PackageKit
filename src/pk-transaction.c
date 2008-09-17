@@ -429,8 +429,8 @@ pk_transaction_error_code_cb (PkBackend *backend, PkErrorCodeEnum code,
 
 	if (code == PK_ERROR_ENUM_UNKNOWN) {
 		pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "backend emitted 'unknown error' rather than a specific error "
-				    "- this is a backend problem and should be fixed!");
+				    "%s emitted 'unknown error' rather than a specific error "
+				    "- this is a backend problem and should be fixed!", pk_role_enum_to_text (transaction->priv->role));
 	}
 
 	code_text = pk_error_enum_to_text (code);
@@ -641,6 +641,7 @@ static void
 pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransaction *transaction)
 {
 	const gchar *info_text;
+	const gchar *role_text;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -651,14 +652,17 @@ pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransa
 		return;
 	}
 
+	/* we need this in warnings */
+	role_text = pk_role_enum_to_text (transaction->priv->role);
+
 	/* check the backend is doing the right thing */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (obj->info == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "backend emitted 'installed' rather than 'installing' "
-					    "- you need to do the package *before* you do the action");
+					    "%s emitted 'installed' rather than 'installing' "
+					    "- you need to do the package *before* you do the action", role_text);
 			return;
 		}
 	}
@@ -667,16 +671,16 @@ pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransa
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 		if (obj->info == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "backend emitted package that was installed when "
-					    "the ~installed filter is in place");
+					    "%s emitted package that was installed when "
+					    "the ~installed filter is in place", role_text);
 			return;
 		}
 	}
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_INSTALLED)) {
 		if (obj->info == PK_INFO_ENUM_AVAILABLE) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "backend emitted package that was ~installed when "
-					    "the installed filter is in place");
+					    "%s emitted package that was ~installed when "
+					    "the installed filter is in place", role_text);
 			return;
 		}
 	}
