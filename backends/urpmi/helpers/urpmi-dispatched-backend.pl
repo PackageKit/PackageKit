@@ -103,6 +103,7 @@ sub dispatch_command {
   }
   elsif($command eq "install-packages") {
     install_packages($urpm, $args);
+    urpm::media::configure($urpm);
   }
   elsif($command eq "search-name") {
     search_name($urpm, $args);
@@ -113,6 +114,7 @@ sub dispatch_command {
   }
   elsif($command eq "remove-packages") {
     remove_packages($urpm, $args);
+    urpm::media::configure($urpm);
   }
   elsif($command eq "resolve") {
     resolve($urpm, $args);
@@ -128,9 +130,11 @@ sub dispatch_command {
   }
   elsif($command eq "update-packages") {
     update_packages($urpm, $args);
+    urpm::media::configure($urpm);
   }
   elsif($command eq "update-system") {
     update_system($urpm);
+    urpm::media::configure($urpm);
   }
   elsif($command eq "exit") {
     exit 0;
