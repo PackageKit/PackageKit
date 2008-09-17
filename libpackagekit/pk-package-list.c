@@ -132,7 +132,7 @@ pk_package_list_add_list (PkPackageList *plist, PkPackageList *list)
  * pk_package_list_to_string:
  **/
 gchar *
-pk_package_list_to_string (PkPackageList *plist)
+pk_package_list_to_string (const PkPackageList *plist)
 {
 	PkPackageObj *obj;
 	guint i;
@@ -162,10 +162,10 @@ pk_package_list_to_string (PkPackageList *plist)
 }
 
 /**
- * pk_package_list_to_argv:
+ * pk_package_list_to_strv:
  **/
 gchar **
-pk_package_list_to_argv (PkPackageList *plist)
+pk_package_list_to_strv (const PkPackageList *plist)
 {
 	PkPackageObj *obj;
 	GPtrArray *array;
@@ -195,7 +195,7 @@ pk_package_list_to_argv (PkPackageList *plist)
  * pk_package_list_get_size:
  **/
 guint
-pk_package_list_get_size (PkPackageList *plist)
+pk_package_list_get_size (const PkPackageList *plist)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), 0);
 	return plist->priv->array->len;
@@ -289,7 +289,7 @@ pk_package_list_sort_info (PkPackageList *plist)
  * pk_package_list_get_obj:
  **/
 const PkPackageObj *
-pk_package_list_get_obj (PkPackageList *plist, guint item)
+pk_package_list_get_obj (const PkPackageList *plist, guint item)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
 	if (item >= plist->priv->array->len) {
@@ -321,7 +321,7 @@ pk_package_list_clear (PkPackageList *plist)
  * pk_package_list_contains:
  **/
 gboolean
-pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
+pk_package_list_contains (const PkPackageList *plist, const gchar *package_id)
 {
 	PkPackageObj *obj;
 	guint i;
@@ -407,7 +407,7 @@ pk_package_list_remove_obj (PkPackageList *plist, const PkPackageObj *obj)
  * pk_package_list_contains_obj:
  **/
 gboolean
-pk_package_list_contains_obj (PkPackageList *plist, const PkPackageObj *obj)
+pk_package_list_contains_obj (const PkPackageList *plist, const PkPackageObj *obj)
 {
 	PkPackageObj *obj_temp;
 	guint i;
@@ -432,7 +432,7 @@ pk_package_list_contains_obj (PkPackageList *plist, const PkPackageObj *obj)
  * pk_package_list_to_file:
  **/
 gboolean
-pk_package_list_to_file (PkPackageList *plist, const gchar *filename)
+pk_package_list_to_file (const PkPackageList *plist, const gchar *filename)
 {
 	PkPackageObj *obj;
 	guint i;
@@ -628,7 +628,7 @@ pk_package_list_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "make sure argv is correct");
-	argv = pk_package_list_to_argv (plist);
+	argv = pk_package_list_to_strv (plist);
 	if (argv != NULL &&
 	    egg_strequal (argv[0], "gnome;1.23;i386;data") &&
 	    argv[1] == NULL)

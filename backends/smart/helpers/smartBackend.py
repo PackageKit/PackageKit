@@ -1183,15 +1183,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
 def main():
     backend = PackageKitSmartBackend('')
-    args = sys.argv[1:]
-    backend.dispatch_command(args[0],args[1:])
-    while True:
-        line = raw_input('')
-        if line == 'exit':
-            break
-        backend.reset()
-        args = line.split(' ')
-        backend.dispatch_command(args[0],args[1:])
+    backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":
     main()

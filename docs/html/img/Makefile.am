@@ -35,6 +35,9 @@ IMAGE_FILES =					\
 	gpk-waiting.png				\
 	gpk-remove-confirm.png			\
 	gpk-distro-upgrade-notify.png		\
+	gpk-client-codecs.png			\
+	gpk-client-mime-type.png		\
+	gpk-client-font.png			\
 	$(NULL)
 
 EXTRA_DIST = 					\
