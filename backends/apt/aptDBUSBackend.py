@@ -137,7 +137,21 @@ SECTION_GROUP_MAP = {
     "alien" : GROUP_UNKNOWN,
     "translations" : GROUP_LOCALIZATION,
     "metapackages" : GROUP_COLLECTIONS }
- 
+
+
+def unlock_cache_afterwards(func):
+    '''
+    Make sure that the package cache is unlocked after the decorated function
+    was called
+    '''
+    def wrapper(*args,**kwargs):
+        backend = args[0]
+        func(*args,**kwargs)
+        backend._unlock_cache()
+    wrapper.__name__ = func.__name__
+    return wrapper
+
+
 class InstallTimeOutPKError(Exception):
     pass
 
@@ -358,7 +372,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         pklog.debug("PM status: %s" % status)
 
     def startUpdate(self):
-        # The apt system lock was set by _acquire_lock() before
+        # The apt system lock was set by _lock_cache() before
         apt_pkg.PkgSystemUnLock()
         self._backend.StatusChanged(STATUS_COMMIT)
         self.last_activity = time.time()
@@ -741,12 +755,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    @unlock_cache_afterwards
     def doUpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
         '''
         pklog.info("Upgrading system")
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -765,12 +780,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    @unlock_cache_afterwards
     def doRemovePackages(self, ids, deps=True, auto=False):
         '''
         Implement the {backend}-remove functionality
         '''
         pklog.info("Removing package(s): id %s" % ids)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -983,12 +999,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    @unlock_cache_afterwards
     def doUpdatePackages(self, ids):
         '''
         Implement the {backend}-update functionality
         '''
         pklog.info("Updating package with id %s" % ids)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1096,12 +1113,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
  
     @threaded
     @async
+    @unlock_cache_afterwards
     def doInstallPackages(self, ids):
         '''
         Implement the {backend}-install functionality
         '''
         pklog.info("Installing package with id %s" % ids)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1142,13 +1160,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    @unlock_cache_afterwards
     def doInstallFiles(self, trusted, full_paths):
         '''
         Implement install-files for the apt backend
         Install local Debian package files
         '''
         pklog.info("Installing package files: %s" % full_paths)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1185,7 +1204,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         if not self._commit_changes((10,25), (25,50)): return False
         # Install the Debian package files
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         for deb in packages:
             try:
                 res = deb.install(PackageKitDpkgInstallProgress(self))
@@ -1209,12 +1228,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    @unlock_cache_afterwards
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
         pklog.info("Refresh cache")
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_REFRESH_CACHE)
         self.last_action_time = time.time()
         self.AllowCancel(False);
@@ -1526,7 +1546,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     # Helpers
 
-    def _acquire_lock(self):
+    def _lock_cache(self):
         """
         Emit an error message and return true if the apt system lock cannot
         be acquired.
@@ -1538,6 +1558,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Only use one package management programme at the "
                            "the same time.")
             self.Finished(EXIT_FAILED)
+            return False
+        return True
+
+    def _unlock_cache(self):
+        """
+        Unlock the system package cache
+        """
+        try:
+            apt_pkg.PkgSystemUnLock()
+        except SystemError:
             return False
         return True
 
