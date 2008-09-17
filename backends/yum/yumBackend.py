@@ -1955,7 +1955,7 @@ def main():
         line = raw_input('')
         if line == 'exit':
             break
-        args = line.split(' ')
+        args = line.split('\t')
         backend.dispatch_command(args[0],args[1:])
 
 if __name__ == "__main__":

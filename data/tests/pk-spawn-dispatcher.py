@@ -17,8 +17,10 @@ import sys
 
 def dispatch(args):
     if args[0] == 'search-name':
-        print 'package\tavailable\tpolkit;0.0.1;i386;data\tPolicyKit daemon'
-        sys.stdout.flush()
+        # check we escape spaces properly
+        if args[2] == 'power manager':
+            print 'package\tavailable\tpolkit;0.0.1;i386;data\tPolicyKit daemon'
+            sys.stdout.flush()
 
 def main():
     args = sys.argv[1:]
@@ -27,7 +29,7 @@ def main():
         line = raw_input('')
         if line == 'exit':
             break
-        args = line.split(' ')
+        args = line.split('\t')
         dispatch(args)
 
 if __name__ == "__main__":

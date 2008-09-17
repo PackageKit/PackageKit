@@ -1190,7 +1190,7 @@ def main():
         if line == 'exit':
             break
         backend.reset()
-        args = line.split(' ')
+        args = line.split('\t')
         backend.dispatch_command(args[0],args[1:])
 
 if __name__ == "__main__":
