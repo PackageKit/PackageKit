@@ -10,27 +10,25 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Copyright (C) 2008 Tim Lauridsen <timlau@fedoraproject.org>
+# Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
 
 # Dispacher script to run pk commands from stdin
 
 import sys
+from packagekit.backend import *
 
-def dispatch(args):
-    if args[0] == 'search-name':
+class PackageKitYumBackend(PackageKitBaseBackend):
+    def __init__(self,args,lock=True):
+        PackageKitBaseBackend.__init__(self,args)
+
+    def search_name(self,filters,key):
         # check we escape spaces properly
-        if args[2] == 'power manager':
-            print 'package\tavailable\tpolkit;0.0.1;i386;data\tPolicyKit daemon'
-            sys.stdout.flush()
+        if key == 'power manager':
+            self.package("polkit;0.0.1;i386;data",INFO_AVAILABLE,"PolicyKit daemon")
 
 def main():
-    args = sys.argv[1:]
-    dispatch(args)
-    while True:
-        line = raw_input('')
-        if line == 'exit':
-            break
-        args = line.split('\t')
-        dispatch(args)
+    backend = PackageKitYumBackend('',lock=True)
+    backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":
     main()

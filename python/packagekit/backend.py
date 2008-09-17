@@ -556,6 +556,16 @@ class PackageKitBaseBackend:
             self.error(ERROR_INTERNAL_ERROR,errmsg,exit=False)
             self.finished();
 
+    def dispatcher(self,args):
+        if len(args) > 0:
+            self.dispatch_command(args[0],args[1:])
+        while True:
+            line = raw_input('')
+            if line == 'exit':
+                break
+            args = line.split('\t')
+            self.dispatch_command(args[0],args[1:])
+
 def exceptionHandler(typ,value,tb,base):
     # Restore original exception handler
     sys.excepthook = sys.__excepthook__

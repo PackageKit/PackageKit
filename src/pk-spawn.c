@@ -804,8 +804,8 @@ pk_spawn_test (EggTest *test)
 		egg_test_failed (test, "dispatcher exited");
 
 	/************************************************************/
-	egg_test_title (test, "we got a package?");
-	if (stdout_count == 1)
+	egg_test_title (test, "we got a package (+finished)?");
+	if (stdout_count == 2)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not get a package");
@@ -829,8 +829,8 @@ pk_spawn_test (EggTest *test)
 	egg_test_loop_wait (test, 100);
 
 	/************************************************************/
-	egg_test_title (test, "we got another package?");
-	if (stdout_count == 2)
+	egg_test_title (test, "we got another package (+finished)?");
+	if (stdout_count == 4)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not get a package");
