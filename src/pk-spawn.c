@@ -113,9 +113,8 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 	guint bytes_processed;
 
 	/* if nothing then don't emit */
-	if (egg_strzero (string->str)) {
+	if (egg_strzero (string->str))
 		return FALSE;
-	}
 
 	/* split into lines - the last line may be incomplete */
 	lines = g_strsplit (string->str, "\n", 0);
@@ -160,7 +159,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf);
 
 	/* Only print one in twenty times to avoid filling the screen */
-	if (limit_printing++ % 20 ==0)
+	if (limit_printing++ % 20 == 0)
 		egg_debug ("polling child_pid=%i (1/20)", spawn->priv->child_pid);
 
 	/* check if the child exited */
@@ -243,6 +242,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 		return FALSE;
 	}
 
+	/* never repeat */
 	return FALSE;
 }
 
@@ -337,6 +337,15 @@ gboolean
 pk_spawn_exit (PkSpawn *spawn)
 {
 	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
+
+	/* check if already sending exit */
+	if (spawn->priv->is_sending_exit) {
+		egg_warning ("already sending exit, ignoring");
+		return FALSE;
+	}
+
 	spawn->priv->is_sending_exit = TRUE;
 	ret = pk_spawn_send_stdin (spawn, "exit");
 	return ret;
@@ -382,9 +391,10 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 		} else if (!egg_strvequal (spawn->priv->last_envp, envp)) {
 			egg_debug ("envp did not match, not reusing");
 		} else {
+			/* join with tabs, as spaces could be in file name */
+			command = g_strjoinv ("\t", &argv[1]);
+
 			/* reuse instance */
-			//TODO: escape spaces
-			command = g_strjoinv (" ", &argv[1]);
 			egg_debug ("reusing instance");
 			ret = pk_spawn_send_stdin (spawn, command);
 			g_free (command);
@@ -773,8 +783,8 @@ pk_spawn_test (EggTest *test)
 	egg_test_title (test, "run the dispatcher");
 	mexit = BAD_EXIT;
 	file = egg_test_get_data_file ("pk-spawn-dispatcher.py");
-	path = g_strdup_printf ("%s search-name none power", file);
-	argv = g_strsplit (path, " ", 0);
+	path = g_strdup_printf ("%s\tsearch-name\tnone\tpower manager", file);
+	argv = g_strsplit (path, "\t", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (file);
 	g_free (path);
@@ -794,8 +804,8 @@ pk_spawn_test (EggTest *test)
 		egg_test_failed (test, "dispatcher exited");
 
 	/************************************************************/
-	egg_test_title (test, "we got a package?");
-	if (stdout_count == 1)
+	egg_test_title (test, "we got a package (+finished)?");
+	if (stdout_count == 2)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not get a package");
@@ -819,8 +829,8 @@ pk_spawn_test (EggTest *test)
 	egg_test_loop_wait (test, 100);
 
 	/************************************************************/
-	egg_test_title (test, "we got another package?");
-	if (stdout_count == 2)
+	egg_test_title (test, "we got another package (+finished)?");
+	if (stdout_count == 4)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not get a package");
@@ -832,6 +842,14 @@ pk_spawn_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed to close dispatcher");
+
+	/************************************************************/
+	egg_test_title (test, "ask dispatcher to close (again, should be closing)");
+	ret = pk_spawn_exit (spawn);
+	if (!ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "attempted to close twice");
 
 	/* this may take a while */
 	egg_test_loop_wait (test, 100);

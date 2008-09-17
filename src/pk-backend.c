@@ -148,9 +148,8 @@ pk_backend_get_groups (PkBackend *backend)
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_GROUP_ENUM_UNKNOWN);
 
 	/* not compulsory */
-	if (backend->desc->get_groups == NULL) {
+	if (backend->desc->get_groups == NULL)
 		return PK_GROUP_ENUM_UNKNOWN;
-	}
 	return backend->desc->get_groups (backend);
 }
 
@@ -164,9 +163,8 @@ pk_backend_get_filters (PkBackend *backend)
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_FILTER_ENUM_UNKNOWN);
 
 	/* not compulsory */
-	if (backend->desc->get_filters == NULL) {
+	if (backend->desc->get_filters == NULL)
 		return PK_FILTER_ENUM_UNKNOWN;
-	}
 	return backend->desc->get_filters (backend);
 }
 
@@ -184,84 +182,58 @@ pk_backend_get_actions (PkBackend *backend)
 
 	/* lets reduce pointer dereferences... */
 	desc = backend->desc;
-	if (desc->cancel != NULL) {
+	if (desc->cancel != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_CANCEL);
-	}
-	if (desc->get_depends != NULL) {
+	if (desc->get_depends != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DEPENDS);
-	}
-	if (desc->get_details != NULL) {
+	if (desc->get_details != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DETAILS);
-	}
-	if (desc->get_files != NULL) {
+	if (desc->get_files != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_FILES);
-	}
-	if (desc->get_requires != NULL) {
+	if (desc->get_requires != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_REQUIRES);
-	}
-	if (desc->get_packages != NULL) {
+	if (desc->get_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_PACKAGES);
-	}
-	if (desc->what_provides != NULL) {
+	if (desc->what_provides != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_WHAT_PROVIDES);
-	}
-	if (desc->get_updates != NULL) {
+	if (desc->get_updates != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_UPDATES);
-	}
-	if (desc->get_update_detail != NULL) {
+	if (desc->get_update_detail != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
-	}
-	if (desc->install_packages != NULL) {
+	if (desc->install_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGES);
-	}
-	if (desc->install_files != NULL) {
+	if (desc->install_files != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_INSTALL_FILES);
-	}
-	if (desc->refresh_cache != NULL) {
+	if (desc->refresh_cache != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REFRESH_CACHE);
-	}
-	if (desc->remove_packages != NULL) {
+	if (desc->remove_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGES);
-	}
-	if (desc->download_packages != NULL) {
+	if (desc->download_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
-	}
-	if (desc->resolve != NULL) {
+	if (desc->resolve != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_RESOLVE);
-	}
-	if (desc->rollback != NULL) {
+	if (desc->rollback != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_ROLLBACK);
-	}
-	if (desc->search_details != NULL) {
+	if (desc->search_details != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_DETAILS);
-	}
-	if (desc->search_file != NULL) {
+	if (desc->search_file != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_FILE);
-	}
-	if (desc->search_group != NULL) {
+	if (desc->search_group != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_GROUP);
-	}
-	if (desc->search_name != NULL) {
+	if (desc->search_name != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_NAME);
-	}
-	if (desc->update_packages != NULL) {
+	if (desc->update_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	}
-	if (desc->update_system != NULL) {
+	if (desc->update_system != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_UPDATE_SYSTEM);
-	}
-	if (desc->get_repo_list != NULL) {
+	if (desc->get_repo_list != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_REPO_LIST);
-	}
-	if (desc->repo_enable != NULL) {
+	if (desc->repo_enable != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_ENABLE);
-	}
-	if (desc->repo_set_data != NULL) {
+	if (desc->repo_set_data != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_SET_DATA);
-	}
-	if (desc->get_distro_upgrades != NULL) {
+	if (desc->get_distro_upgrades != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
-	}
 	return roles;
 }
 
@@ -276,9 +248,8 @@ pk_backend_set_string (PkBackend *backend, const gchar *key, const gchar *data)
 	g_return_val_if_fail (key != NULL, FALSE);
 
 	/* valid, but do nothing */
-	if (data == NULL) {
+	if (data == NULL)
 		return FALSE;
-	}
 
 	/* does already exist? */
 	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
@@ -302,9 +273,8 @@ pk_backend_set_strv (PkBackend *backend, const gchar *key, gchar **data)
 	g_return_val_if_fail (key != NULL, FALSE);
 
 	/* valid, but do nothing */
-	if (data == NULL) {
+	if (data == NULL)
 		return FALSE;
-	}
 
 	/* does already exist? */
 	value = g_hash_table_lookup (backend->priv->hash_strv, (gpointer) key);
@@ -328,9 +298,8 @@ pk_backend_set_array (PkBackend *backend, const gchar *key, GPtrArray *data)
 	g_return_val_if_fail (key != NULL, FALSE);
 
 	/* valid, but do nothing */
-	if (data == NULL) {
+	if (data == NULL)
 		return FALSE;
-	}
 
 	/* does already exist? */
 	value = g_hash_table_lookup (backend->priv->hash_array, (gpointer) key);
@@ -698,9 +667,8 @@ pk_backend_unlock (PkBackend *backend)
 		egg_warning ("not yet loaded backend, try pk_backend_lock()");
 		return FALSE;
 	}
-	if (backend->desc->destroy != NULL) {
+	if (backend->desc->destroy != NULL)
 		backend->desc->destroy (backend);
-	}
 	backend->priv->locked = FALSE;
 	return TRUE;
 }
@@ -731,9 +699,8 @@ pk_backend_emit_progress_changed (PkBackend *backend)
 	percentage = backend->priv->last_percentage;
 
 	/* have not ever set any value? */
-	if (percentage == PK_BACKEND_PERCENTAGE_DEFAULT) {
+	if (percentage == PK_BACKEND_PERCENTAGE_DEFAULT)
 		percentage = PK_BACKEND_PERCENTAGE_INVALID;
-	}
 	subpercentage = backend->priv->last_subpercentage;
 	elapsed = pk_time_get_elapsed (backend->priv->time);
 	remaining = backend->priv->last_remaining;
@@ -881,7 +848,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	if (status == PK_STATUS_ENUM_WAIT) {
 		egg_warning ("backend tried to WAIT, only the runner should set this value");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "backends shouldn't use STATUS_WAIT");
+				    "%s shouldn't use STATUS_WAIT", pk_role_enum_to_text (backend->priv->role));
 		return FALSE;
 	}
 
@@ -889,7 +856,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	if (status == PK_STATUS_ENUM_SETUP && backend->priv->status != PK_STATUS_ENUM_WAIT) {
 		egg_warning ("backend tried to SETUP, but should be in WAIT");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Tried to SETUP when not in WAIT");
+				    "%s to SETUP when not in WAIT", pk_role_enum_to_text (backend->priv->role));
 		return FALSE;
 	}
 
@@ -1541,9 +1508,8 @@ pk_backend_finished_delay (gpointer data)
 	PkBackend *backend = PK_BACKEND (data);
 
 	/* this wasn't set otherwise, assume success */
-	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
+	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
-	}
 
 	g_hash_table_remove_all (backend->priv->hash_pointer);
 	g_hash_table_remove_all (backend->priv->hash_string);
@@ -1582,14 +1548,14 @@ pk_backend_finished (PkBackend *backend)
 	/* are we trying to finish in init? */
 	if (backend->priv->during_initialize) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "You can't call pk_backend_finished in backend_initialize!");
+				    "%s can't call pk_backend_finished in backend_initialize!", role_text);
 		return FALSE;
 	}
 
 	/* check we have not already finished */
 	if (backend->priv->finished) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Backends cannot request Finished more than once!");
+				    "%s cannot request Finished more than once!", role_text);
 		return FALSE;
 	}
 
@@ -1600,7 +1566,7 @@ pk_backend_finished (PkBackend *backend)
 	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	     backend->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Backends should send a Package() for this role!");
+				    "Backends should send a Package() for %s!", role_text);
 	}
 
 	/* if we set an error code notifier, clear */
@@ -1644,9 +1610,8 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* this function is only valid when we have a running transaction */
-	if (backend->priv->c_tid != NULL) {
+	if (backend->priv->c_tid != NULL)
 		egg_warning ("only valid when we have a running transaction");
-	}
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
 	/* don't wait, do this now */
 	pk_backend_finished_delay (backend);
@@ -1700,12 +1665,10 @@ pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author)
 	g_return_val_if_fail (backend->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
-	if (name != NULL && backend->desc->description != NULL) {
+	if (name != NULL && backend->desc->description != NULL)
 		*name = g_strdup (backend->desc->description);
-	}
-	if (author != NULL && backend->desc->author != NULL) {
+	if (author != NULL && backend->desc->author != NULL)
 		*author = g_strdup (backend->desc->author);
-	}
 	return TRUE;
 }
 
@@ -1768,9 +1731,8 @@ pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
 	g_return_val_if_fail (eula_id != NULL, FALSE);
 
 	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
-	if (present != NULL) {
+	if (present != NULL)
 		return TRUE;
-	}
 	return FALSE;
 }
 
@@ -1836,9 +1798,8 @@ pk_backend_finalize (GObject *object)
 	g_hash_table_unref (backend->priv->hash_pointer);
 	g_hash_table_unref (backend->priv->hash_array);
 
-	if (backend->priv->handle != NULL) {
+	if (backend->priv->handle != NULL)
 		g_module_close (backend->priv->handle);
-	}
 	egg_debug ("parent_class->finalize");
 	G_OBJECT_CLASS (pk_backend_parent_class)->finalize (object);
 }
@@ -1958,9 +1919,8 @@ pk_backend_reset (PkBackend *backend)
 	}
 
 	/* if we set an error code notifier, clear */
-	if (backend->priv->signal_error_timeout != 0) {
+	if (backend->priv->signal_error_timeout != 0)
 		g_source_remove (backend->priv->signal_error_timeout);
-	}
 
 	pk_package_obj_free (backend->priv->last_package);
 	backend->priv->set_error = FALSE;
@@ -2147,27 +2107,24 @@ pk_backend_test (EggTest *test)
 	data_string = pk_backend_get_string (backend, "dave2");
 	if (egg_strequal (data_string, ""))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "data was %s", data_string);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "get a ~bool");
 	data_bool = pk_backend_get_bool (backend, "roger2");
 	if (!data_bool)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "data was %i", data_bool);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "get a zero uint");
 	data_uint = pk_backend_get_uint (backend, "linda2");
 	if (data_uint == 0)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "data was %i", data_uint);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "set a string");
@@ -2198,27 +2155,24 @@ pk_backend_test (EggTest *test)
 	data_string = pk_backend_get_string (backend, "dave");
 	if (egg_strequal (data_string, "ania"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "data was %s", data_string);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "get a bool");
 	data_bool = pk_backend_get_bool (backend, "roger");
 	if (data_bool)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "data was %i", data_bool);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "get a uint");
 	data_uint = pk_backend_get_uint (backend, "linda");
 	if (data_uint == 999)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "data was %i", data_uint);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "create a config file");
@@ -2234,9 +2188,8 @@ pk_backend_test (EggTest *test)
 	ret = pk_backend_watch_file (backend, filename, pk_backend_test_watch_file_cb, test);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "eula valid");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "change the config file");
@@ -2266,45 +2219,40 @@ pk_backend_test (EggTest *test)
 	ret = pk_backend_is_eula_valid (backend, "license_foo");
 	if (!ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "eula valid");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "accept eula");
 	ret = pk_backend_accept_eula (backend, "license_foo");
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "eula was not accepted");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "get eula that does exist");
 	ret = pk_backend_is_eula_valid (backend, "license_foo");
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "eula valid");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "accept eula (again)");
 	ret = pk_backend_accept_eula (backend, "license_foo");
 	if (!ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "eula was accepted twice");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "get backend name");
 	text = pk_backend_get_name (backend);
 	if (text == NULL)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "invalid name %s (test suite needs to unref backend?)", text);
-	}
 	g_free (text);
 
 	/************************************************************/
@@ -2328,44 +2276,39 @@ pk_backend_test (EggTest *test)
 	ret = pk_backend_set_name (backend, "dummy");
 	if (ret == FALSE)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "loaded twice");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "lock an valid backend");
 	ret = pk_backend_lock (backend);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed to lock");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "lock a backend again");
 	ret = pk_backend_lock (backend);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "locked twice should succeed");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "check we are out of init");
 	if (backend->priv->during_initialize == FALSE)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "not out of init");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "get backend name");
 	text = pk_backend_get_name (backend);
 	if (egg_strequal(text, "dummy"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "invalid name %s", text);
-	}
 	g_free (text);
 
 	/************************************************************/
@@ -2373,52 +2316,46 @@ pk_backend_test (EggTest *test)
 	ret = pk_backend_unlock (backend);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed to unlock");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "unlock an valid backend again");
 	ret = pk_backend_unlock (backend);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "unlocked twice, should succeed");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "check we are not finished");
 	if (backend->priv->finished == FALSE)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "we did not clear finish!");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "check we have no error");
 	if (backend->priv->set_error == FALSE)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "an error has already been set");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "lock again");
 	ret = pk_backend_lock (backend);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed to unlock");
-	}
 
 	/************************************************************/
 	egg_test_title (test, "wait for a thread to return true");
 	ret = pk_backend_thread_create (backend, pk_backend_test_func_true);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "wait for a thread failed");
-	}
 
 	/* wait for Finished */
 	egg_test_loop_wait (test, 2000);
@@ -2432,9 +2369,8 @@ pk_backend_test (EggTest *test)
 	ret = pk_backend_thread_create (backend, pk_backend_test_func_immediate_false);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "returned false!");
-	}
 
 	/* wait for Finished */
 	egg_test_loop_wait (test, PK_BACKEND_FINISHED_TIMEOUT_GRACE + 100);
@@ -2451,9 +2387,8 @@ pk_backend_test (EggTest *test)
 	egg_test_title (test, "check we enforce finished after error_code");
 	if (number_messages == 1)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "we messaged %i times!", number_messages);
-	}
 
 	g_object_unref (backend);
 

@@ -272,6 +272,10 @@ pk_task_list_refresh (PkTaskList *tlist)
 
 	/* get the latest job list */
 	array = pk_control_transaction_list_get (tlist->priv->control);
+	if (array == NULL) {
+		egg_warning ("failed to get transaction list");
+		return FALSE;
+	}
 
 	/* mark previous tasks as non-valid */
 	length = tlist->priv->task_list->len;

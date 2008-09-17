@@ -396,17 +396,15 @@ pk_control_get_backend_detail (PkControl *control, gchar **name, gchar **author,
 	}
 
 	/* copy needed bits */
-	if (name != NULL) {
+	if (name != NULL)
 		*name = tname;
-	} else {
+	else
 		g_free (tauthor);
-	}
 	/* copy needed bits */
-	if (author != NULL) {
+	if (author != NULL)
 		*author = tauthor;
-	} else {
+	else
 		g_free (tauthor);
-	}
 	return ret;
 }
 
@@ -519,7 +517,10 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 				 G_TYPE_INVALID);
 	if (!ret) {
 		egg_warning ("GetTid failed :%s", error_local->message);
-		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		if (error_local->code == DBUS_GERROR_SPAWN_CHILD_EXITED)
+			pk_control_error_set (error, PK_CONTROL_ERROR_CANNOT_START_DAEMON, "cannot GetTid: %s", error_local->message);
+		else
+			pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -561,9 +562,8 @@ pk_control_transaction_list_print (PkControl *control)
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 
 	length = g_strv_length (control->priv->array);
-	if (length == 0) {
+	if (length == 0)
 		return TRUE;
-	}
 	egg_debug ("jobs:");
 	for (i=0; i<length; i++) {
 		tid = control->priv->array[i];
@@ -591,7 +591,6 @@ pk_control_transaction_list_refresh (PkControl *control, GError **error)
 		g_strfreev (control->priv->array);
 		control->priv->array = NULL;
 	}
-	error = NULL;
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetTransactionList", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRV, &control->priv->array,
@@ -828,9 +827,8 @@ pk_control_init (PkControl *control)
 	/* get a connection to the engine object */
 	control->priv->proxy = dbus_g_proxy_new_for_name (control->priv->connection,
 							 PK_DBUS_SERVICE, PK_DBUS_PATH, PK_DBUS_INTERFACE);
-	if (control->priv->proxy == NULL) {
+	if (control->priv->proxy == NULL)
 		egg_error ("Cannot connect to PackageKit.");
-	}
 
 	dbus_g_proxy_add_signal (control->priv->proxy, "TransactionListChanged",
 				 G_TYPE_STRV, G_TYPE_INVALID);

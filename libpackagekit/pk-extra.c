@@ -229,6 +229,16 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
+
+	/* get summary packages - no translation */
+	statement = g_strdup_printf ("SELECT package, summary FROM localised WHERE locale = '%s'", "C");
+	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_locale_cache_callback, extra, &error_msg);
+	g_free (statement);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		return FALSE;
+	}
 	return TRUE;
 }
 

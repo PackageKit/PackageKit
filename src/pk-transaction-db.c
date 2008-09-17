@@ -216,11 +216,10 @@ pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (egg_strequal (col, "timespec")) {
+		if (egg_strequal (col, "timespec"))
 			*timespec = g_strdup (value);
-		} else {
+		else
 			egg_warning ("%s = %s\n", col, value);
-		}
 	}
 	return 0;
 }
@@ -309,13 +308,13 @@ pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
-	if (limit == 0) {
+	if (limit == 0)
 		statement = g_strdup ("SELECT transaction_id, timespec, succeeded, duration, role, data "
 				      "FROM transactions ORDER BY timespec DESC");
-	} else {
+	else
 		statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role, data "
 					     "FROM transactions ORDER BY timespec DESC LIMIT %i", limit);
-	}
+
 	pk_transaction_db_sql_statement (tdb, statement);
 	g_free (statement);
 
@@ -578,23 +577,20 @@ pk_transaction_db_test (EggTest *test)
 	ret = pk_transaction_db_action_time_reset (db, PK_ROLE_ENUM_REFRESH_CACHE);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed to reset value");
-	}
 
 	g_usleep (2*1000*1000);
 
 	/************************************************************/
 	egg_test_title (test, "do we get the correct time");
 	value = pk_transaction_db_action_time_since (db, PK_ROLE_ENUM_REFRESH_CACHE);
-	if (value > 1 && value <= 4) {
+	if (value > 1 && value <= 4)
 		egg_test_success (test, "failed to get correct time");
-	} else {
+	else
 		egg_test_failed (test, "failed to get correct time, %i", value);
-	}
 
 	g_object_unref (db);
-
 	egg_test_end (test);
 }
 #endif
