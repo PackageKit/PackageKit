@@ -1397,7 +1397,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         elif len(pkgs) == 1:
             # check if there are any updates to the preupgrade package
             po = pkgs[0]
-            pkgs = self.yumbase.pkgSack.returnNewestByName(name='kernel')
+            pkgs = self.yumbase.pkgSack.returnNewestByName(name='preupgrade')
             if pkgs:
                 newest = pkgs[0]
                 if newest.EVR > po.EVR:
@@ -1949,14 +1949,7 @@ class PackageKitYumBase(yum.YumBase):
 
 def main():
     backend = PackageKitYumBackend('',lock=True)
-    args = sys.argv[1:]
-    backend.dispatch_command(args[0],args[1:])
-    while True:
-        line = raw_input('')
-        if line == 'exit':
-            break
-        args = line.split(' ')
-        backend.dispatch_command(args[0],args[1:])
+    backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":
     main()
