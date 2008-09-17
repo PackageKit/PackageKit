@@ -71,7 +71,7 @@ gboolean		 pk_package_list_contains_obj	(const PkPackageList	*plist,
 							 const PkPackageObj	*obj);
 gchar			*pk_package_list_to_string	(const PkPackageList	*plist)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gchar			**pk_package_list_to_argv	(const PkPackageList	*plist)
+gchar			**pk_package_list_to_strv	(const PkPackageList	*plist)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint			 pk_package_list_get_size	(const PkPackageList	*plist);
 gboolean		 pk_package_list_sort		(PkPackageList		*plist);
