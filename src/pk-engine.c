@@ -110,7 +110,7 @@ struct PkEnginePrivate
 	PkFileMonitor		*file_monitor;
 	PkBitfield		 actions;
 	PkBitfield		 groups;
-	PkBitfield	 filters;
+	PkBitfield		 filters;
 	guint			 signal_state_priority_timeout;
 	guint			 signal_state_normal_timeout;
 };
@@ -361,9 +361,8 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 	}
 
 	/* don't bombard the user 10 seconds after resuming */
-	if (egg_strequal (reason, "resume")) {
+	if (egg_strequal (reason, "resume"))
 		is_priority = FALSE;
-	}
 
 	/* are we normal, and already scheduled normal? */
 	if (!is_priority && engine->priv->signal_state_normal_timeout != 0) {
@@ -380,13 +379,12 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 		engine->priv->signal_state_normal_timeout = 0;	}
 
 	/* wait a little delay in case we get multiple requests */
-	if (is_priority) {
+	if (is_priority)
 		engine->priv->signal_state_priority_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT,
 										     pk_engine_state_changed_cb, engine);
-	} else {
+	else
 		engine->priv->signal_state_normal_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT,
 										   pk_engine_state_changed_cb, engine);
-	}
 	return TRUE;
 }
 
@@ -651,9 +649,8 @@ pk_engine_init (PkEngine *engine)
 
 	/* lock database */
 	ret = pk_backend_lock (engine->priv->backend);
-	if (!ret) {
+	if (!ret)
 		egg_error ("could not lock backend, you need to restart the daemon");
-	}
 
 	/* we dont need this, just don't keep creating and destroying it */
 	engine->priv->security = pk_security_new ();
@@ -680,9 +677,8 @@ pk_engine_init (PkEngine *engine)
 
 	/* get another connection */
 	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
-	if (connection == NULL) {
+	if (connection == NULL)
 		egg_error ("no connection");
-	}
 
 	/* add the interface */
 	engine->priv->notify = pk_notify_new ();
@@ -739,9 +735,8 @@ pk_engine_finalize (GObject *object)
 
 	/* unlock if we locked this */
 	ret = pk_backend_unlock (engine->priv->backend);
-	if (!ret) {
+	if (!ret)
 		egg_warning ("couldn't unlock the backend");
-	}
 
 	/* if we set an state changed notifier, clear */
 	if (engine->priv->signal_state_priority_timeout != 0) {

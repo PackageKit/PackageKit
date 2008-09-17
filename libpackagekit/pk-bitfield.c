@@ -70,9 +70,8 @@ pk_bitfield_contain_priority (PkBitfield values, gint value, ...)
 			break;
 		}
 		/* end of the list */
-		if (value_temp == -1) {
+		if (value_temp == -1)
 			break;
-		}
 	}
 	va_end (args);
 

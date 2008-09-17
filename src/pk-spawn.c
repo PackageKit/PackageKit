@@ -113,9 +113,8 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 	guint bytes_processed;
 
 	/* if nothing then don't emit */
-	if (egg_strzero (string->str)) {
+	if (egg_strzero (string->str))
 		return FALSE;
-	}
 
 	/* split into lines - the last line may be incomplete */
 	lines = g_strsplit (string->str, "\n", 0);
@@ -160,7 +159,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf);
 
 	/* Only print one in twenty times to avoid filling the screen */
-	if (limit_printing++ % 20 ==0)
+	if (limit_printing++ % 20 == 0)
 		egg_debug ("polling child_pid=%i (1/20)", spawn->priv->child_pid);
 
 	/* check if the child exited */
@@ -243,6 +242,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 		return FALSE;
 	}
 
+	/* never repeat */
 	return FALSE;
 }
 
