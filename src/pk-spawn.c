@@ -391,9 +391,10 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 		} else if (!egg_strvequal (spawn->priv->last_envp, envp)) {
 			egg_debug ("envp did not match, not reusing");
 		} else {
+			/* join with tabs, as spaces could be in file name */
+			command = g_strjoinv ("\t", &argv[1]);
+
 			/* reuse instance */
-			//TODO: escape spaces
-			command = g_strjoinv (" ", &argv[1]);
 			egg_debug ("reusing instance");
 			ret = pk_spawn_send_stdin (spawn, command);
 			g_free (command);
@@ -782,8 +783,8 @@ pk_spawn_test (EggTest *test)
 	egg_test_title (test, "run the dispatcher");
 	mexit = BAD_EXIT;
 	file = egg_test_get_data_file ("pk-spawn-dispatcher.py");
-	path = g_strdup_printf ("%s search-name none power", file);
-	argv = g_strsplit (path, " ", 0);
+	path = g_strdup_printf ("%s\tsearch-name\tnone\tpower manager", file);
+	argv = g_strsplit (path, "\t", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (file);
 	g_free (path);
