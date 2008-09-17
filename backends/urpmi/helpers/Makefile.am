@@ -23,6 +23,7 @@ dist_helper_DATA = 						\
 	update-packages.pl					\
 	update-system.pl						\
 	get-distro-upgrades.pl						\
+	urpmi-dispatched-backend.pl					\
 	$(NULL)
 
 install-data-hook:
