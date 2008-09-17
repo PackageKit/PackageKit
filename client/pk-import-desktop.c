@@ -157,6 +157,11 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 
 	/* get the default entry */
 	name_unlocalised = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", NULL);
+	if (!egg_strzero (name_unlocalised)) {
+		g_print ("C");
+		pk_extra_set_locale (extra, "C");
+		pk_extra_set_data_locale (extra, package_name, name_unlocalised);
+	}
 
 	/* for each locale */
 	for (i=0; i<locale_array->len; i++) {
