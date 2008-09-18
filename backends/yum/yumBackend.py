@@ -293,10 +293,10 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         if grp:
             if grp.installed:
                 if show_inst:
-                    self.package(id,INFO_COLLECTION_INSTALLED,grp.description)
+                    self.package(id,INFO_COLLECTION_INSTALLED,grp.name)
             else:
                 if show_avail:
-                    self.package(id,INFO_COLLECTION_AVAILABLE,grp.description)
+                    self.package(id,INFO_COLLECTION_AVAILABLE,grp.name)
 
     #@handle_repo_error
     def search_group(self,filters,group_key):
