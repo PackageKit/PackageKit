@@ -82,6 +82,23 @@ class PackageKitClient:
         self._wrapCall(pk_xn, method, {'Package' : package_cb})
         return result
 
+    def _wrapDistroUpgradeCall(self, pk_xn, method):
+        '''
+        Wraps a call which emits Finished, ErrorCode on completion and
+        DistroUpgrade for information returns a list of dicts with
+        'type', 'name' and 'summary' keys
+        '''
+
+        result = []
+        distup_cb = lambda typ,name,summary: result.append(
+            {'type' : typ,
+             'name': name,
+             'summary' : self._to_utf8(summary)
+             })
+        self._wrapCall(pk_xn, method, {'DistroUpgrade' : distup_cb})
+        return result
+
+
     def _wrapDetailsCall(self, pk_xn, method):
         '''
         Wraps a call which emits Finished, ErrorCode on completion and
@@ -275,15 +292,13 @@ class PackageKitClient:
         self._wrapBasicCall(xn, lambda : xn.RefreshCache(force))
 
 
-    def GetRepoList(self, filter=None):
+    def GetRepoList(self, filter=FILTER_NONE):
         '''
         Returns the list of repositories used in the system
 
         filter is a correct filter, e.g. None or 'installed;~devel'
 
         '''
-        if (filter == None):
-            filter = 'none'
         xn = self._get_xn()
         return self._wrapReposCall(xn, lambda : xn.GetRepoList(filter))
 
@@ -300,7 +315,7 @@ class PackageKitClient:
         xn = self._get_xn()
         self._wrapBasicCall(xn, lambda : xn.RepoEnable(repo_id, enabled))
 
-    def GetUpdates(self, filter=None):
+    def GetUpdates(self, filter=FILTER_NONE):
         '''
         This method should return a list of packages that are installed and
         are upgradable.
@@ -308,18 +323,14 @@ class PackageKitClient:
         It should only return the newest update for each installed package.
         '''
         xn = self._get_xn()
-        if (filter == None):
-            filter = 'none'
         return self._wrapPackageCall(xn, lambda : xn.GetUpdates(filter))
 
-    def GetPackages(self, filter=None):
+    def GetPackages(self, filter=FILTER_NONE):
         '''
         This method should return a total list of packages, limmited by the
         filter used
         '''
         xn = self._get_xn()
-        if (filter == None):
-            filter = FILTER_NONE
         return self._wrapPackageCall(xn, lambda : xn.GetPackages(filter))
 
     def UpdateSystem(self):
@@ -370,7 +381,8 @@ class PackageKitClient:
         return self._wrapUpdateDetailsCall(xn, lambda : xn.GetUpdateDetail(package_ids))
 
     def GetDistroUpgrades(self):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
+        xn = self._get_xn()
+        return self._wrapPackageCall(xn, lambda : xn.GetDistroUpgrades())
 
     def InstallFiles(self,trusted,files):
         raise PackageKitError(ERROR_NOT_SUPPORTED)
@@ -432,19 +444,34 @@ class PackageKitClient:
         self.main_loop.run()
 
     def _h_status(self, status):
+        '''
+        StatusChanged signal handler
+        '''
         self._status = status
 
     def _h_allowcancel(self, allow):
+        '''
+        AllowCancel signal handler
+        '''
         self._allow_cancel = allow
 
     def _h_error(self, enum, desc):
+        '''
+        ErrorCode signal handler
+        '''
         self._error_enum = enum
 
     def _h_finished(self, status, code):
+        '''
+        Finished signal handler
+        '''
         self._finished_status = status
         self.main_loop.quit()
 
     def _h_progress(self, per, subper, el, rem):
+        '''
+        ProgressChanged signal handler
+        '''
         def _cancel(xn):
             try:
                 xn.Cancel()
