@@ -1311,7 +1311,11 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 desc = desc.replace('\n\n',';')
                 desc = desc.replace('\n',' ')
                 group = grp.name
-                self.details(id,"",group,desc,"",0)
+                pkgs = self._get_group_packages(grp)
+                size = 0;
+                for pkg in pkgs:
+                    size = size + pkg.size
+                self.details(id,"",group,desc,"",size)
 
             else:
                 pkg,inst = self._findPackage(package)
