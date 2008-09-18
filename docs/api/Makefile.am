@@ -51,6 +51,7 @@ HTML_IMAGES =						\
 	spec/pk-structure.svg				\
 	spec/pk-faq-error-code.png			\
 	spec/pk-faq-status.png				\
+	spec/pk-faq-filter.png				\
 	spec/pk-transactions.svg			\
 	spec/pk-transactions-set-locale.png		\
 	spec/pk-transactions-failure.png		\
