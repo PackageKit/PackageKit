@@ -1750,10 +1750,11 @@ backend_what_provides_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	const gchar *search;
 	search = pk_backend_get_string (backend, "search");
+	PkProvidesEnum provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
 	zypp::Capability cap (search);
 	zypp::sat::WhatProvides prov (cap);
 
-	if(g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
+	if((provides == PK_PROVIDES_ENUM_HARDWARE_DRIVER) || g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
 
 
 		// solver run
