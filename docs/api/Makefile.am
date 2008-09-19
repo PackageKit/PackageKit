@@ -99,6 +99,3 @@ include $(top_srcdir)/gtk-doc.make
 # Other files to distribute
 EXTRA_DIST += version.xml.in
 
-clean-local :
-	rm -f *~ *.txt xml/* tmpl/* html/* *.bak *.out *.gcno PackageKit-scan.* PackageKit.types version.xml
-
