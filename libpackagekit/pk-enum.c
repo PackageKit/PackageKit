@@ -306,6 +306,7 @@ static PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_MODALIAS,		"modalias"},
 	{PK_PROVIDES_ENUM_CODEC,		"codec"},
 	{PK_PROVIDES_ENUM_MIMETYPE,		"mimetype"},
+	{PK_PROVIDES_ENUM_HARDWARE_DRIVER,	"driver"},
 	{PK_PROVIDES_ENUM_FONT,			"font"},
 	{0, NULL}
 };
