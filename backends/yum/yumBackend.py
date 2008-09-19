@@ -446,6 +446,11 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         for package in package_ids:
             self.percentage(percentage)
             pkg,inst = self._findPackage(package)
+            # if we couldn't map package_id -> pkg
+            if not pkg:
+                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,"Could not find the package %s" % package)
+                continue
+
             n,a,e,v,r = pkg.pkgtup
             packs = self.yumbase.pkgSack.searchNevra(n,e,v,r,a)
 
