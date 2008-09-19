@@ -133,6 +133,24 @@ pk_get_distro_id (void)
 		goto out;
 	}
 
+	/* check for PLD */
+	ret = g_file_get_contents ("/etc/pld-release", &contents, NULL, NULL);
+	if (ret) {
+		/* 2.99 PLD Linux (Th) */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* we can't get arch from /etc */
+		arch = pk_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("pld-%s-%s", split[0], arch);
+		goto out;
+	}
+
 out:
 	g_strfreev (split);
 	g_free (arch);
