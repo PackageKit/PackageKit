@@ -316,31 +316,6 @@ typedef enum {
 } PkGroupEnum;
 
 /**
- * PkFreqEnum:
- *
- * The frequency type
- **/
-typedef enum {
-	PK_FREQ_ENUM_HOURLY,
-	PK_FREQ_ENUM_DAILY,
-	PK_FREQ_ENUM_WEEKLY,
-	PK_FREQ_ENUM_NEVER,
-	PK_FREQ_ENUM_UNKNOWN
-} PkFreqEnum;
-
-/**
- * PkUpdateEnum:
- *
- * The update type
- **/
-typedef enum {
-	PK_UPDATE_ENUM_ALL,
-	PK_UPDATE_ENUM_SECURITY,
-	PK_UPDATE_ENUM_NONE,
-	PK_UPDATE_ENUM_UNKNOWN
-} PkUpdateEnum;
-
-/**
  * PkUpdateStateEnum:
  *
  * What state the update is in
@@ -557,14 +532,8 @@ const gchar     *pk_sig_type_enum_to_text               (PkSigTypeEnum   sig_typ
 PkInfoEnum	 pk_info_enum_from_text			(const gchar	*info);
 const gchar	*pk_info_enum_to_text			(PkInfoEnum	 info);
 
-PkUpdateEnum	 pk_update_enum_from_text		(const gchar	*update);
-const gchar	*pk_update_enum_to_text			(PkUpdateEnum	 update);
-
 PkUpdateStateEnum  pk_update_state_enum_from_text	(const gchar	*update_state);
 const gchar	*pk_update_state_enum_to_text		(PkUpdateStateEnum update_state);
-
-PkFreqEnum	 pk_freq_enum_from_text			(const gchar	*freq);
-const gchar	*pk_freq_enum_to_text			(PkFreqEnum	 freq);
 
 PkExitEnum	 pk_exit_enum_from_text			(const gchar	*exit);
 const gchar	*pk_exit_enum_to_text			(PkExitEnum	 exit);
