@@ -257,23 +257,6 @@ static PkEnumMatch enum_group[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_freq[] = {
-	{PK_FREQ_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
-	{PK_FREQ_ENUM_HOURLY,			"hourly"},
-	{PK_FREQ_ENUM_DAILY,			"daily"},
-	{PK_FREQ_ENUM_WEEKLY,			"weekly"},
-	{PK_FREQ_ENUM_NEVER,			"never"},
-	{0, NULL}
-};
-
-static PkEnumMatch enum_update[] = {
-	{PK_UPDATE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_UPDATE_ENUM_ALL,			"all"},
-	{PK_UPDATE_ENUM_SECURITY,		"security"},
-	{PK_UPDATE_ENUM_NONE,			"none"},
-	{0, NULL}
-};
-
 static PkEnumMatch enum_update_state[] = {
 	{PK_UPDATE_STATE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_UPDATE_STATE_ENUM_TESTING,		"testing"},
@@ -864,62 +847,6 @@ pk_group_enum_to_text (PkGroupEnum group)
 }
 
 /**
- * pk_freq_enum_from_text:
- * @freq: Text describing the enumerated type
- *
- * Converts a text enumerated type to its unsigned integer representation
- *
- * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
- **/
-PkFreqEnum
-pk_freq_enum_from_text (const gchar *freq)
-{
-	return pk_enum_find_value (enum_freq, freq);
-}
-
-/**
- * pk_freq_enum_to_text:
- * @freq: The enumerated type value
- *
- * Converts a enumerated type to its text representation
- *
- * Return value: the enumerated constant value, e.g. "available"
- **/
-const gchar *
-pk_freq_enum_to_text (PkFreqEnum freq)
-{
-	return pk_enum_find_string (enum_freq, freq);
-}
-
-/**
- * pk_update_enum_from_text:
- * @update: Text describing the enumerated type
- *
- * Converts a text enumerated type to its unsigned integer representation
- *
- * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
- **/
-PkUpdateEnum
-pk_update_enum_from_text (const gchar *update)
-{
-	return pk_enum_find_value (enum_update, update);
-}
-
-/**
- * pk_update_enum_to_text:
- * @update: The enumerated type value
- *
- * Converts a enumerated type to its text representation
- *
- * Return value: the enumerated constant value, e.g. "available"
- **/
-const gchar *
-pk_update_enum_to_text (PkUpdateEnum update)
-{
-	return pk_enum_find_string (enum_update, update);
-}
-
-/**
  * pk_update_state_enum_from_text:
  * @update_state: Text describing the enumerated type
  *
@@ -1121,28 +1048,6 @@ pk_enum_test (EggTest *test)
 	egg_test_title (test, "check we convert all the group bitfield");
 	for (i=1; i<=PK_GROUP_ENUM_UNKNOWN; i++) {
 		string = pk_group_enum_to_text (i);
-		if (string == NULL) {
-			egg_test_failed (test, "failed to get %i", i);
-			break;
-		}
-	}
-	egg_test_success (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "check we convert all the freq bitfield");
-	for (i=0; i<=PK_FREQ_ENUM_UNKNOWN; i++) {
-		string = pk_freq_enum_to_text (i);
-		if (string == NULL) {
-			egg_test_failed (test, "failed to get %i", i);
-			break;
-		}
-	}
-	egg_test_success (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "check we convert all the update bitfield");
-	for (i=0; i<=PK_UPDATE_ENUM_UNKNOWN; i++) {
-		string = pk_update_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
