@@ -211,7 +211,7 @@ egg_obj_list_to_string (EggObjList *list)
  * Adds a copy of the object to the list
  **/
 void
-egg_obj_list_add (EggObjList *list, const gpointer obj)
+egg_obj_list_add (EggObjList *list, gconstpointer obj)
 {
 	gpointer obj_new;
 
@@ -234,7 +234,7 @@ void
 egg_package_list_add_list (EggObjList *list, const EggObjList *data)
 {
 	guint i;
-	gpointer obj;
+	gconstpointer obj;
 
 	g_return_if_fail (EGG_IS_OBJ_LIST (list));
 	g_return_if_fail (EGG_IS_OBJ_LIST (data));
@@ -256,7 +256,7 @@ egg_package_list_add_list (EggObjList *list, const EggObjList *data)
  * Removes an item from a list
  **/
 gboolean
-egg_obj_list_remove (EggObjList *list, const gpointer obj)
+egg_obj_list_remove (EggObjList *list, gconstpointer obj)
 {
 	gboolean ret;
 	gpointer obj_new;
@@ -312,7 +312,7 @@ gboolean
 egg_obj_list_to_file (EggObjList *list, const gchar *filename)
 {
 	guint i;
-	gpointer obj;
+	gconstpointer obj;
 	gchar *part;
 	GString *string;
 	gboolean ret = TRUE;
@@ -434,15 +434,15 @@ out:
  *
  * Gets an object from the list
  **/
-const gpointer
+gconstpointer
 egg_obj_list_index (const EggObjList *list, guint index)
 {
-	gpointer obj;
+	gconstpointer obj;
 
 	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), NULL);
 
 	obj = g_ptr_array_index (list->priv->array, index);
-	return (const gpointer) obj;
+	return obj;
 }
 
 /**
