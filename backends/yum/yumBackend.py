@@ -293,10 +293,10 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         if grp:
             if grp.installed:
                 if show_inst:
-                    self.package(id,INFO_COLLECTION_INSTALLED,grp.description)
+                    self.package(id,INFO_COLLECTION_INSTALLED,grp.name)
             else:
                 if show_avail:
-                    self.package(id,INFO_COLLECTION_AVAILABLE,grp.description)
+                    self.package(id,INFO_COLLECTION_AVAILABLE,grp.name)
 
     #@handle_repo_error
     def search_group(self,filters,group_key):
@@ -1311,7 +1311,11 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 desc = desc.replace('\n\n',';')
                 desc = desc.replace('\n',' ')
                 group = grp.name
-                self.details(id,"",group,desc,"",0)
+                pkgs = self._get_group_packages(grp)
+                size = 0;
+                for pkg in pkgs:
+                    size = size + pkg.size
+                self.details(id,"",group,desc,"",size)
 
             else:
                 pkg,inst = self._findPackage(package)

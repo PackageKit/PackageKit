@@ -22,6 +22,29 @@ import sys
 from packagekit.client import PackageKitClient
 from packagekit.enums import *
 
+def show_packages(pk,pkgs,details=False,limit=None):
+    i = 0
+    for pkg in pkgs:
+        i += 1
+        if limit and i == limit:
+            break
+        show_package(pkg)
+        if details:
+            details = pk.GetDetails(pkg['id'])
+            print 79 *"-"
+            print details[0]['detail']
+            print 79 *"="
+
+def show_package(pkg):
+    if pkg:
+        if isinstance(pkg, list):
+            pkg = pkg[0]
+        (name,ver,arch,repo) = tuple(pkg['id'].split(";"))
+        p =  "%s-%s.%s" % (name,ver,arch)
+        print "%-40s : %s" % (p,pkg['summary'])
+    else:
+        print "no package found"
+
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         cmd = sys.argv[1:]
@@ -32,32 +55,22 @@ if __name__ == '__main__':
 
     if 'all' in cmd or "refresh-cache" in cmd:
         print '---- RefreshCache() -----'''
-        print pk.RefreshCache()
+        pk.RefreshCache()
 
     if 'all' in cmd or "resolve" in cmd:
         print '---- Resolve() -----'
         pkg = pk.Resolve(FILTER_NONE, 'yum')
-        if pkg:
-            print pkg
+        show_package(pkg)
 
     if 'all' in cmd or "get-packages" in cmd:
         print '---- GetPackages() ----'
         packages = pk.GetPackages(FILTER_INSTALLED)
-        i = 0
-        for pkg in packages:
-            i += 1
-            if i == 20:
-                break
-            (name,ver,arch,repo) = tuple(pkg['id'].split(";"))
-            p =  "%s-%s.%s" % (name,ver,arch)
-            print "%-40s : %s" % (p,pkg['summary'])
-            details = pk.GetDetails(pkg['id'])
-            print 79 *"-"
-            print details[0]['detail']
+        show_packages(pk,packages,details=True,limit=20)
 
     if 'all' in cmd or "search-file" in cmd:
         print '---- SearchFile() ----'
-        print pk.SearchFile(FILTER_INSTALLED,"/usr/bin/yum")
+        pkgs = pk.SearchFile(FILTER_INSTALLED,"/usr/bin/yum")
+        show_packages(pk,pkgs)
 
     if 'all' in cmd or "get-updates" in cmd:
         print '---- GetUpdates() ----'
@@ -69,8 +82,21 @@ if __name__ == '__main__':
 
     if 'all' in cmd or "search-name" in cmd:
         print '---- SearchName() -----'
-        print pk.SearchName(FILTER_NOT_INSTALLED, 'coreutils')
-        print pk.SearchName(FILTER_INSTALLED, 'coreutils')
+        show_package(pk.SearchName(FILTER_NOT_INSTALLED, 'coreutils'))
+        show_package(pk.SearchName(FILTER_INSTALLED, 'coreutils'))
+
+    if  "search-group" in cmd:
+        print '---- SearchGroup() -----'
+        show_packages(pk,pk.SearchGroup(FILTER_NONE, GROUP_GAMES))
+        show_packages(pk,pk.SearchGroup(FILTER_NONE, GROUP_COLLECTIONS))
+
+    if  "get-distro-upgrades" in cmd:
+        print '---- GetDistroUpgrades() -----'
+        rc = pk.GetDistroUpgrades()
+        if rc:
+            print rc
+        else:
+            print "No distribution upgrades"
 
 
     def cb(status, pc, spc, el, rem, c):
