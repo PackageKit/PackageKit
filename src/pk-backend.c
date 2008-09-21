@@ -725,7 +725,7 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: percentage %i", percentage);
 		return FALSE;
 	}
 
@@ -799,7 +799,7 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: sub-percentage %i", percentage);
 		return FALSE;
 	}
 
@@ -840,7 +840,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 
 	/* have we already set an error? */
 	if (backend->priv->set_error && status != PK_STATUS_ENUM_FINISHED) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: status %s", pk_status_enum_to_text (status));
 		return FALSE;
 	}
 
@@ -926,7 +926,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: package %s", package_id);
 		return FALSE;
 	}
 
@@ -981,7 +981,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: update_detail %s", package_id);
 		return FALSE;
 	}
 
@@ -1043,7 +1043,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: require-restart %s", pk_restart_enum_to_text (restart));
 		return FALSE;
 	}
 
@@ -1067,7 +1067,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 
 	/* have we already set an error? */
 	if (backend->priv->set_error && message != PK_MESSAGE_ENUM_BACKEND_ERROR) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: message %s", pk_message_enum_to_text (message));
 		return FALSE;
 	}
 
@@ -1149,7 +1149,7 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: details %s", package_id);
 		return FALSE;
 	}
 
@@ -1180,7 +1180,7 @@ pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *file
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: files %s", package_id);
 		return FALSE;
 	}
 
@@ -1208,7 +1208,7 @@ pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum type, const g
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: distro-upgrade");
 		return FALSE;
 	}
 
@@ -1240,7 +1240,7 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: repo-sig-reqd");
 		return FALSE;
 	}
 
@@ -1276,7 +1276,7 @@ pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar 
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: eula required");
 		return FALSE;
 	}
 
@@ -1311,7 +1311,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: repo-detail %s", repo_id);
 		return FALSE;
 	}
 
@@ -1413,7 +1413,7 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 
 	/* have we already set an error? */
 	if (backend->priv->set_error && allow_cancel) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: allow-cancel %i", allow_cancel);
 		return FALSE;
 	}
 
