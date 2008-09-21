@@ -68,17 +68,17 @@ gboolean	 pk_store_set_pointer			(PkStore	*store,
 							 const gchar	*key,
 							 gpointer	 data);
 
-const gchar	*pk_store_get_string			(PkStore	*store,
+const gchar	*pk_store_get_string			(const PkStore	*store,
 							 const gchar	*key);
-GPtrArray	*pk_store_get_array			(PkStore	*store,
+const GPtrArray	*pk_store_get_array			(const PkStore	*store,
 							 const gchar	*key);
-gchar		**pk_store_get_strv			(PkStore	*store,
+gchar		**pk_store_get_strv			(const PkStore	*store,
 							 const gchar	*key);
-guint		 pk_store_get_uint			(PkStore	*store,
+guint		 pk_store_get_uint			(const PkStore	*store,
 							 const gchar	*key);
-gboolean	 pk_store_get_bool			(PkStore	*store,
+gboolean	 pk_store_get_bool			(const PkStore	*store,
 							 const gchar	*key);
-gpointer	 pk_store_get_pointer			(PkStore	*store,
+gpointer	 pk_store_get_pointer			(const PkStore	*store,
 							 const gchar	*key);
 gboolean	 pk_store_reset				(PkStore	*store);
 
