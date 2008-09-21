@@ -15,6 +15,8 @@ import dbus
 from enums import *
 from misc import *
 
+__api_version__ = '0.1.0'
+
 class PackageKitError(Exception):
     '''PackageKit error.
 
