@@ -30,18 +30,16 @@ def show_packages(pk,pkgs,details=False,limit=None):
             break
         show_package(pkg)
         if details:
-            details = pk.GetDetails(pkg['id'])
+            details = pk.GetDetails(pkg.id)
             print 79 *"-"
-            print details[0]['detail']
+            print details[0].detail
             print 79 *"="
 
 def show_package(pkg):
     if pkg:
         if isinstance(pkg, list):
             pkg = pkg[0]
-        (name,ver,arch,repo) = tuple(pkg['id'].split(";"))
-        p =  "%s-%s.%s" % (name,ver,arch)
-        print "%-40s : %s" % (p,pkg['summary'])
+        print str(pkg)
     else:
         print "no package found"
 
@@ -77,8 +75,8 @@ if __name__ == '__main__':
         pkgs = pk.GetUpdates(FILTER_INSTALLED)
         if pkgs: # We have updates
             for p in pkgs:
-                print p['id']
-                print pk.GetUpdateDetail(p['id'])
+                print p.id
+                print pk.GetUpdateDetail(p.id)
 
     if 'all' in cmd or "search-name" in cmd:
         print '---- SearchName() -----'
@@ -112,22 +110,22 @@ if __name__ == '__main__':
         print '---- InstallPackages() -----'
         pkg = pk.Resolve(FILTER_NOT_INSTALLED, 'yumex')
         if pkg:
-            print "Installing : %s " % pkg[0]['id']
-            pk.InstallPackages(pkg[0]['id'], cb)
+            print "Installing : %s " % pkg[0].id
+            pk.InstallPackages(pkg[0].id, cb)
 
     if "remove-packages" in cmd:
         print '---- RemovePackages() -----'
         pkg = pk.Resolve(FILTER_INSTALLED, 'yumex')
         if pkg:
-            print "Removing : %s " % pkg[0]['id']
-            pk.RemovePackages(pkg[0]['id'], cb)
+            print "Removing : %s " % pkg[0].id
+            pk.RemovePackages(pkg[0].id, cb)
 
     if "download-packages" in cmd:
         print '---- DownloadPackages() -----'
         pkg = pk.Resolve(FILTER_NOT_INSTALLED, 'yumex')
         if pkg:
-            print "Installing : %s " % pkg[0]['id']
-            print pk.DownloadPackages(pkg[0]['id'])
+            print "Installing : %s " % pkg[0].id
+            print pk.DownloadPackages(pkg[0].id)
 
     pk.SuggestDaemonQuit()
 
