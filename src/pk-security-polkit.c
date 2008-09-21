@@ -350,24 +350,9 @@ pk_security_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get an instance");
 	security = pk_security_new ();
-	if (security != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "check connection");
-	if (security->priv->connection != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "check PolKit context");
-	if (security->priv->pk_context != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, security != NULL);
+	egg_test_title_assert (test, "check connection", security->priv->connection != NULL);
+	egg_test_title_assert (test, "check PolKit context", security->priv->pk_context != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "map valid role to action");

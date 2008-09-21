@@ -227,10 +227,7 @@ pk_conf_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get an instance");
 	conf = pk_conf_new ();
-	if (conf != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, conf != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "get the default backend");

@@ -539,10 +539,7 @@ pk_task_list_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get client");
 	tlist = pk_task_list_new ();
-	if (tlist != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, tlist != NULL);
 	g_signal_connect (tlist, "finished",
 			  G_CALLBACK (pk_task_list_test_finished_cb), test);
 
@@ -561,9 +558,8 @@ pk_task_list_test (EggTest *test)
 	egg_test_title (test, "we finished?");
 	if (finished)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "not finished");
-	}
 
 	g_object_unref (tlist);
 	g_object_unref (client);

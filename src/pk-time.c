@@ -364,28 +364,23 @@ pk_time_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get PkTime object");
 	time = pk_time_new ();
-	if (time != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, time != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "get elapsed correctly at startup");
 	value = pk_time_get_elapsed (time);
-	if (value < 10) {
+	if (value < 10)
 		egg_test_success (test, "elapsed at startup %i", value);
-	} else {
+	else
 		egg_test_failed (test, "elapsed at startup %i", value);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "ignore remaining correctly");
 	value = pk_time_get_remaining (time);
 	if (value == 0)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "got %i, not zero!", value);
-	}
 
 	/************************************************************/
 	g_usleep (1000*1000);
@@ -393,28 +388,23 @@ pk_time_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get elapsed correctly");
 	value = pk_time_get_elapsed (time);
-	if (value > 900 && value < 1100) {
+	if (value > 900 && value < 1100)
 		egg_test_success (test, "elapsed ~1000ms: %i", value);
-	} else {
+	else
 		egg_test_failed (test, "elapsed not ~1000ms: %i", value);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "ignore remaining correctly when not enough entries");
 	value = pk_time_get_remaining (time);
 	if (value == 0)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "got %i, not zero!", value);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "make sure we can add data");
 	ret = pk_time_add_data (time, 10);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "make sure we can get remaining correctly");
@@ -427,9 +417,8 @@ pk_time_test (EggTest *test)
 	value = pk_time_get_remaining (time);
 	if (value > 9 && value < 11)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "got %i", value);
-	}
 
 	/* reset */
 	g_object_unref (time);
@@ -447,10 +436,8 @@ pk_time_test (EggTest *test)
 	value = pk_time_get_remaining (time);
 	if (value > 1199 && value < 1201)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "got %i", value);
-	}
-
 
 	g_object_unref (time);
 

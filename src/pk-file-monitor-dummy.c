@@ -143,10 +143,7 @@ pk_file_monitor_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get a file_monitor");
 	file_monitor = pk_file_monitor_new ();
-	if (file_monitor != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, file_monitor != NULL);
 	g_object_unref (file_monitor);
 
 	egg_test_end (test);

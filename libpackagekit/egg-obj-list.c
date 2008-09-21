@@ -533,10 +533,7 @@ egg_obj_list_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get an instance");
 	list = egg_obj_list_new ();
-	if (list != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, list != NULL);
 
 	g_object_unref (list);
 

@@ -4083,18 +4083,12 @@ pk_client_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get client");
 	client = pk_client_new ();
-	if (client != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, client != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "reset client, unused");
 	ret = pk_client_reset (client, NULL);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/* check use after finalise */
 	g_signal_connect (client, "finished",
@@ -4116,10 +4110,7 @@ pk_client_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get new client so we can test resets in ::Finished()");
 	client = pk_client_new ();
-	if (client != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, client != NULL);
 
 	/* check reset during finalise when sync */
 	pk_client_set_synchronous (client, TRUE, NULL);
@@ -4129,10 +4120,7 @@ pk_client_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "search name sync, with a reset in finalise");
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "check reset failed");
@@ -4146,10 +4134,7 @@ pk_client_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get new client");
 	client = pk_client_new ();
-	if (client != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, client != NULL);
 	pk_client_set_synchronous (client, TRUE, NULL);
 	pk_client_set_use_buffer (client, TRUE, NULL);
 

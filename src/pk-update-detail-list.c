@@ -192,10 +192,7 @@ pk_update_detail_test_list (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get an instance");
 	list = pk_update_detail_list_new ();
-	if (list != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, list != NULL);
 
 	g_object_unref (list);
 

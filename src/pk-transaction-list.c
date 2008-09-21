@@ -556,25 +556,22 @@ pk_transaction_list_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get a transaction list object");
 	tlist = pk_transaction_list_new ();
-	if (tlist != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, tlist != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "make sure we get a valid tid");
 	tid = pk_transaction_id_generate ();
-	if (tid != NULL) {
+	if (tid != NULL)
 		egg_test_success (test, "got tid %s", tid);
-	} else
+	else
 		egg_test_failed (test, "failed to get tid");
 
 	/************************************************************/
 	egg_test_title (test, "create a transaction object");
 	ret = pk_transaction_list_create (tlist, tid);
-	if (ret) {
+	if (ret)
 		egg_test_success (test, "created transaction %s", tid);
-	} else
+	else
 		egg_test_failed (test, "failed to create transaction");
 
 	/************************************************************/
@@ -654,10 +651,7 @@ pk_transaction_list_test (EggTest *test)
 	backend = pk_backend_new ();
 	egg_test_title (test, "try to load a valid backend");
 	ret = pk_backend_set_name (backend, "dummy");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "lock an valid backend");

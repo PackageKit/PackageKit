@@ -730,10 +730,7 @@ pk_extra_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get extra");
 	extra = pk_extra_new ();
-	if (extra != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, extra != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "set database");
@@ -754,18 +751,12 @@ pk_extra_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "set database (same as original)");
 	ret = pk_extra_set_database (extra, "extra.db");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "set database (don't care)");
 	ret = pk_extra_set_database (extra, NULL);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "set locale explicit en");
@@ -777,10 +768,7 @@ pk_extra_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "check locale base");
-	if (extra->priv->locale_base == NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, extra->priv->locale_base == NULL);
 
 	/************************************************************/
 	egg_test_title (test, "get locale");
@@ -810,10 +798,7 @@ pk_extra_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "set locale implicit en_GB");
 	ret = pk_extra_set_locale (extra, "en_GB");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "check locale base");
