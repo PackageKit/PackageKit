@@ -520,10 +520,10 @@ typedef enum {
 } PkLicenseEnum;
 
 /* general */
-guint		 pk_enum_find_value			(PkEnumMatch	*table,
+guint		 pk_enum_find_value			(const PkEnumMatch *table,
 							 const gchar	*string)
 							 G_GNUC_WARN_UNUSED_RESULT;
-const gchar	*pk_enum_find_string			(PkEnumMatch	*table,
+const gchar	*pk_enum_find_string			(const PkEnumMatch *table,
 							 guint		 value)
 							 G_GNUC_WARN_UNUSED_RESULT;
 
