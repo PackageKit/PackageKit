@@ -865,6 +865,7 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_set_running (PkTransaction *transaction)
 {
 	PkBackendDesc *desc;
+	PkStore *store;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
@@ -941,24 +942,25 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->has_been_run = TRUE;
 
 	/* set all possible arguments for backend */
-	pk_backend_set_bool (priv->backend, "force", priv->cached_force);
-	pk_backend_set_bool (priv->backend, "allow_deps", priv->cached_allow_deps);
-	pk_backend_set_bool (priv->backend, "autoremove", priv->cached_autoremove);
-	pk_backend_set_bool (priv->backend, "enabled", priv->cached_enabled);
-	pk_backend_set_bool (priv->backend, "trusted", priv->cached_trusted);
-	pk_backend_set_uint (priv->backend, "filters", priv->cached_filters);
-	pk_backend_set_uint (priv->backend, "provides", priv->cached_provides);
-	pk_backend_set_strv (priv->backend, "package_ids", priv->cached_package_ids);
-	pk_backend_set_strv (priv->backend, "full_paths", priv->cached_full_paths);
-	pk_backend_set_string (priv->backend, "package_id", priv->cached_package_id);
-	pk_backend_set_string (priv->backend, "transaction_id", priv->cached_transaction_id);
-	pk_backend_set_string (priv->backend, "full_path", priv->cached_full_path);
-	pk_backend_set_string (priv->backend, "search", priv->cached_search);
-	pk_backend_set_string (priv->backend, "repo_id", priv->cached_repo_id);
-	pk_backend_set_string (priv->backend, "key_id", priv->cached_key_id);
-	pk_backend_set_string (priv->backend, "parameter", priv->cached_parameter);
-	pk_backend_set_string (priv->backend, "value", priv->cached_value);
-	pk_backend_set_string (priv->backend, "directory", priv->cached_directory);
+	store = pk_backend_get_store (priv->backend);
+	pk_store_set_bool (store, "force", priv->cached_force);
+	pk_store_set_bool (store, "allow_deps", priv->cached_allow_deps);
+	pk_store_set_bool (store, "autoremove", priv->cached_autoremove);
+	pk_store_set_bool (store, "enabled", priv->cached_enabled);
+	pk_store_set_bool (store, "trusted", priv->cached_trusted);
+	pk_store_set_uint (store, "filters", priv->cached_filters);
+	pk_store_set_uint (store, "provides", priv->cached_provides);
+	pk_store_set_strv (store, "package_ids", priv->cached_package_ids);
+	pk_store_set_strv (store, "full_paths", priv->cached_full_paths);
+	pk_store_set_string (store, "package_id", priv->cached_package_id);
+	pk_store_set_string (store, "transaction_id", priv->cached_transaction_id);
+	pk_store_set_string (store, "full_path", priv->cached_full_path);
+	pk_store_set_string (store, "search", priv->cached_search);
+	pk_store_set_string (store, "repo_id", priv->cached_repo_id);
+	pk_store_set_string (store, "key_id", priv->cached_key_id);
+	pk_store_set_string (store, "parameter", priv->cached_parameter);
+	pk_store_set_string (store, "value", priv->cached_value);
+	pk_store_set_string (store, "directory", priv->cached_directory);
 
 	/* lets reduce pointer dereferences... */
 	desc = priv->backend->desc;

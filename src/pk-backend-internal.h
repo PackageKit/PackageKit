@@ -23,6 +23,7 @@
 #define __PK_BACKEND_INTERNAL_H
 
 #include <glib-object.h>
+#include "pk-store.h"
 #include "pk-backend.h"
 #include "pk-bitfield.h"
 
@@ -41,6 +42,7 @@ typedef struct _PkBackendClass PkBackendClass;
 struct _PkBackend
 {
 	GObject			 parent;
+	PkStore			*store;
 	PkBackendDesc		*desc;
 	PkBackendPrivate	*priv;
 };
@@ -71,6 +73,7 @@ gboolean	 pk_backend_get_backend_detail		(PkBackend	*backend,
 PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_actions			(PkBackend	*backend);
+PkStore		*pk_backend_get_store			(PkBackend	*backend);
 
 G_END_DECLS
 
