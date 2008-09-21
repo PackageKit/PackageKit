@@ -30,6 +30,8 @@ typedef struct EggTest EggTest;
 gboolean	 egg_test_start			(EggTest *test, const gchar *name);
 void		 egg_test_end			(EggTest *test);
 void		 egg_test_title			(EggTest *test, const gchar *format, ...);
+void		 egg_test_title_assert		(EggTest *test, const gchar *text, gboolean value);
+void		 egg_test_assert		(EggTest *test, gboolean value);
 void		 egg_test_success		(EggTest *test, const gchar *format, ...);
 void		 egg_test_failed		(EggTest *test, const gchar *format, ...);
 EggTest		*egg_test_init			(void);
