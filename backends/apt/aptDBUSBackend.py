@@ -53,6 +53,8 @@ warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
 
+apt_pkg.InitConfig()
+
 # Xapian database is optionally used to speed up package description search
 XAPIAN_DB_PATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
 XAPIAN_DB = XAPIAN_DB_PATH + "/index"
@@ -83,6 +85,7 @@ except ImportError:
     META_RELEASE_SUPPORT = False
 else:
     META_RELEASE_SUPPORT = True
+
 
 # Set a timeout for the changelog download
 socket.setdefaulttimeout(2)
@@ -456,7 +459,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled = threading.Event()
         self._canceled.clear()
         self._lock = threading.Lock()
-        apt_pkg.InitConfig()
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -2075,6 +2077,10 @@ def main():
                       action="store_true", dest="takeover",
                       help="Exit the currently running backend "
                            "(Only needed by developers)")
+    parser.add_option("-r", "--root",
+                      action="store", type="string", dest="root",
+                      help="Use the given directory as the system root "
+                           "(Only needed by developers)")
     parser.add_option("-p", "--profile",
                       action="store", type="string", dest="profile",
                       help="Store profiling stats in the given file "
@@ -2088,6 +2094,12 @@ def main():
     if options.debug:
         pklog.setLevel(logging.DEBUG)
         sys.excepthook = debug_exception
+
+    if options.root:
+        config = apt_pkg.Config
+        config.Set("Dir", options.root)
+        config.Set("Dir::State::status",
+                   os.path.join(options.root, "/var/lib/dpkg/status"))
 
     if options.takeover:
         takeover()
