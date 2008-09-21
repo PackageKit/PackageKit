@@ -63,6 +63,8 @@ shared_SOURCES =					\
 	pk-time.c					\
 	pk-conf.c					\
 	pk-conf.h					\
+	pk-store.c					\
+	pk-store.h					\
 	pk-cache.c					\
 	pk-cache.h					\
 	pk-notify.c					\
