@@ -1631,10 +1631,7 @@ pk_backend_dbus_test_cancel_cb (gpointer data)
 	egg_test_title (test, "cancel");
 	ret = pk_backend_dbus_cancel (backend_dbus);
 	elapsed = egg_test_elapsed (test);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "check we didnt take too long");
@@ -1691,10 +1688,7 @@ pk_backend_test_dbus (EggTest *test)
 	egg_test_title (test, "set the name and activate");
 	ret = pk_backend_dbus_set_name (backend_dbus, "org.freedesktop.PackageKitTestBackend");
 	elapsed = egg_test_elapsed (test);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "check we actually did something and didn't fork");
@@ -1714,10 +1708,7 @@ pk_backend_test_dbus (EggTest *test)
 	egg_test_title (test, "search by name");
 	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
 	elapsed = egg_test_elapsed (test);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "check we forked and didn't block");
@@ -1744,10 +1735,7 @@ pk_backend_test_dbus (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "search by name again");
 	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/* wait for finished */
 	egg_test_loop_wait (test, 5000);
@@ -1767,10 +1755,7 @@ pk_backend_test_dbus (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "search by name");
 	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/* schedule a cancel */
 	egg_test_set_user_data (test, backend_dbus);

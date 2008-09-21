@@ -595,10 +595,7 @@ pk_package_list_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "create");
 	plist = pk_package_list_new ();
-	if (plist != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, plist != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "make sure size is zero");
@@ -613,10 +610,7 @@ pk_package_list_test (EggTest *test)
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, id, "GNOME!");
 	pk_package_id_free (id);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "make sure size is one");
@@ -642,35 +636,25 @@ pk_package_list_test (EggTest *test)
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	ret = pk_package_list_contains (plist, "liferea;1.23;i386;data");
 	pk_package_id_free (id);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "check exists");
 	ret = pk_package_list_contains (plist, "gnome;1.23;i386;data");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "check exists different data");
 	ret = pk_package_list_contains (plist, "gnome;1.23;i386;fedora");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "add entry");
 	text = pk_package_list_to_string (plist);
 	if (egg_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "get string incorrect '%s'", text);
-	}
 	g_free (text);
 
 	/************************************************************/
@@ -680,9 +664,8 @@ pk_package_list_test (EggTest *test)
 	pk_package_id_free (id);
 	if (ret)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "could not add NULL summary");
-	}
 	g_object_unref (plist);
 
 	plist = pk_package_list_new ();
@@ -735,9 +718,8 @@ pk_package_list_test (EggTest *test)
 	    egg_strequal (r1->summary, "fed") &&
 	    egg_strequal (r2->summary, "zed"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
-	}
 
 	/************************************************************/
 	egg_test_title (test, "sort by severity");
@@ -749,9 +731,8 @@ pk_package_list_test (EggTest *test)
 	    r1->info == PK_INFO_ENUM_BUGFIX &&
 	    r2->info == PK_INFO_ENUM_ENHANCEMENT)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
-	}
 
 	g_object_unref (plist);
 

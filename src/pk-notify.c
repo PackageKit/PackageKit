@@ -223,10 +223,7 @@ egg_test_notify (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get an instance");
 	notify = pk_notify_new ();
-	if (notify != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, notify != NULL);
 
 	g_object_unref (notify);
 

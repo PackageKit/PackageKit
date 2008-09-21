@@ -842,27 +842,18 @@ pk_engine_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get a backend instance");
 	backend = pk_backend_new ();
-	if (backend != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, backend != NULL);
 
 	/* set the type, as we have no pk-main doing this for us */
 	/************************************************************/
 	egg_test_title (test, "set the backend name");
 	ret = pk_backend_set_name (backend, "dummy");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "get an engine instance");
 	engine = pk_engine_new ();
-	if (engine != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, engine != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "get idle at startup");

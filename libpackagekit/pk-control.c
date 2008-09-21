@@ -935,10 +935,7 @@ pk_control_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get control");
 	control = pk_control_new ();
-	if (control != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, control != NULL);
 	g_object_unref (control);
 
 	egg_test_end (test);

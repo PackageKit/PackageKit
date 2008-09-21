@@ -586,7 +586,7 @@ pk_transaction_db_test (EggTest *test)
 	egg_test_title (test, "do we get the correct time");
 	value = pk_transaction_db_action_time_since (db, PK_ROLE_ENUM_REFRESH_CACHE);
 	if (value > 1 && value <= 4)
-		egg_test_success (test, "failed to get correct time");
+		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed to get correct time, %i", value);
 

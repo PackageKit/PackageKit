@@ -165,19 +165,13 @@ egg_test_transaction_id (EggTest *test)
 	 ************************************************************/
 	egg_test_title (test, "get an tid object");
 	tid = pk_transaction_id_generate ();
-	if (tid != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, tid != NULL);
 	g_free (tid);
 
 	/************************************************************/
 	egg_test_title (test, "tid equal pass (same)");
 	ret = pk_transaction_id_equal ("/34_1234def_r23", "/34_1234def_r23");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	egg_test_end (test);
 }

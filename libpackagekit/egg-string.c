@@ -376,18 +376,12 @@ egg_string_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "id strcmp pass");
 	ret = egg_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "id strcmp fail");
 	ret = egg_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************
 	 ****************          strlen          ******************
@@ -458,74 +452,47 @@ egg_string_test (EggTest *test)
 	 ************************************************************/
 	egg_test_title (test, "check number valid");
 	ret = egg_strnumber ("123");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "check number valid");
 	ret = egg_strnumber ("-123");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "check number zero");
 	ret = egg_strnumber ("0");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "check number oversize");
 	ret = egg_strnumber ("123456891234");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "check number NULL");
 	ret = egg_strnumber (NULL);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "check number blank");
 	ret = egg_strnumber ("");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "check number not negative");
 	ret = egg_strnumber ("503-");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "check number positive");
 	ret = egg_strnumber ("+503");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "check number random chars");
 	ret = egg_strnumber ("dave");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************
 	 **************        Convert numbers       ****************

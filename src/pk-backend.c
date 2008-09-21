@@ -2081,26 +2081,17 @@ pk_backend_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "set a blank string");
 	ret = pk_backend_set_string (backend, "dave2", "");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "set a ~bool");
 	ret = pk_backend_set_bool (backend, "roger2", FALSE);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "set a zero uint");
 	ret = pk_backend_set_uint (backend, "linda2", 0);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "get a blank string");
@@ -2129,26 +2120,17 @@ pk_backend_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "set a string");
 	ret = pk_backend_set_string (backend, "dave", "ania");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "set a bool");
 	ret = pk_backend_set_bool (backend, "roger", TRUE);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "set a uint");
 	ret = pk_backend_set_uint (backend, "linda", 999);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "get a string");
@@ -2206,10 +2188,7 @@ pk_backend_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "delete the config file");
 	ret = g_unlink (filename);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	g_signal_connect (backend, "message", G_CALLBACK (pk_backend_test_message_cb), NULL);
 	g_signal_connect (backend, "finished", G_CALLBACK (pk_backend_test_finished_cb), test);
@@ -2266,10 +2245,7 @@ pk_backend_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "try to load a valid backend");
 	ret = pk_backend_set_name (backend, "dummy");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "load an valid backend again");

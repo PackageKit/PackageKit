@@ -391,10 +391,7 @@ pk_catalog_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get catalog");
 	catalog = pk_catalog_new ();
-	if (catalog != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, catalog != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "process the files getting non-null");
@@ -411,9 +408,9 @@ pk_catalog_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "have we got packages?");
 	size = pk_package_list_get_size (list);
-	if (size > 0) {
+	if (size > 0)
 		egg_test_success (test, "%i packages", size);
-	} else
+	else
 		egg_test_failed (test, NULL);
 	g_object_unref (list);
 	g_object_unref (catalog);

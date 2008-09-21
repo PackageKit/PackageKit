@@ -241,50 +241,32 @@ pk_package_ids_test (EggTest *test)
 
 	egg_test_title (test, "parse va_list");
 	package_ids = pk_package_ids_test_va_list ("foo;0.0.1;i386;fedora", "bar;0.1.1;noarch;livna", NULL);
-	if (package_ids != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, package_ids != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "correct size");
 	size = pk_package_ids_size (package_ids);
-	if (size == 2)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, size == 2);
 
 	/************************************************************/
 	egg_test_title (test, "verify");
 	ret = pk_package_ids_check (package_ids);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "first correct");
 	ret = pk_package_id_equal_strings (package_ids[0], "foo;0.0.1;i386;fedora");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "second correct");
 	ret = pk_package_id_equal_strings (package_ids[1], "bar;0.1.1;noarch;livna");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "print");
 	ret = pk_package_ids_print (package_ids);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "to text");
