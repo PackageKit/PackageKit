@@ -50,6 +50,7 @@ class PackageKitSmartInterface(Interface):
 
     def __init__(self, ctrl, backend):
         Interface.__init__(self, ctrl)
+        smart.sysconf.set("max-active-downloads", 1, soft=True)
         self._progress = PackageKitSmartProgress(True, backend)
 
     def getProgress(self, obj, hassub=False):
