@@ -228,6 +228,18 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 }
 
 /**
+ * backend_get_update_detail:
+ */
+static void
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, BACKEND("get-update-detail"), package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
  * backend_install_packages:
  */
 static void
@@ -450,7 +462,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_packages,				/* get_packages */
 	backend_get_repo_list,				/* get_repo_list */
 	backend_get_requires,				/* get_requires */
-	NULL,						/* get_update_detail */
+	backend_get_update_detail,			/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	backend_install_files,				/* install_files */
 	backend_install_packages,			/* install_packages */

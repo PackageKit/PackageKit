@@ -344,6 +344,85 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._show_package_list()
 
     @needs_cache
+    def get_update_detail(self, packageids):
+        self.status(STATUS_INFO)
+        self.allow_cancel(True)
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+
+            packages = self._process_search_results(results)
+
+            if len(packages) == 0:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
+                return
+
+            channels = self._search_channels(packageid)
+
+            package = packages[0]
+            changelog = ''
+            errata = None
+            for loader in package.loaders:
+                if channels and loader.getChannel() not in channels:
+                    continue
+                info = loader.getInfo(package)
+                if hasattr(info, 'getChangeLog'):
+                    changelog = info.getChangeLog()
+                if hasattr(loader, 'getErrata'):
+                    errata = loader.getErrata(package)
+
+            upgrades = ''
+            if package.upgrades:
+                upgrades = []
+                for upg in package.upgrades:
+                    for prv in upg.providedby:
+                        for prvpkg in prv.packages:
+                            if prvpkg.installed:
+                                upgrades.append(self._package_id(prvpkg, loader))
+                upgrades = '^'.join(upgrades)
+            obsoletes = ''
+
+            if not errata:
+                state = self._get_status(package) or ''
+                self.update_detail(self._package_id(package, loader),
+                    upgrades, obsoletes, '', '', '',
+                    'none', '', changelog, state, '', '')
+                continue
+
+            state = errata.getType()
+            issued = errata.getDate()
+            updated = ''
+
+            description = errata.getDescription()
+            description = description.replace(";", ",")
+            description = description.replace("\n", ";")
+
+            urls = errata.getReferenceURLs()
+            vendor_urls = []
+            bugzilla_urls = []
+            cve_urls = []
+            for url in urls:
+                if url.find("cve") != -1:
+                    cve_urls.append(url)
+                elif url.find("bugzilla") != -1:
+                    bugzilla_urls.append(url)
+                else:
+                    vendor_urls.append(url)
+            vendor_url = ';'.join(vendor_urls)
+            bugzilla_url = ';'.join(vendor_urls)
+            cve_url = ';'.join(vendor_urls)
+
+            if errata.isRebootSuggested():
+                reboot = 'system'
+            else:
+                reboot = 'none'
+
+            self.update_detail(self._package_id(package, loader),
+                upgrades, obsoletes, vendor_url, bugzilla_url, cve_url,
+                reboot, description, changelog, state, issued, updated)
+
+    @needs_cache
     def resolve(self, filters, packages):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1023,6 +1102,17 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         return group
 
     def _get_status(self, package):
+        for loader in package.loaders:
+            if hasattr(loader, 'getErrata'):
+                errata = loader.getErrata(package)
+                type = errata.getType()
+                if type == 'security':
+                    return INFO_SECURITY
+                elif type == 'bugfix':
+                    return INFO_BUGFIX
+                elif type == 'enhancement':
+                    return INFO_ENHANCEMENT
+        # using the flags for errata is deprecated
         flags = smart.pkgconf.testAllFlags(package)
         for flag in flags:
             if flag == 'security':
