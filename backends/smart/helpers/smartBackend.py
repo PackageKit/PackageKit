@@ -38,7 +38,11 @@ def needs_cache(func):
             obj.status(STATUS_LOADING_CACHE)
             obj.allow_cancel(True)
             obj.ctrl.reloadChannels()
-        result = func(obj, *args, **kwargs)
+        result = None
+        try:
+            result = func(obj, *args, **kwargs)
+        except UnicodeDecodeError, e:
+            pass
         if not obj._cacheloaded:
             obj.ctrl.saveSysConf()
             obj._cacheloaded = True
