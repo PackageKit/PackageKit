@@ -299,6 +299,13 @@ main (int argc, char *argv[])
 	pk_client_set_synchronous (client, TRUE, NULL);
 
 	extra = pk_extra_new ();
+	ret = pk_extra_set_access (extra, PK_EXTRA_ACCESS_WRITE_ONLY);
+	if (!ret) {
+		if (!quiet)
+			g_print ("%s", _("Could not set database readonly"));
+		goto out;
+	}
+
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
 		if (!quiet) {
