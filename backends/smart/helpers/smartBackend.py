@@ -755,8 +755,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             group = self._get_group(info)
 
-            self.details(packageid, license, group, description, url,
-                    pkgsize)
+            self.details(self._package_id(package),
+                         license, group, description, url, pkgsize)
 
     @needs_cache
     def get_files(self, packageids):
