@@ -377,6 +377,15 @@ zypp_get_packages_by_file (const gchar *search_file)
 		}
 	}
 
+	if (v->empty ()) {
+		zypp::Capability cap (search_file);
+		zypp::sat::WhatProvides prov (cap);
+
+		for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
+			v->push_back (*it);
+		}
+	}
+
 	return v;
 }
 
