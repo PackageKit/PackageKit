@@ -930,6 +930,23 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package,status in self._package_list:
             self._show_package(package, status)
 
+    def _package_id(self, package, loader=None):
+        name, version, arch = self._splitpackage(package)
+        collection = False
+        if name.startswith('^'):
+            collection = True
+            name = name.replace('^', '@', 1)
+        if not loader:
+           loader = package.loaders[0]
+        channel = loader.getChannel()
+        if package.installed:
+            data = 'installed'
+        elif self._channel_is_local(channel):
+            data = 'local'
+        else:
+            data = channel.getAlias()
+        return pkpackage.get_package_id(name, version, arch, data)
+
     def _show_package(self, package, status=None):
         if not status:
             if self._status == STATUS_DOWNLOAD:
@@ -942,25 +959,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 status = INFO_REMOVING
             else:
                 status = INFO_UNKNOWN
-        name, version, arch = self._splitpackage(package)
-        collection = False
-        if name.startswith('^'):
-            collection = True
-            name = name.replace('^', '@', 1)
         for loader in package.loaders:
             channel = loader.getChannel()
             if package.installed and not channel.getType().endswith('-sys'):
                 continue
             info = loader.getInfo(package)
-            if package.installed:
-                data = 'installed'
-            elif self._channel_is_local(channel):
-                data = 'local'
-            else:
-                data = channel.getAlias()
             summary = info.getSummary()
-            self.package(pkpackage.get_package_id(name, version, arch, data),
-                status, summary)
+            self.package(self._package_id(package, loader), status, summary)
 
     def _package_in_requires(self, packagename, groupname):
         groups = self.ctrl.getCache().getPackages(groupname)
