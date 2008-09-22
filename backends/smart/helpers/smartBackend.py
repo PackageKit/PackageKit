@@ -370,6 +370,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 info = loader.getInfo(package)
                 if hasattr(info, 'getChangeLog'):
                     changelog = info.getChangeLog()
+                    changelog = ';'.join(changelog)
                 if hasattr(loader, 'getErrata'):
                     errata = loader.getErrata(package)
 
