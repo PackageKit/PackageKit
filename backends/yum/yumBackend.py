@@ -1330,11 +1330,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 desc = grp.description
                 desc = desc.replace('\n\n',';')
                 desc = desc.replace('\n',' ')
-                cat = self._get_category(grp.groupid)
-                if cat:
-                    group = "%s\%s" % (cat.name,grp.name)
-                else:
-                    group = grp.name
+                group = GROUP_COLLECTIONS
                 pkgs = self._get_group_packages(grp)
                 size = 0;
                 for pkg in pkgs:
