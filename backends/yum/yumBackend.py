@@ -1306,6 +1306,13 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED,"The packages failed to be removed")
 
+    def _get_category(self,groupid):
+        cat_id = self.comps.get_category(groupid)
+        if self.yumbase.comps._categories.has_key(cat_id):
+            return self.yumbase.comps._categories[cat_id]
+        else:
+            return None
+
     def get_details(self,package_ids):
         '''
         Print a detailed details for a given package
@@ -1323,7 +1330,11 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 desc = grp.description
                 desc = desc.replace('\n\n',';')
                 desc = desc.replace('\n',' ')
-                group = grp.name
+                cat = self._get_category(grp.groupid)
+                if cat:
+                    group = "%s\%s" % (cat.name,grp.name)
+                else:
+                    group = grp.name
                 pkgs = self._get_group_packages(grp)
                 size = 0;
                 for pkg in pkgs:

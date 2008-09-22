@@ -288,6 +288,15 @@ class yumComps:
             all_packages.append(row[0])
         return all_packages
 
+    def get_category(self,groupid):
+        ''' for a comps group, get the category for a group '''
+        category = None
+        self.cursor.execute('SELECT category FROM groups WHERE groupid = ?;',[groupid])
+        for row in self.cursor:
+            category = row[0]
+            break
+        return category
+
 if __name__ == "__main__":
     import yum
     import os
