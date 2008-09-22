@@ -596,7 +596,7 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 				PK_INFO_ENUM_INSTALLED :
 				PK_INFO_ENUM_AVAILABLE,
 			    package_id,
-			    it->lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
+			    it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 		g_free (package_id);
 	}
 }
