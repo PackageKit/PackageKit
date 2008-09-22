@@ -81,6 +81,8 @@ static const PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO,	"download-updateinfo"},
 	{PK_STATUS_ENUM_REPACKAGING,		"repackaging"},
 	{PK_STATUS_ENUM_LOADING_CACHE,		"loading-cache"},
+	{PK_STATUS_ENUM_SCAN_APPLICATIONS,	"scan-applications"},
+	{PK_STATUS_ENUM_GENERATE_PACKAGE_LIST,	"generate-package-list"},
 	{0, NULL}
 };
 
