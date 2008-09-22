@@ -43,6 +43,8 @@ struct PkRefreshPrivate
 	PkExtra			*extra;
 	GMainLoop		*loop;
 	PkPackageList		*list;
+	guint			 finished_id;
+	guint			 package_id;
 };
 
 enum {
@@ -339,10 +341,12 @@ pk_refresh_update_package_list (PkRefresh *refresh)
 	/* clear old list */
 	pk_package_list_clear (refresh->priv->list);
 
+	/* update UI */
+	pk_refresh_emit_status_changed (refresh, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
+	pk_refresh_emit_progress_changed (refresh, 101);
+
 	/* get the new package list */
 	pk_backend_reset (refresh->priv->backend);
-	pk_refresh_emit_status_changed (refresh, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
-	pk_refresh_emit_progress_changed (refresh, 0);
 	refresh->priv->backend->desc->get_packages (refresh->priv->backend, PK_FILTER_ENUM_NONE);
 
 	/* wait for finished */
@@ -396,6 +400,9 @@ pk_refresh_finalize (GObject *object)
 	g_return_if_fail (PK_IS_REFRESH (object));
 	refresh = PK_REFRESH (object);
 
+	g_signal_handler_disconnect (refresh->priv->backend, refresh->priv->finished_id);
+	g_signal_handler_disconnect (refresh->priv->backend, refresh->priv->package_id);
+
 	if (g_main_loop_is_running (refresh->priv->loop))
 		g_main_loop_quit (refresh->priv->loop);
 	g_main_loop_unref (refresh->priv->loop);
@@ -445,10 +452,12 @@ pk_refresh_init (PkRefresh *refresh)
 	refresh->priv->list = pk_package_list_new ();
 	refresh->priv->backend = pk_backend_new ();
 
-	g_signal_connect (refresh->priv->backend, "finished",
-			  G_CALLBACK (pk_refresh_finished_cb), refresh);
-	g_signal_connect (refresh->priv->backend, "package",
-			  G_CALLBACK (pk_refresh_package_cb), refresh);
+	refresh->priv->finished_id =
+		g_signal_connect (refresh->priv->backend, "finished",
+				  G_CALLBACK (pk_refresh_finished_cb), refresh);
+	refresh->priv->package_id =
+		g_signal_connect (refresh->priv->backend, "package",
+				  G_CALLBACK (pk_refresh_package_cb), refresh);
 
 	refresh->priv->extra = pk_extra_new ();
 
