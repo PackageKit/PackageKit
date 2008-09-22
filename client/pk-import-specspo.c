@@ -48,6 +48,7 @@ static PkClient *client = NULL;
 static PkExtra *extra = NULL;
 static GPtrArray *locale_array = NULL;
 static GPtrArray *package_array = NULL;
+static gboolean quiet = FALSE;
 
 /**
  * pk_import_specspo_get_summary:
@@ -114,11 +115,12 @@ pk_import_specspo_do_package (const gchar *package_name)
 
 	summary = pk_import_specspo_get_summary (package_name);
 	if (summary == NULL) {
-		g_print ("no summary for %s\n", package_name);
+		if (!quiet)
+			g_print ("no summary for %s\n", package_name);
 		return;
 	}
-	g_print ("processing %s [", package_name);
-//	g_print ("%s,", summary);
+	if (!quiet)
+		g_print ("processing %s [", package_name);
 
 	for (j=0; j<locale_array->len; j++) {
 		locale = g_ptr_array_index (locale_array, j);
@@ -129,14 +131,15 @@ pk_import_specspo_do_package (const gchar *package_name)
 
 			/* if different, then save */
 			if (egg_strequal (summary, trans) == FALSE) {
-				g_print (" %s", locale);
-//				g_print (" %s", trans);
+				if (!quiet)
+					g_print (" %s", locale);
 				pk_extra_set_locale (extra, locale);
 				pk_extra_set_data_locale (extra, package_name, trans);
 			}
 		}
 	}
-	g_print ("]\n");
+	if (!quiet)
+		g_print ("]\n");
 }
 
 /**
@@ -157,6 +160,8 @@ main (int argc, char *argv[])
 			"Show extra debugging information", NULL },
 		{ "database-location", '\0', 0, G_OPTION_ARG_STRING, &database_location,
 			"Database location (default set from daemon)", NULL },
+		{ "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet,
+			"Do not show any output to the console", NULL },
 		{ NULL}
 	};
 
@@ -176,8 +181,10 @@ main (int argc, char *argv[])
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
-		g_print (_("Could not open database: %s"), database_location);
-		g_print ("\n%s\n", _("You probably need to run this program as the root user"));
+		if (!quiet) {
+			g_print (_("Could not open database: %s"), database_location);
+			g_print ("\n%s\n", _("You probably need to run this program as the root user"));
+		}
 		goto out;
 	}
 
