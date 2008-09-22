@@ -755,8 +755,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             group = self._get_group(info)
 
-            self.details(packageid, license, group, description, url,
-                    pkgsize)
+            self.details(self._package_id(package),
+                         license, group, description, url, pkgsize)
 
     @needs_cache
     def get_files(self, packageids):
@@ -1033,7 +1033,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             collection = True
             name = name.replace('^', '@', 1)
         if not loader:
-           loader = package.loaders[0]
+            for loader in package.loaders:
+                break
         channel = loader.getChannel()
         if package.installed:
             data = 'installed'
