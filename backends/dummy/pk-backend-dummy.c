@@ -539,9 +539,14 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-			    "vips-doc;7.12.4-2.fc8;noarch;linva",
-			    "The vips documentation package.");
+	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
+		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+				    "vips-doc;7.12.4-2.fc8;noarch;linva",
+				    "The vips documentation package");
+	else
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+				    "vips-doc;7.12.4-2.fc8;noarch;linva",
+				    "The vips documentation package");
 	pk_backend_finished (backend);
 }
 
