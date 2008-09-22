@@ -477,6 +477,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	gchar *filename;
 	guint time;
 	gchar *packages;
+	gchar *exec;
 	gchar *command;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -562,13 +563,15 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 		 * NOTE: we can't do this in process as it uses PkClient */
 		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageList");
 		if (ret) {
-			command = g_build_filename (LIBEXECDIR, "pk-generate-package-list", NULL);
+			exec = g_build_filename (LIBEXECDIR, "pk-generate-package-list", NULL);
+			command = g_strdup_printf ("%s --quiet", exec);
 			egg_debug ("running helper %s", command);
 			ret = g_spawn_command_line_async (command, &error);
 			if (!ret) {
 				egg_warning ("failed to execute %s: %s", command, error->message);
 				g_error_free (error);
 			}
+			g_free (exec);
 			g_free (command);
 		}
 
@@ -576,13 +579,15 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 		 * NOTE: we can't do this in process as it uses PkClient */
 		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
 		if (ret) {
-			command = g_build_filename (LIBEXECDIR, "pk-import-desktop", NULL);
+			exec = g_build_filename (LIBEXECDIR, "pk-import-desktop", NULL);
+			command = g_strdup_printf ("%s --quiet", exec);
 			egg_debug ("running helper %s", command);
 			ret = g_spawn_command_line_async (command, &error);
 			if (!ret) {
 				egg_warning ("failed to execute %s: %s", command, error->message);
 				g_error_free (error);
 			}
+			g_free (exec);
 			g_free (command);
 		}
 

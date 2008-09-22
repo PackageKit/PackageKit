@@ -41,6 +41,7 @@
 
 static PkClient *client = NULL;
 static PkExtra *extra = NULL;
+static gboolean quiet = FALSE;
 
 /**
  * pk_desktop_get_name_for_file:
@@ -153,12 +154,14 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	}
 	g_strfreev (key_array);
 
-	g_print ("PackageName:\t%s\t[", package_name);
+	if (!quiet)
+		g_print ("PackageName:\t%s\t[", package_name);
 
 	/* get the default entry */
 	name_unlocalised = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", NULL);
 	if (!egg_strzero (name_unlocalised)) {
-		g_print ("C");
+		if (!quiet)
+			g_print ("C");
 		pk_extra_set_locale (extra, "C");
 		pk_extra_set_data_locale (extra, package_name, name_unlocalised);
 	}
@@ -171,7 +174,8 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 
 		/* if different, then save */
 		if (egg_strequal (name_unlocalised, name) == FALSE) {
-			g_print (" %s", locale);
+			if (!quiet)
+				g_print (" %s", locale);
 			comment = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
 								"Comment", locale, NULL);
 			genericname = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
@@ -195,7 +199,8 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	g_ptr_array_foreach (locale_array, (GFunc) g_free, NULL);
 	g_ptr_array_free (locale_array, TRUE);
 	g_free (name_unlocalised);
-	g_print ("]\n");
+	if (!quiet)
+		g_print ("]\n");
 
 	exec = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", NULL);
 	icon = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", NULL);
@@ -240,8 +245,10 @@ pk_desktop_process_directory (const gchar *directory)
 			/* process the file */
 			if (package_name != NULL)
 				pk_desktop_process_desktop (package_name, filename);
-			else
-				g_print ("%s ignored, failed to get package name\n", filename);
+			else {
+				if (!quiet)
+					g_print ("%s ignored, failed to get package name\n", filename);
+			}
 			g_free (package_name);
 			g_free (filename);
 		}
@@ -269,6 +276,8 @@ main (int argc, char *argv[])
 			"Database location (default set from daemon)", NULL },
 		{ "desktop-location", '\0', 0, G_OPTION_ARG_STRING, &desktop_location,
 			"Desktop location (default " PK_IMPORT_APPLICATIONSDIR ")", NULL },
+		{ "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet,
+			"Do not show any output to the console", NULL },
 		{ NULL}
 	};
 
@@ -292,8 +301,10 @@ main (int argc, char *argv[])
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
-		g_print (_("Could not open database: %s"), database_location);
-		g_print ("\n%s\n", _("You probably need to run this program as the root user"));
+		if (!quiet) {
+			g_print (_("Could not open database: %s"), database_location);
+			g_print ("\n%s\n", _("You probably need to run this program as the root user"));
+		}
 		goto out;
 	}
 
