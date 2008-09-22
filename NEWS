@@ -1,3 +1,49 @@
+Version 0.3.4
+~~~~~~~~~~~~~~
+Released: 2008-09-22
+
+New Features:
+ - Add PK_PROVIDES_ENUM_HARDWARE_DRIVER to query for hardware drivers (Scott Reeves)
+ - python: Implemented some extra methods and did some code cleanups (Tim Lauridsen)
+ - python: Removed packagekitwrapper.py, it is replaced by packagekit/client.py (Tim Lauridsen)
+ - python: Implemented the last methods and make the wrapper-test.py a lot better (Tim Lauridsen)
+ - Change RefreshCacheScanDesktopFiles and RefreshCacheUpdatePackageList to default true (Richard Hughes)
+ - Use a new in-process desktop scanner and package list generator (Richard Hughes)
+ - Add a --quiet flag for the import tools (Richard Hughes)
+
+Bugfixes:
+ - Add PLD to pk_get_distro_id (Marcin Banasiak)
+ - Split the dispatcher commands using tab else we don't handle filenames
+   with spaces in them correctly (Richard Hughes)
+ - Store translations in the C locale so we can still provide a package name
+   in C even if there are no translations (Richard Hughes)
+ - Emit a proper error code when we can't start the dameon (Richard Hughes)
+ - Don't show a critical warning if we can't start up the daemon (Richard Hughes)
+ - Use gconstpointer rather than const gpointer (Richard Hughes)
+ - Make pkcon always overwrite the percentage values (Richard Hughes)
+ - python API: return objects instead of dict (Tim Lauridsen)
+
+Backends:
+ - dummy: Respect the filter setting in SearchFile (Richard Hughes)
+ - smart: Add download status for non-package/repodata files (Anders F Bjorklund)
+ - smart: Implement GetUpdateDetail (Anders F Bjorklund)
+ - smart: Only allow one download at a time, to avoid confusing interface (Anders F Bjorklund)
+ - urpmi: Now using dispatched backend (Aurelien Lefebvre)
+ - yum: Make meta packages use verbose name as summary, insted of description (Tim Lauridsen)
+ - yum: Fix a potential problem if the package_id could not be found (Richard Hughes)
+ - yum: Hook up get-distro-upgrades in the dispatcher (Richard Hughes)
+ - yum: Don't try and upgrade kernel when we GetDistroUpgrades (Richard Hughes)
+ - yum: Don't report the collection version or arch as meta (Richard Hughes)
+ - yum: Add the collection size to the output of GetDetails (Richard Hughes)
+ - yum: get-updates should list obsoletes too (Tim Lauridsen)
+ - yum: GetDepends return packages added from group, not only deps (Tim Lauridsen)
+ - zypp: Fix the separator when returning multiple id's (Scott Reeves)
+ - zypp: Build pool before solving (Stefan Haas)
+ - zypp: Cleaned WhatProvides method (Stefan Haas)
+ - zypp: Fix potential segfault (Martin S)
+ - zypp: Check provides if no package was found (Stefan Haas)
+ - zypp: Package expects a summary, not a (long) description (Martin S)
+
 Version 0.3.3
 ~~~~~~~~~~~~~~
 Released: 2008-09-16
