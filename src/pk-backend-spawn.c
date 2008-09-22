@@ -423,11 +423,9 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 	gboolean ret;
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
-	egg_debug ("stdout from %p = '%s'", spawn, line);
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, line);
-	if (!ret) {
+	if (!ret)
 		egg_debug ("failed to parse '%s'", line);
-	}
 }
 
 /**
