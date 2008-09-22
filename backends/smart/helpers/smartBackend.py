@@ -746,7 +746,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if hasattr(info, 'getLicense'):
                 license = info.getLicense()
             else:
-                license = LICENSE_UNKNOWN
+                license = ''
 
             group = self._get_group(info)
 
