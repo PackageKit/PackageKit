@@ -22,11 +22,7 @@ import smart
 from smart.interface import Interface
 from smart.progress import Progress
 from smart.fetcher import Fetcher
-from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
-        INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
-        INFO_SECURITY, INFO_BUGFIX, INFO_ENHANCEMENT, \
-        ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED, \
-        ERROR_PACKAGE_DOWNLOAD_FAILED
+from packagekit.backend import PackageKitBaseBackend
 from packagekit.package import PackagekitPackage
 from packagekit.enums import *
 import re
@@ -95,6 +91,21 @@ class PackageKitSmartProgress(Progress):
             if self._fetcher and subtopic != self._lasturl:
                 packages = self._backend._packagesdict
                 if not packages:
+                    filename = subtopic
+                    if filename.find('repomd') != -1 \
+                    or filename.find('Release') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_REPOSITORY)
+                    elif filename.find('primary') != -1 \
+                    or filename.find('Packages') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_PACKAGELIST)
+                    elif filename.find('filelists') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_FILELIST)
+                    elif filename.find('other') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_CHANGELOG)
+                    elif filename.find('comps') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_GROUP)
+                    elif filename.find('updateinfo') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_UPDATEINFO)
                     return
                 for package in packages:
                     for loader in package.loaders:
@@ -327,6 +338,85 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     self._add_package(package, status)
         self._post_process_package_list(filters)
         self._show_package_list()
+
+    @needs_cache
+    def get_update_detail(self, packageids):
+        self.status(STATUS_INFO)
+        self.allow_cancel(True)
+        for packageid in packageids:
+            ratio, results, suggestions = self._search_packageid(packageid)
+
+            packages = self._process_search_results(results)
+
+            if len(packages) == 0:
+                packagestring = self._string_packageid(packageid)
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                           'Package %s was not found' % packagestring)
+                return
+
+            channels = self._search_channels(packageid)
+
+            package = packages[0]
+            changelog = ''
+            errata = None
+            for loader in package.loaders:
+                if channels and loader.getChannel() not in channels:
+                    continue
+                info = loader.getInfo(package)
+                if hasattr(info, 'getChangeLog'):
+                    changelog = info.getChangeLog()
+                if hasattr(loader, 'getErrata'):
+                    errata = loader.getErrata(package)
+
+            upgrades = ''
+            if package.upgrades:
+                upgrades = []
+                for upg in package.upgrades:
+                    for prv in upg.providedby:
+                        for prvpkg in prv.packages:
+                            if prvpkg.installed:
+                                upgrades.append(self._package_id(prvpkg, loader))
+                upgrades = '^'.join(upgrades)
+            obsoletes = ''
+
+            if not errata:
+                state = self._get_status(package) or ''
+                self.update_detail(self._package_id(package, loader),
+                    upgrades, obsoletes, '', '', '',
+                    'none', '', changelog, state, '', '')
+                continue
+
+            state = errata.getType()
+            issued = errata.getDate()
+            updated = ''
+
+            description = errata.getDescription()
+            description = description.replace(";", ",")
+            description = description.replace("\n", ";")
+
+            urls = errata.getReferenceURLs()
+            vendor_urls = []
+            bugzilla_urls = []
+            cve_urls = []
+            for url in urls:
+                if url.find("cve") != -1:
+                    cve_urls.append(url)
+                elif url.find("bugzilla") != -1:
+                    bugzilla_urls.append(url)
+                else:
+                    vendor_urls.append(url)
+            vendor_url = ';'.join(vendor_urls)
+            bugzilla_url = ';'.join(vendor_urls)
+            cve_url = ';'.join(vendor_urls)
+
+            if errata.isRebootSuggested():
+                reboot = 'system'
+            else:
+                reboot = 'none'
+
+            self.update_detail(self._package_id(package, loader),
+                upgrades, obsoletes, vendor_url, bugzilla_url, cve_url,
+                reboot, description, changelog, state, issued, updated)
 
     @needs_cache
     def resolve(self, filters, packages):
@@ -930,6 +1020,23 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package,status in self._package_list:
             self._show_package(package, status)
 
+    def _package_id(self, package, loader=None):
+        name, version, arch = self._splitpackage(package)
+        collection = False
+        if name.startswith('^'):
+            collection = True
+            name = name.replace('^', '@', 1)
+        if not loader:
+           loader = package.loaders[0]
+        channel = loader.getChannel()
+        if package.installed:
+            data = 'installed'
+        elif self._channel_is_local(channel):
+            data = 'local'
+        else:
+            data = channel.getAlias()
+        return pkpackage.get_package_id(name, version, arch, data)
+
     def _show_package(self, package, status=None):
         if not status:
             if self._status == STATUS_DOWNLOAD:
@@ -942,25 +1049,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 status = INFO_REMOVING
             else:
                 status = INFO_UNKNOWN
-        name, version, arch = self._splitpackage(package)
-        collection = False
-        if name.startswith('^'):
-            collection = True
-            name = name.replace('^', '@', 1)
         for loader in package.loaders:
             channel = loader.getChannel()
             if package.installed and not channel.getType().endswith('-sys'):
                 continue
             info = loader.getInfo(package)
-            if package.installed:
-                data = 'installed'
-            elif self._channel_is_local(channel):
-                data = 'local'
-            else:
-                data = channel.getAlias()
             summary = info.getSummary()
-            self.package(pkpackage.get_package_id(name, version, arch, data),
-                status, summary)
+            self.package(self._package_id(package, loader), status, summary)
 
     def _package_in_requires(self, packagename, groupname):
         groups = self.ctrl.getCache().getPackages(groupname)
@@ -1003,6 +1098,17 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         return group
 
     def _get_status(self, package):
+        for loader in package.loaders:
+            if hasattr(loader, 'getErrata'):
+                errata = loader.getErrata(package)
+                type = errata.getType()
+                if type == 'security':
+                    return INFO_SECURITY
+                elif type == 'bugfix':
+                    return INFO_BUGFIX
+                elif type == 'enhancement':
+                    return INFO_ENHANCEMENT
+        # using the flags for errata is deprecated
         flags = smart.pkgconf.testAllFlags(package)
         for flag in flags:
             if flag == 'security':

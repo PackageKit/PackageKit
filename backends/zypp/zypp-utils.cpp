@@ -377,6 +377,15 @@ zypp_get_packages_by_file (const gchar *search_file)
 		}
 	}
 
+	if (v->empty ()) {
+		zypp::Capability cap (search_file);
+		zypp::sat::WhatProvides prov (cap);
+
+		for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
+			v->push_back (*it);
+		}
+	}
+
 	return v;
 }
 
@@ -587,7 +596,7 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 				PK_INFO_ENUM_INSTALLED :
 				PK_INFO_ENUM_AVAILABLE,
 			    package_id,
-			    it->lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
+			    it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 		g_free (package_id);
 	}
 }
@@ -872,7 +881,12 @@ zypp_build_package_id_capabilities (zypp::Capabilities caps)
 
 	for (zypp::sat::WhatProvides::const_iterator it = provs.begin (); it != provs.end (); it++) {
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
-		package_ids = g_strconcat (package_ids, package_id, "^", (gchar *)NULL);
+		//package_ids = g_strconcat (package_ids, package_id, "^", (gchar *)NULL);
+		if (strlen (package_ids) == 0) {			
+			package_ids = g_strdup (package_id);
+		} else {
+			package_ids = g_strconcat (package_ids, "^", package_id, (gchar *)NULL);
+		}
 		g_free (package_id);
 	}
 
