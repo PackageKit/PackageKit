@@ -1034,7 +1034,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             name = name.replace('^', '@', 1)
         if not loader:
             for loader in package.loaders:
-                channel = loader.getChannel()
                 break
         channel = loader.getChannel()
         if package.installed:
