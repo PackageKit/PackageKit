@@ -71,9 +71,8 @@ pk_package_obj_new (PkInfoEnum info, const PkPackageId *id, const gchar *summary
 gboolean
 pk_package_obj_free (PkPackageObj *obj)
 {
-	if (obj == NULL) {
+	if (obj == NULL)
 		return FALSE;
-	}
 	pk_package_id_free (obj->id);
 	g_free (obj->summary);
 	g_free (obj);
@@ -88,9 +87,8 @@ pk_package_obj_free (PkPackageObj *obj)
 gboolean
 pk_package_obj_equal (const PkPackageObj *obj1, const PkPackageObj *obj2)
 {
-	if (obj1 == NULL || obj2 == NULL) {
+	if (obj1 == NULL || obj2 == NULL)
 		return FALSE;
-	}
 	return (obj1->info == obj2->info && pk_package_id_equal (obj1->id, obj2->id));
 }
 
@@ -188,37 +186,25 @@ pk_package_obj_test (EggTest *test)
 	egg_test_title (test, "add entry");
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	obj1 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, id, "GNOME!");
-	if (obj1 != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, obj1 != NULL);
 	pk_package_id_free (id);
 
 	/************************************************************/
 	egg_test_title (test, "add entry");
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, id, "GNOME foo!");
-	if (obj2 != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, obj2 != NULL);
 	pk_package_id_free (id);
 
 	/************************************************************/
 	egg_test_title (test, "copy entry");
 	obj3 = pk_package_obj_copy (obj2);
-	if (obj3 != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, obj3 != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "check equal");
 	ret = pk_package_obj_equal (obj1, obj3);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	pk_package_obj_free (obj2);
 	pk_package_obj_free (obj3);
@@ -227,18 +213,12 @@ pk_package_obj_test (EggTest *test)
 	egg_test_title (test, "add entry");
 	id = pk_package_id_new_from_string ("gnome-do;1.23;i386;data");
 	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, id, "GNOME doo!");
-	if (obj2 != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, obj2 != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "check !equal");
 	ret = pk_package_obj_equal (obj1, obj2);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "check to string");
@@ -255,12 +235,11 @@ pk_package_obj_test (EggTest *test)
 	    pk_package_id_equal (obj3->id, obj1->id) &&
 	    egg_strequal (obj3->summary, "GNOME!"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "got incorrect data %s,%s,%s",
 			      pk_info_enum_to_text (obj3->info),
 			      pk_package_id_to_string (obj3->id),
 			      obj3->summary);
-	}
 
 	pk_package_id_free (id);
 	pk_package_obj_free (obj1);

@@ -164,18 +164,12 @@ pk_update_detail_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get an detail object");
 	obj = pk_update_detail_obj_new ();
-	if (obj != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, obj != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "test detail");
 	ret = pk_update_detail_obj_free (obj);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	egg_test_end (test);
 }

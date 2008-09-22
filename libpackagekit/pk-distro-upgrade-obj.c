@@ -127,18 +127,12 @@ egg_test_distro_upgrade (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get an upgrade object");
 	obj = pk_distro_upgrade_obj_new ();
-	if (obj != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, obj != NULL);
 
 	/************************************************************/
 	egg_test_title (test, "test upgrade");
 	ret = pk_distro_upgrade_obj_free (obj);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	egg_test_end (test);
 }

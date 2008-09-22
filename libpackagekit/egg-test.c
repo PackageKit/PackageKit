@@ -263,6 +263,31 @@ failed:
 }
 
 /**
+ * egg_test_assert:
+ **/
+void
+egg_test_assert (EggTest *test, gboolean value)
+{
+	if (value)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
+}
+
+/**
+ * egg_test_title_assert:
+ **/
+void
+egg_test_title_assert (EggTest *test, const gchar *text, gboolean value)
+{
+	egg_test_title (test, "%s", text);
+	if (value)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
+}
+
+/**
  * egg_test_get_data_file:
  **/
 gchar *

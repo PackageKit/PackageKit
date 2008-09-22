@@ -1,11 +1,26 @@
 #!/usr/bin/python
 #
+# Licensed under the GNU General Public License Version 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
 # (c) 2008
 #    Canonical Ltd.
 #    Aidan Skinner <aidan@skinner.me.uk>
 #    Martin Pitt <martin.pitt@ubuntu.com>
 #    Tim Lauridsen <timlau@fedoraproject.org>
-# License: LGPL 2.1 or later
 #
 # Synchronous PackageKit client wrapper API for Python.
 
@@ -13,6 +28,9 @@ import os
 import gobject
 import dbus
 from enums import *
+from misc import *
+
+__api_version__ = '0.1.0'
 
 class PackageKitError(Exception):
     '''PackageKit error.
@@ -75,10 +93,7 @@ class PackageKitClient:
 
         result = []
         package_cb = lambda i, id, summary: result.append(
-            {'installed' : (i == 'installed'),
-             'id': str(id),
-             'summary' : self._to_utf8(summary)
-             })
+            PackageKitPackage(i, id, summary))
         self._wrapCall(pk_xn, method, {'Package' : package_cb})
         return result
 
@@ -91,10 +106,7 @@ class PackageKitClient:
 
         result = []
         distup_cb = lambda typ,name,summary: result.append(
-            {'type' : typ,
-             'name': name,
-             'summary' : self._to_utf8(summary)
-             })
+            PackageKitDistroUpgrade(typ,name,summary))
         self._wrapCall(pk_xn, method, {'DistroUpgrade' : distup_cb})
         return result
 
@@ -107,13 +119,7 @@ class PackageKitClient:
         '''
         result = []
         details_cb = lambda id, license, group, detail, url, size: result.append(
-        {"id" : (str(id)),
-          "license" : (str(license)),
-          "group" : (str(group)),
-          "detail" : (self._to_utf8(detail)),
-          "url" : str(url),
-          "size" : int(size)
-          })
+            PackageKitDetails(id, license, group, detail, url, size))
 
         self._wrapCall(pk_xn, method, {'Details' : details_cb})
         return result
@@ -128,18 +134,9 @@ class PackageKitClient:
         details_cb =  lambda id, updates, obsoletes, vendor_url, bugzilla_url, \
                              cve_url, restart, update_text, changelog, state, \
                              issued, updated: result.append(
-        {"id" : id,
-         "updates"      : updates,
-         "obsoletes"    : obsoletes,
-         "vendor_url"   : vendor_url,
-         "bugzilla_url" : bugzilla_url,
-         "cve_url"      : cve_url,
-         "restart"      : restart,
-         "update_text"  : update_text,
-         "changelog"    : changelog,
-         "state"        : state,
-         "issued"       : issued,
-         "updated"      : updated})
+            PackageKitUpdateDetails(id, updates, obsoletes, vendor_url, bugzilla_url, \
+                                    cve_url, restart, update_text, changelog, state, \
+                                    issued, updated))
         self._wrapCall(pk_xn, method, {'UpdateDetail' : details_cb})
         return result
 
@@ -150,10 +147,8 @@ class PackageKitClient:
         'description', 'enabled' keys
         '''
         result = []
-        repo_cb = lambda id, description, enabled: result.append
-        ({'id' : str(id),
-          'desc' : self._to_utf8(description),
-          'enabled' : enabled})
+        repo_cb = lambda id, description, enabled: result.append(
+            PackageKitRepos(id, description, enabled))
         self._wrapCall(pk_xn, method, {'RepoDetail' : repo_cb})
         return result
 
@@ -164,9 +159,8 @@ class PackageKitClient:
         'files'
         '''
         result = []
-        files_cb = lambda id, files: result.append
-        ({'id' : str(id),
-          'files' : files.split(';')})
+        files_cb = lambda id, files: result.append(
+            PackageKitFiles(id, files))
         self._wrapCall(pk_xn, method, {'Files' : files_cb})
         return result
 
@@ -426,15 +420,8 @@ class PackageKitClient:
     #
     # Internal helper functions
     #
-
-    def _to_utf8(self, obj, errors='replace'):
-        '''convert 'unicode' to an encoded utf-8 byte string '''
-        if isinstance(obj, unicode):
-            obj = obj.encode('utf-8', errors)
-        return obj
-
-    def _to_list(self, obj, errors='replace'):
-        '''convert 'unicode' to an encoded utf-8 byte string '''
+    def _to_list(self, obj):
+        '''convert obj to list'''
         if isinstance(obj, str):
             obj = [obj]
         return obj

@@ -127,6 +127,8 @@ typedef enum {
 	PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO,
 	PK_STATUS_ENUM_REPACKAGING,
 	PK_STATUS_ENUM_LOADING_CACHE,
+	PK_STATUS_ENUM_SCAN_APPLICATIONS,
+	PK_STATUS_ENUM_GENERATE_PACKAGE_LIST,
 	PK_STATUS_ENUM_UNKNOWN
 } PkStatusEnum;
 
@@ -386,7 +388,7 @@ typedef enum {
 	PK_PROVIDES_ENUM_CODEC,
 	PK_PROVIDES_ENUM_MIMETYPE,
 	PK_PROVIDES_ENUM_FONT,
-    PK_PROVIDES_ENUM_HARDWARE_DRIVER,
+	PK_PROVIDES_ENUM_HARDWARE_DRIVER,
 	PK_PROVIDES_ENUM_UNKNOWN
 } PkProvidesEnum;
 
@@ -520,10 +522,10 @@ typedef enum {
 } PkLicenseEnum;
 
 /* general */
-guint		 pk_enum_find_value			(PkEnumMatch	*table,
+guint		 pk_enum_find_value			(const PkEnumMatch *table,
 							 const gchar	*string)
 							 G_GNUC_WARN_UNUSED_RESULT;
-const gchar	*pk_enum_find_string			(PkEnumMatch	*table,
+const gchar	*pk_enum_find_string			(const PkEnumMatch *table,
 							 guint		 value)
 							 G_GNUC_WARN_UNUSED_RESULT;
 

@@ -193,6 +193,30 @@ egg_dbus_monitor_is_connected (EggDbusMonitor *monitor)
 }
 
 /**
+ * egg_dbus_monitor_reset
+ * @monitor: This class instance
+ * Return value: if we reset correctly
+ **/
+gboolean
+egg_dbus_monitor_reset (EggDbusMonitor *monitor)
+{
+	g_return_val_if_fail (EGG_IS_DBUS_MONITOR (monitor), FALSE);
+	if (monitor->priv->proxy != NULL) {
+		egg_debug ("not already assigned!");
+		return FALSE;
+	}
+	if (monitor->priv->service != NULL) {
+		g_free (monitor->priv->service);
+		monitor->priv->service = NULL;
+	}
+	if (monitor->priv->proxy != NULL) {
+		g_object_unref (monitor->priv->proxy);
+		monitor->priv->proxy = NULL;
+	}
+	return TRUE;
+}
+
+/**
  * egg_dbus_monitor_class_init:
  * @klass: The EggDbusMonitorClass
  **/

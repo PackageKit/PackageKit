@@ -56,6 +56,8 @@ shared_SOURCES =					\
 	pk-network.h					\
 	pk-shared.c					\
 	pk-shared.h					\
+	pk-refresh.c					\
+	pk-refresh.h					\
 	pk-network-nm.h					\
 	pk-network-unix.c				\
 	pk-network-unix.h				\
@@ -63,6 +65,8 @@ shared_SOURCES =					\
 	pk-time.c					\
 	pk-conf.c					\
 	pk-conf.h					\
+	pk-store.c					\
+	pk-store.h					\
 	pk-cache.c					\
 	pk-cache.h					\
 	pk-notify.c					\

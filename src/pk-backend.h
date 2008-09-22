@@ -165,7 +165,7 @@ gboolean	 pk_backend_set_pointer			(PkBackend	*backend,
 /* get backend instance data */
 const gchar	*pk_backend_get_string			(PkBackend	*backend,
 							 const gchar	*key);
-GPtrArray	*pk_backend_get_array			(PkBackend	*backend,
+const GPtrArray	*pk_backend_get_array			(PkBackend	*backend,
 							 const gchar	*key);
 gchar		**pk_backend_get_strv			(PkBackend	*backend,
 							 const gchar	*key);

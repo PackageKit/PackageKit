@@ -71,6 +71,7 @@
 #include "pk-cache.h"
 #include "pk-notify.h"
 #include "pk-security.h"
+#include "pk-refresh.h"
 
 static void     pk_transaction_class_init	(PkTransactionClass *klass);
 static void     pk_transaction_init		(PkTransaction      *transaction);
@@ -78,6 +79,9 @@ static void     pk_transaction_finalize		(GObject	    *object);
 
 #define PK_TRANSACTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION, PkTransactionPrivate))
 #define PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT	100 /* ms */
+
+static void pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTransaction *transaction);
+static void pk_transaction_progress_changed_cb (PkBackend *backend, guint percentage, guint subpercentage, guint elapsed, guint remaining, PkTransaction *transaction);
 
 struct PkTransactionPrivate
 {
@@ -177,9 +181,8 @@ GQuark
 pk_transaction_error_quark (void)
 {
 	static GQuark quark = 0;
-	if (!quark) {
+	if (!quark)
 		quark = g_quark_from_static_string ("pk_transaction_error");
-	}
 	return quark;
 }
 
@@ -329,21 +332,18 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	egg_debug ("invalidating caches");
 
 	/* copy this into the cache if we are getting updates */
-	if (transaction->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
+	if (transaction->priv->role == PK_ROLE_ENUM_GET_UPDATES)
 		pk_cache_set_updates (transaction->priv->cache, transaction->priv->package_list);
-	}
 
 	/* we unref the update cache if it exists */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
 		pk_cache_invalidate (transaction->priv->cache);
-	}
 
 	/* this has to be done as different repos might have different updates */
 	if (transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
-	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
+	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA)
 		pk_cache_invalidate (transaction->priv->cache);
-	}
 
 	/* could the update list have changed? */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
@@ -371,11 +371,10 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
 	transaction->priv->allow_cancel = allow_cancel;
 
 	/* remove or add the hal inhibit */
-	if (allow_cancel) {
+	if (allow_cancel)
 		pk_inhibit_remove (transaction->priv->inhibit, transaction);
-	} else {
+	else
 		pk_inhibit_add (transaction->priv->inhibit, transaction);
-	}
 
 	egg_debug ("emitting allow-interrpt %i", allow_cancel);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_ALLOW_CANCEL], 0, allow_cancel);
@@ -476,12 +475,9 @@ static void
 pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *transaction)
 {
 	gboolean ret;
-	GError *error = NULL;
 	const gchar *exit_text;
-	gchar *filename;
 	guint time;
 	gchar *packages;
-	gchar *command;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -491,62 +487,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 		egg_warning ("Already finished");
 		return;
 	}
-
-	/* we should get no more from the backend with this tid */
-	transaction->priv->finished = TRUE;
-
-	/* mark not running */
-	transaction->priv->running = FALSE;
-
-	/* if we did ::repo-signature-required or ::eula-required, change the error code */
-	if (transaction->priv->emit_signature_required) {
-		exit = PK_EXIT_ENUM_KEY_REQUIRED;
-	} else if (transaction->priv->emit_eula_required) {
-		exit = PK_EXIT_ENUM_EULA_REQUIRED;
-	}
-
-	/* invalidate some caches if we succeeded*/
-	if (exit == PK_EXIT_ENUM_SUCCESS) {
-		pk_transaction_finish_invalidate_caches (transaction);
-	}
-
-	/* find the length of time we have been running */
-	time = pk_transaction_get_runtime (transaction);
-	egg_debug ("backend was running for %i ms", time);
-
-	/* add to the database if we are going to log it */
-	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
-	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-		packages = pk_package_list_to_string (transaction->priv->package_list);
-		if (egg_strzero (packages) == FALSE) {
-			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
-		}
-		g_free (packages);
-	}
-
-	/* the repo list will have changed */
-	if (transaction->priv->role == PK_ROLE_ENUM_SERVICE_PACK ||
-	    transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
-	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		pk_notify_repo_list_changed (transaction->priv->notify);
-	}
-
-	/* only reset the time if we succeeded */
-	if (exit == PK_EXIT_ENUM_SUCCESS) {
-		pk_transaction_db_action_time_reset (transaction->priv->transaction_db, transaction->priv->role);
-	}
-
-	/* did we finish okay? */
-	if (exit == PK_EXIT_ENUM_SUCCESS) {
-		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, TRUE, time);
-	} else {
-		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, FALSE, time);
-	}
-
-	/* remove any inhibit */
-	pk_inhibit_remove (transaction->priv->inhibit, transaction);
 
 	/* disconnect these straight away, as the PkTransaction object takes time to timeout */
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
@@ -567,42 +507,79 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 
 	/* do some optional extra actions when we've finished refreshing the cache */
 	if (transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		/* asynchronously generate the package list
-		 * NOTE: we can't do this in process as it uses PkClient */
-		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageList");
-		if (ret) {
-			command = g_build_filename (LIBEXECDIR, "pk-generate-package-list", NULL);
-			egg_debug ("running helper %s", command);
-			ret = g_spawn_command_line_async (command, &error);
-			if (!ret) {
-				egg_warning ("failed to execute %s: %s", command, error->message);
-				g_error_free (error);
-			}
-			g_free (command);
-		}
+		PkRefresh *refresh;
+		refresh = pk_refresh_new ();
 
-		/* refresh the desktop icon cache
-		 * NOTE: we can't do this in process as it uses PkClient */
-		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
-		if (ret) {
-			command = g_build_filename (LIBEXECDIR, "pk-import-desktop", NULL);
-			egg_debug ("running helper %s", command);
-			ret = g_spawn_command_line_async (command, &error);
-			if (!ret) {
-				egg_warning ("failed to execute %s: %s", command, error->message);
-				g_error_free (error);
-			}
-			g_free (command);
-		}
+		g_signal_connect (refresh, "status-changed",
+				  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
+		g_signal_connect (refresh, "progress-changed",
+				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
+
+		/* generate the package list */
+		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageListBugfix");
+		if (ret)
+			pk_refresh_update_package_list (refresh);
+
+		/* refresh the desktop icon cache */
+		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFilesBugfix");
+		if (ret)
+			pk_refresh_import_desktop_files (refresh);
 
 		/* clear the firmware requests directory */
-		filename = g_build_filename (LOCALSTATEDIR, "run", "PackageKit", "udev", NULL);
-		egg_debug ("clearing udev firmware requests at %s", filename);
-		ret = pk_directory_remove_contents (filename);
-		if (!ret)
-			egg_warning ("failed to clear %s", filename);
-		g_free (filename);
+		pk_refresh_clear_firmware_requests (refresh);
+		g_object_unref (refresh);
 	}
+
+	/* we should get no more from the backend with this tid */
+	transaction->priv->finished = TRUE;
+
+	/* mark not running */
+	transaction->priv->running = FALSE;
+
+	/* if we did ::repo-signature-required or ::eula-required, change the error code */
+	if (transaction->priv->emit_signature_required)
+		exit = PK_EXIT_ENUM_KEY_REQUIRED;
+	else if (transaction->priv->emit_eula_required)
+		exit = PK_EXIT_ENUM_EULA_REQUIRED;
+
+	/* invalidate some caches if we succeeded*/
+	if (exit == PK_EXIT_ENUM_SUCCESS)
+		pk_transaction_finish_invalidate_caches (transaction);
+
+	/* find the length of time we have been running */
+	time = pk_transaction_get_runtime (transaction);
+	egg_debug ("backend was running for %i ms", time);
+
+	/* add to the database if we are going to log it */
+	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		packages = pk_package_list_to_string (transaction->priv->package_list);
+		if (!egg_strzero (packages))
+			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
+		g_free (packages);
+	}
+
+	/* the repo list will have changed */
+	if (transaction->priv->role == PK_ROLE_ENUM_SERVICE_PACK ||
+	    transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
+	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		pk_notify_repo_list_changed (transaction->priv->notify);
+	}
+
+	/* only reset the time if we succeeded */
+	if (exit == PK_EXIT_ENUM_SUCCESS)
+		pk_transaction_db_action_time_reset (transaction->priv->transaction_db, transaction->priv->role);
+
+	/* did we finish okay? */
+	if (exit == PK_EXIT_ENUM_SUCCESS)
+		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, TRUE, time);
+	else
+		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, FALSE, time);
+
+	/* remove any inhibit */
+	pk_inhibit_remove (transaction->priv->inhibit, transaction);
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	exit_text = pk_exit_enum_to_text (exit);
@@ -866,7 +843,6 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 	g_free (package_id);
 }
 
-
 /**
  * pk_transaction_set_running:
  */
@@ -874,6 +850,7 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_set_running (PkTransaction *transaction)
 {
 	PkBackendDesc *desc;
+	PkStore *store;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
@@ -950,84 +927,85 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->has_been_run = TRUE;
 
 	/* set all possible arguments for backend */
-	pk_backend_set_bool (priv->backend, "force", priv->cached_force);
-	pk_backend_set_bool (priv->backend, "allow_deps", priv->cached_allow_deps);
-	pk_backend_set_bool (priv->backend, "autoremove", priv->cached_autoremove);
-	pk_backend_set_bool (priv->backend, "enabled", priv->cached_enabled);
-	pk_backend_set_bool (priv->backend, "trusted", priv->cached_trusted);
-	pk_backend_set_uint (priv->backend, "filters", priv->cached_filters);
-	pk_backend_set_uint (priv->backend, "provides", priv->cached_provides);
-	pk_backend_set_strv (priv->backend, "package_ids", priv->cached_package_ids);
-	pk_backend_set_strv (priv->backend, "full_paths", priv->cached_full_paths);
-	pk_backend_set_string (priv->backend, "package_id", priv->cached_package_id);
-	pk_backend_set_string (priv->backend, "transaction_id", priv->cached_transaction_id);
-	pk_backend_set_string (priv->backend, "full_path", priv->cached_full_path);
-	pk_backend_set_string (priv->backend, "search", priv->cached_search);
-	pk_backend_set_string (priv->backend, "repo_id", priv->cached_repo_id);
-	pk_backend_set_string (priv->backend, "key_id", priv->cached_key_id);
-	pk_backend_set_string (priv->backend, "parameter", priv->cached_parameter);
-	pk_backend_set_string (priv->backend, "value", priv->cached_value);
-	pk_backend_set_string (priv->backend, "directory", priv->cached_directory);
+	store = pk_backend_get_store (priv->backend);
+	pk_store_set_bool (store, "force", priv->cached_force);
+	pk_store_set_bool (store, "allow_deps", priv->cached_allow_deps);
+	pk_store_set_bool (store, "autoremove", priv->cached_autoremove);
+	pk_store_set_bool (store, "enabled", priv->cached_enabled);
+	pk_store_set_bool (store, "trusted", priv->cached_trusted);
+	pk_store_set_uint (store, "filters", priv->cached_filters);
+	pk_store_set_uint (store, "provides", priv->cached_provides);
+	pk_store_set_strv (store, "package_ids", priv->cached_package_ids);
+	pk_store_set_strv (store, "full_paths", priv->cached_full_paths);
+	pk_store_set_string (store, "package_id", priv->cached_package_id);
+	pk_store_set_string (store, "transaction_id", priv->cached_transaction_id);
+	pk_store_set_string (store, "full_path", priv->cached_full_path);
+	pk_store_set_string (store, "search", priv->cached_search);
+	pk_store_set_string (store, "repo_id", priv->cached_repo_id);
+	pk_store_set_string (store, "key_id", priv->cached_key_id);
+	pk_store_set_string (store, "parameter", priv->cached_parameter);
+	pk_store_set_string (store, "value", priv->cached_value);
+	pk_store_set_string (store, "directory", priv->cached_directory);
 
 	/* lets reduce pointer dereferences... */
 	desc = priv->backend->desc;
 
 	/* do the correct action with the cached parameters */
-	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
+	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS)
 		desc->get_depends (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
-	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
+	else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
 		desc->get_update_detail (priv->backend, priv->cached_package_ids);
-	} else if (priv->role == PK_ROLE_ENUM_RESOLVE) {
+	else if (priv->role == PK_ROLE_ENUM_RESOLVE)
 		desc->resolve (priv->backend, priv->cached_filters, priv->cached_package_ids);
-	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
+	else if (priv->role == PK_ROLE_ENUM_ROLLBACK)
 		desc->rollback (priv->backend, priv->cached_transaction_id);
-	} else if (priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+	else if (priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES)
 		desc->download_packages (priv->backend, priv->cached_package_ids, priv->cached_directory);
-	} else if (priv->role == PK_ROLE_ENUM_GET_DETAILS) {
+	else if (priv->role == PK_ROLE_ENUM_GET_DETAILS)
 		desc->get_details (priv->backend, priv->cached_package_ids);
-	} else if (priv->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES) {
+	else if (priv->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
 		desc->get_distro_upgrades (priv->backend);
-	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
+	else if (priv->role == PK_ROLE_ENUM_GET_FILES)
 		desc->get_files (priv->backend, priv->cached_package_ids);
-	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
+	else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES)
 		desc->get_requires (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
-	} else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
+	else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES)
 		desc->what_provides (priv->backend, priv->cached_filters, priv->cached_provides, priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
+	else if (priv->role == PK_ROLE_ENUM_GET_UPDATES)
 		desc->get_updates (priv->backend, priv->cached_filters);
-	} else if (priv->role == PK_ROLE_ENUM_GET_PACKAGES) {
+	else if (priv->role == PK_ROLE_ENUM_GET_PACKAGES)
 		desc->get_packages (priv->backend, priv->cached_filters);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+	else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS)
 		desc->search_details (priv->backend, priv->cached_filters, priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
-		desc->search_file (priv->backend,priv->cached_filters,priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
+	else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE)
+		desc->search_file (priv->backend, priv->cached_filters, priv->cached_search);
+	else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP)
 		desc->search_group (priv->backend, priv->cached_filters, priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
+	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
 		desc->search_name (priv->backend,priv->cached_filters,priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+	else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES)
 		desc->install_packages (priv->backend, priv->cached_package_ids);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES) {
+	else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES)
 		desc->install_files (priv->backend, priv->cached_trusted, priv->cached_full_paths);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
+	else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE)
 		desc->install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
-	} else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
+	else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK)
 		desc->service_pack (priv->backend, priv->cached_full_path, priv->cached_enabled);
-	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+	else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE)
 		desc->refresh_cache (priv->backend,  priv->cached_force);
-	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+	else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES)
 		desc->remove_packages (priv->backend, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
-	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+	else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
 		desc->update_packages (priv->backend, priv->cached_package_ids);
-	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+	else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM)
 		desc->update_system (priv->backend);
-	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
+	else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST)
 		desc->get_repo_list (priv->backend, priv->cached_filters);
-	} else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE) {
+	else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE)
 		desc->repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
-	} else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
+	else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA)
 		desc->repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
-	} else {
+	else {
 		egg_error ("failed to run as role not assigned");
 		return FALSE;
 	}
@@ -1240,14 +1218,10 @@ pk_transaction_action_is_allowed (PkTransaction *transaction, gboolean trusted, 
 
 /**
  * pk_transaction_priv_get_role:
- *
- * Only valid from an async caller, which is fine, as we won't prompt the user
- * when not async.
  **/
 PkRoleEnum
 pk_transaction_priv_get_role (PkTransaction *transaction)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	return transaction->priv->role;
 }
@@ -1397,7 +1371,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
-	if (ret == FALSE) {
+	if (!ret) {
 	        package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 	                             "The package id's '%s' are not valid", package_ids_temp);
@@ -1497,7 +1471,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
-	if (ret == FALSE) {
+	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
@@ -1562,7 +1536,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
-	if (ret == FALSE) {
+	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
@@ -1676,7 +1650,7 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
-	if (ret == FALSE) {
+	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
@@ -1925,7 +1899,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
-	if (ret == FALSE) {
+	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
@@ -2043,7 +2017,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
-	if (ret == FALSE) {
+	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
@@ -2517,7 +2491,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
-	if (ret == FALSE) {
+	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
@@ -2743,7 +2717,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
-	if (ret == FALSE) {
+	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
@@ -3401,7 +3375,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
-	if (ret == FALSE) {
+	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
@@ -3813,10 +3787,7 @@ egg_test_transaction (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get PkTransaction object");
 	transaction = pk_transaction_new ();
-	if (transaction != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, transaction != NULL);
 
 	/************************************************************
 	 ****************          FILTERS         ******************
@@ -3824,110 +3795,71 @@ egg_test_transaction (EggTest *test)
 	temp = NULL;
 	egg_test_title (test, "test a fail filter (null)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "passed the filter '%s'", temp);
-	}
+	egg_test_assert (test, !ret);
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "";
 	egg_test_title (test, "test a fail filter ()");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "passed the filter '%s'", temp);
-	}
+	egg_test_assert (test, !ret);
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = ";";
 	egg_test_title (test, "test a fail filter (;)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "passed the filter '%s'", temp);
-	}
+	egg_test_assert (test, !ret);
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "moo";
 	egg_test_title (test, "test a fail filter (invalid)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "passed the filter '%s'", temp);
-	}
+	egg_test_assert (test, !ret);
+
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "moo;foo";
 	egg_test_title (test, "test a fail filter (invalid, multiple)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "passed the filter '%s'", temp);
-	}
+	egg_test_assert (test, !ret);
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "gui;;";
 	egg_test_title (test, "test a fail filter (valid then zero length)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret == FALSE)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "passed the filter '%s'", temp);
-	}
+	egg_test_assert (test, !ret);
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "none";
 	egg_test_title (test, "test a pass filter (none)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed the filter '%s'", temp);
-	}
+	egg_test_assert (test, ret);
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "gui";
 	egg_test_title (test, "test a pass filter (single)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed the filter '%s'", temp);
-	}
+	egg_test_assert (test, ret);
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "devel;~gui";
 	egg_test_title (test, "test a pass filter (multiple)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed the filter '%s'", temp);
-	}
+	egg_test_assert (test, ret);
 	g_clear_error (&error);
 
 	/************************************************************/
 	temp = "~gui;~installed";
 	egg_test_title (test, "test a pass filter (multiple2)");
 	ret = pk_transaction_filter_check (temp, &error);
-	if (ret)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed the filter '%s'", temp);
-	}
+	egg_test_assert (test, ret);
 	g_clear_error (&error);
 
 	g_object_unref (transaction);

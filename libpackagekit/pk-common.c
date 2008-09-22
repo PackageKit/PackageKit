@@ -519,9 +519,9 @@ pk_common_test (EggTest *test)
 	 ************************************************************/
 	egg_test_title (test, "get distro id");
 	text_safe = pk_get_distro_id ();
-	if (text_safe != NULL) {
+	if (text_safe != NULL)
 		egg_test_success (test, "distro_id=%s", text_safe);
-	} else
+	else
 		egg_test_failed (test, NULL);
 	g_free (text_safe);
 
@@ -533,9 +533,8 @@ pk_common_test (EggTest *test)
 	if (egg_strequal (array[0], "richard") &&
 	    array[1] == NULL)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "incorrect array '%s'", array[0]);
-	}
 	g_strfreev (array);
 
 	/************************************************************/
@@ -546,9 +545,8 @@ pk_common_test (EggTest *test)
 	    egg_strequal (array[2], "hughes") &&
 	    array[3] == NULL)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
-	}
 	g_strfreev (array);
 
 	/************************************************************/
@@ -559,9 +557,8 @@ pk_common_test (EggTest *test)
 	    egg_strequal (array[2], "hughes") &&
 	    array[3] == NULL)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
-	}
 	g_strfreev (array);
 
 	/************************************************************/
@@ -572,9 +569,8 @@ pk_common_test (EggTest *test)
 	    egg_strequal (array[2], "hughes") &&
 	    array[3] == NULL)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
-	}
 	g_strfreev (array);
 
 	/************************************************************
@@ -582,42 +578,27 @@ pk_common_test (EggTest *test)
 	 ************************************************************/
 	egg_test_title (test, "validate correct char 1");
 	ret = pk_strvalidate_char ('a');
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "validate correct char 2");
 	ret = pk_strvalidate_char ('~');
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "validate incorrect char");
 	ret = pk_strvalidate_char ('$');
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "validate incorrect text");
 	ret = pk_strvalidate ("richard$hughes");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "validate correct text");
 	ret = pk_strvalidate ("richardhughes");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************
 	 ****************       REPLACE CHARS      ******************
@@ -626,9 +607,8 @@ pk_common_test (EggTest *test)
 	text_safe = pk_strsafe ("Richard Hughes");
 	if (egg_strequal (text_safe, "Richard Hughes"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	}
 	g_free (text_safe);
 
 	/************************************************************/
@@ -636,9 +616,8 @@ pk_common_test (EggTest *test)
 	text_safe = pk_strsafe ("Gölas");
 	if (egg_strequal (text_safe, "Gölas"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	}
 	g_free (text_safe);
 
 	/************************************************************/
@@ -646,9 +625,8 @@ pk_common_test (EggTest *test)
 	text_safe = pk_strsafe ("Richard\tHughes");
 	if (egg_strequal (text_safe, "Richard Hughes"))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	}
 	g_free (text_safe);
 
 	/************************************************************/
@@ -656,9 +634,8 @@ pk_common_test (EggTest *test)
 	text_safe = pk_strsafe ("Richard\"Hughes\"");
 	if (egg_strequal (text_safe, "Richard Hughes "))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	}
 	g_free (text_safe);
 
 	/************************************************************/
@@ -666,9 +643,8 @@ pk_common_test (EggTest *test)
 	text_safe = pk_strsafe (" Richard\"Hughes\"");
 	if (egg_strequal (text_safe, " Richard Hughes "))
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	}
 	g_free (text_safe);
 
 	/************************************************************
@@ -678,9 +654,8 @@ pk_common_test (EggTest *test)
 	present = pk_iso8601_present ();
 	if (present != NULL)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "present is NULL");
-	}
 
 	g_usleep (2000000);
 
@@ -689,9 +664,8 @@ pk_common_test (EggTest *test)
 	seconds = pk_iso8601_difference (present);
 	if (seconds == 2)
 		egg_test_success (test, NULL);
-	else {
+	else
 		egg_test_failed (test, "seconds is wrong, %i", seconds);
-	}
 
 	/************************************************************/
 	g_free (present);

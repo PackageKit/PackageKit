@@ -41,6 +41,7 @@
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
 #include "pk-backend.h"
+#include "pk-store.h"
 #include "pk-time.h"
 #include "pk-file-monitor.h"
 #include "pk-update-detail-obj.h"
@@ -91,6 +92,7 @@ struct _PkBackendPrivate
 	gboolean		 set_eula;
 	gboolean		 has_sent_package;
 	PkNetwork		*network;
+	PkStore			*store;
 	PkPackageObj		*last_package;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
@@ -107,10 +109,6 @@ struct _PkBackendPrivate
 	guint			 signal_finished;
 	guint			 signal_error_timeout;
 	GThread			*thread;
-	GHashTable		*hash_string;
-	GHashTable		*hash_strv;
-	GHashTable		*hash_pointer;
-	GHashTable		*hash_array;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -238,28 +236,22 @@ pk_backend_get_actions (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_store:
+ **/
+PkStore *
+pk_backend_get_store (PkBackend *backend)
+{
+	return backend->priv->store;
+}
+
+/**
  * pk_backend_set_string:
  **/
 gboolean
 pk_backend_set_string (PkBackend *backend, const gchar *key, const gchar *data)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (key != NULL, FALSE);
-
-	/* valid, but do nothing */
-	if (data == NULL)
-		return FALSE;
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
-	if (value != NULL) {
-		egg_warning ("already set data for %s", key);
-		return FALSE;
-	}
-	egg_debug ("saving '%s' for %s", data, key);
-	g_hash_table_insert (backend->priv->hash_string, g_strdup (key), (gpointer) g_strdup (data));
-	return TRUE;
+	return pk_store_set_string (backend->priv->store, key, data);
 }
 
 /**
@@ -268,23 +260,8 @@ pk_backend_set_string (PkBackend *backend, const gchar *key, const gchar *data)
 gboolean
 pk_backend_set_strv (PkBackend *backend, const gchar *key, gchar **data)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (key != NULL, FALSE);
-
-	/* valid, but do nothing */
-	if (data == NULL)
-		return FALSE;
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_strv, (gpointer) key);
-	if (value != NULL) {
-		egg_warning ("already set data for %s", key);
-		return FALSE;
-	}
-	egg_debug ("saving %p for %s", data, key);
-	g_hash_table_insert (backend->priv->hash_strv, g_strdup (key), (gpointer) g_strdupv (data));
-	return TRUE;
+	return pk_store_set_strv (backend->priv->store, key, data);
 }
 
 /**
@@ -293,23 +270,8 @@ pk_backend_set_strv (PkBackend *backend, const gchar *key, gchar **data)
 gboolean
 pk_backend_set_array (PkBackend *backend, const gchar *key, GPtrArray *data)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (key != NULL, FALSE);
-
-	/* valid, but do nothing */
-	if (data == NULL)
-		return FALSE;
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_array, (gpointer) key);
-	if (value != NULL) {
-		egg_warning ("already set data for %s", key);
-		return FALSE;
-	}
-	egg_debug ("saving %p for %s", data, key);
-	g_hash_table_insert (backend->priv->hash_array, g_strdup (key), (gpointer) data);
-	return TRUE;
+	return pk_store_set_array (backend->priv->store, key, data);
 }
 
 /**
@@ -318,19 +280,8 @@ pk_backend_set_array (PkBackend *backend, const gchar *key, GPtrArray *data)
 gboolean
 pk_backend_set_uint (PkBackend *backend, const gchar *key, guint data)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (key != NULL, FALSE);
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
-	if (value != NULL) {
-		egg_warning ("already set data for %s", key);
-		return FALSE;
-	}
-	egg_debug ("saving %i for %s", data, key);
-	g_hash_table_insert (backend->priv->hash_pointer, g_strdup (key), GINT_TO_POINTER (data+1));
-	return TRUE;
+	return pk_store_set_uint (backend->priv->store, key, data);
 }
 
 /**
@@ -339,19 +290,8 @@ pk_backend_set_uint (PkBackend *backend, const gchar *key, guint data)
 gboolean
 pk_backend_set_bool (PkBackend *backend, const gchar *key, gboolean data)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (key != NULL, FALSE);
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
-	if (value != NULL) {
-		egg_warning ("already set data for %s", key);
-		return FALSE;
-	}
-	egg_debug ("saving %i for %s", data, key);
-	g_hash_table_insert (backend->priv->hash_pointer, g_strdup (key), GINT_TO_POINTER (data+1));
-	return TRUE;
+	return pk_store_set_bool (backend->priv->store, key, data);
 }
 
 /**
@@ -360,20 +300,8 @@ pk_backend_set_bool (PkBackend *backend, const gchar *key, gboolean data)
 gboolean
 pk_backend_set_pointer (PkBackend *backend, const gchar *key, gpointer data)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (key != NULL, FALSE);
-	g_return_val_if_fail (data != NULL, FALSE);
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
-	if (value != NULL) {
-		egg_warning ("already set data for %s", key);
-		return FALSE;
-	}
-	egg_debug ("saving %p for %s", data, key);
-	g_hash_table_insert (backend->priv->hash_pointer, g_strdup (key), data+1);
-	return TRUE;
+	return pk_store_set_pointer (backend->priv->store, key, data);
 }
 
 /**
@@ -382,17 +310,8 @@ pk_backend_set_pointer (PkBackend *backend, const gchar *key, gpointer data)
 const gchar *
 pk_backend_get_string (PkBackend *backend, const gchar *key)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (key != NULL, NULL);
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
-	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
-		return NULL;
-	}
-	return (const gchar *) value;
+	return pk_store_get_string (backend->priv->store, key);
 }
 
 /**
@@ -401,36 +320,18 @@ pk_backend_get_string (PkBackend *backend, const gchar *key)
 gchar **
 pk_backend_get_strv (PkBackend *backend, const gchar *key)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (key != NULL, NULL);
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_strv, (gpointer) key);
-	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
-		return NULL;
-	}
-	return (gchar **) value;
+	return pk_store_get_strv (backend->priv->store, key);
 }
 
 /**
  * pk_backend_get_array:
  **/
-GPtrArray *
+const GPtrArray *
 pk_backend_get_array (PkBackend *backend, const gchar *key)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (key != NULL, NULL);
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_array, (gpointer) key);
-	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
-		return NULL;
-	}
-	return (GPtrArray *) value;
+	return pk_store_get_array (backend->priv->store, key);
 }
 
 /**
@@ -439,18 +340,8 @@ pk_backend_get_array (PkBackend *backend, const gchar *key)
 uint
 pk_backend_get_uint (PkBackend *backend, const gchar *key)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
-	g_return_val_if_fail (key != NULL, 0);
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
-	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
-		return FALSE;
-	}
-	/* we do the +1/-1 as NULL also means missing in the hash table */
-	return GPOINTER_TO_INT (value)-1;
+	return pk_store_get_uint (backend->priv->store, key);
 }
 
 /**
@@ -459,17 +350,8 @@ pk_backend_get_uint (PkBackend *backend, const gchar *key)
 gboolean
 pk_backend_get_bool (PkBackend *backend, const gchar *key)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (key != NULL, FALSE);
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
-	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
-		return FALSE;
-	}
-	return GPOINTER_TO_INT (value)-1;
+	return pk_store_get_bool (backend->priv->store, key);
 }
 
 /**
@@ -478,17 +360,8 @@ pk_backend_get_bool (PkBackend *backend, const gchar *key)
 gpointer
 pk_backend_get_pointer (PkBackend *backend, const gchar *key)
 {
-	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (key != NULL, NULL);
-
-	/* does already exist? */
-	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
-	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
-		return NULL;
-	}
-	return value-1;
+	return pk_store_get_pointer (backend->priv->store, key);
 }
 
 /**
@@ -725,7 +598,7 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: percentage %i", percentage);
 		return FALSE;
 	}
 
@@ -799,7 +672,7 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: sub-percentage %i", percentage);
 		return FALSE;
 	}
 
@@ -840,7 +713,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 
 	/* have we already set an error? */
 	if (backend->priv->set_error && status != PK_STATUS_ENUM_FINISHED) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: status %s", pk_status_enum_to_text (status));
 		return FALSE;
 	}
 
@@ -926,7 +799,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: package %s", package_id);
 		return FALSE;
 	}
 
@@ -981,7 +854,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: update_detail %s", package_id);
 		return FALSE;
 	}
 
@@ -1043,7 +916,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: require-restart %s", pk_restart_enum_to_text (restart));
 		return FALSE;
 	}
 
@@ -1067,7 +940,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 
 	/* have we already set an error? */
 	if (backend->priv->set_error && message != PK_MESSAGE_ENUM_BACKEND_ERROR) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: message %s", pk_message_enum_to_text (message));
 		return FALSE;
 	}
 
@@ -1149,7 +1022,7 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: details %s", package_id);
 		return FALSE;
 	}
 
@@ -1180,7 +1053,7 @@ pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *file
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: files %s", package_id);
 		return FALSE;
 	}
 
@@ -1208,7 +1081,7 @@ pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum type, const g
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: distro-upgrade");
 		return FALSE;
 	}
 
@@ -1240,7 +1113,7 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: repo-sig-reqd");
 		return FALSE;
 	}
 
@@ -1276,7 +1149,7 @@ pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar 
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: eula required");
 		return FALSE;
 	}
 
@@ -1311,7 +1184,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: repo-detail %s", repo_id);
 		return FALSE;
 	}
 
@@ -1413,7 +1286,7 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 
 	/* have we already set an error? */
 	if (backend->priv->set_error && allow_cancel) {
-		egg_warning ("already set error, cannot process");
+		egg_warning ("already set error, cannot process: allow-cancel %i", allow_cancel);
 		return FALSE;
 	}
 
@@ -1511,10 +1384,8 @@ pk_backend_finished_delay (gpointer data)
 	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
 
-	g_hash_table_remove_all (backend->priv->hash_pointer);
-	g_hash_table_remove_all (backend->priv->hash_string);
-	g_hash_table_remove_all (backend->priv->hash_strv);
-	g_hash_table_remove_all (backend->priv->hash_array);
+	/* clear all state */
+	pk_store_reset (backend->priv->store);
 
 	egg_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
@@ -1792,11 +1663,8 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->c_tid);
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->network);
+	g_object_unref (backend->priv->store);
 	g_hash_table_destroy (backend->priv->eulas);
-	g_hash_table_unref (backend->priv->hash_string);
-	g_hash_table_unref (backend->priv->hash_strv);
-	g_hash_table_unref (backend->priv->hash_pointer);
-	g_hash_table_unref (backend->priv->hash_array);
 
 	if (backend->priv->handle != NULL)
 		g_module_close (backend->priv->handle);
@@ -1943,15 +1811,6 @@ pk_backend_reset (PkBackend *backend)
 }
 
 /**
- * pk_free_ptr_array:
- **/
-static void
-pk_free_ptr_array (gpointer data)
-{
-	g_ptr_array_free ((GPtrArray *) data, TRUE);
-}
-
-/**
  * pk_backend_init:
  **/
 static void
@@ -1971,13 +1830,10 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->signal_finished = 0;
 	backend->priv->signal_error_timeout = 0;
 	backend->priv->during_initialize = FALSE;
+	backend->priv->store = pk_store_new ();
 	backend->priv->time = pk_time_new ();
 	backend->priv->network = pk_network_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-	backend->priv->hash_string = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
-	backend->priv->hash_strv = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_strfreev);
-	backend->priv->hash_pointer = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-	backend->priv->hash_array = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, pk_free_ptr_array);
 
 	/* monitor config files for changes */
 	backend->priv->file_monitor = pk_file_monitor_new ();
@@ -2063,9 +1919,6 @@ pk_backend_test (EggTest *test)
 	gchar *text;
 	gboolean ret;
 	const gchar *filename;
-	const gchar *data_string;
-	guint data_uint;
-	gboolean data_bool;
 
 	if (!egg_test_start (test, "PkBackend"))
 		return;
@@ -2077,102 +1930,6 @@ pk_backend_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "set a blank string");
-	ret = pk_backend_set_string (backend, "dave2", "");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "set a ~bool");
-	ret = pk_backend_set_bool (backend, "roger2", FALSE);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "set a zero uint");
-	ret = pk_backend_set_uint (backend, "linda2", 0);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "get a blank string");
-	data_string = pk_backend_get_string (backend, "dave2");
-	if (egg_strequal (data_string, ""))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "data was %s", data_string);
-
-	/************************************************************/
-	egg_test_title (test, "get a ~bool");
-	data_bool = pk_backend_get_bool (backend, "roger2");
-	if (!data_bool)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "data was %i", data_bool);
-
-	/************************************************************/
-	egg_test_title (test, "get a zero uint");
-	data_uint = pk_backend_get_uint (backend, "linda2");
-	if (data_uint == 0)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "data was %i", data_uint);
-
-	/************************************************************/
-	egg_test_title (test, "set a string");
-	ret = pk_backend_set_string (backend, "dave", "ania");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "set a bool");
-	ret = pk_backend_set_bool (backend, "roger", TRUE);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "set a uint");
-	ret = pk_backend_set_uint (backend, "linda", 999);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "get a string");
-	data_string = pk_backend_get_string (backend, "dave");
-	if (egg_strequal (data_string, "ania"))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "data was %s", data_string);
-
-	/************************************************************/
-	egg_test_title (test, "get a bool");
-	data_bool = pk_backend_get_bool (backend, "roger");
-	if (data_bool)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "data was %i", data_bool);
-
-	/************************************************************/
-	egg_test_title (test, "get a uint");
-	data_uint = pk_backend_get_uint (backend, "linda");
-	if (data_uint == 999)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "data was %i", data_uint);
 
 	/************************************************************/
 	egg_test_title (test, "create a config file");
@@ -2206,10 +1963,7 @@ pk_backend_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "delete the config file");
 	ret = g_unlink (filename);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, !ret);
 
 	g_signal_connect (backend, "message", G_CALLBACK (pk_backend_test_message_cb), NULL);
 	g_signal_connect (backend, "finished", G_CALLBACK (pk_backend_test_finished_cb), test);
@@ -2266,10 +2020,7 @@ pk_backend_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "try to load a valid backend");
 	ret = pk_backend_set_name (backend, "dummy");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "load an valid backend again");

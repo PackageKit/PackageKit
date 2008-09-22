@@ -27,6 +27,7 @@
 /* prototypes */
 void egg_string_test (EggTest *test);
 void pk_conf_test (EggTest *test);
+void pk_store_test (EggTest *test);
 void pk_inhibit_test (EggTest *test);
 void pk_spawn_test (EggTest *test);
 void pk_transaction_list_test (EggTest *test);
@@ -59,6 +60,7 @@ main (int argc, char **argv)
 	pk_security_test (test);
 	pk_time_test (test);
 	pk_conf_test (test);
+	pk_store_test (test);
 	pk_inhibit_test (test);
 	pk_spawn_test (test);
 	pk_transaction_list_test (test);

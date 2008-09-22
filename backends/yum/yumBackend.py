@@ -801,6 +801,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         bump = 100 / len(package_ids)
         deps_list = []
         resolve_list = []
+        grp_pkgs = []
 
         # resolve each package_id to a pkg object
         for package in package_ids:
@@ -808,7 +809,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             grp = self._is_meta_package(package)
             if grp:
                 pkgs = self._get_group_packages(grp)
-                resolve_list.extend(pkgs)
+                grp_pkgs.extend(pkgs)
             else:
                 name = package.split(';')[0]
                 pkg,inst = self._findPackage(package)
@@ -819,11 +820,18 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                     break
             percentage += bump
 
+        if grp_pkgs:
+            resolve_list.extend(grp_pkgs)
         # get the best deps
         deps_list = self._get_best_depends(resolve_list,recursive)
 
         # make unique list
         deps_list = unique(deps_list)
+
+        # If packages comes from a group, then we show them along with deps.
+        if grp_pkgs:
+            deps_list.extend(grp_pkgs)
+
 
         # add to correct lists
         for pkg in deps_list:
@@ -1298,6 +1306,13 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED,"The packages failed to be removed")
 
+    def _get_category(self,groupid):
+        cat_id = self.comps.get_category(groupid)
+        if self.yumbase.comps._categories.has_key(cat_id):
+            return self.yumbase.comps._categories[cat_id]
+        else:
+            return None
+
     def get_details(self,package_ids):
         '''
         Print a detailed details for a given package
@@ -1315,7 +1330,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 desc = grp.description
                 desc = desc.replace('\n\n',';')
                 desc = desc.replace('\n',' ')
-                group = grp.name
+                group = GROUP_COLLECTIONS
                 pkgs = self._get_group_packages(grp)
                 size = 0;
                 for pkg in pkgs:
@@ -1459,13 +1474,16 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         fltlist = filters.split(';')
         package_list = []
         pkgfilter = YumFilter(fltlist)
-
+        pkgs = []
         try:
             ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
+            pkgs.extend(ygl.updates)
+            ygl = self.yumbase.doPackageLists(pkgnarrow='obsoletes')
+            pkgs.extend(ygl.obsoletes)
         except yum.Errors.RepoError,e:
             self.error(ERROR_REPO_NOT_AVAILABLE,str(e))
         md = self.updateMetadata
-        for pkg in ygl.updates:
+        for pkg in pkgs:
             if pkgfilter._do_extra_filtering(pkg):
                 # Get info about package in updates info
                 notice = md.get_notice((pkg.name,pkg.version,pkg.release))
