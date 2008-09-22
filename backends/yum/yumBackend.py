@@ -1459,13 +1459,16 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         fltlist = filters.split(';')
         package_list = []
         pkgfilter = YumFilter(fltlist)
-
+        pkgs = []
         try:
             ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
+            pkgs.extend(ygl.updates)
+            ygl = self.yumbase.doPackageLists(pkgnarrow='obsoletes')
+            pkgs.extend(ygl.obsoletes)
         except yum.Errors.RepoError,e:
             self.error(ERROR_REPO_NOT_AVAILABLE,str(e))
         md = self.updateMetadata
-        for pkg in ygl.updates:
+        for pkg in pkgs:
             if pkgfilter._do_extra_filtering(pkg):
                 # Get info about package in updates info
                 notice = md.get_notice((pkg.name,pkg.version,pkg.release))
