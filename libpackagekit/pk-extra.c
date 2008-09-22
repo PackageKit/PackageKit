@@ -664,6 +664,9 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 		}
 	}
 
+	/* we don't need to keep syncing */
+	sqlite3_exec (extra->priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
+
 	/* try to populate a working cache */
 	if (extra->priv->access == PK_EXTRA_ACCESS_READ_ONLY ||
 	    extra->priv->access == PK_EXTRA_ACCESS_READ_WRITE)
