@@ -40,7 +40,7 @@
 #include "pk-common.h"
 #include "pk-enum.h"
 
-static PkEnumMatch enum_exit[] = {
+static const PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_EXIT_ENUM_SUCCESS,			"success"},
 	{PK_EXIT_ENUM_FAILED,			"failed"},
@@ -51,7 +51,7 @@ static PkEnumMatch enum_exit[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_status[] = {
+static const PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_STATUS_ENUM_WAIT,			"wait"},
 	{PK_STATUS_ENUM_SETUP,			"setup"},
@@ -84,7 +84,7 @@ static PkEnumMatch enum_status[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_role[] = {
+static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ROLE_ENUM_CANCEL,			"cancel"},
 	{PK_ROLE_ENUM_GET_DEPENDS,		"get-depends"},
@@ -118,7 +118,7 @@ static PkEnumMatch enum_role[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_error[] = {
+static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ERROR_ENUM_OOM,			"out-of-memory"},
 	{PK_ERROR_ENUM_NO_CACHE,		"no-cache"},
@@ -166,7 +166,7 @@ static PkEnumMatch enum_error[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_restart[] = {
+static const PkEnumMatch enum_restart[] = {
 	{PK_RESTART_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_RESTART_ENUM_NONE,			"none"},
 	{PK_RESTART_ENUM_SYSTEM,		"system"},
@@ -175,7 +175,7 @@ static PkEnumMatch enum_restart[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_message[] = {
+static const PkEnumMatch enum_message[] = {
 	{PK_MESSAGE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_MESSAGE_ENUM_BROKEN_MIRROR,		"broken-mirror"},
 	{PK_MESSAGE_ENUM_CONNECTION_REFUSED,	"connection-refused"},
@@ -192,7 +192,7 @@ static PkEnumMatch enum_message[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_filter[] = {
+static const PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_FILTER_ENUM_NONE,			"none"},
 	{PK_FILTER_ENUM_INSTALLED,		"installed"},
@@ -220,7 +220,7 @@ static PkEnumMatch enum_filter[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_group[] = {
+static const PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_GROUP_ENUM_ACCESSIBILITY,		"accessibility"},
 	{PK_GROUP_ENUM_ACCESSORIES,		"accessories"},
@@ -257,7 +257,7 @@ static PkEnumMatch enum_group[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_update_state[] = {
+static const PkEnumMatch enum_update_state[] = {
 	{PK_UPDATE_STATE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_UPDATE_STATE_ENUM_TESTING,		"testing"},
 	{PK_UPDATE_STATE_ENUM_UNSTABLE,		"unstable"},
@@ -265,7 +265,7 @@ static PkEnumMatch enum_update_state[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_info[] = {
+static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_INFO_ENUM_INSTALLED,		"installed"},
 	{PK_INFO_ENUM_AVAILABLE,		"available"},
@@ -287,20 +287,20 @@ static PkEnumMatch enum_info[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_sig_type[] = {
+static const PkEnumMatch enum_sig_type[] = {
 	{PK_SIGTYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_SIGTYPE_ENUM_GPG,			"gpg"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_upgrade[] = {
+static const PkEnumMatch enum_upgrade[] = {
 	{PK_DISTRO_UPGRADE_ENUM_UNKNOWN,	"unknown"},	/* fall though value */
 	{PK_DISTRO_UPGRADE_ENUM_STABLE,		"stable"},
 	{PK_DISTRO_UPGRADE_ENUM_UNSTABLE,		"unstable"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_provides[] = {
+static const PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_PROVIDES_ENUM_ANY,			"any"},
 	{PK_PROVIDES_ENUM_MODALIAS,		"modalias"},
@@ -311,7 +311,7 @@ static PkEnumMatch enum_provides[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_network[] = {
+static const PkEnumMatch enum_network[] = {
 	{PK_NETWORK_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_NETWORK_ENUM_OFFLINE,		"offline"},
 	{PK_NETWORK_ENUM_ONLINE,		"online"},
@@ -320,7 +320,7 @@ static PkEnumMatch enum_network[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_free_licenses[] = {
+static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_LICENSE_ENUM_GLIDE,			"Glide"},
 	{PK_LICENSE_ENUM_AFL,			"AFL"},
@@ -460,7 +460,7 @@ static PkEnumMatch enum_free_licenses[] = {
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 guint
-pk_enum_find_value (PkEnumMatch *table, const gchar *string)
+pk_enum_find_value (const PkEnumMatch *table, const gchar *string)
 {
 	guint i;
 	const gchar *string_tmp;
@@ -471,13 +471,11 @@ pk_enum_find_value (PkEnumMatch *table, const gchar *string)
 	}
 	for (i=0;;i++) {
 		string_tmp = table[i].string;
-		if (string_tmp == NULL) {
+		if (string_tmp == NULL)
 			break;
-		}
 		/* keep strcmp for speed */
-		if (strcmp (string, string_tmp) == 0) {
+		if (strcmp (string, string_tmp) == 0)
 			return table[i].value;
-		}
 	}
 	return table[0].value;
 }
@@ -492,7 +490,7 @@ pk_enum_find_value (PkEnumMatch *table, const gchar *string)
  * Return value: the string constant, e.g. "desktop-gnome"
  */
 const gchar *
-pk_enum_find_string (PkEnumMatch *table, guint value)
+pk_enum_find_string (const PkEnumMatch *table, guint value)
 {
 	guint i;
 	guint tmp;
@@ -500,13 +498,11 @@ pk_enum_find_string (PkEnumMatch *table, guint value)
 
 	for (i=0;;i++) {
 		string_tmp = table[i].string;
-		if (string_tmp == NULL) {
+		if (string_tmp == NULL)
 			break;
-		}
 		tmp = table[i].value;
-		if (tmp == value) {
+		if (tmp == value)
 			return table[i].string;
-		}
 	}
 	return table[0].string;
 }
