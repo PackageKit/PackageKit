@@ -71,6 +71,7 @@
 #include "pk-cache.h"
 #include "pk-notify.h"
 #include "pk-security.h"
+#include "pk-refresh.h"
 
 static void     pk_transaction_class_init	(PkTransactionClass *klass);
 static void     pk_transaction_init		(PkTransaction      *transaction);
@@ -78,6 +79,9 @@ static void     pk_transaction_finalize		(GObject	    *object);
 
 #define PK_TRANSACTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION, PkTransactionPrivate))
 #define PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT	100 /* ms */
+
+static void pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTransaction *transaction);
+static void pk_transaction_progress_changed_cb (PkBackend *backend, guint percentage, guint subpercentage, guint elapsed, guint remaining, PkTransaction *transaction);
 
 struct PkTransactionPrivate
 {
@@ -372,7 +376,6 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
 	else
 		pk_inhibit_add (transaction->priv->inhibit, transaction);
 
-
 	egg_debug ("emitting allow-interrpt %i", allow_cancel);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_ALLOW_CANCEL], 0, allow_cancel);
 }
@@ -472,13 +475,9 @@ static void
 pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *transaction)
 {
 	gboolean ret;
-	GError *error = NULL;
 	const gchar *exit_text;
-	gchar *filename;
 	guint time;
 	gchar *packages;
-	gchar *exec;
-	gchar *command;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -487,6 +486,48 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	if (transaction->priv->finished) {
 		egg_warning ("Already finished");
 		return;
+	}
+
+	/* disconnect these straight away, as the PkTransaction object takes time to timeout */
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_details);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_error_code);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_files);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_distro_upgrade);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_finished);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_package);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_detail);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_signature_required);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_eula_required);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
+
+	/* do some optional extra actions when we've finished refreshing the cache */
+	if (transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		PkRefresh *refresh;
+		refresh = pk_refresh_new ();
+
+		g_signal_connect (refresh, "status-changed",
+				  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
+		g_signal_connect (refresh, "progress-changed",
+				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
+
+		/* generate the package list */
+		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageListBugfix");
+		if (ret)
+			pk_refresh_update_package_list (refresh);
+
+		/* refresh the desktop icon cache */
+		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFilesBugfix");
+		if (ret)
+			pk_refresh_import_desktop_files (refresh);
+
+		/* clear the firmware requests directory */
+		pk_refresh_clear_firmware_requests (refresh);
+		g_object_unref (refresh);
 	}
 
 	/* we should get no more from the backend with this tid */
@@ -539,66 +580,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 
 	/* remove any inhibit */
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
-
-	/* disconnect these straight away, as the PkTransaction object takes time to timeout */
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_details);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_error_code);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_files);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_distro_upgrade);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_finished);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_package);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_detail);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_signature_required);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_eula_required);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
-
-	/* do some optional extra actions when we've finished refreshing the cache */
-	if (transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		/* asynchronously generate the package list
-		 * NOTE: we can't do this in process as it uses PkClient */
-		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageList");
-		if (ret) {
-			exec = g_build_filename (LIBEXECDIR, "pk-generate-package-list", NULL);
-			command = g_strdup_printf ("%s --quiet", exec);
-			egg_debug ("running helper %s", command);
-			ret = g_spawn_command_line_async (command, &error);
-			if (!ret) {
-				egg_warning ("failed to execute %s: %s", command, error->message);
-				g_error_free (error);
-			}
-			g_free (exec);
-			g_free (command);
-		}
-
-		/* refresh the desktop icon cache
-		 * NOTE: we can't do this in process as it uses PkClient */
-		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
-		if (ret) {
-			exec = g_build_filename (LIBEXECDIR, "pk-import-desktop", NULL);
-			command = g_strdup_printf ("%s --quiet", exec);
-			egg_debug ("running helper %s", command);
-			ret = g_spawn_command_line_async (command, &error);
-			if (!ret) {
-				egg_warning ("failed to execute %s: %s", command, error->message);
-				g_error_free (error);
-			}
-			g_free (exec);
-			g_free (command);
-		}
-
-		/* clear the firmware requests directory */
-		filename = g_build_filename (LOCALSTATEDIR, "run", "PackageKit", "udev", NULL);
-		egg_debug ("clearing udev firmware requests at %s", filename);
-		ret = pk_directory_remove_contents (filename);
-		if (!ret)
-			egg_warning ("failed to clear %s", filename);
-		g_free (filename);
-	}
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	exit_text = pk_exit_enum_to_text (exit);
