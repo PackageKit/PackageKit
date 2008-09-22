@@ -1033,7 +1033,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             collection = True
             name = name.replace('^', '@', 1)
         if not loader:
-           loader = package.loaders[0]
+            for loader in package.loaders:
+                channel = loader.getChannel()
+                break
         channel = loader.getChannel()
         if package.installed:
             data = 'installed'
