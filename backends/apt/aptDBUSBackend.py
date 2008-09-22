@@ -29,6 +29,7 @@ import re
 import signal
 import shutil
 import socket
+import stat
 import string
 import sys
 import time
@@ -459,6 +460,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled = threading.Event()
         self._canceled.clear()
         self._lock = threading.Lock()
+        self._last_cache_refresh = None
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -1595,6 +1597,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             self.Exit()
             return
+        self._last_cache_refresh = time.time()
 
     def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
         """
@@ -1633,9 +1636,23 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Check if the backend was initialized well and try to recover from
         a broken setup
         '''
-        pklog.debug("Check apt cache and xapian database")
+        pklog.debug("Checking apt cache and xapian database")
+        pkg_cache = os.path.join(apt_pkg.Config["Dir"],
+                                 apt_pkg.Config["Dir::Cache"],
+                                 apt_pkg.Config["Dir::Cache::pkgcache"])
+        src_cache = os.path.join(apt_pkg.Config["Dir"],
+                                 apt_pkg.Config["Dir::Cache"],
+                                 apt_pkg.Config["Dir::Cache::srcpkgcache"])
+        # Check if the cache instance is of the coorect class type, contains
+        # any broken packages and if the dpkg status or apt cache files have 
+        # been changed since the last refresh
         if not isinstance(self._cache, apt.cache.Cache) or \
-           self._cache._depcache.BrokenCount > 0:
+           (self._cache._depcache.BrokenCount > 0) or \
+           (os.stat(apt_pkg.Config["Dir::State::status"])[stat.ST_MTIME] > \
+            self._last_cache_refresh) or \
+           (os.stat(pkg_cache)[stat.ST_MTIME] > self._last_cache_refresh) or \
+           (os.stat(src_cache)[stat.ST_MTIME] > self._last_cache_refresh):
+            pklog.debug("Reloading the cache is required")
             self._open_cache(prange, progress)
         else:
             self._cache.clear()
