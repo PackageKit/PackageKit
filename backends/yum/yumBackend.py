@@ -801,6 +801,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         bump = 100 / len(package_ids)
         deps_list = []
         resolve_list = []
+        grp_pkgs = []
 
         # resolve each package_id to a pkg object
         for package in package_ids:
@@ -808,7 +809,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             grp = self._is_meta_package(package)
             if grp:
                 pkgs = self._get_group_packages(grp)
-                resolve_list.extend(pkgs)
+                grp_pkgs.extend(pkgs)
             else:
                 name = package.split(';')[0]
                 pkg,inst = self._findPackage(package)
@@ -819,11 +820,18 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                     break
             percentage += bump
 
+        if grp_pkgs:
+            resolve_list.extend(grp_pkgs)
         # get the best deps
         deps_list = self._get_best_depends(resolve_list,recursive)
 
         # make unique list
         deps_list = unique(deps_list)
+
+        # If packages comes from a group, then we show them along with deps.
+        if grp_pkgs:
+            deps_list.extend(grp_pkgs)
+
 
         # add to correct lists
         for pkg in deps_list:
