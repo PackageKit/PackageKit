@@ -227,9 +227,7 @@ backend_get_requires_thread (PkBackend *backend)
 						it->resolvable ()->arch ().c_str(),
 						it->resolvable ()->repoInfo().alias ().c_str ());
 
-				pk_backend_package (backend, status, package_id, "");
-						// FIXME There is something in our descriptions which let crash pk
-						//it->resolvable ()->description ().c_str ());
+				pk_backend_package (backend, status, package_id, it->resolvable ()->summary ().c_str ());
 
 				g_free (package_id);
 			}
@@ -421,12 +419,12 @@ backend_get_depends_thread (PkBackend *backend)
 				pk_backend_package (backend,
 						PK_INFO_ENUM_INSTALLED,
 						package_id_temp,
-						item->description ().c_str());
+						item->summary ().c_str());
 			} else {
 				pk_backend_package (backend,
 						PK_INFO_ENUM_AVAILABLE,
 						package_id_temp,
-						"");
+						item->summary ().c_str());
 			}
 			g_free (package_id_temp);
 		}
@@ -721,10 +719,11 @@ backend_get_updates_thread (PkBackend *backend)
 		}
 
 		gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
-		pk_backend_package (backend, infoEnum, package_id, "");
+		pk_backend_package (backend, infoEnum, package_id, res->summary ().c_str ());
 					// some package descriptions generate markup parse failures
 					// causing the update to show empty package lines, comment for now
-					// res->description ().c_str ());
+					// res->summary ().c_str ());
+					// Test if this still happens!
 		g_free (package_id);
 	}
 
@@ -1270,11 +1269,15 @@ backend_resolve_thread (PkBackend *backend)
 		}
 
 		const gchar *package_id = zypp_build_package_id_from_resolvable (package);
-		// TODO: Determine whether the package is installed and emit either PK_INFO_ENUM_AVAILABLE or PK_INFO_ENUM_INSTALLED
+
+		PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
+		if( package.isSystem ())
+			info = PK_INFO_ENUM_INSTALLED;
+
 		pk_backend_package (backend,
-				    PK_INFO_ENUM_AVAILABLE,
+				    info,
 				    package_id,
-				    package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
+				    package.lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 	}
 
 	pk_backend_finished (backend);
@@ -1795,7 +1798,7 @@ backend_what_provides_thread (PkBackend *backend)
 						it->resolvable ()->arch ().c_str(),
 						it->resolvable ()->repoInfo().alias ().c_str ());
 
-				pk_backend_package (backend, status, package_id, it->resolvable ()->description ().c_str ());
+				pk_backend_package (backend, status, package_id, it->resolvable ()->summary ().c_str ());
 
 				g_free (package_id);
 			}
