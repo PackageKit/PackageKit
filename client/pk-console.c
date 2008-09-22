@@ -98,9 +98,9 @@ pk_console_bar (guint subpercentage)
 	}
 	g_print ("] ");
 	if (percentage_last != PK_CLIENT_PERCENTAGE_INVALID) {
-		g_print ("(%i%%)", percentage_last);
+		g_print ("(%i%%)  ", percentage_last);
 	} else {
-		g_print ("       ");
+		g_print ("        ");
 	}
 	awaiting_space = TRUE;
 }
@@ -371,7 +371,7 @@ pk_console_pulse_bar (PulseState *pulse_state)
 	}
 	g_print ("] ");
 	if (percentage_last != PK_CLIENT_PERCENTAGE_INVALID) {
-		g_print ("(%i%%)", percentage_last);
+		g_print ("(%i%%)  ", percentage_last);
 	} else {
 		g_print ("        ");
 	}
