@@ -22,11 +22,7 @@ import smart
 from smart.interface import Interface
 from smart.progress import Progress
 from smart.fetcher import Fetcher
-from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
-        INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
-        INFO_SECURITY, INFO_BUGFIX, INFO_ENHANCEMENT, \
-        ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED, \
-        ERROR_PACKAGE_DOWNLOAD_FAILED
+from packagekit.backend import PackageKitBaseBackend
 from packagekit.package import PackagekitPackage
 from packagekit.enums import *
 import re
