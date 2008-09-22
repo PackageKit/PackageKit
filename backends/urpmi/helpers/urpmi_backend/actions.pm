@@ -1,3 +1,14 @@
+#
+# Copyright (C) 2008 Aurelien Lefebvre <alefebvre@mandriva.com>
+#
+# Licensed under the GNU General Public License Version 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+
 package urpmi_backend::actions;
 
 use strict;
@@ -79,7 +90,7 @@ sub perform_installation {
       # Fix me
       # Display message to prevent that the installation cannot continue because some
       # packages has to be removed for others to be upgraded.
-      exit 0;
+      die;
     }
     # Else, it's ok.
     # Here we can display $list, which describe packages which has to be removed for
@@ -145,9 +156,10 @@ sub perform_installation {
         print "Install current mode = ", $mode, "\n";
       },
       bad_signature => sub {
-        # Here we display a message (with PK enum) to warn the user
-        # about a bad signature, then we exit
-        exit 1;
+        pk_print_error(PK_ERROR_ENUM_GPG_FAILURE, "Bad or missing GPG signatures");
+        undef $lock;
+        undef $rpm_lock;
+        die;
       },
       ask_yes_or_no => sub {
         # Return 1 = Return Yes
@@ -160,7 +172,6 @@ sub perform_installation {
       completed => sub {
         undef $lock;
         undef $rpm_lock;
-        pk_print_status(PK_STATUS_ENUM_FINISHED);
       },
       post_download => sub {
         # Fix me !
@@ -219,12 +230,12 @@ sub perform_file_search {
 
 sub perform_requires_search {
 
-  my ($urpm, $pkg, $recursive_option) = @_;
+  my ($urpm, $pkgnames, $recursive_option) = @_;
 
   my (@properties, %requires, %properties, $dep);
   my %requested;
   urpm::select::search_packages($urpm, 
-    \%requested, [ $pkg->name ], 
+    \%requested, $pkgnames, 
     use_provides => 0,
     fuzzy => 0,
     all => 0

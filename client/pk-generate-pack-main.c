@@ -31,7 +31,7 @@
 #include <glib/gstdio.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-client.h>
 #include <pk-control.h>
 
@@ -53,7 +53,7 @@ main (int argc, char *argv[])
 	gchar *pack_filename = NULL;
 	gchar *packname = NULL;
 	PkControl *control = NULL;
-	PkRoleEnum roles;
+	PkBitfield roles;
 	const gchar *package_list = NULL;
 	gchar *tempdir = NULL;
 	gboolean exists;
@@ -79,7 +79,7 @@ main (int argc, char *argv[])
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	if (with_package_list != NULL) {
 		package_list = with_package_list;
@@ -94,8 +94,8 @@ main (int argc, char *argv[])
 
 	/* are we dumb and can't check for depends? */
 	control = pk_control_new ();
-	roles = pk_control_get_actions (control);
-	if (!pk_enums_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
+	roles = pk_control_get_actions (control, NULL);
+	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
 		g_print ("Please use a backend that supports GetDepends!\n");
 		goto out;
 	}
@@ -113,8 +113,8 @@ main (int argc, char *argv[])
 	}
 
 	/* check the suffix */
-	if (!g_str_has_suffix (pack_filename,".pack")) {
-		g_print(_("Invalid name for the service pack, Specify a name with .pack extension\n"));
+	if (!g_str_has_suffix (pack_filename,".servicepack")) {
+		g_print(_("Invalid name for the service pack, Specify a name with .servicepack extension\n"));
 		goto out;
 	}
 

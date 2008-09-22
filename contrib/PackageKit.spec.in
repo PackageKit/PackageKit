@@ -1,29 +1,29 @@
 %define glib2_version           2.16.1
 %define dbus_version            0.90
 %define dbus_glib_version       0.70
-%define policykit_version       0.7
-%define alphatag		#ALPHATAG#
+%define policykit_version       0.8
+%define alphatag                #ALPHATAG#
 
 %{!?python_sitelib: %define python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
-Summary:   System daemon that is a DBUS abstraction layer for packages
+Summary:   System daemon that is a DBUS abstraction layer for package management
 Name:      PackageKit
 Version:   #VERSION#
 Release:   0.#BUILD#%{?alphatag}%{?dist}
-Epoch:     1
 License:   GPLv2+
 Group:     System Environment/Libraries
 URL:       http://packagekit.freedesktop.org
-Source0:   http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.tar.gz
+Source0:   http://www.packagekit.org/releases/%{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
-Requires: PackageKit-libs = %{epoch}:%{version}-%{release}
-Requires: yum-packagekit = %{epoch}:%{version}-%{release}
-Requires: yum >= 3.2.6
-Requires: libtar
+Requires: PackageKit-libs = %{version}-%{release}
+Requires: yum-packagekit = %{version}-%{release}
+Requires: udev-packagekit = %{version}-%{release}
+Requires: PackageKit-yum = %{version}-%{release}
 Requires: shared-mime-info
+Requires: python-sqlite2
 
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: dbus-devel  >= %{dbus_version}
@@ -43,12 +43,38 @@ BuildRequires: perl(XML::Parser)
 BuildRequires: intltool
 BuildRequires: gettext
 BuildRequires: xulrunner-devel
-BuildRequires: libtar-devel
+BuildRequires: libarchive-devel
 
-%description 
+%description
 PackageKit is a D-Bus abstraction layer that allows the session user
 to manage packages in a secure way using a cross-distro,
 cross-architecture API.
+
+%package yum
+Summary: PackageKit YUM backend
+Group: System Environment/Libraries
+Requires: yum >= 3.2.19
+Requires: %{name} = %{version}-%{release}
+
+%description yum
+A backend for PackageKit to enable yum functionality.
+
+%package smart
+Summary: PackageKit SMART backend
+Group: System Environment/Libraries
+Requires: smart
+Requires: %{name} = %{version}-%{release}
+
+%description smart
+A backend for PackageKit to enable SMART functionality.
+
+%package docs
+Summary: Documentation for PackageKit
+Group: Development/Libraries
+Requires: %{name} = %{version}-%{release}
+
+%description docs
+API docs for PackageKit.
 
 %package -n udev-packagekit
 Summary: Tell PackageKit to install firmware that udev requires
@@ -76,7 +102,7 @@ will almost instantly update itself to reflect this.
 Summary: Libraries for accessing PackageKit
 Group: Development/Libraries
 Requires: dbus >= %{dbus_version}
-Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name} = %{version}-%{release}
 
 %description libs
 Libraries for accessing PackageKit.
@@ -85,7 +111,7 @@ Libraries for accessing PackageKit.
 Summary: Cron job and related utilities for PackageKit
 Group: System Environment/Base
 Requires: cronie
-Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name} = %{version}-%{release}
 
 %description cron
 Crontab and utilities for running PackageKit as a cron job.
@@ -93,7 +119,7 @@ Crontab and utilities for running PackageKit as a cron job.
 %package devel
 Summary: Libraries and headers for PackageKit
 Group: Development/Libraries
-Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name} = %{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
 Requires: pkgconfig
 Requires: sqlite-devel
@@ -105,7 +131,7 @@ Headers and libraries for PackageKit.
 Summary: Browser Plugin for PackageKit
 Group: Development/Libraries
 Requires: gtk2
-Requires: PackageKit-libs = %{epoch}:%{version}-%{release}
+Requires: PackageKit-libs = %{version}-%{release}
 
 %description browser-plugin
 The PackageKit browser plugin allows web sites to offer the ability to
@@ -116,7 +142,7 @@ using PackageKit.
 %setup -q
 
 %build
-%configure --enable-yum --enable-yum2 --with-default-backend=yum --disable-local
+%configure --enable-yum --enable-smart --with-default-backend=yum --disable-local
 
 make %{?_smp_mflags}
 
@@ -130,8 +156,6 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
-
-chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/yumDBUSBackend.py
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
 
 %find_lang %name
@@ -151,23 +175,27 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING 
+%doc README AUTHORS NEWS COPYING
 %dir %{_datadir}/PackageKit
 %dir %{_datadir}/PackageKit/helpers
 %dir %{_sysconfdir}/PackageKit
 %dir %{_localstatedir}/lib/PackageKit
 %dir %{python_sitelib}/packagekit
 %dir %{_localstatedir}/run/PackageKit
+%dir %{_localstatedir}/run/PackageKit/udev
+%dir %{_localstatedir}/cache/PackageKit
+%dir %{_localstatedir}/cache/PackageKit/downloads
 %{python_sitelib}/packagekit/*py*
 %dir %{_sysconfdir}/bash_completion.d
 %config %{_sysconfdir}/bash_completion.d/pk-completion.bash
 %config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
 %config %{_sysconfdir}/dbus-1/system.d/*
-%{_datadir}/PackageKit/helpers/*
+%dir %{_datadir}/PackageKit/helpers/test_spawn
+%{_datadir}/PackageKit/helpers/test_spawn/*
 %{_datadir}/man/man1/*.1.gz
-%{_datadir}/gtk-doc/html/PackageKit
 %{_datadir}/PolicyKit/policy/*.policy
 %{_datadir}/mime/packages/packagekit-*.xml
+%{_datadir}/PackageKit/pk-upgrade-distro.sh
 %{_sbindir}/packagekitd
 %{_bindir}/pkmon
 %{_bindir}/pkcon
@@ -176,43 +204,67 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libexecdir}/pk-import-*
 %{_libexecdir}/pk-generate-*
 %exclude %{_libdir}/libpackagekit*.so.*
-%exclude %{_libdir}/packagekit-backend/*.so
+%{_libdir}/packagekit-backend/libpk_backend_dummy.so
+%{_libdir}/packagekit-backend/libpk_backend_test_*.so
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
 %ghost %verify(not md5 size mtime) %{_localstatedir}/run/PackageKit/job_count.dat
 %{_datadir}/dbus-1/system-services/*.service
 %{_libdir}/pm-utils/sleep.d/95packagekit
 %{_libexecdir}/*py*
 
+%files docs
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_datadir}/gtk-doc/html/PackageKit
+
+%files smart
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_libdir}/packagekit-backend/libpk_backend_smart.so
+%dir %{_datadir}/PackageKit/helpers/smart
+%{_datadir}/PackageKit/helpers/smart/*
+
+%files yum
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_libdir}/packagekit-backend/libpk_backend_yum.so
+%dir %{_datadir}/PackageKit/helpers/yum
+%{_datadir}/PackageKit/helpers/yum/*
+
 %files -n yum-packagekit
 %defattr(-, root, root)
+%doc README AUTHORS NEWS COPYING
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/refresh-packagekit.conf
 /usr/lib/yum-plugins/refresh-packagekit.*
 
 %files -n udev-packagekit
 %defattr(-, root, root)
+%doc README AUTHORS NEWS COPYING
 %{_sysconfdir}/udev/rules.d/*.rules
 /lib/udev/*.sh
 
 %files libs
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING 
+%doc README AUTHORS NEWS COPYING
 %dir %{_libdir}/packagekit-backend
 %{_libdir}/*packagekit*.so.*
-%{_libdir}/packagekit-backend/*.so
 
 %files cron
 %defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
 %config %{_sysconfdir}/cron.daily/packagekit-background.cron
-%config %{_sysconfdir}/sysconfig/packagekit-background
-
-%files devel
-%defattr(-,root,root,-)
+%config(noreplace) %{_sysconfdir}/sysconfig/packagekit-background
 
 %files browser-plugin
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
 %dir %{_libdir}/mozilla
 %dir %{_libdir}/mozilla/plugins
 %{_libdir}/mozilla/plugins/packagekit-plugin.so
 
+%files devel
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
 %{_libdir}/lib*.so
 %{_libdir}/pkgconfig/*
 %{_includedir}/*

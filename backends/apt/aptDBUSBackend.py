@@ -17,6 +17,7 @@ the Free Software Foundation; either version 2 of the License, or
 
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 
+import errno
 import gdbm
 import httplib
 import locale
@@ -28,6 +29,7 @@ import re
 import signal
 import shutil
 import socket
+import string
 import sys
 import time
 import threading
@@ -44,6 +46,8 @@ import gobject
 
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded, async
 from packagekit.enums import *
+
+import debfile
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 
@@ -63,6 +67,23 @@ else:
         pklog.debug("Use XAPIAN for the search")
         XAPIAN_SUPPORT = True
 
+# SoftwareProperties is required to proivde information about repositories
+try:
+    import softwareproperties.SoftwareProperties
+except ImportError:
+    REPOS_SUPPORT = False
+else:
+    REPOS_SUPPORT = True
+
+# Check if update-manager-core is installed to get aware of the
+# latest distro releases
+try:
+    from UpdateManager.Core.MetaRelease import MetaReleaseCore
+except ImportError:
+    META_RELEASE_SUPPORT = False
+else:
+    META_RELEASE_SUPPORT = True
+
 # Set a timeout for the changelog download
 socket.setdefaulttimeout(2)
 
@@ -77,21 +98,166 @@ os.putenv("APT_LISTCHANGES_FRONTEND", "none")
 gobject.threads_init()
 dbus.glib.threads_init()
 
-def debug_exception(type, value, tb):
+# Map Debian sections to the PackageKit group name space
+SECTION_GROUP_MAP = {
+    "admin" : GROUP_ADMIN_TOOLS,
+    "base" : GROUP_SYSTEM,
+    "comm" : GROUP_COMMUNICATION,
+    "devel" : GROUP_PROGRAMMING,
+    "doc" : GROUP_DOCUMENTATION,
+    "editors" : GROUP_PUBLISHING,
+    "electronics" : GROUP_ELECTRONICS,
+    "embedded" : GROUP_SYSTEM,
+    "games" : GROUP_GAMES,
+    "gnome" : GROUP_DESKTOP_GNOME,
+    "graphics" : GROUP_GRAPHICS,
+    "hamradio" : GROUP_COMMUNICATION,
+    "interpreters" : GROUP_PROGRAMMING,
+    "kde" : GROUP_DESKTOP_KDE,
+    "libdevel" : GROUP_PROGRAMMING,
+    "libs" : GROUP_SYSTEM,
+    "mail" : GROUP_INTERNET,
+    "math" : GROUP_SCIENCE,
+    "misc" : GROUP_OTHER,
+    "net" : GROUP_NETWORK,
+    "news" : GROUP_INTERNET,
+    "oldlibs" : GROUP_LEGACY,
+    "otherosfs" : GROUP_SYSTEM,
+    "perl" : GROUP_PROGRAMMING,
+    "python" : GROUP_PROGRAMMING,
+    "science" : GROUP_SCIENCE,
+    "shells" : GROUP_SYSTEM,
+    "sound" : GROUP_MULTIMEDIA,
+    "tex" : GROUP_PUBLISHING,
+    "text" : GROUP_PUBLISHING,
+    "utils" : GROUP_ACCESSORIES,
+    "web" : GROUP_INTERNET,
+    "x11" : GROUP_DESKTOP_OTHER,
+    "unknown" : GROUP_UNKNOWN,
+    "alien" : GROUP_UNKNOWN,
+    "translations" : GROUP_LOCALIZATION,
+    "metapackages" : GROUP_COLLECTIONS }
+ 
+class InstallTimeOutPKError(Exception):
+    pass
+
+class PackageKitCache(apt.cache.Cache):
     """
-    Provides an interactive debugging session on unhandled exceptions
-    See http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/65287
+    Enhanced version of the apt.cache.Cache class which supports some features
+    which can only be found in the consolidate branch of python-apt
     """
-    if hasattr(sys, 'ps1') or not sys.stderr.isatty() or \
-       not sys.stdin.isatty() or not sys.stdout.isatty() or type==SyntaxError:
-        # Calls the default handler in interactive mode, if output is·
-        # redirected or on syntax errors
-        sys.__excepthook__(type, value, tb)
-    else:
-       import traceback, pdb
-       traceback.print_exception(type, value, tb)
-       print
-       pdb.pm()
+    def __iter__(self):
+        """
+        Let the cache behave like a sorted list of packages
+        """
+        for pkgname in sorted(self._dict.keys()):
+            yield self._dict[pkgname]
+        raise StopIteration
+
+    def isVirtualPackage(self, name):
+        """ 
+        Return True if the package of the given name is a virtual package
+        """
+        try:
+            virtual_pkg = self._cache[name]
+        except KeyError:
+            return False
+        if len(virtual_pkg.VersionList) == 0:
+            return True
+        return False
+
+    def getProvidingPackages(self, virtual):
+        """
+        Return a list of packages which provide the virtual package of the
+        specified name
+        """
+        providers = []
+        try:
+            vp = self._cache[virtual]
+            if len(vp.VersionList) != 0:
+                return providers
+        except KeyError:
+            return providers
+        for pkg in self:
+            v = self._depcache.GetCandidateVer(pkg._pkg)
+            if v == None:
+                continue
+            for p in v.ProvidesList:
+                #print virtual
+                #print p[0]
+                if virtual == p[0]:
+                    # we found a pkg that provides this virtual
+                    # pkg, check if the proivdes is any good
+                    providers.append(pkg)
+                    #cand = self._cache[pkg.name]
+                    #candver = self._cache._depcache.GetCandidateVer(cand._pkg)
+                    #instver = cand._pkg.CurrentVer
+                    #res = apt_pkg.CheckDep(candver.VerStr,oper,ver)
+                    #if res == True:
+                    #    self._dbg(1,"we can use %s" % pkg.name)
+                    #    or_found = True
+                    #    break
+        return providers
+
+    def clear(self):
+         """ Unmark all changes """
+         self._depcache.Init()
+
+
+class DpkgInstallProgress(apt.progress.InstallProgress):
+    """
+    Class to initiate and monitor installation of local package files with dpkg
+    """
+    def run(self, filename):
+        """
+        Start installing the given Debian package
+        """
+        try:
+            self.debname = os.path.basename(filename).split("_")[0]
+        except:
+            self.debname = "unknown"
+        pid = self.fork()
+        if pid == 0:
+            # child
+            dpkg_res = os.system("/usr/bin/dpkg --status-fd %s -i %s" % \
+                                 (self.writefd, filename))
+            res = os.WEXITSTATUS(dpkg_res)
+            os._exit(res)
+        self.child_pid = pid
+        res = self.waitChild()
+        return res
+
+    def updateInterface(self):
+        """
+        Process status messages from dpkg
+        """
+        if self.statusfd == None:
+            return
+        try:
+            while not self.read.endswith("\n"):
+                self.read += os.read(self.statusfd.fileno(), 1)
+        except OSError, (error_no, error_str):
+            # resource temporarly unavailable is ignored
+            if error_no not in [errno.EAGAIN, errno.EWOULDBLOCK]:
+                print err_str
+        if self.read.endswith("\n"):
+            statusl = string.split(self.read, ":")
+            if len(statusl) < 3:
+                print "got garbage from dpkg: '%s'" % read
+                self.read = ""
+            status = statusl[2].strip()
+            #print status
+            if status == "error":
+                self.error(self.debname, status)
+            elif status == "conffile-prompt":
+                # we get a string like this:
+                # 'current-conffile' 'new-conffile' useredited distedited
+                match = re.compile("\s*\'(.*)\'\s*\'(.*)\'.*").match(status_str)
+                if match:
+                     self.conffile(match.group(1), match.group(2))
+            else:
+                self.status = status
+            self.read = ""
 
 
 class PackageKitOpProgress(apt.progress.OpProgress):
@@ -124,6 +290,7 @@ class PackageKitOpProgress(apt.progress.OpProgress):
         except:
             pklog.warning("An additional step to open the cache is required")
 
+
 class PackageKitFetchProgress(apt.progress.FetchProgress):
     '''
     Handle the package download process
@@ -135,16 +302,17 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self.pend = prange[1]
         self.pprev = None
 
-    # FetchProgress callbacks
     def pulse(self):
+        apt.progress.FetchProgress.pulse(self)
+        # Strange, but we seem to need this to detect a cancel immediately
+        time.sleep(0.01)
         if self._backend._canceled.isSet():
             return False
-        percent = ((self.currentBytes + self.currentItems)*100.0)/float(self.totalBytes+self.totalItems)
-        progress = int(self.pstart + percent/100 * (self.pend - self.pstart))
+        progress = int(self.pstart + self.percent/100 * \
+                       (self.pend - self.pstart))
         if self.pprev < progress:
             self._backend.PercentageChanged(progress)
             self.pprev = progress
-        apt.progress.FetchProgress.pulse(self)
         return True
 
     def start(self):
@@ -156,28 +324,33 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self._backend.AllowCancel(False)
 
     def mediaChange(self, medium, drive):
-        #FIXME: use the Message method to notify the user
-        self._backend.error(ERROR_UNKNOWN,
-                            "Medium change needed")
+        #FIXME: Raise an expcetion and handle it in _commit_changes
+        #       Strangly _commit_changes does not catch the expcetion
+        self._backend.Message(MESSAGE_UNKNOWN,
+                              "Installing from CD-Rom (%s) is not "
+                              "supported." % medium)
+        return False
+
+
 class PackageKitInstallProgress(apt.progress.InstallProgress):
     '''
     Handle the installation and removal process. Bits taken from
     DistUpgradeViewNonInteractive.
     '''
-
-    # a insanly long timeout to be able to kill hanging maintainer
-    # scripts
-    TIMEOUT = 10*60
-
     def __init__(self, backend, prange=(0,100)):
         apt.progress.InstallProgress.__init__(self)
         self._backend = backend
         self.pstart = prange[0]
         self.pend = prange[1]
         self.pprev = None
+        self.last_activity = None
         self.conffile_prompts = set()
+        # insanly long timeout to be able to kill hanging maintainer scripts
+        self.timeout = 10*60
+        self.start_time = None
 
     def statusChange(self, pkg, percent, status):
+        self.last_activity = time.time()
         progress = self.pstart + percent/100 * (self.pend - self.pstart)
         if self.pprev < progress:
             self._backend.PercentageChanged(int(progress))
@@ -185,8 +358,11 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         pklog.debug("PM status: %s" % status)
 
     def startUpdate(self):
-        self._backend.StatusChanged(STATUS_INSTALL)
+        # The apt system lock was set by _acquire_lock() before
+        apt_pkg.PkgSystemUnLock()
+        self._backend.StatusChanged(STATUS_COMMIT)
         self.last_activity = time.time()
+        self.start_time = time.time()
 
     def fork(self):
         pklog.debug("fork()")
@@ -194,31 +370,66 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         return pid
 
     def updateInterface(self):
-        #pklog.debug("Updating interface")
         apt.progress.InstallProgress.updateInterface(self)
         try:
             pklog.debug("%s" % os.read(self.master_fd, 512))
         except Exception, e:
             pklog.debug("ioerror: %s" % e)
         # we timed out, send ctrl-c
-        if self.last_activity + self.TIMEOUT < time.time():
-            pklog.critical("no activity for %s time sending ctrl-c" % self.TIMEOUT)
-            os.write(self.master_fd, 3)
+        if self.last_activity + self.timeout < time.time():
+            pklog.critical("no activity for %s time sending ctrl-c" \
+                           % self.timeout)
+            os.write(self.master_fd, chr(3))
+            raise InstallTimeOutPKError
 
     def conffile(self, current, new):
         pklog.warning("Config file prompt: '%s' (sending no)" % current)
         i = os.write(self.master_fd, "n\n")
         pklog.debug("wrote n, send %i bytes" % i)
         self.conffile_prompts.add(new)
-    
+
     def finishUpdate(self):
         pklog.debug("finishUpdate()")
         if self.conffile_prompts:
-            self._backend.Message(MESSAGE_NOTICE, "The following conffile prompts were found and need investiagtion: %s" % "\n".join(self.conffile_prompts))
+            self._backend.Message(MESSAGE_CONFIG_FILES_CHANGED, 
+                                  "The following conffile prompts were found "
+                                  "and need investiagtion: %s" % \
+                                  "\n".join(self.conffile_prompts))
+        # Check for required restarts
+        if os.path.exists("/var/run/reboot-required") and \
+           os.path.getmtime("/var/run/reboot-required") > self.start_time:
+            self._backend.RequireRestart(RESTART_SYSTEM, "")
 
-def sigquit(signum, frame):
-    pklog.error("Was killed")
-    sys.exit(1)
+
+class PackageKitDpkgInstallProgress(DpkgInstallProgress,
+                                    PackageKitInstallProgress):
+    """
+    Class to integrate the progress of core dpkg operations into PackageKit
+    """
+    def run(self, filename):
+        return DpkgInstallProgress.run(self, filename)
+
+    def updateInterface(self):
+        DpkgInstallProgress.updateInterface(self)
+        try:
+            pklog.debug("%s" % os.read(self.master_fd, 512))
+        except Exception, e:
+            pklog.debug("ioerror: %s" % e)
+        # we timed out, send ctrl-c
+        if self.last_activity + self.timeout < time.time():
+            pklog.critical("no activity for %s time sending "
+                           "ctrl-c" % self.timeout)
+            os.write(self.master_fd, chr(3))
+
+
+if REPOS_SUPPORT == True:
+    class PackageKitSoftwareProperties(softwareproperties.SoftwareProperties.SoftwareProperties):
+        """
+        Helper class to fix a siily bug in python-software-properties
+        """
+        def set_modified_sourceslist(self):
+            self.save_sourceslist()
+
 
 class PackageKitAptBackend(PackageKitBaseBackend):
     '''
@@ -238,7 +449,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     def doInit(self):
         pklog.info("Initializing cache")
-        self.StatusChanged(STATUS_SETUP)
+        self.StatusChanged(STATUS_RUNNING)
         self.AllowCancel(False)
         self.NoPercentageUpdates()
         self._open_cache(progress=False)
@@ -254,6 +465,28 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled.wait()
 
     @threaded
+    def doSearchFile(self, filters, filename):
+        '''
+        Implement the apt2-search-file functionality
+
+        Apt specific: Works only for installed files. Since config files are
+        not removed by default even not installed packages can be reported.
+        '''
+        pklog.info("Searching for file: %s" % filename)
+        self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(True)
+
+        for pkg in self._cache:
+            if self._check_canceled(): return False
+            for installed_file in self._get_installed_files(pkg):
+                if filename in installed_file:
+                    self._emit_visible_package(filters, pkg)
+                    continue
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
     def doSearchGroup(self, filters, group):
         '''
         Implement the apt2-search-group functionality
@@ -265,15 +498,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         for pkg in self._cache:
-            if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                               "The search was canceled")
-                self.Finished(EXIT_KILLED)
-                self._canceled.clear()
-                return
-            elif self._get_package_group(pkg) == group and \
-                 self._is_package_visible(pkg, filters):
-                self._emit_package(pkg)
+            if self._check_canceled(): return False
+            elif self._get_package_group(pkg) == group:
+                self._emit_visible_package(filters, pkg)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -288,14 +515,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         for pkg in self._cache:
-            if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                               "The search was canceled")
-                self.Finished(EXIT_KILLED)
-                self._canceled.clear()
-                return
-            elif search in pkg.name and self._is_package_visible(pkg, filters):
-                self._emit_package(pkg)
+            if self._check_canceled(): return False
+            elif search in pkg.name:
+                self._emit_visible_package(filters, pkg)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -330,17 +552,53 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             pklog.debug("Performing apt cache based search")
             for p in self._cache._dict.values():
-                if self._check_canceled("Search was canceled"): return
+                if self._check_canceled(): return
                 needle = search.strip().lower()
                 haystack = p.description.lower()
                 if p.name.find(needle) >= 0 or haystack.find(needle) >= 0:
                     results.append(p)
 
         for r in results:
-            if self._check_canceled("Search was canceled"): return
-            if self._is_package_visible(r, filters) == True:
-                self._emit_package(r)
+            if self._check_canceled(): return
+            self._emit_visible_package(filters, r)
 
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
+    def doGetDistroUpgrades(self):
+        '''
+        Implement the {backend}-get-distro-upgrades functionality
+        '''
+        pklog.info("Get distro upgrades")
+        self.StatusChanged(STATUS_INFO)
+        self.AllowCancel(False)
+        self.NoPercentageUpdates()
+
+        if META_RELEASE_SUPPORT == False:
+            if self._cache.has_key("update-manager-core") and \
+               self._cache["update-manager-core"].isInstalled == False:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please install the package update-manager-core to get notified "
+                               "of the latest distribution releases.")
+            else:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please make sure that update-manager-core is"
+                               "correctly installed.")
+            self.Finished(EXIT_FAILED)
+            return
+
+        #FIXME Evil to start the download during init
+        meta_release = MetaReleaseCore(False, False)
+        #FIXME: should use a lock
+        while meta_release.downloading:
+                time.sleep(1)
+        #FIXME: Add support for description
+        if meta_release.new_dist != None:
+            self.DistroUpgrade("stable", 
+                               "%s %s" % (meta_release.new_dist.name, 
+                                          meta_release_new_dist.version), 
+                               "The latest stable release")
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -349,9 +607,31 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-update functionality
         '''
+        def succeeds_security_update(pkg):
+            """
+            Return True if an update succeeds a previous security update
+
+            An example would be a package with version 1.1 in the security
+            archive and 1.1.1 in the archive of proposed updates or the
+            same version in both archives.
+            """
+            inst_ver = pkg._pkg.CurrentVer
+            for ver in pkg._pkg.VersionList:
+                # Skip versions which are not later
+                if inst_ver and \
+                   apt_pkg.VersionCompare(ver.VerStr, inst_ver.VerStr) <= 0:
+                       continue
+                for(verFileIter, index) in ver.FileList:
+                    if verFileIter.Origin in ["Debian", "Ubuntu"] and \
+                       (verFileIter.Archive.endswith("-security") or \
+                        verFileIter.Label == "Debian-Security"):
+                            indexfile = pkg._list.FindIndex(verFileIter)
+                            if indexfile and indexfile.IsTrusted:
+                                return True
+            return False
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
-        self.StatusChanged(STATUS_INFO)
+        self.StatusChanged(STATUS_QUERY)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self._check_init(progress=False)
@@ -359,12 +639,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         updates = filter(lambda p: self._cache[p].isUpgradable,
                          self._cache.keys())
         for pkg in self._cache.getChanges():
-            if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                               "Calculating updates was canceled")
-                self.Finished(EXIT_KILLED)
-                self._canceled.clear()
-                return
+            if self._check_canceled(): return False
             else:
                 updates.remove(pkg.name)
                 info = INFO_NORMAL
@@ -376,17 +651,21 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     if archive.endswith("-security") or \
                        label == "Debian-Security":
                         info = INFO_SECURITY
+                    elif succeeds_security_update(pkg):
+                        pklog.debug("Update of %s succeeds a security "
+                                    "update. Raising its priority." % pkg.name)
+                        info = INFO_SECURITY
                     elif archive.endswith("-backports"):
                         info = INFO_ENHANCEMENT
                     elif archive.endswith("-updates"):
                         info = INFO_BUGFIX
                 if origin in ["Backports.org archive"] and trusted == True:
                         info = INFO_ENHANCEMENT
-                self._emit_package(pkg, info)
+                self._emit_package(pkg, info, force_candidate=True)
         # Report packages that are upgradable but cannot be upgraded
         for missed in updates:
              self._emit_package(self._cache[missed], INFO_BLOCKED)
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -400,7 +679,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         self._check_init(progress=False)
         for pkg_id in pkg_ids:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pkg = self._find_package_by_id(pkg_id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -408,7 +687,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
             # FIXME add some real data
-            updates = pkg_id
+            updates = self.get_id_from_package(pkg, force_candidate=False)
             obsoletes = ""
             vendor_url = ""
             bugzilla_url = ""
@@ -417,7 +696,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             update_text = ""
             #FIXME: Replace this method with the python-apt one as soon as the
             #       consolidate branch gets merged
+            self.StatusChanged(STATUS_DOWNLOAD_CHANGELOG)
             changelog = self._get_changelog(pkg)
+            self.StatusChanged(STATUS_INFO)
             state = ""
             issued = ""
             updated = ""
@@ -432,38 +713,24 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-get-details functionality
         '''
         pklog.info("Get details of %s" % pkg_ids)
-        self.StatusChanged(STATUS_INFO)
+        self.StatusChanged(STATUS_DEP_RESOLVE)
         self.NoPercentageUpdates()
         self.AllowCancel(True)
         self._check_init(progress=False)
         for pkg_id in pkg_ids:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pkg = self._find_package_by_id(pkg_id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                                "Package %s isn't available" % name)
                 self.Finished(EXIT_FAILED)
                 return
-            #FIXME: should perhaps go to python-apt since we need this in
-            #       several applications
-            desc = pkg.description
-            # Skip the first line - it's a duplicate of the summary
-            i = desc.find('\n')
-            desc = desc[i+1:]
-            # do some regular expression magic on the description
-            # Add a newline before each bullet
-            p = re.compile(r'^(\s|\t)*(\*|0|-)',re.MULTILINE)
-            desc = p.sub(ur'\n\u2022', desc)
-            # replace all newlines by spaces
-            p = re.compile(r'\n', re.MULTILINE)
-            desc = p.sub(" ", desc)
-            # replace all multiple spaces by newlines
-            p = re.compile(r'\s\s+', re.MULTILINE)
-            desc = p.sub('\n', desc)
+            desc = self._get_package_description(pkg)
             #FIXME: We need more fine grained license information!
-            origin = pkg.candidateOrigin[0]
-            if origin.component in ["main", "universe"] and \
-               origin.origin in ["Debian", "Ubuntu"]:
+            candidate = pkg.candidateOrigin
+            if candidate != None and  \
+               candidate[0].component in ["main", "universe"] and \
+               candidate[0].origin in ["Debian", "Ubuntu"]:
                 license = "free"
             else:
                 license = "unknown"
@@ -479,30 +746,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-update-system functionality
         '''
         pklog.info("Upgrading system")
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,5))
         try:
             self._cache.upgrade(distUpgrade=False)
-            self._cache.commit(PackageKitFetchProgress(self, prange=(5,50)),
-                               PackageKitInstallProgress(self, prange=(50,95)))
-        except apt.cache.FetchFailedException:
-            self._open_cache()
-            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED, "Download failed")
-            self.Finished(EXIT_FAILED)
-            return
-        except apt.cache.FetchCancelledException:
-            self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
-            self.Finished(EXIT_KILLED)
-            self._canceled.clear()
-            return
         except:
-            self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_UNKNOWN, "System update failed")
+            self._cache.clear()
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
+                           "Failed to upgrade the system.")
             self.Finished(EXIT_FAILED)
             return
+        if not self._commit_changes(): return False
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
@@ -513,6 +770,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-remove functionality
         '''
         pklog.info("Removing package(s): id %s" % ids)
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -531,6 +789,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
             pkgs.append(pkg.name[:])
+            if pkg._pkg.Essential == True:
+                self.ErrorCode(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                               "Package %s cannot be removed." % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
             try:
                 pkg.markDelete()
             except:
@@ -538,14 +801,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN, "Removal of %s failed" % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
-        try:
-            self._cache.commit(PackageKitFetchProgress(self, prange=(10,10)),
-                               PackageKitInstallProgress(self, prange=(10,90)))
-        except:
-            self._open_cache(prange=(90,99))
-            self.ErrorCode(ERROR_UNKNOWN, "Removal failed")
-            self.Finished(EXIT_FAILED)
-            return
+        if not self._commit_changes(fetch_range=(10,10),
+                                    install_range=(10,90)):
+            return False
         self._open_cache(prange=(90,99))
         for p in pkgs:
             if self._cache.has_key(p) and self._cache[p].isInstalled:
@@ -557,15 +815,184 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    def doGetRepoList(self, filters):
+        '''
+        Implement the {backend}-get-repo-list functionality
+
+        FIXME: should we use the abstration of software-properties or provide
+               low level access using pure aptsources?
+        '''
+        pklog.info("Getting repository list: %s" % filters)
+        self.StatusChanged(STATUS_INFO)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        if REPOS_SUPPORT == False:
+            if self._cache.has_key("python-software-properties") and \
+               self._cache["python-software-properties"].isInstalled == False:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please install the package "
+                               "python-software-properties to handle repositories")
+            else:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please make sure that python-software-properties is"
+                               "correctly installed.")
+            self.Finished(EXIT_FAILED)
+            return
+        filter_list = filters.split(";")
+        repos = PackageKitSoftwareProperties()
+        # Emit distro components as virtual repositories
+        for comp in repos.distro.source_template.components:
+            repo_id = "%s_comp_%s" % (repos.distro.id, comp.name)
+            description = "%s %s - %s (%s)" % (repos.distro.id,
+                                               repos.distro.release,
+                                               comp.get_description(),
+                                               comp.name)
+            #FIXME: There is no inconsitent state in PackageKit
+            enabled = repos.get_comp_download_state(comp)[0]
+            if not FILTER_DEVELOPMENT in filter_list:
+                self.RepoDetail(repo_id, description, enabled)
+        # Emit distro's virtual update repositories
+        for template in repos.distro.source_template.children:
+            repo_id = "%s_child_%s" % (repos.distro.id, template.name)
+            description = "%s %s - %s (%s)" % (repos.distro.id,
+                                               repos.distro.release,
+                                               template.description,
+                                               template.name)
+            #FIXME: There is no inconsitent state in PackageKit
+            enabled = repos.get_comp_child_state(template)[0]
+            if not FILTER_DEVELOPMENT in filter_list:
+                self.RepoDetail(repo_id, description, enabled)
+        # Emit distro's cdrom sources
+        for source in repos.get_cdrom_sources():
+            if FILTER_NOT_DEVELOPMENT in filter_list and \
+               source.type in ("deb-src", "rpm-src"):
+                continue
+            enabled = not source.disabled
+            # Remove markups from the description
+            description = re.sub(r"</?b>", "", repos.render_source(source))
+            repo_id = "cdrom_%s_%s" % (source.uri, source.dist)
+            repo_id.join(map(lambda c: "_%s" % c, source.comps))
+            self.RepoDetail(repo_id, description, enabled)
+        # Emit distro's virtual source code repositoriy
+        if not FILTER_NOT_DEVELOPMENT in filter_list:
+            repo_id = "%s_source" % repos.distro.id
+            enabled = repos.get_source_code_state() or False
+            #FIXME: no translation :(
+            description = "%s %s - Source code" % (repos.distro.id, 
+                                                   repos.distro.release)
+            self.RepoDetail(repo_id, description, enabled)
+        # Emit third party repositories
+        for source in repos.get_isv_sources():
+            if FILTER_NOT_DEVELOPMENT in filter_list and \
+               source.type in ("deb-src", "rpm-src"):
+                continue
+            enabled = not source.disabled
+            # Remove markups from the description
+            description = re.sub(r"</?b>", "", repos.render_source(source))
+            repo_id = "isv_%s_%s" % (source.uri, source.dist)
+            repo_id.join(map(lambda c: "_%s" % c, source.comps))
+            self.RepoDetail(repo_id, description, enabled)
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
+    def doRepoEnable(self, repo_id, enable):
+        '''
+        Implement the {backend}-repo-enable functionality
+
+        FIXME: should we use the abstration of software-properties or provide
+               low level access using pure aptsources?
+        '''
+        pklog.info("Enabling repository: %s %s" % (repo_id, enable))
+        self.StatusChanged(STATUS_RUNNING)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        if REPOS_SUPPORT == False:
+            if self._cache.has_key("python-software-properties") and \
+               self._cache["python-software-properties"].isInstalled == False:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please install the package "
+                               "python-software-properties to handle repositories")
+            else:
+                self.ErrorCode(ERROR_UNKNOWN,
+                               "Please make sure that python-software-properties is"
+                               "correctly installed.")
+            self.Finished(EXIT_FALIED)
+            return
+        repos = PackageKitSoftwareProperties()
+
+        found = False
+        # Check if the repo_id matches a distro component, e.g. main
+        if repo_id.startswith("%s_comp_" % repos.distro.id):
+            for comp in repos.distro.source_template.components:
+                if repo_id == "%s_comp_%s" % (repos.distro.id, comp.name):
+                    if enable == repos.get_comp_download_state(comp)[0]:
+                        pklog.debug("Repository is already enabled")
+                        pass
+                    if enable == True:
+                        repos.enable_component(comp.name)
+                    else:
+                        repos.disable_component(comp.name)
+                    found = True
+                    break
+        # Check if the repo_id matches a distro child repository, e.g. hardy-updates
+        elif repo_id.startswith("%s_child_" % repos.distro.id):
+            for template in repos.distro.source_template.children:
+                if repo_id == "%s_child_%s" % (repos.distro.id, template.name):
+                    if enable == repos.get_comp_child_state(template)[0]:
+                        pklog.debug("Repository is already enabled")
+                        pass
+                    elif enable == True:
+                        repos.enable_child_source(template)
+                    else:
+                        repos.disable_child_source(template)
+                    found = True
+                    break
+        # Check if the repo_id matches a cdrom repository
+        elif repo_id.startswith("cdrom_"):
+            for source in repos.get_isv_sources():
+                source_id = "cdrom_%s_%s" % (source.uri, source.dist)
+                source_id.join(map(lambda c: "_%s" % c, source.comps))
+                if repo_id == source_id:
+                    if source.disabled == enable:
+                        source.disabled = not enable
+                        repos.save_sourceslist()
+                    else:
+                        pklog.debug("Repository is already enabled")
+                    found = True
+                    break
+        # Check if the repo_id matches an isv repository
+        elif repo_id.startswith("isv_"):
+            for source in repos.get_isv_sources():
+                source_id = "isv_%s_%s" % (source.uri, source.dist)
+                source_id.join(map(lambda c: "_%s" % c, source.comps))
+                if repo_id == source_id:
+                    if source.disabled == enable:
+                        source.disabled = not enable
+                        repos.save_sourceslist()
+                    else:
+                        pklog.debug("Repository is already enabled")
+                    found = True
+                    break
+        if found == False:
+            self.ErrorCode(ERROR_REPO_NOT_AVAILABLE,
+                           "The repository of the id %s isn't available" % repo_id)
+            self.Finished(EXIT_FAILED)
+            return
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
     def doUpdatePackages(self, ids):
         '''
         Implement the {backend}-update functionality
         '''
         pklog.info("Updating package with id %s" % ids)
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
-        self.StatusChanged(STATUS_RUNNING)
+        self._check_init(prange=(0,10))
         pkgs=[]
         for id in ids:
             pkg = self._find_package_by_id(id)
@@ -588,15 +1015,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                               "update" % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
-        try:
-            self._cache.commit(PackageKitFetchProgress(self, prange=(10,50)),
-                               PackageKitInstallProgress(self, prange=(50,90)))
-        except Exception, e:
-            pklog.warning("Exception during commit(): %s" % e)
-            self._open_cache(prange=(90,100))
-            self.ErrorCode(ERROR_UNKNOWN, "Update failed")
-            self.Finished(EXIT_FAILED)
-            return
+        if not self._commit_changes(): return False
         self._open_cache(prange=(90,100))
         self.PercentageChanged(100)
         pklog.debug("Checking success of operation")
@@ -627,7 +1046,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         # Setup the fetcher
         self._check_init(prange=(0,10))
-        self._cache._depcache.Init()
         progress = PackageKitFetchProgress(self, prange=(10,90))
         fetcher = apt_pkg.GetAcquire(progress)
         pm = apt_pkg.GetPackageManager(self._cache._depcache)
@@ -637,7 +1055,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Mark installed packages for reinstallation and not installed packages
         # for installation without dependencies
         for id in ids:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -651,11 +1069,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Download 
         pm.GetArchives(fetcher, list, recs)
         res = fetcher.Run()
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.PercentageChanged(95)
         # Copy files from cache to final destination
         for item in fetcher.Items:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pklog.debug("Download item: %s" % item)
             if (item.Status != item.StatDone and not item.StatIdle) or \
                 res == fetcher.ResultCancelled:
@@ -683,6 +1101,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         '''
         pklog.info("Installing package with id %s" % ids)
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -709,15 +1128,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                               "installation: %s" % (pkg.name,e))
                 self.Finished(EXIT_FAILED)
                 return
-        try:
-            self._cache.commit(PackageKitFetchProgress(self, prange=(10,50)),
-                               PackageKitInstallProgress(self, prange=(50,90)))
-        except Exception, e:
-            pklog.warning("exception %s during commit()" % e)
-            self._open_cache(prange=(90,100))
-            self.ErrorCode(ERROR_UNKNOWN, "Installation failed")
-            self.Finished(EXIT_FAILED)
-            return
+        if not self._commit_changes(): return False
         self._open_cache(prange=(90,100))
         self.PercentageChanged(100)
         pklog.debug("Checking success of operation")
@@ -731,11 +1142,79 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    def doInstallFiles(self, trusted, full_paths):
+        '''
+        Implement install-files for the apt backend
+        Install local Debian package files
+        '''
+        pklog.info("Installing package files: %s" % full_paths)
+        if not self._acquire_lock(): return
+        self.StatusChanged(STATUS_INSTALL)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        self._check_init(prange=(0,10))
+        dependencies = []
+        packages = []
+        # Collect all dependencies which need to be installed
+        self.StatusChanged(STATUS_DEP_RESOLVE)
+        for path in full_paths:
+            deb = debfile.DebPackage(path, self._cache)
+            packages.append(deb)
+            if not deb.checkDeb():
+                self.ErrorCode(ERROR_UNKNOWN, deb._failureString)
+                self.Finished(EXIT_FAILED)
+                return
+            (install, remove, unauthenticated) = deb.requiredChanges
+            pklog.debug("Changes: Install %s, Remove %s, Unauthenticated "
+                        "%s" % (install, remove, unauthenticated))
+            if len(remove) > 0:
+                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED, 
+                               "Remove the following packages "
+                               "before: %s" % remove)
+                self.Finished(EXIT_FAILED)
+                return
+            dependencies.extend(install)
+        # Install all dependecies before
+        try:
+            for dep in dependencies:
+                self._cache[dep].markInstall()
+        except:
+            self._cache.clear()
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED, "")
+            self.Finished(EXIT_FAILED)
+            return
+        if not self._commit_changes((10,25), (25,50)): return False
+        # Install the Debian package files
+        if not self._acquire_lock(): return
+        for deb in packages:
+            try:
+                res = deb.install(PackageKitDpkgInstallProgress(self))
+            except Exception, e:
+                self.ErrorCode(ERROR_UNKNOWN, "Failed to install dpkg: %s" % e)
+                self.Finished(EXIT_FAILED)
+                return
+            print res
+            if res != 0:
+                self.ErrorCode(ERROR_UNKNOWN, 
+                               "Failed to install package %s" % deb.pkgname)
+                self.Finished(EXIT_FAILED)
+                return
+            # Check if there is a newer version in the cache
+            if deb.compareToVersionInCache() == debfile.VERSION_OUTDATED:
+                self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
+                             "There is a later version of %s "
+                             "available in the repositories." % deb.pkgname)
+        self.PercentageChanged(100)
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    @async
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
         pklog.info("Refresh cache")
+        if not self._acquire_lock(): return
         self.StatusChanged(STATUS_REFRESH_CACHE)
         self.last_action_time = time.time()
         self.AllowCancel(False);
@@ -743,17 +1222,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init((0,10))
         try:
             self._cache.update(PackageKitFetchProgress(self, prange=(10,95)))
-        except apt.cache.FetchFailedException:
-            self.ErrorCode(ERROR_NO_NETWORK, "Download failed")
-            self.Finished(EXIT_FAILED)
-            return
-        except apt.cache.FetchCancelledException:
-            self._canceled.clear()
-            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
-            self.Finished(EXIT_KILLED)
-            return
         except Exception, e:
             self._open_cache(prange=(95,100))
+            if self._check_canceled(): return False
             self.ErrorCode(ERROR_UNKNOWN, "Refreshing cache failed: %s" % e)
             self.Finished(EXIT_FAILED)
             return
@@ -772,12 +1243,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         for pkg in self._cache:
-            if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                               "The search was canceled")
-                self.Finished(EXIT_KILLED)
-                self._canceled.clear()
-                return
+            if self._check_canceled(): return False
             elif self._is_package_visible(pkg, filters):
                 self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
@@ -793,20 +1259,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.AllowCancel(False)
 
-        #FIXME: Support candidates
         for name in names:
-            pkg = None
             if self._cache.has_key(name):
-                pkg = self._cache[name]
-                if not self._is_package_visible(pkg, filters):
-                    pkg = None
-            if pkg:
-                self._emit_package(pkg)
-                self.Finished(EXIT_SUCCESS)
+                self._emit_visible_package(filters, self._cache[name])
             else:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                                "Package name %s could not be resolved" % name)
                 self.Finished(EXIT_FAILED)
+                return
+        self.Finished(EXIT_SUCCESS)
 
     @threaded
     def doGetDepends(self, filter, ids, recursive=False):
@@ -832,9 +1293,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
 
         # Mark all packages for installation
-        self._cache._depcache.Init()
+        pkgs = []
         for id in ids:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -850,9 +1311,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "Dependecies for %s cannot be satisfied: %s" % e)
                 self.Finished(EXIT_FAILED)
                 return
+            pkgs.append(pkg)
         # Check the status of the resulting changes
         for p in self._cache.getChanges():
-            if self._is_canceled(): return
+            if self._check_canceled(): return
+            if p in pkgs: continue
             if p.markedDelete:
                 # Packagekit policy forbids removing packages for installation
                 self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
@@ -870,7 +1333,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
         # Clean up
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -882,20 +1345,24 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: recursive is not yet implemented
         if recursive == True:
             pklog.warn("Recursive dependencies are not implemented")
-        self.StatusChanged(STATUS_INFO)
+        self.StatusChanged(STATUS_DEP_RESOLVE)
         self.NoPercentageUpdates()
         self._check_init(progress=False)
         self.AllowCancel(True)
         pkgs = []
 
         # Mark all packages for installation
-        self._cache._depcache.Init()
         for id in ids:
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                                "Package %s isn't available" % name)
+                self.Finished(EXIT_FAILED)
+                return
+            if pkg._pkg.Essential == True:
+                self.ErrorCode(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                               "Package %s cannot be removed." % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
             pkgs.append(pkg)
@@ -910,7 +1377,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
         # Check the status of the resulting changes
         for p in self._cache.getChanges():
-            if self._is_canceled(): return
+            if self._check_canceled(): return
             if p.markedDelete:
                 if not p in pkgs and self._is_package_visible(p, filter):
                     self._emit_package(p)
@@ -922,7 +1389,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
         # Clean up
-        self._cache._depcache.Init()
+        self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -959,7 +1426,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             else:
                 return db
 
-        self.StatusChanged(STATUS_INFO)
+        self.StatusChanged(STATUS_QUERY)
         self.NoPercentageUpdates()
         self._check_init(progress=False)
         self.AllowCancel(False)
@@ -1019,6 +1486,23 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self.Finished(EXIT_SUCCESS)
 
+    def doGetFiles(self, package_ids):
+        """
+        Emit the Files signal which includes the files included in a package
+        Apt only supports this for installed packages
+        """
+        self.StatusChanged(STATUS_INFO)
+        for id in package_ids:
+            pkg = self._find_package_by_id(id)
+            if pkg == None:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package %s doesn't exist" % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
+            files = string.join(self._get_installed_files(pkg), ";")
+            self.Files(id, files)
+        self.Finished(EXIT_SUCCESS)
+
     def doSetProxy(self, http_proxy, ftp_proxy):
         '''
         Set a proxy server for http and ftp transfer
@@ -1042,15 +1526,30 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     # Helpers
 
+    def _acquire_lock(self):
+        """
+        Emit an error message and return true if the apt system lock cannot
+        be acquired.
+        """
+        try:
+            apt_pkg.PkgSystemLock()
+        except SystemError:
+            self.ErrorCode(ERROR_CANNOT_GET_LOCK,
+                           "Only use one package management programme at the "
+                           "the same time.")
+            self.Finished(EXIT_FAILED)
+            return False
+        return True
+
     def _open_cache(self, prange=(0,100), progress=True):
         '''
         (Re)Open the APT cache
         '''
         pklog.debug("Open APT cache")
-        self.StatusChanged(STATUS_REFRESH_CACHE)
+        self.StatusChanged(STATUS_LOADING_CACHE)
         try:
-            self._cache = apt.Cache(PackageKitOpProgress(self, prange,
-                                                         progress))
+            self._cache = PackageKitCache(PackageKitOpProgress(self, prange,
+                                                               progress))
         except:
             self.ErrorCode(ERROR_NO_CACHE, "Package cache could not be opened")
             self.Finished(EXIT_FAILED)
@@ -1065,33 +1564,37 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Exit()
             return
 
-    def _lock_cache(self):
-        '''
-        Lock the cache
-        '''
-        pklog.debug("Locking cache")
-        self._locked.acquire()
-
-    def _is_canceled(self):
-        '''
-        Check if the current action was canceled. If so send the corresponding
-        error code.
-        '''
-        if self._canceled.isSet():
-            self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                           "The search was canceled")
-            self.Finished(EXIT_KILLED)
+    def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
+        """
+        Commit changes to the cache and handle errors
+        """
+        try:
+            self._cache.commit(PackageKitFetchProgress(self, fetch_range), 
+                               PackageKitInstallProgress(self, install_range))
+        except apt.cache.FetchFailedException:
+            self._open_cache(prange=(95,100))
+            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED, "Download failed")
+            self.Finished(EXIT_FAILED)
+        except apt.cache.FetchCancelledException:
+            self._open_cache(prange=(95,100))
+            self.Finished(EXIT_CANCELLED)
             self._canceled.clear()
-            return True
+        except InstallTimeOutPKError:
+            self._open_cache(prange=(95,100))
+            #FIXME: should provide more information
+            self.ErrorCode(ERROR_UNKNOWN,
+                           "Transaction was cancelled since the installation "
+                           "of a package hung.\n"
+                           "This can be caused by maintainer scripts which "
+                           "require input on the terminal.")
+            self.Finished(EXIT_KILLED)
+        except:
+            self._open_cache(prange=(95,100))
+            self.ErrorCode(ERROR_UNKNOWN, "Applying changes failed")
+            self.Finished(EXIT_FAILED)
         else:
-            return False
- 
-    def _unlock_cache(self):
-        '''
-        Unlock the cache
-        '''
-        pklog.debug("Releasing cache")
-        self._locked.release()
+            return True
+        return False
 
     def _check_init(self, prange=(0,10), progress=True):
         '''
@@ -1102,47 +1605,69 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if not isinstance(self._cache, apt.cache.Cache) or \
            self._cache._depcache.BrokenCount > 0:
             self._open_cache(prange, progress)
+        else:
+            self._cache.clear()
 
-    def _check_canceled(self, msg):
+    def _check_canceled(self):
         '''
         Check if the current transaction was canceled. If so send the
         corresponding error message and return True
         '''
         if self._canceled.isSet():
-             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, msg)
-             self.Finished(EXIT_KILLED)
+             self.Finished(EXIT_CANCELLED)
              self._canceled.clear()
              return True
         return False
  
-    def get_id_from_package(self, pkg, installed=False):
+    def get_id_from_package(self, pkg, force_candidate=False):
         '''
-        Return the id of the installation candidate of a core
-        apt package. If installed is set to True the id of the currently
-        installed package will be returned.
+        Return the packagekit id of package. By default this will be the 
+        installed version for installed packages and the candidate version
+        for not installed packages.
+
+        The force_candidate option will also report the id of the candidate
+        version for installed packages.
         '''
-        origin = ''
-        if installed == True and pkg.isInstalled:
-            pkgver = pkg.installedVersion
+        origin = ""
+        cand_origin = pkg.candidateOrigin
+        if not pkg.isInstalled or force_candidate:
+            version = pkg.candidateVersion
+            if cand_origin:
+                origin = cand_origin[0].label
         else:
-            pkgver = pkg.candidateVersion
-            if pkg.candidateOrigin:
-                origin = pkg.candidateOrigin[0].label
-        id = self._get_package_id(pkg.name, pkgver, pkg.architecture, origin)
+            version = pkg.installedVersion
+            if cand_origin and cand_origin[0].site != "" and \
+               pkg.installedVersion == pkg.candidateVersion:
+                origin = cand_origin[0].label
+        id = self._get_package_id(pkg.name, version, pkg.architecture, origin)
         return id
 
-    def _emit_package(self, pkg, info=None):
+    def _emit_package(self, pkg, info=None, force_candidate=False):
         '''
         Send the Package signal for a given apt package
         '''
-        id = self.get_id_from_package(pkg)
+        id = self.get_id_from_package(pkg, force_candidate)
+        section = pkg.section.split("/")[-1]
         if info == None:
             if pkg.isInstalled:
-                info = INFO_INSTALLED
+                if section == "metapackages":
+                    info = INFO_COLLECTION_INSTALLED
+                else:
+                    info = INFO_INSTALLED
             else:
-                info = INFO_AVAILABLE
+                if section == "metapackages":
+                    info = INFO_COLLECTION_AVAILABLE
+                else:
+                    info = INFO_AVAILABLE
         summary = pkg.summary
         self.Package(info, id, summary)
+
+    def _emit_visible_package(self, filters, pkg, info=None):
+        """
+        Filter and emit a package
+        """
+        if self._is_package_visible(pkg, filters):
+            self._emit_package(pkg, info)
 
     def _emit_visible_packages(self, filters, pkgs, info=None):
         """
@@ -1167,33 +1692,80 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Return True if the package should be shown in the user interface
         '''
-        #FIXME: Needs to be optmized
-        if filters == 'none':
+        if filters == FILTER_NONE:
             return True
-        if FILTER_INSTALLED in filters and not pkg.isInstalled:
-            return False
-        if FILTER_NOT_INSTALLED in filters and pkg.isInstalled:
-            return False
-        if FILTER_GUI in filters and not self._package_has_gui(pkg):
-            return False
-        if FILTER_NOT_GUI in filters and self._package_has_gui(pkg):
-            return False
-        if FILTER_DEVELOPMENT in filters and not self._package_is_devel(pkg):
-            return False
-        if FILTER_NOT_DEVELOPMENT in filters and self._package_is_devel(pkg):
-            return False
+        for filter in filters.split(";"):
+            if (filter == FILTER_INSTALLED and not pkg.isInstalled) or \
+               (filter == FILTER_NOT_INSTALLED and pkg.isInstalled) or \
+               (filter == FILTER_SUPPORTED and not \
+                self._is_package_supported(pkg)) or \
+               (filter == FILTER_NOT_SUPPORTED and \
+                self._is_package_supported(pkg)) or \
+               (filter == FILTER_FREE and not self._is_package_free(pkg)) or \
+               (filter == FILTER_NOT_FREE and \
+                not self._is_package_not_free(pkg)) or \
+               (filter == FILTER_GUI and not self._has_package_gui(pkg)) or \
+               (filter == FILTER_NOT_GUI and self._has_package_gui(pkg)) or \
+               (filter == FILTER_COLLECTIONS and not \
+                self._is_package_collection(pkg)) or \
+               (filter == FILTER_NOT_COLLECTIONS and \
+                self._is_package_collection(pkg)) or\
+                (filter == FILTER_DEVELOPMENT and not \
+                self._is_package_devel(pkg)) or \
+               (filter == FILTER_NOT_DEVELOPMENT and \
+                self._is_package_devel(pkg)):
+                return False
         return True
 
-    def _package_has_gui(self, pkg):
+    def _is_package_not_free(self, pkg):
+        """
+        Return True if we can be sure that the package's license isn't any 
+        free one
+        """
+        candidate = pkg.candidateOrigin
+        return candidate != None and \
+               ((candidate[0].origin == "Ubuntu" and \
+                 candidate[0].component in ["multiverse", "restricted"]) or \
+                (candidate[0].origin == "Debian" and \
+                 candidate[0].component in ["contrib", "non-free"])) and \
+               candidate[0].trusted == True
+
+    def _is_package_collection(self, pkg):
+        """
+        Return True if the package is a metapackge
+        """
+        section = pkg.section.split("/")[-1]
+        return section == "metapackages"
+
+    def _is_package_free(self, pkg):
+        """
+        Return True if we can be sure that the package has got a free license
+        """
+        candidate = pkg.candidateOrigin
+        return candidate != None and \
+               ((candidate[0].origin == "Ubuntu" and \
+                 candidate[0].component in ["main", "universe"]) or \
+                (candidate[0].origin == "Debian" and \
+                 candidate[0].component == "main")) and\
+               candidate[0].trusted == True
+
+    def _has_package_gui(self, pkg):
         #FIXME: should go to a modified Package class
         #FIXME: take application data into account. perhaps checking for
         #       property in the xapian database
         return pkg.section.split('/')[-1].lower() in ['x11', 'gnome', 'kde']
 
-    def _package_is_devel(self, pkg):
+    def _is_package_devel(self, pkg):
         #FIXME: should go to a modified Package class
         return pkg.name.endswith("-dev") or pkg.name.endswith("-dbg") or \
                pkg.section.split('/')[-1].lower() in ['devel', 'libdevel']
+
+    def _is_package_supported(self, pkg):
+        candidate = pkg.candidateOrigin[0]
+        return candidate != None and \
+               candidate[0].origin == "Ubuntu" and \
+               candidate[0].component in ["main", "restricted"] and \
+               candidate[0].trusted == True
 
     def _find_package_by_id(self, id):
         '''
@@ -1205,6 +1777,23 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return self._cache[name]
         else:
             return None
+
+    def _get_installed_files(self, pkg):
+        """
+        Return the list of unicode names of the files which have
+        been installed by the package
+
+        This method should be obsolete by the apt.package.Package.installedFiles
+        attribute as soon as the consolidate branch of python-apt gets merged
+        """
+        path = "/var/lib/dpkg/info/%s.list" % pkg.name
+        try:
+            list = open(path)
+            files = list.read().decode().split("\n")
+            list.close()
+        except:
+            return []
+        return files
 
     def _get_changelog(self, pkg, uri=None, cancel_lock=None):
         """
@@ -1232,7 +1821,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                       "/%(src_section)s/%(prefix)s/%(src_pkg)s" \
                       "/%(src_pkg)s_%(src_ver)s/changelog"
             else:
-                return _("The list of changes is not available")
+                return "The list of changes is not available"
 
         # get the src package name
         src_pkg = pkg.sourcePackageName
@@ -1332,7 +1921,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     "Please use http://launchpad.net/ubuntu/+source/%s/%s/" \
                     "+changelog\n" \
                     "until the changes become available or try again " \
-                    "later." % (srcpkg, srcver),
+                    "later." % (src_pkg, src_ver)
         except IOError, httplib.BadStatusLine:
                 return "Failed to download the list of changes.\nPlease " \
                         "check your Internet connection."
@@ -1342,85 +1931,85 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         Return the packagekit group corresponding to the package's section
         """
-        section = pkg.section
-        if section == "admin":
-            return GROUP_ADMIN_TOOLS
-        elif section == "base":
-            return GROUP_SYSTEM
-        elif section == "comm":
-            return GROUP_COMMUNICATION
-        elif section == "devel":
-            return GROUP_PROGRAMMING
-        elif section == "doc":
-            #FIXME: introduce a new group
-            return GROUP_OTHER
-        elif section == "editors":
-            return GROUP_PUBLISHING
-        elif section == "electronics":
-            #FIXME: do we need a special group?
-            return GROUP_OTHER
-        elif section == "embedded":
-            return GROUP_SYSTEM
-        elif section == "games":
-            return GROUP_GAMES
-        elif section == "GNOME":
-            return GROUP_DESKTOP_GNOME
-        elif section == "graphics":
-            return GROUP_GRAPHICS
-        elif section == "hamradio":
-            return GROUP_COMMUNICATION
-        elif section == "interpreters":
-            return GROUP_PROGRAMMING
-        elif section == "kde":
-            return GROUP_DESKTOP_KDE
-        elif section == "libdevel":
-            return GROUP_PROGRAMMING
-        elif section == "lib":
-            return GROUP_SYSTEM
-        elif section == "mail":
-            return GROUP_INTERNET
-        elif section == "math":
-            #FIXME: Need a group science
-            return GROUP_OTHER
-        elif section == "misc":
-            return GROUP_OTHER
-        elif section == "net":
-            return GROUP_NETWORK
-        elif section == "news":
-            return GROUP_INTERNET
-        elif section == "oldlibs":
-            return GROUP_LEGACY
-        elif section == "otherosfs":
-            return GROUP_SYSTEM
-        elif section == "perl":
-            return GROUP_PROGRAMMING
-        elif section == "python":
-            return GROUP_PROGRAMMING
-        elif section == "science":
-            #FIXME Need a new group
-            return GROUP_OTHER
-        elif section == "shells":
-            return GROUP_SYSTEM
-        elif section == "sound":
-            return GROUP_MULTIMEDIA
-        elif section == "tex":
-            return GROUP_PUBLISHING
-        elif section == "text":
-            return GROUP_PUBLISHING
-        elif section == "utils":
-            return GROUP_ACCESSORIES
-        elif section == "web":
-            return GROUP_INTERNET
-        elif section == "x11":
-            return GROUP_DESKTOP_OTHER
-        elif section == "unknown":
-            return GROUP_UNKNOWN
-        elif section == "alien":
-            return GROUP_UNKNOWN
-        elif section == "translations":
-            return GROUP_LOCALIZATION
+        section = pkg.section.split("/")[-1]
+        if SECTION_GROUP_MAP.has_key(section):
+            return SECTION_GROUP_MAP[section]
         else:
+            pklog.debug("Unkown package section %s of %s" % (pkg.section,
+                                                             pkg.name))
             return GROUP_UNKNOWN
+
+    def _get_package_description(self, pkg):
+        """
+        Return the formated long description according to the Debian policy
+        (Chapter 5.6.13).
+        See http://www.debian.org/doc/debian-policy/ch-controlfields.html
+        for more information.
+        """
+        if not pkg._lookupRecord():
+            return ""
+        # get the translated description
+        ver = pkg._depcache.GetCandidateVer(pkg._pkg)
+        desc_iter = ver.TranslatedDescription
+        pkg._records.Lookup(desc_iter.FileList.pop(0))
+        desc = ""
+        try:
+            s = unicode(pkg._records.LongDesc,"utf-8")
+        except UnicodeDecodeError,e:
+            s = "Invalid unicode in description for '%s' (%s)" % (pkg.name, e)
+        lines = string.split(s, "\n")
+        for i in range(len(lines)):
+            # Skip the first line, since its a duplication of the summary
+            if i == 0: continue
+            raw_line = lines[i]
+            if raw_line.strip() == ".":
+                # The line is just line break
+                if not desc.endswith("\n"):
+                    desc += "\n"
+                continue
+            elif raw_line.startswith("  "):
+                # The line should be displayed verbatim without word wrapping
+                if not desc.endswith("\n"):
+                    line = "\n%s\n" % raw_line[2:]
+                else:
+                    line = "%s\n" % raw_line[2:]
+            elif raw_line.startswith(" "):
+                # The line is part of a paragraph.
+                if desc.endswith("\n") or desc == "":
+                    # Skip the leading white space
+                    line = raw_line[1:]
+                else:
+                    line = raw_line
+            else:
+                line = raw_line
+                pkglog.debug("invalid line %s in description for %s:\n%s" % \
+                             (i, pkg.name, pkg.rawDescription))
+            # Use dots for lists
+            line = re.sub(r"^(\s*)(\*|0|o|-) ", ur"\1\u2022 ", line, 1)
+            # Add current line to the description
+            desc += line
+        return desc
+
+
+def sigquit(signum, frame):
+    pklog.error("Was killed")
+    sys.exit(1)
+
+def debug_exception(type, value, tb):
+    """
+    Provides an interactive debugging session on unhandled exceptions
+    See http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/65287
+    """
+    if hasattr(sys, 'ps1') or not sys.stderr.isatty() or \
+       not sys.stdin.isatty() or not sys.stdout.isatty() or type==SyntaxError:
+        # Calls the default handler in interactive mode, if output is·
+        # redirected or on syntax errors
+        sys.__excepthook__(type, value, tb)
+    else:
+       import traceback, pdb
+       traceback.print_exception(type, value, tb)
+       print
+       pdb.pm()
 
 def takeover():
     """

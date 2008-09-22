@@ -36,13 +36,16 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
+#include <locale.h>
 
 #include <glib/gi18n.h>
 #include <sqlite3.h>
 
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-extra.h"
 #include "pk-common.h"
-#include "pk-debug.h"
 
 static void     pk_extra_class_init	(PkExtraClass *klass);
 static void     pk_extra_init		(PkExtra      *extra);
@@ -101,18 +104,23 @@ pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, g
 		col = col_name[i];
 		value = argv[i];
 		/* save the package name, and use it is the key */
-		if (pk_strequal (col, "package") && value != NULL) {
+		if (egg_strequal (col, "package") && value != NULL) {
 			package = g_strdup (argv[i]);
-		} else if (pk_strequal (col, "icon") && value != NULL) {
-			icon_name = g_strdup (argv[i]);
-		} else if (pk_strequal (col, "exec") && value != NULL) {
+		} else if (egg_strequal (col, "icon") && value != NULL) {
+			/* filter out icons that are not icon names, but files */
+			if (!egg_strzero (argv[i]) &&
+			    !g_str_has_suffix (argv[i], ".xpm") &&
+			    !g_str_has_suffix (argv[i], ".png") &&
+			    !g_str_has_suffix (argv[i], ".svg"))
+				icon_name = g_strdup (argv[i]);
+		} else if (egg_strequal (col, "exec") && value != NULL) {
 			exec = g_strdup (argv[i]);
 		}
 	}
 
 	/* sanity check */
 	if (package == NULL) {
-		pk_warning ("package data invalid (%s,%s,%s)", package, icon_name, exec);
+		egg_warning ("package data invalid (%s,%s,%s)", package, icon_name, exec);
 		goto out;
 	}
 
@@ -153,16 +161,15 @@ pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gc
 		col = col_name[i];
 		value = argv[i];
 		/* save the package name, and use it is the key */
-		if (pk_strequal (col, "package") && value != NULL) {
+		if (egg_strequal (col, "package") && value != NULL)
 			package = g_strdup (argv[i]);
-		} else if (pk_strequal (col, "summary") && value != NULL) {
+		else if (egg_strequal (col, "summary") && value != NULL)
 			summary = g_strdup (argv[i]);
-		}
 	}
 
 	/* sanity check */
 	if (package == NULL) {
-		pk_warning ("package data invalid (%s,%s)", package, summary);
+		egg_warning ("package data invalid (%s,%s)", package, summary);
 		goto out;
 	}
 
@@ -199,7 +206,7 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -208,7 +215,7 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_locale_cache_callback, extra, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -218,7 +225,17 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_locale_cache_callback, extra, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		return FALSE;
+	}
+
+	/* get summary packages - no translation */
+	statement = g_strdup_printf ("SELECT package, summary FROM localised WHERE locale = '%s'", "C");
+	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_locale_cache_callback, extra, &error_msg);
+	g_free (statement);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -242,7 +259,7 @@ pk_extra_populate_package_cache (PkExtra *extra)
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -250,7 +267,7 @@ pk_extra_populate_package_cache (PkExtra *extra)
 	statement = "SELECT package, icon, exec FROM data";
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_package_cache_callback, extra, &error_msg);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -260,7 +277,7 @@ pk_extra_populate_package_cache (PkExtra *extra)
 /**
  * pk_extra_set_locale:
  * @extra: a valid #PkExtra instance
- * @locale: a correct locale
+ * @locale: a correct locale, or NULL if the session default should be used
  *
  * Return value: %TRUE if set correctly
  **/
@@ -269,26 +286,44 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 {
 	guint i;
 	guint len;
+	gchar *locale_default; /* does not need to be freed */
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
-	g_return_val_if_fail (locale != NULL, FALSE);
 
+	/* old locale no longer valid */
 	g_free (extra->priv->locale);
-	extra->priv->locale = g_strdup (locale);
-	extra->priv->locale_base = g_strdup (locale);
+	g_free (extra->priv->locale_base);
+	extra->priv->locale = NULL;
+	extra->priv->locale_base = NULL;
+
+	/* using hardcoded locale */
+	if (locale != NULL) {
+		extra->priv->locale = g_strdup (locale);
+	} else {
+		/* using default */
+		locale_default = setlocale (LC_ALL, NULL);
+		if (locale_default == NULL) {
+			egg_warning ("cannot find default locale");
+			return FALSE;
+		}
+		extra->priv->locale = g_strdup (locale_default);
+	}
+
+	/* copy as we modify */
+	extra->priv->locale_base = g_strdup (extra->priv->locale);
 
 	/* we only want the first section to compare */
-	len = pk_strlen (locale, 10);
+	len = egg_strlen (extra->priv->locale, 10);
 	for (i=0; i<len; i++) {
 		if (extra->priv->locale_base[i] == '_') {
 			extra->priv->locale_base[i] = '\0';
-			pk_debug ("locale_base is '%s'", extra->priv->locale_base);
+			egg_debug ("locale_base is '%s'", extra->priv->locale_base);
 			break;
 		}
 	}
 
 	/* no point doing it twice if they are the same */
-	if (pk_strequal (extra->priv->locale_base, extra->priv->locale)) {
+	if (egg_strequal (extra->priv->locale_base, extra->priv->locale)) {
 		g_free (extra->priv->locale_base);
 		extra->priv->locale_base = NULL;
 	}
@@ -328,9 +363,8 @@ pk_extra_get_summary (PkExtra *extra, const gchar *package)
 
 	/* super quick if exists in cache */
 	obj = g_hash_table_lookup (extra->priv->hash_locale, package);
-	if (obj == NULL) {
-		return FALSE;
-	}
+	if (obj == NULL)
+		return NULL;
 	return obj->summary;
 }
 
@@ -350,9 +384,8 @@ pk_extra_get_icon_name (PkExtra *extra, const gchar *package)
 
 	/* super quick if exists in cache */
 	obj = g_hash_table_lookup (extra->priv->hash_package, package);
-	if (obj == NULL) {
-		return FALSE;
-	}
+	if (obj == NULL)
+		return NULL;
 	return obj->icon_name;
 }
 
@@ -372,9 +405,8 @@ pk_extra_get_exec (PkExtra *extra, const gchar *package)
 
 	/* super quick if exists in cache */
 	obj = g_hash_table_lookup (extra->priv->hash_package, package);
-	if (obj == NULL) {
-		return FALSE;
-	}
+	if (obj == NULL)
+		return NULL;
 	return obj->exec;
 }
 
@@ -400,7 +432,7 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -416,7 +448,7 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 				 "INSERT INTO localised (package, locale, summary) "
 				 "VALUES (?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL failed to prepare");
+		egg_warning ("SQL failed to prepare");
 		return FALSE;
 	}
 
@@ -429,7 +461,7 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 	sqlite3_step (sql_statement);
 	rc = sqlite3_finalize (sql_statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -463,7 +495,7 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
-		pk_debug ("no database");
+		egg_debug ("no database");
 		return FALSE;
 	}
 
@@ -476,7 +508,7 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 	rc = sqlite3_prepare_v2 (extra->priv->db, "INSERT INTO data (package, icon, exec) "
 				 "VALUES (?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL failed to prepare");
+		egg_warning ("SQL failed to prepare");
 		return FALSE;
 	}
 
@@ -489,13 +521,13 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 	sqlite3_step (sql_statement);
 	rc = sqlite3_finalize (sql_statement);
 	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
+		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
 
 	/* add to cache */
-	pk_debug ("adding package:%s", package);
+	egg_debug ("adding package:%s", package);
 	obj = g_new (PkExtraPackageObj, 1);
 	obj->icon_name = g_strdup (icon_name);
 	obj->exec = g_strdup (exec);
@@ -507,7 +539,7 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 /**
  * pk_extra_set_database:
  * @extra: a valid #PkExtra instance
- * @filename: a valid database
+ * @filename: a valid database, or NULL to use the default or previously set value
  *
  * Return value: %TRUE if set correctly
  **/
@@ -521,15 +553,27 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 
+	/* already set? */
 	if (extra->priv->database != NULL) {
-		pk_warning ("cannot assign extra than once");
+		/* we don't care, just use the default */
+		if (filename == NULL) {
+			egg_debug ("continuing to use old database as we don't care");
+			return TRUE;
+		}
+		/* we care, but it's the same as last time */
+		if (egg_strequal (extra->priv->database, filename)) {
+			egg_debug ("continuing to use old database as same as before");
+			return TRUE;
+		}
+		/* bad */
+		egg_warning ("Using same PkExtra object with different databases: %s and %s",
+			     filename, extra->priv->database);
 		return FALSE;
 	}
 
 	/* if this is NULL, then assume default */
-	if (filename == NULL) {
+	if (filename == NULL)
 		filename = PK_EXTRA_DEFAULT_DATABASE_INTERNAL;
-	}
 
 	/* save for later */
 	extra->priv->database = g_strdup (filename);
@@ -537,10 +581,10 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 	/* if the database file was not installed (or was nuked) recreate it */
 	create_file = g_file_test (filename, G_FILE_TEST_EXISTS);
 
-	pk_debug ("trying to open database '%s'", filename);
+	egg_debug ("trying to open database '%s'", filename);
 	rc = sqlite3_open (filename, &extra->priv->db);
 	if (rc) {
-		pk_warning ("Can't open database: %s\n", sqlite3_errmsg (extra->priv->db));
+		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (extra->priv->db));
 		sqlite3_close (extra->priv->db);
 		extra->priv->db = NULL;
 		return FALSE;
@@ -553,7 +597,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "summary TEXT);";
 			rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, &error_msg);
 			if (rc != SQLITE_OK) {
-				pk_warning ("SQL error: %s\n", error_msg);
+				egg_warning ("SQL error: %s\n", error_msg);
 				sqlite3_free (error_msg);
 			}
 			statement = "CREATE TABLE data ("
@@ -563,7 +607,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "exec TEXT);";
 			rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, &error_msg);
 			if (rc != SQLITE_OK) {
-				pk_warning ("SQL error: %s\n", error_msg);
+				egg_warning ("SQL error: %s\n", error_msg);
 				sqlite3_free (error_msg);
 			}
 		}
@@ -663,12 +707,12 @@ pk_extra_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 #include <glib/gstdio.h>
 
 void
-libst_extra (LibSelfTest *test)
+pk_extra_test (EggTest *test)
 {
 	PkExtra *extra;
 	const gchar *text;
@@ -678,184 +722,165 @@ libst_extra (LibSelfTest *test)
 	const gchar *summary = NULL;
 	guint i;
 
-	if (libst_start (test, "PkExtra", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkExtra"))
 		return;
-	}
 
 	g_unlink ("extra.db");
 
 	/************************************************************/
-	libst_title (test, "get extra");
+	egg_test_title (test, "get extra");
 	extra = pk_extra_new ();
-	if (extra != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, extra != NULL);
 
 	/************************************************************/
-	libst_title (test, "set database");
+	egg_test_title (test, "set database");
 	ret = pk_extra_set_database (extra, "extra.db");
-	if (ret) {
-		libst_success (test, "%ims", libst_elapsed (test));
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (ret)
+		egg_test_success (test, "%ims", egg_test_elapsed (test));
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set database (again)");
+	egg_test_title (test, "set database (again)");
 	ret = pk_extra_set_database (extra, "angry.db");
-	if (ret == FALSE) {
-		libst_success (test, "%ims", libst_elapsed (test));
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (ret == FALSE)
+		egg_test_success (test, "%ims", egg_test_elapsed (test));
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "set locale explicit en");
+	egg_test_title (test, "set database (same as original)");
+	ret = pk_extra_set_database (extra, "extra.db");
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "set database (don't care)");
+	ret = pk_extra_set_database (extra, NULL);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "set locale explicit en");
 	ret = pk_extra_set_locale (extra, "en");
-	if (ret) {
-		libst_success (test, "%ims", libst_elapsed (test));
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (ret)
+		egg_test_success (test, "%ims", egg_test_elapsed (test));
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check locale base");
-	if (extra->priv->locale_base == NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_title (test, "check locale base");
+	egg_test_assert (test, extra->priv->locale_base == NULL);
 
 	/************************************************************/
-	libst_title (test, "get locale");
+	egg_test_title (test, "get locale");
 	text = pk_extra_get_locale (extra);
-	if (pk_strequal (text, "en")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "locale was %s", text);
-	}
+	if (egg_strequal (text, "en"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "locale was %s", text);
 
 	/************************************************************/
-	libst_title (test, "insert localised data");
+	egg_test_title (test, "insert localised data");
 	ret = pk_extra_set_data_locale (extra, "gnome-power-manager", "Power manager for the GNOME's desktop");
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "failed!");
-	}
+	if (ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed!");
+
 
 	/************************************************************/
-	libst_title (test, "retrieve localised data");
+	egg_test_title (test, "retrieve localised data");
 	summary = pk_extra_get_summary (extra, "gnome-power-manager");
-	if (summary != NULL) {
-		libst_success (test, "%s", summary);
-	} else {
-		libst_failed (test, "failed!");
-	}
+	if (summary != NULL)
+		egg_test_success (test, "%s", summary);
+	else
+		egg_test_failed (test, "failed!");
 
 	/************************************************************/
-	libst_title (test, "set locale implicit en_GB");
+	egg_test_title (test, "set locale implicit en_GB");
 	ret = pk_extra_set_locale (extra, "en_GB");
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, ret);
 
 	/************************************************************/
-	libst_title (test, "check locale base");
-	if (pk_strequal (extra->priv->locale_base, "en")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_title (test, "check locale base");
+	if (egg_strequal (extra->priv->locale_base, "en"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "retrieve localised data2");
+	egg_test_title (test, "retrieve localised data2");
 	summary = pk_extra_get_summary (extra, "gnome-power-manager");
-	if (summary != NULL) {
-		libst_success (test, "%s", summary);
-	} else {
-		libst_failed (test, "failed!");
-	}
+	if (summary != NULL)
+		egg_test_success (test, "%s", summary);
+	else
+		egg_test_failed (test, "failed!");
 
 	/************************************************************/
-	libst_title (test, "insert package data");
+	egg_test_title (test, "insert package data");
 	ret = pk_extra_set_data_package (extra, "gnome-power-manager", "gpm-main.png", "gnome-power-manager");
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "failed!");
-	}
+	if (ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed!");
 
 	/************************************************************/
-	libst_title (test, "retrieve package data");
+	egg_test_title (test, "retrieve package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-power-manager");
 	exec = pk_extra_get_exec (extra, "gnome-power-manager");
-	if (pk_strequal (icon, "gpm-main.png")) {
-		libst_success (test, "%s:%s", icon, exec);
-	} else {
-		libst_failed (test, "%s:%s", icon, exec);
-	}
+	if (egg_strequal (icon, "gpm-main.png"))
+		egg_test_success (test, "%s:%s", icon, exec);
+	else
+		egg_test_failed (test, "%s:%s", icon, exec);
 
 	/************************************************************/
-	libst_title (test, "insert new package data");
+	egg_test_title (test, "insert new package data");
 	ret = pk_extra_set_data_package (extra, "gnome-power-manager", "gpm-prefs.png", "gnome-power-preferences");
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "failed!");
-	}
+	if (ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed!");
 
 	/************************************************************/
-	libst_title (test, "retrieve new package data");
+	egg_test_title (test, "retrieve new package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-power-manager");
 	exec = pk_extra_get_exec (extra, "gnome-power-manager");
-	if (pk_strequal (icon, "gpm-prefs.png") &&
-	    pk_strequal (exec, "gnome-power-preferences")) {
-		libst_success (test, "%s:%s", icon, exec);
-	} else {
-		libst_failed (test, "%s:%s", icon, exec);
-	}
+	if (egg_strequal (icon, "gpm-prefs.png") &&
+	    egg_strequal (exec, "gnome-power-preferences"))
+		egg_test_success (test, "%s:%s", icon, exec);
+	else
+		egg_test_failed (test, "%s:%s", icon, exec);
 
 	/************************************************************/
-	libst_title (test, "retrieve missing package data");
+	egg_test_title (test, "retrieve missing package data");
 	icon = pk_extra_get_icon_name (extra, "gnome-moo-manager");
 	exec = pk_extra_get_exec (extra, "gnome-moo-manager");
-	if (icon == NULL && exec == NULL) {
-		libst_success (test, "passed");
-	} else {
-		libst_failed (test, "%s:%s", icon, exec);
-	}
+	if (icon == NULL && exec == NULL)
+		egg_test_success (test, "passed");
+	else
+		egg_test_failed (test, "%s:%s", icon, exec);
 
 	/************************************************************/
-	libst_title (test, "do lots of loops");
+	egg_test_title (test, "do lots of loops");
 	for (i=0;i<250;i++) {
 		summary = pk_extra_get_summary (extra, "gnome-power-manager");
-		if (summary == NULL) {
-			libst_failed (test, "failed to get good!");
-		}
+		if (summary == NULL)
+			egg_test_failed (test, "failed to get good!");
 		summary = pk_extra_get_summary (extra, "gnome-moo-manager");
-		if (summary != NULL) {
-			libst_failed (test, "failed to not get bad 2!");
-		}
+		if (summary != NULL)
+			egg_test_failed (test, "failed to not get bad 2!");
 		summary = pk_extra_get_summary (extra, "gnome-moo-manager");
-		if (summary != NULL) {
-			libst_failed (test, "failed to not get bad 3!");
-		}
+		if (summary != NULL)
+			egg_test_failed (test, "failed to not get bad 3!");
 		summary = pk_extra_get_summary (extra, "gnome-moo-manager");
-		if (summary != NULL) {
-			libst_failed (test, "failed to not get bad 4!");
-		}
+		if (summary != NULL)
+			egg_test_failed (test, "failed to not get bad 4!");
 	}
-	libst_success (test, "%i get_summary loops completed in %ims", i*5, libst_elapsed (test));
+	egg_test_success (test, "%i get_summary loops completed in %ims", i*5, egg_test_elapsed (test));
 
 	g_object_unref (extra);
 	g_unlink ("extra.db");
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

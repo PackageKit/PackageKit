@@ -13,7 +13,10 @@
 import sys
 
 from smartBackend import PackageKitSmartBackend
-package = sys.argv[1]
+filters = sys.argv[1]
+package = sys.argv[2]
+recursive = sys.argv[3]
+
 backend = PackageKitSmartBackend(sys.argv[1:])
-backend.get_depends(package.split('|'))
+backend.get_depends(filters, package.split('|'), recursive)
 sys.exit(0)

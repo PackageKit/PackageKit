@@ -28,7 +28,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-common.h>
 #include <pk-control.h>
 #include <pk-task-list.h>
@@ -40,7 +40,21 @@
 static void
 pk_monitor_task_list_changed_cb (PkTaskList *tlist, gpointer data)
 {
-	pk_task_list_print (tlist);
+	guint i;
+	PkTaskListItem *item;
+	guint length;
+
+	length = pk_task_list_get_size (tlist);
+	g_print ("Tasks:\n");
+	if (length == 0) {
+		g_print ("[none]\n");
+		return;
+	}
+	for (i=0; i<length; i++) {
+		item = pk_task_list_get_item (tlist, i);
+		g_print ("#%i\t%s\t%s (%s)\t%s\n", i+1, item->tid, pk_role_enum_to_text (item->role),
+			 pk_status_enum_to_text (item->status), item->text);
+	}
 }
 
 /**
@@ -67,7 +81,7 @@ pk_monitor_updates_changed_cb (PkControl *control, gpointer data)
 static void
 pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointer data)
 {
-	pk_debug ("connected=%i", connected);
+	egg_debug ("connected=%i", connected);
 }
 
 /**
@@ -124,7 +138,7 @@ main (int argc, char *argv[])
 		return 0;
 	}
 
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	loop = g_main_loop_new (NULL, FALSE);
 
@@ -132,7 +146,7 @@ main (int argc, char *argv[])
 	g_signal_connect (pconnection, "connection-changed",
 			  G_CALLBACK (pk_connection_changed_cb), loop);
 	connected = pk_connection_valid (pconnection);
-	pk_debug ("connected=%i", connected);
+	egg_debug ("connected=%i", connected);
 
 	control = pk_control_new ();
 	g_signal_connect (control, "locked",
@@ -148,7 +162,7 @@ main (int argc, char *argv[])
 	g_signal_connect (tlist, "status-changed",
 			  G_CALLBACK (pk_monitor_task_list_changed_cb), NULL);
 
-	pk_debug ("refreshing task list");
+	egg_debug ("refreshing task list");
 	ret = pk_task_list_refresh (tlist);
 	if (ret == FALSE) {
 		g_error ("cannot refresh transaction list");

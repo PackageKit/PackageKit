@@ -61,26 +61,26 @@ gboolean		 pk_package_list_add_obj	(PkPackageList		*plist,
 							 const PkPackageObj	*obj);
 gboolean		 pk_package_list_add_list	(PkPackageList		*plist,
 							 PkPackageList		*list);
-gboolean		 pk_package_list_contains	(PkPackageList		*plist,
+gboolean		 pk_package_list_contains	(const PkPackageList	*plist,
 							 const gchar		*package_id);
 gboolean		 pk_package_list_remove		(PkPackageList		*plist,
 							 const gchar		*package_id);
 gboolean		 pk_package_list_remove_obj	(PkPackageList		*plist,
 							 const PkPackageObj	*obj);
-gboolean		 pk_package_list_contains_obj	(PkPackageList		*plist,
+gboolean		 pk_package_list_contains_obj	(const PkPackageList	*plist,
 							 const PkPackageObj	*obj);
-gchar			*pk_package_list_to_string	(PkPackageList		*plist)
+gchar			*pk_package_list_to_string	(const PkPackageList	*plist)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gchar			**pk_package_list_to_argv	(PkPackageList		*plist)
+gchar			**pk_package_list_to_strv	(const PkPackageList	*plist)
 							 G_GNUC_WARN_UNUSED_RESULT;
-guint			 pk_package_list_get_size	(PkPackageList		*plist);
+guint			 pk_package_list_get_size	(const PkPackageList	*plist);
 gboolean		 pk_package_list_sort		(PkPackageList		*plist);
 gboolean		 pk_package_list_sort_info	(PkPackageList		*plist);
 gboolean		 pk_package_list_sort_summary	(PkPackageList		*plist);
-const PkPackageObj	*pk_package_list_get_obj	(PkPackageList		*plist,
+const PkPackageObj	*pk_package_list_get_obj	(const PkPackageList	*plist,
 							 guint			 item);
 gboolean		 pk_package_list_clear		(PkPackageList		*plist);
-gboolean		 pk_package_list_to_file	(PkPackageList		*plist,
+gboolean		 pk_package_list_to_file	(const PkPackageList	*plist,
 							 const gchar		*filename);
 gboolean		 pk_package_list_add_file	(PkPackageList		*plist,
 							 const gchar		*filename);

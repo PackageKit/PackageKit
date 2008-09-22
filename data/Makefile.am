@@ -19,6 +19,14 @@ crondata_SCRIPTS = packagekit-background
 pmutilsdir = $(libdir)/pm-utils/sleep.d
 pmutils_DATA = 95packagekit
 
+upgradescriptdir = $(datadir)/PackageKit
+upgradescript_SCRIPTS = pk-upgrade-distro.sh
+
+if BACKEND_TYPE_APT
+aptconfdir = ${SYSCONFDIR}/apt.conf.d
+aptconf_DATA = 20packagekit
+endif
+
 @INTLTOOL_XML_RULE@
 mimedir = $(datadir)/mime/packages
 mime_in_files = 					\
@@ -31,7 +39,6 @@ dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = 					\
 	org.freedesktop.PackageKit.conf			\
 	org.freedesktop.PackageKitTestBackend.conf	\
-	org.freedesktop.PackageKitYumBackend.conf	\
 	org.freedesktop.PackageKitAptBackend.conf	\
 	$(NULL)
 
@@ -40,12 +47,6 @@ servicemain_in_files = org.freedesktop.PackageKit.service.in
 servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
 $(servicemain_DATA): $(servicemain_in_files) Makefile
 	@sed -e "s|\@servicedir\@|$(sbindir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@
-
-serviceyumdir       = $(DBUS_SERVICES_DIR)
-serviceyum_in_files = org.freedesktop.PackageKitYumBackend.service.in
-serviceyum_DATA     = $(serviceyum_in_files:.service.in=.service)
-$(serviceyum_DATA): $(serviceyum_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(libexecdir)|"  -e "s|\@PK_BACKEND_USER\@|$(PK_BACKEND_USER)|" $< > $@
 
 servicetestdir       = $(DBUS_SERVICES_DIR)
 servicetest_in_files = org.freedesktop.PackageKitTestBackend.service.in
@@ -75,16 +76,16 @@ EXTRA_DIST =						\
 	packagekit-background.cron			\
 	org.freedesktop.PackageKit.conf.in		\
 	org.freedesktop.PackageKitTestBackend.conf.in	\
-	org.freedesktop.PackageKitYumBackend.conf.in	\
 	org.freedesktop.PackageKitAptBackend.conf.in	\
 	packagekit.pc.in				\
+	20packagekit					\
 	$(servicemain_in_files)				\
-	$(serviceyum_in_files)				\
 	$(servicetest_in_files)				\
 	$(serviceapt_in_files)				\
 	$(mime_in_files)				\
 	$(localcache_DATA)				\
 	$(database_DATA)				\
+	$(upgradescript_SCRIPTS)			\
 	$(NULL)
 
 clean-local:
@@ -97,7 +98,6 @@ DISTCLEANFILES =					\
 	$(mime_DATA)					\
 	org.freedesktop.PackageKit.service		\
 	org.freedesktop.PackageKitTestBackend.service	\
-	org.freedesktop.PackageKitYumBackend.service	\
 	org.freedesktop.PackageKitAptBackend.service	\
 	$(NULL)
 

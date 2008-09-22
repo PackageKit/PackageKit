@@ -46,18 +46,22 @@
 #include <polkit-dbus/polkit-dbus.h>
 #endif
 
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-enum.h"
+#include "pk-bitfield.h"
 #include "pk-client.h"
 #include "pk-connection.h"
 #include "pk-package-id.h"
 #include "pk-package-ids.h"
 #include "pk-package-list.h"
-#include "pk-debug.h"
 #include "pk-marshal.h"
 #include "pk-common.h"
 #include "pk-control.h"
 #include "pk-update-detail-obj.h"
 #include "pk-details-obj.h"
+#include "pk-distro-upgrade-obj.h"
 
 static void     pk_client_class_init	(PkClientClass *klass);
 static void     pk_client_init		(PkClient      *client);
@@ -76,12 +80,14 @@ struct _PkClientPrivate
 	DBusGProxy		*proxy;
 	GMainLoop		*loop;
 	gboolean		 is_finished;
+	gboolean		 is_finishing;
 	gboolean		 use_buffer;
 	gboolean		 synchronous;
 	gchar			*tid;
 	PkControl		*control;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
+	gulong			 pconnection_signal_id;
 	PkRestartEnum		 require_restart;
 	PkStatusEnum		 last_status;
 	PkRoleEnum		 role;
@@ -98,7 +104,7 @@ struct _PkClientPrivate
 	gchar			*cached_search;
 	gchar			*cached_directory;
 	PkProvidesEnum		 cached_provides;
-	PkFilterEnum		 cached_filters;
+	PkBitfield	 cached_filters;
 };
 
 typedef enum {
@@ -111,6 +117,7 @@ typedef enum {
 	PK_CLIENT_REQUIRE_RESTART,
 	PK_CLIENT_MESSAGE,
 	PK_CLIENT_TRANSACTION,
+	PK_CLIENT_DISTRO_UPGRADE,
 	PK_CLIENT_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
 	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
@@ -134,9 +141,8 @@ GQuark
 pk_client_error_quark (void)
 {
 	static GQuark quark = 0;
-	if (!quark) {
+	if (!quark)
 		quark = g_quark_from_static_string ("pk_client_error");
-	}
 	return quark;
 }
 
@@ -156,7 +162,8 @@ pk_client_error_get_type (void)
 			ENUM_ENTRY (PK_CLIENT_ERROR_FAILED_AUTH, "FailedAuth"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_NO_TID, "NoTid"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_ALREADY_TID, "AlreadyTid"),
-			ENUM_ENTRY (PK_CLIENT_ERROR_ROLE_UNKNOWN, "RoleUnkown"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_ROLE_UNKNOWN, "RoleUnknown"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_CANNOT_START_DAEMON, "CannotStartDaemon"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_INVALID_PACKAGEID, "InvalidPackageId"),
 			{ 0, NULL, NULL }
 		};
@@ -188,14 +195,14 @@ pk_client_error_set (GError **error, gint code, const gchar *format, ...)
 
 	/* dumb */
 	if (error == NULL) {
-		pk_warning ("No error set, so can't set: %s", buffer);
+		egg_warning ("No error set, so can't set: %s", buffer);
 		ret = FALSE;
 		goto out;
 	}
 
 	/* already set */
 	if (*error != NULL) {
-		pk_warning ("not NULL error!");
+		egg_warning ("not NULL error!");
 		g_clear_error (error);
 	}
 
@@ -223,12 +230,11 @@ pk_client_error_print (GError **error)
 	if (error != NULL && *error != NULL) {
 		/* get some proper debugging */
 		if ((*error)->domain == DBUS_GERROR &&
-		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION) {
+		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION)
 			name = dbus_g_error_get_name (*error);
-		} else {
+		else
 			name = g_quark_to_string ((*error)->domain);
-		}
-		pk_debug ("ERROR: %s: %s", name, (*error)->message);
+		egg_debug ("ERROR: %s: %s", name, (*error)->message);
 		return TRUE;
 	}
 	return FALSE;
@@ -246,7 +252,7 @@ pk_client_error_fixup (GError **error)
 		if ((*error)->domain == DBUS_GERROR &&
 		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION) {
 			/* use one of our local codes */
-			pk_debug ("fixing up code from %i", (*error)->code);
+			egg_debug ("fixing up code from %i", (*error)->code);
 			(*error)->code = PK_CLIENT_ERROR_FAILED;
 		}
 		return TRUE;
@@ -266,25 +272,22 @@ pk_client_error_refused_by_policy (GError *error)
 	const gchar *error_name;
 
 	/* if not set */
-	if (error == NULL) {
+	if (error == NULL)
 		return FALSE;
-	}
 
 	/* not a dbus error */
 	if (error->code != DBUS_GERROR_REMOTE_EXCEPTION) {
-		pk_warning ("not a remote exception: %s", error->message);
+		egg_warning ("not a remote exception: %s", error->message);
 		return FALSE;
 	}
 
 	/* check for specific error */
 	error_name = dbus_g_error_get_name (error);
-	pk_debug ("ERROR: %s: %s", error_name, error->message);
-	if (pk_strequal (error_name, "org.freedesktop.PackageKit.RefusedByPolicy")) {
+	egg_debug ("ERROR: %s: %s", error_name, error->message);
+	if (egg_strequal (error_name, "org.freedesktop.PackageKit.RefusedByPolicy"))
 		return TRUE;
-	}
-	if (pk_strequal (error_name, "org.freedesktop.PackageKit.Transaction.RefusedByPolicy")) {
+	if (egg_strequal (error_name, "org.freedesktop.PackageKit.Transaction.RefusedByPolicy"))
 		return TRUE;
-	}
 	return FALSE;
 }
 
@@ -313,25 +316,24 @@ pk_client_error_auth_obtain (GError *error)
 	/* get PolKitAction */
 	ret = polkit_dbus_error_parse_from_strings ("org.freedesktop.PolicyKit.Error.NotAuthorized", error->message, &action, &result);
 	if (!ret) {
-		pk_warning ("Not a polkit auth failure: %s", error->message);
+		egg_warning ("Not a polkit auth failure: %s", error->message);
 		return FALSE;
 	}
 
 	/* get action_id from PolKitAction */
 	ret = polkit_action_get_action_id (action, &action_id);
 	if (!ret) {
-		pk_warning ("Unable to get an action ID");
+		egg_warning ("Unable to get an action ID");
 		return FALSE;
 	}
 
 	/* this blocks - use polkit_gnome_auth_obtain for non blocking version */
 	ret = polkit_auth_obtain (action_id, 0, getpid (), &error2);
-	if (dbus_error_is_set (&error2)) {
-		pk_warning ("Failed to obtain auth: %s", error2.message);
-	}
+	if (dbus_error_is_set (&error2))
+		egg_warning ("Failed to obtain auth: %s", error2.message);
 	dbus_error_free (&error2);
 
-	pk_debug ("gained %s privilege = %d", action_id, ret);
+	egg_debug ("gained %s privilege = %d", action_id, ret);
 
 	polkit_action_unref (action);
 #endif
@@ -349,9 +351,8 @@ pk_client_error_auth_obtain (GError *error)
 gchar *
 pk_client_get_tid (PkClient *client)
 {
-	if (client->priv->tid == NULL) {
+	if (client->priv->tid == NULL)
 		return NULL;
-	}
 	return g_strdup (client->priv->tid);
 }
 
@@ -468,9 +469,8 @@ pk_client_get_package_list (PkClient *client)
 {
 	PkPackageList *list;
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	if (!client->priv->use_buffer) {
+	if (!client->priv->use_buffer)
 		return NULL;
-	}
 	list = client->priv->package_list;
 	g_object_ref (list);
 	return list;
@@ -491,17 +491,23 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	g_object_ref (client);
 
 	exit = pk_exit_enum_from_text (exit_text);
-	pk_debug ("emit finished %s, %i", exit_text, runtime);
+	egg_debug ("emit finished %s, %i", exit_text, runtime);
 
 	/* only this instance is finished, and do it before the signal so we can reset */
 	client->priv->is_finished = TRUE;
 
+	/* we are finishing, so we can detect when we try to do insane things
+	 * in the ::Finished() handler */
+	client->priv->is_finishing = TRUE;
+
 	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit, runtime);
 
+	/* done callback */
+	client->priv->is_finishing = FALSE;
+
 	/* exit our private loop */
-	if (client->priv->synchronous) {
+	if (client->priv->synchronous)
 		g_main_loop_quit (client->priv->loop);
-	}
 
 	/* unref what we previously ref'd */
 	g_object_unref (client);
@@ -516,7 +522,7 @@ pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subper
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit progress-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
+	egg_debug ("emit progress-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
 	g_signal_emit (client , signals [PK_CLIENT_PROGRESS_CHANGED], 0,
 		       percentage, subpercentage, elapsed, remaining);
 }
@@ -527,7 +533,7 @@ pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subper
 static void
 pk_client_change_status (PkClient *client, PkStatusEnum status)
 {
-	pk_debug ("emit status-changed %s", pk_status_enum_to_text (status));
+	egg_debug ("emit status-changed %s", pk_status_enum_to_text (status));
 	g_signal_emit (client , signals [PK_CLIENT_STATUS_CHANGED], 0, status);
 	client->priv->last_status = status;
 }
@@ -566,13 +572,12 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	id = pk_package_id_new_from_string (package_id);
 	obj = pk_package_obj_new (info, id, summary);
 
-	pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
+	egg_debug ("emit package %s, %s, %s", info_text, package_id, summary);
 	g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, obj);
 
 	/* cache */
-	if (client->priv->use_buffer || client->priv->synchronous) {
+	if (client->priv->use_buffer || client->priv->synchronous)
 		pk_package_list_add_obj (client->priv->package_list, obj);
-	}
 	pk_package_id_free (id);
 	pk_package_obj_free (obj);
 }
@@ -589,10 +594,28 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	role = pk_role_enum_from_text (role_text);
-	pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec,
+	egg_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec,
 		  succeeded, role_text, duration, data);
 	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec,
 		       succeeded, role, duration, data);
+}
+
+/**
+ * pk_client_distro_upgrade_cb:
+ */
+static void
+pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gchar *name,
+			     const gchar *summary, PkClient *client)
+{
+	PkUpdateStateEnum type;
+	PkDistroUpgradeObj *obj;
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	type = pk_update_state_enum_from_text (type_text);
+	obj = pk_distro_upgrade_obj_new_from_data  (type, name, summary);
+	egg_debug ("emitting distro_upgrade %s, %s, %s", type_text, name, summary);
+	g_signal_emit (client, signals [PK_CLIENT_DISTRO_UPGRADE], 0, obj);
+	pk_distro_upgrade_obj_free (obj);
 }
 
 /**
@@ -614,7 +637,7 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
+	egg_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, updates, obsoletes, vendor_url, bugzilla_url,
 		  cve_url, restart_text, update_text, changelog,
 		  state_text, issued_text, updated_text);
@@ -656,7 +679,7 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 	group = pk_group_enum_from_text (group_text);
 	id = pk_package_id_new_from_string (package_id);
 
-	pk_debug ("emit details %s, %s, %s, %s, %s, %ld",
+	egg_debug ("emit details %s, %s, %s, %s, %s, %ld",
 		  package_id, license, group_text, description, url, (long int) size);
 
 	details = pk_details_obj_new_from_data (id, license, group, description, url, size);
@@ -666,15 +689,50 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 }
 
 /**
+ * pk_client_file_copy:
+ */
+static gboolean
+pk_client_file_copy (const gchar *filename, const gchar *directory)
+{
+	gboolean ret;
+	GError *error = NULL;
+	gchar *command;
+
+	/* TODO: use GIO when we have a hard dep on it */
+	command = g_strdup_printf ("cp \"%s\" \"%s\"", filename, directory);
+	egg_debug ("command: %s", command);
+	ret = g_spawn_command_line_sync (command, NULL, NULL, NULL, &error);
+	if (!ret) {
+		egg_warning ("failed to copy: %s", error->message);
+		g_error_free (error);
+	}
+	g_free (command);
+	return ret;
+}
+
+/**
  * pk_client_files_cb:
  */
 static void
-pk_client_files_cb (DBusGProxy  *proxy, const gchar *package_id, const gchar *filelist, PkClient *client)
+pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *filelist, PkClient *client)
 {
+	guint i;
+	guint length;
+	gchar **split;
+
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit files %s, <lots of files>", package_id);
+	egg_debug ("emit files %s, <lots of files>", package_id);
 	g_signal_emit (client , signals [PK_CLIENT_FILES], 0, package_id, filelist);
+
+	/* we are a callback from DownloadPackages */
+	if (client->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+		split = g_strsplit (filelist, ";", -1);
+		length = g_strv_length (split);
+		for (i=0; i<length; i++)
+			pk_client_file_copy (split[i], client->priv->cached_directory);
+		g_strfreev (split);
+	}
 }
 
 /**
@@ -688,7 +746,7 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %s",
+	egg_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, repository_name, key_url, key_userid,
 		  key_id, key_fingerprint, key_timestamp, type_text);
 
@@ -705,7 +763,7 @@ pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit eula-required %s, %s, %s, %s",
+	egg_debug ("emit eula-required %s, %s, %s, %s",
 		  eula_id, package_id, vendor_name, license_agreement);
 
 	g_signal_emit (client, signals [PK_CLIENT_EULA_REQUIRED], 0,
@@ -721,7 +779,7 @@ pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
+	egg_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
 	g_signal_emit (client, signals [PK_CLIENT_REPO_DETAIL], 0, repo_id, description, enabled);
 }
 
@@ -738,7 +796,7 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	code = pk_error_enum_from_text (code_text);
-	pk_debug ("emit error-code %i, %s", code, details);
+	egg_debug ("emit error-code %i, %s", code, details);
 	g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, code, details);
 }
 
@@ -750,7 +808,7 @@ pk_client_allow_cancel_cb (DBusGProxy *proxy, gboolean allow_cancel, PkClient *c
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit allow-cancel %i", allow_cancel);
+	egg_debug ("emit allow-cancel %i", allow_cancel);
 	g_signal_emit (client , signals [PK_CLIENT_ALLOW_CANCEL], 0, allow_cancel);
 }
 
@@ -798,7 +856,7 @@ pk_client_caller_active_changed_cb (DBusGProxy  *proxy,
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit caller-active-changed %i", is_active);
+	egg_debug ("emit caller-active-changed %i", is_active);
 	g_signal_emit (client , signals [PK_CLIENT_CALLER_ACTIVE_CHANGED], 0, is_active);
 }
 
@@ -815,11 +873,11 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	restart = pk_restart_enum_from_text (restart_text);
-	pk_debug ("emit require-restart %i, %s", restart, details);
+	egg_debug ("emit require-restart %i, %s", restart, details);
 	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, details);
 	if (restart > client->priv->require_restart) {
 		client->priv->require_restart = restart;
-		pk_debug ("restart status now %s", pk_restart_enum_to_text (restart));
+		egg_debug ("restart status now %s", pk_restart_enum_to_text (restart));
 	}
 }
 
@@ -833,7 +891,7 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	message = pk_message_enum_from_text (message_text);
-	pk_debug ("emit message %i, %s", message, details);
+	egg_debug ("emit message %i, %s", message, details);
 	g_signal_emit (client , signals [PK_CLIENT_MESSAGE], 0, message, details);
 }
 
@@ -995,11 +1053,10 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **text, GError **e
 	if (ret) {
 		*role = pk_role_enum_from_text (role_text);
 		g_free (role_text);
-		if (text != NULL) {
+		if (text != NULL)
 			*text = text_temp;
-		} else {
+		else
 			g_free (text_temp);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1028,8 +1085,14 @@ pk_client_cancel (PkClient *client, GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* we don't need to cancel, so return TRUE */
-	if (client->priv->proxy == NULL) {
+	if (client->priv->proxy == NULL)
 		return TRUE;
+
+	/* we cannot cancel a client in ::Finished() */
+	if (client->priv->is_finishing) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
+				     "unable to cancel client in finished handler");
+		return FALSE;
 	}
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", &error_local,
@@ -1041,7 +1104,7 @@ pk_client_cancel (PkClient *client, GError **error)
 
 	/* special case - if the tid is already finished, then cancel should return TRUE */
 	if (g_str_has_suffix (error_local->message, " doesn't exist\n")) {
-		pk_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
+		egg_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
 		g_error_free (error_local);
 		return TRUE;
 	}
@@ -1077,7 +1140,10 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 	/* get a new ID */
 	ret = pk_control_allocate_transaction_id (client->priv->control, &tid, &error_local);
 	if (!ret) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "failed to get a TID: %s", error_local->message);
+		if (error_local->code == PK_CONTROL_ERROR_CANNOT_START_DAEMON)
+			pk_client_error_set (error, PK_CLIENT_ERROR_CANNOT_START_DAEMON, "cannot start daemon: %s", error_local->message);
+		else
+			pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "failed to get a TID: %s (%i)", error_local->message, error_local->code);
 		g_error_free (error_local);
 		return FALSE;
 	}
@@ -1096,7 +1162,7 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 /**
  * pk_client_get_updates:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get a list of all the packages that can be updated for all repositories.
@@ -1104,7 +1170,7 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
  * Return value: %TRUE if we got told the daemon to get the update list
  **/
 gboolean
-pk_client_get_updates (PkClient *client, PkFilterEnum filters, GError **error)
+pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1114,9 +1180,8 @@ pk_client_get_updates (PkClient *client, PkFilterEnum filters, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATES;
@@ -1127,7 +1192,7 @@ pk_client_get_updates (PkClient *client, PkFilterEnum filters, GError **error)
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdates", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1137,9 +1202,8 @@ pk_client_get_updates (PkClient *client, PkFilterEnum filters, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1192,9 +1256,8 @@ pk_client_update_system (PkClient *client, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
@@ -1220,18 +1283,16 @@ pk_client_update_system (PkClient *client, GError **error)
 		}
 	}
 	/* we failed one of these, return the error to the user */
-	if (!ret) {
+	if (!ret)
 		g_propagate_error (error, error_pk);
-	}
 
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -1240,7 +1301,7 @@ pk_client_update_system (PkClient *client, GError **error)
 /**
  * pk_client_search_name:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: free text to search for, for instance, "power"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1250,7 +1311,7 @@ pk_client_update_system (PkClient *client, GError **error)
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
+pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1260,9 +1321,8 @@ pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *sear
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_NAME;
@@ -1274,7 +1334,7 @@ pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *sear
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchName", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
@@ -1285,9 +1345,8 @@ pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *sear
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1296,7 +1355,7 @@ pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *sear
 /**
  * pk_client_search_details:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: free text to search for, for instance, "power"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1307,7 +1366,7 @@ pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *sear
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
+pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1317,9 +1376,8 @@ pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *s
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_DETAILS;
@@ -1331,7 +1389,7 @@ pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *s
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchDetails", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
@@ -1342,9 +1400,8 @@ pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *s
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1353,7 +1410,7 @@ pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *s
 /**
  * pk_client_search_group:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: a group enum to search for, for instance, "system-tools"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1362,7 +1419,7 @@ pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *s
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
+pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1372,9 +1429,8 @@ pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *sea
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_GROUP;
@@ -1386,7 +1442,7 @@ pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *sea
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchGroup", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
@@ -1397,9 +1453,8 @@ pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *sea
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1408,7 +1463,7 @@ pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *sea
 /**
  * pk_client_search_file:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: file to search for, for instance, "/sbin/service"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1417,7 +1472,7 @@ pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *sea
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
+pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1427,9 +1482,8 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_FILE;
@@ -1441,7 +1495,7 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchFile", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
@@ -1452,9 +1506,8 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1463,7 +1516,7 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
 /**
  * pk_client_get_depends:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for depends
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1473,7 +1526,7 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_depends (PkClient *client, PkFilterEnum filters, gchar **package_ids, gboolean recursive, GError **error)
+pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1495,9 +1548,8 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, gchar **package_i
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
@@ -1510,7 +1562,7 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, gchar **package_i
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRV, package_ids,
@@ -1522,9 +1574,8 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, gchar **package_i
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1577,16 +1628,14 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
         }
         ret = dbus_g_proxy_call (client->priv->proxy, "DownloadPackages", error,
                                  G_TYPE_STRV, package_ids,
-                                 G_TYPE_STRING, directory,
                                  G_TYPE_INVALID, G_TYPE_INVALID);
         if (ret && !client->priv->is_finished) {
                 /* allow clients to respond in the status changed callback */
                 pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
                 /* spin until finished */
-                if (client->priv->synchronous) {
+                if (client->priv->synchronous)
                         g_main_loop_run (client->priv->loop);
-                }
         }
         pk_client_error_fixup (error);
         return ret;
@@ -1596,7 +1645,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 /**
  * pk_client_get_packages:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get the list of packages from the backend
@@ -1604,7 +1653,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
+pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1614,9 +1663,8 @@ pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_PACKAGES;
@@ -1627,7 +1675,7 @@ pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackages", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1637,9 +1685,8 @@ pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1681,7 +1728,7 @@ pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
 /**
  * pk_client_get_requires:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for requires
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1691,7 +1738,7 @@ pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_ids, gboolean recursive, GError **error)
+pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1713,9 +1760,8 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
@@ -1728,7 +1774,7 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRV, package_ids,
@@ -1740,9 +1786,8 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1751,7 +1796,7 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_
 /**
  * pk_client_what_provides:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
  * @search: a search term such as "sound/mp3"
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1763,7 +1808,7 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, gchar **package_
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum provides,
+pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum provides,
 			 const gchar *search, GError **error)
 {
 	gboolean ret;
@@ -1777,9 +1822,8 @@ pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum 
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_WHAT_PROVIDES;
@@ -1794,7 +1838,7 @@ pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum 
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "WhatProvides", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, provides_text,
@@ -1806,9 +1850,8 @@ pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum 
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1847,9 +1890,8 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
@@ -1868,9 +1910,8 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1897,9 +1938,8 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_ROLLBACK;
@@ -1918,9 +1958,8 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -1929,7 +1968,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 /**
  * pk_client_resolve:
  * @client: a valid #PkClient instance
- * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @packages: an array of package names to resolve, e.g. "gnome-system-tools"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1940,7 +1979,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_resolve (PkClient *client, PkFilterEnum filters, gchar **packages, GError **error)
+pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -1951,9 +1990,8 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, gchar **packages, GEr
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_RESOLVE;
@@ -1965,7 +2003,7 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, gchar **packages, GEr
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRV, packages,
@@ -1976,9 +2014,8 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, gchar **packages, GEr
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -2017,9 +2054,8 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DETAILS;
@@ -2038,9 +2074,53 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
+	}
+	pk_client_error_fixup (error);
+	return ret;
+}
+
+/**
+ * pk_client_get_distro_upgrades:
+ * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * This method should return a list of distribution upgrades that are available.
+ * It should not return updates, only major upgrades.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_get_distro_upgrades (PkClient *client, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret)
+		return FALSE;
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetDistroUpgrades", error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret && !client->priv->is_finished) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous)
+			g_main_loop_run (client->priv->loop);
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -2078,9 +2158,8 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_FILES;
@@ -2099,9 +2178,8 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	pk_client_error_fixup (error);
 	return ret;
@@ -2172,9 +2250,8 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
@@ -2206,9 +2283,8 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2261,9 +2337,8 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REFRESH_CACHE;
@@ -2293,9 +2368,8 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2357,9 +2431,8 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
@@ -2389,9 +2462,8 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2458,9 +2530,8 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_SIGNATURE;
@@ -2491,9 +2562,8 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2555,9 +2625,8 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
@@ -2591,9 +2660,8 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2679,9 +2747,8 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* convert all the relative paths to absolute ones */
 	files = g_strdupv (files_rel);
@@ -2689,8 +2756,8 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 	for (i=0; i<length; i++) {
 		file = pk_resolve_local_path (files[i]);
 		/* only replace if different */
-		if (!pk_strequal (file, files[i])) {
-			pk_debug ("resolved %s to %s", files[i], file);
+		if (!egg_strequal (file, files[i])) {
+			egg_debug ("resolved %s to %s", files[i], file);
 			/* replace */
 			g_free (files[i]);
 			files[i] = g_strdup (file);
@@ -2727,9 +2794,8 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	g_strfreev (files);
@@ -2746,7 +2812,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
  * Return value: %TRUE if the daemon queued the transaction
  */
 gboolean
-pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
+pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 {
 	gboolean ret;
 	gchar *filter_text;
@@ -2756,9 +2822,8 @@ pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REPO_LIST;
@@ -2769,7 +2834,7 @@ pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	filter_text = pk_filter_enums_to_text (filters);
+	filter_text = pk_filter_bitfield_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRepoList", error,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -2780,9 +2845,8 @@ pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 	return ret;
 }
@@ -2832,9 +2896,8 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_ACCEPT_EULA;
@@ -2863,9 +2926,8 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -2918,9 +2980,8 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_ENABLE;
@@ -2949,9 +3010,8 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -3013,9 +3073,8 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_SET_DATA;
@@ -3044,9 +3103,8 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous) {
+		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
-		}
 	}
 
 	return ret;
@@ -3105,9 +3163,8 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
+	if (!ret)
 		return FALSE;
-	}
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -3167,49 +3224,49 @@ pk_client_requeue (PkClient *client, GError **error)
 	pk_package_list_clear (client->priv->package_list);
 
 	/* do the correct action with the cached parameters */
-	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
+	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS)
 		ret = pk_client_get_depends (client, priv->cached_filters, priv->cached_package_ids, priv->cached_force, error);
-	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
+	else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
 		ret = pk_client_get_update_detail (client, priv->cached_package_ids, error);
-	} else if (priv->role == PK_ROLE_ENUM_RESOLVE) {
+	else if (priv->role == PK_ROLE_ENUM_RESOLVE)
 		ret = pk_client_resolve (client, priv->cached_filters, priv->cached_package_ids, error);
-	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
+	else if (priv->role == PK_ROLE_ENUM_ROLLBACK)
 		ret = pk_client_rollback (client, priv->cached_transaction_id, error);
-	} else if (priv->role == PK_ROLE_ENUM_GET_DETAILS) {
+	else if (priv->role == PK_ROLE_ENUM_GET_DETAILS)
 		ret = pk_client_get_details (client, priv->cached_package_ids, error);
-	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
+	else if (priv->role == PK_ROLE_ENUM_GET_FILES)
 		ret = pk_client_get_files (client, priv->cached_package_ids, error);
-	} else if (priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+	else if (priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES)
 		ret = pk_client_download_packages (client, priv->cached_package_ids, priv->cached_directory, error);
-	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
+	else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES)
 		ret = pk_client_get_requires (client, priv->cached_filters, priv->cached_package_ids, priv->cached_force, error);
-	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
+	else if (priv->role == PK_ROLE_ENUM_GET_UPDATES)
 		ret = pk_client_get_updates (client, priv->cached_filters, error);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+	else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS)
 		ret = pk_client_search_details (client, priv->cached_filters, priv->cached_search, error);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
+	else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE)
 		ret = pk_client_search_file (client, priv->cached_filters, priv->cached_search, error);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
+	else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP)
 		ret = pk_client_search_group (client, priv->cached_filters, priv->cached_search, error);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
+	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
 		ret = pk_client_search_name (client, priv->cached_filters, priv->cached_search, error);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+	else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES)
 		ret = pk_client_install_packages (client, priv->cached_package_ids, error);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES) {
+	else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES)
 		ret = pk_client_install_files (client, priv->cached_trusted, priv->cached_full_paths, error);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
+	else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE)
 		ret = pk_client_install_signature (client, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id, error);
-	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+	else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE)
 		ret = pk_client_refresh_cache (client, priv->cached_force, error);
-	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+	else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES)
 		ret = pk_client_remove_packages (client, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove, error);
-	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+	else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
 		ret = pk_client_update_packages (client, priv->cached_package_ids, error);
-	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+	else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM)
 		ret = pk_client_update_system (client, error);
-	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
+	else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST)
 		ret = pk_client_get_repo_list (client, priv->cached_filters, error);
-	} else {
+	else {
 		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
 	}
@@ -3252,7 +3309,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 		return FALSE;
 	}
 	client->priv->tid = g_strdup (tid);
-	pk_debug ("set tid %s on %p", client->priv->tid, client);
+	egg_debug ("set tid %s on %p", client->priv->tid, client);
 
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
@@ -3270,6 +3327,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "DistroUpgrade",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Details",
 				 G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
@@ -3300,6 +3359,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     G_CALLBACK (pk_client_transaction_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
 				     G_CALLBACK (pk_client_update_detail_cb), client, NULL);
+	dbus_g_proxy_connect_signal (proxy, "DistroUpgrade",
+				     G_CALLBACK (pk_client_distro_upgrade_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Details",
 				     G_CALLBACK (pk_client_details_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Files",
@@ -3403,6 +3464,22 @@ pk_client_class_init (PkClientClass *klass)
 			      NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT_STRING,
 			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING);
+	/**
+	 * PkClient::distro_upgrade:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @type: A valid upgrade %PkUpdateStateEnum type
+	 * @name: The short name of the distribution, e.g. <literal>Fedora Core 10 RC1</literal>
+	 * @summary: The multi-line description of the release.
+	 *
+	 * The ::distro_upgrade signal is emitted when the method GetDistroUpgrades() is
+	 * called, and the upgrade options are being sent.
+	 **/
+	signals [PK_CLIENT_DISTRO_UPGRADE] =
+		g_signal_new ("distro-upgrade",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkClientClass, distro_upgrade),
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	/**
 	 * PkClient::update-detail:
 	 * @client: the #PkClient instance that emitted the signal
@@ -3532,7 +3609,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::message:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @message: the PkMessageEnum type of the message, e.g. PK_MESSAGE_ENUM_WARNING
+	 * @message: the PkMessageEnum type of the message, e.g. %PK_MESSAGE_ENUM_BROKEN_MIRROR
 	 * @details: the non-localised message details
 	 *
 	 * The ::message signal is emitted when the transaction wants to tell
@@ -3600,7 +3677,7 @@ pk_client_class_init (PkClientClass *klass)
 static void
 pk_client_connect (PkClient *client)
 {
-	pk_debug ("connect");
+	egg_debug ("connect");
 }
 
 /**
@@ -3610,9 +3687,8 @@ static void
 pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkClient *client)
 {
 	/* if PK re-started mid-transaction then show a big fat warning */
-	if (!connected && client->priv->tid != NULL && !client->priv->is_finished) {
-		pk_warning ("daemon disconnected mid-transaction!");
-	}
+	if (!connected && client->priv->tid != NULL && !client->priv->is_finished)
+		egg_warning ("daemon disconnected mid-transaction!");
 }
 
 /**
@@ -3621,9 +3697,8 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkClien
 static gboolean
 pk_client_disconnect_proxy (PkClient *client)
 {
-	if (client->priv->proxy == NULL) {
+	if (client->priv->proxy == NULL)
 		return FALSE;
-	}
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Finished",
 				        G_CALLBACK (pk_client_finished_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ProgressChanged",
@@ -3634,6 +3709,8 @@ pk_client_disconnect_proxy (PkClient *client)
 				        G_CALLBACK (pk_client_package_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Transaction",
 				        G_CALLBACK (pk_client_transaction_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "DistroUpgrade",
+				        G_CALLBACK (pk_client_distro_upgrade_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Details",
 				        G_CALLBACK (pk_client_details_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Files",
@@ -3679,13 +3756,21 @@ pk_client_reset (PkClient *client, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* we cannot reset a synchronous client in ::Finished() --
+	   the whole point of a sync client is we don't handle this signal
+	   and we'll clear the package cache if we allow this */
+	if (client->priv->is_finishing && client->priv->synchronous) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
+				     "unable to reset synchronous client in finished handler");
+		return FALSE;
+	}
+
 	if (client->priv->tid != NULL && !client->priv->is_finished) {
-		pk_debug ("not exit status, will try to cancel tid %s", client->priv->tid);
+		egg_debug ("not exit status, will try to cancel tid %s", client->priv->tid);
 		/* we try to cancel the running tranaction */
 		ret = pk_client_cancel (client, error);
-		if (!ret) {
+		if (!ret)
 			return FALSE;
-		}
 	}
 
 	g_free (client->priv->tid);
@@ -3736,6 +3821,7 @@ pk_client_init (PkClient *client)
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
+	client->priv->is_finishing = FALSE;
 	client->priv->package_list = pk_package_list_new ();
 	client->priv->cached_package_id = NULL;
 	client->priv->cached_package_ids = NULL;
@@ -3752,21 +3838,24 @@ pk_client_init (PkClient *client)
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("Could not connect to system DBUS.");
 	}
 
 	/* watch for PackageKit on the bus, and try to connect up at start */
 	client->priv->pconnection = pk_connection_new ();
-	g_signal_connect (client->priv->pconnection, "connection-changed",
-			  G_CALLBACK (pk_connection_changed_cb), client);
-	if (pk_connection_valid (client->priv->pconnection)) {
+	client->priv->pconnection_signal_id = g_signal_connect (client->priv->pconnection, "connection-changed",
+								G_CALLBACK (pk_connection_changed_cb), client);
+	if (pk_connection_valid (client->priv->pconnection))
 		pk_client_connect (client);
-	}
 
 	/* Use a main control object */
 	client->priv->control = pk_control_new ();
+
+	/* DistroUpgrade */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* ProgressChanged */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_UINT_UINT,
@@ -3861,12 +3950,12 @@ pk_client_finalize (GObject *object)
 	g_strfreev (client->priv->cached_full_paths);
 
 	/* clear the loop, if we were using it */
-	if (client->priv->synchronous) {
+	if (client->priv->synchronous)
 		g_main_loop_quit (client->priv->loop);
-	}
 	g_main_loop_unref (client->priv->loop);
 
 	/* disconnect signal handlers */
+	g_signal_handler_disconnect (client->priv->pconnection, client->priv->pconnection_signal_id);
 	pk_client_disconnect_proxy (client);
 	g_object_unref (client->priv->pconnection);
 	g_object_unref (client->priv->package_list);
@@ -3908,15 +3997,16 @@ void init()
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 #include <glib/gstdio.h>
 
 static gboolean finished = FALSE;
+static gboolean reset_okay = FALSE;
 static guint clone_packages = 0;
 
 static void
-libst_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
+pk_client_test_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
 	finished = TRUE;
 	/* this is actually quite common */
@@ -3924,19 +4014,31 @@ libst_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, LibS
 }
 
 static void
-libst_client_copy_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
+pk_client_test_finished2_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
-	libst_loopquit (test);
+	GError *error = NULL;
+	/* this is supported */
+	reset_okay = pk_client_reset (client, &error);
+	if (!reset_okay) {
+		egg_warning ("failed to reset in ::Finished(): %s", error->message);
+		g_error_free (error);
+	}
 }
 
 static void
-libst_client_copy_package_cb (PkClient *client, const PkPackageObj *obj, LibSelfTest *test)
+pk_client_test_copy_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
+{
+	egg_test_loop_quit (test);
+}
+
+static void
+pk_client_test_copy_package_cb (PkClient *client, const PkPackageObj *obj, EggTest *test)
 {
 	clone_packages++;
 }
 
 void
-libst_client (LibSelfTest *test)
+pk_client_test (EggTest *test)
 {
 	PkClient *client;
 	PkClient *client_copy;
@@ -3949,136 +4051,142 @@ libst_client (LibSelfTest *test)
 	gchar *file;
 	PkPackageList *list;
 
-	if (libst_start (test, "PkClient", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkClient"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "test resolve NULL");
+	egg_test_title (test, "test resolve NULL");
 	file = pk_resolve_local_path (NULL);
-	if (file == NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (file == NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "test resolve /etc/hosts");
+	egg_test_title (test, "test resolve /etc/hosts");
 	file = pk_resolve_local_path ("/etc/hosts");
-	if (file != NULL && pk_strequal (file, "/etc/hosts")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "got: %s", file);
-	}
+	if (file != NULL && egg_strequal (file, "/etc/hosts"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got: %s", file);
 	g_free (file);
 
 	/************************************************************/
-	libst_title (test, "test resolve /etc/../etc/hosts");
+	egg_test_title (test, "test resolve /etc/../etc/hosts");
 	file = pk_resolve_local_path ("/etc/../etc/hosts");
-	if (file != NULL && pk_strequal (file, "/etc/hosts")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "got: %s", file);
-	}
+	if (file != NULL && egg_strequal (file, "/etc/hosts"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got: %s", file);
 	g_free (file);
 
 	/************************************************************/
-	libst_title (test, "get client");
+	egg_test_title (test, "get client");
 	client = pk_client_new ();
-	if (client != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, client != NULL);
 
 	/************************************************************/
-	libst_title (test, "reset client, unused");
+	egg_test_title (test, "reset client, unused");
 	ret = pk_client_reset (client, NULL);
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, ret);
 
 	/* check use after finalise */
 	g_signal_connect (client, "finished",
-			  G_CALLBACK (libst_client_finished_cb), test);
+			  G_CALLBACK (pk_client_test_finished_cb), test);
 
 	/* run the method */
 	pk_client_set_synchronous (client, TRUE, NULL);
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
 
 	/************************************************************/
-	libst_title (test, "we finished?");
-	if (!ret) {
-		libst_failed (test, "not correct return value");
-	} else if (!finished) {
-		libst_failed (test, "not finished");
-	} else {
-		libst_success (test, NULL);
-	}
+	egg_test_title (test, "we finished?");
+	if (!ret)
+		egg_test_failed (test, "not correct return value");
+	else if (!finished)
+		egg_test_failed (test, "not finished");
+	else
+		egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get new client");
+	egg_test_title (test, "get new client so we can test resets in ::Finished()");
 	client = pk_client_new ();
-	if (client != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, client != NULL);
+
+	/* check reset during finalise when sync */
+	pk_client_set_synchronous (client, TRUE, NULL);
+	g_signal_connect (client, "finished",
+			  G_CALLBACK (pk_client_test_finished2_cb), test);
+
+	/************************************************************/
+	egg_test_title (test, "search name sync, with a reset in finalise");
+	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "check reset failed");
+	if (!reset_okay)
+		egg_test_success (test, "failed to reset in finished as sync");
+	else
+		egg_test_failed (test, "reset in finished when sync");
+
+	g_object_unref (client);
+
+	/************************************************************/
+	egg_test_title (test, "get new client");
+	client = pk_client_new ();
+	egg_test_assert (test, client != NULL);
 	pk_client_set_synchronous (client, TRUE, NULL);
 	pk_client_set_use_buffer (client, TRUE, NULL);
 
 	/************************************************************/
-	libst_title (test, "reset client #1");
+	egg_test_title (test, "reset client #1");
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		libst_failed (test, "failed to reset: %s", error->message);
+		egg_test_failed (test, "failed to reset: %s", error->message);
 		g_error_free (error);
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "reset client #2");
+	egg_test_title (test, "reset client #2");
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		libst_failed (test, "failed to reset: %s", error->message);
+		egg_test_failed (test, "failed to reset: %s", error->message);
 		g_error_free (error);
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get updates");
+	egg_test_title (test, "get updates");
 	ret = pk_client_get_updates (client, PK_FILTER_ENUM_NONE, &error);
 	if (!ret) {
-		libst_failed (test, "failed to get updates: %s", error->message);
+		egg_test_failed (test, "failed to get updates: %s", error->message);
 		g_error_free (error);
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "get updates (without reset) with null error");
+	egg_test_title (test, "get updates (without reset) with null error");
 	ret = pk_client_get_updates (client, PK_FILTER_ENUM_NONE, NULL);
-	if (!ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "got updates with no reset (no description possible)");
-	}
+	if (!ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got updates with no reset (no description possible)");
 
 	/************************************************************/
-	libst_title (test, "reset client #2");
+	egg_test_title (test, "reset client #2");
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		libst_failed (test, "failed to reset: %s", error->message);
+		egg_test_failed (test, "failed to reset: %s", error->message);
 		g_error_free (error);
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "search for power");
+	egg_test_title (test, "search for power");
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
-		libst_failed (test, "failed: %s", error->message);
+		egg_test_failed (test, "failed: %s", error->message);
 		g_error_free (error);
 	}
 
@@ -4086,84 +4194,80 @@ libst_client (LibSelfTest *test)
 	list = pk_client_get_package_list (client);
 	size = pk_package_list_get_size (list);
 	g_object_unref (list);
-	if (size == 0) {
-		libst_failed (test, "failed: to get any results");
-	}
-	libst_success (test, "search name with %i entries", size);
+	if (size == 0)
+		egg_test_failed (test, "failed: to get any results");
+	egg_test_success (test, "search name with %i entries", size);
 
 	/************************************************************/
-	libst_title (test, "do lots of loops");
+	egg_test_title (test, "do lots of loops");
 	for (i=0;i<5;i++) {
 		ret = pk_client_reset (client, &error);
 		if (!ret) {
-			libst_failed (test, "failed: to reset: %s", error->message);
+			egg_test_failed (test, "failed: to reset: %s", error->message);
 			g_error_free (error);
 		}
 		ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 		if (!ret) {
-			libst_failed (test, "failed to search: %s", error->message);
+			egg_test_failed (test, "failed to search: %s", error->message);
 			g_error_free (error);
 		}
 		/* check we got the same results */
 		list = pk_client_get_package_list (client);
 		size_new = pk_package_list_get_size (list);
 		g_object_unref (list);
-		if (size != size_new) {
-			libst_failed (test, "old size %i, new size %", size, size_new);
-		}
+		if (size != size_new)
+			egg_test_failed (test, "old size %i, new size %", size, size_new);
 	}
-	libst_success (test, "%i search name loops completed in %ims", i, libst_elapsed (test));
+	egg_test_success (test, "%i search name loops completed in %ims", i, egg_test_elapsed (test));
 	g_object_unref (client);
 
 	/************************************************************/
-	libst_title (test, "try to clone");
+	egg_test_title (test, "try to clone");
 
 	/* set up the source */
 	client = pk_client_new ();
 	g_signal_connect (client, "finished",
-			  G_CALLBACK (libst_client_copy_finished_cb), test);
+			  G_CALLBACK (pk_client_test_copy_finished_cb), test);
 	/* set up the copy */
 	client_copy = pk_client_new ();
 	g_signal_connect (client_copy, "package",
-			  G_CALLBACK (libst_client_copy_package_cb), test);
+			  G_CALLBACK (pk_client_test_copy_package_cb), test);
 
 	/* search with the source */
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
-		libst_failed (test, "failed: %s", error->message);
+		egg_test_failed (test, "failed: %s", error->message);
 		g_error_free (error);
 	}
 
 	/* get the tid */
 	tid = pk_client_get_tid (client);
-	if (tid == NULL) {
-		libst_failed (test, "failed to get tid");
-	}
+	if (tid == NULL)
+		egg_test_failed (test, "failed to get tid");
 
 	/* set the tid on the copy */
 	ret = pk_client_set_tid (client_copy, tid, &error);
 	if (!ret) {
-		libst_failed (test, "failed to set tid: %s", error->message);
+		egg_test_failed (test, "failed to set tid: %s", error->message);
 		g_error_free (error);
 		error = NULL;
 	}
+	g_free (tid);
 
-	libst_loopwait (test, 5000);
-	if (clone_packages != size_new) {
-		libst_failed (test, "failed to get correct number of packages: %i", clone_packages);
-	}
-	libst_success (test, "cloned in %i", libst_elapsed (test));
+	egg_test_loop_wait (test, 5000);
+	if (clone_packages != size_new)
+		egg_test_failed (test, "failed to get correct number of packages: %i", clone_packages);
+	egg_test_success (test, "cloned in %i", egg_test_elapsed (test));
 
 	/************************************************************/
-	libst_title (test, "cancel a finished task");
+	egg_test_title (test, "cancel a finished task");
 	ret = pk_client_cancel (client, &error);
 	if (ret) {
-		if (error != NULL) {
-			libst_failed (test, "error set and retval true");
-		}
-		libst_success (test, "did not cancel finished task");
+		if (error != NULL)
+			egg_test_failed (test, "error set and retval true");
+		egg_test_success (test, "did not cancel finished task");
 	} else {
-		libst_failed (test, "error %s", error->message);
+		egg_test_failed (test, "error %s", error->message);
 		g_error_free (error);
 	}
 
@@ -4171,42 +4275,38 @@ libst_client (LibSelfTest *test)
 	g_object_unref (client_copy);
 
 	/************************************************************/
-	libst_title (test, "set a made up TID");
+	egg_test_title (test, "set a made up TID");
 	client = pk_client_new ();
 	ret = pk_client_set_tid (client, "/made_up_tid", &error);
 	if (ret) {
-		if (error != NULL) {
-			libst_failed (test, "error set and retval true");
-		}
-		libst_success (test, NULL);
+		if (error != NULL)
+			egg_test_failed (test, "error set and retval true");
+		egg_test_success (test, NULL);
 	} else {
-		if (error == NULL) {
-			libst_failed (test, "error not set and retval false");
-		}
-		libst_failed (test, "error %s", error->message);
+		if (error == NULL)
+			egg_test_failed (test, "error not set and retval false");
+		egg_test_failed (test, "error %s", error->message);
 		g_error_free (error);
 		error = NULL;
 	}
 
 	/************************************************************/
-	libst_title (test, "cancel a non running task");
+	egg_test_title (test, "cancel a non running task");
 	ret = pk_client_cancel (client, &error);
 	if (ret) {
-		if (error != NULL) {
-			libst_failed (test, "error set and retval true");
-		}
-		libst_success (test, "did not cancel non running task");
+		if (error != NULL)
+			egg_test_failed (test, "error set and retval true");
+		egg_test_success (test, "did not cancel non running task");
 	} else {
-		if (error == NULL) {
-			libst_failed (test, "error not set and retval false");
-		}
-		libst_failed (test, "error %s", error->message);
+		if (error == NULL)
+			egg_test_failed (test, "error not set and retval false");
+		egg_test_failed (test, "error %s", error->message);
 		g_error_free (error);
 		error = NULL;
 	}
 	g_object_unref (client);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

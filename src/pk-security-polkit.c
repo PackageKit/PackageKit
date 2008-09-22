@@ -39,7 +39,9 @@
 #include <pk-enum.h>
 #include <pk-common.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-security.h"
 
 #define PK_SECURITY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SECURITY, PkSecurityPrivate))
@@ -70,7 +72,7 @@ pk_security_uid_from_dbus_sender (PkSecurity *security, const gchar *dbus_name, 
 	dbus_error_init (&dbus_error);
 	caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_name, &dbus_error);
 	if (dbus_error_is_set (&dbus_error)) {
-		pk_warning ("failed to get caller %s: %s\n", dbus_error.name, dbus_error.message);
+		egg_warning ("failed to get caller %s: %s\n", dbus_error.name, dbus_error.message);
 		dbus_error_free (&dbus_error);
 		goto out;
 	}
@@ -78,7 +80,7 @@ pk_security_uid_from_dbus_sender (PkSecurity *security, const gchar *dbus_name, 
 	/* get uid */
 	retval = polkit_caller_get_uid (caller, uid);
 	if (!retval) {
-		pk_warning ("failed to get UID");
+		egg_warning ("failed to get UID");
 		goto out;
 	}
 	ret = TRUE;
@@ -101,18 +103,18 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 	/* set action */
 	pk_action = polkit_action_new ();
 	if (pk_action == NULL) {
-		pk_warning ("error: polkit_action_new failed");
+		egg_warning ("error: polkit_action_new failed");
 		return POLKIT_RESULT_NO;
 	}
 	polkit_action_set_action_id (pk_action, action);
 
 	/* set caller */
-	pk_debug ("using caller %s for action %s", dbus_sender, action);
+	egg_debug ("using caller %s for action %s", dbus_sender, action);
 	dbus_error_init (&dbus_error);
 	pk_caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_sender, &dbus_error);
 	if (pk_caller == NULL) {
 		if (dbus_error_is_set (&dbus_error)) {
-			pk_warning ("error: polkit_caller_new_from_dbus_name(): %s: %s\n",
+			egg_warning ("error: polkit_caller_new_from_dbus_name(): %s: %s\n",
 				    dbus_error.name, dbus_error.message);
 			dbus_error_free (&dbus_error);
 		}
@@ -120,7 +122,7 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 	}
 
 	pk_result = polkit_context_is_caller_authorized (security->priv->pk_context, pk_action, pk_caller, TRUE, NULL);
-	pk_debug ("PolicyKit result = '%s'", polkit_result_to_string_representation (pk_result));
+	egg_debug ("PolicyKit result = '%s'", polkit_result_to_string_representation (pk_result));
 
 	polkit_action_unref (pk_action);
 	polkit_caller_unref (pk_caller);
@@ -185,16 +187,15 @@ pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
 	/* map the roles to policykit rules */
 	policy = pk_security_role_to_action (security, trusted, role);
 	if (policy == NULL) {
-		pk_warning ("policykit type required for '%s'", pk_role_enum_to_text (role));
+		egg_warning ("policykit type required for '%s'", pk_role_enum_to_text (role));
 		return FALSE;
 	}
 
 	/* get the dbus sender */
 	pk_result = pk_security_can_do_action (security, dbus_sender, policy);
 	if (pk_result != POLKIT_RESULT_YES) {
-		if (error_detail != NULL) {
+		if (error_detail != NULL)
 			*error_detail = g_strdup_printf ("%s %s", policy, polkit_result_to_string_representation (pk_result));
-		}
 		return FALSE;
 	}
 	return TRUE;
@@ -249,9 +250,8 @@ pk_security_io_add_watch (PolKitContext *pk_context, int fd)
 	guint id = 0;
 	GIOChannel *channel;
 	channel = g_io_channel_unix_new (fd);
-	if (channel == NULL) {
+	if (channel == NULL)
 		return id;
-	}
 	id = g_io_add_watch (channel, G_IO_IN, pk_security_io_watch_have_data, pk_context);
 	if (id == 0) {
 		g_io_channel_unref (channel);
@@ -286,14 +286,14 @@ pk_security_init (PkSecurity *security)
 
 	security->priv = PK_SECURITY_GET_PRIVATE (security);
 
-	pk_debug ("Using PolicyKit security framework");
+	egg_debug ("Using PolicyKit security framework");
 
 	/* get a connection to the bus */
 	dbus_error_init (&dbus_error);
 	security->priv->connection = dbus_bus_get (DBUS_BUS_SYSTEM, &dbus_error);
 	if (security->priv->connection == NULL) {
 		if (dbus_error_is_set (&dbus_error)) {
-			pk_warning ("failed to get system connection %s: %s\n", dbus_error.name, dbus_error.message);
+			egg_warning ("failed to get system connection %s: %s\n", dbus_error.name, dbus_error.message);
 			dbus_error_free (&dbus_error);
 		}
 	}
@@ -309,7 +309,7 @@ pk_security_init (PkSecurity *security)
 	pk_error = NULL;
 	retval = polkit_context_init (security->priv->pk_context, &pk_error);
 	if (retval == FALSE) {
-		pk_warning ("Could not init PolicyKit context: %s", polkit_error_get_error_message (pk_error));
+		egg_warning ("Could not init PolicyKit context: %s", polkit_error_get_error_message (pk_error));
 		polkit_error_free (pk_error);
 	}
 }
@@ -333,78 +333,56 @@ pk_security_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_security (LibSelfTest *test)
+pk_security_test (EggTest *test)
 {
 	PkSecurity *security;
 	const gchar *action;
 	gboolean ret;
 	gchar *error;
 
-	if (libst_start (test, "PkSecurity", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkSecurity"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	egg_test_title (test, "get an instance");
 	security = pk_security_new ();
-	if (security != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, security != NULL);
+	egg_test_title_assert (test, "check connection", security->priv->connection != NULL);
+	egg_test_title_assert (test, "check PolKit context", security->priv->pk_context != NULL);
 
 	/************************************************************/
-	libst_title (test, "check connection");
-	if (security->priv->connection != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "check PolKit context");
-	if (security->priv->pk_context != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "map valid role to action");
+	egg_test_title (test, "map valid role to action");
 	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	if (pk_strequal (action, "org.freedesktop.packagekit.system-update")) {
-		libst_success (test, NULL, error);
-	} else {
-		libst_failed (test, "did not get correct action '%s'", action);
-	}
+	if (egg_strequal (action, "org.freedesktop.packagekit.system-update"))
+		egg_test_success (test, NULL, error);
+	else
+		egg_test_failed (test, "did not get correct action '%s'", action);
 
 	/************************************************************/
-	libst_title (test, "map invalid role to action");
+	egg_test_title (test, "map invalid role to action");
 	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_SEARCH_NAME);
-	if (action == NULL) {
-		libst_success (test, NULL, error);
-	} else {
-		libst_failed (test, "did not get correct action '%s'", action);
-	}
+	if (action == NULL)
+		egg_test_success (test, NULL, error);
+	else
+		egg_test_failed (test, "did not get correct action '%s'", action);
 
 	/************************************************************/
-	libst_title (test, "get the default backend");
+	egg_test_title (test, "get the default backend");
 	error = NULL;
 	ret = pk_security_action_is_allowed (security, ":0", FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
-	if (ret == FALSE) {
-		libst_success (test, "did not authenticate update-package, error '%s'", error);
-	} else {
-		libst_failed (test, "authenticated update-package!");
-	}
+	if (ret == FALSE)
+		egg_test_success (test, "did not authenticate update-package, error '%s'", error);
+	else
+		egg_test_failed (test, "authenticated update-package!");
 	g_free (error);
 
 	g_object_unref (security);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

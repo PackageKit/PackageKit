@@ -21,7 +21,7 @@
 
 /**
  * SECTION:pk-enum
- * @short_description: Functions for converting strings to enums and vice-versa
+ * @short_description: Functions for converting strings to enum and vice-versa
  *
  * This file contains functions to convert to and from enumerated types.
  */
@@ -34,11 +34,13 @@
 #include <sys/types.h>
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-enum.h"
 
-static PkEnumMatch enum_exit[] = {
+static const PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_EXIT_ENUM_SUCCESS,			"success"},
 	{PK_EXIT_ENUM_FAILED,			"failed"},
@@ -49,7 +51,7 @@ static PkEnumMatch enum_exit[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_status[] = {
+static const PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_STATUS_ENUM_WAIT,			"wait"},
 	{PK_STATUS_ENUM_SETUP,			"setup"},
@@ -78,10 +80,13 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_DOWNLOAD_GROUP,		"download-group"},
 	{PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO,	"download-updateinfo"},
 	{PK_STATUS_ENUM_REPACKAGING,		"repackaging"},
+	{PK_STATUS_ENUM_LOADING_CACHE,		"loading-cache"},
+	{PK_STATUS_ENUM_SCAN_APPLICATIONS,	"scan-applications"},
+	{PK_STATUS_ENUM_GENERATE_PACKAGE_LIST,	"generate-package-list"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_role[] = {
+static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ROLE_ENUM_CANCEL,			"cancel"},
 	{PK_ROLE_ENUM_GET_DEPENDS,		"get-depends"},
@@ -111,10 +116,11 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_WHAT_PROVIDES,		"what-provides"},
 	{PK_ROLE_ENUM_ACCEPT_EULA,		"accept-eula"},
 	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,	"download-packages"},
+	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,	"get-distro-upgrades"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_error[] = {
+static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ERROR_ENUM_OOM,			"out-of-memory"},
 	{PK_ERROR_ENUM_NO_CACHE,		"no-cache"},
@@ -151,14 +157,18 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,	"repo-configuration-error"},
 	{PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,	"no-license-agreement"},
 	{PK_ERROR_ENUM_FILE_CONFLICTS,		"file-conflicts"},
+	{PK_ERROR_ENUM_PACKAGE_CONFLICTS,	"package-conflicts"},
 	{PK_ERROR_ENUM_REPO_NOT_AVAILABLE,	"repo-not-available"},
 	{PK_ERROR_ENUM_INVALID_PACKAGE_FILE,    "invalid-package-file"},
 	{PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED, "package-install-blocked"},
 	{PK_ERROR_ENUM_PACKAGE_CORRUPT,         "package-corrupt"},
+	{PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED, "all-packages-already-installed"},
+	{PK_ERROR_ENUM_FILE_NOT_FOUND,		"file-not-found"},
+	{PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY,	"no-more-mirrors-to-try"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_restart[] = {
+static const PkEnumMatch enum_restart[] = {
 	{PK_RESTART_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_RESTART_ENUM_NONE,			"none"},
 	{PK_RESTART_ENUM_SYSTEM,		"system"},
@@ -167,15 +177,24 @@ static PkEnumMatch enum_restart[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_message[] = {
+static const PkEnumMatch enum_message[] = {
 	{PK_MESSAGE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_MESSAGE_ENUM_NOTICE,		"notice"},
-	{PK_MESSAGE_ENUM_WARNING,		"warning"},
-	{PK_MESSAGE_ENUM_DAEMON,		"daemon"},
+	{PK_MESSAGE_ENUM_BROKEN_MIRROR,		"broken-mirror"},
+	{PK_MESSAGE_ENUM_CONNECTION_REFUSED,	"connection-refused"},
+	{PK_MESSAGE_ENUM_PARAMETER_INVALID,	"parameter-invalid"},
+	{PK_MESSAGE_ENUM_PRIORITY_INVALID,	"priority-invalid"},
+	{PK_MESSAGE_ENUM_BACKEND_ERROR,		"backend-error"},
+	{PK_MESSAGE_ENUM_DAEMON_ERROR,		"daemon-error"},
+	{PK_MESSAGE_ENUM_CACHE_BEING_REBUILT,	"cache-being-rebuilt"},
+	{PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE,	"untrusted-package"},
+	{PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS,	"newer-package-exists"},
+	{PK_MESSAGE_ENUM_COULD_NOT_FIND_PACKAGE,	"could-not-find-package"},
+	{PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,	"config-files-changed"},
+	{PK_MESSAGE_ENUM_PACKAGE_ALREADY_INSTALLED, "package-already-installed"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_filter[] = {
+static const PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_FILTER_ENUM_NONE,			"none"},
 	{PK_FILTER_ENUM_INSTALLED,		"installed"},
@@ -198,10 +217,12 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_ARCH,		"~arch"},
 	{PK_FILTER_ENUM_SOURCE,			"source"},
 	{PK_FILTER_ENUM_NOT_SOURCE,		"~source"},
+	{PK_FILTER_ENUM_COLLECTIONS,		"collections"},
+	{PK_FILTER_ENUM_NOT_COLLECTIONS,	"~collections"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_group[] = {
+static const PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_GROUP_ENUM_ACCESSIBILITY,		"accessibility"},
 	{PK_GROUP_ENUM_ACCESSORIES,		"accessories"},
@@ -231,27 +252,14 @@ static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_NETWORK,			"network"},
 	{PK_GROUP_ENUM_MAPS,			"maps"},
 	{PK_GROUP_ENUM_REPOS,			"repos"},
+	{PK_GROUP_ENUM_SCIENCE,			"science"},
+	{PK_GROUP_ENUM_DOCUMENTATION,		"documentation"},
+	{PK_GROUP_ENUM_ELECTRONICS,		"electronics"},
+	{PK_GROUP_ENUM_COLLECTIONS,		"collections"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_freq[] = {
-	{PK_FREQ_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
-	{PK_FREQ_ENUM_HOURLY,			"hourly"},
-	{PK_FREQ_ENUM_DAILY,			"daily"},
-	{PK_FREQ_ENUM_WEEKLY,			"weekly"},
-	{PK_FREQ_ENUM_NEVER,			"never"},
-	{0, NULL}
-};
-
-static PkEnumMatch enum_update[] = {
-	{PK_UPDATE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_UPDATE_ENUM_ALL,			"all"},
-	{PK_UPDATE_ENUM_SECURITY,		"security"},
-	{PK_UPDATE_ENUM_NONE,			"none"},
-	{0, NULL}
-};
-
-static PkEnumMatch enum_update_state[] = {
+static const PkEnumMatch enum_update_state[] = {
 	{PK_UPDATE_STATE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_UPDATE_STATE_ENUM_TESTING,		"testing"},
 	{PK_UPDATE_STATE_ENUM_UNSTABLE,		"unstable"},
@@ -259,7 +267,7 @@ static PkEnumMatch enum_update_state[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_info[] = {
+static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_INFO_ENUM_INSTALLED,		"installed"},
 	{PK_INFO_ENUM_AVAILABLE,		"available"},
@@ -276,26 +284,36 @@ static PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_REMOVING,			"removing"},
 	{PK_INFO_ENUM_CLEANUP,			"cleanup"},
 	{PK_INFO_ENUM_OBSOLETING,		"obsoleting"},
+	{PK_INFO_ENUM_COLLECTION_INSTALLED,	"collection-installed"},
+	{PK_INFO_ENUM_COLLECTION_AVAILABLE,	"collection-available"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_sig_type[] = {
+static const PkEnumMatch enum_sig_type[] = {
 	{PK_SIGTYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_SIGTYPE_ENUM_GPG,			"gpg"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_provides[] = {
+static const PkEnumMatch enum_upgrade[] = {
+	{PK_DISTRO_UPGRADE_ENUM_UNKNOWN,	"unknown"},	/* fall though value */
+	{PK_DISTRO_UPGRADE_ENUM_STABLE,		"stable"},
+	{PK_DISTRO_UPGRADE_ENUM_UNSTABLE,		"unstable"},
+	{0, NULL}
+};
+
+static const PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_PROVIDES_ENUM_ANY,			"any"},
 	{PK_PROVIDES_ENUM_MODALIAS,		"modalias"},
 	{PK_PROVIDES_ENUM_CODEC,		"codec"},
 	{PK_PROVIDES_ENUM_MIMETYPE,		"mimetype"},
+	{PK_PROVIDES_ENUM_HARDWARE_DRIVER,	"driver"},
 	{PK_PROVIDES_ENUM_FONT,			"font"},
 	{0, NULL}
 };
 
-static PkEnumMatch enum_network[] = {
+static const PkEnumMatch enum_network[] = {
 	{PK_NETWORK_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_NETWORK_ENUM_OFFLINE,		"offline"},
 	{PK_NETWORK_ENUM_ONLINE,		"online"},
@@ -304,7 +322,7 @@ static PkEnumMatch enum_network[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_free_licenses[] = {
+static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_LICENSE_ENUM_GLIDE,			"Glide"},
 	{PK_LICENSE_ENUM_AFL,			"AFL"},
@@ -444,7 +462,7 @@ static PkEnumMatch enum_free_licenses[] = {
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 guint
-pk_enum_find_value (PkEnumMatch *table, const gchar *string)
+pk_enum_find_value (const PkEnumMatch *table, const gchar *string)
 {
 	guint i;
 	const gchar *string_tmp;
@@ -455,13 +473,11 @@ pk_enum_find_value (PkEnumMatch *table, const gchar *string)
 	}
 	for (i=0;;i++) {
 		string_tmp = table[i].string;
-		if (string_tmp == NULL) {
+		if (string_tmp == NULL)
 			break;
-		}
 		/* keep strcmp for speed */
-		if (strcmp (string, string_tmp) == 0) {
+		if (strcmp (string, string_tmp) == 0)
 			return table[i].value;
-		}
 	}
 	return table[0].value;
 }
@@ -476,7 +492,7 @@ pk_enum_find_value (PkEnumMatch *table, const gchar *string)
  * Return value: the string constant, e.g. "desktop-gnome"
  */
 const gchar *
-pk_enum_find_string (PkEnumMatch *table, guint value)
+pk_enum_find_string (const PkEnumMatch *table, guint value)
 {
 	guint i;
 	guint tmp;
@@ -484,56 +500,13 @@ pk_enum_find_string (PkEnumMatch *table, guint value)
 
 	for (i=0;;i++) {
 		string_tmp = table[i].string;
-		if (string_tmp == NULL) {
+		if (string_tmp == NULL)
 			break;
-		}
 		tmp = table[i].value;
-		if (tmp == value) {
+		if (tmp == value)
 			return table[i].string;
-		}
 	}
 	return table[0].string;
-}
-
-/**
- * pk_enums_contain_priority:
- * @values: a valid enums instance
- * @value: the values we are searching for
- *
- * Finds elements in a list, but with priority going to the preceeding entry
- *
- * Return value: The return enumerated type, or -1 if none are found
- **/
-gint
-pk_enums_contain_priority (guint values, gint value, ...)
-{
-	va_list args;
-	guint i;
-	guint value_temp;
-	gint retval = -1;
-
-	/* we must query at least one thing */
-	if (pk_enums_contain (values, value)) {
-		return value;
-	}
-
-	/* process the valist */
-	va_start (args, value);
-	for (i=0;; i++) {
-		value_temp = va_arg (args, gint);
-		/* do we have this one? */
-		if (pk_enums_contain (values, value_temp)) {
-			retval = value_temp;
-			break;
-		}
-		/* end of the list */
-		if (value_temp == -1) {
-			break;
-		}
-	}
-	va_end (args);
-
-	return retval;
 }
 
 /**
@@ -562,6 +535,34 @@ const gchar *
 pk_sig_type_enum_to_text (PkSigTypeEnum sig_type)
 {
 	return pk_enum_find_string (enum_sig_type, sig_type);
+}
+
+/**
+ * pk_distro_upgrade_enum_from_text:
+ * @upgrade: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_DISTRO_UPGRADE_ENUM_STABLE
+ */
+PkDistroUpgradeEnum
+pk_distro_upgrade_enum_from_text (const gchar *upgrade)
+{
+	return pk_enum_find_value (enum_upgrade, upgrade);
+}
+
+/**
+ * pk_distro_upgrade_enum_to_text:
+ * @upgrade: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "stable"
+ **/
+const gchar *
+pk_distro_upgrade_enum_to_text (PkDistroUpgradeEnum upgrade)
+{
+	return pk_enum_find_string (enum_upgrade, upgrade);
 }
 
 /**
@@ -733,69 +734,6 @@ pk_role_enum_to_text (PkRoleEnum role)
 }
 
 /**
- * pk_roles_enums_to_text:
- * @filters: The enumerated type values
- *
- * Converts a enumerated type bitfield to its text representation
- *
- * Return value: the enumerated constant value, e.g. "install-file;update-system"
- **/
-gchar *
-pk_role_enums_to_text (PkRoleEnum roles)
-{
-	GString *string;
-	guint i;
-
-	string = g_string_new ("");
-	for (i=1; i<PK_ROLE_ENUM_UNKNOWN; i*=2) {
-		if ((roles & i) == 0) {
-			continue;
-		}
-		g_string_append_printf (string, "%s;", pk_role_enum_to_text (i));
-	}
-	/* do we have a no enums? \n */
-	if (string->len == 0) {
-		pk_warning ("not valid!");
-		g_string_append (string, pk_role_enum_to_text (PK_ROLE_ENUM_UNKNOWN));
-	} else {
-		/* remove last \n */
-		g_string_set_size (string, string->len - 1);
-	}
-	return g_string_free (string, FALSE);
-}
-
-/**
- * pk_role_enums_from_text:
- * @roles: the enumerated constant value, e.g. "available;~gui"
- *
- * Converts text representation to its enumerated type bitfield
- *
- * Return value: The enumerated type values
- **/
-PkRoleEnum
-pk_role_enums_from_text (const gchar *roles)
-{
-	PkRoleEnum roles_enum = 0;
-	gchar **split;
-	guint length;
-	guint i;
-
-	split = g_strsplit (roles, ";", 0);
-	if (split == NULL) {
-		pk_warning ("unable to split");
-		goto out;
-	}
-
-	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
-		roles_enum += pk_role_enum_from_text (split[i]);
-	}
-out:
-	g_strfreev (split);
-	return roles_enum;
-}
-
-/**
  * pk_error_enum_from_text:
  * @code: Text describing the enumerated type
  *
@@ -908,125 +846,6 @@ pk_group_enum_to_text (PkGroupEnum group)
 }
 
 /**
- * pk_groups_enums_to_text:
- * @groups: The enumerated type values
- *
- * Converts a enumerated type bitfield to its text representation
- *
- * Return value: the enumerated constant value, e.g. "gnome;kde"
- **/
-gchar *
-pk_group_enums_to_text (PkGroupEnum groups)
-{
-	GString *string;
-	guint i;
-
-	string = g_string_new ("");
-	for (i=1; i<PK_GROUP_ENUM_UNKNOWN; i*=2) {
-		if ((groups & i) == 0) {
-			continue;
-		}
-		g_string_append_printf (string, "%s;", pk_group_enum_to_text (i));
-	}
-	/* do we have a no enums? \n */
-	if (string->len == 0) {
-		pk_warning ("not valid!");
-		g_string_append (string, pk_group_enum_to_text (PK_GROUP_ENUM_UNKNOWN));
-	} else {
-		/* remove last \n */
-		g_string_set_size (string, string->len - 1);
-	}
-	return g_string_free (string, FALSE);
-}
-
-/**
- * pk_group_enums_from_text:
- * @groups: the enumerated constant value, e.g. "available;~gui"
- *
- * Converts text representation to its enumerated type bitfield
- *
- * Return value: The enumerated type values
- **/
-PkGroupEnum
-pk_group_enums_from_text (const gchar *groups)
-{
-	PkGroupEnum groups_enum = 0;
-	gchar **split;
-	guint length;
-	guint i;
-
-	split = g_strsplit (groups, ";", 0);
-	if (split == NULL) {
-		pk_warning ("unable to split");
-		goto out;
-	}
-
-	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
-		groups_enum += pk_group_enum_from_text (split[i]);
-	}
-out:
-	g_strfreev (split);
-	return groups_enum;
-}
-
-/**
- * pk_freq_enum_from_text:
- * @freq: Text describing the enumerated type
- *
- * Converts a text enumerated type to its unsigned integer representation
- *
- * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
- **/
-PkFreqEnum
-pk_freq_enum_from_text (const gchar *freq)
-{
-	return pk_enum_find_value (enum_freq, freq);
-}
-
-/**
- * pk_freq_enum_to_text:
- * @freq: The enumerated type value
- *
- * Converts a enumerated type to its text representation
- *
- * Return value: the enumerated constant value, e.g. "available"
- **/
-const gchar *
-pk_freq_enum_to_text (PkFreqEnum freq)
-{
-	return pk_enum_find_string (enum_freq, freq);
-}
-
-/**
- * pk_update_enum_from_text:
- * @update: Text describing the enumerated type
- *
- * Converts a text enumerated type to its unsigned integer representation
- *
- * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
- **/
-PkUpdateEnum
-pk_update_enum_from_text (const gchar *update)
-{
-	return pk_enum_find_value (enum_update, update);
-}
-
-/**
- * pk_update_enum_to_text:
- * @update: The enumerated type value
- *
- * Converts a enumerated type to its text representation
- *
- * Return value: the enumerated constant value, e.g. "available"
- **/
-const gchar *
-pk_update_enum_to_text (PkUpdateEnum update)
-{
-	return pk_enum_find_string (enum_update, update);
-}
-
-/**
  * pk_update_state_enum_from_text:
  * @update_state: Text describing the enumerated type
  *
@@ -1083,74 +902,6 @@ pk_filter_enum_to_text (PkFilterEnum filter)
 }
 
 /**
- * pk_filter_enums_to_text:
- * @filters: The enumerated type values
- *
- * Converts a enumerated type bitfield to its text representation
- *
- * Return value: the enumerated constant value, e.g. "available;~gui"
- **/
-gchar *
-pk_filter_enums_to_text (PkFilterEnum filters)
-{
-	GString *string;
-	guint i;
-
-	/* shortcut */
-	if (filters == PK_FILTER_ENUM_NONE) {
-		return g_strdup (pk_filter_enum_to_text (filters));
-	}
-
-	string = g_string_new ("");
-	for (i=1; i<PK_FILTER_ENUM_UNKNOWN; i*=2) {
-		if ((filters & i) == 0) {
-			continue;
-		}
-		g_string_append_printf (string, "%s;", pk_filter_enum_to_text (i));
-	}
-	/* do we have a 'none' filter? \n */
-	if (string->len == 0) {
-		pk_warning ("not valid!");
-		g_string_append (string, pk_filter_enum_to_text (PK_FILTER_ENUM_NONE));
-	} else {
-		/* remove last \n */
-		g_string_set_size (string, string->len - 1);
-	}
-	return g_string_free (string, FALSE);
-}
-
-/**
- * pk_filter_enums_from_text:
- * @filters: the enumerated constant value, e.g. "available;~gui"
- *
- * Converts text representation to its enumerated type bitfield
- *
- * Return value: The enumerated type values
- **/
-PkFilterEnum
-pk_filter_enums_from_text (const gchar *filters)
-{
-	PkFilterEnum filters_enum = PK_FILTER_ENUM_NONE;
-	gchar **split;
-	guint length;
-	guint i;
-
-	split = g_strsplit (filters, ";", 0);
-	if (split == NULL) {
-		pk_warning ("unable to split");
-		goto out;
-	}
-
-	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
-		filters_enum += pk_filter_enum_from_text (split[i]);
-	}
-out:
-	g_strfreev (split);
-	return filters_enum;
-}
-
-/**
  * pk_license_enum_from_text:
  * @license: Text describing the enumerated type
  *
@@ -1181,318 +932,173 @@ pk_license_enum_to_text (PkLicenseEnum license)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_enum (LibSelfTest *test)
+pk_enum_test (EggTest *test)
 {
 	const gchar *string;
 	PkRoleEnum role_value;
 	guint i;
-	gchar *text;
-	PkFilterEnum filter;
-	guint value;
-	guint values;
 
-	if (libst_start (test, "PkEnum", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkEnum"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "find role_value");
+	egg_test_title (test, "find role_value");
 	role_value = pk_enum_find_value (enum_role, "search-file");
-	if (role_value == PK_ROLE_ENUM_SEARCH_FILE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (role_value == PK_ROLE_ENUM_SEARCH_FILE)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "find string");
+	egg_test_title (test, "find string");
 	string = pk_enum_find_string (enum_role, PK_ROLE_ENUM_SEARCH_FILE);
-	if (pk_strequal (string, "search-file")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (egg_strequal (string, "search-file"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "find value");
+	egg_test_title (test, "find value");
 	role_value = pk_role_enum_from_text ("search-file");
-	if (role_value == PK_ROLE_ENUM_SEARCH_FILE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (role_value == PK_ROLE_ENUM_SEARCH_FILE)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "find string");
+	egg_test_title (test, "find string");
 	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
-	if (pk_strequal (string, "search-file")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (egg_strequal (string, "search-file"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the role enums");
-	for (i=1; i<=PK_ROLE_ENUM_UNKNOWN; i*=2) {
+	egg_test_title (test, "check we convert all the role bitfield");
+	for (i=1; i<=PK_ROLE_ENUM_UNKNOWN; i++) {
 		string = pk_role_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the status enums");
-	for (i=1; i<=PK_STATUS_ENUM_UNKNOWN; i*=2) {
+	egg_test_title (test, "check we convert all the status bitfield");
+	for (i=1; i<=PK_STATUS_ENUM_UNKNOWN; i++) {
 		string = pk_status_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the exit enums");
+	egg_test_title (test, "check we convert all the exit bitfield");
 	for (i=0; i<=PK_EXIT_ENUM_UNKNOWN; i++) {
 		string = pk_exit_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the filter enums");
+	egg_test_title (test, "check we convert all the filter bitfield");
 	for (i=0; i<=PK_FILTER_ENUM_UNKNOWN; i++) {
 		string = pk_filter_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the restart enums");
+	egg_test_title (test, "check we convert all the restart bitfield");
 	for (i=0; i<=PK_RESTART_ENUM_UNKNOWN; i++) {
 		string = pk_restart_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the error_code enums");
+	egg_test_title (test, "check we convert all the error_code bitfield");
 	for (i=0; i<=PK_ERROR_ENUM_UNKNOWN; i++) {
 		string = pk_error_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the group enums");
-	for (i=1; i<=PK_GROUP_ENUM_UNKNOWN; i*=2) {
+	egg_test_title (test, "check we convert all the group bitfield");
+	for (i=1; i<=PK_GROUP_ENUM_UNKNOWN; i++) {
 		string = pk_group_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the freq enums");
-	for (i=0; i<=PK_FREQ_ENUM_UNKNOWN; i++) {
-		string = pk_freq_enum_to_text (i);
-		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
-			break;
-		}
-	}
-	libst_success (test, NULL);
-
-	/************************************************************/
-	libst_title (test, "check we convert all the update enums");
-	for (i=0; i<=PK_UPDATE_ENUM_UNKNOWN; i++) {
-		string = pk_update_enum_to_text (i);
-		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
-			break;
-		}
-	}
-	libst_success (test, NULL);
-
-	/************************************************************/
-	libst_title (test, "check we convert all the info enums");
-	for (i=1; i<=PK_INFO_ENUM_UNKNOWN; i*=2) {
+	egg_test_title (test, "check we convert all the info bitfield");
+	for (i=1; i<=PK_INFO_ENUM_UNKNOWN; i++) {
 		string = pk_info_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the sig_type enums");
+	egg_test_title (test, "check we convert all the sig_type bitfield");
 	for (i=0; i<=PK_SIGTYPE_ENUM_UNKNOWN; i++) {
 		string = pk_sig_type_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we convert all the license enums");
+	egg_test_title (test, "check we convert all the upgrade bitfield");
+	for (i=0; i<=PK_DISTRO_UPGRADE_ENUM_UNKNOWN; i++) {
+		string = pk_distro_upgrade_enum_to_text (i);
+		if (string == NULL) {
+			egg_test_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	egg_test_success (test, NULL);
+
+	/************************************************************/
+	egg_test_title (test, "check we convert all the license bitfield");
 	for (i=0; i<=PK_LICENSE_ENUM_UNKNOWN; i++) {
 		string = pk_license_enum_to_text (i);
 		if (string == NULL) {
-			libst_failed (test, "failed to get %i", i);
+			egg_test_failed (test, "failed to get %i", i);
 			break;
 		}
 	}
-	libst_success (test, NULL);
+	egg_test_success (test, NULL);
 
-	/************************************************************/
-	libst_title (test, "check we can convert filter enums to text (none)");
-	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NONE);
-	if (pk_strequal (text, "none")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "text was %s", text);
-	}
-	g_free (text);
-
-	/************************************************************/
-	libst_title (test, "check we can convert filter enums to text (single)");
-	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NOT_DEVELOPMENT);
-	if (pk_strequal (text, "~devel")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "text was %s", text);
-	}
-	g_free (text);
-
-	/************************************************************/
-	libst_title (test, "check we can convert filter enums to text (plural)");
-	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST);
-	if (pk_strequal (text, "~devel;gui;newest")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "text was %s", text);
-	}
-	g_free (text);
-
-	/************************************************************/
-	libst_title (test, "check we can convert filter text to enums (none)");
-	filter = pk_filter_enums_from_text ("none");
-	if (filter == PK_FILTER_ENUM_NONE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "filter was %i", i);
-	}
-
-	/************************************************************/
-	libst_title (test, "check we can convert filter text to enums (single)");
-	filter = pk_filter_enums_from_text ("~devel");
-	if (filter == PK_FILTER_ENUM_NOT_DEVELOPMENT) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "filter was %i", i);
-	}
-
-	/************************************************************/
-	libst_title (test, "check we can convert filter text to enums (plural)");
-	filter = pk_filter_enums_from_text ("~devel;gui;newest");
-	if (filter == (PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST)) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "filter was %i", i);
-	}
-
-	/************************************************************/
-	libst_title (test, "check we can add / remove enums");
-	filter = PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST;
-	pk_enums_add (filter, PK_FILTER_ENUM_NOT_FREE);
-	pk_enums_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
-	text = pk_filter_enums_to_text (filter);
-	if (pk_strequal (text, "gui;~free;newest")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "text was %s", text);
-	}
-	g_free (text);
-
-	/************************************************************/
-	libst_title (test, "check we can test enum presence");
-	filter = PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST;
-	if (pk_enums_contain (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "wrong boolean");
-	}
-	libst_title (test, "check we can test enum false-presence");
-	if (!pk_enums_contain (filter, PK_FILTER_ENUM_FREE)) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "wrong boolean");
-	}
-
-	/************************************************************/
-	libst_title (test, "check we can add / remove enums to nothing");
-	filter = PK_FILTER_ENUM_NOT_DEVELOPMENT;
-	pk_enums_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
-	text = pk_filter_enums_to_text (filter);
-	if (pk_strequal (text, "none")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "text was %s", text);
-	}
-	g_free (text);
-
-	/************************************************************/
-	libst_title (test, "priority check missing");
-	values = PK_ROLE_ENUM_SEARCH_DETAILS | PK_ROLE_ENUM_SEARCH_GROUP;
-	value = pk_enums_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, -1);
-	if (value == -1) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "returned priority %i when should be missing", value);
-	}
-
-	/************************************************************/
-	libst_title (test, "priority check first");
-	value = pk_enums_contain_priority (values, PK_ROLE_ENUM_SEARCH_GROUP, -1);
-	if (value == PK_ROLE_ENUM_SEARCH_GROUP) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "returned wrong value; %i", value);
-	}
-
-	/************************************************************/
-	libst_title (test, "priority check second, correct");
-	value = pk_enums_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, PK_ROLE_ENUM_SEARCH_GROUP, -1);
-	if (value == PK_ROLE_ENUM_SEARCH_GROUP) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "returned wrong value; %i", value);
-	}
-
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

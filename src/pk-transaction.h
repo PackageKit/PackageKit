@@ -84,12 +84,8 @@ PkTransaction	*pk_transaction_new			(void);
 /* go go go! */
 gboolean	 pk_transaction_run			(PkTransaction      *transaction)
 							 G_GNUC_WARN_UNUSED_RESULT;
-/* get status */
-PkStatusEnum	 pk_transaction_priv_get_status		(PkTransaction	*transaction);
+/* internal status */
 PkRoleEnum	 pk_transaction_priv_get_role		(PkTransaction	*transaction);
-const gchar	*pk_transaction_priv_get_text		(PkTransaction	*transaction);
-PkPackageList	*pk_transaction_priv_get_package_list	(PkTransaction	*transaction);
-guint		 pk_transaction_priv_get_runtime	(PkTransaction	*transaction);
 
 /* set and retrieve tid */
 const gchar	*pk_transaction_get_tid			(PkTransaction	*transaction);
@@ -104,7 +100,6 @@ gboolean	 pk_transaction_cancel			(PkTransaction	*transaction,
 							 GError		**error);
 void		 pk_transaction_download_packages	(PkTransaction  *transaction,
 							 gchar		**package_ids,
-							 const gchar	*directory,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_allow_cancel	(PkTransaction	*transaction,
 							 gboolean	*allow_cancel,
@@ -116,6 +111,8 @@ void		 pk_transaction_get_depends		(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_details		(PkTransaction	*transaction,
 							 gchar		**package_ids,
+							 DBusGMethodInvocation *context);
+void		 pk_transaction_get_distro_upgrades	(PkTransaction	*transaction,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_files		(PkTransaction	*transaction,
 							 gchar		**package_ids,

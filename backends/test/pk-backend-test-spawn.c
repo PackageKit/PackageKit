@@ -31,12 +31,12 @@ static PkBackendSpawn *spawn;
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-name.sh", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -48,7 +48,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_initialize (PkBackend *backend)
 {
-	pk_debug ("backend: initialize");
+	egg_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "test");
 }
@@ -60,7 +60,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	pk_debug ("backend: destroy");
+	egg_debug ("backend: destroy");
 	g_object_unref (spawn);
 }
 
@@ -75,6 +75,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	NULL,					/* get_depends */
 	NULL,					/* get_details */
+	NULL,					/* get_distro_upgrades */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */

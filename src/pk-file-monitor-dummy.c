@@ -36,7 +36,7 @@
 
 #include <glib/gi18n.h>
 #include <pk-common.h>
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include "pk-file-monitor.h"
 
 static void     pk_file_monitor_class_init	(PkFileMonitorClass *klass);
@@ -129,29 +129,24 @@ pk_file_monitor_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_file_monitor (LibSelfTest *test)
+pk_file_monitor_test (EggTest *test)
 {
 	PkFileMonitor *file_monitor;
 
-	if (libst_start (test, "PkFileMonitor", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkFileMonitor"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "get a file_monitor");
+	egg_test_title (test, "get a file_monitor");
 	file_monitor = pk_file_monitor_new ();
-	if (file_monitor != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, file_monitor != NULL);
 	g_object_unref (file_monitor);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

@@ -32,7 +32,7 @@
 
 #include <config.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-security.h"
 
 #define PK_SECURITY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SECURITY, PkSecurityPrivate))
@@ -99,8 +99,8 @@ pk_security_class_init (PkSecurityClass *klass)
 static void
 pk_security_init (PkSecurity *security)
 {
-	pk_debug ("Using dummy security framework");
-	pk_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
+	egg_debug ("Using dummy security framework");
+	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 }
 
 /**
@@ -115,11 +115,11 @@ pk_security_new (void)
 	return PK_SECURITY (security);
 }
 
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_security (LibSelfTest *test)
+pk_security_test (EggTest *test)
 {
 	return;
 }

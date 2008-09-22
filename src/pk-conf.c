@@ -32,7 +32,7 @@
 #include <glib/gi18n.h>
 #include <glib.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-conf.h"
 
 #define PK_CONF_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CONF, PkConfPrivate))
@@ -61,7 +61,7 @@ pk_conf_get_string (PkConf *conf, const gchar *key)
 	if (error != NULL) {
 		/* set to missing value */
 		value = PK_CONF_VALUE_STRING_MISSING;
-		pk_debug ("%s read error: %s", key, error->message);
+		egg_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
 	return value;
@@ -83,7 +83,7 @@ pk_conf_get_int (PkConf *conf, const gchar *key)
 	if (error != NULL) {
 		/* set to missing value */
 		value = PK_CONF_VALUE_INT_MISSING;
-		pk_debug ("%s read error: %s", key, error->message);
+		egg_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
 	return value;
@@ -103,7 +103,7 @@ pk_conf_get_bool (PkConf *conf, const gchar *key)
 
 	value = g_key_file_get_boolean (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
-		pk_debug ("%s read error: %s", key, error->message);
+		egg_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
 	return value;
@@ -149,7 +149,7 @@ pk_conf_get_filename (void)
 	if (g_file_test (path, G_FILE_TEST_EXISTS)) {
 		goto out;
 	}
-	pk_debug ("local config file not found '%s'", path);
+	egg_debug ("local config file not found '%s'", path);
 	g_free (path);
 #endif
 	/* check the prefix path */
@@ -159,7 +159,7 @@ pk_conf_get_filename (void)
 	}
 
 	/* none found! */
-	pk_warning ("config file not found '%s'", path);
+	egg_warning ("config file not found '%s'", path);
 	g_free (path);
 	path = NULL;
 out:
@@ -181,17 +181,15 @@ pk_conf_init (PkConf *conf)
 
 	conf->priv = PK_CONF_GET_PRIVATE (conf);
 	path = pk_conf_get_filename ();
-	if (path == NULL) {
-		pk_error ("config file not found");
-	}
-	pk_debug ("using config file '%s'", path);
+	if (path == NULL)
+		egg_error ("config file not found");
+	egg_debug ("using config file '%s'", path);
 	conf->priv->keyfile = g_key_file_new ();
 	ret = g_key_file_load_from_file (conf->priv->keyfile, path,
 					 G_KEY_FILE_NONE, NULL);
 	g_free (path);
-	if (!ret) {
-		pk_error ("failed to parse config file!");
-	}
+	if (!ret)
+		egg_error ("failed to parse config file!");
 }
 
 /**
@@ -213,71 +211,61 @@ pk_conf_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_conf (LibSelfTest *test)
+pk_conf_test (EggTest *test)
 {
 	PkConf *conf;
 	gchar *text;
 	gint value;
 
-	if (libst_start (test, "PkConf", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkConf"))
 		return;
-	}
-
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	egg_test_title (test, "get an instance");
 	conf = pk_conf_new ();
-	if (conf != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, conf != NULL);
 
 	/************************************************************/
-	libst_title (test, "get the default backend");
+	egg_test_title (test, "get the default backend");
 	text = pk_conf_get_string (conf, "DefaultBackend");
-	if (text != PK_CONF_VALUE_STRING_MISSING) {
-		libst_success (test, "got default backend '%s'", text);
-	} else {
-		libst_failed (test, "got NULL!");
-	}
+	if (text != PK_CONF_VALUE_STRING_MISSING)
+		egg_test_success (test, "got default backend '%s'", text);
+	else
+		egg_test_failed (test, "got NULL!");
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "get a string that doesn't exist");
+	egg_test_title (test, "get a string that doesn't exist");
 	text = pk_conf_get_string (conf, "FooBarBaz");
-	if (text == PK_CONF_VALUE_STRING_MISSING) {
-		libst_success (test, "got NULL", text);
-	} else {
-		libst_failed (test, "got return value '%s'", text);
-	}
+	if (text == PK_CONF_VALUE_STRING_MISSING)
+		egg_test_success (test, "got NULL", text);
+	else
+		egg_test_failed (test, "got return value '%s'", text);
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "get the shutdown timeout");
+	egg_test_title (test, "get the shutdown timeout");
 	value = pk_conf_get_int (conf, "ShutdownTimeout");
-	if (value != PK_CONF_VALUE_INT_MISSING) {
-		libst_success (test, "got ShutdownTimeout '%i'", value);
-	} else {
-		libst_failed (test, "got %i", value);
-	}
+	if (value != PK_CONF_VALUE_INT_MISSING)
+		egg_test_success (test, "got ShutdownTimeout '%i'", value);
+	else
+		egg_test_failed (test, "got %i", value);
 
 	/************************************************************/
-	libst_title (test, "get an int that doesn't exist");
+	egg_test_title (test, "get an int that doesn't exist");
 	value = pk_conf_get_int (conf, "FooBarBaz");
-	if (value == PK_CONF_VALUE_INT_MISSING) {
-		libst_success (test, "got %i", value);
-	} else {
-		libst_failed (test, "got return value '%i'", value);
-	}
+	if (value == PK_CONF_VALUE_INT_MISSING)
+		egg_test_success (test, "got %i", value);
+	else
+		egg_test_failed (test, "got return value '%i'", value);
 
 	g_object_unref (conf);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

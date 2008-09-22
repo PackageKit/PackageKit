@@ -41,7 +41,7 @@ G_BEGIN_DECLS
 #define PK_IS_NETWORK_NM_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_NETWORK_NM))
 #define PK_NETWORK_NM_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_NETWORK_NM, PkNetworkNmClass))
 #define PK_NETWORK_NM_ERROR		(pk_network_nm_error_quark ())
-#define PK_NETWORK_NM_TYPE_ERROR	(pk_network_nm_error_get_type ()) 
+#define PK_NETWORK_NM_TYPE_ERROR	(pk_network_nm_error_get_type ())
 
 typedef struct _PkNetworkNmPrivate	PkNetworkNmPrivate;
 typedef struct _PkNetworkNm		PkNetworkNm;

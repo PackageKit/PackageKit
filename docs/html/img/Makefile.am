@@ -9,6 +9,7 @@ IMAGE_FILES =					\
 	large-preferences-system.png		\
 	large-system-users.png			\
 	packagekit.png				\
+	pk-web-plugin.png			\
 	pk-update-bugfix.png			\
 	pk-update-enhancement.png		\
 	pk-update-high.png			\
@@ -33,6 +34,10 @@ IMAGE_FILES =					\
 	gpk-updates-warning.png			\
 	gpk-waiting.png				\
 	gpk-remove-confirm.png			\
+	gpk-distro-upgrade-notify.png		\
+	gpk-client-codecs.png			\
+	gpk-client-mime-type.png		\
+	gpk-client-font.png			\
 	$(NULL)
 
 EXTRA_DIST = 					\

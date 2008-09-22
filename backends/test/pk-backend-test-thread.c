@@ -33,7 +33,7 @@ static gboolean is_cancelled = FALSE;
 static void
 backend_initialize (PkBackend *backend)
 {
-	pk_debug ("backend: initialize");
+	egg_debug ("backend: initialize");
 }
 
 /**
@@ -43,7 +43,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	pk_debug ("backend: destroy");
+	egg_debug ("backend: destroy");
 }
 
 /**
@@ -67,7 +67,7 @@ backend_search_group_thread (PkBackend *backend)
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_thread_create (backend, backend_search_group_thread);
 }
@@ -80,15 +80,15 @@ backend_search_name_thread (PkBackend *backend)
 {
 	GTimer *timer;
 	guint percentage;
-	PkFilterEnum filters;
+	PkBitfield filters;
 	gchar *filters_text;
 	const gchar *search;
 
 	filters = pk_backend_get_uint (backend, "filters");
 	search = pk_backend_get_string (backend, "search");
 
-	filters_text = pk_filter_enums_to_text (filters);
-	pk_debug ("started task (%p) search=%s filters=%s", backend, search, filters_text);
+	filters_text = pk_filter_bitfield_to_text (filters);
+	egg_debug ("started task (%p) search=%s filters=%s", backend, search, filters_text);
 	g_free (filters_text);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	timer = g_timer_new ();
@@ -107,7 +107,7 @@ backend_search_name_thread (PkBackend *backend)
 	} while (percentage < 100);
 	g_timer_destroy (timer);
 	pk_backend_set_percentage (backend, 100);
-	pk_debug ("exited task (%p)", backend);
+	egg_debug ("exited task (%p)", backend);
 
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
@@ -121,7 +121,7 @@ backend_search_name_thread (PkBackend *backend)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_thread_create (backend, backend_search_name_thread);
 }
@@ -132,7 +132,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_cancel (PkBackend *backend)
 {
-	pk_debug ("cancelling %p", backend);
+	egg_debug ("cancelling %p", backend);
 	is_cancelled = TRUE;
 }
 
@@ -147,6 +147,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	NULL,					/* get_depends */
 	NULL,					/* get_details */
+	NULL,					/* get_distro_upgrades */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */

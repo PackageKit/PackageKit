@@ -34,13 +34,15 @@ MKTMPL_OPTIONS=
 FIXXREF_OPTIONS=
 
 # Used for dependencies. The docs will be rebuilt if any of these change.
-HFILE_GLOB=$(top_srcdir)/libpackagekit/*.h
-CFILE_GLOB=$(top_srcdir)/libpackagekit/*.c
+HFILE_GLOB=$(top_srcdir)/libpackagekit/pk-*.h
+CFILE_GLOB=$(top_srcdir)/libpackagekit/pk-*.c
 
 # Header files to ignore when scanning.
 IGNORE_HFILES =						\
 	config.h					\
 	pk-marshal.h					\
+	egg-dbus-monitor.h				\
+	egg-obj-list.h					\
 	$(NULL)
 
 # Images to copy into HTML directory.
@@ -49,9 +51,11 @@ HTML_IMAGES =						\
 	spec/pk-structure.svg				\
 	spec/pk-faq-error-code.png			\
 	spec/pk-faq-status.png				\
+	spec/pk-faq-filter.png				\
 	spec/pk-transactions.svg			\
 	spec/pk-transactions-set-locale.png		\
 	spec/pk-transactions-failure.png		\
+	spec/pk-transactions-download.png		\
 	spec/pk-transactions-sig-install.png		\
 	spec/pk-transactions-success.png		\
 	spec/pk-transactions-trusted.png
@@ -94,7 +98,4 @@ include $(top_srcdir)/gtk-doc.make
 
 # Other files to distribute
 EXTRA_DIST += version.xml.in
-
-clean-local :
-	rm -f *~ *.txt xml/* tmpl/* html/* *.bak *.out *.gcno PackageKit-scan.* PackageKit.types version.xml
 

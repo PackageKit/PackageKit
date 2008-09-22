@@ -31,7 +31,9 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-package-ids.h>
 #include <pk-client.h>
 #include <pk-control.h>
@@ -39,13 +41,14 @@
 #include <pk-common.h>
 #include <pk-connection.h>
 #include <pk-update-detail-obj.h>
+#include <pk-distro-upgrade-obj.h>
 
 #include "pk-tools-common.h"
 
 #define PROGRESS_BAR_SIZE 15
 
 static GMainLoop *loop = NULL;
-static PkRoleEnum roles;
+static PkBitfield roles;
 static gboolean is_console = FALSE;
 static gboolean has_output_bar = FALSE;
 static gboolean need_requeue = FALSE;
@@ -95,11 +98,48 @@ pk_console_bar (guint subpercentage)
 	}
 	g_print ("] ");
 	if (percentage_last != PK_CLIENT_PERCENTAGE_INVALID) {
-		g_print ("(%i%%)", percentage_last);
+		g_print ("(%i%%)  ", percentage_last);
 	} else {
-		g_print ("       ");
+		g_print ("        ");
 	}
 	awaiting_space = TRUE;
+}
+
+/**
+ * pk_strpad:
+ * @data: the input string
+ * @length: the desired length of the output string, with padding
+ *
+ * Returns the text padded to a length with spaces. If the string is
+ * longer than length then a longer string is returned.
+ *
+ * Return value: The padded string
+ **/
+static gchar *
+pk_strpad (const gchar *data, guint length)
+{
+	gint size;
+	guint data_len;
+	gchar *text;
+	gchar *padding;
+
+	if (data == NULL) {
+		return g_strnfill (length, ' ');
+	}
+
+	/* ITS4: ignore, only used for formatting */
+	data_len = strlen (data);
+
+	/* calculate */
+	size = (length - data_len);
+	if (size <= 0) {
+		return g_strdup (data);
+	}
+
+	padding = g_strnfill (size, ' ');
+	text = g_strdup_printf ("%s%s", data, padding);
+	g_free (padding);
+	return text;
 }
 
 /**
@@ -143,7 +183,7 @@ pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 	}
 
 	/* pad the name-version */
-	if (pk_strzero (obj->id->version)) {
+	if (egg_strzero (obj->id->version)) {
 		package = g_strdup (obj->id->name);
 	} else {
 		package = g_strdup_printf ("%s-%s", obj->id->name, obj->id->version);
@@ -206,6 +246,20 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
 }
 
 /**
+ * pk_console_distro_upgrade_cb:
+ **/
+static void
+pk_console_distro_upgrade_cb (PkClient *client, const PkDistroUpgradeObj *obj, gpointer user_data)
+{
+	if (awaiting_space) {
+		g_print ("\n");
+	}
+	g_print ("Distro       : %s\n", obj->name);
+	g_print (" type        : %s\n", pk_update_state_enum_to_text (obj->state));
+	g_print (" summary     : %s\n", obj->summary);
+}
+
+/**
  * pk_console_update_detail_cb:
  **/
 static void
@@ -219,39 +273,39 @@ pk_console_update_detail_cb (PkClient *client, const PkUpdateDetailObj *detail, 
 	}
 	g_print ("%s\n", _("Update detail"));
 	g_print ("  package:    '%s-%s.%s'\n", detail->id->name, detail->id->version, detail->id->arch);
-	if (!pk_strzero (detail->updates)) {
+	if (!egg_strzero (detail->updates)) {
 		g_print ("  updates:    '%s'\n", detail->updates);
 	}
-	if (!pk_strzero (detail->obsoletes)) {
+	if (!egg_strzero (detail->obsoletes)) {
 		g_print ("  obsoletes:  '%s'\n", detail->obsoletes);
 	}
-	if (!pk_strzero (detail->vendor_url)) {
+	if (!egg_strzero (detail->vendor_url)) {
 		g_print ("  vendor URL: '%s'\n", detail->vendor_url);
 	}
-	if (!pk_strzero (detail->bugzilla_url)) {
+	if (!egg_strzero (detail->bugzilla_url)) {
 		g_print ("  bug URL:    '%s'\n", detail->bugzilla_url);
 	}
-	if (!pk_strzero (detail->cve_url)) {
+	if (!egg_strzero (detail->cve_url)) {
 		g_print ("  cve URL:    '%s'\n", detail->cve_url);
 	}
 	if (detail->restart != PK_RESTART_ENUM_NONE) {
 		g_print ("  restart:    '%s'\n", pk_restart_enum_to_text (detail->restart));
 	}
-	if (!pk_strzero (detail->update_text)) {
+	if (!egg_strzero (detail->update_text)) {
 		g_print ("  update_text:'%s'\n", detail->update_text);
 	}
-	if (!pk_strzero (detail->changelog)) {
+	if (!egg_strzero (detail->changelog)) {
 		g_print ("  changelog:  '%s'\n", detail->changelog);
 	}
 	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
 		g_print ("  state:      '%s'\n", pk_update_state_enum_to_text (detail->state));
 	}
 	issued = pk_iso8601_from_date (detail->issued);
-	if (!pk_strzero (issued)) {
+	if (!egg_strzero (issued)) {
 		g_print ("  issued:     '%s'\n", issued);
 	}
 	updated = pk_iso8601_from_date (detail->updated);
-	if (!pk_strzero (updated)) {
+	if (!egg_strzero (updated)) {
 		g_print ("  updated:    '%s'\n", updated);
 	}
 	g_free (issued);
@@ -317,7 +371,7 @@ pk_console_pulse_bar (PulseState *pulse_state)
 	}
 	g_print ("] ");
 	if (percentage_last != PK_CLIENT_PERCENTAGE_INVALID) {
-		g_print ("(%i%%)", percentage_last);
+		g_print ("(%i%%)  ", percentage_last);
 	} else {
 		g_print ("        ");
 	}
@@ -381,10 +435,10 @@ pk_console_signature_finished_cb (PkClient *client_signature, PkExitEnum exit, g
 	gboolean ret;
 	GError *error = NULL;
 
-	pk_debug ("trying to requeue");
+	egg_debug ("trying to requeue");
 	ret = pk_client_requeue (client, &error);
 	if (!ret) {
-		pk_warning ("failed to requeue action: %s", error->message);
+		egg_warning ("failed to requeue action: %s", error->message);
 		g_error_free (error);
 		g_main_loop_quit (loop);
 	}
@@ -429,7 +483,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	pk_debug ("%s runtime was %.1f seconds", role_text, time);
+	egg_debug ("%s runtime was %.1f seconds", role_text, time);
 
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
@@ -443,19 +497,19 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 
 	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
 	    exit == PK_EXIT_ENUM_FAILED && need_requeue) {
-		pk_warning ("waiting for second install file to finish");
+		egg_warning ("waiting for second install file to finish");
 		return;
 	}
 
 	/* have we failed to install, and the gpg key is now installed */
 	if (exit == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
-		pk_debug ("key now installed");
+		egg_debug ("key now installed");
 		return;
 	}
 
 	/* have we failed to install, and the eula key is now installed */
 	if (exit == PK_EXIT_ENUM_EULA_REQUIRED && need_requeue) {
-		pk_debug ("eula now agreed");
+		egg_debug ("eula now agreed");
 		return;
 	}
 
@@ -467,7 +521,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
  * pk_console_perhaps_resolve:
  **/
 static gchar *
-pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *package, GError **error)
+pk_console_perhaps_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gboolean valid;
@@ -485,7 +539,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	ret = pk_client_reset (client_task, error);
 	if (!ret) {
-		pk_warning ("failed to reset client task");
+		egg_warning ("failed to reset client task");
 		return NULL;
 	}
 
@@ -494,7 +548,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	ret = pk_client_resolve (client_task, filter, packages, error);
 	g_strfreev (packages);
 	if (!ret) {
-		pk_warning ("Resolve is not supported in this backend");
+		egg_warning ("Resolve is not supported in this backend");
 		return NULL;
 	}
 
@@ -517,7 +571,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	list = pk_client_get_package_list (client_task);
 	length = pk_package_list_get_size (list);
 	if (length == 0) {
-		pk_debug ("Could not find a package match");
+		egg_debug ("Could not find a package match");
 		return NULL;
 	}
 
@@ -570,7 +624,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		if (is_local) {
 			g_ptr_array_add (array_files, g_strdup (packages[i]));
 		} else {
-			package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NOT_INSTALLED, packages[i], error);
+			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages[i], error);
 			if (package_id == NULL) {
 				*error = g_error_new (1, 0, "%s: %s", _("Could not find package to install"), packages[i]);
 				ret = FALSE;
@@ -582,7 +636,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 
 	/* one of the resolves failed */
 	if (!ret) {
-		pk_warning ("resolve failed");
+		egg_warning ("resolve failed");
 		goto out;
 	}
 
@@ -590,18 +644,18 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 	/* any to process? */
 	if (array_packages->len > 0) {
 		/* convert to strv */
-		package_ids = pk_ptr_array_to_argv (array_packages);
+		package_ids = pk_ptr_array_to_strv (array_packages);
 
 		/* reset */
 		ret = pk_client_reset (client, error);
 		if (!ret) {
-			pk_warning ("failed to reset");
+			egg_warning ("failed to reset");
 			goto out;
 		}
 
 		ret = pk_client_install_packages (client, package_ids, error);
 		if (!ret) {
-			pk_warning ("failed to install packages");
+			egg_warning ("failed to install packages");
 			goto out;
 		}
 	}
@@ -609,7 +663,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 	/* any to process? */
 	if (array_files->len > 0) {
 		/* convert to strv */
-		files = pk_ptr_array_to_argv (array_files);
+		files = pk_ptr_array_to_strv (array_files);
 
 		/* save for untrusted callback */
 		g_strfreev (files_cache);
@@ -618,13 +672,13 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		/* reset */
 		ret = pk_client_reset (client, error);
 		if (!ret) {
-			pk_warning ("failed to reset");
+			egg_warning ("failed to reset");
 			goto out;
 		}
 
 		ret = pk_client_install_files (client, trusted, files, error);
 		if (!ret) {
-			pk_warning ("failed to install files");
+			egg_warning ("failed to install files");
 			goto out;
 		}
 	}
@@ -633,8 +687,8 @@ out:
 	g_strfreev (package_ids);
 	g_strfreev (files);
 	g_ptr_array_foreach (array_files, (GFunc) g_free, NULL);
-	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
 	g_ptr_array_free (array_files, TRUE);
+	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
 	g_ptr_array_free (array_packages, TRUE);
 	return ret;
 }
@@ -647,7 +701,7 @@ pk_console_remove_only (PkClient *client, gchar **package_ids, gboolean force, G
 {
 	gboolean ret;
 
-	pk_debug ("remove+ %s", package_ids[0]);
+	egg_debug ("remove+ %s", package_ids[0]);
 	ret = pk_client_reset (client, error);
 	if (!ret) {
 		return ret;
@@ -676,14 +730,14 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	list = pk_package_list_new ();
 	length = g_strv_length (packages);
 	for (i=2; i<length; i++) {
-		package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, packages[i], error);
+		package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), packages[i], error);
 		if (package_id == NULL) {
 			*error = g_error_new (1, 0, "%s:%s\n", _("Could not find package to remove"), packages[i]);
 			ret = FALSE;
 			break;
 		}
 		g_ptr_array_add (array, g_strdup (package_id));
-		pk_debug ("resolved to %s", package_id);
+		egg_debug ("resolved to %s", package_id);
 		g_free (package_id);
 	}
 
@@ -693,10 +747,10 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	}
 
 	/* convert to strv */
-	package_ids = pk_ptr_array_to_argv (array);
+	package_ids = pk_ptr_array_to_strv (array);
 
 	/* are we dumb and can't check for requires? */
-	if (!pk_enums_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
+	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
 		/* no, just try to remove it without deps */
 		ret = pk_console_remove_only (client, package_ids, FALSE, error);
 		goto out;
@@ -704,15 +758,15 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 
 	ret = pk_client_reset (client_task, error);
 	if (!ret) {
-		pk_warning ("failed to reset");
+		egg_warning ("failed to reset");
 		goto out;
 	}
 
-	pk_debug ("Getting installed requires for %s", package_ids[0]);
+	egg_debug ("Getting installed requires for %s", package_ids[0]);
 	/* see if any packages require this one */
-	ret = pk_client_get_requires (client_task, PK_FILTER_ENUM_INSTALLED, package_ids, TRUE, error);
+	ret = pk_client_get_requires (client_task, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, TRUE, error);
 	if (!ret) {
-		pk_warning ("failed to get requires");
+		egg_warning ("failed to get requires");
 		goto out;
 	}
 
@@ -729,7 +783,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	/* if there are no required packages, just do the remove */
 	length = pk_package_list_get_size (list);
 	if (length == 0) {
-		pk_debug ("no requires");
+		egg_debug ("no requires");
 		ret = pk_console_remove_only (client, package_ids, FALSE, error);
 		goto out;
 	}
@@ -761,6 +815,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 out:
 	g_object_unref (list);
 	g_strfreev (package_ids);
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 	return ret;
 }
@@ -781,7 +836,7 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 	array_packages = g_ptr_array_new ();
 	length = g_strv_length (packages);
 	for (i=3; i<length; i++) {
-			package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, packages[i], error);
+			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), packages[i], error);
 			if (package_id == NULL) {
 				*error = g_error_new (1, 0, "%s: %s", _("Could not find package to download"), packages[i]);
 				ret = FALSE;
@@ -792,7 +847,7 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 	
 	/* one of the resolves failed */
 	if (!ret) {
-		pk_warning ("resolve failed");
+		egg_warning ("resolve failed");
 		goto out;
 	}
 
@@ -800,24 +855,25 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 	/* any to process? */
 	if (array_packages->len > 0) {
 		/* convert to strv */
-		package_ids = pk_ptr_array_to_argv (array_packages);
+		package_ids = pk_ptr_array_to_strv (array_packages);
 
 		/* reset */
 		ret = pk_client_reset (client, error);
 		if (!ret) {
-			pk_warning ("failed to reset");
+			egg_warning ("failed to reset");
 			goto out;
 		}
 
 		ret = pk_client_download_packages (client, package_ids, directory, error);
 		if (!ret) {
-			pk_warning ("failed to download the packages");
+			egg_warning ("failed to download the packages");
 			goto out;
 		}
 	}
 
 out:
 	g_strfreev (package_ids);
+	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
 	g_ptr_array_free (array_packages, TRUE);
 	return ret;
 }
@@ -832,7 +888,7 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 	gchar *package_id;
 	gchar **package_ids;
 
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, error);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s: %s", _("Could not find package to update"), package);
 		return FALSE;
@@ -849,12 +905,12 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
  * pk_console_get_requires:
  **/
 static gboolean
-pk_console_get_requires (PkClient *client, PkFilterEnum filters, const gchar *package, GError **error)
+pk_console_get_requires (PkClient *client, PkBitfield filters, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
 	gchar **package_ids;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, error);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s %s", _("Could not find what packages require"), package);
 		return FALSE;
@@ -870,12 +926,12 @@ pk_console_get_requires (PkClient *client, PkFilterEnum filters, const gchar *pa
  * pk_console_get_depends:
  **/
 static gboolean
-pk_console_get_depends (PkClient *client, PkFilterEnum filters, const gchar *package, GError **error)
+pk_console_get_depends (PkClient *client, PkBitfield filters, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
 	gchar **package_ids;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, error);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s %s", _("Could not get dependencies for"), package);
 		return FALSE;
@@ -896,7 +952,7 @@ pk_console_get_details (PkClient *client, const gchar *package, GError **error)
 	gboolean ret;
 	gchar *package_id;
 	gchar **package_ids;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, error);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s %s", _("Could not find details for"), package);
 		return FALSE;
@@ -919,7 +975,7 @@ pk_console_get_files (PkClient *client, const gchar *package, GError **error)
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, &error_local);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s (%s)", _("Could not find the files for this package"), error_local->message);
 		g_error_free (error_local);
@@ -945,7 +1001,7 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 	gboolean ret;
 	gchar *package_id;
 	gchar **package_ids;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, error);
 	if (package_id == NULL) {
 		*error = g_error_new (1, 0, "%s %s", _("Could not find the update details for"), package);
 		return FALSE;
@@ -973,21 +1029,21 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 	if (need_requeue) {
 		if (error_code == PK_ERROR_ENUM_GPG_FAILURE ||
 		    error_code == PK_ERROR_ENUM_NO_LICENSE_AGREEMENT) {
-			pk_debug ("ignoring %s error as handled", pk_error_enum_to_text (error_code));
+			egg_debug ("ignoring %s error as handled", pk_error_enum_to_text (error_code));
 			return;
 		}
-		pk_warning ("set requeue, but did not handle error");
+		egg_warning ("set requeue, but did not handle error");
 	}
 
 	/* do we need to do the untrusted action */
 	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
 	    error_code == PK_ERROR_ENUM_MISSING_GPG_SIGNATURE && trusted) {
-		pk_debug ("need to try again with trusted FALSE");
+		egg_debug ("need to try again with trusted FALSE");
 		trusted = FALSE;
 		ret = pk_client_install_files (client_install_files, trusted, files_cache, &error);
 		/* we succeeded, so wait for the requeue */
 		if (!ret) {
-			pk_warning ("failed to install file second time: %s", error->message);
+			egg_warning ("failed to install file second time: %s", error->message);
 			g_error_free (error);
 		}
 		need_requeue = ret;
@@ -1024,7 +1080,17 @@ static void
 pk_console_files_cb (PkClient *client, const gchar *package_id,
 		     const gchar *filelist, gpointer data)
 {
-	gchar **filevector = g_strsplit (filelist, ";", 0);
+	PkRoleEnum role;
+	gchar **filevector;
+
+	/* don't print if we are DownloadPackages */
+	pk_client_get_role (client, &role, NULL, NULL);
+	if (role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+		egg_debug ("ignoring ::files");
+		return;
+	}
+
+	filevector = g_strsplit (filelist, ";", 0);
 
 	if (awaiting_space) {
 		g_print ("\n");
@@ -1079,12 +1145,12 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	}
 
 	/* install signature */
-	pk_debug ("install signature %s", key_id);
+	egg_debug ("install signature %s", key_id);
 	ret = pk_client_install_signature (client_signature, PK_SIGTYPE_ENUM_GPG,
 					   key_id, package_id, &error);
 	/* we succeeded, so wait for the requeue */
 	if (!ret) {
-		pk_warning ("failed to install signature: %s", error->message);
+		egg_warning ("failed to install signature: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -1122,11 +1188,11 @@ pk_console_eula_required_cb (PkClient *client, const gchar *eula_id, const gchar
 	}
 
 	/* accept eula */
-	pk_debug ("accept eula %s", eula_id);
+	egg_debug ("accept eula %s", eula_id);
 	ret = pk_client_accept_eula (client_signature, eula_id, &error);
 	/* we succeeded, so wait for the requeue */
 	if (!ret) {
-		pk_warning ("failed to accept eula: %s", error->message);
+		egg_warning ("failed to accept eula: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -1160,7 +1226,7 @@ pk_console_sigint_handler (int sig)
 	PkRoleEnum role;
 	gboolean ret;
 	GError *error = NULL;
-	pk_debug ("Handling SIGINT");
+	egg_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the cancels might hang */
 	signal (SIGINT, SIG_DFL);
@@ -1170,7 +1236,7 @@ pk_console_sigint_handler (int sig)
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
 		ret = pk_client_cancel (client, &error);
 		if (!ret) {
-			pk_warning ("failed to cancel normal client: %s", error->message);
+			egg_warning ("failed to cancel normal client: %s", error->message);
 			g_error_free (error);
 			error = NULL;
 		}
@@ -1179,13 +1245,13 @@ pk_console_sigint_handler (int sig)
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
 		ret = pk_client_cancel (client_task, &error);
 		if (!ret) {
-			pk_warning ("failed to cancel task client: %s", error->message);
+			egg_warning ("failed to cancel task client: %s", error->message);
 			g_error_free (error);
 		}
 	}
 
 	/* kill ourselves */
-	pk_debug ("Retrying SIGINT");
+	egg_debug ("Retrying SIGINT");
 	kill (getpid (), SIGINT);
 }
 
@@ -1193,7 +1259,7 @@ pk_console_sigint_handler (int sig)
  * pk_console_get_summary:
  **/
 static gchar *
-pk_console_get_summary (PkRoleEnum roles)
+pk_console_get_summary (PkBitfield roles)
 {
 	GString *string;
 	string = g_string_new ("");
@@ -1208,70 +1274,73 @@ pk_console_get_summary (PkRoleEnum roles)
 	g_string_append_printf (string, "  %s\n", "get-transactions");
 	g_string_append_printf (string, "  %s\n", "get-time");
 
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_NAME) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_DETAILS) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_GROUP) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_FILE)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_NAME) ||
+	    pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_DETAILS) ||
+	    pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_GROUP) ||
+	    pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_FILE)) {
 		g_string_append_printf (string, "  %s\n", "search [name|details|group|file] [data]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_PACKAGES) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_FILES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_PACKAGES) ||
+	    pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_FILES)) {
 		g_string_append_printf (string, "  %s\n", "install [packages|files]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
 		g_string_append_printf (string, "  %s\n", "download [directory] [packages]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
 		g_string_append_printf (string, "  %s\n", "install-sig [type] [key_id] [package_id]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_REMOVE_PACKAGES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REMOVE_PACKAGES)) {
 		g_string_append_printf (string, "  %s\n", "remove [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_UPDATE_SYSTEM) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_UPDATE_PACKAGES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_UPDATE_SYSTEM) ||
+	    pk_bitfield_contain (roles, PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		g_string_append_printf (string, "  %s\n", "update <package>");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_REFRESH_CACHE)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REFRESH_CACHE)) {
 		g_string_append_printf (string, "  %s\n", "refresh");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_RESOLVE)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_RESOLVE)) {
 		g_string_append_printf (string, "  %s\n", "resolve [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_UPDATES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_UPDATES)) {
 		g_string_append_printf (string, "  %s\n", "get-updates");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
 		g_string_append_printf (string, "  %s\n", "get-depends [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
 		g_string_append_printf (string, "  %s\n", "get-requires [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_DETAILS)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DETAILS)) {
 		g_string_append_printf (string, "  %s\n", "get-details [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_FILES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES)) {
+		g_string_append_printf (string, "  %s\n", "get-distro-upgrades");
+	}
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_FILES)) {
 		g_string_append_printf (string, "  %s\n", "get-files [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
 		g_string_append_printf (string, "  %s\n", "get-update-detail [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_PACKAGES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_PACKAGES)) {
 		g_string_append_printf (string, "  %s\n", "get-packages");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_REPO_LIST)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REPO_LIST)) {
 		g_string_append_printf (string, "  %s\n", "repo-list");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_REPO_ENABLE)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPO_ENABLE)) {
 		g_string_append_printf (string, "  %s\n", "repo-enable [repo_id]");
 		g_string_append_printf (string, "  %s\n", "repo-disable [repo_id]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_REPO_SET_DATA)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPO_SET_DATA)) {
 		g_string_append_printf (string, "  %s\n", "repo-set-data [repo_id] [parameter] [value];");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_WHAT_PROVIDES)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_WHAT_PROVIDES)) {
 		g_string_append_printf (string, "  %s\n", "what-provides [search]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_ACCEPT_EULA)) {
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_ACCEPT_EULA)) {
 		g_string_append_printf (string, "  %s\n", "accept-eula [eula-id]");
 	}
 	return g_string_free (string, FALSE);
@@ -1298,11 +1367,11 @@ main (int argc, char *argv[])
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
-	PkGroupEnum groups;
+	PkBitfield groups;
 	gchar *text;
 	ret = FALSE;
 	gboolean maybe_sync = TRUE;
-	PkFilterEnum filters = 0;
+	PkBitfield filters = 0;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -1333,14 +1402,14 @@ main (int argc, char *argv[])
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		g_error_free (error);
 		g_error (_("Could not connect to system DBUS."));
 	}
 
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_new ();
-	roles = pk_control_get_actions (control);
+	roles = pk_control_get_actions (control, NULL);
 	summary = pk_console_get_summary (roles);
 
 	context = g_option_context_new ("PackageKit Console Program");
@@ -1351,7 +1420,8 @@ main (int argc, char *argv[])
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
 
-	pk_debug_init (verbose);
+	/* we are now parsed */
+	egg_debug_init (verbose);
 
 	if (program_version) {
 		g_print (VERSION "\n");
@@ -1375,6 +1445,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_package_cb), NULL);
 	g_signal_connect (client, "transaction",
 			  G_CALLBACK (pk_console_transaction_cb), NULL);
+	g_signal_connect (client, "distro-upgrade",
+			  G_CALLBACK (pk_console_distro_upgrade_cb), NULL);
 	g_signal_connect (client, "details",
 			  G_CALLBACK (pk_console_details_cb), NULL);
 	g_signal_connect (client, "files",
@@ -1410,21 +1482,17 @@ main (int argc, char *argv[])
 	g_signal_connect (client_signature, "finished",
 			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
 
-	if (filter != NULL) {
-		filters = pk_filter_enums_from_text (filter);
-	}
-	pk_debug ("filter=%s, filters=%i", filter, filters);
+	if (filter != NULL)
+		filters = pk_filter_bitfield_from_text (filter);
+	egg_debug ("filter=%s, filters=%" PK_BITFIELD_FORMAT, filter, filters);
 
 	mode = argv[1];
-	if (argc > 2) {
+	if (argc > 2)
 		value = argv[2];
-	}
-	if (argc > 3) {
+	if (argc > 3)
 		details = argv[3];
-	}
-	if (argc > 4) {
+	if (argc > 4)
 		parameter = argv[4];
-	}
 
 	/* parse the big list */
 	if (strcmp (mode, "search") == 0) {
@@ -1571,6 +1639,9 @@ main (int argc, char *argv[])
 		}
 		ret = pk_console_get_depends (client, filters, value, &error);
 
+	} else if (strcmp (mode, "get-distro-upgrades") == 0) {
+		ret = pk_client_get_distro_upgrades (client, &error);
+
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
@@ -1613,7 +1684,7 @@ main (int argc, char *argv[])
 		ret = pk_client_get_packages (client, filters, &error);
 
 	} else if (strcmp (mode, "get-actions") == 0) {
-		text = pk_role_enums_to_text (roles);
+		text = pk_role_bitfield_to_text (roles);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
@@ -1622,8 +1693,8 @@ main (int argc, char *argv[])
 		ret = TRUE;
 
 	} else if (strcmp (mode, "get-filters") == 0) {
-		filters = pk_control_get_filters (control);
-		text = pk_filter_enums_to_text (filters);
+		filters = pk_control_get_filters (control, NULL);
+		text = pk_filter_bitfield_to_text (filters);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
@@ -1632,8 +1703,8 @@ main (int argc, char *argv[])
 		ret = TRUE;
 
 	} else if (strcmp (mode, "get-groups") == 0) {
-		groups = pk_control_get_groups (control);
-		text = pk_group_enums_to_text (groups);
+		groups = pk_control_get_groups (control, NULL);
+		text = pk_group_bitfield_to_text (groups);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
@@ -1682,3 +1753,73 @@ out:
 
 	return 0;
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef EGG_TEST
+#include "egg-test.h"
+
+void
+egg_test_console (EggTest *test)
+{
+	gchar *text_safe;
+
+	if (!egg_test_start (test, "PkConsole"))
+		return;
+
+	/************************************************************
+	 ****************         Padding          ******************
+	 ************************************************************/
+	egg_test_title (test, "pad smaller");
+	text_safe = pk_strpad ("richard", 10);
+	if (egg_strequal (text_safe, "richard   "))
+		egg_test_success (test, NULL);
+	else {
+		egg_test_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	egg_test_title (test, "pad NULL");
+	text_safe = pk_strpad (NULL, 10);
+	if (egg_strequal (text_safe, "          "))
+		egg_test_success (test, NULL);
+	else {
+		egg_test_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	egg_test_title (test, "pad nothing");
+	text_safe = pk_strpad ("", 10);
+	if (egg_strequal (text_safe, "          "))
+		egg_test_success (test, NULL);
+	else {
+		egg_test_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	egg_test_title (test, "pad over");
+	text_safe = pk_strpad ("richardhughes", 10);
+	if (egg_strequal (text_safe, "richardhughes"))
+		egg_test_success (test, NULL);
+	else {
+		egg_test_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	egg_test_title (test, "pad zero");
+	text_safe = pk_strpad ("rich", 0);
+	if (egg_strequal (text_safe, "rich"))
+		egg_test_success (test, NULL);
+	else {
+		egg_test_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+	egg_test_end (test);
+}
+#endif
+

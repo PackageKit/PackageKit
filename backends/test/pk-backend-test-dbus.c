@@ -33,7 +33,7 @@ static PkBackendDbus *dbus;
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -56,7 +56,7 @@ backend_cancel (PkBackend *backend)
 static void
 backend_initialize (PkBackend *backend)
 {
-	pk_debug ("backend: initialize");
+	egg_debug ("backend: initialize");
 	dbus = pk_backend_dbus_new ();
 	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_TEST);
 }
@@ -68,7 +68,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	pk_debug ("backend: destroy");
+	egg_debug ("backend: destroy");
 	pk_backend_dbus_kill (dbus);
 	g_object_unref (dbus);
 }
@@ -84,6 +84,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	NULL,					/* get_depends */
 	NULL,					/* get_details */
+	NULL,					/* get_distro_upgrades */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */

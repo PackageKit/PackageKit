@@ -51,7 +51,7 @@ backend_get_groups (PkBackend *backend)
 /**
  * backend_get_filters:
  */
-extern "C" PkFilterEnum
+extern "C" PkBitfield
 backend_get_filters (PkBackend *backend)
 {
 	return (PK_FILTER_ENUM_GUI |
@@ -108,9 +108,9 @@ extern "C" void backend_init_search(PkBackend *backend)
 	{
 		gchar *apt_fname = NULL;
 		if (pkgInitConfig(*_config) == false)
-			pk_debug("pkginitconfig was false");
+			egg_debug("pkginitconfig was false");
 		if (pkgInitSystem(*_config, _system) == false)
-			pk_debug("pkginitsystem was false");
+			egg_debug("pkginitsystem was false");
 
 		apt_fname = g_strconcat(
 				_config->Find("Dir").c_str(),

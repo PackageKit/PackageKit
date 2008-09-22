@@ -31,7 +31,9 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-package-id.h>
@@ -46,6 +48,7 @@ static PkClient *client = NULL;
 static PkExtra *extra = NULL;
 static GPtrArray *locale_array = NULL;
 static GPtrArray *package_array = NULL;
+static gboolean quiet = FALSE;
 
 /**
  * pk_import_specspo_get_summary:
@@ -62,7 +65,7 @@ pk_import_specspo_get_summary (const gchar *name)
 
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		pk_warning ("failed to reset client: %s", error->message);
+		egg_warning ("failed to reset client: %s", error->message);
 		g_error_free (error);
 		return NULL;
 	}
@@ -73,7 +76,7 @@ pk_import_specspo_get_summary (const gchar *name)
 	ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, names, &error);
 	g_strfreev (names);
 	if (!ret) {
-		pk_warning ("failed to resolve: %s", error->message);
+		egg_warning ("failed to resolve: %s", error->message);
 		g_error_free (error);
 		return NULL;
 	}
@@ -82,14 +85,14 @@ pk_import_specspo_get_summary (const gchar *name)
 	list = pk_client_get_package_list (client);
 	size = pk_package_list_get_size (list);
 	if (size != 1) {
-		pk_warning ("not correct size, %i", size);
+		egg_warning ("not correct size, %i", size);
 		return NULL;
 	}
 
 	/* get the item */
 	item = pk_package_list_get_obj (list, 0);
 	if (item == NULL) {
-		pk_error ("cannot get item");
+		egg_error ("cannot get item");
 		g_object_unref (list);
 		return NULL;
 	}
@@ -112,29 +115,31 @@ pk_import_specspo_do_package (const gchar *package_name)
 
 	summary = pk_import_specspo_get_summary (package_name);
 	if (summary == NULL) {
-		g_print ("no summary for %s\n", package_name);
+		if (!quiet)
+			g_print ("no summary for %s\n", package_name);
 		return;
 	}
-	g_print ("processing %s [", package_name);
-//	g_print ("%s,", summary);
+	if (!quiet)
+		g_print ("processing %s [", package_name);
 
 	for (j=0; j<locale_array->len; j++) {
 		locale = g_ptr_array_index (locale_array, j);
 		set_locale = setlocale (LC_ALL, locale);
-		if (pk_strequal (set_locale, locale)) {
+		if (egg_strequal (set_locale, locale)) {
 			/* get the translation */
 			trans = gettext (summary);
 
 			/* if different, then save */
-			if (pk_strequal (summary, trans) == FALSE) {
-				g_print (" %s", locale);
-//				g_print (" %s", trans);
+			if (egg_strequal (summary, trans) == FALSE) {
+				if (!quiet)
+					g_print (" %s", locale);
 				pk_extra_set_locale (extra, locale);
 				pk_extra_set_data_locale (extra, package_name, trans);
 			}
 		}
 	}
-	g_print ("]\n");
+	if (!quiet)
+		g_print ("]\n");
 }
 
 /**
@@ -155,6 +160,8 @@ main (int argc, char *argv[])
 			"Show extra debugging information", NULL },
 		{ "database-location", '\0', 0, G_OPTION_ARG_STRING, &database_location,
 			"Database location (default set from daemon)", NULL },
+		{ "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet,
+			"Do not show any output to the console", NULL },
 		{ NULL}
 	};
 
@@ -165,7 +172,7 @@ main (int argc, char *argv[])
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	client = pk_client_new ();
 	locale_array = pk_import_get_locale_list ();
@@ -174,8 +181,10 @@ main (int argc, char *argv[])
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
-		g_print (_("Could not open database: %s"), database_location);
-		g_print ("\n%s\n", _("You probably need to run this program as the root user"));
+		if (!quiet) {
+			g_print (_("Could not open database: %s"), database_location);
+			g_print ("\n%s\n", _("You probably need to run this program as the root user"));
+		}
 		goto out;
 	}
 
@@ -193,7 +202,9 @@ main (int argc, char *argv[])
 out:
 	g_object_unref (client);
 	g_object_unref (extra);
+	g_ptr_array_foreach (package_array, (GFunc) g_free, NULL);
 	g_ptr_array_free (package_array, TRUE);
+	g_ptr_array_foreach (locale_array, (GFunc) g_free, NULL);
 	g_ptr_array_free (locale_array, TRUE);
 
 	return 0;

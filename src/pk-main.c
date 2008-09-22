@@ -31,7 +31,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include <pk-debug.h>
+#include "egg-debug.h"
 #include "pk-conf.h"
 #include "pk-engine.h"
 #include "pk-transaction.h"
@@ -77,7 +77,7 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
 
 	/* abort as the DBUS method failed */
 	if (!ret) {
-		pk_warning ("RequestName failed!");
+		egg_warning ("RequestName failed!");
 		g_clear_error (error);
 		message = g_strdup_printf ("%s\n%s\n* %s\n* %s\n",
 					   _("Startup failed due to security policies on this machine."),
@@ -128,9 +128,9 @@ pk_main_timeout_check_cb (PkEngine *engine)
 {
 	guint idle;
 	idle = pk_engine_get_seconds_idle (engine);
-	pk_debug ("idle is %i", idle);
+	egg_debug ("idle is %i", idle);
 	if (idle > exit_idle_time) {
-		pk_warning ("exit!!");
+		egg_warning ("exit!!");
 		exit (0);
 	}
 	return TRUE;
@@ -142,7 +142,7 @@ pk_main_timeout_check_cb (PkEngine *engine)
 static void
 pk_main_sigint_handler (int sig)
 {
-	pk_debug ("Handling SIGINT");
+	egg_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the finalisers might hang */
 	signal (SIGINT, SIG_DFL);
@@ -155,7 +155,7 @@ pk_main_sigint_handler (int sig)
 	g_usleep (500*1000);
 
 	/* kill ourselves */
-	pk_debug ("Retrying SIGINT");
+	egg_debug ("Retrying SIGINT");
 	kill (getpid (), SIGINT);
 }
 
@@ -208,7 +208,7 @@ main (int argc, char *argv[])
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	if (version) {
 		g_print ("Version %s\n", VERSION);
@@ -244,16 +244,16 @@ main (int argc, char *argv[])
 
 	/* do we log? */
 	do_logging = pk_conf_get_bool (conf, "TransactionLogging");
-	pk_debug ("Log all transactions: %i", do_logging);
-	pk_debug_set_logging (do_logging);
+	egg_debug ("Log all transactions: %i", do_logging);
+	egg_debug_set_logging (do_logging);
 
 	/* after how long do we timeout? */
 	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");
-	pk_debug ("daemon shutdown set to %i seconds", exit_idle_time);
+	egg_debug ("daemon shutdown set to %i seconds", exit_idle_time);
 
 	if (backend_name == NULL) {
 		backend_name = pk_conf_get_string (conf, "DefaultBackend");
-		pk_debug ("using default backend %s", backend_name);
+		egg_debug ("using default backend %s", backend_name);
 	}
 
 	/* load our chosen backend */
@@ -263,7 +263,7 @@ main (int argc, char *argv[])
 
 	/* all okay? */
 	if (!ret) {
-		pk_error ("cannot continue, backend invalid");
+		egg_error ("cannot continue, backend invalid");
 	}
 
 	/* create a new engine object */
@@ -279,19 +279,16 @@ main (int argc, char *argv[])
 
 	/* Only timeout and close the mainloop if we have specified it
 	 * on the command line */
-	if (timed_exit) {
+	if (timed_exit)
 		g_timeout_add_seconds (20, (GSourceFunc) timed_exit_cb, loop);
-	}
 
 	/* only poll every 10 seconds when we are alive */
-	if (exit_idle_time != 0 && disable_timer == FALSE) {
+	if (exit_idle_time != 0 && !disable_timer)
 		g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, engine);
-	}
 
 	/* immediatly exit */
-	if (immediate_exit) {
+	if (immediate_exit)
 		g_timeout_add (50, (GSourceFunc) timed_exit_cb, loop);
-	}
 
 	g_main_loop_run (loop);
 	g_main_loop_unref (loop);

@@ -14,12 +14,8 @@ INCLUDES =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
+	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
 	-I$(top_srcdir)/libpackagekit			\
-	-I$(top_srcdir)/libselftest			\
-	$(NULL)
-
-SELFTEST_LIBS =						\
-	$(top_builddir)/libselftest/libselftest.la	\
 	$(NULL)
 
 PK_LIBS =						\
@@ -39,6 +35,10 @@ libexec_PROGRAMS =					\
 	$(NULL)
 
 pkcon_SOURCES =						\
+	egg-debug.c					\
+	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
 	pk-console.c					\
 	pk-tools-common.c				\
 	pk-tools-common.h				\
@@ -48,10 +48,11 @@ pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
-	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 pkmon_SOURCES =						\
+	egg-debug.c					\
+	egg-debug.h					\
 	pk-monitor.c					\
 	$(NULL)
 
@@ -59,10 +60,13 @@ pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
-	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 pkgenpack_SOURCES =					\
+	egg-debug.c					\
+	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
 	pk-generate-pack-main.c				\
 	pk-generate-pack.c				\
 	pk-generate-pack.h				\
@@ -71,14 +75,15 @@ pkgenpack_SOURCES =					\
 	$(NULL)
 
 pkgenpack_LDADD = 					\
-	$(TAR_LIBS)					\
+	$(ARCHIVE_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
-	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 pk_generate_package_list_SOURCES =			\
+	egg-debug.c					\
+	egg-debug.h					\
 	pk-generate-package-list.c			\
 	$(NULL)
 
@@ -88,6 +93,10 @@ pk_generate_package_list_LDADD =			\
 	$(NULL)
 
 pk_import_desktop_SOURCES =				\
+	egg-debug.c					\
+	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
 	pk-import-common.c				\
 	pk-import-common.h				\
 	pk-import-desktop.c				\
@@ -100,6 +109,10 @@ pk_import_desktop_LDADD =				\
 	$(NULL)
 
 pk_import_specspo_SOURCES =				\
+	egg-debug.c					\
+	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
 	pk-import-common.c				\
 	pk-import-common.h				\
 	pk-import-specspo.c				\
@@ -111,12 +124,18 @@ pk_import_specspo_LDADD =				\
 	$(PK_LIBS)					\
 	$(NULL)
 
-if PK_BUILD_TESTS
+if EGG_BUILD_TESTS
 
 check_PROGRAMS =					\
 	pk-self-test
 
 pk_self_test_SOURCES =					\
+	egg-debug.c					\
+	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
+	egg-test.c					\
+	egg-test.h					\
 	pk-self-test.c					\
 	pk-generate-pack.c				\
 	pk-tools-common.c				\
@@ -128,9 +147,11 @@ pk_self_test_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SELFTEST_LIBS)				\
-	$(TAR_LIBS)					\
+	$(ARCHIVE_LIBS)					\
 	$(PK_LIBS)					\
 	$(NULL)
+
+pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS)
 
 TESTS = pk-self-test
 endif
@@ -138,10 +159,6 @@ endif
 clean-local:
 	rm -f *~
 	rm -f *.out
-	rm -f *.gcno
-	rm -f *.gcda
-	rm -f gcov.txt
-	rm -f gprof.txt
 
 CLEANFILES = $(BUILT_SOURCES)
 

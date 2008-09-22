@@ -27,6 +27,7 @@
 #include <errno.h>
 
 #include <string.h>
+#include <locale.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #ifdef HAVE_UNISTD_H
@@ -40,7 +41,7 @@
 #include <glib/gprintf.h>
 #include <dbus/dbus-glib.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-control.h"
 #include "pk-client.h"
 #include "pk-marshal.h"
@@ -93,9 +94,8 @@ GQuark
 pk_control_error_quark (void)
 {
 	static GQuark quark = 0;
-	if (!quark) {
+	if (!quark)
 		quark = g_quark_from_static_string ("pk_control_error");
-	}
 	return quark;
 }
 
@@ -120,14 +120,14 @@ pk_control_error_set (GError **error, gint code, const gchar *format, ...)
 
 	/* dumb */
 	if (error == NULL) {
-		pk_warning ("No error set, so can't set: %s", buffer);
+		egg_warning ("No error set, so can't set: %s", buffer);
 		ret = FALSE;
 		goto out;
 	}
 
 	/* already set */
 	if (*error != NULL) {
-		pk_warning ("not NULL error!");
+		egg_warning ("not NULL error!");
 		g_clear_error (error);
 	}
 
@@ -140,61 +140,44 @@ out:
 }
 
 /**
- * pk_control_error_fixup:
- * @error: a %GError
- **/
-static gboolean
-pk_control_error_fixup (GError **error)
-{
-	if (error != NULL && *error != NULL) {
-		/* get some proper debugging */
-		if ((*error)->domain == DBUS_GERROR &&
-		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION) {
-			/* use one of our local codes */
-			pk_debug ("fixing up code from %i", (*error)->code);
-			(*error)->code = PK_CONTROL_ERROR_FAILED;
-		}
-		return TRUE;
-	}
-	return FALSE;
-}
-
-/**
  * pk_control_get_actions:
  * @control: a valid #PkControl instance
+ * @error: a %GError to put the error code and message in, or %NULL
  *
  * Actions are roles that the daemon can do with the current backend
  *
  * Return value: an enumerated list of the actions the backend supports
  **/
-PkRoleEnum
-pk_control_get_actions (PkControl *control)
+PkBitfield
+pk_control_get_actions (PkControl *control, GError **error)
 {
 	gboolean ret;
-	GError *error = NULL;
+	GError *error_local = NULL;
 	gchar *actions;
-	PkRoleEnum roles_enum = PK_GROUP_ENUM_UNKNOWN;
+	PkBitfield roles_enum = 0;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), PK_GROUP_ENUM_UNKNOWN);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
-		pk_warning ("No proxy for manager");
+		egg_warning ("No proxy for manager");
 		goto out;
 	}
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetActions", &error,
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetActions", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &actions,
 				 G_TYPE_INVALID);
 	if (!ret) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetActions failed :%s", error->message);
-		g_error_free (error);
+		egg_warning ("GetActions failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
 	/* convert to enumerated types */
-	roles_enum = pk_role_enums_from_text (actions);
+	roles_enum = pk_role_bitfield_from_text (actions);
 	g_free (actions);
 out:
 	return roles_enum;
@@ -205,33 +188,36 @@ out:
  * @control: a valid #PkControl instance
  * @proxy_http: a HTTP proxy string such as "username:password@server.lan:8080"
  * @proxy_ftp: a FTP proxy string such as "server.lan:8080"
+ * @error: a %GError to put the error code and message in, or %NULL
  *
  * Set a proxy on the PK daemon
  *
  * Return value: if we set the proxy successfully
  **/
 gboolean
-pk_control_set_proxy (PkControl *control, const gchar *proxy_http, const gchar *proxy_ftp)
+pk_control_set_proxy (PkControl *control, const gchar *proxy_http, const gchar *proxy_ftp, GError **error)
 {
 	gboolean ret = FALSE;
-	GError *error = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), PK_GROUP_ENUM_UNKNOWN);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
-		pk_warning ("No proxy for manager");
+		egg_warning ("No proxy for manager");
 		goto out;
 	}
-	ret = dbus_g_proxy_call (control->priv->proxy, "SetProxy", &error,
+	ret = dbus_g_proxy_call (control->priv->proxy, "SetProxy", &error_local,
 				 G_TYPE_STRING, proxy_http,
 				 G_TYPE_STRING, proxy_ftp,
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (!ret) {
 		/* abort as the DBUS method failed */
-		pk_warning ("SetProxy failed :%s", error->message);
-		g_error_free (error);
+		egg_warning ("SetProxy failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 	}
 out:
 	return ret;
@@ -240,6 +226,7 @@ out:
 /**
  * pk_control_get_groups:
  * @control: a valid #PkControl instance
+ * @error: a %GError to put the error code and message in, or %NULL
  *
  * The group list is enumerated so it can be localised and have deep
  * integration with desktops.
@@ -247,34 +234,36 @@ out:
  *
  * Return value: an enumerated list of the groups the backend supports
  **/
-PkGroupEnum
-pk_control_get_groups (PkControl *control)
+PkBitfield
+pk_control_get_groups (PkControl *control, GError **error)
 {
 	gboolean ret;
-	GError *error = NULL;
+	GError *error_local = NULL;
 	gchar *groups;
-	PkGroupEnum groups_enum = PK_GROUP_ENUM_UNKNOWN;
+	PkBitfield groups_enum = 0;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), PK_GROUP_ENUM_UNKNOWN);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
-		pk_warning ("No proxy for manager");
+		egg_warning ("No proxy for manager");
 		goto out;
 	}
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetGroups", &error,
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetGroups", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &groups,
 				 G_TYPE_INVALID);
 	if (!ret) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetGroups failed :%s", error->message);
-		g_error_free (error);
+		egg_warning ("GetGroups failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
 	/* convert to enumerated types */
-	groups_enum = pk_group_enums_from_text (groups);
+	groups_enum = pk_group_bitfield_from_text (groups);
 	g_free (groups);
 out:
 	return groups_enum;
@@ -283,32 +272,35 @@ out:
 /**
  * pk_control_get_network_state:
  * @control: a valid #PkControl instance
+ * @error: a %GError to put the error code and message in, or %NULL
  *
  * Return value: an enumerated network state
  **/
 PkNetworkEnum
-pk_control_get_network_state (PkControl *control)
+pk_control_get_network_state (PkControl *control, GError **error)
 {
 	gboolean ret;
-	GError *error = NULL;
+	GError *error_local = NULL;
 	gchar *network_state;
-	PkGroupEnum network_state_enum = PK_NETWORK_ENUM_UNKNOWN;
+	PkNetworkEnum network_state_enum = PK_NETWORK_ENUM_UNKNOWN;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), PK_NETWORK_ENUM_UNKNOWN);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
-		pk_warning ("No proxy for manager");
+		egg_warning ("No proxy for manager");
 		goto out;
 	}
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetNetworkState", &error,
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetNetworkState", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &network_state,
 				 G_TYPE_INVALID);
 	if (!ret) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetNetworkState failed :%s", error->message);
-		g_error_free (error);
+		egg_warning ("GetNetworkState failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
@@ -322,39 +314,42 @@ out:
 /**
  * pk_control_get_filters:
  * @control: a valid #PkControl instance
+ * @error: a %GError to put the error code and message in, or %NULL
  *
  * Filters are how the backend can specify what type of package is returned.
  *
  * Return value: an enumerated list of the filters the backend supports
  **/
-PkFilterEnum
-pk_control_get_filters (PkControl *control)
+PkBitfield
+pk_control_get_filters (PkControl *control, GError **error)
 {
 	gboolean ret;
-	GError *error = NULL;
+	GError *error_local = NULL;
 	gchar *filters;
-	PkFilterEnum filters_enum = PK_FILTER_ENUM_UNKNOWN;
+	PkBitfield filters_enum = 0;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), PK_FILTER_ENUM_UNKNOWN);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
-		pk_warning ("No proxy for manager");
+		egg_warning ("No proxy for manager");
 		goto out;
 	}
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetFilters", &error,
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetFilters", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &filters,
 				 G_TYPE_INVALID);
 	if (!ret) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetFilters failed :%s", error->message);
-		g_error_free (error);
+		egg_warning ("GetFilters failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
 	/* convert to enumerated types */
-	filters_enum = pk_filter_enums_from_text (filters);
+	filters_enum = pk_filter_bitfield_from_text (filters);
 	g_free (filters);
 out:
 	return filters_enum;
@@ -378,6 +373,7 @@ pk_control_get_backend_detail (PkControl *control, gchar **name, gchar **author,
 	gboolean ret;
 	gchar *tname;
 	gchar *tauthor;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -387,28 +383,28 @@ pk_control_get_backend_detail (PkControl *control, gchar **name, gchar **author,
 		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, "No proxy for manager");
 		return FALSE;
 	}
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetBackendDetail", error,
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetBackendDetail", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &tname,
 				 G_TYPE_STRING, &tauthor,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (!ret) {
-		pk_control_error_fixup (error);
+		egg_warning ("GetFilters failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 		return FALSE;
 	}
 
 	/* copy needed bits */
-	if (name != NULL) {
+	if (name != NULL)
 		*name = tname;
-	} else {
+	else
 		g_free (tauthor);
-	}
 	/* copy needed bits */
-	if (author != NULL) {
+	if (author != NULL)
 		*author = tauthor;
-	} else {
+	else
 		g_free (tauthor);
-	}
 	return ret;
 }
 
@@ -429,6 +425,7 @@ pk_control_get_time_since_action (PkControl *control, PkRoleEnum role, guint *se
 {
 	gboolean ret;
 	const gchar *role_text;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -440,17 +437,22 @@ pk_control_get_time_since_action (PkControl *control, PkRoleEnum role, guint *se
 		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, "No proxy for manager");
 		return FALSE;
 	}
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetTimeSinceAction", error,
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetTimeSinceAction", &error_local,
 				 G_TYPE_STRING, role_text,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, seconds,
 				 G_TYPE_INVALID);
-	pk_control_error_fixup (error);
+	if (!ret) {
+		egg_warning ("GetTimeSinceAction failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
+	}
 	return ret;
 }
 
 /**
  * pk_control_set_locale:
+ * @error: a %GError to put the error code and message in, or %NULL
  **/
 static gboolean
 pk_control_set_locale (PkControl *control, const gchar *tid, GError **error)
@@ -458,13 +460,15 @@ pk_control_set_locale (PkControl *control, const gchar *tid, GError **error)
 	PkClient *client;
 	gboolean ret;
 	gchar *locale; /* does not need to be freed */
+	GError *error_local = NULL;
 
+	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	client = pk_client_new ();
 	ret = pk_client_set_tid (client, tid, error);
 	if (!ret) {
-		pk_warning ("failed to set the tid: %s", (*error)->message);
+		egg_warning ("failed to set the tid: %s", (*error)->message);
 		goto out;
 	}
 
@@ -472,7 +476,9 @@ pk_control_set_locale (PkControl *control, const gchar *tid, GError **error)
 	locale = setlocale (LC_ALL, NULL);
 	ret = pk_client_set_locale (client, locale, error);
 	if (!ret) {
-		pk_warning ("failed to set the locale: %s", (*error)->message);
+		egg_warning ("SetLocale failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 out:
@@ -495,6 +501,7 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 {
 	gboolean ret;
 	gchar *tid_local = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -504,12 +511,17 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, "No proxy for GetTid");
 		return FALSE;
 	}
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetTid", error,
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetTid", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &tid_local,
 				 G_TYPE_INVALID);
 	if (!ret) {
-		pk_control_error_fixup (error);
+		egg_warning ("GetTid failed :%s", error_local->message);
+		if (error_local->code == DBUS_GERROR_SPAWN_CHILD_EXITED)
+			pk_control_error_set (error, PK_CONTROL_ERROR_CANNOT_START_DAEMON, "cannot GetTid: %s", error_local->message);
+		else
+			pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
@@ -523,13 +535,15 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 	/* automatically set the locale */
 	ret = pk_control_set_locale (control, tid_local, error);
 	if (!ret) {
-		pk_control_error_fixup (error);
+		egg_warning ("GetTid failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
 	/* copy */
 	*tid = g_strdup (tid_local);
-	pk_debug ("Got tid: '%s'", tid_local);
+	egg_debug ("Got tid: '%s'", tid_local);
 out:
 	g_free (tid_local);
 	return ret;
@@ -548,13 +562,12 @@ pk_control_transaction_list_print (PkControl *control)
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 
 	length = g_strv_length (control->priv->array);
-	if (length == 0) {
+	if (length == 0)
 		return TRUE;
-	}
-	pk_debug ("jobs:");
+	egg_debug ("jobs:");
 	for (i=0; i<length; i++) {
 		tid = control->priv->array[i];
-		pk_debug ("%s", tid);
+		egg_debug ("%s", tid);
 	}
 	return TRUE;
 }
@@ -565,34 +578,31 @@ pk_control_transaction_list_print (PkControl *control)
  * Not normally required, but force a refresh
  **/
 static gboolean
-pk_control_transaction_list_refresh (PkControl *control)
+pk_control_transaction_list_refresh (PkControl *control, GError **error)
 {
 	gboolean ret;
-	GError *error;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* clear old data */
 	if (control->priv->array != NULL) {
 		g_strfreev (control->priv->array);
 		control->priv->array = NULL;
 	}
-	error = NULL;
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetTransactionList", &error,
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetTransactionList", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRV, &control->priv->array,
 				 G_TYPE_INVALID);
-	if (error != NULL) {
-		pk_warning ("ERROR: %s", error->message);
-		g_error_free (error);
-	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetTransactionList failed!");
+	if (!ret) {
 		control->priv->array = NULL;
-		return FALSE;
+		egg_warning ("GetTransactionList failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 	}
-	return TRUE;
+
+	return ret;
 }
 
 /**
@@ -614,11 +624,10 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **array, PkCont
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	/* clear old data */
-	if (control->priv->array != NULL) {
+	if (control->priv->array != NULL)
 		g_strfreev (control->priv->array);
-	}
 	control->priv->array = g_strdupv (array);
-	pk_debug ("emit transaction-list-changed");
+	egg_debug ("emit transaction-list-changed");
 	g_signal_emit (control , signals [PK_CONTROL_LIST_CHANGED], 0);
 }
 
@@ -629,9 +638,8 @@ static void
 pk_control_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkControl *control)
 {
 	/* force a refresh so we have valid data*/
-	if (connected) {
-		pk_control_transaction_list_refresh (control);
-	}
+	if (connected)
+		pk_control_transaction_list_refresh (control, NULL);
 }
 
 /**
@@ -642,7 +650,7 @@ pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 {
 	g_return_if_fail (PK_IS_CONTROL (control));
 
-	pk_debug ("emitting restart-schedule");
+	egg_debug ("emitting restart-schedule");
 	g_signal_emit (control, signals [PK_CONTROL_RESTART_SCHEDULE], 0);
 
 }
@@ -655,7 +663,7 @@ pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
 	g_return_if_fail (PK_IS_CONTROL (control));
 
-	pk_debug ("emitting updates-changed");
+	egg_debug ("emitting updates-changed");
 	g_signal_emit (control, signals [PK_CONTROL_UPDATES_CHANGED], 0);
 
 }
@@ -668,7 +676,7 @@ pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
 	g_return_if_fail (PK_IS_CONTROL (control));
 
-	pk_debug ("emitting repo-list-changed");
+	egg_debug ("emitting repo-list-changed");
 	g_signal_emit (control, signals [PK_CONTROL_REPO_LIST_CHANGED], 0);
 }
 
@@ -682,7 +690,7 @@ pk_control_network_state_changed_cb (DBusGProxy *proxy, const gchar *network_tex
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	network = pk_network_enum_from_text (network_text);
-	pk_debug ("emitting network-state-changed: %s", network_text);
+	egg_debug ("emitting network-state-changed: %s", network_text);
 	g_signal_emit (control, signals [PK_CONTROL_NETWORK_STATE_CHANGED], 0, network);
 }
 
@@ -692,7 +700,7 @@ pk_control_network_state_changed_cb (DBusGProxy *proxy, const gchar *network_tex
 static void
 pk_control_locked_cb (DBusGProxy *proxy, gboolean is_locked, PkControl *control)
 {
-	pk_debug ("emit locked %i", is_locked);
+	egg_debug ("emit locked %i", is_locked);
 	g_signal_emit (control , signals [PK_CONTROL_LOCKED], 0, is_locked);
 }
 
@@ -796,13 +804,14 @@ pk_control_class_init (PkControlClass *klass)
 static void
 pk_control_init (PkControl *control)
 {
+	gboolean ret;
 	GError *error = NULL;
 
 	control->priv = PK_CONTROL_GET_PRIVATE (control);
 	/* check dbus connections, exit if not valid */
 	control->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		pk_warning ("%s", error->message);
+		egg_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("This program cannot start until you start the dbus system service.");
 	}
@@ -818,9 +827,8 @@ pk_control_init (PkControl *control)
 	/* get a connection to the engine object */
 	control->priv->proxy = dbus_g_proxy_new_for_name (control->priv->connection,
 							 PK_DBUS_SERVICE, PK_DBUS_PATH, PK_DBUS_INTERFACE);
-	if (control->priv->proxy == NULL) {
-		pk_error ("Cannot connect to PackageKit.");
-	}
+	if (control->priv->proxy == NULL)
+		egg_error ("Cannot connect to PackageKit.");
 
 	dbus_g_proxy_add_signal (control->priv->proxy, "TransactionListChanged",
 				 G_TYPE_STRV, G_TYPE_INVALID);
@@ -851,7 +859,11 @@ pk_control_init (PkControl *control)
 				     G_CALLBACK (pk_control_locked_cb), control, NULL);
 
 	/* force a refresh so we have valid data*/
-	pk_control_transaction_list_refresh (control);
+	ret = pk_control_transaction_list_refresh (control, &error);
+	if (!ret) {
+		egg_warning ("failed to get list: %s", error->message);
+		g_error_free (error);
+	}
 }
 
 /**
@@ -909,29 +921,24 @@ pk_control_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_control (LibSelfTest *test)
+pk_control_test (EggTest *test)
 {
 	PkControl *control;
 
-	if (libst_start (test, "PkControl", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkControl"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "get control");
+	egg_test_title (test, "get control");
 	control = pk_control_new ();
-	if (control != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, control != NULL);
 	g_object_unref (control);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

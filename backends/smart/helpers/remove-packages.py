@@ -11,10 +11,12 @@
 # (at your option) any later version.
 
 import sys
-import smartBackend
 
+from smartBackend import PackageKitSmartBackend
 
-backend = smartBackend.PackageKitSmartBackend(sys.argv[2:])
-backend.remove_packages(sys.argv[1], sys.argv[2])
+allow_deps = sys.argv[1]
+packages = sys.argv[2:]
+backend = PackageKitSmartBackend(sys.argv[1:])
+backend.remove_packages(allow_deps, packages)
 
-sys.exit()
+sys.exit(0)

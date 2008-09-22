@@ -34,7 +34,7 @@ static PkBackendSpawn *spawn;
 static void
 backend_initialize (PkBackend *backend)
 {
-	pk_debug ("backend: initialize");
+	egg_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "conary");
 }
@@ -46,36 +46,38 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	pk_debug ("backend: destroy");
+	egg_debug ("backend: destroy");
 	g_object_unref (spawn);
 }
 
 /**
  * backend_get_groups:
  */
-static PkGroupEnum
+static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return (PK_GROUP_ENUM_ACCESSIBILITY |
-		PK_GROUP_ENUM_ACCESSORIES |
-		PK_GROUP_ENUM_EDUCATION |
-		PK_GROUP_ENUM_GAMES |
-		PK_GROUP_ENUM_GRAPHICS |
-		PK_GROUP_ENUM_INTERNET |
-		PK_GROUP_ENUM_OFFICE |
-		PK_GROUP_ENUM_OTHER |
-		PK_GROUP_ENUM_PROGRAMMING |
-		PK_GROUP_ENUM_MULTIMEDIA |
-		PK_GROUP_ENUM_SYSTEM);
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_ACCESSIBILITY,
+		PK_GROUP_ENUM_ACCESSORIES,
+		PK_GROUP_ENUM_EDUCATION,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_INTERNET,
+		PK_GROUP_ENUM_OFFICE,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_SYSTEM,
+		-1);
 }
 
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return PK_FILTER_ENUM_INSTALLED;
+	return pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
 }
 
 /**
@@ -107,7 +109,7 @@ static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "get-details.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -119,7 +121,7 @@ static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "get-files.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -128,10 +130,10 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
 	g_free (filters_text);
 }
@@ -143,7 +145,7 @@ static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "get-update-detail.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -164,7 +166,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -178,7 +180,7 @@ backend_install_files (PkBackend *backend, gboolean trusted, const gchar *full_p
 {
 	gchar *package_ids_temp;
 
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "install-files.py", full_paths, NULL);
 	g_free (package_ids_temp);
 }
@@ -209,7 +211,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "remove-packages.py", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -218,10 +220,10 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * pk_backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-name.py", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -243,7 +245,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
 	pk_backend_spawn_helper (spawn, "update-packages.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -261,10 +263,10 @@ backend_update_system (PkBackend *backend)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_enums_to_text (filters);
+	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_ids[0], NULL);
 	g_free (filters_text);
 }
@@ -280,6 +282,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	NULL,					/* get_depends */
 	backend_get_details,			/* get_details */
+	NULL,					/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */

@@ -63,78 +63,79 @@ typedef struct
 
 GType		 pk_backend_dbus_get_type		(void) G_GNUC_CONST;
 PkBackendDbus	*pk_backend_dbus_new			(void);
-gboolean	 pk_backend_dbus_refresh_cache		(PkBackendDbus	*backend_dbus,
-							 gboolean	 force);
-gboolean	 pk_backend_dbus_update_system		(PkBackendDbus	*backend_dbus);
-gboolean	 pk_backend_dbus_resolve		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters,
-							 gchar		**packages);
-gboolean	 pk_backend_dbus_rollback		(PkBackendDbus	*backend_dbus,
-							 const gchar	*transaction_id);
-gboolean	 pk_backend_dbus_search_name		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters,
-							 const gchar	*search);
-gboolean	 pk_backend_dbus_search_details		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters,
-							 const gchar	*search);
-gboolean	 pk_backend_dbus_search_group		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters,
-							 const gchar	*search);
-gboolean	 pk_backend_dbus_search_file		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters,
-							 const gchar	*search);
-gboolean	 pk_backend_dbus_get_packages		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters);
-gboolean	 pk_backend_dbus_download_packages	(PkBackendDbus	*backend_dbus,
-							 gchar		**package_ids,
-							 const gchar	*directory);
-gboolean	 pk_backend_dbus_get_depends		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters,
-							 gchar		**package_ids,
-							 gboolean	 recursive);
-gboolean	 pk_backend_dbus_get_requires		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters,
-							 gchar		**package_ids,
-							 gboolean	 recursive);
-gboolean	 pk_backend_dbus_get_update_detail	(PkBackendDbus	*backend_dbus,
-							 gchar		**package_ids);
-gboolean	 pk_backend_dbus_get_details		(PkBackendDbus	*backend_dbus,
-							 gchar		**package_ids);
-gboolean	 pk_backend_dbus_get_files		(PkBackendDbus	*backend_dbus,
-							 gchar		**package_ids);
-gboolean	 pk_backend_dbus_remove_packages	(PkBackendDbus	*backend_dbus,
-							 gchar		**package_ids,
-							 gboolean	 allow_deps,
-							 gboolean	 autoremove);
-gboolean	 pk_backend_dbus_install_packages	(PkBackendDbus	*backend_dbus,
-							 gchar		**package_ids);
-gboolean	 pk_backend_dbus_update_packages	(PkBackendDbus	*backend_dbus,
-							 gchar		**package_ids);
-gboolean	 pk_backend_dbus_install_files		(PkBackendDbus	*backend_dbus,
-							 gboolean	 trusted,
-							 gchar		**full_paths);
-gboolean	 pk_backend_dbus_service_pack		(PkBackendDbus	*backend_dbus,
-							 const gchar	*location,
-							 gboolean	 enabled);
-gboolean	 pk_backend_dbus_what_provides		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters,
-							 PkProvidesEnum	 provides,
-							 const gchar	*search);
-gboolean	 pk_backend_dbus_kill			(PkBackendDbus	*backend_dbus);
-gboolean	 pk_backend_dbus_repo_enable		(PkBackendDbus	*backend_dbus,
-							 const gchar	*rid,
-							 gboolean	 enabled);
-gboolean	 pk_backend_dbus_repo_set_data		(PkBackendDbus	*backend_dbus,
-							 const gchar	*rid,
-							 const gchar	*parameter,
-							 const gchar	*value);
-gboolean	 pk_backend_dbus_get_repo_list		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters);
-gboolean	 pk_backend_dbus_cancel			(PkBackendDbus	*backend_dbus);
-gboolean	 pk_backend_dbus_get_updates		(PkBackendDbus	*backend_dbus,
-							 PkFilterEnum	 filters);
-gboolean	 pk_backend_dbus_set_name		(PkBackendDbus	*backend_dbus,
-							 const gchar	*service);
+gboolean	 pk_backend_dbus_refresh_cache		(PkBackendDbus		*backend_dbus,
+							 gboolean		 force);
+gboolean	 pk_backend_dbus_update_system		(PkBackendDbus		*backend_dbus);
+gboolean	 pk_backend_dbus_resolve		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters,
+							 gchar			**packages);
+gboolean	 pk_backend_dbus_rollback		(PkBackendDbus		*backend_dbus,
+							 const gchar		*transaction_id);
+gboolean	 pk_backend_dbus_search_name		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters,
+							 const gchar		*search);
+gboolean	 pk_backend_dbus_search_details		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters,
+							 const gchar		*search);
+gboolean	 pk_backend_dbus_search_group		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters,
+							 const gchar		*search);
+gboolean	 pk_backend_dbus_search_file		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters,
+							 const gchar		*search);
+gboolean	 pk_backend_dbus_get_packages		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters);
+gboolean	 pk_backend_dbus_download_packages	(PkBackendDbus		*backend_dbus,
+							 gchar			**package_ids,
+							 const gchar		*directory);
+gboolean	 pk_backend_dbus_get_depends		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters,
+							 gchar			**package_ids,
+							 gboolean		 recursive);
+gboolean	 pk_backend_dbus_get_requires		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters,
+							 gchar			**package_ids,
+							 gboolean		 recursive);
+gboolean	 pk_backend_dbus_get_update_detail	(PkBackendDbus		*backend_dbus,
+							 gchar			**package_ids);
+gboolean	 pk_backend_dbus_get_details		(PkBackendDbus		*backend_dbus,
+							 gchar			**package_ids);
+gboolean	 pk_backend_dbus_get_files		(PkBackendDbus		*backend_dbus,
+							 gchar			**package_ids);
+gboolean	 pk_backend_dbus_remove_packages	(PkBackendDbus		*backend_dbus,
+							 gchar			**package_ids,
+							 gboolean		 allow_deps,
+							 gboolean		 autoremove);
+gboolean	 pk_backend_dbus_install_packages	(PkBackendDbus		*backend_dbus,
+							 gchar			**package_ids);
+gboolean	 pk_backend_dbus_update_packages	(PkBackendDbus		*backend_dbus,
+							 gchar			**package_ids);
+gboolean	 pk_backend_dbus_install_files		(PkBackendDbus		*backend_dbus,
+							 gboolean		 trusted,
+							 gchar			**full_paths);
+gboolean	 pk_backend_dbus_service_pack		(PkBackendDbus		*backend_dbus,
+							 const gchar		*location,
+							 gboolean		 enabled);
+gboolean	 pk_backend_dbus_what_provides		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters,
+							 PkProvidesEnum		 provides,
+							 const gchar		*search);
+gboolean	 pk_backend_dbus_kill			(PkBackendDbus		*backend_dbus);
+gboolean	 pk_backend_dbus_repo_enable		(PkBackendDbus		*backend_dbus,
+							 const gchar		*rid,
+							 gboolean		 enabled);
+gboolean	 pk_backend_dbus_repo_set_data		(PkBackendDbus		*backend_dbus,
+							 const gchar		*rid,
+							 const gchar		*parameter,
+							 const gchar		*value);
+gboolean	 pk_backend_dbus_get_repo_list		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters);
+gboolean	 pk_backend_dbus_cancel			(PkBackendDbus		*backend_dbus);
+gboolean	 pk_backend_dbus_get_updates		(PkBackendDbus		*backend_dbus,
+							 PkBitfield	 filters);
+gboolean	 pk_backend_dbus_set_name		(PkBackendDbus		*backend_dbus,
+							 const gchar		*service);
+gboolean	 pk_backend_dbus_get_distro_upgrades	(PkBackendDbus		*backend_dbus);
 
 G_END_DECLS
 

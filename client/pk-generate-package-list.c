@@ -29,7 +29,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-package-id.h>
@@ -45,6 +45,7 @@ main (int argc, char *argv[])
 	PkClient *client;
 	GOptionContext *context;
 	gboolean verbose = FALSE;
+	gboolean quiet = FALSE;
 	gboolean ret;
 	GError *error = NULL;
 	PkPackageList *list = NULL;
@@ -52,6 +53,8 @@ main (int argc, char *argv[])
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 			"Show extra debugging information", NULL },
+		{ "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet,
+			"Do not show any output to the console", NULL },
 		{ NULL}
 	};
 
@@ -62,7 +65,7 @@ main (int argc, char *argv[])
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	client = pk_client_new ();
 	pk_client_set_use_buffer (client, TRUE, NULL);
@@ -71,7 +74,8 @@ main (int argc, char *argv[])
 	/* get the package list with no filter */
 	ret = pk_client_get_packages (client, PK_FILTER_ENUM_NONE, &error);
 	if (!ret) {
-		g_print ("Failed to get package lists: %s\n", error->message);
+		if (!quiet)
+			g_print ("Failed to get package lists: %s\n", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -80,8 +84,8 @@ main (int argc, char *argv[])
 	list = pk_client_get_package_list (client);
 	ret = pk_package_list_to_file (list, PK_PACKAGE_LIST_LOCATION);
 	if (!ret) {
-		g_print ("Failed to write to disk\n");
-		g_error_free (error);
+		if (!quiet)
+			g_print ("Failed to write to disk\n");
 		goto out;
 	}
 

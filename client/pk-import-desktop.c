@@ -29,7 +29,9 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-package-id.h>
@@ -39,7 +41,11 @@
 
 static PkClient *client = NULL;
 static PkExtra *extra = NULL;
+static gboolean quiet = FALSE;
 
+/**
+ * pk_desktop_get_name_for_file:
+ **/
 static gchar *
 pk_desktop_get_name_for_file (const gchar *filename)
 {
@@ -53,14 +59,14 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	/* use PK to find the correct package */
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
-		pk_warning ("failed to reset client: %s", error->message);
+		egg_warning ("failed to reset client: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
 
-	ret = pk_client_search_file (client, PK_FILTER_ENUM_INSTALLED, filename, &error);
+	ret = pk_client_search_file (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), filename, &error);
 	if (!ret) {
-		pk_warning ("failed to search file: %s", error->message);
+		egg_warning ("failed to search file: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -69,14 +75,14 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	list = pk_client_get_package_list (client);
 	size = pk_package_list_get_size (list);
 	if (size != 1) {
-		pk_warning ("not correct size, %i", size);
+		egg_warning ("not correct size, %i", size);
 		goto out;
 	}
 
 	/* get the obj */
 	obj = pk_package_list_get_obj (list, 0);
 	if (obj == NULL) {
-		pk_error ("cannot get obj");
+		egg_warning ("cannot get obj");
 		goto out;
 	}
 
@@ -84,12 +90,14 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	name = g_strdup (obj->id->name);
 
 out:
-	if (list != NULL) {
+	if (list != NULL)
 		g_object_unref (list);
-	}
 	return name;
 }
 
+/**
+ * pk_import_get_locale:
+ **/
 static gchar *
 pk_import_get_locale (const gchar *buffer)
 {
@@ -97,15 +105,17 @@ pk_import_get_locale (const gchar *buffer)
 	gchar *locale;
 	gchar *result;
 	result = g_strrstr (buffer, "[");
-	if (result == NULL) {
+	if (result == NULL)
 		return NULL;
-	}
 	locale = g_strdup (result+1);
-	len = pk_strlen (locale, 20);
+	len = egg_strlen (locale, 20);
 	locale[len-1] = '\0';
 	return locale;
 }
 
+/**
+ * pk_desktop_process_desktop:
+ **/
 static void
 pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 {
@@ -126,8 +136,9 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 
 	key = g_key_file_new ();
 	ret = g_key_file_load_from_file (key, filename, G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
-	if (ret == FALSE) {
-		pk_error ("bad!!");
+	if (!ret) {
+		egg_warning ("cannot open desktop file %s", filename);
+		return;
 	}
 
 	/* get this specific locale list */
@@ -137,17 +148,23 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		if (g_str_has_prefix (key_array[i], "Name")) {
 			/* set the locale */
 			locale_temp = pk_import_get_locale (key_array[i]);
-			if (locale_temp != NULL) {
+			if (locale_temp != NULL)
 				g_ptr_array_add (locale_array, g_strdup (locale_temp));
-			}
 		}
 	}
 	g_strfreev (key_array);
 
-	g_print ("PackageName:\t%s\t[", package_name);
+	if (!quiet)
+		g_print ("PackageName:\t%s\t[", package_name);
 
 	/* get the default entry */
 	name_unlocalised = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", NULL);
+	if (!egg_strzero (name_unlocalised)) {
+		if (!quiet)
+			g_print ("C");
+		pk_extra_set_locale (extra, "C");
+		pk_extra_set_data_locale (extra, package_name, name_unlocalised);
+	}
 
 	/* for each locale */
 	for (i=0; i<locale_array->len; i++) {
@@ -156,36 +173,38 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		name = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", locale, NULL);
 
 		/* if different, then save */
-		if (pk_strequal (name_unlocalised, name) == FALSE) {
-			g_print (" %s", locale);
+		if (egg_strequal (name_unlocalised, name) == FALSE) {
+			if (!quiet)
+				g_print (" %s", locale);
 			comment = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
 								"Comment", locale, NULL);
 			genericname = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
 								    "GenericName", locale, NULL);
-			pk_debug ("PackageName=%s, Locale=%s, Name=%s, GenericName=%s, Comment=%s",
+			egg_debug ("PackageName=%s, Locale=%s, Name=%s, GenericName=%s, Comment=%s",
 				  package_name, locale, name, genericname, comment);
 			pk_extra_set_locale (extra, locale);
 
 			/* save in order of priority */
-			if (comment != NULL) {
+			if (comment != NULL)
 				pk_extra_set_data_locale (extra, package_name, comment);
-			} else if (genericname != NULL) {
+			else if (genericname != NULL)
 				pk_extra_set_data_locale (extra, package_name, genericname);
-			} else {
+			else
 				pk_extra_set_data_locale (extra, package_name, name);
-			}
 			g_free (comment);
 			g_free (genericname);
 		}
 		g_free (name);
 	}
+	g_ptr_array_foreach (locale_array, (GFunc) g_free, NULL);
 	g_ptr_array_free (locale_array, TRUE);
 	g_free (name_unlocalised);
-	g_print ("]\n");
+	if (!quiet)
+		g_print ("]\n");
 
 	exec = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", NULL);
 	icon = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", NULL);
-	pk_debug ("PackageName=%s, Exec=%s, Icon=%s", package_name, exec, icon);
+	egg_debug ("PackageName=%s, Exec=%s, Icon=%s", package_name, exec, icon);
 	pk_extra_set_data_package (extra, package_name, icon, exec);
 	g_free (icon);
 	g_free (exec);
@@ -193,6 +212,9 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	g_key_file_free (key);
 }
 
+/**
+ * pk_desktop_process_directory:
+ **/
 static void
 pk_desktop_process_directory (const gchar *directory)
 {
@@ -205,7 +227,8 @@ pk_desktop_process_directory (const gchar *directory)
 
 	dir = g_dir_open (directory, 0, NULL);
 	if (dir == NULL) {
-		pk_error ("not a valid desktop dir!");
+		egg_warning ("not a valid desktop dir!");
+		return;
 	}
 
 	pattern = g_pattern_spec_new ("*.desktop");
@@ -220,10 +243,11 @@ pk_desktop_process_directory (const gchar *directory)
 			package_name = pk_desktop_get_name_for_file (filename);
 
 			/* process the file */
-			if (package_name != NULL) {
+			if (package_name != NULL)
 				pk_desktop_process_desktop (package_name, filename);
-			} else {
-				g_print ("%s ignored, failed to get package name\n", filename);
+			else {
+				if (!quiet)
+					g_print ("%s ignored, failed to get package name\n", filename);
 			}
 			g_free (package_name);
 			g_free (filename);
@@ -252,6 +276,8 @@ main (int argc, char *argv[])
 			"Database location (default set from daemon)", NULL },
 		{ "desktop-location", '\0', 0, G_OPTION_ARG_STRING, &desktop_location,
 			"Desktop location (default " PK_IMPORT_APPLICATIONSDIR ")", NULL },
+		{ "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet,
+			"Do not show any output to the console", NULL },
 		{ NULL}
 	};
 
@@ -262,12 +288,11 @@ main (int argc, char *argv[])
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
-	pk_debug_init (verbose);
+	egg_debug_init (verbose);
 
 	/* set defaults */
-	if (desktop_location == NULL) {
+	if (desktop_location == NULL)
 		desktop_location = PK_IMPORT_APPLICATIONSDIR;
-	}
 
 	client = pk_client_new ();
 	pk_client_set_use_buffer (client, TRUE, NULL);
@@ -276,8 +301,10 @@ main (int argc, char *argv[])
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
-		g_print (_("Could not open database: %s"), database_location);
-		g_print ("\n%s\n", _("You probably need to run this program as the root user"));
+		if (!quiet) {
+			g_print (_("Could not open database: %s"), database_location);
+			g_print ("\n%s\n", _("You probably need to run this program as the root user"));
+		}
 		goto out;
 	}
 

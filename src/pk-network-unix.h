@@ -41,7 +41,7 @@ G_BEGIN_DECLS
 #define PK_IS_NETWORK_UNIX_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_NETWORK_UNIX))
 #define PK_NETWORK_UNIX_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_NETWORK_UNIX, PkNetworkUnixClass))
 #define PK_NETWORK_UNIX_ERROR		(pk_network_unix_error_quark ())
-#define PK_NETWORK_UNIX_TYPE_ERROR	(pk_network_unix_error_get_type ()) 
+#define PK_NETWORK_UNIX_TYPE_ERROR	(pk_network_unix_error_get_type ())
 
 typedef struct _PkNetworkUnixPrivate	PkNetworkUnixPrivate;
 typedef struct _PkNetworkUnix		PkNetworkUnix;

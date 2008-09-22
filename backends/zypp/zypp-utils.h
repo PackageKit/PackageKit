@@ -89,6 +89,11 @@ gboolean zypp_is_changeable_media (const zypp::Url &url);
 zypp::ResPool zypp_build_pool (gboolean include_local);
 
 /**
+* check and warns the user that a repository may be outdated
+*/
+void warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool);
+
+/**
  * Build and return a ResPool that contains only the local resolvables.
  */
 zypp::ResPool zypp_build_local_pool ();
@@ -135,7 +140,7 @@ zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
 gchar * zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable);
 
 /**
-  * Get the RepoInfo 
+  * Get the RepoInfo
   */
 zypp::RepoInfo
 zypp_get_Repository (PkBackend *backend, const gchar *alias);
@@ -175,7 +180,7 @@ std::set<zypp::PoolItem> * zypp_get_patches (PkRestartEnum restart = PK_RESTART_
   */
 gboolean zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force);
 
-void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkFilterEnum filters);
+void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkBitfield filters);
 
 /**
   * convert a std::set<zypp::sat::Solvable to gchar ** array

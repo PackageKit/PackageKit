@@ -33,7 +33,7 @@ G_BEGIN_DECLS
 #define PK_IS_SPAWN_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_SPAWN))
 #define PK_SPAWN_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_SPAWN, PkSpawnClass))
 #define PK_SPAWN_ERROR		(pk_spawn_error_quark ())
-#define PK_SPAWN_TYPE_ERROR	(pk_spawn_error_get_type ()) 
+#define PK_SPAWN_TYPE_ERROR	(pk_spawn_error_get_type ())
 
 typedef struct PkSpawnPrivate PkSpawnPrivate;
 
@@ -48,6 +48,21 @@ typedef struct
 	GObjectClass	parent_class;
 } PkSpawnClass;
 
+/**
+ * PkSpawnExitType:
+ *
+ * How the spawned file exited
+ **/
+typedef enum {
+	PK_SPAWN_EXIT_TYPE_SUCCESS,		/* script run, without any problems */
+	PK_SPAWN_EXIT_TYPE_FAILED,		/* script failed to run */
+	PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED,	/* changed dispatcher, another started */
+	PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT,	/* we timed out, and exited the dispatcher instance */
+	PK_SPAWN_EXIT_TYPE_SIGQUIT,		/* we killed the instance (SIGQUIT) */
+	PK_SPAWN_EXIT_TYPE_SIGKILL,		/* we killed the instance (SIGKILL) */
+	PK_SPAWN_EXIT_TYPE_UNKNOWN
+} PkSpawnExitType;
+
 GType		 pk_spawn_get_type		  	(void) G_GNUC_CONST;
 PkSpawn		*pk_spawn_new				(void);
 
@@ -56,6 +71,7 @@ gboolean	 pk_spawn_argv				(PkSpawn	*spawn,
 							 gchar		**envp)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_spawn_kill				(PkSpawn	*spawn);
+gboolean	 pk_spawn_exit				(PkSpawn	*spawn);
 
 G_END_DECLS
 

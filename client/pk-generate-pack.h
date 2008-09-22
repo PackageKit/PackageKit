@@ -24,7 +24,7 @@
 #define __PK_GENERATE_PACK_H
 
 gchar		*pk_generate_pack_perhaps_resolve		(PkClient *client,
-								 PkFilterEnum filter, 
+								 PkBitfield filter,
 								 const gchar *package,
 								 GError **error);
 gboolean	 pk_generate_pack_download_only 		(PkClient *client,

@@ -25,6 +25,11 @@ UseNetworkHeuristic=true
 # default=300
 ShutdownTimeout=300
 
+# Unlock the backend after this many seconds idle.
+#
+# default=5
+BackendShutdownTimeout=5
+
 # Default backend, as chosen in the configure script. This will be used where
 # no --backend="foo" option is given to the daemon.
 #
@@ -40,4 +45,18 @@ DefaultBackend=@defaultbackend@
 #
 # ProxyHTTP=username:password@server.lan:8080
 # ProxyFTP=server.lan:21
+
+# Scan the desktop files when we do RefreshCache
+#
+# NOTE: Don't enable this for backends that are slow doing SearchFile()
+#
+# default=false
+RefreshCacheScanDesktopFiles=false
+
+# Update the package list when we RefreshCache
+#
+# NOTE: Don't enable this for backends that are slow doing GetPackages()
+#
+# default=false
+RefreshCacheUpdatePackageList=false
 

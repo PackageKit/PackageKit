@@ -42,7 +42,9 @@
 
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-package-id.h"
 #include "pk-package-obj.h"
@@ -130,7 +132,7 @@ pk_package_list_add_list (PkPackageList *plist, PkPackageList *list)
  * pk_package_list_to_string:
  **/
 gchar *
-pk_package_list_to_string (PkPackageList *plist)
+pk_package_list_to_string (const PkPackageList *plist)
 {
 	PkPackageObj *obj;
 	guint i;
@@ -160,10 +162,10 @@ pk_package_list_to_string (PkPackageList *plist)
 }
 
 /**
- * pk_package_list_to_argv:
+ * pk_package_list_to_strv:
  **/
 gchar **
-pk_package_list_to_argv (PkPackageList *plist)
+pk_package_list_to_strv (const PkPackageList *plist)
 {
 	PkPackageObj *obj;
 	GPtrArray *array;
@@ -182,7 +184,8 @@ pk_package_list_to_argv (PkPackageList *plist)
 	}
 
 	/* convert to argv */
-	package_ids = pk_ptr_array_to_argv (array);
+	package_ids = pk_ptr_array_to_strv (array);
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 
 	return package_ids;
@@ -192,7 +195,7 @@ pk_package_list_to_argv (PkPackageList *plist)
  * pk_package_list_get_size:
  **/
 guint
-pk_package_list_get_size (PkPackageList *plist)
+pk_package_list_get_size (const PkPackageList *plist)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), 0);
 	return plist->priv->array->len;
@@ -286,11 +289,11 @@ pk_package_list_sort_info (PkPackageList *plist)
  * pk_package_list_get_obj:
  **/
 const PkPackageObj *
-pk_package_list_get_obj (PkPackageList *plist, guint item)
+pk_package_list_get_obj (const PkPackageList *plist, guint item)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
 	if (item >= plist->priv->array->len) {
-		pk_warning ("item too large!");
+		egg_warning ("item too large!");
 		return NULL;
 	}
 	return g_ptr_array_index (plist->priv->array, item);
@@ -318,7 +321,7 @@ pk_package_list_clear (PkPackageList *plist)
  * pk_package_list_contains:
  **/
 gboolean
-pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
+pk_package_list_contains (const PkPackageList *plist, const gchar *package_id)
 {
 	PkPackageObj *obj;
 	guint i;
@@ -404,7 +407,7 @@ pk_package_list_remove_obj (PkPackageList *plist, const PkPackageObj *obj)
  * pk_package_list_contains_obj:
  **/
 gboolean
-pk_package_list_contains_obj (PkPackageList *plist, const PkPackageObj *obj)
+pk_package_list_contains_obj (const PkPackageList *plist, const PkPackageObj *obj)
 {
 	PkPackageObj *obj_temp;
 	guint i;
@@ -429,7 +432,7 @@ pk_package_list_contains_obj (PkPackageList *plist, const PkPackageObj *obj)
  * pk_package_list_to_file:
  **/
 gboolean
-pk_package_list_to_file (PkPackageList *plist, const gchar *filename)
+pk_package_list_to_file (const PkPackageList *plist, const gchar *filename)
 {
 	PkPackageObj *obj;
 	guint i;
@@ -456,7 +459,7 @@ pk_package_list_to_file (PkPackageList *plist, const gchar *filename)
 	text = g_string_free (buffer, FALSE);
 	ret = g_file_set_contents (filename, text, -1, &error);
 	if (!ret) {
-		pk_warning ("Failed to write to disk: %s", error->message);
+		egg_warning ("Failed to write to disk: %s", error->message);
 		g_error_free (error);
 	}
 	g_free (text);
@@ -482,7 +485,7 @@ pk_package_list_add_file (PkPackageList *plist, const gchar *filename)
 
 	ret = g_file_get_contents (filename, &text, NULL, &error);
 	if (!ret) {
-		pk_warning ("Failed to read from disk: %s", error->message);
+		egg_warning ("Failed to read from disk: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -492,7 +495,7 @@ pk_package_list_add_file (PkPackageList *plist, const gchar *filename)
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
 		/* we get trailing whitespace sometimes */
-		if (!pk_strzero (split[i])) {
+		if (!egg_strzero (split[i])) {
 			obj = pk_package_obj_from_string (split[i]);
 			if (obj != NULL) {
 				pk_package_list_add_obj (plist, obj);
@@ -545,7 +548,7 @@ pk_package_list_finalize (GObject *object)
 	g_return_if_fail (plist->priv != NULL);
 
 	/* removed any cached packages */
-	pk_package_list_clear (plist);
+	g_ptr_array_foreach (plist->priv->array, (GFunc) pk_package_obj_free, NULL);
 	g_ptr_array_free (plist->priv->array, TRUE);
 
 	G_OBJECT_CLASS (pk_package_list_parent_class)->finalize (object);
@@ -567,11 +570,11 @@ pk_package_list_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_package_list (LibSelfTest *test)
+pk_package_list_test (EggTest *test)
 {
 	PkPackageList *plist;
 	gchar *text;
@@ -583,107 +586,111 @@ libst_package_list (LibSelfTest *test)
 	gchar *r1_text;
 	gchar *r2_text;
 	PkPackageId *id;
+	guint size;
+	gchar **argv;
 
-	if (libst_start (test, "PkPackageList", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkPackageList"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "create");
+	egg_test_title (test, "create");
 	plist = pk_package_list_new ();
-	if (plist != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, plist != NULL);
 
 	/************************************************************/
-	libst_title (test, "add entry");
+	egg_test_title (test, "make sure size is zero");
+	size = pk_package_list_get_size (plist);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size: %i", size);
+
+	/************************************************************/
+	egg_test_title (test, "add entry");
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, id, "GNOME!");
 	pk_package_id_free (id);
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, ret);
 
 	/************************************************************/
-	libst_title (test, "check not exists");
+	egg_test_title (test, "make sure size is one");
+	size = pk_package_list_get_size (plist);
+	if (size == 1)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size: %i", size);
+
+	/************************************************************/
+	egg_test_title (test, "make sure argv is correct");
+	argv = pk_package_list_to_strv (plist);
+	if (argv != NULL &&
+	    egg_strequal (argv[0], "gnome;1.23;i386;data") &&
+	    argv[1] == NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "list: %s", argv[0]);
+	g_strfreev (argv);
+
+	/************************************************************/
+	egg_test_title (test, "check not exists");
 	id = pk_package_id_new_from_string ("gnome;1.23;i386;data");
 	ret = pk_package_list_contains (plist, "liferea;1.23;i386;data");
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	pk_package_id_free (id);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
-	libst_title (test, "check exists");
+	egg_test_title (test, "check exists");
 	ret = pk_package_list_contains (plist, "gnome;1.23;i386;data");
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, ret);
 
 	/************************************************************/
-	libst_title (test, "check exists different data");
+	egg_test_title (test, "check exists different data");
 	ret = pk_package_list_contains (plist, "gnome;1.23;i386;fedora");
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, ret);
 
 	/************************************************************/
-	libst_title (test, "add entry");
+	egg_test_title (test, "add entry");
 	text = pk_package_list_to_string (plist);
-	if (pk_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "get string incorrect '%s'", text);
-	}
+	if (egg_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "get string incorrect '%s'", text);
 	g_free (text);
 
 	/************************************************************/
-	libst_title (test, "add entry with NULL summary");
+	egg_test_title (test, "add entry with NULL summary");
 	id = pk_package_id_new_from_string ("nosummary;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, id, NULL);
 	pk_package_id_free (id);
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "could not add NULL summary");
-	}
+	if (ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "could not add NULL summary");
 	g_object_unref (plist);
 
 	plist = pk_package_list_new ();
 
 	/************************************************************/
-	libst_title (test, "add entries");
+	egg_test_title (test, "add entries");
 	id = pk_package_id_new_from_string ("def;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, id, "zed");
 	pk_package_id_free (id);
-	if (!ret) {
-		libst_failed (test, NULL);
-	}
+	if (!ret)
+		egg_test_failed (test, NULL);
 	id = pk_package_id_new_from_string ("abc;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, id, "fed");
 	pk_package_id_free (id);
-	if (!ret) {
-		libst_failed (test, NULL);
-	}
+	if (!ret)
+		egg_test_failed (test, NULL);
 	id = pk_package_id_new_from_string ("ghi;1.23;i386;data");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_ENHANCEMENT, id, "aed");
 	pk_package_id_free (id);
-	if (!ret) {
-		libst_failed (test, NULL);
-	}
-	libst_success (test, NULL);
+	if (!ret)
+		egg_test_failed (test, NULL);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "sort by package_id");
+	egg_test_title (test, "sort by package_id");
 	ret = pk_package_list_sort (plist);
 	r0 = pk_package_list_get_obj (plist, 0);
 	r1 = pk_package_list_get_obj (plist, 1);
@@ -691,41 +698,41 @@ libst_package_list (LibSelfTest *test)
 	r0_text = pk_package_id_to_string (r0->id);
 	r1_text = pk_package_id_to_string (r1->id);
 	r2_text = pk_package_id_to_string (r2->id);
-	if (pk_strequal (r0_text, "abc;1.23;i386;data") &&
-	    pk_strequal (r1_text, "def;1.23;i386;data") &&
-	    pk_strequal (r2_text, "ghi;1.23;i386;data")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
-	}
+	if (egg_strequal (r0_text, "abc;1.23;i386;data") &&
+	    egg_strequal (r1_text, "def;1.23;i386;data") &&
+	    egg_strequal (r2_text, "ghi;1.23;i386;data"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
+	g_free (r0_text);
+	g_free (r1_text);
+	g_free (r2_text);
 
 	/************************************************************/
-	libst_title (test, "sort by summary");
+	egg_test_title (test, "sort by summary");
 	ret = pk_package_list_sort_summary (plist);
 	r0 = pk_package_list_get_obj (plist, 0);
 	r1 = pk_package_list_get_obj (plist, 1);
 	r2 = pk_package_list_get_obj (plist, 2);
-	if (pk_strequal (r0->summary, "aed") &&
-	    pk_strequal (r1->summary, "fed") &&
-	    pk_strequal (r2->summary, "zed")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
-	}
+	if (egg_strequal (r0->summary, "aed") &&
+	    egg_strequal (r1->summary, "fed") &&
+	    egg_strequal (r2->summary, "zed"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
 
 	/************************************************************/
-	libst_title (test, "sort by severity");
+	egg_test_title (test, "sort by severity");
 	ret = pk_package_list_sort_info (plist);
 	r0 = pk_package_list_get_obj (plist, 0);
 	r1 = pk_package_list_get_obj (plist, 1);
 	r2 = pk_package_list_get_obj (plist, 2);
 	if (r0->info == PK_INFO_ENUM_SECURITY &&
 	    r1->info == PK_INFO_ENUM_BUGFIX &&
-	    r2->info == PK_INFO_ENUM_ENHANCEMENT) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
-	}
+	    r2->info == PK_INFO_ENUM_ENHANCEMENT)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
 
 	g_object_unref (plist);
 
@@ -744,7 +751,7 @@ libst_package_list (LibSelfTest *test)
 	pk_package_id_free (id);
 
 	/************************************************************/
-	libst_title (test, "sort by package_id then priority (should not mess up previous sort)");
+	egg_test_title (test, "sort by package_id then priority (should not mess up previous sort)");
 	pk_package_list_sort (plist);
 	pk_package_list_sort_info (plist);
 	r0 = pk_package_list_get_obj (plist, 0);
@@ -753,17 +760,19 @@ libst_package_list (LibSelfTest *test)
 	r0_text = pk_package_id_to_string (r0->id);
 	r1_text = pk_package_id_to_string (r1->id);
 	r2_text = pk_package_id_to_string (r2->id);
-	if (pk_strequal (r0_text, "abc;1.23;i386;data") &&
-	    pk_strequal (r1_text, "def;1.23;i386;data") &&
-	    pk_strequal (r2_text, "ghi;1.23;i386;data")) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
-	}
+	if (egg_strequal (r0_text, "abc;1.23;i386;data") &&
+	    egg_strequal (r1_text, "def;1.23;i386;data") &&
+	    egg_strequal (r2_text, "ghi;1.23;i386;data"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
+	g_free (r0_text);
+	g_free (r1_text);
+	g_free (r2_text);
 
 	g_object_unref (plist);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

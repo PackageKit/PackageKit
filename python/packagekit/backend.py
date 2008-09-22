@@ -25,7 +25,7 @@ import sys
 import codecs
 import traceback
 import locale
-
+import os.path
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
 from enums import *
@@ -83,11 +83,11 @@ class PackageKitBaseBackend:
             if self.isLocked():
                 self.unLock()
             sys.exit(1)
-    
+
     def message(self,typ,msg):
         '''
         send 'message' signal
-        @param typ: MESSAGE_WARNING, MESSAGE_NOTICE, MESSAGE_DEAMON
+        @param typ: MESSAGE_BROKEN_MIRROR
         '''
         print "message\t%s\t%s" % (typ,msg)
         sys.stdout.flush()
@@ -100,6 +100,16 @@ class PackageKitBaseBackend:
         @param summary: The package Summary
         '''
         print >> sys.stdout,"package\t%s\t%s\t%s" % (status,id,summary)
+        sys.stdout.flush()
+
+    def distro_upgrade(self,dtype,name,summary):
+        '''
+        send 'distro-upgrade' signal
+        @param dtype: the enumerated DISTRO_UPGRADE_* string
+        @param name: The distro name, e.g. "fedora-9"
+        @param summary: The localised distribution name and description
+        '''
+        print >> sys.stdout,"distro-upgrade\t%s\t%s\t%s" % (dtype,name,summary)
         sys.stdout.flush()
 
     def status(self,state):
@@ -146,6 +156,13 @@ class PackageKitBaseBackend:
         @param file_list: List of the files in the package, separated by ';'
         '''
         print >> sys.stdout,"files\t%s\t%s" % (id,file_list)
+        sys.stdout.flush()
+
+    def finished(self):
+        '''
+        Send 'finished' signal
+        '''
+        print >> sys.stdout,"finished"
         sys.stdout.flush()
 
     def update_detail(self,id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text,changelog,state,issued,updated):
@@ -351,6 +368,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def get_distro_upgrades(self):
+        '''
+        Implement the {backend}-get-distro-upgrades functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
     def repo_enable(self,repoid,enable):
         '''
         Implement the {backend}-repo-enable functionality
@@ -372,7 +396,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def repo_signature_install(self,package):        
+    def repo_signature_install(self,package):
         '''
         Implement the {backend}-repo-signature-install functionality
         Needed to be implemented in a sub class
@@ -380,11 +404,11 @@ class PackageKitBaseBackend:
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def download_packages(self,directory,packages):
-	'''
-	Implement the {backend}-download-packages functionality
-	Needed to be implemented in a sub class
-	'''
-	self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        '''
+        Implement the {backend}-download-packages functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def customTracebackHandler(self,tb):
         '''
@@ -396,6 +420,151 @@ class PackageKitBaseBackend:
         Overload this method if you what handle special Tracebacks
         '''
         return False
+
+    def run_command(self):
+        '''
+        interprete the command from the calling args (self.cmds)
+        '''
+        fname = os.path.split(self.cmds[0])[1]
+        cmd = fname.split('.')[0] # get the helper filename wo ext
+        args = self.cmds[1:]
+        self.dispatch_command(cmd,args)
+
+    def dispatch_command(self,cmd,args):
+        if cmd == 'download-packages':
+            dir = args[0]
+            pkgs = args[1:]
+            self.download_packages(dir,pkgs)
+            self.finished();
+        elif cmd == 'get-depends':
+            filters = args[0]
+            pkgs = args[1].split('|')
+            recursive = args[2]
+            self.get_depends(filters,pkgs,recursive)
+            self.finished();
+        elif cmd == 'get-details':
+            pkgs = args[0].split('|')
+            self.get_details(pkgs)
+            self.finished();
+        elif cmd == 'get-files':
+            pkgs = args[0].split('|')
+            self.get_files(pkgs)
+            self.finished();
+        elif cmd == 'get-packages':
+            filters = args[0]
+            self.get_packages(filters)
+            self.finished();
+        elif cmd == 'get-repo-list':
+            filters = args[0]
+            self.get_repo_list(filters)
+            self.finished();
+        elif cmd == 'get-requires':
+            filters = args[0]
+            pkgs = args[1].split('|')
+            recursive = args[2]
+            self.get_requires(filters,pkgs,recursive)
+            self.finished();
+        elif cmd == 'get-update-detail':
+            pkgs = args[0].split('|')
+            self.get_update_detail(pkgs)
+            self.finished();
+        elif cmd == 'get-distro-upgrades':
+            self.get_distro_upgrades()
+            self.finished();
+        elif cmd == 'get-updates':
+            filters = args[0]
+            self.get_updates(filters)
+            self.finished();
+        elif cmd == 'install-files':
+            trusted = args[0]
+            files_to_inst = args[1:]
+            self.install_files(trusted,files_to_inst)
+            self.finished();
+        elif cmd == 'install-packages':
+            pkgs = args[0:]
+            self.install_packages(pkgs)
+            self.finished();
+        elif cmd == 'install-signature':
+            sigtype = args[0]
+            key_id = args[1]
+            package_id = args[2]
+            self.install_signature(sigtype,key_id,package_id)
+            self.finished();
+        elif cmd == 'refresh-cache':
+            self.refresh_cache()
+            self.finished();
+        elif cmd == 'remove-packages':
+            allowdeps = args[0]
+            packages = args[1:]
+            self.remove_packages(allowdeps,packages)
+            self.finished();
+        elif cmd == 'repo-enable':
+            repoid = args[0]
+            state=args[1]
+            self.repo_enable(repoid,state)
+            self.finished();
+        elif cmd == 'repo-set-data':
+            repoid = args[0]
+            para = args[1]
+            value=args[2]
+            self.repo_set_data(repoid,para,value)
+            self.finished();
+        elif cmd == 'resolve':
+            filters = args[0]
+            packages = args[1:]
+            self.resolve(filters,packages)
+            self.finished();
+        elif cmd == 'search-details':
+            options = args[0]
+            searchterms = args[1]
+            self.search_details(options,searchterms)
+            self.finished();
+        elif cmd == 'search-file':
+            options = args[0]
+            searchterms = args[1]
+            self.search_file(options,searchterms)
+            self.finished();
+        elif cmd == 'search-group':
+            options = args[0]
+            searchterms = args[1]
+            self.search_group(options,searchterms)
+            self.finished();
+        elif cmd == 'search-name':
+            options = args[0]
+            searchterms = args[1]
+            self.search_name(options,searchterms)
+            self.finished();
+        elif cmd == 'signature-install':
+            package = args[0]
+            self.repo_signature_install(package)
+            self.finished();
+        elif cmd == 'update-packages':
+            packages = args[0:]
+            self.update_packages(packages)
+            self.finished();
+        elif cmd == 'update-system':
+            self.update_system()
+            self.finished();
+        elif cmd == 'what-provides':
+            filters = args[0]
+            provides_type = args[1]
+            search = args[2]
+            self.what_provides(filters,provides_type,search)
+            self.finished();
+        else:
+            errmsg = "command '%s' is not known" % cmd
+            self.error(ERROR_INTERNAL_ERROR,errmsg,exit=False)
+            self.finished();
+
+    def dispatcher(self,args):
+        if len(args) > 0:
+            self.dispatch_command(args[0],args[1:])
+        while True:
+            line = raw_input('')
+            if line == 'exit':
+                break
+            args = line.split('\t')
+            self.dispatch_command(args[0],args[1:])
 
 def exceptionHandler(typ,value,tb,base):
     # Restore original exception handler
@@ -411,7 +580,6 @@ def exceptionHandler(typ,value,tb,base):
             errmsg += '    %s;' % c
         # send the traceback to PackageKit
         base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
-
 
 def installExceptionHandler(base):
     sys.excepthook = lambda typ,value,tb: exceptionHandler(typ,value,tb,base)

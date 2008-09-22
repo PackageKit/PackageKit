@@ -33,7 +33,7 @@
 #include <glib.h>
 #include <dbus/dbus-glib.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-inhibit.h"
 
 #define PK_INHIBIT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_INHIBIT, PkInhibitPrivate))
@@ -82,11 +82,11 @@ pk_inhibit_lock (PkInhibit *inhibit)
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	if (inhibit->priv->proxy == NULL) {
-		pk_warning ("not connected to HAL");
+		egg_warning ("not connected to HAL");
 		return FALSE;
 	}
 	if (inhibit->priv->is_locked) {
-		pk_warning ("already inhibited, not trying again");
+		egg_warning ("already inhibited, not trying again");
 		return FALSE;
 	}
 
@@ -102,7 +102,7 @@ pk_inhibit_lock (PkInhibit *inhibit)
 	}
 	if (ret) {
 		inhibit->priv->is_locked = TRUE;
-		pk_debug ("emit lock %i", inhibit->priv->is_locked);
+		egg_debug ("emit lock %i", inhibit->priv->is_locked);
 		g_signal_emit (inhibit, signals [PK_INHIBIT_LOCKED], 0, inhibit->priv->is_locked);
 	}
 
@@ -121,11 +121,11 @@ pk_inhibit_unlock (PkInhibit *inhibit)
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	if (inhibit->priv->proxy == NULL) {
-		pk_warning ("not connected to HAL");
+		egg_warning ("not connected to HAL");
 		return FALSE;
 	}
 	if (inhibit->priv->is_locked == FALSE) {
-		pk_warning ("not inhibited, not trying to unlock");
+		egg_warning ("not inhibited, not trying to unlock");
 		return FALSE;
 	}
 
@@ -141,7 +141,7 @@ pk_inhibit_unlock (PkInhibit *inhibit)
 	}
 	if (ret) {
 		inhibit->priv->is_locked = FALSE;
-		pk_debug ("emit lock %i", inhibit->priv->is_locked);
+		egg_debug ("emit lock %i", inhibit->priv->is_locked);
 		g_signal_emit (inhibit, signals [PK_INHIBIT_LOCKED], 0, inhibit->priv->is_locked);
 	}
 
@@ -161,15 +161,14 @@ pk_inhibit_add (PkInhibit *inhibit, gpointer data)
 
 	for (i=0; i<inhibit->priv->array->len; i++) {
 		if (g_ptr_array_index (inhibit->priv->array, i) == data) {
-			pk_debug ("trying to add item %p already in array", data);
+			egg_debug ("trying to add item %p already in array", data);
 			return FALSE;
 		}
 	}
 	g_ptr_array_add (inhibit->priv->array, data);
 	/* do inhibit */
-	if (inhibit->priv->array->len == 1) {
+	if (inhibit->priv->array->len == 1)
 		ret = pk_inhibit_lock (inhibit);
-	}
 	return ret;
 }
 
@@ -187,13 +186,12 @@ pk_inhibit_remove (PkInhibit *inhibit, gpointer data)
 	for (i=0; i<inhibit->priv->array->len; i++) {
 		if (g_ptr_array_index (inhibit->priv->array, i) == data) {
 			g_ptr_array_remove_index (inhibit->priv->array, i);
-			if (inhibit->priv->array->len == 0) {
+			if (inhibit->priv->array->len == 0)
 				ret = pk_inhibit_unlock (inhibit);
-			}
 			return ret;
 		}
 	}
-	pk_debug ("cannot find item %p", data);
+	egg_debug ("cannot find item %p", data);
 	return FALSE;
 }
 
@@ -212,10 +210,10 @@ pk_inhibit_finalize (GObject *object)
 	/* force an unlock if we are inhibited */
 	if (inhibit->priv->is_locked) {
 		ret = pk_inhibit_unlock (inhibit);
-		if (!ret) {
-			pk_warning ("failed to unock on finalise!");
-		}
+		if (!ret)
+			egg_warning ("failed to unock on finalise!");
 	}
+	/* no need to free the data in the array */
 	g_ptr_array_free (inhibit->priv->array, TRUE);
 	g_object_unref (inhibit->priv->proxy);
 
@@ -257,7 +255,7 @@ pk_inhibit_init (PkInhibit *inhibit)
 	/* connect to system bus */
 	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		pk_warning ("Cannot connect to system bus: %s", error->message);
+		egg_warning ("Cannot connect to system bus: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -267,7 +265,7 @@ pk_inhibit_init (PkInhibit *inhibit)
 				  HAL_DBUS_SERVICE, HAL_DBUS_PATH_COMPUTER,
 				  HAL_DBUS_INTERFACE_DEVICE, &error);
 	if (error != NULL) {
-		pk_warning ("Cannot connect to HAL: %s", error->message);
+		egg_warning ("Cannot connect to HAL: %s", error->message);
 		g_error_free (error);
 	}
 
@@ -292,120 +290,108 @@ pk_inhibit_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_inhibit (LibSelfTest *test)
+pk_inhibit_test (EggTest *test)
 {
 	PkInhibit *inhibit;
 	gboolean ret;
 
-	if (libst_start (test, "PkInhibit", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkInhibit"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	egg_test_title (test, "get an instance");
 	inhibit = pk_inhibit_new ();
-	if (inhibit != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (inhibit != NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "check we have a connection");
-	if (inhibit->priv->proxy != NULL) {
-		libst_success (test, "got proxy");
-	} else {
-		libst_failed (test, "could not get proxy");
-	}
+	egg_test_title (test, "check we have a connection");
+	if (inhibit->priv->proxy != NULL)
+		egg_test_success (test, "got proxy");
+	else
+		egg_test_failed (test, "could not get proxy");
 
 	/************************************************************/
-	libst_title (test, "check we are not inhibited");
+	egg_test_title (test, "check we are not inhibited");
 	ret = pk_inhibit_locked (inhibit);
-	if (ret == FALSE) {
-		libst_success (test, "marked correctly");
-	} else {
-		libst_failed (test, "not marked correctly");
-	}
+	if (ret == FALSE)
+		egg_test_success (test, "marked correctly");
+	else
+		egg_test_failed (test, "not marked correctly");
 
 	/************************************************************/
-	libst_title (test, "add 123");
+	egg_test_title (test, "add 123");
 	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (123));
-	if (ret) {
-		libst_success (test, "inhibited");
-	} else {
-		libst_failed (test, "could not inhibit");
-	}
+	if (ret)
+		egg_test_success (test, "inhibited");
+	else
+		egg_test_failed (test, "could not inhibit");
 
 	/************************************************************/
-	libst_title (test, "check we are inhibited");
+	egg_test_title (test, "check we are inhibited");
 	ret = pk_inhibit_locked (inhibit);
-	if (ret) {
-		libst_success (test, "marked correctly");
-	} else {
-		libst_failed (test, "not marked correctly");
-	}
+	if (ret)
+		egg_test_success (test, "marked correctly");
+	else
+		egg_test_failed (test, "not marked correctly");
 
 	/************************************************************/
-	libst_title (test, "add 123 (again)");
+	egg_test_title (test, "add 123 (again)");
 	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (123));
-	if (ret == FALSE) {
-		libst_success (test, "correctly ignored second");
-	} else {
-		libst_failed (test, "added the same number twice");
-	}
+	if (ret == FALSE)
+		egg_test_success (test, "correctly ignored second");
+	else
+		egg_test_failed (test, "added the same number twice");
 
 	/************************************************************/
-	libst_title (test, "add 456");
+	egg_test_title (test, "add 456");
 	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (456));
-	if (ret) {
-		libst_success (test, "inhibited");
-	} else {
-		libst_failed (test, "could not inhibit");
-	}
+	if (ret)
+		egg_test_success (test, "inhibited");
+	else
+		egg_test_failed (test, "could not inhibit");
 
 	/************************************************************/
-	libst_title (test, "remove 123");
+	egg_test_title (test, "remove 123");
 	ret = pk_inhibit_remove (inhibit, GUINT_TO_POINTER (123));
-	if (ret) {
-		libst_success (test, "removed first inhibit");
-	} else {
-		libst_failed (test, "could not remove inhibit");
-	}
+	if (ret)
+		egg_test_success (test, "removed first inhibit");
+	else
+		egg_test_failed (test, "could not remove inhibit");
 
 	/************************************************************/
-	libst_title (test, "check we are still inhibited");
+	egg_test_title (test, "check we are still inhibited");
 	ret = pk_inhibit_locked (inhibit);
-	if (ret) {
-		libst_success (test, "marked correctly");
-	} else {
-		libst_failed (test, "not marked correctly");
-	}
+	if (ret)
+		egg_test_success (test, "marked correctly");
+	else
+		egg_test_failed (test, "not marked correctly");
 
 	/************************************************************/
-	libst_title (test, "remove 456");
+	egg_test_title (test, "remove 456");
 	ret = pk_inhibit_remove (inhibit, GUINT_TO_POINTER (456));
-	if (ret) {
-		libst_success (test, "removed second inhibit");
-	} else {
-		libst_failed (test, "could not remove inhibit");
-	}
+	if (ret)
+		egg_test_success (test, "removed second inhibit");
+	else
+		egg_test_failed (test, "could not remove inhibit");
 
 	/************************************************************/
-	libst_title (test, "check we are not inhibited");
+	egg_test_title (test, "check we are not inhibited");
 	ret = pk_inhibit_locked (inhibit);
-	if (ret == FALSE) {
-		libst_success (test, "marked correctly");
-	} else {
-		libst_failed (test, "not marked correctly");
-	}
+	if (ret == FALSE)
+		egg_test_success (test, "marked correctly");
+	else
+		egg_test_failed (test, "not marked correctly");
 
 	g_object_unref (inhibit);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

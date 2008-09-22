@@ -25,8 +25,11 @@
 #include <glib.h>
 #include <gmodule.h>
 #include <pk-enum.h>
+#include <pk-bitfield.h>
 #include <pk-package-id.h>
-#include <pk-debug.h>
+
+#include "egg-debug.h"
+#include "egg-string.h"
 
 G_BEGIN_DECLS
 
@@ -117,6 +120,10 @@ gboolean	 pk_backend_details			(PkBackend	*backend,
 gboolean 	 pk_backend_files 			(PkBackend 	*backend,
 							 const gchar	*package_id,
 							 const gchar 	*filelist);
+gboolean 	 pk_backend_distro_upgrade		(PkBackend 	*backend,
+							 PkDistroUpgradeEnum type,
+							 const gchar 	*name,
+							 const gchar 	*summary);
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
 							 PkErrorCodeEnum code,
 							 const gchar	*details, ...);
@@ -158,7 +165,7 @@ gboolean	 pk_backend_set_pointer			(PkBackend	*backend,
 /* get backend instance data */
 const gchar	*pk_backend_get_string			(PkBackend	*backend,
 							 const gchar	*key);
-GPtrArray	*pk_backend_get_array			(PkBackend	*backend,
+const GPtrArray	*pk_backend_get_array			(PkBackend	*backend,
 							 const gchar	*key);
 gchar		**pk_backend_get_strv			(PkBackend	*backend,
 							 const gchar	*key);
@@ -193,32 +200,33 @@ typedef struct {
 	const gchar	*author;
 	void		(*initialize)			(PkBackend	*backend);
 	void		(*destroy)			(PkBackend	*backend);
-	PkGroupEnum	(*get_groups)			(PkBackend	*backend);
-	PkFilterEnum	(*get_filters)			(PkBackend	*backend);
+	PkBitfield	(*get_groups)			(PkBackend	*backend);
+	PkBitfield	(*get_filters)			(PkBackend	*backend);
 	void		(*cancel)			(PkBackend	*backend);
 	void		(*download_packages)		(PkBackend	*backend,
 							 gchar		**package_ids,
 							 const gchar	*directory);
 	void		(*get_depends)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 gchar		**package_ids,
 							 gboolean	 recursive);
 	void		(*get_details)			(PkBackend	*backend,
 							 gchar		**package_ids);
+	void		(*get_distro_upgrades)		(PkBackend	*backend);
 	void		(*get_files)			(PkBackend	*backend,
 							 gchar		**package_ids);
 	void		(*get_packages)			(PkBackend	*backend,
-							 PkFilterEnum	 filters);
+							 PkBitfield	 filters);
 	void		(*get_repo_list)		(PkBackend	*backend,
-							 PkFilterEnum	 filters);
+							 PkBitfield	 filters);
 	void		(*get_requires)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 gchar		**package_ids,
 							 gboolean	 recursive);
 	void		(*get_update_detail)		(PkBackend	*backend,
 							 gchar		**package_ids);
 	void		(*get_updates)			(PkBackend	*backend,
-							 PkFilterEnum	 filters);
+							 PkBitfield	 filters);
 	void		(*install_files)		(PkBackend	*backend,
 							 gboolean	 trusted,
 							 gchar		**full_paths);
@@ -242,21 +250,21 @@ typedef struct {
 							 const gchar	*parameter,
 							 const gchar	*value);
 	void		(*resolve)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 gchar		**packages);
 	void		(*rollback)			(PkBackend	*backend,
 							 const gchar	*transaction_id);
 	void		(*search_details)		(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 const gchar	*search);
 	void		(*search_file)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 const gchar	*search);
 	void		(*search_group)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 const gchar	*search);
 	void		(*search_name)			(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 const gchar	*search);
 	void		(*service_pack)			(PkBackend	*backend,
 							 const gchar	*location,
@@ -265,14 +273,14 @@ typedef struct {
 							 gchar		**package_ids);
 	void		(*update_system)		(PkBackend	*backend);
 	void		(*what_provides)		(PkBackend	*backend,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 PkProvidesEnum	 provides,
 							 const gchar	*search);
 	gpointer	padding[10];
 } PkBackendDesc;
 
 #define PK_BACKEND_OPTIONS(description, author, initialize, destroy, get_filters, get_groups, cancel, download_packages, \
-			   get_depends, get_details, get_files, get_packages, get_repo_list, get_requires,	\
+			   get_depends, get_details, get_distro_upgrades, get_files, get_packages, get_repo_list, get_requires,	\
 			   get_update_detail, get_updates, install_files, install_packages,		\
 			   install_signature, refresh_cache, remove_packages, repo_enable,		\
 			   repo_set_data, resolve, rollback, search_details, search_file, search_group,	\
@@ -288,6 +296,7 @@ typedef struct {
 		download_packages,	\
 		get_depends,		\
 		get_details,		\
+		get_distro_upgrades,	\
 		get_files,		\
 		get_packages,		\
 		get_repo_list,		\

@@ -41,7 +41,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-client.h>
 #include <pk-common.h>
 #include <pk-task-list.h>
@@ -93,14 +93,14 @@ pk_task_list_print (PkTaskList *tlist)
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	length = tlist->priv->task_list->len;
-	pk_debug ("Tasks:");
+	egg_debug ("Tasks:");
 	if (length == 0) {
-		pk_debug ("[none]...");
+		egg_debug ("[none]...");
 		return TRUE;
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		pk_debug ("%s\t%s:%s %s", item->tid, pk_role_enum_to_text (item->role),
+		egg_debug ("%s\t%s:%s %s", item->tid, pk_role_enum_to_text (item->role),
 			 pk_status_enum_to_text (item->status), item->text);
 	}
 	return TRUE;
@@ -166,7 +166,7 @@ pk_task_list_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskLis
 	item = pk_task_list_find_existing_tid (tlist, tid);
 	item->status = status;
 
-	pk_debug ("emit status-changed(%s) for %s", pk_status_enum_to_text (status), tid);
+	egg_debug ("emit status-changed(%s) for %s", pk_status_enum_to_text (status), tid);
 	g_signal_emit (tlist, signals [PK_TASK_LIST_STATUS_CHANGED], 0);
 	g_free (tid);
 }
@@ -178,7 +178,7 @@ static void
 gpk_task_list_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, PkTaskList *tlist)
 {
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
-	pk_debug ("emit finished");
+	egg_debug ("emit finished");
 	g_signal_emit (tlist, signals [PK_TASK_LIST_FINISHED], 0, client, exit, runtime);
 }
 
@@ -189,7 +189,7 @@ static void
 gpk_task_list_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, PkTaskList *tlist)
 {
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
-	pk_debug ("emit error-code");
+	egg_debug ("emit error-code");
 	g_signal_emit (tlist, signals [PK_TASK_LIST_ERROR_CODE], 0, client, error_code, details);
 }
 
@@ -200,8 +200,58 @@ static void
 gpk_task_list_message_cb (PkClient *client, PkMessageEnum message, const gchar *details, PkTaskList *tlist)
 {
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
-	pk_debug ("emit message");
+	egg_debug ("emit message");
 	g_signal_emit (tlist, signals [PK_TASK_LIST_MESSAGE], 0, client, message, details);
+}
+
+/**
+ * pk_task_list_item_free:
+ **/
+static void
+pk_task_list_item_free (PkTaskListItem *item)
+{
+	g_return_if_fail (item != NULL);
+	g_object_unref (item->monitor);
+	g_free (item->tid);
+	g_free (item->text);
+	g_free (item);
+}
+
+/**
+ * pk_task_list_item_create:
+ **/
+static PkTaskListItem *
+pk_task_list_item_create (PkTaskList *tlist, const gchar *tid)
+{
+	gboolean ret;
+	GError *error = NULL;
+	PkTaskListItem *item;
+
+	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), NULL);
+	g_return_val_if_fail (tid != NULL, NULL);
+
+	item = g_new0 (PkTaskListItem, 1);
+	item->tid = g_strdup (tid);
+	item->monitor = pk_client_new ();
+	g_signal_connect (item->monitor, "status-changed",
+			  G_CALLBACK (pk_task_list_status_changed_cb), tlist);
+	g_signal_connect (item->monitor, "finished",
+			  G_CALLBACK (gpk_task_list_finished_cb), tlist);
+	g_signal_connect (item->monitor, "error-code",
+			  G_CALLBACK (gpk_task_list_error_code_cb), tlist);
+	g_signal_connect (item->monitor, "message",
+			  G_CALLBACK (gpk_task_list_message_cb), tlist);
+	ret = pk_client_set_tid (item->monitor, tid, &error);
+	if (!ret) {
+		egg_error ("could not set tid: %s", error->message);
+		g_error_free (error);
+		pk_task_list_item_free (item);
+		return NULL;
+	}
+	pk_client_get_role (item->monitor, &item->role, &item->text, NULL);
+	pk_client_get_status (item->monitor, &item->status, NULL);
+
+	return item;
 }
 
 /**
@@ -217,13 +267,15 @@ pk_task_list_refresh (PkTaskList *tlist)
 	guint length;
 	const gchar *tid;
 	const gchar **array;
-	GError *error = NULL;
-	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	/* get the latest job list */
 	array = pk_control_transaction_list_get (tlist->priv->control);
+	if (array == NULL) {
+		egg_warning ("failed to get transaction list");
+		return FALSE;
+	}
 
 	/* mark previous tasks as non-valid */
 	length = tlist->priv->task_list->len;
@@ -239,27 +291,8 @@ pk_task_list_refresh (PkTaskList *tlist)
 
 		item = pk_task_list_find_existing_tid (tlist, tid);
 		if (item == NULL) {
-			pk_debug ("new job, have to create %s", tid);
-			item = g_new0 (PkTaskListItem, 1);
-			item->tid = g_strdup (tid);
-			item->monitor = pk_client_new ();
-			g_signal_connect (item->monitor, "status-changed",
-					  G_CALLBACK (pk_task_list_status_changed_cb), tlist);
-			g_signal_connect (item->monitor, "finished",
-					  G_CALLBACK (gpk_task_list_finished_cb), tlist);
-			g_signal_connect (item->monitor, "error-code",
-					  G_CALLBACK (gpk_task_list_error_code_cb), tlist);
-			g_signal_connect (item->monitor, "message",
-					  G_CALLBACK (gpk_task_list_message_cb), tlist);
-			ret = pk_client_set_tid (item->monitor, tid, &error);
-			if (!ret) {
-				pk_error ("could not set tid: %s", error->message);
-				g_error_free (error);
-				break;
-			}
-			pk_client_get_role (item->monitor, &item->role, &item->text, NULL);
-			pk_client_get_status (item->monitor, &item->status, NULL);
-
+			egg_debug ("new job, have to create %s", tid);
+			item = pk_task_list_item_create (tlist, tid);
 			/* add to watched array */
 			g_ptr_array_add (tlist->priv->task_list, item);
 		}
@@ -272,11 +305,8 @@ pk_task_list_refresh (PkTaskList *tlist)
 	for (i=0; i<tlist->priv->task_list->len; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
 		if (!item->valid) {
-			g_object_unref (item->monitor);
+			pk_task_list_item_free (item);
 			g_ptr_array_remove (tlist->priv->task_list, item);
-			g_free (item->tid);
-			g_free (item->text);
-			g_free (item);
 		}
 	}
 
@@ -301,7 +331,7 @@ pk_task_list_get_item (PkTaskList *tlist, guint item)
 {
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), NULL);
 	if (item >= tlist->priv->task_list->len) {
-		pk_warning ("item too large!");
+		egg_warning ("item too large!");
 		return NULL;
 	}
 	return g_ptr_array_index (tlist->priv->task_list, item);
@@ -316,8 +346,8 @@ pk_task_list_transaction_list_changed_cb (PkControl *control, PkTaskList *tlist)
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 	/* for now, just refresh all the jobs. a little inefficient me thinks */
 	pk_task_list_refresh (tlist);
-	pk_debug ("emit changed");
-	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
+	egg_debug ("emit changed");
+	g_signal_emit (tlist, signals [PK_TASK_LIST_CHANGED], 0);
 }
 
 /**
@@ -327,11 +357,11 @@ static void
 pk_task_list_connection_changed_cb (PkConnection *connection, gboolean connected, PkTaskList *tlist)
 {
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
-	pk_debug ("connected=%i", connected);
-	if (connected) {
-		/* force a refresh so we have valid data*/
+	egg_debug ("connected=%i", connected);
+
+	/* force a refresh so we have valid data */
+	if (connected)
 		pk_task_list_refresh (tlist);
-	}
 }
 
 /**
@@ -373,7 +403,7 @@ pk_task_list_class_init (PkTaskListClass *klass)
 	 * PkTaskList::message:
 	 * @tlist: the #PkTaskList instance that emitted the signal
 	 * @client: the #PkClient instance that caused the signal
-	 * @message: the PkMessageEnum type of the message, e.g. PK_MESSAGE_ENUM_WARNING
+	 * @message: the PkMessageEnum type of the message, e.g. %PK_MESSAGE_ENUM_BROKEN_MIRROR
 	 * @details: the non-localised message details
 	 *
 	 * The ::message signal is emitted when the transaction wants to tell
@@ -452,8 +482,6 @@ pk_task_list_init (PkTaskList *tlist)
 static void
 pk_task_list_finalize (GObject *object)
 {
-	guint i;
-	PkTaskListItem *item;
 	PkTaskList *tlist;
 
 	g_return_if_fail (object != NULL);
@@ -462,14 +490,7 @@ pk_task_list_finalize (GObject *object)
 	g_return_if_fail (tlist->priv != NULL);
 
 	/* remove all watches */
-	for (i=0; i<tlist->priv->task_list->len; i++) {
-		item = g_ptr_array_index (tlist->priv->task_list, i);
-		g_object_unref (item->monitor);
-		g_free (item->text);
-		g_ptr_array_remove (tlist->priv->task_list, item);
-		g_free (item);
-	}
-
+	g_ptr_array_foreach (tlist->priv->task_list, (GFunc) pk_task_list_item_free, NULL);
 	g_ptr_array_free (tlist->priv->task_list, TRUE);
 	g_object_unref (tlist->priv->control);
 
@@ -490,66 +511,60 @@ pk_task_list_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 static gboolean finished = FALSE;
 
 static void
-libst_task_list_finished_cb (PkTaskList *tlist, PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
+pk_task_list_test_finished_cb (PkTaskList *tlist, PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 	finished = TRUE;
-	libst_loopquit (test);
+	egg_test_loop_quit (test);
 }
 
 void
-libst_task_list (LibSelfTest *test)
+pk_task_list_test (EggTest *test)
 {
 	PkTaskList *tlist;
 	PkClient *client;
 	gboolean ret;
 	GError *error = NULL;
 
-	if (libst_start (test, "PkTaskList", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkTaskList"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "get client");
+	egg_test_title (test, "get client");
 	tlist = pk_task_list_new ();
-	if (tlist != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, tlist != NULL);
 	g_signal_connect (tlist, "finished",
-			  G_CALLBACK (libst_task_list_finished_cb), test);
+			  G_CALLBACK (pk_task_list_test_finished_cb), test);
 
 	/************************************************************/
-	libst_title (test, "search for power");
+	egg_test_title (test, "search for power");
 	client = pk_client_new ();
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
-		libst_failed (test, "failed: %s", error->message);
+		egg_test_failed (test, "failed: %s", error->message);
 		g_error_free (error);
 	}
-	libst_loopwait (test, 5000);
-	libst_success (test, NULL);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "we finished?");
-	if (finished) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "not finished");
-	}
+	egg_test_title (test, "we finished?");
+	if (finished)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "not finished");
 
 	g_object_unref (tlist);
 	g_object_unref (client);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

@@ -21,53 +21,59 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <libselftest.h>
-#include <pk-debug.h>
+#include "egg-test.h"
+#include <egg-debug.h>
 
 /* prototypes */
-void libst_conf (LibSelfTest *test);
-void libst_inhibit (LibSelfTest *test);
-void libst_spawn (LibSelfTest *test);
-void libst_transaction_list (LibSelfTest *test);
-void libst_transaction_db (LibSelfTest *test);
-void libst_security (LibSelfTest *test);
-void libst_time (LibSelfTest *test);
-void libst_backend (LibSelfTest *test);
-void libst_backend_spawn (LibSelfTest *test);
-void libst_backend_dbus (LibSelfTest *test);
-void libst_file_monitor (LibSelfTest *test);
-void libst_engine (LibSelfTest *test);
+void egg_string_test (EggTest *test);
+void pk_conf_test (EggTest *test);
+void pk_store_test (EggTest *test);
+void pk_inhibit_test (EggTest *test);
+void pk_spawn_test (EggTest *test);
+void pk_transaction_list_test (EggTest *test);
+void pk_transaction_db_test (EggTest *test);
+void pk_security_test (EggTest *test);
+void pk_time_test (EggTest *test);
+void pk_backend_test (EggTest *test);
+void pk_backend_test_spawn (EggTest *test);
+void pk_backend_test_dbus (EggTest *test);
+void pk_file_monitor_test (EggTest *test);
+void pk_engine_test (EggTest *test);
 
 int
 main (int argc, char **argv)
 {
-	LibSelfTest test;
+	EggTest *test;
 
 	if (! g_thread_supported ()) {
 		g_thread_init (NULL);
 	}
 	g_type_init ();
-	libst_init (&test);
-	pk_debug_init (TRUE);
+	test = egg_test_init ();
+	egg_debug_init (TRUE);
+
+	/* egg */
+	egg_string_test (test);
 
 	/* components */
-	libst_file_monitor (&test);
-	libst_security (&test);
-	libst_time (&test);
-	libst_conf (&test);
-	libst_inhibit (&test);
-	libst_spawn (&test);
-	libst_transaction_list (&test);
-	libst_transaction_db (&test);
+	pk_file_monitor_test (test);
+	pk_security_test (test);
+	pk_time_test (test);
+	pk_conf_test (test);
+	pk_store_test (test);
+	pk_inhibit_test (test);
+	pk_spawn_test (test);
+	pk_transaction_list_test (test);
+	pk_transaction_db_test (test);
 
 	/* backend stuff */
-	libst_backend (&test);
-	libst_backend_spawn (&test);
-	libst_backend_dbus (&test);
+	pk_backend_test (test);
+	pk_backend_test_spawn (test);
+	pk_backend_test_dbus (test);
 
 	/* system */
-	libst_engine (&test);
+	pk_engine_test (test);
 
-	return (libst_finish (&test));
+	return (egg_test_finish (test));
 }
 

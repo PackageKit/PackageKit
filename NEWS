@@ -1,3 +1,429 @@
+Version 0.3.4
+~~~~~~~~~~~~~~
+Released: 2008-09-22
+
+New Features:
+ - Add PK_PROVIDES_ENUM_HARDWARE_DRIVER to query for hardware drivers (Scott Reeves)
+ - python: Implemented some extra methods and did some code cleanups (Tim Lauridsen)
+ - python: Removed packagekitwrapper.py, it is replaced by packagekit/client.py (Tim Lauridsen)
+ - python: Implemented the last methods and make the wrapper-test.py a lot better (Tim Lauridsen)
+ - Change RefreshCacheScanDesktopFiles and RefreshCacheUpdatePackageList to default true (Richard Hughes)
+ - Use a new in-process desktop scanner and package list generator (Richard Hughes)
+ - Add a --quiet flag for the import tools (Richard Hughes)
+
+Bugfixes:
+ - Add PLD to pk_get_distro_id (Marcin Banasiak)
+ - Split the dispatcher commands using tab else we don't handle filenames
+   with spaces in them correctly (Richard Hughes)
+ - Store translations in the C locale so we can still provide a package name
+   in C even if there are no translations (Richard Hughes)
+ - Emit a proper error code when we can't start the dameon (Richard Hughes)
+ - Don't show a critical warning if we can't start up the daemon (Richard Hughes)
+ - Use gconstpointer rather than const gpointer (Richard Hughes)
+ - Make pkcon always overwrite the percentage values (Richard Hughes)
+ - python API: return objects instead of dict (Tim Lauridsen)
+
+Backends:
+ - dummy: Respect the filter setting in SearchFile (Richard Hughes)
+ - smart: Add download status for non-package/repodata files (Anders F Bjorklund)
+ - smart: Implement GetUpdateDetail (Anders F Bjorklund)
+ - smart: Only allow one download at a time, to avoid confusing interface (Anders F Bjorklund)
+ - urpmi: Now using dispatched backend (Aurelien Lefebvre)
+ - yum: Make meta packages use verbose name as summary, insted of description (Tim Lauridsen)
+ - yum: Fix a potential problem if the package_id could not be found (Richard Hughes)
+ - yum: Hook up get-distro-upgrades in the dispatcher (Richard Hughes)
+ - yum: Don't try and upgrade kernel when we GetDistroUpgrades (Richard Hughes)
+ - yum: Don't report the collection version or arch as meta (Richard Hughes)
+ - yum: Add the collection size to the output of GetDetails (Richard Hughes)
+ - yum: get-updates should list obsoletes too (Tim Lauridsen)
+ - yum: GetDepends return packages added from group, not only deps (Tim Lauridsen)
+ - zypp: Fix the separator when returning multiple id's (Scott Reeves)
+ - zypp: Build pool before solving (Stefan Haas)
+ - zypp: Cleaned WhatProvides method (Stefan Haas)
+ - zypp: Fix potential segfault (Martin S)
+ - zypp: Check provides if no package was found (Stefan Haas)
+ - zypp: Package expects a summary, not a (long) description (Martin S)
+
+Version 0.3.3
+~~~~~~~~~~~~~~
+Released: 2008-09-16
+
+Notes:
+ - This release fixes a serious bug where the daemon would sometimes stop
+   handling requests under heavy load.
+ - A new package type of Collection has been added that is designed to work
+   as an abstract package. It can be used to install or remove groups of packages.
+
+New Features:
+ - Add PK_INFO_ENUM_COLLECTION_INSTALLED and PK_INFO_ENUM_COLLECTION_AVAILABLE (Richard Hughes)
+ - Add pk-upgrade-distro.sh so we can actually do the distro upgrade action (Richard Hughes)
+ - Add support for running the Ubuntu dist upgrade tool (Sebastian Heinlein)
+ - Add PK_FILTER_ENUM_COLLECTIONS and PK_FILTER_ENUM_NOT_COLLECTIONS functionality (Tim Lauridsen)
+ - Add documentation about how the udev firmware loading stuff actually works (Richard Hughes)
+ - Added client Python API based on the packagekitwrapper.py (Tim Lauridsen)
+ - Python client API - many improvements (Tim Lauridsen)
+
+Bugfixes:
+ - Don't assume /bin/sh supports echo -e (James Westby)
+ - Complete handling of local backend directory for test (James Westby)
+ - When we have finished RefreshCache delete the udev file if it exists (Richard Hughes)
+ - Fix the race where firemware is requested by udev and and old file is overwritten (Richard Hughes)
+ - Actually print the transactions without using --verbose when using pkmon (Richard Hughes)
+ - Use a proper error enum when we have no more mirrors to try (Richard Hughes)
+ - Don't convert null sections of a package_id instead use an empty string (Richard Hughes)
+ - Turn off -Wformat-security as old gtk-doc generators break the build (Richard Hughes)
+ - Use a bitfield when searching for files in the catalog (Richard Hughes)
+ - Execute the pk_transaction_run handler in an idle callback (Richard Hughes)
+ - Allow the catalog list to be split with more than just ; chars (Richard Hughes)
+ - Fix up all the memory leaks found by the self tests in src and libpackagekit (Richard Hughes)
+ - Make PkBitfield a 64 bit type now we have 33 group enums (Richard Hughes)
+ - Emit custom exit status from PkSpawn so we can tell the exit status (Richard Hughes)
+ - Only return the icon name in PkExtra if it's an icon name, and not an actual icon (Richard Hughes)
+ - PkExtra is a singleton, so don't error out when we try to reuse it (Richard Hughes)
+ - Add GError parameters to all the public functions in PkControl that can fail (Richard Hughes)
+
+Backends:
+ - apt: Handle inconsistent source repo state (James Westby)
+ - apt: Only define the enhanced softwareproperties class if possible (Sebastian Heinlein)
+ - apt: Disable the sources list repository if it is inconsistent (Sebastian Heinlein)
+ - apt: Add missing support for cdrom sources (Sebastian Heinlein)
+ - apt: Check the cache at first in doUpdatePackages (Sebastian Heinlein)
+ - apt: Add support for collections. Based on the metapackages section (Sebastian Heinlein)
+ - apt: Use a dictonary for the section to group mapping (Sebastian Heinlein)
+ - apt: Make sure that we are can lock the pkg system before installing local packages (Sebastian Heinlein)
+ - apt: Fix path of the reboot-required stamp (Sebastian Heinlein)
+ - dummy: Make what-provides take some time, and also special case some codec names (Richard Hughes)
+ - dummy: Make install_files and get_depends a little smarter (Richard Hughes)
+ - smart: Only show the best requires/provides, and remove the package itself (Anders F Bjorklund)
+ - smart: Better error reporting for install/remove of non-existing package (Anders F Bjorklund)
+ - smart: Fix progress report bug that was stopping update_system (Anders F Bjorklund)
+ - smart: Add basename_filtering (Anders F Bjorklund)
+ - smart: Need to reset backend between runs, when using dispatching mode (Anders F Bjorklund)
+ - smart: Use filters for get_updates (Anders F Bjorklund)
+ - smart: Set special repo data for installed/local (Anders F Bjorklund)
+ - smart: Fix unicode decode errors by using a temporary variable (Anders F Bjorklund)
+ - smart: Avoid looking in external pathlists for installed packages (Anders F Bjorklund)
+ - smart: Send more status updates when using dispatcher (Anders F Bjorklund)
+ - smart: Avoid KeyError when no extra deps (Anders F Bjorklund)
+ - smart: Add yum/yast metapackages group (Anders F Bjorklund)
+ - smart: Add alternative groups from opensuse rpm (Anders F Bjorklund)
+ - smart: Search for rpm subgroups, if no group matches (Anders F Bjorklund)
+ - smart: Add collections_filtering (Anders F Bjorklund)
+ - smart: Set special status for collection packages (Anders F Bjorklund)
+ - smart: Report get_details error when package not found or in wrong channel (Anders F Bjorklund)
+ - smart: Report get_fileserror when package not found or in wrong channel (Anders F Bjorklund)
+ - smart: Add mandriva rpm groups (Anders F Bjorklund)
+ - smart: Sync smart groups with urpmi groups somewhat (Anders F Bjorklund)
+ - smart: Move emulators to virtualization (Anders F Bjorklund)
+ - smart: Add more rpm groups from opensuse (Anders F Bjorklund)
+ - urpmi: Warn the user when installation failed because of bad signatures (Aurelien Lefebvre)
+ - urpmi: Best error's handle in refresh-cache method (Aurelien Lefebvre)
+ - urpmi: get-detail method now supports package ids list (Aurelien Lefebvre)
+ - urpmi: get-update-details now supports package ids list argument (Aurelien Lefebvre)
+ - urpmi: get-requires now supports package ids list argument (Aurelien Lefebvre)
+ - urpmi: resolve now supports package ids list argument (Aurelien Lefebvre)
+ - urpmi: get-files now supports package ids list argument (Aurelien Lefebvre)
+ - urpmi: get-depends now supports package ids list argument (Aurelien Lefebvre)
+ - urpmi: get_distro_upgrades method implemented (Aurelien Lefebvre)
+ - urpmi: Start converting methods to a dispatched backend (Aurelien Lefebvre)
+ - urpmi: Added support for install-packages to install more than one package (Aurelien Lefebvre)
+ - yum: Disable the YumDirect code, it dont work (Tim Lauridsen)
+ - yum: Add some code to support metapackage installation (Tim Lauridsen)
+ - yum: More metapackage functionality (Tim Lauridsen)
+ - yum: Add some percentage to collections (Tim Lauridsen)
+ - yum: Remove-packages should not fail on meta package (Tim Lauridsen)
+ - yum: Make remove-packages handle meta packages (Tim Lauridsen)
+ - yum: Make get-requires handle meta packages (comps groups) (Tim Lauridsen)
+ - yum: Handle unknown group in search-group (Tim Lauridsen)
+ - yum: Make get-details work with meta-packages (comps groups) (Tim Lauridsen)
+ - yum: Now we depend on 3.2.19, rip out YumDirectSQL as we can use yum directly
+        rather than fumble about in the sqlite files (Richard Hughes)
+ - yum: Add a workaround when getObsoletesTuples fails, fixes fd#17528 (Richard Hughes)
+ - yum: Support the collections group (Richard Hughes)
+ - yum: Handle the collections filter like we do all the other filters (Richard Hughes)
+ - zypp: Update the repo location (Scott Reeves)
+ - zypp: Implement fate #301904 to warn for outdated repo (Stefan Haas)
+ - zypp: Added get_distro_upgrades (Stefan Haas)
+ - zypp: Reset force flag also if something fails (Stefan Haas)
+
+Version 0.3.2
+~~~~~~~~~~~~~~
+Released: 2008-09-08
+
+Notes:
+ - This is the first release with the dispatcher functionality that allows
+   backend reuse. This speeds up packagekitd to native speeds when doing
+   repeated similar transactions from the same session and locale.
+
+Translations:
+ - Updated Spanish translation (Domingo Becker)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Polish translation (Piotr Drąg)
+ - Updated Finnish translation (Ville-Pekka Vainio)
+
+New Features:
+ - Allow the engine to reuse the backend as a dispatcher (Richard Hughes, Tim Lauridsen)
+ - Optionally auto-run pk-generate-package-list and pk-import-desktop (Richard Hughes)
+ - Unexport generic functions libpackagekit to avoid pollution (Richard Hughes)
+
+Bugfixes:
+ - Fix pkcon to treat the filters as bitfields, not enums (Richard Hughes)
+ - Check the install_files input before we process it. Fixes fd#17350 (Richard Hughes)
+ - Add another error enum for package conflicts (Richard Hughes)
+ - Add instructions for getting PackageKit on Ubuntu (Dimitris Symeonidis)
+ - Add the new status enum LOADING_CACHE (Richard Hughes)
+ - Fix pk-import-desktop so that it uses a valid bitfield, not just an enum (Richard Hughes)
+ - Spawned backends are allowed to call finished manually (Richard Hughes)
+ - Don't corrupt envp when we pass it to the new executable (Richard Hughes)
+ - Allow the backend to force the dispatcher to close after a timeout (Richard Hughes)
+ - Wait for the previous dispatcher to finish exiting before we try to launch the new one (Richard Hughes)
+ - Fix the dispatcher when called from different user sessions or locales (Richard Hughes)
+ - Remove pk-backend-python and the complicated interpretor stuff (Richard Hughes)
+ - Give a warning if a package is already installed, and a proper error if all
+   packages in the transaction are already installed. Fixes rh#459870 (Robin Norwood)
+ - Fix udev firmware rule to call the correct script (Scott Reeves)
+ - Rename the mime extension so we match service packs (Shishir Goyal)
+ - Fix the python enum converter to allow underscores in the value names (Sebastian Heinlein)
+ - Add support for distro upgrades to the dbus backend (Sebastian Heinlein)
+
+Backends:
+ - apt: Implement SearchFile (Sebastian Heinlein)
+ - apt: Implement the free filter (Sebastian Heinlein)
+ - apt: Handle the candidate origin to not break on obsolete packages (Sebastian Heinlein)
+ - apt: Add a custom cache class based on python-apt's consolidate branch (Sebastian Heinlein)
+ - apt: Import latest debfile from python-apt's consolidate branch (Sebastian Heinlein)
+ - apt: The __iter__ now uses a sorted list of the package names (Sebastian Heinlein)
+ - apt: Fix section to group mapping for non-main packages (Sebastian Heinlein)
+ - apt: Implement GetDistroUpgrades (Sebastian Heinlein)
+ - apt: Implement GetRepoList (Sebastian Heinlein)
+ - apt: Implement RepoEnable (Sebastian Heinlein)
+ - apt: Updates which succeed a security update as a security update (Sebastian Heinlein)
+ - apt: Acquire the system lock before making any invasive changes (Sebastian Heinlein)
+ - apt: Fail correctly if installing from cdrom (Sebastian Heinlein)
+ - apt: Detect a cancel in the cache refreshing correctly (Sebastian Heinlein)
+ - apt: Use the correct names if we fail to get the changelog. Fixes fd#17406 (Richard Hughes)
+ - apt: Remove the localised error descriptions (Richard Hughes)
+ - smart: Allow for multiple packages (Anders F Bjorklund)
+ - smart: Add get_packages (Anders F Bjorklund)
+ - smart: Add RPM/DEB groups (Anders F Bjorklund)
+ - smart: Add get_requires (Anders F Bjorklund)
+ - smart: Add basic status reports (Anders F Bjorklund)
+ - smart: Add more filters, graphical/development/license (Anders F Bjorklund)
+ - smart: Use filters for depends/requires (Anders F Bjorklund)
+ - smart: Make packageid work for deb/slack channels (Anders F Bjorklund)
+ - smart: Add search_file (Anders F Bjorklund)
+ - smart: Add what_provides (Anders F Bjorklund)
+ - smart: Add repo_set_data (Anders F Bjorklund)
+ - smart: Do graphical/development filtering (Anders F Bjorklund)
+ - smart: Add newest filtering (Anders F Bjorklund)
+ - smart: Fix packages/depends/requires bug with post filters (Anders F Bjorklund)
+ - smart: Allow cancel - killing backend (Anders F Bjorklund)
+ - smart: Show package for download/install (Anders F Bjorklund)
+ - smart: Don't forget the files signal in smart download (Anders F Bjorklund)
+ - smart: Don't remove essential packages (Anders F Bjorklund)
+ - smart: Avoid bombing out for smart progress updates without packages (Anders F Bjorklund)
+ - smart: Optionally allow backend to use dispatcher (Anders F Bjorklund)
+ - yum: Use inheritence insted of declaring a helper class (Tim Lauridsen)
+ - yum: Cleanup imports (Tim Lauridsen)
+ - yum: Use the sqlite3 build into python-2.5 (Tim Lauridsen)
+ - yum: Add dispatcher script for future improvement of the backend (Tim Lauridsen)
+ - yum: Let the yum backend use the new multiple command dispatcher (Tim Lauridsen)
+ - yum: Don't always prefer the first package returned from returnNewestByNameArch()
+        as this will be i386 on x64 which is wrong on multiarch (Richard Hughes)
+ - yum: Use the new PACKAGE_CONFLICTS error enum. Fixes rh#459914 (Richard Hughes)
+ - yum: Add GetDistroUpgrades support using the preupgrade package (Richard Hughes)
+ - yum: Never set self.yumbase.conf.cache = 1 to fix the dispatcher (Richard Hughes)
+ - yum2: Remove the yum2 plugin now we have a fast dispatcher (Richard Hughes)
+ - zypp: Updated pk-matrix (Stefan Haas)
+
+Version 0.3.1
+~~~~~~~~~~~~~~
+Released: 2008-08-27
+
+New Features:
+ - Add new API for GetDistroUpgrades() and ::DistroUpgrade() (Richard Hughes)
+ - Change DownloadPackages() so we get the correct SELinux contexts (Richard Hughes)
+ - Change Service Packs extension from .pack to .servicepack (Shishir Goel)
+ - Set "directory" as an argument for DownloadPackages() (Marcin Banasiak)
+ - Switch to using a guint64 bitfield type (Richard Hughes)
+ - Make PkMessages into proper enumerated types (Richard Hughes)
+ - Make sure the backends are respecting the installed filter (Richard Hughes)
+ - Remove the libtar code, and instead use the libarchive library (Richard Hughes)
+
+Bugfixes:
+ - Fix compiling the browser plugins with a new gtk (Richard Hughes)
+ - Don't crash the daemon if we never called SetLocale. Fixes fd#17298 (Richard Hughes)
+ - Don't allow reset (if sync) or cancel in ::Finished() (Richard Hughes)
+ - Fix a memory leak in RemovePackages (Shishir Goel)
+ - Clarify some documentation about the transaction methods (Richard Hughes)
+ - Build fix for pk-import-desktop (Sebastian Heinlein)
+ - Don't crash the 64 bit client tools when the daemon exits (Richard Hughes)
+ - Fix compile by adding add locale.h include (Scott Reeves)
+
+Backends:
+ - apt: Add support for Ubuntu supported filter (Sebastian Heinlein)
+ - apt: Fix filtering. Was totally broken (Sebastian Heinlein)
+ - apt: Fix wrong use of the STATUS_SETUP in doInit() (Sebastian Heinlein)
+ - apt: implement GetFiles (Sebastian Heinlein)
+ - apt: Instead of sending an empty file list for a package send none (Sebastian Heinlein)
+ - apt: support the new groups science, doc and electronics (Sebastian Heinlein)
+ - apt: do not report the package itself on GetDepends (Sebastian Heinlein)
+ - apt: Implement InstallFiles (Sebastian Heinlein)
+ - apt: Send a message if a newer package exists (Sebastian Heinlein)
+ - apt: fix killing hanging installations (Sebastian Heinlein)
+ - apt: Do not allow to remove essential packages (Sebastian Heinlein)
+ - apt: Add method for calling InstallFiles in the dbus backend (Sebastian Heinlein)
+ - conary: update to support {install,remove}-packages (Ken VanDine)
+ - conary: more updates to work with 0.3.x series (Ken VanDine)
+ - poldek: support multiple package_ids in GetFiles (Marcin Banasiak)
+ - poldek: make execute_* functions use va_list (Marcin Banasiak)
+ - poldek: fix crash (Marcin Banasiak)
+ - poldek: get localized descriptions and summaries (Marcin Banasiak)
+ - poldek: removed backend reference count (Marcin Banasiak)
+ - poldek: use source name as repo description (Marcin Banasiak)
+ - poldek: pass changes to GetUpdateDetail() (Marcin Banasiak)
+ - poldek: support documentation group (Marcin Banasiak)
+ - smart: use alias if channel has no name (Anders F Bjorklund)
+ - smart: GetDetails should be getDescription (Anders F Bjorklund)
+ - smart: match helpers with backend (Anders F Bjorklund)
+ - smart: use PackagekitPackage (Anders F Bjorklund)
+ - urpmi: make updatedetail signal compatible with 0.3.X (Aurelien Lefebvre)
+ - yum: fix InstallFile to make it work for multiple simultaneous packs (Shishir Goel)
+ - zypp: finish the switch to PkBitfield (Scott Reeves)
+
+Version 0.3.0
+~~~~~~~~~~~~~~
+Released: 2008-08-18
+
+Notes:
+ - This is the first release of the 0.3.x codebase and it may still have
+   regressions when compared to 0.2.4. These will be fixed as a priority.
+ - There is a lot of new functionality and many bug fixes in this release.
+ - The 0.3.0 branch is not ABI stable, as new API will be added on this branch
+   to support new use cases.
+ - The 0.2.x branch is ABI and API stable, and the 0.1.x branch is now obsolete.
+
+New Features:
+ - Add a PackageKit browser plugin (Owen W. Taylor)
+ - Add a README section on testing the plugin (Owen W. Taylor)
+ - Add a profiles page on the website so we can show typical users (Richard Hughes)
+ - Rename some of the PolicyKit actions on advice of David Zeuthen (Richard Hughes)
+ - GetRole now returns the role and the search parameter or the package name (Richard Hughes)
+ - Add a SetLocale method so we can support native localisations (Richard Hughes)
+ - Add a libtar build requirement for the new pkgenpack executable (Richard Hughes)
+ - Add pk-generate-package-list to generate a package list (Richard Hughes)
+ - Add pkgenpack, a way of packaging up a package and it's deps for installation (Shishir Goel)
+ - Add 4 new fields to the UpdateDetail callback struct (Richard Hughes)
+ - Add a new method DownloadPackages() to be able to create ServicePacks (Shishir Goel)
+ - Added download packages functionality to pkcon (Shishir Goel)
+
+Translations:
+ - Updated German translation (Fabian Affolter)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Brazilian Portuguese translation (Matt Domsch)
+ - Updated Polish translation (Piotr Drąg)
+
+Backends:
+ - alpm: fix build for 0.3.0 (Valeriy Lyasotskiy)
+ - apt: Add a first try to implement DownloadPackages. Does not work yet (Sebastian Heinlein)
+ - apt: Add a small script to analyze the HotShot profiling stats (Sebastian Heinlein)
+ - apt: Add mime-type support for WhatProvides (Sebastian Heinlein)
+ - apt: Add new command line options to the backend (Sebastian Heinlein)
+ - apt: Clean up doUpdatePackages () (Sebastian Heinlein)
+ - apt: Allow to get details of several package ids (Sebastian Heinlein)
+ - apt: Fix doResolve. Thanks to Martin Pitt for the patch (Sebastian Heinlein)
+ - apt: fixes in GetDepends: report packages to be upgraded and installed (Sebastian Heinlein)
+ - apt: GetDepends(): Take version requirements into account (Sebastian Heinlein)
+ - apt: Implement a basic doGetDepends() (Sebastian Heinlein)
+ - apt: Implement codec searching in WhatProvides (Sebastian Heinlein)
+ - apt: Implement GetRequires (Sebastian Heinlein)
+ - apt: Implement SetLocale (Sebastian Heinlein)
+ - apt: Implement SetProxy (Sebastian Heinlein)
+ - apt: implement the missing doUpdatePackages() method (Michael Vogt)
+ - apt: Provide more details about updates (Sebastian Heinlein)
+ - apt: Report packages that are upgradable but cannot be upgraded (Sebastian Heinlein)
+ - apt: Show license information based on the repositories (Sebastian Heinlein)
+ - apt: Support string array of package names in doResolve (Sebastian Heinlein)
+ - dummy: add some more functionality to the dummy backend (Richard Hughes)
+ - dummy: properly emulate package_ids for get_update_detail (Richard Hughes)
+ - opkg: fix some memory leak issue (I-Fan, Chen)
+ - PiSi: compile with 0.3 changes (S.Çağlar Onur)
+ - poldek: build fix (Marcin Banasiak)
+ - poldek: implement DownloadPackages (Marcin Banasiak)
+ - razor: add an experimental razor backend (Richard Hughes)
+ - razor: add initial functionality (Richard Hughes)
+ - razor: add Resolve() functionality (Richard Hughes)
+ - razor: add SearchName and SearchDescription (Richard Hughes)
+ - razor: add the devel filter (Richard Hughes)
+ - smart: change packageid to packageids (Anders F Bjorklund)
+ - smart: use smart status flags. Fixes #16525 (Anders F Bjorklund)
+ - urpmi: Improve download error handling in installation method (Aurelien Lefebvre)
+ - yum: add a nice class to access the yum sqlite database directly (Richard Hughes)
+ - yum: add Bohdi ID to the UpdateDetail if available. Fixes RH#457358 (Richard Hughes)
+ - yum: add the SericePack decompressing code (Shishir Goel)
+ - yum: allow more than one package to be removed in one transaction (Richard Hughes)
+ - yum: don't show a backtrace if we try to install a zero byte rpm (Richard Hughes)
+ - yum: fix an error message which can lead to printf breakage in the daemon (Richard Hughes)
+ - yum: fix the DownloadPackages call to give useful output (Richard Hughes)
+ - yum: fix the GetDepends call to match on installed before available (Richard Hughes)
+ - yum: fix the Resolve call with multiple packages (Richard Hughes)
+ - yum: fix up DownloadPackages for the yum backend (Shishir Goel)
+ - yum: fix up GetRequires and GetDepends to do the filtering in the backend (Richard Hughes)
+ - yum: fix up the GPG key method since the yum API changed (Richard Hughes)
+ - yum: return all packages when we do GetPackages() rather than just the newest (Richard Hugh
+ - yum: abstract out the filtering stuff (Richard Hughes)
+ - yum: support passing more than one package_id to GetUpdateDetail (Richard Hughes)
+ - yum: tidy up yumBackend and use yumComps, yumDirect and yumProgress (Richard Hughes)
+ - zypp: added driver search for new hardware (Stefan Haas)
+ - zypp: added relogin-flag for patches (Stefan Haas)
+ - zypp: changes for new api (Wang Hoi)
+ - zypp: changes for zypp 5.4.0 (Stefan Haas)
+ - zypp: change to return all restart_suggested patches not just the first one (Scott Reeves)
+ - zypp match the libzypp updates for listing repos (Scott Reeves)
+ - zypp: pk_backend_require_restart will be send when needed (Stefan Haas)
+
+Bindings:
+ - C: Bump the soname as we changed ABI some time ago (Richard Hughes)
+ - C: Rename some source files and be more militant with const (Richard Hughes)
+ - C: Don't use-after-free in pk_task_list_status_changed_cb (Richard Hughes)
+ - C: Export libpackagekit with -export-dynamic. Fixes fd#16991 (Richard Hughes)
+ - C: Correct the 'over the wire' enum for update-packages (Richard Hughes)
+ - python: Import new python frontend bindings (Aidan Skinner)
+ - python: Use glib mainloop for running (Aidan Skinner)
+ - python: Make Resolve and GetDetails return easy-to-use dicts, not tuples (Aidan Skinner)
+ - python: Add generic wrapper call that takes a dict of callbacks to connect (Aidan Skinner)
+ - python: Wrap dbus calls so that they attempt to obtain the right privilages (Aidan Skinner)
+ - browser-plugin: Use org.freedesktop.PackageKit session service (Owen W. Taylor)
+ - browser-plugin: Call gnome_desktop_item_set_launch_time() with value from event (Owen W. Taylor)
+ - browser-plugin: Switch launching from gnome-desktop to GAppInfo (Owen W. Taylor)
+
+Bugfixes:
+ - Fixed a typo in policy file (Daniel Nicoletti)
+ - Fix building with -Wformat-security. Fixes fd#16431 (Martin Pitt)
+ - Changed the required version of dbus-glib to 0.76 (Patrick Niklaus)
+ - Add the EulaRequired signal to the dbus python backend (Sebastian Heinlein)
+ - Check the package_id for UTF8 validity (Richard Hughes)
+ - Don't optimise for the common case in pk-import-desktop (Richard Hughes)
+ - Add a new helper class for talking to an embedded python instance (Richard Hughes)
+ - Fix a small memory leak in pk_engine_transaction_list_changed_cb (Richard Hughes)
+ - Don't leak the package_ids in pk_transaction_get_update_detail (Richard Hughes)
+ - AllowCancel(FALSE) is allowed when we are finished, but not TRUE (Richard Hughes)
+ - Don't print out '%' chars on the console from python exceptions (Richard Hughes)
+ - Properly match local files correctly so we don't try to resolve them (Richard Hughes)
+ - WhatProvides has a free form search string that we need to check (Richard Hughes)
+ - Check for a zero destination in the unix network code. Fixes rh#453531 (Richard Hughes)
+ - Add some convenience helpers for managing ISO8601 dates (Richard Hughes)
+ - Use g_key_file_* in pkgenpack as we need to use a group name (Richard Hughes)
+ - Check service pack's compatibility with the distro before installing it (Shishir Goel)
+ - Don't blacklist apostrophe characters. Fixes rh#459155 (Richard Hughes)
+ - Check for write access on the directory we are downloading into (Richard Hughes)
+ - Fix broken DownloadPackages in the DBus backend (Sebastian Heinlein)
+ - Submit the filters to the doGetDepends method in the python backend (Sebastian Heinlein)
+ - Implement SetLocale in the python dbus backend (Sebastian Heinlein)
+ - Add a --with-package-list option to pkgenpack to make it useful (Shishir Goel)
+ - Add a metadata.conf file while creating the pack (Shishir Goel)
+ - Fix the configure check for libtar.h (Val L)
+
 Version 0.2.3
 ~~~~~~~~~~~~~~
 Released: 2008-07-04
@@ -133,7 +559,7 @@ Released: 2008-06-05
  - Allow adding and removing multiple packages at one time with pkcon (Richard Hughes)
  - Add the source filter (Richard Hughes)
  - Allow proxy_http and proxy_ftp to be NULL in the DBUS backend (Richard Hughes)
- - Add another convenience function, pk_strreplace() (Richard Hughes)
+ - Add another convenience function, egg_strreplace() (Richard Hughes)
  - Add some notes on howto do the release, as Robin is going to do the next one (Richard Hughes)
  - Add pk_package_list_add_list() convenience function (Richard Hughes)
  - Add pk_client_get_package_list() (Richard Hughes)
@@ -920,7 +1346,7 @@ Released: 2007-11-01
    get the errors and completions (Richard Hughes)
  - Add pk-backend-python.[c|h], for common spawning functions for python
    backends and switch the backends to use them (James Bowes)
- - Use pk_strzero, pk_strlen and pk_strcmp to increase performance and
+ - Use egg_strzero, egg_strlen and pk_strcmp to increase performance and
    potentally improve security (Richard Hughes)
  - Add resolve support to pkcon get depends/requires/description/updatedetail
    (S.Çağlar Onur)

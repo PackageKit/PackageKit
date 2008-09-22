@@ -1,7 +1,3 @@
-*** Timeframe: 0.2.x ***
-
-* Make PkMessages into proper enumerated types with localised descriptions
-
 *** Timeframe: 0.3.x ***
 
 * Enable GetUpdateDetail to handle arrays for 'updates' and 'obsoletes'

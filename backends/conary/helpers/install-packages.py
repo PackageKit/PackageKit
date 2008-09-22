@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.4
 #
 # Copyright (C) 2007 Ken VanDine <ken@vandine.org>
 #
@@ -12,7 +12,7 @@
 import sys
 from conaryBackend import PackageKitConaryBackend
 
-package = sys.argv[1]
+package_ids = sys.argv[1]
 backend = PackageKitConaryBackend(sys.argv[1:])
-backend.install_packages(package)
+backend.update_packages(package_ids)
 sys.exit(0)

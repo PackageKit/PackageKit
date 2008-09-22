@@ -33,7 +33,7 @@
 #include <glib/gi18n.h>
 
 #include <pk-enum.h>
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-common.h"
 #include "pk-update-detail-obj.h"
 
@@ -145,42 +145,33 @@ pk_update_detail_obj_free (PkUpdateDetailObj *obj)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_update_detail (LibSelfTest *test)
+pk_update_detail_test (EggTest *test)
 {
 	gboolean ret;
 	PkUpdateDetailObj *obj;
 
-	if (libst_start (test, "PkUpdateDetailObj", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkUpdateDetailObj"))
 		return;
-	}
 
 	/************************************************************
 	 ****************          IDENT           ******************
 	 ************************************************************/
 
 	/************************************************************/
-	libst_title (test, "get an detail object");
+	egg_test_title (test, "get an detail object");
 	obj = pk_update_detail_obj_new ();
-	if (obj != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, obj != NULL);
 
 	/************************************************************/
-	libst_title (test, "test detail");
+	egg_test_title (test, "test detail");
 	ret = pk_update_detail_obj_free (obj);
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, ret);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

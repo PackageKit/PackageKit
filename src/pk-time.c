@@ -39,7 +39,7 @@
 
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-time.h"
 #include "pk-marshal.h"
 
@@ -161,7 +161,7 @@ pk_time_get_remaining (PkTime *time)
 
 	length = time->priv->array->len;
 	if (length < 2) {
-		pk_debug ("array too small");
+		egg_debug ("array too small");
 		return 0;
 	}
 
@@ -170,9 +170,9 @@ pk_time_get_remaining (PkTime *time)
 		item_prev = g_ptr_array_index (time->priv->array, i-1);
 		item = g_ptr_array_index (time->priv->array, i);
 		grad = pk_time_get_gradient (item, item_prev);
-		pk_debug ("gradient between %i/%i=%f", i-1, i, grad);
+		egg_debug ("gradient between %i/%i=%f", i-1, i, grad);
 		if (grad < 0.00001 || grad > 100) {
-			pk_debug ("ignoring gradient: %f", grad);
+			egg_debug ("ignoring gradient: %f", grad);
 		} else {
 			grad_ave += grad;
 			averaged++;
@@ -182,29 +182,29 @@ pk_time_get_remaining (PkTime *time)
 		}
 	}
 
-	pk_debug ("averaged %i points", averaged);
+	egg_debug ("averaged %i points", averaged);
 	if (averaged < time->priv->average_min) {
-		pk_debug ("not enough samples for accurate time: %i", averaged);
+		egg_debug ("not enough samples for accurate time: %i", averaged);
 		return 0;
 	}
 
 	/* normalise to the number of samples */
 	grad_ave /= averaged;
-	pk_debug ("grad_ave=%f", grad_ave);
+	egg_debug ("grad_ave=%f", grad_ave);
 
 	/* just for debugging */
 	elapsed = pk_time_get_elapsed (time);
-	pk_debug ("elapsed=%i", elapsed);
+	egg_debug ("elapsed=%i", elapsed);
 
 	/* 100 percent to be complete */
 	item = g_ptr_array_index (time->priv->array, length - 1);
 	percentage_left = 100 - item->percentage;
-	pk_debug ("percentage_left=%i", percentage_left);
+	egg_debug ("percentage_left=%i", percentage_left);
 	estimated = (gfloat) percentage_left / grad_ave;
 
 	/* turn to ms */
 	estimated /= 1000;
-	pk_debug ("estimated=%f seconds", estimated);
+	egg_debug ("estimated=%f seconds", estimated);
 
 	if (estimated < time->priv->value_min) {
 		estimated = 0;
@@ -227,7 +227,7 @@ pk_time_add_data (PkTime *time, guint percentage)
 
 	/* check we are going up */
 	if (percentage < time->priv->last_percentage) {
-		pk_warning ("percentage cannot go down!");
+		egg_warning ("percentage cannot go down!");
 		return FALSE;
 	}
 	time->priv->last_percentage = percentage;
@@ -235,7 +235,7 @@ pk_time_add_data (PkTime *time, guint percentage)
 	/* get runtime in ms */
 	elapsed = pk_time_get_elapsed (time);
 
-	pk_debug ("adding %i at %i (ms)", percentage, elapsed);
+	egg_debug ("adding %i at %i (ms)", percentage, elapsed);
 
 	/* create a new object and add to the array */
 	item = g_new0 (PkTimeItem, 1);
@@ -325,7 +325,7 @@ pk_time_finalize (GObject *object)
 
 	time = PK_TIME (object);
 	g_return_if_fail (time->priv != NULL);
-	pk_time_free_data (time);
+	g_ptr_array_foreach (time->priv->array, (GFunc) g_free, NULL);
 	g_ptr_array_free (time->priv->array, TRUE);
 	g_timer_destroy (time->priv->timer);
 
@@ -348,79 +348,66 @@ pk_time_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_time (LibSelfTest *test)
+pk_time_test (EggTest *test)
 {
 	PkTime *time = NULL;
 	gboolean ret;
 	guint value;
 
-	if (libst_start (test, "PkTime", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkTime"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "get PkTime object");
+	egg_test_title (test, "get PkTime object");
 	time = pk_time_new ();
-	if (time != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, time != NULL);
 
 	/************************************************************/
-	libst_title (test, "get elapsed correctly at startup");
+	egg_test_title (test, "get elapsed correctly at startup");
 	value = pk_time_get_elapsed (time);
-	if (value < 10) {
-		libst_success (test, "elapsed at startup %i", value);
-	} else {
-		libst_failed (test, "elapsed at startup %i", value);
-	}
+	if (value < 10)
+		egg_test_success (test, "elapsed at startup %i", value);
+	else
+		egg_test_failed (test, "elapsed at startup %i", value);
 
 	/************************************************************/
-	libst_title (test, "ignore remaining correctly");
+	egg_test_title (test, "ignore remaining correctly");
 	value = pk_time_get_remaining (time);
-	if (value == 0) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "got %i, not zero!", value);
-	}
+	if (value == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got %i, not zero!", value);
 
 	/************************************************************/
 	g_usleep (1000*1000);
 
 	/************************************************************/
-	libst_title (test, "get elapsed correctly");
+	egg_test_title (test, "get elapsed correctly");
 	value = pk_time_get_elapsed (time);
-	if (value > 900 && value < 1100) {
-		libst_success (test, "elapsed ~1000ms: %i", value);
-	} else {
-		libst_failed (test, "elapsed not ~1000ms: %i", value);
-	}
+	if (value > 900 && value < 1100)
+		egg_test_success (test, "elapsed ~1000ms: %i", value);
+	else
+		egg_test_failed (test, "elapsed not ~1000ms: %i", value);
 
 	/************************************************************/
-	libst_title (test, "ignore remaining correctly when not enough entries");
+	egg_test_title (test, "ignore remaining correctly when not enough entries");
 	value = pk_time_get_remaining (time);
-	if (value == 0) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "got %i, not zero!", value);
-	}
+	if (value == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got %i, not zero!", value);
 
 	/************************************************************/
-	libst_title (test, "make sure we can add data");
+	egg_test_title (test, "make sure we can add data");
 	ret = pk_time_add_data (time, 10);
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, ret);
 
 	/************************************************************/
-	libst_title (test, "make sure we can get remaining correctly");
+	egg_test_title (test, "make sure we can get remaining correctly");
 	value = 20;
 	while (value < 60) {
 		time->priv->time_offset += 2000;
@@ -428,18 +415,17 @@ libst_time (LibSelfTest *test)
 		value += 10;
 	}
 	value = pk_time_get_remaining (time);
-	if (value > 9 && value < 11) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "got %i", value);
-	}
+	if (value > 9 && value < 11)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got %i", value);
 
 	/* reset */
 	g_object_unref (time);
 	time = pk_time_new ();
 
 	/************************************************************/
-	libst_title (test, "make sure we can do long times");
+	egg_test_title (test, "make sure we can do long times");
 	value = 10;
 	pk_time_add_data (time, 0);
 	while (value < 60) {
@@ -448,16 +434,14 @@ libst_time (LibSelfTest *test)
 		value += 10;
 	}
 	value = pk_time_get_remaining (time);
-	if (value > 1199 && value < 1201) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "got %i", value);
-	}
-
+	if (value > 1199 && value < 1201)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got %i", value);
 
 	g_object_unref (time);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

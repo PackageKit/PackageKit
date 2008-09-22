@@ -74,7 +74,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This method downloads packages into a specified directory.
+            This method downloads packages into a temporary directory.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -83,15 +83,6 @@
           <doc:summary>
             <doc:para>
               An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="directory" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The directory to install the packages into.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -558,6 +549,25 @@
           </doc:summary>
         </doc:doc>
       </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="GetDistroUpgrades">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method should return a list of distribution upgrades that are
+            available.
+            It should not return updates, only major upgrades.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <literal>DistroUpgrade</literal>,
+            <literal>Error</literal> and
+          </doc:para>
+        </doc:description>
+      </doc:doc>
     </method>
 
     <!--*****************************************************************************************-->
@@ -2036,6 +2046,46 @@
           <doc:summary>
             <doc:para>
               The ISO8601 encoded date that the update was updated.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </signal>
+
+    <!--*****************************************************************************************-->
+    <signal name="DistroUpgrade">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal allows the backend to communicate distribution
+            upgrades to the session.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="type" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A valid upgrade string enumerated type, e.g. <literal>stable</literal>
+              or <literal>unstable</literal>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="name" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The short name of the distribution, e.g. <literal>Fedora Core 10 RC1</literal>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="summary" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The multi-line description of the release.
             </doc:para>
           </doc:summary>
         </doc:doc>

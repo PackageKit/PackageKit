@@ -39,11 +39,11 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
-#include <pk-dbus-monitor.h>
 
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-dbus-monitor.h"
 #include "pk-network.h"
 #include "pk-network-nm.h"
 #include "pk-network-unix.h"
@@ -68,7 +68,7 @@ struct _PkNetworkPrivate
 	PkNetworkNm		*net_nm;
 	PkNetworkUnix		*net_unix;
 	PkConf			*conf;
-	PkDbusMonitor		*nm_bus;
+	EggDbusMonitor		*nm_bus;
 };
 
 enum {
@@ -171,20 +171,20 @@ pk_network_init (PkNetwork *network)
 	network->priv->use_unix = pk_conf_get_bool (network->priv->conf, "UseNetworkHeuristic");
 
 	/* check if NM is on the bus */
-	network->priv->nm_bus = pk_dbus_monitor_new ();
-	pk_dbus_monitor_assign (network->priv->nm_bus, PK_DBUS_MONITOR_SYSTEM, "org.freedesktop.NetworkManager");
-	nm_alive = pk_dbus_monitor_is_connected (network->priv->nm_bus);
+	network->priv->nm_bus = egg_dbus_monitor_new ();
+	egg_dbus_monitor_assign (network->priv->nm_bus, EGG_DBUS_MONITOR_SYSTEM, "org.freedesktop.NetworkManager");
+	nm_alive = egg_dbus_monitor_is_connected (network->priv->nm_bus);
 
 	/* NetworkManager isn't up, so we can't use it */
 	if (network->priv->use_nm && !nm_alive) {
-		pk_warning ("UseNetworkManager true, but org.freedesktop.NetworkManager not up");
+		egg_warning ("UseNetworkManager true, but org.freedesktop.NetworkManager not up");
 		network->priv->use_nm = FALSE;
 	}
 
 #if !PK_BUILD_NETWORKMANAGER
 	/* check we can actually use the default */
 	if (network->priv->use_nm) {
-		pk_warning ("UseNetworkManager true, but not built with NM support");
+		egg_warning ("UseNetworkManager true, but not built with NM support");
 		network->priv->use_nm = FALSE;
 	}
 #endif

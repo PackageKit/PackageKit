@@ -33,7 +33,7 @@
 #include <glib.h>
 #include <dbus/dbus-glib.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
 #include "pk-notify.h"
 #include "pk-marshal.h"
 
@@ -65,7 +65,7 @@ pk_notify_restart_schedule (PkNotify *notify)
 {
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
 
-	pk_debug ("emitting restart-schedule");
+	egg_debug ("emitting restart-schedule");
 	g_signal_emit (notify, signals [PK_NOTIFY_RESTART_SCHEDULE], 0);
 	return TRUE;
 }
@@ -78,7 +78,7 @@ pk_notify_repo_list_changed (PkNotify *notify)
 {
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
 
-	pk_debug ("emitting repo-list-changed");
+	egg_debug ("emitting repo-list-changed");
 	g_signal_emit (notify, signals [PK_NOTIFY_REPO_LIST_CHANGED], 0);
 	return TRUE;
 }
@@ -91,7 +91,7 @@ pk_notify_updates_changed (PkNotify *notify)
 {
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
 
-	pk_debug ("emitting updates-changed");
+	egg_debug ("emitting updates-changed");
 	g_signal_emit (notify, signals [PK_NOTIFY_UPDATES_CHANGED], 0);
 	return TRUE;
 }
@@ -119,7 +119,7 @@ pk_notify_wait_updates_changed (PkNotify *notify, guint timeout)
 
 	/* check if we did this more than once */
 	if (notify->priv->timeout_id != 0) {
-		pk_warning ("already scheduled");
+		egg_warning ("already scheduled");
 		return FALSE;
 	}
 
@@ -209,30 +209,25 @@ pk_notify_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_notify (LibSelfTest *test)
+egg_test_notify (EggTest *test)
 {
 	PkNotify *notify;
 
-	if (libst_start (test, "PkNotify", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkNotify"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	egg_test_title (test, "get an instance");
 	notify = pk_notify_new ();
-	if (notify != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, notify != NULL);
 
 	g_object_unref (notify);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

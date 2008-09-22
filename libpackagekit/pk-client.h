@@ -24,6 +24,7 @@
 
 #include <glib-object.h>
 #include "pk-enum.h"
+#include "pk-bitfield.h"
 #include "pk-package-list.h"
 #include "pk-update-detail-obj.h"
 #include "pk-details-obj.h"
@@ -63,6 +64,7 @@ typedef enum
 	PK_CLIENT_ERROR_NO_TID,
 	PK_CLIENT_ERROR_ALREADY_TID,
 	PK_CLIENT_ERROR_ROLE_UNKNOWN,
+	PK_CLIENT_ERROR_CANNOT_START_DAEMON,
 	PK_CLIENT_ERROR_INVALID_PACKAGEID
 } PkClientError;
 
@@ -96,6 +98,10 @@ struct _PkClientClass
 							 PkRoleEnum	 role,
 							 guint		 duration,
 							 const gchar	*data);
+	void		(* distro_upgrade)		(PkClient	*client,
+							 PkUpdateStateEnum type,
+							 const gchar	*name,
+							 const gchar	*summary);
 	void		(* update_detail)		(PkClient	*client,
 							 PkUpdateDetailObj	*update_detail);
 	void		(* details)			(PkClient	*client,
@@ -196,41 +202,41 @@ gboolean	 pk_client_download_packages		(PkClient	*client,
 							 gchar		**package_ids,
 							 const gchar	*directory,
 							 GError		**error)
-							 G_GNUC_WARN_UNUSED_RESULT;	
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_updates			(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield filters,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_system		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_name			(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield filters,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_details		(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield filters,
 							 const gchar	*search,
 							 GError		**error);
 gboolean	 pk_client_search_group			(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield filters,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_file			(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield filters,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_depends			(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield filters,
 							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_packages			(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield filters,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_update_detail		(PkClient	*client,
@@ -238,19 +244,21 @@ gboolean	 pk_client_get_update_detail		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_requires			(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield filters,
 							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_what_provides		(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield	 filters,
 							 PkProvidesEnum	 provides,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_details			(PkClient	*client,
 							 gchar		**package_ids,
+							 GError		**error);
+gboolean	 pk_client_get_distro_upgrades		(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_get_files			(PkClient	*client,
 							 gchar		**package_ids,
@@ -291,7 +299,7 @@ gboolean	 pk_client_install_file			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_resolve			(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield filters,
 							 gchar		**packages,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -312,7 +320,7 @@ gboolean	 pk_client_accept_eula			(PkClient	*client,
 
 /* repo stuff */
 gboolean	 pk_client_get_repo_list		(PkClient	*client,
-							 PkFilterEnum	 filters,
+							 PkBitfield filters,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_repo_enable			(PkClient	*client,

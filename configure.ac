@@ -1,6 +1,6 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.3.0)
+AC_INIT(PackageKit, 0.3.5)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -18,7 +18,7 @@ DEVELOPMENT_RELEASE=no
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-LT_CURRENT=4
+LT_CURRENT=7
 LT_REVISION=0
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
@@ -45,13 +45,19 @@ GTK_DOC_CHECK(1.9)
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
+AM_PATH_PYTHON
+PYTHON_PACKAGE_DIR=${pythondir}/packagekit
+AC_SUBST(PYTHON_PACKAGE_DIR)
+
+
 dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
 if test "$GCC" = "yes"; then
-	CPPFLAGS="$CPPFLAGS -Werror -Wcast-align -Wno-uninitialized"
-#	CPPFLAGS="$CPPFLAGS -Wall -Wformat-security"
-	CPPFLAGS="$CPPFLAGS -Wall"
+	CPPFLAGS="$CPPFLAGS -Wcast-align -Wno-uninitialized"
+	CPPFLAGS="$CPPFLAGS -Wall -Wreturn-type"
+#	CPPFLAGS="$CPPFLAGS -Wformat-security"
+	CPPFLAGS="$CPPFLAGS -Werror"
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -103,9 +109,21 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
-AC_CHECK_HEADERS(libtar.h, [AC_DEFINE(HAVE_LIBTAR_H)], [AC_MSG_ERROR([Can't find libtar.h. Please install libtar.])])
-TAR_LIBS=-ltar
-AC_SUBST(TAR_LIBS)
+
+dnl ---------------------------------------------------------------------------
+dnl - libarchive
+dnl ---------------------------------------------------------------------------
+AC_CHECK_HEADERS(archive.h,
+		 HAVE_ARCHIVE_H="yes",
+		 HAVE_ARCHIVE_H="no")
+if test "x$HAVE_ARCHIVE_H" = "xyes"; then
+		AC_DEFINE(HAVE_ARCHIVE_H)
+		ARCHIVE_LIBS=-larchive
+		AC_SUBST(ARCHIVE_LIBS)
+else
+		AC_MSG_WARN([Cannot find archive.h. Service packs cannot be created or checked.])
+fi
+AM_CONDITIONAL(HAVE_ARCHIVE_H, test x$HAVE_ARCHIVE_H = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl - xsltproc
@@ -153,33 +171,6 @@ if test "$DOCBOOK2MAN" = "no" ; then
 	fi
 AM_CONDITIONAL(HAVE_DOCBOOK2MAN, [test "$DOCBOOK2MAN" != "no"])
 
-AM_PATH_PYTHON([2.3],[],[have_python=no])
-if test "x$PYTHON" = "x:"; then
-	have_python=no
-fi
-
-PY_PREFIX=`$PYTHON -c 'import sys ; print sys.prefix'`
-PY_EXEC_PREFIX=`$PYTHON -c 'import sys ; print sys.exec_prefix'`
-PYTHON_LIBS="-lpython$PYTHON_VERSION"
-if test -d $PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION ; then
-	PYTHON_LIB_LOC="-L$PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION/config"
-	PYTHON_MAKEFILE="$PY_EXEC_PREFIX/lib64/python$PYTHON_VERSION/config/Makefile"
-else
-	PYTHON_LIB_LOC="-L$PY_EXEC_PREFIX/lib/python$PYTHON_VERSION/config"
-	PYTHON_MAKEFILE="$PY_EXEC_PREFIX/lib/python$PYTHON_VERSION/config/Makefile"
-fi
-PYTHON_CFLAGS="-I$PY_PREFIX/include/python$PYTHON_VERSION"
-PYTHON_LOCALMODLIBS=`sed -n -e 's/^LOCALMODLIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
-PYTHON_BASEMODLIBS=`sed -n -e 's/^BASEMODLIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
-PYTHON_OTHER_LIBS=`sed -n -e 's/^LIBS=\(.*\)/\1/p' $PYTHON_MAKEFILE`
-PYTHON_EXTRA_LIBS="$PYTHON_LOCALMODLIBS $PYTHON_BASEMODLIBS $PYTHON_OTHER_LIBS"
-PYTHON_PACKAGE_DIR=${pythondir}/packagekit
-AC_SUBST([PYTHON_LIBS])
-AC_SUBST([PYTHON_LIB_LOC])
-AC_SUBST([PYTHON_CFLAGS])
-AC_SUBST([PYTHON_EXTRA_LIBS])
-AC_SUBST(PYTHON_PACKAGE_DIR)
-
 dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
 dnl ---------------------------------------------------------------------------
@@ -218,9 +209,9 @@ dnl - Build self tests
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
 	      enable_tests=$enableval,enable_tests=$DEVELOPMENT_RELEASE)
-AM_CONDITIONAL(PK_BUILD_TESTS, test x$enable_tests = xyes)
+AM_CONDITIONAL(EGG_BUILD_TESTS, test x$enable_tests = xyes)
 if test x$enable_tests = xyes; then
-	AC_DEFINE(PK_BUILD_TESTS,1,[Build test code])
+	AC_DEFINE(EGG_BUILD_TESTS,1,[Build test code])
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -251,7 +242,7 @@ PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk
                   build_browser_plugin=yes, build_browser_plugin=no)
 
 AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
-		 
+
 AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
 AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
 
@@ -291,7 +282,6 @@ AC_ARG_ENABLE(razor, AS_HELP_STRING([--enable-razor],[use the razor backend]),en
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
-AC_ARG_ENABLE(yum2, AS_HELP_STRING([--enable-yum2],[use the YUM DBUS backend]),enable_yum2=$enableval,enable_yum2=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
 
 # export to Makefile.am's
@@ -307,7 +297,6 @@ AM_CONDITIONAL(BACKEND_TYPE_RAZOR, [test x$enable_razor = xyes], [using Razor ba
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART backend])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes], [using URPMI backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
-AM_CONDITIONAL(BACKEND_TYPE_YUM2, [test x$enable_yum2 = xyes], [using YUM DBUS backend])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes], [using Zypp backend])
 
 if test x$enable_gcov = xyes; then
@@ -547,9 +536,6 @@ backends/urpmi/helpers/perl_packagekit/Makefile
 backends/urpmi/helpers/urpmi_backend/Makefile
 backends/razor/Makefile
 backends/yum/Makefile
-backends/yum/helpers/Makefile
-backends/yum2/Makefile
-backends/yum2/helpers/Makefile
 backends/pisi/Makefile
 backends/pisi/helpers/Makefile
 backends/poldek/Makefile
@@ -558,10 +544,8 @@ data/Makefile
 data/packagekit.pc
 data/org.freedesktop.PackageKit.conf
 data/org.freedesktop.PackageKitTestBackend.conf
-data/org.freedesktop.PackageKitYumBackend.conf
 data/org.freedesktop.PackageKitAptBackend.conf
 data/tests/Makefile
-libselftest/Makefile
 libpackagekit/Makefile
 policy/Makefile
 src/Makefile
@@ -588,7 +572,7 @@ echo "
         Security framework:        ${with_security_framework}
         Networking stack:          ${with_networking_stack}
         GIO support:               ${with_gio}
-        Browser Plugin: 	   ${build_browser_plugin}
+        Browser plugin:            ${build_browser_plugin}
 
         Backends:
         ALPM backend:              ${enable_alpm}
@@ -603,7 +587,6 @@ echo "
         SMART backend:             ${enable_smart}
         URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
-        YUM2 backend:              ${enable_yum2}
         Zypp backend:              ${enable_zypp}
         Default backend:           ${with_default_backend}
 "

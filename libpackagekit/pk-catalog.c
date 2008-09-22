@@ -25,7 +25,9 @@
 #include <stdio.h>
 #include <glib/gi18n.h>
 
-#include "pk-debug.h"
+#include "egg-debug.h"
+#include "egg-string.h"
+
 #include "pk-common.h"
 #include "pk-client.h"
 #include "pk-package-list.h"
@@ -65,6 +67,7 @@ G_DEFINE_TYPE (PkCatalog, pk_catalog, G_TYPE_OBJECT)
 static gboolean
 pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar *distro_id_part)
 {
+	gchar *data;
 	gchar **list;
 	gchar *key;
 	guint len;
@@ -72,23 +75,24 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 
 	/* cancelled? */
 	if (catalog->priv->is_cancelled) {
-		pk_debug ("escaping as cancelled!");
+		egg_debug ("escaping as cancelled!");
 		return FALSE;
 	}
 
 	/* make key */
-	if (distro_id_part == NULL) {
+	if (distro_id_part == NULL)
 		key = g_strdup (catalog->priv->type);
-	} else {
+	else
 		key = g_strdup_printf ("%s(%s)", catalog->priv->type, distro_id_part);
-	}
-	list = g_key_file_get_string_list (catalog->priv->file, PK_CATALOG_FILE_HEADER, key, NULL, NULL);
+	data = g_key_file_get_string (catalog->priv->file, PK_CATALOG_FILE_HEADER, key, NULL);
 	g_free (key);
 
 	/* we have no key of this name */
-	if (list == NULL) {
+	if (data == NULL)
 		return FALSE;
-	}
+
+	/* split using the three delimiters */
+	list = g_strsplit_set (data, ";, ", 0);
 
 	/* add to array */
 	len = g_strv_length (list);
@@ -96,6 +100,7 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 		g_ptr_array_add (array, g_strdup (list[i]));
 	}
 	g_strfreev (list);
+	g_free (data);
 	return TRUE;
 }
 
@@ -118,7 +123,7 @@ pk_catalog_process_type (PkCatalog *catalog)
 
 	/* cancelled? */
 	if (catalog->priv->is_cancelled) {
-		pk_debug ("escaping as cancelled!");
+		egg_debug ("escaping as cancelled!");
 		return FALSE;
 	}
 
@@ -140,25 +145,25 @@ pk_catalog_process_type (PkCatalog *catalog)
 	pk_catalog_process_type_part (catalog, array, catalog->priv->distro_id);
 
 	/* find mode */
-	if (pk_strequal (catalog->priv->type, "InstallPackages")) {
+	if (egg_strequal (catalog->priv->type, "InstallPackages")) {
 		mode = PK_CATALOG_PROGRESS_PACKAGES;
-	} else if (pk_strequal (catalog->priv->type, "InstallFiles")) {
+	} else if (egg_strequal (catalog->priv->type, "InstallFiles")) {
 		mode = PK_CATALOG_PROGRESS_FILES;
-	} else if (pk_strequal (catalog->priv->type, "InstallProvides")) {
+	} else if (egg_strequal (catalog->priv->type, "InstallProvides")) {
 		mode = PK_CATALOG_PROGRESS_PROVIDES;
 	}
 
 	/* do each entry */
 	for (i=0; i<array->len; i++) {
 		if (catalog->priv->is_cancelled) {
-			pk_debug ("escaping as cancelled!");
+			egg_debug ("escaping as cancelled!");
 			break;
 		}
 
 		/* reset */
 		ret = pk_client_reset (catalog->priv->client, &error);
 		if (!ret) {
-			pk_warning ("reset failed: %s", error->message);
+			egg_warning ("reset failed: %s", error->message);
 			g_error_free (error);
 			break;
 		}
@@ -172,15 +177,21 @@ pk_catalog_process_type (PkCatalog *catalog)
 		/* do the actions */
 		if (mode == PK_CATALOG_PROGRESS_PACKAGES) {
 			packages = pk_package_ids_from_id (package);
-			ret = pk_client_resolve (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, packages, &error);
+			ret = pk_client_resolve (catalog->priv->client,
+						 pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						 packages, &error);
 			g_strfreev (packages);
 		} else if (mode == PK_CATALOG_PROGRESS_FILES) {
-			ret = pk_client_search_file (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, package, &error);
+			ret = pk_client_search_file (catalog->priv->client,
+						     pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						     package, &error);
 		} else if (mode == PK_CATALOG_PROGRESS_PROVIDES) {
-			ret = pk_client_what_provides (catalog->priv->client, PK_FILTER_ENUM_NOT_INSTALLED, 0, package, &error);
+			ret = pk_client_what_provides (catalog->priv->client,
+						      pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						      PK_PROVIDES_ENUM_ANY, package, &error);
 		}
 		if (!ret) {
-			pk_warning ("method failed: %s", error->message);
+			egg_warning ("method failed: %s", error->message);
 			g_error_free (error);
 			break;
 		}
@@ -192,6 +203,7 @@ pk_catalog_process_type (PkCatalog *catalog)
 	}
 
 	g_strfreev (parts);
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 	return ret;
 }
@@ -207,14 +219,14 @@ pk_catalog_process_file (PkCatalog *catalog, const gchar *filename)
 
 	/* cancelled? */
 	if (catalog->priv->is_cancelled) {
-		pk_debug ("escaping as cancelled!");
+		egg_debug ("escaping as cancelled!");
 		return FALSE;
 	}
 
 	/* load all data */
 	ret = g_key_file_load_from_file (catalog->priv->file, filename, G_KEY_FILE_NONE, &error);
 	if (!ret) {
-		pk_warning ("cannot open file %s, %s", filename, error->message);
+		egg_warning ("cannot open file %s, %s", filename, error->message);
 		g_error_free (error);
 		return FALSE;
 	}
@@ -244,7 +256,7 @@ pk_catalog_cancel (PkCatalog *catalog)
 	GError *error = NULL;
 
 	if (catalog->priv->is_cancelled) {
-		pk_warning ("already cancelled");
+		egg_warning ("already cancelled");
 		return FALSE;
 	}
 	catalog->priv->is_cancelled = TRUE;
@@ -252,7 +264,7 @@ pk_catalog_cancel (PkCatalog *catalog)
 	/* cancel whatever is in progress */
 	ret = pk_client_cancel (catalog->priv->client, &error);
 	if (!ret) {
-		pk_warning ("cancel failed: %s", error->message);
+		egg_warning ("cancel failed: %s", error->message);
 		g_error_free (error);
 	}
 	return TRUE;
@@ -271,10 +283,10 @@ pk_catalog_process_files (PkCatalog *catalog, gchar **filenames)
 	len = g_strv_length (filenames);
 	for (i=0; i<len; i++) {
 		if (catalog->priv->is_cancelled) {
-			pk_debug ("escaping as cancelled!");
+			egg_debug ("escaping as cancelled!");
 			break;
 		}
-		pk_debug ("filenames[%i]=%s", i, filenames[i]);
+		egg_debug ("filenames[%i]=%s", i, filenames[i]);
 		pk_catalog_process_file (catalog, filenames[i]);
 	}
 
@@ -315,7 +327,7 @@ pk_catalog_init (PkCatalog *catalog)
 	/* name-version-arch */
 	catalog->priv->distro_id = pk_get_distro_id ();
 	if (catalog->priv->distro_id == NULL) {
-		pk_error ("no distro_id, your distro needs to implement this in pk-common.c!");
+		egg_error ("no distro_id, your distro needs to implement this in pk-common.c!");
 	}
 
 	catalog->priv->client = pk_client_new ();
@@ -361,11 +373,11 @@ pk_catalog_new (void)
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
-#ifdef PK_BUILD_TESTS
-#include <libselftest.h>
+#ifdef EGG_TEST
+#include "egg-test.h"
 
 void
-libst_catalog (LibSelfTest *test)
+pk_catalog_test (EggTest *test)
 {
 	PkCatalog *catalog;
 	PkPackageList *list;
@@ -373,44 +385,37 @@ libst_catalog (LibSelfTest *test)
 	gchar *path;
 	guint size;
 
-	if (libst_start (test, "PkCatalog", CLASS_AUTO) == FALSE) {
+	if (!egg_test_start (test, "PkCatalog"))
 		return;
-	}
 
 	/************************************************************/
-	libst_title (test, "get catalog");
+	egg_test_title (test, "get catalog");
 	catalog = pk_catalog_new ();
-	if (catalog != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	egg_test_assert (test, catalog != NULL);
 
 	/************************************************************/
-	libst_title (test, "process the files getting non-null");
-	path = libst_get_data_file ("test.catalog");
+	egg_test_title (test, "process the files getting non-null");
+	path = egg_test_get_data_file ("test.catalog");
 	filenames = g_strsplit (path, " ", 0);
 	list = pk_catalog_process_files (catalog, filenames);
 	g_free (path);
 	g_strfreev (filenames);
-	if (list != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (list != NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
 
 	/************************************************************/
-	libst_title (test, "have we got packages?");
+	egg_test_title (test, "have we got packages?");
 	size = pk_package_list_get_size (list);
-	if (size > 0) {
-		libst_success (test, "%i packages", size);
-	} else {
-		libst_failed (test, NULL);
-	}
+	if (size > 0)
+		egg_test_success (test, "%i packages", size);
+	else
+		egg_test_failed (test, NULL);
 	g_object_unref (list);
 	g_object_unref (catalog);
 
-	libst_end (test);
+	egg_test_end (test);
 }
 #endif
 

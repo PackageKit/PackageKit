@@ -24,7 +24,7 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-backend-internal.h>
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <pk-package-ids.h>
 #include <pk-enum.h>
 #include <pk-common.h>
@@ -80,18 +80,18 @@ pk_razor_filter_devel (const gchar *name)
 static gboolean
 pk_razor_emit_package (PkBackend *backend, const gchar *name, const gchar *version, const gchar *arch, const gchar *summary)
 {
-	PkFilterEnum filters;
+	PkBitfield filters;
 	gchar *package_id;
 	gboolean ret;
 
 	filters = pk_backend_get_uint (backend, "filters");
 
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
 		ret = pk_razor_filter_devel (name);
 		if (!ret)
 			return FALSE;
 	}
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
 		ret = pk_razor_filter_devel (name);
 		if (ret)
 			return FALSE;
@@ -124,7 +124,7 @@ backend_resolve_thread (PkBackend *backend)
 					    RAZOR_DETAIL_SUMMARY, &summary,
 					    RAZOR_DETAIL_LAST)) {
 		for (i=0; i<length; i++) {
-			if (pk_strequal (name, package_ids[i])) {
+			if (egg_strequal (name, package_ids[i])) {
 				pk_razor_emit_package (backend, name, version, arch, summary);
 			}
 		}
@@ -139,7 +139,7 @@ backend_resolve_thread (PkBackend *backend)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **packages)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -173,7 +173,7 @@ backend_get_details_thread (PkBackend *backend)
 		for (i=0; i<length; i++) {
 			/* TODO: we should cache this */
 			id = pk_package_id_new_from_string (package_ids[i]);
-			if (pk_strequal (name, id->name)) {
+			if (egg_strequal (name, id->name)) {
 				package_id = pk_package_id_build (name, version, arch, "installed");
 				razor_package_get_details (set, package,
 							   RAZOR_DETAIL_SUMMARY, &summary,
@@ -218,7 +218,7 @@ backend_resolve_package_id (const PkPackageId *id)
 					    RAZOR_DETAIL_VERSION, &version,
 					    RAZOR_DETAIL_ARCH, &arch,
 					    RAZOR_DETAIL_LAST)) {
-		if (pk_strequal (name, id->name)) {
+		if (egg_strequal (name, id->name)) {
 			package_retval = package;
 			break;
 		}
@@ -278,7 +278,7 @@ backend_get_packages_thread (PkBackend *backend)
  * backend_get_packages:
  */
 static void
-backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -296,8 +296,8 @@ pk_str_case_contains (const gchar *haystack, const gchar *needle)
 	guint haystack_length;
 	guint needle_length;
 
-	haystack_length = pk_strlen (haystack, 1024);
-	needle_length = pk_strlen (needle, 1024);
+	haystack_length = egg_strlen (haystack, 1024);
+	needle_length = egg_strlen (needle, 1024);
 
 	/* needle longer than haystack */
 	if (needle_length > haystack_length) {
@@ -365,7 +365,7 @@ backend_search_thread (PkBackend *backend)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -377,7 +377,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * backend_search_description:
  */
 static void
-backend_search_description (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_description (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -388,10 +388,10 @@ backend_search_description (PkBackend *backend, PkFilterEnum filters, const gcha
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return (PK_FILTER_ENUM_DEVELOPMENT);
+	return pk_bitfield_from_enums (PK_FILTER_ENUM_DEVELOPMENT, -1);
 }
 
 PK_BACKEND_OPTIONS (
@@ -405,6 +405,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	NULL,					/* get_depends */
 	backend_get_details,			/* get_details */
+	NULL,					/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,					/* get_repo_list */

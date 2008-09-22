@@ -29,12 +29,25 @@ easier to install.
    Conary: Yes, just run: <code>sudo conary update PackageKit gnome-packagekit</code>
   </li>
   <li>
-   Fedora 8: Yes, just install <a href="http://people.freedesktop.org/~hughsient/fedora/">this</a>
-   repository file and run: <code>yum install PackageKit gnome-packagekit</code> (as root)
+   Fedora 9: Yes, just run: <code>yum install PackageKit gnome-packagekit</code> (as root)
   </li>
   <li>
-   openSUSE 11: Yes, add <a href="http://download.opensuse.org/distribution/SL-OSS-factory/inst-source">this</a>
+  Ubuntu: Ubuntu 8.04 Hardy Heron ships an obsolete version (0.1.6) of PackageKit by default.
+  Intrepid, the upcoming Ubuntu release, features 0.2.4, but we plan to ship 0.3.2.<br/>
+  You can find the latest version of the 0.3 series for Hardy and Intrepid in this
+  <a href="https://edge.launchpad.net/~packagekit/+archive">Personal Package Archive</a>.
+  <a href="https://help.ubuntu.com/8.04/add-applications/C/extra-repositories-adding.html">Add</a>
+  the repository and <a href="https://help.ubuntu.com/8.04/add-applications/C/advanced.html">
+  install</a> the packages <code>packagekit</code> and <code>packagekit-gnome</code>.
+  </li>
+  <li>
+   openSUSE 11: Yes, add <a href="http://download.opensuse.org/distribution/11.0/repo/oss/">this</a>
    repository file and run: <code>zypper install PackageKit gnome-packagekit</code> (as root)
+  </li>
+  <li>
+  Mandriva : PackageKit will be available on the next release of Mandriva (2009.0). You can already 
+  try it by adding the <a href="http://wiki.mandriva.com/en/Development"><tt>cooker</tt></a> repository.<br/>
+  Be carefull, it will update your system to the development branch of Mandriva. Use it at your own risk.
   </li>
   <li>
    Others: Probably not, although you can compile from source. See below for more details.
@@ -45,6 +58,47 @@ easier to install.
 <p>
 Released versions are found on
 <a href="http://www.packagekit.org/releases/">http://www.packagekit.org/releases/</a>.
+</p>
+<h3>
+Latest Supported Versions:
+</h3>
+<p>
+These are versions which have new features for each release.
+We are also willing to break ABI and API to fix bugs and will merge new or
+modified translations as required or suggested.
+Releases are normally once every 1-2 weeks.
+</p>
+<table>
+<tr><td><b>Version</b></td><td>&nbsp;&nbsp;</td><td><b>Date</b></td></tr>
+<tr><td>0.3.0</td><td></td><td>2008-08-18</td></tr>
+<tr><td>0.3.1</td><td></td><td>2008-08-27</td></tr>
+<tr><td>0.3.2</td><td></td><td>2008-09-08</td></tr>
+<tr><td>0.3.3</td><td></td><td>2008-09-16</td></tr>
+<tr><td>0.3.4</td><td></td><td>2008-09-22</td></tr>
+</table>
+<h3>
+ABI Stable Versions:
+</h3>
+<p>
+These are versions where we will not break ABI, API or localisations.
+Releases are less frequent, usually less than once a month.
+</p>
+<table>
+<tr><td><b>Version</b></td><td>&nbsp;&nbsp;</td><td><b>Date</b></td></tr>
+<tr><td>0.2.0</td><td></td><td>2008-05-06</td></tr>
+<tr><td>0.2.1</td><td></td><td>2008-05-09</td></tr>
+<tr><td>0.2.2</td><td></td><td>2008-06-05</td></tr>
+<tr><td>0.2.3</td><td></td><td>2008-07-04</td></tr>
+<tr><td>0.2.4</td><td></td><td>2008-07-30</td></tr>
+<tr><td>0.2.5</td><td></td><td>2008-09-06</td></tr>
+</table>
+<h3>
+Obsolete Versions:
+</h3>
+<p>
+These are versions that used to be the ABI stable releases, but are now
+longer supported.
+There will not be any more releases of these versions.
 </p>
 <table>
 <tr><td><b>Version</b></td><td>&nbsp;&nbsp;</td><td><b>Date</b></td></tr>
@@ -60,11 +114,6 @@ Released versions are found on
 <tr><td>0.1.9</td><td></td><td>2008-03-04</td></tr>
 <tr><td>0.1.10</td><td></td><td>2008-03-28</td></tr>
 <tr><td>0.1.11</td><td></td><td>2008-04-05</td></tr>
-<tr><td>0.2.0</td><td></td><td>2008-05-06</td></tr>
-<tr><td>0.2.1</td><td></td><td>2008-05-09</td></tr>
-<tr><td>0.2.2</td><td></td><td>2008-06-05</td></tr>
-<tr><td>0.2.3</td><td></td><td>2008-07-04</td></tr>
-<tr><td>0.2.4</td><td></td><td>2008-07-30</td></tr>
 </table>
 
 <h2>Dependencies</h2>

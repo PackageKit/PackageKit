@@ -23,7 +23,7 @@
 #include <glib.h>
 #include <pk-backend.h>
 #include <unistd.h>
-#include <pk-debug.h>
+#include <egg-debug.h>
 #include <string>
 #include <set>
 #include <glib/gi18n.h>
@@ -92,7 +92,7 @@ backend_initialize (PkBackend *backend)
 {
 	zypp_logging ();
 	get_zypp ();
-	pk_debug ("zypp_backend_initialize");
+	egg_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
 	_eventDirectors [backend] = eventDirector;
 	std::vector<std::string> *signature = new std::vector<std::string> ();
@@ -107,7 +107,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	pk_debug ("zypp_backend_destroy");
+	egg_debug ("zypp_backend_destroy");
 	EventDirector *eventDirector = _eventDirectors [backend];
 	if (eventDirector != NULL) {
 		delete (eventDirector);
@@ -191,7 +191,7 @@ backend_get_requires_thread (PkBackend *backend)
 		if (solver.resolvePool () == FALSE) {
 			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
 			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
-				pk_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
+				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
 			pk_package_id_free (pi);
@@ -227,9 +227,7 @@ backend_get_requires_thread (PkBackend *backend)
 						it->resolvable ()->arch ().c_str(),
 						it->resolvable ()->repoInfo().alias ().c_str ());
 
-				pk_backend_package (backend, status, package_id, "");
-						// FIXME There is something in our descriptions which let crash pk
-						//it->resolvable ()->description ().c_str ());
+				pk_backend_package (backend, status, package_id, it->resolvable ()->summary ().c_str ());
 
 				g_free (package_id);
 			}
@@ -251,7 +249,7 @@ backend_get_requires_thread (PkBackend *backend)
   * backend_get_requires:
   */
 static void
-backend_get_requires(PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_requires(PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_thread_create (backend, backend_get_requires_thread);
 }
@@ -259,41 +257,45 @@ backend_get_requires(PkBackend *backend, PkFilterEnum filters, gchar **package_i
 /**
  * backend_get_groups:
  */
-static PkGroupEnum
+static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return (PkGroupEnum)(PK_GROUP_ENUM_ADMIN_TOOLS |
-			PK_GROUP_ENUM_COMMUNICATION |
-			PK_GROUP_ENUM_DESKTOP_GNOME |
-			PK_GROUP_ENUM_DESKTOP_KDE |
-			PK_GROUP_ENUM_DESKTOP_OTHER |
-			PK_GROUP_ENUM_DESKTOP_XFCE |
-			PK_GROUP_ENUM_EDUCATION |
-			PK_GROUP_ENUM_GAMES |
-			PK_GROUP_ENUM_GRAPHICS |
-			PK_GROUP_ENUM_LOCALIZATION |
-			PK_GROUP_ENUM_MULTIMEDIA |
-			PK_GROUP_ENUM_NETWORK |
-			PK_GROUP_ENUM_OFFICE |
-			PK_GROUP_ENUM_PROGRAMMING |
-			PK_GROUP_ENUM_PUBLISHING |
-			PK_GROUP_ENUM_SECURITY |
-			PK_GROUP_ENUM_SYSTEM |
-			PK_GROUP_ENUM_UNKNOWN);
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_ADMIN_TOOLS,
+		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_DESKTOP_GNOME,
+		PK_GROUP_ENUM_DESKTOP_KDE,
+		PK_GROUP_ENUM_DESKTOP_OTHER,
+		PK_GROUP_ENUM_DESKTOP_XFCE,
+		PK_GROUP_ENUM_EDUCATION,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_LOCALIZATION,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_NETWORK,
+		PK_GROUP_ENUM_OFFICE,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SECURITY,
+		PK_GROUP_ENUM_SYSTEM,
+		PK_GROUP_ENUM_UNKNOWN,
+		-1);
 }
 
 /**
  * backend_get_filters:
  */
-static PkFilterEnum
+static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	return (PkFilterEnum) (PK_FILTER_ENUM_INSTALLED |
-			PK_FILTER_ENUM_NOT_INSTALLED |
-			PK_FILTER_ENUM_ARCH |
-			PK_FILTER_ENUM_NOT_ARCH |
-			PK_FILTER_ENUM_SOURCE |
-			PK_FILTER_ENUM_NOT_SOURCE);
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_INSTALLED,
+		PK_FILTER_ENUM_NOT_INSTALLED,
+		PK_FILTER_ENUM_ARCH,
+		PK_FILTER_ENUM_NOT_ARCH,
+		PK_FILTER_ENUM_SOURCE,
+		PK_FILTER_ENUM_NOT_SOURCE,
+		-1);
 }
 
 static gboolean
@@ -400,7 +402,7 @@ backend_get_depends_thread (PkBackend *backend)
 
 			if (package_name == NULL || *package_name == '\0')
 			{
-				pk_debug ("Skipping emitting a non valid package");
+				egg_debug ("Skipping emitting a non valid package");
 				g_free (package_name);
 				continue;
 			}
@@ -417,12 +419,12 @@ backend_get_depends_thread (PkBackend *backend)
 				pk_backend_package (backend,
 						PK_INFO_ENUM_INSTALLED,
 						package_id_temp,
-						item->description ().c_str());
+						item->summary ().c_str());
 			} else {
 				pk_backend_package (backend,
 						PK_INFO_ENUM_AVAILABLE,
 						package_id_temp,
-						"");
+						item->summary ().c_str());
 			}
 			g_free (package_id_temp);
 		}
@@ -452,7 +454,7 @@ backend_get_depends_thread (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkFilterEnum filters, gchar **package_ids, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_uint (backend, "type", DEPS_TYPE_DEPENDS);
 	pk_backend_thread_create (backend, backend_get_depends_thread);
@@ -568,6 +570,54 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 static gboolean
+backend_get_distro_upgrades_thread(PkBackend *backend)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
+
+	// refresh the repos before checking for updates
+	if (!zypp_refresh_cache (backend, FALSE)) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	zypp::ResPool pool = zypp_build_pool (TRUE);
+	pk_backend_set_percentage (backend, 40);
+
+	// get all Packages and Patches for Update
+	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
+
+	pk_backend_set_percentage (backend, 80);
+
+	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
+	for (ci = cb; ci != ce; ++ci) {
+		zypp::ResObject::constPtr res = ci->resolvable();
+
+		if (zypp::isKind<zypp::Patch>(res)) {
+			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
+			if (patch->category () == "distupgrade")
+			{
+				// here emit a distupgrade available using the patch summary
+				pk_backend_distro_upgrade(backend,
+							PK_DISTRO_UPGRADE_ENUM_STABLE,
+							patch->name ().c_str (),
+							patch->summary ().c_str ());
+			}
+		}
+	}
+	return TRUE;
+}
+
+/**
+ * backend_get_distro_upgrades:
+ */
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+	pk_backend_thread_create (backend, backend_get_distro_upgrades_thread);
+}
+
+static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
 	gboolean force = pk_backend_get_bool(backend, "force");
@@ -597,7 +647,7 @@ check_for_self_update (PkBackend *backend, std::set<zypp::PoolItem> *candidates)
 		zypp::ResObject::constPtr res = ci->resolvable();
 		if (zypp::isKind<zypp::Patch>(res)) {
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
-			//pk_debug ("restart_suggested is %d",(int)patch->restartSuggested());
+			//egg_debug ("restart_suggested is %d",(int)patch->restartSuggested());
 			if (patch->restartSuggested ()) {
 				if (!strcmp (PACKAGEKIT_RPM_NAME, res->satSolvable ().name ().c_str ()) ||
 						!strcmp (GNOME_PACKAGKEKIT_RPM_NAME, res->satSolvable ().name ().c_str ())) {
@@ -625,6 +675,9 @@ backend_get_updates_thread (PkBackend *backend)
 
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
+
+	// check if the repositories may be dead (feature #301904)  
+	 warn_outdated_repos(backend, pool);
 
 	// get all Packages and Patches for Update
 	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
@@ -658,16 +711,19 @@ backend_get_updates_thread (PkBackend *backend)
 				infoEnum = PK_INFO_ENUM_LOW;
 			}else if (patch->category () == "security") {
 				infoEnum = PK_INFO_ENUM_SECURITY;
+			}else if (patch->category () == "distupgrade") {
+				continue;
 			} else {
 				infoEnum = PK_INFO_ENUM_NORMAL;
 			}
 		}
 
 		gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
-		pk_backend_package (backend, infoEnum, package_id, "");
+		pk_backend_package (backend, infoEnum, package_id, res->summary ().c_str ());
 					// some package descriptions generate markup parse failures
 					// causing the update to show empty package lines, comment for now
-					// res->description ().c_str ());
+					// res->summary ().c_str ());
+					// Test if this still happens!
 		g_free (package_id);
 	}
 
@@ -683,7 +739,7 @@ backend_get_updates_thread (PkBackend *backend)
  * backend_get_updates
  */
 static void
-backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_thread_create (backend, backend_get_updates_thread);
 }
@@ -868,7 +924,12 @@ backend_get_update_detail_thread (PkBackend *backend)
 			zypp::sat::SolvableSet content = patch->contents ();
 
 			for (zypp::sat::SolvableSet::const_iterator it = content.begin (); it != content.end (); it++) {
-				obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), "^", (gchar *)NULL);
+				//obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), "^", (gchar *)NULL);
+				if (strlen(obsoletes) == 0) {
+					obsoletes = zypp_build_package_id_capabilities (it->obsoletes ());
+				} else {
+					obsoletes = g_strconcat (obsoletes, "^", zypp_build_package_id_capabilities (it->obsoletes ()), (gchar *)NULL);
+				}
 			}
 		}
 
@@ -1208,11 +1269,15 @@ backend_resolve_thread (PkBackend *backend)
 		}
 
 		const gchar *package_id = zypp_build_package_id_from_resolvable (package);
-		// TODO: Determine whether the package is installed and emit either PK_INFO_ENUM_AVAILABLE or PK_INFO_ENUM_INSTALLED
+
+		PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
+		if( package.isSystem ())
+			info = PK_INFO_ENUM_INSTALLED;
+
 		pk_backend_package (backend,
-				    PK_INFO_ENUM_AVAILABLE,
+				    info,
 				    package_id,
-				    package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
+				    package.lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 	}
 
 	pk_backend_finished (backend);
@@ -1223,7 +1288,7 @@ backend_resolve_thread (PkBackend *backend)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, gchar **package_ids)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_resolve_thread);
 }
@@ -1232,12 +1297,12 @@ static gboolean
 backend_find_packages_thread (PkBackend *backend)
 {
 	const gchar *search;
-	PkFilterEnum filters;
+	PkBitfield filters;
 	guint mode;
 	//GList *list = NULL;
 
 	search = pk_backend_get_string (backend, "search");
-	filters = (PkFilterEnum) pk_backend_get_uint (backend, "filters");
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	mode = pk_backend_get_uint (backend, "mode");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -1273,7 +1338,7 @@ backend_find_packages_thread (PkBackend *backend)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_NAME);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1283,7 +1348,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_DETAILS);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1293,10 +1358,10 @@ static gboolean
 backend_search_group_thread (PkBackend *backend)
 {
 	const gchar *group;
-	PkFilterEnum filters;
+	PkBitfield filters;
 
 	group = pk_backend_get_string (backend, "search");
-	filters = (PkFilterEnum) pk_backend_get_uint (backend, "filters");
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	if (group == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
@@ -1336,7 +1401,7 @@ backend_search_group_thread (PkBackend *backend)
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *pkGroup)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *pkGroup)
 {
 	pk_backend_thread_create (backend, backend_search_group_thread);
 }
@@ -1345,7 +1410,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *pkG
  * backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_FILE);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1355,7 +1420,7 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	//FIXME - use the new param - filter
 
@@ -1507,8 +1572,8 @@ backend_get_files(PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_get_packages_thread (PkBackend *backend)
 {
-	PkFilterEnum filters;
-	filters = (PkFilterEnum) pk_backend_get_uint (backend, "filters");
+	PkBitfield filters;
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1530,7 +1595,7 @@ backend_get_packages_thread (PkBackend *backend)
   * backend_get_packages:
   */
 static void
-backend_get_packages (PkBackend *backend, PkFilterEnum filter)
+backend_get_packages (PkBackend *backend, PkBitfield filter)
 {
 	pk_backend_thread_create (backend, backend_get_packages_thread);
 }
@@ -1546,7 +1611,7 @@ backend_update_packages_thread (PkBackend *backend)
 	zypp_get_patches (restart); // make shure _updating_self is set
 
 	if (_updating_self) {
-		pk_debug ("updating self and setting restart");
+		egg_debug ("updating self and setting restart");
 		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, "Package Management System updated - restart needed");
 		_updating_self = FALSE;
 	}
@@ -1615,7 +1680,7 @@ backend_repo_set_data_thread (PkBackend *backend)
 			}else if (g_ascii_strcasecmp (value, "false") == 0) {
 				repo.setAutorefresh (FALSE);
 			} else {
-				pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Autorefresh a repo: Enter true or false");
+				pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, "Autorefresh a repo: Enter true or false");
 				bReturn = FALSE;
 			}
 
@@ -1626,14 +1691,14 @@ backend_repo_set_data_thread (PkBackend *backend)
 			gint length = strlen (value);
 
 			if (length > 2) {
-				pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Priorities has to be between 1 (highest) and 99");
+				pk_backend_message (backend, PK_MESSAGE_ENUM_PRIORITY_INVALID, "Priorities has to be between 1 (highest) and 99");
 				bReturn = false;
 			} else {
 				for (gint i = 0; i < length; i++) {
 					gint tmp = g_ascii_digit_value (value[i]);
 
 					if (tmp == -1) {
-						pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Priorities has to be a number between 1 (highest) and 99");
+						pk_backend_message (backend, PK_MESSAGE_ENUM_PRIORITY_INVALID, "Priorities has to be a number between 1 (highest) and 99");
 						bReturn = FALSE;
 						prio = 0;
 						break;
@@ -1690,22 +1755,24 @@ backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *pa
 static gboolean
 backend_what_provides_thread (PkBackend *backend)
 {
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	const gchar *search;
 	search = pk_backend_get_string (backend, "search");
+	PkProvidesEnum provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
 	zypp::Capability cap (search);
 	zypp::sat::WhatProvides prov (cap);
 
-	if(g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
+	if((provides == PK_PROVIDES_ENUM_HARDWARE_DRIVER) || g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
 
 
 		// solver run
-		zypp::ResPool pool = zypp::ResPool::instance ();
+		zypp::ResPool pool = zypp_build_pool(true);
 		zypp::Resolver solver(pool);
 
 		if (solver.resolvePool () == FALSE) {
 			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
 			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
-				pk_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
+				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
 			pk_backend_finished (backend);
@@ -1719,17 +1786,8 @@ backend_what_provides_thread (PkBackend *backend)
 
 			gboolean hit = FALSE;
 
-			if (it->status ().isToBeUninstalled ()) {
-				status = PK_INFO_ENUM_REMOVING;
-				hit = TRUE;
-			}else if (it->status ().isToBeInstalled ()) {
-				status = PK_INFO_ENUM_INSTALLING;
-				hit = TRUE;
-			}else if (it->status ().isToBeUninstalledDueToUpgrade ()) {
-				status = PK_INFO_ENUM_UPDATING;
-				hit = TRUE;
-			}else if (it->status ().isToBeUninstalledDueToObsolete ()) {
-				status = PK_INFO_ENUM_OBSOLETING;
+			if (it->status ().isToBeInstalled ()) {
+				status = PK_INFO_ENUM_AVAILABLE;
 				hit = TRUE;
 			}
 
@@ -1740,7 +1798,7 @@ backend_what_provides_thread (PkBackend *backend)
 						it->resolvable ()->arch ().c_str(),
 						it->resolvable ()->repoInfo().alias ().c_str ());
 
-				pk_backend_package (backend, status, package_id, it->resolvable ()->description ().c_str ());
+				pk_backend_package (backend, status, package_id, it->resolvable ()->summary ().c_str ());
 
 				g_free (package_id);
 			}
@@ -1769,7 +1827,7 @@ backend_what_provides_thread (PkBackend *backend)
   * backend_what_provides
   */
 static void
-backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provide, const gchar *search)
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provide, const gchar *search)
 {
 	pk_backend_thread_create (backend, backend_what_provides_thread);
 }
@@ -1787,6 +1845,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
+	backend_get_distro_upgrades,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */

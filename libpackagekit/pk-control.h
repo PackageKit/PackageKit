@@ -29,6 +29,7 @@
 
 #include <glib-object.h>
 #include "pk-enum.h"
+#include "pk-bitfield.h"
 
 G_BEGIN_DECLS
 
@@ -54,6 +55,7 @@ typedef struct _PkControlClass		PkControlClass;
 typedef enum
 {
 	PK_CONTROL_ERROR_FAILED,
+	PK_CONTROL_ERROR_CANNOT_START_DAEMON,
 } PkControlError;
 
 struct _PkControl
@@ -90,11 +92,16 @@ gboolean	 pk_control_allocate_transaction_id	(PkControl	*control,
 							 GError		**error);
 gboolean	 pk_control_set_proxy			(PkControl	*control,
 							 const gchar	*proxy_http,
-							 const gchar	*proxy_ftp);
-PkRoleEnum	 pk_control_get_actions			(PkControl	*control);
-PkFilterEnum	 pk_control_get_filters			(PkControl	*control);
-PkGroupEnum	 pk_control_get_groups			(PkControl	*control);
-PkNetworkEnum	 pk_control_get_network_state		(PkControl	*control);
+							 const gchar	*proxy_ftp,
+							 GError		**error);
+PkBitfield	 pk_control_get_actions			(PkControl	*control,
+							 GError		**error);
+PkBitfield	 pk_control_get_filters			(PkControl	*control,
+							 GError		**error);
+PkBitfield	 pk_control_get_groups			(PkControl	*control,
+							 GError		**error);
+PkNetworkEnum	 pk_control_get_network_state		(PkControl	*control,
+							 GError		**error);
 gboolean	 pk_control_get_backend_detail		(PkControl	*control,
 							 gchar		**name,
 							 gchar		**author,
