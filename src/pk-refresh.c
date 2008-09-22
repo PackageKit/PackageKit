@@ -154,6 +154,9 @@ pk_refresh_import_desktop_files_process_desktop (PkRefresh *refresh, const gchar
 	}
 	g_strfreev (key_array);
 
+	/* make sure this is still set, as we are sharing PkExtra */
+	pk_extra_set_access (refresh->priv->extra, PK_EXTRA_ACCESS_WRITE_ONLY);
+
 	/* get the default entry */
 	name_unlocalised = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", NULL);
 	if (!egg_strzero (name_unlocalised)) {
@@ -460,6 +463,7 @@ pk_refresh_init (PkRefresh *refresh)
 				  G_CALLBACK (pk_refresh_package_cb), refresh);
 
 	refresh->priv->extra = pk_extra_new ();
+	pk_extra_set_access (refresh->priv->extra, PK_EXTRA_ACCESS_WRITE_ONLY);
 
 	/* use the default location */
 	ret = pk_extra_set_database (refresh->priv->extra, NULL);
