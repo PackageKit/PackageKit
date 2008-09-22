@@ -862,7 +862,6 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 	g_free (package_id);
 }
 
-
 /**
  * pk_transaction_set_running:
  */
@@ -998,7 +997,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS)
 		desc->search_details (priv->backend, priv->cached_filters, priv->cached_search);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE)
-		desc->search_file (priv->backend,priv->cached_filters,priv->cached_search);
+		desc->search_file (priv->backend, priv->cached_filters, priv->cached_search);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP)
 		desc->search_group (priv->backend, priv->cached_filters, priv->cached_search);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
@@ -1238,14 +1237,10 @@ pk_transaction_action_is_allowed (PkTransaction *transaction, gboolean trusted, 
 
 /**
  * pk_transaction_priv_get_role:
- *
- * Only valid from an async caller, which is fine, as we won't prompt the user
- * when not async.
  **/
 PkRoleEnum
 pk_transaction_priv_get_role (PkTransaction *transaction)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	return transaction->priv->role;
 }
