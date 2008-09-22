@@ -95,6 +95,20 @@ class PackageKitSmartProgress(Progress):
             if self._fetcher and subtopic != self._lasturl:
                 packages = self._backend._packagesdict
                 if not packages:
+                    if subtopic.find('repomd') != -1 \
+                    or subtopic.find('Release') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_REPOSITORY)
+                    elif subtopic.find('primary') != -1 \
+                    or subtopic.find('Packages') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_PACKAGELIST)
+                    elif subtopic.find('filelists') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_FILELIST)
+                    elif subtopic.find('other') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_CHANGELOG)
+                    elif subtopic.find('comps') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_GROUP)
+                    elif subtopic.find('updateinfo') != -1:
+                        self._backend.status(STATUS_DOWNLOAD_UPDATEINFO)
                     return
                 for package in packages:
                     for loader in package.loaders:
