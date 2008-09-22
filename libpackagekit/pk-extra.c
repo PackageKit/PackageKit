@@ -67,6 +67,7 @@ struct _PkExtraPrivate
 	sqlite3			*db;
 	GHashTable		*hash_locale;
 	GHashTable		*hash_package;
+	PkExtraAccess		 access;
 };
 
 typedef struct
@@ -329,7 +330,9 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 	}
 
 	/* try to populate a working cache */
-	pk_extra_populate_locale_cache (extra);
+	if (extra->priv->access == PK_EXTRA_ACCESS_READ_ONLY ||
+	    extra->priv->access == PK_EXTRA_ACCESS_READ_WRITE)
+		pk_extra_populate_locale_cache (extra);
 
 	return TRUE;
 }
@@ -361,6 +364,12 @@ pk_extra_get_summary (PkExtra *extra, const gchar *package)
 	g_return_val_if_fail (PK_IS_EXTRA (extra), NULL);
 	g_return_val_if_fail (package != NULL, NULL);
 
+	/* write only */
+	if (extra->priv->access == PK_EXTRA_ACCESS_WRITE_ONLY) {
+		egg_warning ("database opened write only");
+		return NULL;
+	}
+
 	/* super quick if exists in cache */
 	obj = g_hash_table_lookup (extra->priv->hash_locale, package);
 	if (obj == NULL)
@@ -382,6 +391,12 @@ pk_extra_get_icon_name (PkExtra *extra, const gchar *package)
 	g_return_val_if_fail (PK_IS_EXTRA (extra), NULL);
 	g_return_val_if_fail (package != NULL, NULL);
 
+	/* write only */
+	if (extra->priv->access == PK_EXTRA_ACCESS_WRITE_ONLY) {
+		egg_warning ("database opened write only");
+		return NULL;
+	}
+
 	/* super quick if exists in cache */
 	obj = g_hash_table_lookup (extra->priv->hash_package, package);
 	if (obj == NULL)
@@ -402,6 +417,12 @@ pk_extra_get_exec (PkExtra *extra, const gchar *package)
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), NULL);
 	g_return_val_if_fail (package != NULL, NULL);
+
+	/* write only */
+	if (extra->priv->access == PK_EXTRA_ACCESS_WRITE_ONLY) {
+		egg_warning ("database opened write only");
+		return NULL;
+	}
 
 	/* super quick if exists in cache */
 	obj = g_hash_table_lookup (extra->priv->hash_package, package);
@@ -436,6 +457,12 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 		return FALSE;
 	}
 
+	/* read only */
+	if (extra->priv->access == PK_EXTRA_ACCESS_READ_ONLY) {
+		egg_warning ("database opened read only");
+		return FALSE;
+	}
+
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM localised WHERE "
 				     "package = '%s' AND locale = '%s'",
@@ -467,9 +494,11 @@ pk_extra_set_data_locale (PkExtra *extra, const gchar *package, const gchar *sum
 	}
 
 	/* add to cache */
-	obj = g_new (PkExtraLocaleObj, 1);
-	obj->summary = g_strdup (summary);
-	g_hash_table_insert (extra->priv->hash_locale, g_strdup (package), (gpointer) obj);
+	if (extra->priv->access == PK_EXTRA_ACCESS_READ_WRITE) {
+		obj = g_new (PkExtraLocaleObj, 1);
+		obj->summary = g_strdup (summary);
+		g_hash_table_insert (extra->priv->hash_locale, g_strdup (package), (gpointer) obj);
+	}
 
 	return TRUE;
 }
@@ -496,6 +525,12 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 	/* we failed to open */
 	if (extra->priv->db == NULL) {
 		egg_debug ("no database");
+		return FALSE;
+	}
+
+	/* read only */
+	if (extra->priv->access == PK_EXTRA_ACCESS_READ_ONLY) {
+		egg_warning ("database opened read only");
 		return FALSE;
 	}
 
@@ -527,12 +562,28 @@ pk_extra_set_data_package (PkExtra *extra, const gchar *package, const gchar *ic
 	}
 
 	/* add to cache */
-	egg_debug ("adding package:%s", package);
-	obj = g_new (PkExtraPackageObj, 1);
-	obj->icon_name = g_strdup (icon_name);
-	obj->exec = g_strdup (exec);
-	g_hash_table_insert (extra->priv->hash_package, g_strdup (package), (gpointer) obj);
+	if (extra->priv->access == PK_EXTRA_ACCESS_READ_WRITE) {
+		egg_debug ("adding package:%s", package);
+		obj = g_new (PkExtraPackageObj, 1);
+		obj->icon_name = g_strdup (icon_name);
+		obj->exec = g_strdup (exec);
+		g_hash_table_insert (extra->priv->hash_package, g_strdup (package), (gpointer) obj);
+	}
 
+	return TRUE;
+}
+
+/**
+ * pk_extra_set_access:
+ * @extra: a valid #PkExtra instance
+ *
+ * Return value: the current locale
+ **/
+gboolean
+pk_extra_set_access (PkExtra *extra, PkExtraAccess access)
+{
+	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
+	extra->priv->access = access;
 	return TRUE;
 }
 
@@ -614,7 +665,9 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 	}
 
 	/* try to populate a working cache */
-	pk_extra_populate_package_cache (extra);
+	if (extra->priv->access == PK_EXTRA_ACCESS_READ_ONLY ||
+	    extra->priv->access == PK_EXTRA_ACCESS_READ_WRITE)
+		pk_extra_populate_package_cache (extra);
 
 	return TRUE;
 }
@@ -664,6 +717,7 @@ pk_extra_init (PkExtra *extra)
 	extra->priv->db = NULL;
 	extra->priv->locale = NULL;
 	extra->priv->locale_base = NULL;
+	extra->priv->access = PK_EXTRA_ACCESS_READ_WRITE;
 	extra->priv->hash_package = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, pk_free_package_obj);
 	extra->priv->hash_locale = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, pk_free_locale_obj);
 }
@@ -876,6 +930,36 @@ pk_extra_test (EggTest *test)
 			egg_test_failed (test, "failed to not get bad 4!");
 	}
 	egg_test_success (test, "%i get_summary loops completed in %ims", i*5, egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "try to set wo");
+	ret = pk_extra_set_access (extra, PK_EXTRA_ACCESS_WRITE_ONLY);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "try to write");
+	ret = pk_extra_set_data_package (extra, "gnome-power-manager", "gpm-prefs.png", "gnome-power-preferences");
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "try to read");
+	summary = pk_extra_get_summary (extra, "gnome-power-manager");
+	egg_test_assert (test, summary == NULL);
+
+	/************************************************************/
+	egg_test_title (test, "try to set ro");
+	ret = pk_extra_set_access (extra, PK_EXTRA_ACCESS_READ_ONLY);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "try to read");
+	summary = pk_extra_get_summary (extra, "gnome-power-manager");
+	egg_test_assert (test, summary != NULL);
+
+	/************************************************************/
+	egg_test_title (test, "try to write");
+	ret = pk_extra_set_data_package (extra, "gnome-power-manager", "gpm-prefs.png", "gnome-power-preferences");
+	egg_test_assert (test, !ret);
 
 	g_object_unref (extra);
 	g_unlink ("extra.db");
