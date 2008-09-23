@@ -319,7 +319,7 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 	/* write to the waiting process */
 	wrote = write (spawn->priv->stdin_fd, buffer, length);
 	if (wrote != length) {
-		egg_warning ("failed to write '%s'", buffer);
+		egg_warning ("wrote %i/%i bytes on fd %i", wrote, length, spawn->priv->stdin_fd);
 		ret = FALSE;
 	}
 out:
@@ -400,7 +400,9 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 			g_free (command);
 			if (ret)
 				return TRUE;
-			/* we failed, so fall on through to kill and respawn */
+
+			/* so fall on through to kill and respawn */
+			egg_warning ("failed to write, so trying to kill and respawn");
 		}
 
 		/* kill off existing instance */
