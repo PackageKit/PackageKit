@@ -915,7 +915,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         except yum.Errors.RepoError,e:
                 message = self._format_msgs(e.value)
                 if message.find ("No more mirrors to try") != -1:
-                    self.error(ERROR_FILE_NO_MORE_MIRRORS_TO_TRY,message)
+                    self.error(ERROR_NO_MORE_MIRRORS_TO_TRY,message)
                 else:
                     self.error(ERROR_REPO_CONFIGURATION_ERROR,message)
         except yum.Errors.YumBaseError,e:
