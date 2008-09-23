@@ -281,7 +281,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
         step = int(800/len(collections))
         print step
-        pct=20
+        pct = 20
         i = 0
         for col in collections:
             i += 1
@@ -445,7 +445,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.status(STATUS_DOWNLOAD)
-        percentage = 0;
+        percentage = 0
         bump = 100 / len(package_ids)
         files = []
 
@@ -593,7 +593,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         self.percentage(None)
         self.status(STATUS_INFO)
 
-        percentage = 0;
+        percentage = 0
         bump = 100 / len(package_ids)
         deps_list = []
         resolve_list = []
@@ -608,7 +608,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 else:
                     txmbr = self.yumbase.groupRemove(grp.groupid)
                     rc,msgs =  self.yumbase.buildTransaction()
-                    if rc !=2:
+                    if rc != 2:
                         self.error(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
                     else:
                         for txmbr in self.yumbase.tsInfo:
@@ -622,7 +622,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                     txmbrs = self.yumbase.remove(po=pkg)
                     if txmbrs:
                         rc,msgs =  self.yumbase.buildTransaction()
-                        if rc !=2:
+                        if rc != 2:
                             self.error(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
                         else:
                             for txmbr in self.yumbase.tsInfo:
@@ -649,7 +649,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         # search for a requested arch first
         ret = self._is_inst(pkg)
         if ret:
-            return True;
+            return True
 
         # then fallback to i686 if i386
         if pkg.arch == 'i386':
@@ -718,18 +718,18 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             for pkg in pkgs:
                 if best:
                     if pkg.EVR > best.EVR:
-                        best=pkg
+                        best = pkg
                 else:
-                    best=pkg
+                    best = pkg
 
         # then give up and see if there's one available
         if not best:
             for pkg in pkglist:
                 if best:
                     if pkg.EVR > best.EVR:
-                        best=pkg
+                        best = pkg
                 else:
-                    best=pkg
+                    best = pkg
         return best
 
     def _get_best_depends(self,pkgs,recursive):
@@ -804,7 +804,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         pkgfilter = YumFilter(fltlist)
         recursive = self._text_to_boolean(recursive_text)
 
-        percentage = 0;
+        percentage = 0
         bump = 100 / len(package_ids)
         deps_list = []
         resolve_list = []
@@ -884,7 +884,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
-        self.allow_cancel(True);
+        self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)
 
@@ -900,10 +900,10 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             for repo in self.yumbase.repos.listEnabled():
                 repo.metadata_expire = 0
                 self.yumbase.repos.populateSack(which=[repo.id],mdtype='metadata',cacheonly=1)
-                pct+=bump
+                pct += bump
                 self.percentage(pct)
                 self.yumbase.repos.populateSack(which=[repo.id],mdtype='filelists',cacheonly=1)
-                pct+=bump
+                pct += bump
                 self.percentage(pct)
 
             self.percentage(95)
@@ -913,11 +913,11 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             self.percentage(100)
 
         except yum.Errors.RepoError,e:
-                message = self._format_msgs(e.value)
-                if message.find ("No more mirrors to try") != -1:
-                    self.error(ERROR_NO_MORE_MIRRORS_TO_TRY,message)
-                else:
-                    self.error(ERROR_REPO_CONFIGURATION_ERROR,message)
+            message = self._format_msgs(e.value)
+            if message.find ("No more mirrors to try") != -1:
+                self.error(ERROR_NO_MORE_MIRRORS_TO_TRY,message)
+            else:
+                self.error(ERROR_REPO_CONFIGURATION_ERROR,message)
         except yum.Errors.YumBaseError,e:
             self.error(ERROR_UNKNOWN,"cannot refresh cache: %s" % str(e))
 
@@ -930,7 +930,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         Implement the {backend}-resolve functionality
         '''
         self._check_init(lazy_cache=True)
-        self.allow_cancel(True);
+        self.allow_cancel(True)
         self.percentage(None)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
@@ -1088,9 +1088,9 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         # If trusted is true, it means that we will only install trusted files
         if trusted == 'yes':
             # disregard the default
-            self.yumbase.conf.gpgcheck=1
+            self.yumbase.conf.gpgcheck = 1
 
-            # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck=1
+            # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck = 1
             # This means we don't run runYumTransaction, and don't get the GPG failure in
             # PackageKitYumBase(_checkSignatures) -- so we check here
             for inst_file in inst_files:
@@ -1100,7 +1100,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 except yum.Errors.YumGPGCheckError,e:
                     self.error(ERROR_MISSING_GPG_SIGNATURE,str(e))
         else:
-            self.yumbase.conf.gpgcheck=0
+            self.yumbase.conf.gpgcheck = 0
 
         # common checks copied from yum
         for inst_file in inst_files:
@@ -1162,11 +1162,10 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             return False
 
         if len(self.yumbase.conf.exclude) > 0:
-           exactmatch, matched, unmatched = \
-                   parsePackages([po], self.yumbase.conf.exclude, casematch=1)
-           if po in exactmatch + matched:
-               self.error(ERROR_PACKAGE_INSTALL_BLOCKED, "Installation of %s is excluded by yum configuration." % pkg)
-               return False
+            exactmatch, matched, unmatched = parsePackages([po], self.yumbase.conf.exclude, casematch=1)
+            if po in exactmatch + matched:
+                self.error(ERROR_PACKAGE_INSTALL_BLOCKED, "Installation of %s is excluded by yum configuration." % pkg)
+                return False
 
         return True
 
@@ -1177,7 +1176,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         '''
         self._check_init()
         self.yumbase.conf.cache = 0 # Allow new files
-        self.allow_cancel(False);
+        self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
         txmbrs = []
@@ -1215,9 +1214,9 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
     def _format_msgs(self,msgs):
         if isinstance(msgs,basestring):
-             msgs = msgs.split('\n')
+            msgs = msgs.split('\n')
         text = ";".join(msgs)
-        text = self._truncate(text, 1024);
+        text = self._truncate(text, 1024)
         text = text.replace(";Please report this error in bugzilla","")
         text = text.replace("Missing Dependency: ","")
         text = text.replace(" (installed)","")
@@ -1232,7 +1231,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             rc,msgs =  self.yumbase.buildTransaction()
         except yum.Errors.RepoError,e:
             self.error(ERROR_REPO_NOT_AVAILABLE,str(e))
-        if rc !=2:
+        if rc != 2:
             self.error(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
         else:
             self._check_for_reboot()
@@ -1286,7 +1285,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         '''
         self._check_init()
         self.yumbase.conf.cache = 0 # Allow new files
-        self.allow_cancel(False);
+        self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
@@ -1339,7 +1338,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 desc = desc.replace('\n',' ')
                 group = GROUP_COLLECTIONS
                 pkgs = self._get_group_packages(grp)
-                size = 0;
+                size = 0
                 for pkg in pkgs:
                     size = size + pkg.size
                 self.details(id,"",group,desc,"",size)
@@ -1444,7 +1443,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
         # find the newest release
         newest = None
-        last_version = 0;
+        last_version = 0
         for section in config.sections():
             # we only care about stable versions
             if config.has_option(section,'stable') and config.getboolean(section,'stable'):
@@ -1741,7 +1740,7 @@ class DownloadCallback(BaseMeter):
         self.lastPct = 0
         self.totalPct = 0
         self.pkgs = None
-        self.numPkgs=0
+        self.numPkgs = 0
         self.bump = 0.0
 
     def setPackages(self,pkgs,startPct,numPct):
@@ -1929,9 +1928,9 @@ class DepSolveCallback(object):
         self.backend = backend
 
     def start(self):
-       if not self.started:
-           self.backend.status(STATUS_DEP_RESOLVE)
-           self.backend.percentage(None)
+        if not self.started:
+            self.backend.status(STATUS_DEP_RESOLVE)
+            self.backend.percentage(None)
 
     # Be lazy and not define the others explicitly
     def _do_nothing(self,*args,**kwargs):
