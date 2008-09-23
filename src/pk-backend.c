@@ -74,7 +74,7 @@
  * This delay is required as some threads may take some time to cancel or a
  * spawned executable to disappear of the system DBUS.
  */
-#define PK_BACKEND_FINISHED_TIMEOUT_GRACE	50 /* ms */
+#define PK_BACKEND_FINISHED_TIMEOUT_GRACE	10 /* ms */
 
 struct _PkBackendPrivate
 {
