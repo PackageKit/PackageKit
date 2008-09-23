@@ -50,13 +50,13 @@ DefaultBackend=@defaultbackend@
 #
 # NOTE: Don't enable this for backends that are slow doing SearchFile()
 #
-# default=false
-RefreshCacheScanDesktopFiles=false
+# default=true
+RefreshCacheScanDesktopFiles=true
 
 # Update the package list when we RefreshCache
 #
 # NOTE: Don't enable this for backends that are slow doing GetPackages()
 #
-# default=false
-RefreshCacheUpdatePackageList=false
+# default=true
+RefreshCacheUpdatePackageList=true
 

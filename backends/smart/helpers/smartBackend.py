@@ -712,7 +712,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             package = packages[0]
             infos = []
             for loader in package.loaders:
-                if channels and loader.getChannel() not in channels:
+                if channels and loader.getChannel() not in channels and not \
+                (package.installed and self._package_is_collection(package)):
                     continue
                 info = loader.getInfo(package)
                 infos.append(info)
@@ -1058,7 +1059,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 status = INFO_UNKNOWN
         for loader in package.loaders:
             channel = loader.getChannel()
-            if package.installed and not channel.getType().endswith('-sys'):
+            if package.installed and not channel.getType().endswith('-sys') \
+            and not self._package_is_collection(package):
                 continue
             info = loader.getInfo(package)
             summary = info.getSummary()
