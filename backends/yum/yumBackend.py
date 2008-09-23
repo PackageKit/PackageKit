@@ -107,7 +107,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         signal.signal(signal.SIGQUIT,sigquit)
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = PackageKitYumBase(self)
-
+        self._LANG = 'C'
         self.comps = yumComps(self.yumbase)
         if not self.comps.connect():
             self.refresh_cache()
@@ -188,6 +188,12 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             if key in grpid:
                 self._show_meta_package(grpid,filters)
 
+    def set_locale(self,code):
+        '''
+        Implement the {backend}-set-locale functionality
+        Needed to be implemented in a sub class
+        '''
+        self._LANG = code
 
     @handle_repo_error
     def _do_search(self,searchlist,filters,key):
@@ -291,12 +297,13 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         id = "%s;;;meta" % grpid
         grp = self.yumbase.comps.return_group(grpid)
         if grp:
+            name = grp.nameByLang(self._LANG)
             if grp.installed:
                 if show_inst:
-                    self.package(id,INFO_COLLECTION_INSTALLED,grp.name)
+                    self.package(id,INFO_COLLECTION_INSTALLED,name)
             else:
                 if show_avail:
-                    self.package(id,INFO_COLLECTION_AVAILABLE,grp.name)
+                    self.package(id,INFO_COLLECTION_AVAILABLE,name)
 
     #@handle_repo_error
     def search_group(self,filters,group_key):
@@ -1327,7 +1334,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             grp = self._is_meta_package(package)
             if grp:
                 id = "%s;;;meta" % grp.groupid
-                desc = grp.description
+                desc = grp.descriptionByLang(self._LANG)
                 desc = desc.replace('\n\n',';')
                 desc = desc.replace('\n',' ')
                 group = GROUP_COLLECTIONS

@@ -410,6 +410,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def set_locale(self,code):
+        '''
+        Implement the {backend}-set-locale functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
     def customTracebackHandler(self,tb):
         '''
         Custom Traceback Handler
@@ -550,6 +557,10 @@ class PackageKitBaseBackend:
             provides_type = args[1]
             search = args[2]
             self.what_provides(filters,provides_type,search)
+            self.finished();
+        elif cmd == 'set-locale':
+            code = args[0]
+            self.set_locale(code)
             self.finished();
         else:
             errmsg = "command '%s' is not known" % cmd
