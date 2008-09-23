@@ -22,7 +22,6 @@
 from packagekit.backend import *
 from packagekit.package import PackagekitPackage
 
-import yum
 import rpmUtils
 import re
 
@@ -71,7 +70,7 @@ class YumFilter(object,PackagekitPackage):
 
     def _get_nevra(self,pkg):
         ''' gets the NEVRA for a pkg '''
-        return "%s-%s:%s-%s.%s" % (pkg.name,pkg.epoch,pkg.version,pkg.release,pkg.arch);
+        return "%s-%s:%s-%s.%s" % (pkg.name,pkg.epoch,pkg.version,pkg.release,pkg.arch)
 
     def _is_main_package(self,repo):
         if repo.endswith('-debuginfo'):
@@ -101,9 +100,9 @@ class YumFilter(object,PackagekitPackage):
         for (pkg,status) in package_list:
             if pkg.sourcerpm:
                 base = rpmUtils.miscutils.splitFilename(pkg.sourcerpm)[0]
-                base_list.append ((pkg,status,base,pkg.version));
+                base_list.append ((pkg,status,base,pkg.version))
             else:
-                base_list.append ((pkg,status,'nosrpm',pkg.version));
+                base_list.append ((pkg,status,'nosrpm',pkg.version))
 
         #find all the packages that match thier basename name (done seporately so we get the "best" match)
         for (pkg,status,base,version) in base_list:
@@ -155,22 +154,22 @@ class YumFilter(object,PackagekitPackage):
         return True
 
     def _do_installed_filtering(self,flt,pkg):
-        isInstalled = False
+        is_installed = False
         if flt == FILTER_INSTALLED:
-            wantInstalled = True
+            want_installed = True
         else:
-            wantInstalled = False
-        isInstalled = pkg.repo.id == 'installed'
-        return isInstalled == wantInstalled
+            want_installed = False
+        is_installed = pkg.repo.id == 'installed'
+        return is_installed == want_installed
 
     def _do_gui_filtering(self,flt,pkg):
-        isGUI = False
+        is_gui = False
         if flt == FILTER_GUI:
-            wantGUI = True
+            want_gui = True
         else:
-            wantGUI = False
-        isGUI = self._check_for_gui(pkg)
-        return isGUI == wantGUI
+            want_gui = False
+        is_gui = self._check_for_gui(pkg)
+        return is_gui == want_gui
 
     def _check_for_gui(self,pkg):
         '''  Check if the GUI_KEYS regex matches any package requirements'''
@@ -181,24 +180,24 @@ class YumFilter(object,PackagekitPackage):
         return False
 
     def _do_devel_filtering(self,flt,pkg):
-        isDevel = False
+        is_devel = False
         if flt == FILTER_DEVELOPMENT:
-            wantDevel = True
+            want_devel = True
         else:
-            wantDevel = False
+            want_devel = False
         regex =  re.compile(r'(-devel)|(-debuginfo)|(-static)|(-libs)')
         if regex.search(pkg.name):
-            isDevel = True
-        return isDevel == wantDevel
+            is_devel = True
+        return is_devel == want_devel
 
     def _do_free_filtering(self,flt,pkg):
-        isFree = False
+        is_free = False
         if flt == FILTER_FREE:
-            wantFree = True
+            want_free = True
         else:
-            wantFree = False
+            want_free = False
 
-        isFree = self.check_license_field(pkg.license)
+        is_free = self.check_license_field(pkg.license)
 
-        return isFree == wantFree
+        return is_free == want_free
 
