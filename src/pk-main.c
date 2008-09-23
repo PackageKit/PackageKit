@@ -32,6 +32,8 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "egg-debug.h"
+#include "egg-dbus-monitor.h"
+
 #include "pk-conf.h"
 #include "pk-engine.h"
 #include "pk-transaction.h"
@@ -167,6 +169,7 @@ main (int argc, char *argv[])
 {
 	GMainLoop *loop;
 	DBusGConnection *system_connection;
+	EggDbusMonitor *monitor;
 	gboolean ret;
 	gboolean verbose = FALSE;
 	gboolean disable_timer = FALSE;
@@ -212,6 +215,16 @@ main (int argc, char *argv[])
 
 	if (version) {
 		g_print ("Version %s\n", VERSION);
+		goto exit_program;
+	}
+
+	/* check if an instance is already running */
+	monitor = egg_dbus_monitor_new ();
+	egg_dbus_monitor_assign (monitor, EGG_DBUS_MONITOR_SYSTEM, PK_DBUS_SERVICE);
+	ret = egg_dbus_monitor_is_connected (monitor);
+	g_object_unref (monitor);
+	if (ret) {
+		g_print ("Already running service which provides %s\n", PK_DBUS_SERVICE);
 		goto exit_program;
 	}
 
