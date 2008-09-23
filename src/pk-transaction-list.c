@@ -296,6 +296,7 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 		    !item->finished) {
 			egg_debug ("running %s as previous one finished", item->tid);
 			pk_transaction_list_run_item (tlist, item);
+			break;
 		}
 	}
 }
