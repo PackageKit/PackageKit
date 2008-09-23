@@ -293,8 +293,10 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		if (item->committed &&
 		    !item->running &&
-		    !item->finished)
+		    !item->finished) {
+			egg_debug ("running %s as previous one finished", item->tid);
 			pk_transaction_list_run_item (tlist, item);
+		}
 	}
 }
 
@@ -397,8 +399,10 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
 	/* do the transaction now if we have no other in progress */
-	if (pk_transaction_list_number_running (tlist) == 0)
+	if (pk_transaction_list_number_running (tlist) == 0) {
+		egg_debug ("running %s as no others in progress", item->tid);
 		pk_transaction_list_run_item (tlist, item);
+	}
 
 	return TRUE;
 }
