@@ -24,9 +24,6 @@
 #    Richard Hughes <richard@hughsie.com>
 
 # imports
-
-import re
-
 from packagekit.backend import *
 from packagekit.progress import *
 from packagekit.package import PackagekitPackage
@@ -107,7 +104,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         signal.signal(signal.SIGQUIT,sigquit)
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = PackageKitYumBase(self)
-        self._LANG = 'C'
+        self._lang = 'C'
         self.comps = yumComps(self.yumbase)
         if not self.comps.connect():
             self.refresh_cache()
@@ -193,7 +190,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         Implement the {backend}-set-locale functionality
         Needed to be implemented in a sub class
         '''
-        self._LANG = code
+        self._lang = code
 
     @handle_repo_error
     def _do_search(self,searchlist,filters,key):
@@ -294,16 +291,16 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
     def _show_meta_package(self,grpid,fltlist=[]):
         show_avail = FILTER_INSTALLED not in fltlist
         show_inst = FILTER_NOT_INSTALLED not in fltlist
-        id = "%s;;;meta" % grpid
+        package_id = "%s;;;meta" % grpid
         grp = self.yumbase.comps.return_group(grpid)
         if grp:
-            name = grp.nameByLang(self._LANG)
+            name = grp.nameByLang(self._lang)
             if grp.installed:
                 if show_inst:
-                    self.package(id,INFO_COLLECTION_INSTALLED,name)
+                    self.package(package_id,INFO_COLLECTION_INSTALLED,name)
             else:
                 if show_avail:
-                    self.package(id,INFO_COLLECTION_AVAILABLE,name)
+                    self.package(package_id,INFO_COLLECTION_AVAILABLE,name)
 
     #@handle_repo_error
     def search_group(self,filters,group_key):
@@ -637,8 +634,8 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
         # each unique name, emit
         for pkg in deps_list:
-            id = self._pkg_to_id(pkg)
-            self.package(id,INFO_INSTALLED,pkg.summary)
+            package_id = self._pkg_to_id(pkg)
+            self.package(package_id,INFO_INSTALLED,pkg.summary)
         self.percentage(100)
 
     def _is_inst(self,pkg):
@@ -1053,9 +1050,9 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
             for mem in members:
                 pack.extract(mem,path = tempdir)
             files = os.listdir(tempdir)
-            for file in files:
-                if file.endswith('.rpm'):
-                    inst_files.append(os.path.join(tempdir, file))
+            for fn in files:
+                if fn.endswith('.rpm'):
+                    inst_files.append(os.path.join(tempdir, fn))
 
         to_remove = []
 
@@ -1255,12 +1252,12 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 if not keyData:
                     self.error(ERROR_BAD_GPG_SIGNATURE,
                                "GPG key not imported, and no GPG information was found.")
-                id = self._pkg_to_id(keyData['po'])
+                package_id = self._pkg_to_id(keyData['po'])
                 fingerprint = keyData['fingerprint']()
                 hex_fingerprint = "%02x" * len(fingerprint) % tuple(map(ord, fingerprint))
                 # Borrowed from http://mail.python.org/pipermail/python-list/2000-September/053490.html
 
-                self.repo_signature_required(id,
+                self.repo_signature_required(package_id,
                                              keyData['po'].repoid,
                                              keyData['keyurl'].replace("file://",""),
                                              keyData['userid'],
@@ -1332,8 +1329,8 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         for package in package_ids:
             grp = self._is_meta_package(package)
             if grp:
-                id = "%s;;;meta" % grp.groupid
-                desc = grp.descriptionByLang(self._LANG)
+                package_id = "%s;;;meta" % grp.groupid
+                desc = grp.descriptionByLang(self._lang)
                 desc = desc.replace('\n\n',';')
                 desc = desc.replace('\n',' ')
                 group = GROUP_COLLECTIONS
@@ -1341,7 +1338,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
                 size = 0
                 for pkg in pkgs:
                     size = size + pkg.size
-                self.details(id,"",group,desc,"",size)
+                self.details(package_id,"",group,desc,"",size)
 
             else:
                 pkg,inst = self._findPackage(package)
@@ -1353,12 +1350,12 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
     def _show_details_pkg(self,pkg):
 
         pkgver = self._get_package_ver(pkg)
-        id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
+        package_id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
         desc = pkg.description
         desc = desc.replace('\n\n',';')
         desc = desc.replace('\n',' ')
         group = self.comps.get_group(pkg.name)
-        self.details(id,pkg.license,group,desc,pkg.url,pkg.size)
+        self.details(package_id,pkg.license,group,desc,pkg.url,pkg.size)
 
     def get_files(self,package_ids):
         self._check_init()
@@ -1381,13 +1378,13 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
 
     def _pkg_to_id(self,pkg):
         pkgver = self._get_package_ver(pkg)
-        id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
-        return id
+        package_id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
+        return package_id
 
     def _show_package(self,pkg,status):
         '''  Show info about package'''
-        id = self._pkg_to_id(pkg)
-        self.package(id,status,pkg.summary)
+        package_id = self._pkg_to_id(pkg)
+        self.package(package_id,status,pkg.summary)
 
     def _get_status(self,notice):
         ut = notice['type']
@@ -1869,11 +1866,11 @@ class PackageKitCallback(RPMBaseCallback):
 
     def _showName(self,status):
         if type(self.curpkg) in types.StringTypes:
-            id = self.base.get_package_id(self.curpkg,'','','')
+            package_id = self.base.get_package_id(self.curpkg,'','','')
         else:
             pkgver = self.base._get_package_ver(self.curpkg)
-            id = self.base.get_package_id(self.curpkg.name,pkgver,self.curpkg.arch,self.curpkg.repo)
-        self.base.package(id,status,"")
+            package_id = self.base.get_package_id(self.curpkg.name,pkgver,self.curpkg.arch,self.curpkg.repo)
+        self.base.package(package_id,status,"")
 
     def event(self,package,action,te_current,te_total,ts_current,ts_total):
         if str(package) != str(self.curpkg):

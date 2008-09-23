@@ -213,6 +213,7 @@ class yumComps:
         return True
 
     def _add_db(self,name,category,groupid,pkgroup,pkgtype):
+        ''' add an item into the database '''
         self.cursor.execute('INSERT INTO groups values(?,?,?,?,?);',(name,category,groupid,pkgroup,pkgtype))
 
     def refresh(self,force=False):
@@ -256,7 +257,7 @@ class yumComps:
 
     def get_package_list(self,group_key):
         ''' for a PK group, get the packagelist for this group '''
-        all_packages = [];
+        all_packages = []
         self.cursor.execute('SELECT name FROM groups WHERE group_enum = ?;',[group_key])
         for row in self.cursor:
             all_packages.append(row[0])
@@ -272,17 +273,16 @@ class yumComps:
         return group
 
     def get_meta_packages(self):
+        ''' return all the group_id's '''
         metapkgs = set()
         self.cursor.execute('SELECT groupid FROM groups')
         for row in self.cursor:
             metapkgs.add(row[0])
         return list(metapkgs)
 
-
-
     def get_meta_package_list(self,groupid):
         ''' for a comps group, get the packagelist for this group (mandatory,default)'''
-        all_packages = [];
+        all_packages = []
         self.cursor.execute('SELECT name FROM groups WHERE groupid = ? AND ( pkgtype = "mandatory" OR pkgtype = "default");',[groupid])
         for row in self.cursor:
             all_packages.append(row[0])
@@ -318,3 +318,4 @@ if __name__ == "__main__":
     pkgs = comps.get_meta_package_list('kde-desktop')
     print pkgs
     os.unlink(db) # kill the db
+
