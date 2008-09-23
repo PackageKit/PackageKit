@@ -6,11 +6,7 @@ pk-marshal.c
 pkcon
 pkmon
 pkgenpack
-pk-update-icon
-pk-application
-pk-import-desktop
 pk-import-specspo
-pk-generate-package-list
 pk-self-test
 *.glade.bak
 *.gladep
