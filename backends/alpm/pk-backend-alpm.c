@@ -19,6 +19,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#define _GNU_SOURCE
+
 #define ALPM_CONFIG_PATH "/etc/pacman.conf"
 
 #define ALPM_ROOT "/"
@@ -62,19 +64,6 @@ typedef enum {
 	PK_ALPM_SEARCH_TYPE_DETAILS,
 	PK_ALPM_SEARCH_TYPE_GROUP
 } PkAlpmSearchType;
-
-typedef struct _PackageSource
-{
-	pmpkg_t *pkg;
-	gchar *repo;
-	guint installed;
-} PackageSource;
-
-void
-package_source_free (PackageSource *source)
-{
-	g_free (source);
-}
 
 gchar *
 pkg_to_package_id_str (pmpkg_t *pkg, const gchar *repo)
@@ -281,96 +270,6 @@ emit_package (PkBackend *backend, pmpkg_t *pkg, const gchar *repo, PkInfoEnum in
 	gchar *package_id_str = pkg_to_package_id_str (pkg, repo);
 	pk_backend_package (backend, info, package_id_str, alpm_pkg_get_desc (pkg));
 	g_free (package_id_str);
-}
-
-static void
-add_packages_from_list (PkBackend *backend, alpm_list_t *list)
-{
-	PackageSource *package = NULL;
-
-	if (list == NULL)
-		egg_warning ("alpm: add_packages_from_list called for empty list!");
-
-	alpm_list_t *iterator;
-	for (iterator = list; iterator; iterator = alpm_list_next (iterator)) {
-		package = (PackageSource *) iterator->data;
-
-		PkInfoEnum info;
-		if (package->installed)
-			info = PK_INFO_ENUM_INSTALLED;
-		else
-			info = PK_INFO_ENUM_AVAILABLE;
-
-		emit_package (backend, package->pkg, package->repo, info);
-	}
-}
-
-alpm_list_t *
-find_packages_by_details (const gchar *name, pmdb_t *db)
-{
-	if (db == NULL || name == NULL)
-		return NULL;
-
-	alpm_list_t *result = NULL;
-
-	// determine if repository is local
-	gboolean repo_is_local = (db == alpm_option_get_localdb ());
-	// determine repository name
-	const gchar *repo;
-	if (repo_is_local)
-		repo = ALPM_LOCAL_DB_ALIAS;
-	else
-		repo = alpm_db_get_name (db);
-	// set search term
-	alpm_list_t *needle = NULL;
-	needle = alpm_list_add (needle, (gchar *) name);
-	// execute query
-	alpm_list_t *query_result = alpm_db_search (db, needle);
-
-	alpm_list_t *iterator;
-	for (iterator = query_result; iterator; iterator = alpm_list_next (iterator)) {
-		PackageSource *source = g_malloc (sizeof (PackageSource));
-
-		source->pkg = (pmpkg_t *) alpm_list_getdata (iterator);
-		source->repo = (gchar *) repo;
-		source->installed = repo_is_local;
-
-		result = alpm_list_add (result, (PackageSource *) source);
-	}
-
-	alpm_list_free (query_result);
-	alpm_list_free (needle);
-	return result;
-}
-
-gboolean
-pkg_is_installed (const gchar *name, const gchar *version)
-{
-	pmdb_t *localdb = NULL;
-	alpm_list_t *result = NULL;
-
-	if (name == NULL)
-		return FALSE;
-
-	localdb = alpm_option_get_localdb ();
-	if (localdb == NULL)
-		return FALSE;
-
-	result = find_packages_by_details (name, localdb);
-	if (result == NULL)
-		return FALSE;
-	if (!alpm_list_count (result))
-		return FALSE;
-
-	if (version == NULL)
-		return TRUE;
-
-	alpm_list_t *icmp = NULL;
-	for (icmp = result; icmp; icmp = alpm_list_next (icmp))
-		if (strcmp (alpm_pkg_get_version ((pmpkg_t *) icmp->data), version) == 0)
-			return TRUE;
-
-	return FALSE;
 }
 
 /**
@@ -961,6 +860,14 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 			case PK_ALPM_SEARCH_TYPE_NAME:
 				match = strstr (alpm_pkg_get_name (pkg), needle) != NULL;
 				break;
+			case PK_ALPM_SEARCH_TYPE_DETAILS:
+				/* TODO: strcasestr() is a non-standard extension, replace it? */
+				/* workaround for buggy packages with no description */
+				if (alpm_pkg_get_desc (pkg) == NULL)
+					match = FALSE;
+				else
+					match = strcasestr (alpm_pkg_get_desc (pkg), needle) != NULL;
+				break;
 			case PK_ALPM_SEARCH_TYPE_GROUP:
 				match = FALSE;
 				alpm_list_t *groups;
@@ -1417,36 +1324,44 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 }
 
 /**
- * backend_search_details:
+ * backend_search_details_thread:
  */
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+static gboolean
+backend_search_details_thread (PkBackend *backend)
 {
-	alpm_list_t *result = NULL;
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	const gchar *search = pk_backend_get_string (backend, "search");
+	PkBitfield filters = pk_backend_get_uint (backend, "filters");
 
 	gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 	gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 
 	if (!search_not_installed) {
-		// Search in local db
-		result = alpm_list_join (result, find_packages_by_details (search, alpm_option_get_localdb ()));
+		/* search in local db */
+		backend_search (backend, alpm_option_get_localdb (), search, PK_ALPM_SEARCH_TYPE_DETAILS);
 	}
 
 	if (!search_installed) {
-		// Search in sync dbs
-		alpm_list_t *iterator;
-		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator))
-			result = alpm_list_join (result, find_packages_by_details (search, (pmdb_t *) alpm_list_getdata(iterator)));
+		/* search in sync repos */
+		alpm_list_t *repos;
+		/* iterate repos */
+		for (repos = alpm_option_get_syncdbs (); repos; repos = alpm_list_next (repos))
+			backend_search (backend, alpm_list_getdata (repos), search, PK_ALPM_SEARCH_TYPE_DETAILS);
 	}
 
-	add_packages_from_list (backend, alpm_list_first (result));
-
-	alpm_list_free_inner (result, (alpm_list_fn_free) package_source_free);
-	alpm_list_free (result);
-
 	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_search_details:
+ */
+static void
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+
+	pk_backend_thread_create (backend, backend_search_details_thread);
 }
 
 /**
