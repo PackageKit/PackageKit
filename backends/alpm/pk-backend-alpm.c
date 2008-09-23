@@ -343,43 +343,6 @@ find_packages_by_details (const gchar *name, pmdb_t *db)
 }
 
 alpm_list_t *
-find_packages_by_name (const gchar *name, pmdb_t *db)
-{
-	if (db == NULL || name == NULL)
-		return NULL;
-
-	alpm_list_t *result = NULL;
-
-	// determine if repository is local
-	gboolean repo_is_local = (db == alpm_option_get_localdb ());
-	// determine repository name
-	const gchar *repo;
-	if (repo_is_local)
-		repo = ALPM_LOCAL_DB_ALIAS;
-	else
-		repo = alpm_db_get_name (db);
-	// get list of packages in repository
-	alpm_list_t *pkgcache = alpm_db_getpkgcache (db);
-
-	alpm_list_t *iterator;
-	for (iterator = pkgcache; iterator; iterator = alpm_list_next (iterator)) {
-		pmpkg_t *pkg = alpm_list_getdata (iterator);
-
-		if (strstr (alpm_pkg_get_name (pkg), name) != NULL) {
-			PackageSource *source = g_malloc (sizeof (PackageSource));
-
-			source->pkg = (pmpkg_t *) pkg;
-			source->repo = (gchar *) repo;
-			source->installed = repo_is_local;
-
-			result = alpm_list_add (result, (PackageSource *) source);
-		}
-	}
-
-	return result;
-}
-
-alpm_list_t *
 find_packages_by_group (const gchar *name, pmdb_t *db)
 {
 	if (db == NULL || name == NULL)
