@@ -185,7 +185,7 @@ groupMap = {
 
 class yumComps:
 
-    def __init__(self,yumbase,db = None):
+    def __init__(self, yumbase, db = None):
         self.yumbase = yumbase
         self.cursor = None
         self.connection = None
@@ -200,22 +200,23 @@ class yumComps:
             self.connection = sqlite.connect(self.db)
             self.cursor = self.connection.cursor()
         except Exception, e:
-            print 'cannot connect to database %s: %s' % (self.db,str(e))
+            print 'cannot connect to database %s: %s' % (self.db, str(e))
             return False
 
         # test if we can get a group for a common package, create if fail
         try:
-            self.cursor.execute('SELECT group_enum FROM groups WHERE name = ?;',['hal'])
+            self.cursor.execute('SELECT group_enum FROM groups WHERE name = ?;', ['hal'])
         except Exception, e:
-            self.cursor.execute('CREATE TABLE groups (name TEXT,category TEXT,groupid TEXT,group_enum TEXT,pkgtype Text);')
+            self.cursor.execute('CREATE TABLE groups (name TEXT, category TEXT, groupid TEXT, group_enum TEXT, pkgtype Text);')
             self.refresh()
 
         return True
 
-    def _add_db(self,name,category,groupid,pkgroup,pkgtype):
-        self.cursor.execute('INSERT INTO groups values(?,?,?,?,?);',(name,category,groupid,pkgroup,pkgtype))
+    def _add_db(self, name, category, groupid, pkgroup, pkgtype):
+        ''' add an item into the database '''
+        self.cursor.execute('INSERT INTO groups values(?, ?, ?, ?, ?);', (name, category, groupid, pkgroup, pkgtype))
 
-    def refresh(self,force=False):
+    def refresh(self, force=False):
         ''' get the data from yum (slow, REALLY SLOW) '''
 
         cats = self.yumbase.comps.categories
@@ -228,43 +229,43 @@ class yumComps:
         # store to sqlite
         for category in cats:
             grps = map(lambda x: self.yumbase.comps.return_group(x),
-               filter(lambda x: self.yumbase.comps.has_group(x),category.groups))
+               filter(lambda x: self.yumbase.comps.has_group(x), category.groups))
             for group in grps:
 
                 # strip out rpmfusion from the group name
                 group_name = group.groupid
-                group_name = group_name.replace('rpmfusion_nonfree-','')
-                group_name = group_name.replace('rpmfusion_free-','')
-                group_id = "%s;%s" % (category.categoryid,group_name)
+                group_name = group_name.replace('rpmfusion_nonfree-', '')
+                group_name = group_name.replace('rpmfusion_free-', '')
+                group_id = "%s;%s" % (category.categoryid, group_name)
 
                 group_enum = GROUP_OTHER
                 if groupMap.has_key(group_id):
                     group_enum = groupMap[group_id]
                 else:
-                    print 'unknown group enum',group_id
+                    print 'unknown group enum', group_id
 
                 for package in group.mandatory_packages:
-                    self._add_db(package,category.categoryid,group_name,group_enum,'mandatory')
+                    self._add_db(package, category.categoryid, group_name, group_enum, 'mandatory')
                 for package in group.default_packages:
-                    self._add_db(package,category.categoryid,group_name,group_enum,'default')
+                    self._add_db(package, category.categoryid, group_name, group_enum, 'default')
                 for package in group.optional_packages:
-                    self._add_db(package,category.categoryid,group_name,group_enum,'optional')
+                    self._add_db(package, category.categoryid, group_name, group_enum, 'optional')
 
         # write to disk
         self.connection.commit()
         return True
 
-    def get_package_list(self,group_key):
+    def get_package_list(self, group_key):
         ''' for a PK group, get the packagelist for this group '''
-        all_packages = [];
-        self.cursor.execute('SELECT name FROM groups WHERE group_enum = ?;',[group_key])
+        all_packages = []
+        self.cursor.execute('SELECT name FROM groups WHERE group_enum = ?;', [group_key])
         for row in self.cursor:
             all_packages.append(row[0])
         return all_packages
 
-    def get_group(self,pkgname):
+    def get_group(self, pkgname):
         ''' return the PackageKit group enum for the package '''
-        self.cursor.execute('SELECT group_enum FROM groups WHERE name = ?;',[pkgname])
+        self.cursor.execute('SELECT group_enum FROM groups WHERE name = ?;', [pkgname])
         group = GROUP_OTHER
         for row in self.cursor:
             group = row[0]
@@ -272,26 +273,25 @@ class yumComps:
         return group
 
     def get_meta_packages(self):
+        ''' return all the group_id's '''
         metapkgs = set()
         self.cursor.execute('SELECT groupid FROM groups')
         for row in self.cursor:
             metapkgs.add(row[0])
         return list(metapkgs)
 
-
-
-    def get_meta_package_list(self,groupid):
-        ''' for a comps group, get the packagelist for this group (mandatory,default)'''
-        all_packages = [];
-        self.cursor.execute('SELECT name FROM groups WHERE groupid = ? AND ( pkgtype = "mandatory" OR pkgtype = "default");',[groupid])
+    def get_meta_package_list(self, groupid):
+        ''' for a comps group, get the packagelist for this group (mandatory, default)'''
+        all_packages = []
+        self.cursor.execute('SELECT name FROM groups WHERE groupid = ? AND ( pkgtype = "mandatory" OR pkgtype = "default");', [groupid])
         for row in self.cursor:
             all_packages.append(row[0])
         return all_packages
 
-    def get_category(self,groupid):
+    def get_category(self, groupid):
         ''' for a comps group, get the category for a group '''
         category = None
-        self.cursor.execute('SELECT category FROM groups WHERE groupid = ?;',[groupid])
+        self.cursor.execute('SELECT category FROM groups WHERE groupid = ?;', [groupid])
         for row in self.cursor:
             category = row[0]
             break
@@ -302,7 +302,7 @@ if __name__ == "__main__":
     import os
     yb = yum.YumBase()
     db = "packagekit-groupsV2.sqlite"
-    comps = yumComps(yb,db)
+    comps = yumComps(yb, db)
     comps.connect()
     comps.refresh()
     print "pk group system"
@@ -318,3 +318,4 @@ if __name__ == "__main__":
     pkgs = comps.get_meta_package_list('kde-desktop')
     print pkgs
     os.unlink(db) # kill the db
+

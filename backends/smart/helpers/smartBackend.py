@@ -127,7 +127,7 @@ class PackageKitSmartProgress(Progress):
                 self._backend._show_package(subkey)
             elif type(subkey) is tuple and len(subkey):
                 if isinstance(subkey[0], smart.cache.PackageInfo):
-                     self._backend._show_package(subkey[0].getPackage())
+                    self._backend._show_package(subkey[0].getPackage())
 
 class PackageKitSmartBackend(PackageKitBaseBackend):
 
@@ -294,7 +294,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.downloadPackages(packages, targetdir=directory)
 
         pkgpath = self.ctrl.fetchPackages(packages, targetdir=directory)
-        for package,files in pkgpath.iteritems():
+        for package, files in pkgpath.iteritems():
             self.files(package, ";".join(files))
 
     @needs_cache
@@ -381,7 +381,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     for prv in upg.providedby:
                         for prvpkg in prv.packages:
                             if prvpkg.installed:
-                                upgrades.append(self._package_id(prvpkg, loader))
+                                upgrades.append(
+                                    self._package_id(prvpkg, loader))
                 upgrades = '^'.join(upgrades)
             obsoletes = ''
 
@@ -712,7 +713,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             package = packages[0]
             infos = []
             for loader in package.loaders:
-                if channels and loader.getChannel() not in channels:
+                if channels and loader.getChannel() not in channels and not \
+                (package.installed and self._package_is_collection(package)):
                     continue
                 info = loader.getInfo(package)
                 infos.append(info)
@@ -793,7 +795,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             self.files(packageid, ";".join(paths))
 
-    def _text_to_boolean(self,text):
+    def _text_to_boolean(self, text):
         if text == 'true' or text == 'TRUE':
             return True
         elif text == 'yes' or text == 'YES':
@@ -1023,7 +1025,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._package_list.append((package, status))
 
     def _show_package_list(self):
-        for package,status in self._package_list:
+        for package, status in self._package_list:
             self._show_package(package, status)
 
     def _package_id(self, package, loader=None):
@@ -1058,7 +1060,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 status = INFO_UNKNOWN
         for loader in package.loaders:
             channel = loader.getChannel()
-            if package.installed and not channel.getType().endswith('-sys'):
+            if package.installed and not channel.getType().endswith('-sys') \
+            and not self._package_is_collection(package):
                 continue
             info = loader.getInfo(package)
             summary = info.getSummary()
@@ -1081,17 +1084,18 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             package = info.getPackage().name
             if group == 'User Interface/X' and package.find('-fonts') != -1:
                 return GROUP_FONTS
-            if group == 'Applications/Productivity' and package.find('-langpack') != -1:
+            if group == 'Applications/Productivity' and \
+            package.find('-langpack') != -1:
                 return GROUP_LOCALIZATION
             if group == 'User Interface/Desktops' and filter_desktops:
-                if self._package_in_requires(package, "^gnome-desktop") \
-                or self._package_in_requires(package, "^gnome-desktop-optional"):
+                if self._package_in_requires(package, "^gnome-desktop") or \
+                self._package_in_requires(package, "^gnome-desktop-optional"):
                     return GROUP_DESKTOP_GNOME
-                if self._package_in_requires(package, "^kde-desktop") \
-                or self._package_in_requires(package, "^kde-desktop-optional"):
+                if self._package_in_requires(package, "^kde-desktop") or \
+                self._package_in_requires(package, "^kde-desktop-optional"):
                     return GROUP_DESKTOP_KDE
-                if self._package_in_requires(package, "^xfce-desktop") \
-                or self._package_in_requires(package, "^xfce-desktop-optional"):
+                if self._package_in_requires(package, "^xfce-desktop") or \
+                self._package_in_requires(package, "^xfce-desktop-optional"):
                     return GROUP_DESKTOP_XFCE
             group = self.GROUPS[group]
         else:
@@ -1272,19 +1276,19 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def _do_basename_filtering(self, package_list):
         basename = {}
-        for package,status in package_list:
+        for package, status in package_list:
             if self._package_has_basename(package):
-                basename[package] = (package,status)
+                basename[package] = (package, status)
         return basename.values()
 
     def _do_newest_filtering(self, package_list):
         newest = {}
-        for package,status in package_list:
+        for package, status in package_list:
             name, version, arch = self._splitpackage(package)
             key = (name, arch)
             if key in newest and package <= newest[key]:
                 continue
-            newest[key] = (package,status)
+            newest[key] = (package, status)
         return newest.values()
 
     def _post_process_package_list(self, filters):

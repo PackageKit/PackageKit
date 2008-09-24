@@ -516,12 +516,12 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
 
 		/* generate the package list */
-		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageListBugfix");
+		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageList");
 		if (ret)
 			pk_refresh_update_package_list (refresh);
 
 		/* refresh the desktop icon cache */
-		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFilesBugfix");
+		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
 		if (ret)
 			pk_refresh_import_desktop_files (refresh);
 
