@@ -104,7 +104,7 @@ class PackageKitYumBackend(PackageKitBaseBackend,PackagekitPackage):
         signal.signal(signal.SIGQUIT,sigquit)
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = PackageKitYumBase(self)
-        self._lang = 'C'
+        self._lang = os.environ['LANG']
         self.comps = yumComps(self.yumbase)
         if not self.comps.connect():
             self.refresh_cache()
