@@ -507,7 +507,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def _is_meta_package(self, package_id):
         grp = None
-        if len(id.split(';')) > 1:
+        if len(package_id.split(';')) > 1:
             # Split up the id
             (name, idver, a, repo) = self.get_package_from_id(package_id)
             if repo == 'meta':
@@ -525,7 +525,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             return None, False
 
         # is this an real id or just an name
-        if len(id.split(';')) > 1:
+        if len(package_id.split(';')) > 1:
             # Split up the id
             (n, idver, a, d) = self.get_package_from_id(package_id)
             # get e, v, r from package id version

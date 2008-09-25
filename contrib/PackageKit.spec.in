@@ -145,6 +145,8 @@ using PackageKit.
 %configure --enable-yum --enable-smart --with-default-backend=yum --disable-local
 
 make %{?_smp_mflags}
+make check -C src
+make check -C libpackagekit
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -202,7 +204,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_bindir}/pkgenpack
 %{_bindir}/packagekit-bugreport.sh
 %{_libexecdir}/pk-import-*
-%{_libexecdir}/pk-generate-*
 %exclude %{_libdir}/libpackagekit*.so.*
 %{_libdir}/packagekit-backend/libpk_backend_dummy.so
 %{_libdir}/packagekit-backend/libpk_backend_test_*.so

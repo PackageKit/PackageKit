@@ -526,6 +526,7 @@ pk_transaction_list_new (void)
 #ifdef EGG_TEST
 #include "egg-test.h"
 #include "pk-backend-internal.h"
+#include "pk-cache.h"
 
 /**
  * pk_transaction_list_test_finished_cb:
@@ -570,6 +571,7 @@ void
 pk_transaction_list_test (EggTest *test)
 {
 	PkTransactionList *tlist;
+	PkCache *cache;
 	gboolean ret;
 	gchar *tid;
 	guint size;
@@ -581,6 +583,9 @@ pk_transaction_list_test (EggTest *test)
 
 	if (!egg_test_start (test, "PkTransactionList"))
 		return;
+
+	/* we get a cache object to reproduce the engine having it ref'd */
+	cache = pk_cache_new ();
 
 	/************************************************************/
 	egg_test_title (test, "get a transaction list object");
@@ -731,7 +736,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_failed (test, "got missing role");
 
 	/************************************************************/
-	egg_test_title (test, "get size one we have in queue");
+	egg_test_title (test, "get size we have in queue");
 	size = pk_transaction_list_get_size (tlist);
 	if (size == 1)
 		egg_test_success (test, NULL);
@@ -794,6 +799,68 @@ pk_transaction_list_test (EggTest *test)
 	g_free (tid);
 
 	/************************************************************
+	 ***************  Get updates from cache    *****************
+	 ************************************************************/
+	item = pk_transaction_list_test_get_item (tlist);
+	g_signal_connect (item->transaction, "finished",
+			  G_CALLBACK (pk_transaction_list_test_finished_cb), test);
+
+	pk_transaction_get_updates (item->transaction, "none", NULL);
+
+	/* wait for cached results*/
+	egg_test_loop_wait (test, 1000);
+	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "make sure item has correct flags");
+	if (item->running == FALSE && item->committed == FALSE && item->finished == TRUE)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong flags: running[%i] committed[%i] finished[%i]",
+				 item->running, item->committed, item->finished);
+
+	/************************************************************/
+	egg_test_title (test, "get transactions (committed, not finished) in progress (none, as cached)");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
+
+	/************************************************************/
+	egg_test_title (test, "get size we have in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 1)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	/* wait for Cleanup */
+	g_timeout_add_seconds (5, (GSourceFunc) pk_transaction_list_test_delay_cb, test);
+	egg_test_loop_wait (test, 6000);
+	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "get transactions (committed, not finished) in progress (none, as cached)");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
+
+	/************************************************************/
+	egg_test_title (test, "get size we have in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	/************************************************************
 	 ****************  Chained transactions    ******************
 	 ************************************************************/
 
@@ -828,11 +895,11 @@ pk_transaction_list_test (EggTest *test)
 			  G_CALLBACK (pk_transaction_list_test_finished_cb), test);
 
 	/* this starts one action */
-	pk_transaction_get_updates (item1->transaction, "none", NULL);
+	pk_transaction_search_details (item1->transaction, "none", "dave", NULL);
 	/* this should be chained after the first action completes */
 	pk_transaction_search_name (item2->transaction, "none", "power", NULL);
 	/* this starts be chained after the second action completes */
-	pk_transaction_get_updates (item3->transaction, "none", NULL);
+	pk_transaction_search_details (item3->transaction, "none", "paul", NULL);
 
 	/************************************************************/
 	egg_test_title (test, "get transactions (committed, not finished) in progress (all)");
@@ -1007,6 +1074,7 @@ pk_transaction_list_test (EggTest *test)
 
 	g_object_unref (tlist);
 	g_object_unref (backend);
+	g_object_unref (cache);
 
 	egg_test_end (test);
 }
