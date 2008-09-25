@@ -240,15 +240,11 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl - Checks for contrib/packagekit-plugin
 dnl ---------------------------------------------------------------------------
-
 PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
                   build_browser_plugin=yes, build_browser_plugin=no)
-
 AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
-
 AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
 AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
-
 if test $build_browser_plugin = "yes"; then
 	# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
 
@@ -263,6 +259,15 @@ if test $build_browser_plugin = "yes"; then
 	CPPFLAGS="$packagekit_save_CPPFLAGS"
 	LDFLAGS="$packagekit_save_LDFLAGS"
 fi
+
+dnl ---------------------------------------------------------------------------
+dnl - Checks for contrib/gstreamer-plugin
+dnl ---------------------------------------------------------------------------
+PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 glib-2.0 dbus-glib-1,
+                  build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
+AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
+AC_SUBST(PK_GSTREAMER_PLUGIN_CFLAGS)
+AC_SUBST(PK_GSTREAMER_PLUGIN_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - Other tests
@@ -519,6 +524,7 @@ docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
 contrib/packagekit-plugin/Makefile
+contrib/gstreamer-plugin/Makefile
 contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
@@ -576,6 +582,7 @@ echo "
         Networking stack:          ${with_networking_stack}
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
+        GStreamer plugin:          ${build_gstreamer_plugin}
 
         Backends:
         ALPM backend:              ${enable_alpm}
