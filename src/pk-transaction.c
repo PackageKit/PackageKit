@@ -1417,7 +1417,9 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	}
 
 	g_free (directory);
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -1504,7 +1506,9 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -1567,7 +1571,9 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -1681,7 +1687,9 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -1737,7 +1745,9 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -1859,7 +1869,9 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -1932,7 +1944,9 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -2456,7 +2470,9 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 	return;
 }
 
@@ -2529,7 +2545,9 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -2607,7 +2625,9 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -2682,7 +2702,9 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -2756,7 +2778,9 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -2824,7 +2848,9 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -2894,7 +2920,9 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -2969,7 +2997,9 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -3036,7 +3066,9 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -3101,7 +3133,9 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -3166,7 +3200,9 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -3231,7 +3267,9 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -3413,7 +3451,9 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -3476,7 +3516,9 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -3551,7 +3593,9 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		return;
 	}
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
