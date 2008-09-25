@@ -833,11 +833,11 @@ pk_transaction_list_test (EggTest *test)
 			  G_CALLBACK (pk_transaction_list_test_finished_cb), test);
 
 	/* this starts one action */
-	pk_transaction_get_updates (item1->transaction, "none", NULL);
+	pk_transaction_search_details (item1->transaction, "none", "dave", NULL);
 	/* this should be chained after the first action completes */
 	pk_transaction_search_name (item2->transaction, "none", "power", NULL);
 	/* this starts be chained after the second action completes */
-	pk_transaction_get_updates (item3->transaction, "none", NULL);
+	pk_transaction_search_details (item3->transaction, "none", "paul", NULL);
 
 	/************************************************************/
 	egg_test_title (test, "get transactions (committed, not finished) in progress (all)");
