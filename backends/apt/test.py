@@ -104,7 +104,7 @@ class AptBackendTestCase(unittest.TestCase):
                               "contrast to apt")
         self.assertTrue(marked == blocked == [], 
                         "PackageKit didn't return all updates:"
-                        "blocked: %s, available: %s" % (blocked, marked)))
+                        "blocked: %s, available: %s" % (blocked, marked))
  
     def testResolve(self):
         """
@@ -123,7 +123,7 @@ class AptBackendTestCase(unittest.TestCase):
         if self.cache["yum"].isInstalled:
             self.pk.RemovePackages([PKG_ID], self._callback)
         self.pk.InstallPackages([PKG_ID], self._callback)
-        self.cache.open()
+        self.cache.open(None)
         self.assertTrue(self.cache["yum"].isInstalled,
                         "yum was not installed")
 
@@ -134,7 +134,7 @@ class AptBackendTestCase(unittest.TestCase):
         if not self.cache["yum"].isInstalled:
             self.pk.InstallPackages([PKG_ID], self._callback)
         self.pk.RemovePackages([PKG_ID], self._callback)
-        self.cache.open()
+        self.cache.open(None)
         self.assertFalse(self.cache["yum"].isInstalled,
                          "yum is still installed")
 
@@ -152,4 +152,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 # vim: ts=4 et sts=4
