@@ -2132,7 +2132,7 @@ pk_backend_test (EggTest *test)
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* wait for finished */
-	egg_test_loop_wait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 200);
+	egg_test_loop_wait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 400);
 	egg_test_loop_check (test);
 
 	egg_test_title (test, "check we enforce finished after error_code");
