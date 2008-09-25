@@ -375,18 +375,30 @@ pk_catalog_new (void)
  ***************************************************************************/
 #ifdef EGG_TEST
 #include "egg-test.h"
+#include "pk-connection.h"
 
 void
 pk_catalog_test (EggTest *test)
 {
+	PkConnection *connection;
 	PkCatalog *catalog;
 	PkPackageList *list;
+	gboolean ret;
 	gchar **filenames;
 	gchar *path;
 	guint size;
 
 	if (!egg_test_start (test, "PkCatalog"))
 		return;
+
+	/* check to see if there is a daemon running */
+	connection = pk_connection_new ();
+	ret = pk_connection_valid (connection);
+	g_object_unref (connection);
+	if (!ret) {
+		egg_warning ("daemon is not running, skipping tests");
+		goto out;
+	}
 
 	/************************************************************/
 	egg_test_title (test, "get catalog");
@@ -414,7 +426,7 @@ pk_catalog_test (EggTest *test)
 		egg_test_failed (test, NULL);
 	g_object_unref (list);
 	g_object_unref (catalog);
-
+out:
 	egg_test_end (test);
 }
 #endif

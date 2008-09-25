@@ -927,17 +927,28 @@ pk_control_new (void)
 void
 pk_control_test (EggTest *test)
 {
+	gboolean ret;
 	PkControl *control;
+	PkConnection *connection;
 
 	if (!egg_test_start (test, "PkControl"))
 		return;
+
+	/* check to see if there is a daemon running */
+	connection = pk_connection_new ();
+	ret = pk_connection_valid (connection);
+	g_object_unref (connection);
+	if (!ret) {
+		egg_warning ("daemon is not running, skipping tests");
+		goto out;
+	}
 
 	/************************************************************/
 	egg_test_title (test, "get control");
 	control = pk_control_new ();
 	egg_test_assert (test, control != NULL);
 	g_object_unref (control);
-
+out:
 	egg_test_end (test);
 }
 #endif
