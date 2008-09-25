@@ -2135,11 +2135,13 @@ pk_backend_test (EggTest *test)
 	egg_test_loop_wait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 400);
 	egg_test_loop_check (test);
 
+#ifdef PK_IS_DEVELOPER
 	egg_test_title (test, "check we enforce finished after error_code");
 	if (number_messages == 1)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "we messaged %i times!", number_messages);
+#endif
 
 	g_object_unref (backend);
 
