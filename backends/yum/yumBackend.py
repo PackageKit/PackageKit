@@ -97,7 +97,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except yum.Errors.RepoError, e:
                     self.error(ERROR_NO_CACHE, str(e))
 
-
         return wrapper
 
     def __init__(self, args, lock=True):
@@ -786,7 +785,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.yumbase.groupUnremove(grp.groupid)
         return pkgs
 
-
     def get_depends(self, filters, package_ids, recursive_text):
         '''
         Print a list of depends for a given package
@@ -835,7 +833,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # If packages comes from a group, then we show them along with deps.
         if grp_pkgs:
             deps_list.extend(grp_pkgs)
-
 
         # add to correct lists
         for pkg in deps_list:

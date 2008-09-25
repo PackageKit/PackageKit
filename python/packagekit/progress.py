@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
+#
 # Copyright (C) 2008
 #    Richard Hughes <richard@hughsie.com>
 
@@ -27,7 +27,7 @@ class PackagekitProgress:
 
     from packagekit import PackagekitProgress
 
-    steps = [10,30,50,70] # Milestones in %
+    steps = [10, 30, 50, 70] # Milestones in %
     progress = PackagekitProgress()
     progress.set_steps(steps)
     for milestone in range(len(steps)):
@@ -48,7 +48,7 @@ class PackagekitProgress:
         self.current_step = 0
         self.subpercent = 0
 
-    def set_steps(self,steps):
+    def set_steps(self, steps):
         '''
         Set the steps for the whole transaction
         @param steps: list of int representing the percentage of each step in the transaction
@@ -75,7 +75,7 @@ class PackagekitProgress:
             self.percent = 100
             self.subpercent = 0
 
-    def set_subpercent(self,pct):
+    def set_subpercent(self, pct):
         '''
         Set subpercentage and update percentage
         '''

@@ -15,7 +15,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Copyright (C) 2007 Tim Lauridsen <timlau@fedoraproject.org>
-#                    Robin Norwood <rnorwood@redhat.com>                  
+#                    Robin Norwood <rnorwood@redhat.com>
 
 #
 # This file contain the base classes to implement a PackageKit python backend
@@ -25,12 +25,10 @@
 import logging
 import logging.handlers
 import os
-import signal
 import sys
 import threading
 import time
 import traceback
-import types
 
 import gobject
 import dbus.service
@@ -44,7 +42,7 @@ logging.basicConfig(format="%(levelname)s:%(message)s")
 pklog = logging.getLogger("PackageKitBackend")
 pklog.setLevel(logging.WARN)
 
-syslog = logging.handlers.SysLogHandler(facility=logging.handlers.SysLogHandler.LOG_DAEMON,address='/dev/log')
+syslog = logging.handlers.SysLogHandler(facility=logging.handlers.SysLogHandler.LOG_DAEMON, address='/dev/log')
 formatter = logging.Formatter('PackageKit: %(levelname)s: %(message)s')
 syslog.setFormatter(formatter)
 pklog.addHandler(syslog)
@@ -63,16 +61,16 @@ def forked(func):
     Decorator to fork a worker process.
 
     Use a custom doCancel method in your backend to cancel forks:
-    
+
     def doCancel(self):
         if self._child_pid:
-            os.kill(self._child_pid,signal.SIGQUIT)
+            os.kill(self._child_pid, signal.SIGQUIT)
             self._child_pid = None
             self.Finished(EXIT_SUCCESS)
             return
         self.Finished(EXIT_FAILED)
     '''
-    def wrapper(*args,**kwargs):
+    def wrapper(*args, **kwargs):
         self = args[0]
         self.AllowCancel(True)
         # Make sure that we are not in the worker process
@@ -82,7 +80,7 @@ def forked(func):
         # Make sure that there is no another child process running
         retries = 0
         while self._is_child_running() and retries < 5:
-            pklog.warning("Method called,but a child is already running")
+            pklog.warning("Method called, but a child is already running")
             time.sleep(0.1)
             retries += 1
         if self._is_child_running():
@@ -95,10 +93,10 @@ def forked(func):
         self.last_action_time = time.time()
         self._child_pid = os.fork()
         if self._child_pid > 0:
-            gobject.child_watch_add(self._child_pid,self.on_child_exit)
+            gobject.child_watch_add(self._child_pid, self.on_child_exit)
             return
         self.loop.quit()
-        sys.exit(func(*args,**kwargs))
+        sys.exit(func(*args, **kwargs))
     return wrapper
 
 class PackageKitThread(threading.Thread):
@@ -109,19 +107,19 @@ class PackageKitThread(threading.Thread):
     def run(self):
         try:
             threading.Thread.run(self)
-        except (KeyboardInterrupt,SystemExit):
-           raise
+        except (KeyboardInterrupt, SystemExit):
+            raise
         except:
-           sys.excepthook(*sys.exc_info())
+            sys.excepthook(*sys.exc_info())
 
 def threaded(func):
     '''
     Decorator to run a PackageKitBaseBackend method in a separate thread
     '''
-    def wrapper(*args,**kwargs):
+    def wrapper(*args, **kwargs):
         backend = args[0]
         backend.last_action_time = time.time()
-        thread = PackageKitThread(target=func,args=args,kwargs=kwargs)
+        thread = PackageKitThread(target=func, args=args, kwargs=kwargs)
         thread.start()
     wrapper.__name__ = func.__name__
     return wrapper
@@ -130,10 +128,10 @@ def async(func):
     '''
     Decorator which makes sure no other threads are running before executing function.
     '''
-    def wrapper(*args,**kwargs):
+    def wrapper(*args, **kwargs):
         backend = args[0]
         backend._lock.acquire()
-        func(*args,**kwargs)
+        func(*args, **kwargs)
         backend._lock.release()
     wrapper.__name__ = func.__name__
     return wrapper
@@ -141,11 +139,11 @@ def async(func):
 class PackageKitBaseBackend(dbus.service.Object):
 
     def PKSignalHouseKeeper(func):
-        def wrapper(*args,**kwargs):
+        def wrapper(*args, **kwargs):
             self = args[0]
             self.last_action_time = time.time()
 
-            return func(*args,**kwargs)
+            return func(*args, **kwargs)
 
         return wrapper
 
@@ -155,16 +153,16 @@ class PackageKitBaseBackend(dbus.service.Object):
 # has to call self.last_action_time = time.time()
 #
 #    def PKMethodHouseKeeper(func):
-#        def wrapper(*args,**kwargs):
+#        def wrapper(*args, **kwargs):
 #            self = args[0]
 #            self.last_action_time = time.time()
 #
-#            return func(*args,**kwargs)
+#            return func(*args, **kwargs)
 #
 #        return wrapper
 
-    def __init__(self,bus_name,dbus_path):
-        dbus.service.Object.__init__(self,bus_name,dbus_path)
+    def __init__(self, bus_name, dbus_path):
+        dbus.service.Object.__init__(self, bus_name, dbus_path)
         sys.excepthook = self._excepthook
 
         self._allow_cancel = False
@@ -173,7 +171,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         self.loop = gobject.MainLoop()
 
-        gobject.timeout_add(INACTIVE_CHECK_INTERVAL,self.check_for_inactivity)
+        gobject.timeout_add(INACTIVE_CHECK_INTERVAL, self.check_for_inactivity)
         self.last_action_time = time.time()
 
         self.loop.run()
@@ -184,19 +182,19 @@ class PackageKitBaseBackend(dbus.service.Object):
             self.Exit()
         return True
 
-    def on_child_exit(pid,condition,data):
+    def on_child_exit(self, pid, condition, data):
         pass
 
     def _is_child_running(self):
         pklog.debug("in child_is_running")
         if self._child_pid:
-            pklog.debug("in child_is_running,pid = %s" % self._child_pid)
+            pklog.debug("in child_is_running, pid = %s" % self._child_pid)
             running = True
             try:
-                (pid,status) = os.waitpid(self._child_pid,os.WNOHANG)
+                (pid, status) = os.waitpid(self._child_pid, os.WNOHANG)
                 if pid:
                     running = False
-            except OSError,e:
+            except OSError, e:
                 pklog.error("OS Error: %s" % str(e))
                 running = False
 
@@ -218,44 +216,44 @@ class PackageKitBaseBackend(dbus.service.Object):
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='s')
-    def Finished(self,exit):
+    def Finished(self, exit):
         pklog.info("Finished (%s)" % (exit))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssb')
-    def RepoDetail(self,repo_id,description,enabled):
-        pklog.info("RepoDetail (%s,%s,%i)" % (repo_id,description,enabled))
+    def RepoDetail(self, repo_id, description, enabled):
+        pklog.info("RepoDetail (%s, %s, %i)" % (repo_id, description, enabled))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='b')
-    def AllowCancel(self,allow_cancel):
+    def AllowCancel(self, allow_cancel):
         self._allow_cancel = allow_cancel
         pklog.info("AllowCancel (%i)" % allow_cancel)
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='sss')
-    def Package(self,status,package_id,summary):
-        pklog.info("Package (%s,%s,%s)" % (status,package_id,summary))
+    def Package(self, status, package_id, summary):
+        pklog.info("Package (%s, %s, %s)" % (status, package_id, summary))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssssst')
-    def Details(self,package_id,license,group,detail,url,size):
-        pklog.info("Details (%s,%s,%s,%s,%s,%u)" % (package_id,license,group,detail,url,size))
+    def Details(self, package_id, license, group, detail, url, size):
+        pklog.info("Details (%s, %s, %s, %s, %s, %u)" % (package_id, license, group, detail, url, size))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
-    def Files(self,package_id,file_list):
-        pklog.info("Files (%s,%s)" % (package_id,file_list))
+    def Files(self, package_id, file_list):
+        pklog.info("Files (%s, %s)" % (package_id, file_list))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='s')
-    def StatusChanged(self,status):
+    def StatusChanged(self, status):
         pklog.info("StatusChanged (%s)" % (status))
 
     @PKSignalHouseKeeper
@@ -266,53 +264,53 @@ class PackageKitBaseBackend(dbus.service.Object):
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='u')
-    def PercentageChanged(self,percentage):
+    def PercentageChanged(self, percentage):
         pklog.info("PercentageChanged (%i)" % (percentage))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='u')
-    def SubPercentageChanged(self,percentage):
+    def SubPercentageChanged(self, percentage):
         pklog.info("SubPercentageChanged (%i)" % (percentage))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssssssssssss')
-    def UpdateDetail(self,package_id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update,changelog,state,issued,updated):
-        pklog.info("UpdateDetail (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (package_id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update,changelog,state,issued,updated))
+    def UpdateDetail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update, changelog, state, issued, updated):
+        pklog.info("UpdateDetail (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update, changelog, state, issued, updated))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
-    def ErrorCode(self,code,description):
+    def ErrorCode(self, code, description):
         '''
         send 'error'
-        @param err: Error Type (ERROR_NO_NETWORK,ERROR_NOT_SUPPORTED,ERROR_INTERNAL_ERROR)
+        @param err: Error Type (ERROR_NO_NETWORK, ERROR_NOT_SUPPORTED, ERROR_INTERNAL_ERROR)
         @param description: Error description
         '''
-        pklog.info("ErrorCode (%s,%s)" % (code,description))
+        pklog.info("ErrorCode (%s, %s)" % (code, description))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
-    def RequireRestart(self,type,details):
+    def RequireRestart(self, type, details):
         '''
         send 'require-restart' signal:
-        @param type:   The level of restart required (system,application,session)
+        @param type:   The level of restart required (system, application, session)
         @param details:  Optional details about the restart
         '''
-        pklog.info("RestartRequired (%s,%s)" % (type,details))
+        pklog.info("RestartRequired (%s, %s)" % (type, details))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
-    def Message(self,type,details):
+    def Message(self, type, details):
         '''
         send 'message' signal:
-        @param type:   The type of message (warning,notice,daemon)
+        @param type:   The type of message (warning, notice, daemon)
         @param details:  Required details about the message
         '''
-        pklog.info("Message (%s,%s)" % (type,details))
+        pklog.info("Message (%s, %s)" % (type, details))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -325,14 +323,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         @param vendor_name: the freedom hater
         @param license_agreement: the plain text license agreement
         '''
-        pklog.info("Eula required (%s,%s,%s,%s)" % (eula_id, package_id,
+        pklog.info("Eula required (%s, %s, %s, %s)" % (eula_id, package_id,
                                                     vendor_name,
                                                     license_agreement))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='')
-    def UpdatesChanged(self,typ,fname):
+    def UpdatesChanged(self, typ, fname):
         '''
         send 'updates-changed' signal:
         '''
@@ -341,12 +339,12 @@ class PackageKitBaseBackend(dbus.service.Object):
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssssssss')
-    def RepoSignatureRequired(self,id,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type):
+    def RepoSignatureRequired(self, id, repo_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, key_type):
         '''
         send 'repo-signature-required' signal:
         '''
-        pklog.info("RepoSignatureRequired (%s,%s,%s,%s,%s,%s,%s,%s)" %
-                   (id,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type))
+        pklog.info("RepoSignatureRequired (%s, %s, %s, %s, %s, %s, %s, %s)" %
+                   (id, repo_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, key_type))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -358,9 +356,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         @param name: Short name of the distribution e.g. Dapper Drake 6.06 LTS
         @param summary: Multi-line description of the release
         '''
-        pklog.info("DistroUpgrade (%s,%s,%s)" % (type, name, summary))
-
-
+        pklog.info("DistroUpgrade (%s, %s, %s)" % (type, name, summary))
 
 #
 # Methods ( client -> engine -> backend )
@@ -368,10 +364,10 @@ class PackageKitBaseBackend(dbus.service.Object):
 # Python inheritence with decorators makes implementing these in the
 # base class and overriding them in child classes very ugly.  So
 # they're commented out here.  Just implement the ones you need in
-# your class,and don't forget the decorators.
+# your class, and don't forget the decorators.
 #
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='',out_signature='')
+                         in_signature='', out_signature='')
     def Init(self):
         pklog.info("Init()")
         self.doInit()
@@ -391,7 +387,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         sys.exit(1)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='',out_signature='')
+                         in_signature='', out_signature='')
     def Exit(self):
         pklog.info("Exit()")
         gobject.idle_add (self._doExitDelay)
@@ -406,15 +402,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss',out_signature='')
-    def SearchName(self,filters,search):
+                         in_signature='ss', out_signature='')
+    def SearchName(self, filters, search):
         '''
         Implement the {backend}-search-name functionality
         '''
         pklog.info("SearchName()")
-        self.doSearchName(filters,search)
+        self.doSearchName(filters, search)
 
-    def doSearchName(self,filters,search):
+    def doSearchName(self, filters, search):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -423,15 +419,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s',out_signature='')
-    def GetPackages(self,filters):
+                         in_signature='s', out_signature='')
+    def GetPackages(self, filters):
         '''
         Implement the {backend}-get-packages functionality
         '''
         pklog.info("GetPackages()")
         self.doGetPackages(filters)
 
-    def doGetPackages(self,filters):
+    def doGetPackages(self, filters):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -440,11 +436,11 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='',out_signature='')
+                         in_signature='', out_signature='')
     def Cancel(self):
         pklog.info("Cancel()")
         if not self._allow_cancel:
-            self.ErrorCode(ERROR_CANNOT_CANCEL,"Current action cannot be cancelled")
+            self.ErrorCode(ERROR_CANNOT_CANCEL, "Current action cannot be cancelled")
             self.Finished(EXIT_FAILED)
             return
         self.doCancel()
@@ -458,15 +454,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss',out_signature='')
-    def DownloadPackages(self,package_ids,directory):
+                         in_signature='ss', out_signature='')
+    def DownloadPackages(self, package_ids, directory):
         '''
         Implement the (backend)-download-packages functionality
         '''
-        pklog.info("DownloadPackages(%s,%s)" % (package_ids, directory))
+        pklog.info("DownloadPackages(%s, %s)" % (package_ids, directory))
         self.doDownloadPackages(package_ids, directory)
 
-    def doDownloadPackages(self,package_ids,directory):
+    def doDownloadPackages(self, package_ids, directory):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -475,15 +471,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss',out_signature='')
-    def SearchDetails(self,filters,key):
+                         in_signature='ss', out_signature='')
+    def SearchDetails(self, filters, key):
         '''
         Implement the {backend}-search-details functionality
         '''
-        pklog.info("SearchDetails(%s,%s)" % (filters,key))
-        self.doSearchDetails(filters,key)
+        pklog.info("SearchDetails(%s, %s)" % (filters, key))
+        self.doSearchDetails(filters, key)
 
-    def doSearchDetails(self,filters,key):
+    def doSearchDetails(self, filters, key):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -492,15 +488,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss',out_signature='')
-    def SearchGroup(self,filters,key):
+                         in_signature='ss', out_signature='')
+    def SearchGroup(self, filters, key):
         '''
         Implement the {backend}-search-group functionality
         '''
-        pklog.info("SearchGroup(%s,%s)" % (filters,key))
-        self.doSearchGroup(filters,key)
+        pklog.info("SearchGroup(%s, %s)" % (filters, key))
+        self.doSearchGroup(filters, key)
 
-    def doSearchGroup(self,filters,key):
+    def doSearchGroup(self, filters, key):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -509,15 +505,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss',out_signature='')
-    def SearchFile(self,filters,key):
+                         in_signature='ss', out_signature='')
+    def SearchFile(self, filters, key):
         '''
         Implement the {backend}-search-file functionality
         '''
-        pklog.info("SearchFile(%s,%s)" % (filters,key))
-        self.doSearchFile(filters,key)
+        pklog.info("SearchFile(%s, %s)" % (filters, key))
+        self.doSearchFile(filters, key)
 
-    def doSearchFile(self,filters,key):
+    def doSearchFile(self, filters, key):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -531,8 +527,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Print a list of requires for a given package
         '''
-        pklog.info("GetRequires(%s,%s,%s)" % (filters, package_ids, recursive))
-        self.doGetRequires(filters, package_ids ,recursive)
+        pklog.info("GetRequires(%s, %s, %s)" % (filters, package_ids, recursive))
+        self.doGetRequires(filters, package_ids , recursive)
 
     def doGetRequires(self, filters, package_ids, recursive):
         '''
@@ -543,15 +539,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sss',out_signature='')
-    def WhatProvides(self,filters,provides_type,search):
+                         in_signature='sss', out_signature='')
+    def WhatProvides(self, filters, provides_type, search):
         '''
         Print a list of packages for a given provide string
         '''
-        pklog.info("WhatProvides(%s,%s,%s)" % (filters,provides_type,search))
-        self.doWhatProvides(filters,provides_type,search)
+        pklog.info("WhatProvides(%s, %s, %s)" % (filters, provides_type, search))
+        self.doWhatProvides(filters, provides_type, search)
 
-    def doWhatProvides(self,filters,provides_type,search):
+    def doWhatProvides(self, filters, provides_type, search):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -560,15 +556,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ssb',out_signature='')
-    def GetDepends(self,filters,package_ids,recursive):
+                         in_signature='ssb', out_signature='')
+    def GetDepends(self, filters, package_ids, recursive):
         '''
         Print a list of depends for a given package
         '''
-        pklog.info("GetDepends(%s,%s,%s)" % (filters,package_ids,recursive))
-        self.doGetDepends(filters,package_ids,recursive)
+        pklog.info("GetDepends(%s, %s, %s)" % (filters, package_ids, recursive))
+        self.doGetDepends(filters, package_ids, recursive)
 
-    def doGetDepends(self,filters,package_ids,recursive):
+    def doGetDepends(self, filters, package_ids, recursive):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -577,7 +573,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='',out_signature='')
+                         in_signature='', out_signature='')
     def UpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
@@ -594,8 +590,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='b',out_signature='')
-    def RefreshCache(self,force):
+                         in_signature='b', out_signature='')
+    def RefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
@@ -611,15 +607,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss',out_signature='')
-    def Resolve(self,filters,name):
+                         in_signature='ss', out_signature='')
+    def Resolve(self, filters, name):
         '''
         Implement the {backend}-resolve functionality
         '''
-        pklog.info("Resolve(%s,%s)" % (filters,name))
-        self.doResolve(filters,name)
+        pklog.info("Resolve(%s, %s)" % (filters, name))
+        self.doResolve(filters, name)
 
-    def doResolve(self,filters,name):
+    def doResolve(self, filters, name):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -628,15 +624,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='as',out_signature='')
-    def InstallPackages(self,package_ids):
+                         in_signature='as', out_signature='')
+    def InstallPackages(self, package_ids):
         '''
         Implement the {backend}-install functionality
         '''
         pklog.info("InstallPackages(%s)" % package_ids)
         self.doInstallPackages(package_ids)
 
-    def doInstallPackages(self,package_ids):
+    def doInstallPackages(self, package_ids):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -645,16 +641,16 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='bas',out_signature='')
-    def InstallFiles (self,trusted,full_paths):
+                         in_signature='bas', out_signature='')
+    def InstallFiles (self, trusted, full_paths):
         '''
         Implement the {backend}-install_files functionality
         Install the package containing the full_paths file
         '''
-        pklog.info("InstallFiles(%i,%s)" % (trusted,full_paths))
-        self.doInstallFiles(trusted,full_paths)
+        pklog.info("InstallFiles(%i, %s)" % (trusted, full_paths))
+        self.doInstallFiles(trusted, full_paths)
 
-    def doInstallFiles(self,full_paths):
+    def doInstallFiles(self, full_paths):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -663,15 +659,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb',out_signature='')
-    def ServicePack (self,location,enabled):
+                         in_signature='sb', out_signature='')
+    def ServicePack (self, location, enabled):
         '''
         Implement the {backend}-service-pack functionality
         '''
-        pklog.info("ServicePack(%s,%s)" % (location,enabled))
-        self.doServicePack(location,enabled)
+        pklog.info("ServicePack(%s, %s)" % (location, enabled))
+        self.doServicePack(location, enabled)
 
-    def doServicePack(self,location,enabled):
+    def doServicePack(self, location, enabled):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -680,15 +676,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='as',out_signature='')
-    def UpdatePackages(self,package_ids):
+                         in_signature='as', out_signature='')
+    def UpdatePackages(self, package_ids):
         '''
         Implement the {backend}-update-packages functionality
         '''
         pklog.info("UpdatePackages(%s)" % package_ids)
         self.doUpdatePackages(package_ids)
 
-    def doUpdatePackages(self,package_ids):
+    def doUpdatePackages(self, package_ids):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -697,16 +693,16 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='asbb',out_signature='')
-    def RemovePackages(self,package_ids,allowdep,autoremove):
+                         in_signature='asbb', out_signature='')
+    def RemovePackages(self, package_ids, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
         '''
-        pklog.info("RemovePackages(%s,%s,%s)" % (package_ids,allowdep,
+        pklog.info("RemovePackages(%s, %s, %s)" % (package_ids, allowdep,
                                                  autoremove))
-        self.doRemovePackages(package_ids,allowdep,autoremove)
+        self.doRemovePackages(package_ids, allowdep, autoremove)
 
-    def doRemovePackages(self,package_ids,allowdep,autoremove):
+    def doRemovePackages(self, package_ids, allowdep, autoremove):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -715,15 +711,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s',out_signature='')
-    def GetDetails(self,package_ids):
+                         in_signature='s', out_signature='')
+    def GetDetails(self, package_ids):
         '''
         Print a detailed details for a given package
         '''
         pklog.info("GetDetails(%s)" % package_ids)
         self.doGetDetails(package_ids)
 
-    def doGetDetails(self,package_ids):
+    def doGetDetails(self, package_ids):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -732,15 +728,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s',out_signature='')
-    def GetFiles(self,package_ids):
+                         in_signature='s', out_signature='')
+    def GetFiles(self, package_ids):
         '''
         Implement the get-files method
         '''
         pklog.info("GetFiles(%s)" % package_ids)
         self.doGetFiles(package_ids)
 
-    def doGetFiles(self,package_ids):
+    def doGetFiles(self, package_ids):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -749,7 +745,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='',out_signature='')
+                         in_signature='', out_signature='')
     def GetDistroUpgrades(self):
         '''
         Implement the {backend}-get-distro-upgrades functionality
@@ -766,15 +762,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s',out_signature='')
-    def GetUpdates(self,filters):
+                         in_signature='s', out_signature='')
+    def GetUpdates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
         '''
         pklog.info("GetUpdates(%s)" % filters)
         self.doGetUpdates(filters)
 
-    def doGetUpdates(self,filters):
+    def doGetUpdates(self, filters):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -783,15 +779,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb',out_signature='')
-    def RepoEnable(self,repoid,enable):
+                         in_signature='sb', out_signature='')
+    def RepoEnable(self, repoid, enable):
         '''
         Implement the {backend}-repo-enable functionality
         '''
-        pklog.info("RepoEnable(%s,%s)" % (repoid,enable))
-        self.doRepoEnable( repoid,enable)
+        pklog.info("RepoEnable(%s, %s)" % (repoid, enable))
+        self.doRepoEnable( repoid, enable)
 
-    def doRepoEnable(self,repoid,enable):
+    def doRepoEnable(self, repoid, enable):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -800,15 +796,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='',out_signature='')
-    def GetRepoList(self,filters):
+                         in_signature='', out_signature='')
+    def GetRepoList(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
         '''
         pklog.info("GetRepoList()")
         self.doGetRepoList(filters)
 
-    def doGetRepoList(self,filters):
+    def doGetRepoList(self, filters):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -817,15 +813,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s',out_signature='')
-    def GetUpdateDetail(self,package_ids):
+                         in_signature='s', out_signature='')
+    def GetUpdateDetail(self, package_ids):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
         pklog.info("GetUpdateDetail(%s)" % package_ids)
         self.doGetUpdateDetail(package_ids)
 
-    def doGetUpdateDetail(self,package_ids):
+    def doGetUpdateDetail(self, package_ids):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -834,15 +830,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sss',out_signature='')
-    def RepoSetData(self,repoid,parameter,value):
+                         in_signature='sss', out_signature='')
+    def RepoSetData(self, repoid, parameter, value):
         '''
         Implement the {backend}-repo-set-data functionality
         '''
-        pklog.info("RepoSetData(%s,%s,%s)" % (repoid,parameter,value))
-        self.doRepoSetData(repoid,parameter,value)
+        pklog.info("RepoSetData(%s, %s, %s)" % (repoid, parameter, value))
+        self.doRepoSetData(repoid, parameter, value)
 
-    def doRepoSetData(self,repoid,parameter,value):
+    def doRepoSetData(self, repoid, parameter, value):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -851,30 +847,30 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss',out_signature='')
-    def SetProxy(self,proxy_http,proxy_ftp):
+                         in_signature='ss', out_signature='')
+    def SetProxy(self, proxy_http, proxy_ftp):
         '''
         Set the proxy
         '''
-        pklog.info("SetProxy(%s,%s)" % (proxy_http,proxy_ftp))
-        self.doSetProxy(proxy_http,proxy_ftp)
+        pklog.info("SetProxy(%s, %s)" % (proxy_http, proxy_ftp))
+        self.doSetProxy(proxy_http, proxy_ftp)
 
-    def doSetProxy(self,proxy_http,proxy_ftp):
+    def doSetProxy(self, proxy_http, proxy_ftp):
         '''
         Should be replaced in the corresponding backend sub class
         '''
         # do not use Finished() in this method
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s',out_signature='')
-    def InstallPublicKey(self,keyurl):
+                         in_signature='s', out_signature='')
+    def InstallPublicKey(self, keyurl):
         '''
         Implement the {backend}-install-public-key functionality
         '''
         pklog.info("InstallPublicKey(%s)" % keyurl)
         self.doInstallPublicKey(keyurl)
 
-    def doInstallPublicKey(self,keyurl):
+    def doInstallPublicKey(self, keyurl):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -883,7 +879,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s',out_signature='')
+                         in_signature='s', out_signature='')
     def SetLocale(self, code):
         '''
         Allow to set the locale of the backend.
@@ -903,16 +899,16 @@ class PackageKitBaseBackend(dbus.service.Object):
 # Utility methods
 #
 
-    def _get_package_id(self,name,version,arch,data):
-        return "%s;%s;%s;%s" % (name,version,arch,data)
+    def _get_package_id(self, name, version, arch, data):
+        return "%s;%s;%s;%s" % (name, version, arch, data)
 
-    def get_package_from_id(self,id):
+    def get_package_from_id(self, id):
         ''' split up a package id name;ver;arch;data into a tuple
-            containing (name,ver,arch,data)
+            containing (name, ver, arch, data)
         '''
-        return tuple(id.split(';',4))
+        return tuple(id.split(';', 4))
 
-    def check_license_field(self,license_field):
+    def check_license_field(self, license_field):
         '''
         Check the string license_field for free licenses, indicated by
         their short names as documented at
@@ -946,8 +942,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         one_free_group = False
 
         for group in groups:
-            group = group.replace("(","")
-            group = group.replace(")","")
+            group = group.replace("(", "")
+            group = group.replace(")", "")
             licenses = group.split(" or ")
 
             group_is_free = False
@@ -974,26 +970,26 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         return True
 
-    def _customTracebackHandler(self,exctype):
+    def _customTracebackHandler(self, exctype):
         '''
 
         '''
         return False
 
-    def _excepthook(self,exctype,excvalue,exctb):
+    def _excepthook(self, exctype, excvalue, exctb):
         '''
         Handle a crash: try to submit the message to packagekitd and the logger.
         afterwards shutdown the daemon.
         '''
-        if (issubclass(exctype,KeyboardInterrupt) or
-            issubclass(exctype,SystemExit)):
+        if (issubclass(exctype, KeyboardInterrupt) or
+            issubclass(exctype, SystemExit)):
             return
         if self._customTracebackHandler(exctype):
             return
 
-        tbtext = ''.join(traceback.format_exception(exctype,excvalue,exctb))
+        tbtext = ''.join(traceback.format_exception(exctype, excvalue, exctb))
         try:
-            self.ErrorCode(ERROR_INTERNAL_ERROR,tbtext)
+            self.ErrorCode(ERROR_INTERNAL_ERROR, tbtext)
             self.Finished(EXIT_FAILED)
         except:
             pass
@@ -1014,7 +1010,7 @@ class PackagekitProgress:
 
     from packagekit.backend import PackagekitProgress
 
-    steps = [10,30,50,70] # Milestones in %
+    steps = [10, 30, 50, 70] # Milestones in %
     progress = PackagekitProgress()
     progress.set_steps(steps)
     for milestone in range(len(steps)):
@@ -1035,7 +1031,7 @@ class PackagekitProgress:
         self.current_step = 0
         self.subpercent = 0
 
-    def set_steps(self,steps):
+    def set_steps(self, steps):
         '''
         Set the steps for the whole transaction
         @param steps: list of int representing the percentage of each step in the transaction
@@ -1062,7 +1058,7 @@ class PackagekitProgress:
             self.percent = 100
             self.subpercent = 0
 
-    def set_subpercent(self,pct):
+    def set_subpercent(self, pct):
         '''
         Set subpercentage and update percentage
         '''

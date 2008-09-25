@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
+#
 # Copyright (C) 2008
 #    Richard Hughes <richard@hughsie.com>
 
@@ -21,16 +21,16 @@ from packagekit.backend import PackageKitEnum
 
 class PackagekitPackage:
 
-    def get_package_id(self,name,version,arch,data):
-        return "%s;%s;%s;%s" % (name,version,arch,data)
+    def get_package_id(self, name, version, arch, data):
+        return "%s;%s;%s;%s" % (name, version, arch, data)
 
-    def get_package_from_id(self,id):
+    def get_package_from_id(self, package_id):
         ''' split up a package id name;ver;arch;data into a tuple
-            containing (name,ver,arch,data)
+            containing (name, ver, arch, data)
         '''
-        return tuple(id.split(';',4))
+        return tuple(package_id.split(';', 4))
 
-    def check_license_field(self,license_field):
+    def check_license_field(self, license_field):
         '''
         Check the string license_field for free licenses, indicated by
         their short names as documented at
@@ -64,8 +64,8 @@ class PackagekitPackage:
         one_free_group = False
 
         for group in groups:
-            group = group.replace("(","")
-            group = group.replace(")","")
+            group = group.replace("(", "")
+            group = group.replace(")", "")
             licenses = group.split(" or ")
 
             group_is_free = False
