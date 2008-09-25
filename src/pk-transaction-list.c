@@ -526,6 +526,7 @@ pk_transaction_list_new (void)
 #ifdef EGG_TEST
 #include "egg-test.h"
 #include "pk-backend-internal.h"
+#include "pk-cache.h"
 
 /**
  * pk_transaction_list_test_finished_cb:
@@ -570,6 +571,7 @@ void
 pk_transaction_list_test (EggTest *test)
 {
 	PkTransactionList *tlist;
+	PkCache *cache;
 	gboolean ret;
 	gchar *tid;
 	guint size;
@@ -581,6 +583,9 @@ pk_transaction_list_test (EggTest *test)
 
 	if (!egg_test_start (test, "PkTransactionList"))
 		return;
+
+	/* we get a cache object to reproduce the engine having it ref'd */
+	cache = pk_cache_new ();
 
 	/************************************************************/
 	egg_test_title (test, "get a transaction list object");
@@ -1007,6 +1012,7 @@ pk_transaction_list_test (EggTest *test)
 
 	g_object_unref (tlist);
 	g_object_unref (backend);
+	g_object_unref (cache);
 
 	egg_test_end (test);
 }
