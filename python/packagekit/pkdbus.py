@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
+#
 # Copyright (C) 2007
 #    Tim Lauridsen <timlau@fedoraproject.org>
 #    Tom Parker <palfrey@tevp.net>
@@ -28,10 +28,10 @@ from pkexceptions import PackageKitAccessDenied, PackageKitTransactionFailure
 from pkexceptions import PackageKitBackendFailure
 
 def dbusException(func):
-    def wrapper(*args,**kwargs):
+    def wrapper(*args, **kwargs):
         try:
-            return func(*args,**kwargs)
-        except dbus.exceptions.DBusException,e:
+            return func(*args, **kwargs)
+        except dbus.exceptions.DBusException, e:
             if e.get_dbus_name() == "org.freedesktop.DBus.Error.AccessDenied":
                 raise PackageKitAccessDenied(e)
             elif e.get_dbus_name() == "org.freedesktop.DBus.Error.NoReply":
@@ -48,13 +48,13 @@ class PackageKitDbusInterface:
         try:
             pk = bus.get_object(service, path)
             self.pk_iface = dbus.Interface(pk, dbus_interface=interface)
-        except dbus.exceptions.DBusException,e:
+        except dbus.exceptions.DBusException, e:
             if e.get_dbus_name() == "org.freedesktop.DBus.Error.ServiceUnknown":
                 raise PackageKitNotStarted
             else:
                 raise PackageKitException(e)
 
-        bus.add_signal_receiver(self.catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member',dbus_interface=interface)
+        bus.add_signal_receiver(self.catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member', dbus_interface=interface)
 
         def catchall_signal_handler(self, *args, **kwargs):
             raise NotImplementedError()
