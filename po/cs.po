@@ -1,347 +1,412 @@
 # PackageKit Czech translation
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Vojtech Smejkal <smejkalv@gmail.com>, 2008.
 #
-#, fuzzy
+# Vojtech Smejkal <smejkalv@gmail.com>, 2008.
+# Adam Pribyl <pribyl@lowlevel.cz>, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: packagekit.master.cs\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-18 16:49+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2008-08-27 01:23+0000\n"
+"PO-Revision-Date: 2008-08-04 23:26+0200\n"
+"Last-Translator: Adam Pribyl <pribyl@lowlevel.cz>\n"
+"Language-Team: Czech <fedora-cs-list@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Lokalize 0.2\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr "Přijmout licenční smlouvu"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr "Pro přijetí licenční smlouvy je vyžadováno oprávnění"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr "Pro změnu parametrů zdrojů softwaru je vyžádováno oprávnění"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-msgid "Authentication is required to install a local file"
-msgstr "K instalaci místního souboru je vyžadováno oprávnění"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-msgid "Authentication is required to install a package"
-msgstr "K instalaci balíku je vyžadováno oprávnění"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-msgid "Authentication is required to install a security signature"
-msgstr "K instalaci bezpečnostního podpisu je vyžadováno oprávnění"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Authentication is required to refresh the package lists"
-msgstr "K obnovení seznamů balíků je vyžadováno oprávnění"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr "K odstranění balíků je vyžadováno oprávnění"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr "K vrácení akce je vyžadováno oprávnění"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid "Authentication is required to update all packages"
-msgstr "K aktualizaci všech balíků je vyžadováno oprávnění"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr "K aktualizaci balíků je vyžadováno oprávnění"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr "Změnit parametry zdrojů softwaru"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr "Nainstalovat místní soubor"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install package"
-msgstr "Nainstalovat balík"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Install security signature"
-msgstr "Nainstalovat bezpečnostní podpis"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Refresh package lists"
-msgstr "Obnovit seznam balíků"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Remove package"
-msgstr "Odstranit balík"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Rollback to a previous transaction"
-msgstr "Vrátit poslední akci"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Update all packages"
-msgstr "Aktualizovat všechny balíky"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Update package"
-msgstr "Aktualizovat balík"
-
-#: ../client/pk-console.c:208
+#: ../client/pk-console.c:235
 msgid "Update detail"
 msgstr "Aktualizovat podrobnosti"
 
-#: ../client/pk-console.c:400
+#: ../client/pk-console.c:452
 msgid "A system restart is required"
 msgstr "Je požadován restart systému"
 
-#: ../client/pk-console.c:402
+#: ../client/pk-console.c:454
 msgid "A logout and login is required"
 msgstr "Je požadováno odhlášení a přihlášení"
 
-#: ../client/pk-console.c:404
+#: ../client/pk-console.c:456
 msgid "An application restart is required"
 msgstr "Je vyžadován restart aplikace"
 
-#: ../client/pk-console.c:443
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Prosím zadejte číslo od 1 do %i: "
-
-#: ../client/pk-console.c:493
-msgid "Could not find a package match"
-msgstr "Nemohu najít odpovídající balík"
-
-#: ../client/pk-console.c:507
+#: ../client/pk-console.c:549 ../client/pk-generate-pack.c:124
 msgid "There are multiple package matches"
 msgstr "Danému výrazu odpovídá více balíků"
 
 #. find out what package the user wants to use
-#: ../client/pk-console.c:514
+#: ../client/pk-console.c:556 ../client/pk-generate-pack.c:131
 msgid "Please enter the package number: "
 msgstr "Prosím zadejte číslo balíku: "
 
-#: ../client/pk-console.c:530
-msgid ""
-"Could not find a package with that name to install, or package already "
-"installed"
-msgstr ""
-"K danému názvu nemohu najít balík k nainstalovaní ani balík, který "
-"už je nainstalovaný"
+#: ../client/pk-console.c:590
+msgid "Could not find package to install"
+msgstr "Nemohu najít balík, který se má instalovat"
 
-#: ../client/pk-console.c:612
-msgid "Could not find a package with that name to remove"
-msgstr "K daného názvu nemohu najít balík, který se má odstranit"
+#: ../client/pk-console.c:696
+msgid "Could not find package to remove"
+msgstr "Nemohu najít balík, který se má odstranit"
 
-#: ../client/pk-console.c:652
+#: ../client/pk-console.c:757
 msgid "The following packages have to be removed"
 msgstr "Následující balíky musí být odstraněny"
 
 #. get user input
-#: ../client/pk-console.c:661
+#: ../client/pk-console.c:764
 msgid "Okay to remove additional packages?"
 msgstr "Souhlasíte s odstraněním doplňkových balíků?"
 
-#: ../client/pk-console.c:665
+#: ../client/pk-console.c:768 ../client/pk-generate-pack.c:523
+#: ../client/pk-generate-pack-main.c:131
 msgid "Cancelled!"
 msgstr "Zrušeno!"
 
-#: ../client/pk-console.c:687
-msgid "Could not find a package with that name to update"
-msgstr "K daného názvu nemohu najít balík, který se má aktualizovat"
+#: ../client/pk-console.c:802
+msgid "Could not find package to download"
+msgstr "Nemohu najít balík, který se má stáhnout"
 
-#: ../client/pk-console.c:705
-msgid "Could not find what packages require this package"
-msgstr "Nemohu zjistit, které balíky vyžadují tento balík"
+#: ../client/pk-console.c:853
+msgid "Could not find package to update"
+msgstr "Nemohu najít balík, který se má aktualizovat"
 
-#: ../client/pk-console.c:723
-msgid "Could not get dependencies for this package"
-msgstr "Nemohu získat závislosti pro tento balík"
+#: ../client/pk-console.c:875
+msgid "Could not find what packages require"
+msgstr "Nemohu zjistit, které balíky jsou vyžadovány"
 
-#: ../client/pk-console.c:741
-msgid "Could not find a description for this package"
-msgstr "Nemohu získat popis tohoto balíku"
+#: ../client/pk-console.c:896
+msgid "Could not get dependencies for"
+msgstr "Nemohu získat závislosti pro"
 
-#: ../client/pk-console.c:759
-#, c-format
+#: ../client/pk-console.c:917
+msgid "Could not find details for"
+msgstr "Nemohu zjistit detaily pro"
+
+#: ../client/pk-console.c:940
 msgid "Could not find the files for this package"
 msgstr "Nemohu nalézt soubory pro tento balík"
 
-#: ../client/pk-console.c:819
+#: ../client/pk-console.c:947
+msgid "Could not get the file list"
+msgstr "Nemohu získat seznam souborů"
+
+#: ../client/pk-console.c:966
+msgid "Could not find the update details for"
+msgstr "Nemohu nalézt podrobnosti o aktualizaci pro"
+
+#: ../client/pk-console.c:1027
 msgid "Package description"
 msgstr "Popis balíku"
 
-#: ../client/pk-console.c:842
+#: ../client/pk-console.c:1060
 msgid "Package files"
 msgstr "Soubory v balíku"
 
-#: ../client/pk-console.c:850
+#: ../client/pk-console.c:1068
 msgid "No files"
 msgstr "Žádné soubory"
 
 #. get user input
-#: ../client/pk-console.c:882
+#: ../client/pk-console.c:1100
 msgid "Okay to import key?"
 msgstr "Chcete importovat klíč?"
 
-#: ../client/pk-console.c:885
+#: ../client/pk-console.c:1103
 msgid "Did not import key"
 msgstr "Klíč nebyl importován"
 
 #. get user input
-#: ../client/pk-console.c:925
+#: ../client/pk-console.c:1143
 msgid "Do you agree?"
 msgstr "Souhlasíte?"
 
-#: ../client/pk-console.c:928
+#: ../client/pk-console.c:1146
 msgid "Did not agree to licence, task will fail"
 msgstr "Nesouhlasil/a jste s licencí, akce bude zrušena"
 
-#: ../client/pk-console.c:957
+#: ../client/pk-console.c:1175
 msgid "The daemon crashed mid-transaction!"
 msgstr "Démon havaroval během činnosti!"
 
 #. header
-#: ../client/pk-console.c:1010
+#: ../client/pk-console.c:1228
 msgid "PackageKit Console Interface"
 msgstr "Konzolové rozhraní PackageKitu"
 
-#: ../client/pk-console.c:1010
+#: ../client/pk-console.c:1228
 msgid "Subcommands:"
 msgstr "Dílčí příkazy:"
 
-#: ../client/pk-console.c:1114 ../client/pk-monitor.c:100 ../src/pk-main.c:189
+#: ../client/pk-console.c:1338 ../client/pk-generate-pack-main.c:64
+#: ../client/pk-monitor.c:104 ../src/pk-main.c:189
 msgid "Show extra debugging information"
 msgstr "Zobrazit dodatečné ladící informace"
 
-#: ../client/pk-console.c:1116 ../client/pk-monitor.c:102
+#: ../client/pk-console.c:1340 ../client/pk-monitor.c:106
 msgid "Show the program version and exit"
 msgstr "Zobrazit verzi programu a ukončit se"
 
-#: ../client/pk-console.c:1118
+#: ../client/pk-console.c:1342
 msgid "Set the filter, e.g. installed"
 msgstr "Nastavit filtr, např. nainstalované"
 
-#: ../client/pk-console.c:1120
+#: ../client/pk-console.c:1344
 msgid "Exit without waiting for actions to complete"
 msgstr "Ukončit bez varovaní o nedokončených akcích"
 
-#: ../client/pk-console.c:1143
+#: ../client/pk-console.c:1367
 msgid "Could not connect to system DBUS."
 msgstr "Nemohu se připojit k systému DBUS"
 
-#: ../client/pk-console.c:1231
-#, c-format
-msgid "You need to specify a search type"
-msgstr "Je nutné stanovit typ vyhledávání"
+#: ../client/pk-console.c:1464
+msgid "You need to specify a search type, e.g. name"
+msgstr "Je nutné stanovit typ vyhledávání, např. jméno"
 
-#: ../client/pk-console.c:1236 ../client/pk-console.c:1243
-#: ../client/pk-console.c:1250 ../client/pk-console.c:1257
-#: ../client/pk-console.c:1361 ../client/pk-console.c:1368
-#: ../client/pk-console.c:1375 ../client/pk-console.c:1382
-#, c-format
+#: ../client/pk-console.c:1469 ../client/pk-console.c:1476
+#: ../client/pk-console.c:1483 ../client/pk-console.c:1490
+#: ../client/pk-console.c:1601 ../client/pk-console.c:1611
+#: ../client/pk-console.c:1618 ../client/pk-console.c:1625
 msgid "You need to specify a search term"
 msgstr "Je nutné uvést termín, který se bude hledat"
 
-#: ../client/pk-console.c:1262
-#, c-format
+#: ../client/pk-console.c:1495
 msgid "Invalid search type"
 msgstr "Neplatný typ vyhledávání"
 
-#: ../client/pk-console.c:1267
-#, c-format
+#: ../client/pk-console.c:1500
 msgid "You need to specify a package or file to install"
 msgstr "Vyberte balík nebo soubor, která se bude instalovat"
 
-#: ../client/pk-console.c:1280
-#, c-format
+#: ../client/pk-console.c:1507
 msgid "You need to specify a type, key_id and package_id"
 msgstr "Je nutné určit typ, key_id a package_id"
 
-#: ../client/pk-console.c:1287
-#, c-format
+#: ../client/pk-console.c:1514
 msgid "You need to specify a package to remove"
 msgstr "Vyberte balík, který se má odstranit"
 
-#: ../client/pk-console.c:1294
-#, c-format
+#: ../client/pk-console.c:1520
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
+msgstr "Je nutné určit cílový adresář a poté balík, který se má stáhnout"
+
+#: ../client/pk-console.c:1525
+msgid "Directory not found"
+msgstr "Adresář nenalezen"
+
+#: ../client/pk-console.c:1531
 msgid "You need to specify a eula-id"
 msgstr "Je nutné určit eula-id"
 
-#: ../client/pk-console.c:1309
-#, c-format
+#: ../client/pk-console.c:1547
 msgid "You need to specify a package name to resolve"
 msgstr "K vyřešení je nutné uvést název balíku"
 
-#: ../client/pk-console.c:1316 ../client/pk-console.c:1323
-#, c-format
+#: ../client/pk-console.c:1556 ../client/pk-console.c:1563
 msgid "You need to specify a repo name"
 msgstr "Je nutné určit název repozitáře"
 
-#: ../client/pk-console.c:1330
-#, c-format
+#: ../client/pk-console.c:1570
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Je nutné určit název/parametr a hodnotu repozitáře"
 
-#: ../client/pk-console.c:1343
-#, c-format
+#: ../client/pk-console.c:1583
 msgid "You need to specify a time term"
 msgstr "Je nutné určit časový termín"
 
-#: ../client/pk-console.c:1348
-#, c-format
+#: ../client/pk-console.c:1588
 msgid "You need to specify a correct role"
 msgstr "Je nutné určit správnou roli"
 
-#: ../client/pk-console.c:1353
-#, c-format
+#: ../client/pk-console.c:1593
 msgid "Failed to get last time"
 msgstr "Nepodařilo se získat poslední čas"
 
-#: ../client/pk-console.c:1389
-#, c-format
-msgid "You need to specify a package to find the description for"
-msgstr "Je nutné určit balík, pro který se má najít popis"
+#: ../client/pk-console.c:1632
+msgid "You need to specify a package to find the details for"
+msgstr "Je nutné určit balík, pro který se mají najít podrobnosti"
 
-#: ../client/pk-console.c:1396
-#, c-format
+#: ../client/pk-console.c:1639
 msgid "You need to specify a package to find the files for"
 msgstr "Je nutné určit balík, pro který se mají najít soubory"
 
-#: ../client/pk-console.c:1441
+#: ../client/pk-console.c:1688
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "Volba '%s' není podporována"
 
-#: ../client/pk-console.c:1452
-msgid "Command failed"
-msgstr "Příkaz selhal"
-
-#: ../client/pk-console.c:1456
+#: ../client/pk-console.c:1701
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Nemáte nezbytné oprávnění pro tuto operaci"
 
-#: ../client/pk-monitor.c:113
-msgid "PackageKit Monitor"
-msgstr "PackageKit Monitor"
+#: ../client/pk-console.c:1703
+msgid "Command failed"
+msgstr "Příkaz selhal"
 
-#: ../client/pk-import-desktop.c:283 ../client/pk-import-specspo.c:169
+#: ../client/pk-generate-pack.c:115
+msgid "Could not find a package match"
+msgstr "Nemohu najít odpovídající balík"
+
+#: ../client/pk-generate-pack.c:149
+msgid "failed to download: invalid package_id and/or directory"
+msgstr "stahování selhala: neplatné package_id a/nebo adresář"
+
+#: ../client/pk-generate-pack.c:230
+msgid "Could not find a valid metadata file"
+msgstr "Nemohu najít platný soubor metadat"
+
+#. get user input
+#: ../client/pk-generate-pack.c:519
+msgid "Okay to download the additional packages"
+msgstr "Souhlasíte s stažením doplňkových balíků"
+
+#: ../client/pk-generate-pack-main.c:66
+msgid ""
+"Set the path of the file with the list of packages/dependencies to be "
+"excluded"
+msgstr ""
+"Nastavte cestu k souboru se seznamem balíčků/závislostí které mají být "
+"vynechány"
+
+#: ../client/pk-generate-pack-main.c:111
+msgid "You need to specify the pack name and packages to be packed\n"
+msgstr "Musíte určit jméno balíku a balíčky, které mají být zabaleny\n"
+
+#: ../client/pk-generate-pack-main.c:117
+msgid ""
+"Invalid name for the service pack, Specify a name with .servicepack "
+"extension\n"
+msgstr ""
+"Neplatné jméno opravného balíčku. Zadejte jméno s příponou "
+".servicepack\n"
+
+#: ../client/pk-generate-pack-main.c:129
+msgid "A pack with the same name already exists, do you want to overwrite it?"
+msgstr "Balík se stejným jménem už existuje, chcete jej přepsat?"
+
+#: ../client/pk-generate-pack-main.c:142
+msgid "Failed to create directory"
+msgstr "Nepodařilo se vytvořit adresář"
+
+#: ../client/pk-generate-pack-main.c:149
+msgid "Failed to create pack"
+msgstr "Nepodařilo se vytvořit balík"
+
+#: ../client/pk-import-desktop.c:279 ../client/pk-import-specspo.c:177
 #, c-format
 msgid "Could not open database: %s"
 msgstr "Nemohu otevřít databázi: %s"
 
-#: ../client/pk-import-desktop.c:284 ../client/pk-import-specspo.c:170
+#: ../client/pk-import-desktop.c:280 ../client/pk-import-specspo.c:178
 msgid "You probably need to run this program as the root user"
 msgstr "Nejspíše budete muset spustit tento program jako superuživatel"
+
+#: ../client/pk-monitor.c:117
+msgid "PackageKit Monitor"
+msgstr "PackageKit Monitor"
+
+#: ../client/pk-tools-common.c:51
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Prosím zadejte číslo od 1 do %i: "
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:300
+msgid "Getting package information..."
+msgstr "Zjišťuji informace o balíčcích..."
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
+msgstr "<span color='#%06x' underline='single' size='larger'>Spustit %s</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:308
+#: ../contrib/packagekit-plugin/src/contents.cpp:313
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#: ../contrib/packagekit-plugin/src/contents.cpp:340
+#, c-format
+msgid "<big>%s</big>"
+msgstr "<big>%s</big>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:310
+#, c-format
+msgid ""
+"\n"
+"<small>Installed version: %s</small>"
+msgstr ""
+"\n"
+"<small>Nainstalované verze: %s</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:316
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run version %s now</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Ihned spustit verzi %s</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:321
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run now</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Ihned spustit</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:325
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Aktualizovat na verzi %s</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
+#, c-format
+msgid ""
+"<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
+msgstr ""
+"<span color='#%06x' underline='single' size='larger'>Ihned instalovat %s<"
+"/span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:333
+#, c-format
+msgid ""
+"\n"
+"<small>Version: %s</small>"
+msgstr ""
+"\n"
+"<small>Verze: %s</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:337
+msgid ""
+"\n"
+"<small>No packages found for your system</small>"
+msgstr ""
+"\n"
+"<small>Pro váš systém nebyly nalezeny žádné balíčky</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:341
+msgid ""
+"\n"
+"<small>Installing...</small>"
+msgstr ""
+"\n"
+"<small>Instaluji...</small>"
+
+#: ../data/packagekit-catalog.xml.in.h:1
+msgid "PackageKit Catalog"
+msgstr "PackageKit Katalog"
+
+#: ../data/packagekit-pack.xml.in.h:1
+msgid "PackageKit Service Pack"
+msgstr "Balící služba PackageKit"
 
 #: ../src/pk-main.c:83
 msgid "Startup failed due to security policies on this machine."
@@ -360,8 +425,8 @@ msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
 "dbus-1/system.d directory"
 msgstr ""
-"Soubor org.freedesktop.PackageKit.conf není nainstalován v systémovém adresáři"
-"/etc/dbus-1/system.d"
+"Soubor org.freedesktop.PackageKit.conf není nainstalován v systémovém "
+"adresáři/etc/dbus-1/system.d"
 
 #: ../src/pk-main.c:185
 msgid "Packaging backend to use, e.g. dummy"
@@ -381,7 +446,7 @@ msgstr "Zobrazit verzi a ukončit se"
 
 #: ../src/pk-main.c:195
 msgid "Exit after a small delay"
-msgstr "Ukončit se krátkým zpožděním"
+msgstr "Ukončit se s krátkým zpožděním"
 
 #: ../src/pk-main.c:197
 msgid "Exit after the engine has loaded"
@@ -399,3 +464,80 @@ msgstr "Nemohu se připojit k systémové sběrnici"
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Chyba při pokusu o spuštění: %s\n"
+
+#~ msgid "Accept EULA"
+#~ msgstr "Přijmout licenční smlouvu"
+
+#~ msgid "Authentication is required to accept a EULA"
+#~ msgstr "Pro přijetí licenční smlouvy je vyžadováno oprávnění"
+
+#~ msgid "Authentication is required to change software source parameters"
+#~ msgstr "Pro změnu parametrů zdrojů softwaru je vyžádováno oprávnění"
+
+#~ msgid "Authentication is required to install a local file"
+#~ msgstr "K instalaci místního souboru je vyžadováno oprávnění"
+
+#~ msgid "Authentication is required to install a package"
+#~ msgstr "K instalaci balíku je vyžadováno oprávnění"
+
+#~ msgid "Authentication is required to install a security signature"
+#~ msgstr "K instalaci bezpečnostního podpisu je vyžadováno oprávnění"
+
+#~ msgid "Authentication is required to refresh the package lists"
+#~ msgstr "K obnovení seznamů balíků je vyžadováno oprávnění"
+
+#~ msgid "Authentication is required to remove packages"
+#~ msgstr "K odstranění balíků je vyžadováno oprávnění"
+
+#~ msgid "Authentication is required to rollback a transaction"
+#~ msgstr "K vrácení akce je vyžadováno oprávnění"
+
+#~ msgid "Authentication is required to update all packages"
+#~ msgstr "K aktualizaci všech balíků je vyžadováno oprávnění"
+
+#~ msgid "Authentication is required to update packages"
+#~ msgstr "K aktualizaci balíků je vyžadováno oprávnění"
+
+#~ msgid "Change software source parameters"
+#~ msgstr "Změnit parametry zdrojů softwaru"
+
+#~ msgid "Install local file"
+#~ msgstr "Nainstalovat místní soubor"
+
+#~ msgid "Install package"
+#~ msgstr "Nainstalovat balík"
+
+#~ msgid "Install security signature"
+#~ msgstr "Nainstalovat bezpečnostní podpis"
+
+#~ msgid "Refresh package lists"
+#~ msgstr "Obnovit seznam balíků"
+
+#~ msgid "Remove package"
+#~ msgstr "Odstranit balík"
+
+#~ msgid "Rollback to a previous transaction"
+#~ msgstr "Vrátit poslední akci"
+
+#~ msgid "Update all packages"
+#~ msgstr "Aktualizovat všechny balíky"
+
+#~ msgid "Update package"
+#~ msgstr "Aktualizovat balík"
+
+#~ msgid ""
+#~ "Could not find a package with that name to install, or package already "
+#~ "installed"
+#~ msgstr ""
+#~ "K danému názvu nemohu najít balík k nainstalovaní ani balík, který už je "
+#~ "nainstalovaný"
+
+#~ msgid "Could not find a package with that name to update"
+#~ msgstr "K daného názvu nemohu najít balík, který se má aktualizovat"
+
+#~ msgid "Could not find a description for this package"
+#~ msgstr "Nemohu získat popis tohoto balíku"
+
+#~ msgid "You need to specify a package to find the description for"
+#~ msgstr "Je nutné určit balík, pro který se má najít popis"
+
