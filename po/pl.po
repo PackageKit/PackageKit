@@ -5,257 +5,257 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-08-26 09:23+0000\n"
-"PO-Revision-Date: 2008-08-26 11:28+0200\n"
+"POT-Creation-Date: 2008-09-25 00:31+0000\n"
+"PO-Revision-Date: 2008-09-26 00:25+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../client/pk-console.c:235
+#: ../client/pk-console.c:274
 msgid "Update detail"
 msgstr "Szczegóły aktualizacji"
 
-#: ../client/pk-console.c:452
+#: ../client/pk-console.c:491
 msgid "A system restart is required"
 msgstr "Wymagane jest ponowne uruchomienie systemu"
 
-#: ../client/pk-console.c:454
+#: ../client/pk-console.c:493
 msgid "A logout and login is required"
 msgstr "Wymagane jest wylogowanie się i ponowne zalogowanie"
 
-#: ../client/pk-console.c:456
+#: ../client/pk-console.c:495
 msgid "An application restart is required"
 msgstr "Wymagane jest ponowne uruchomienie aplikacji"
 
-#: ../client/pk-console.c:549 ../client/pk-generate-pack.c:124
+#: ../client/pk-console.c:588 ../client/pk-generate-pack.c:126
 msgid "There are multiple package matches"
 msgstr "Pasuje kilka pakietów"
 
 #. find out what package the user wants to use
-#: ../client/pk-console.c:556 ../client/pk-generate-pack.c:131
+#: ../client/pk-console.c:595 ../client/pk-generate-pack.c:133
 msgid "Please enter the package number: "
 msgstr "Proszę podać numer pakietu: "
 
-#: ../client/pk-console.c:590
+#: ../client/pk-console.c:629
 msgid "Could not find package to install"
 msgstr "Nie można znaleźć pakietu do zainstalowania"
 
-#: ../client/pk-console.c:696
+#: ../client/pk-console.c:735
 msgid "Could not find package to remove"
 msgstr "Nie można znaleźć pakietu do usunięcia"
 
-#: ../client/pk-console.c:757
+#: ../client/pk-console.c:796
 msgid "The following packages have to be removed"
 msgstr "Następujące pakiety muszą zostać usunięte"
 
 #. get user input
-#: ../client/pk-console.c:764
+#: ../client/pk-console.c:803
 msgid "Okay to remove additional packages?"
 msgstr "Usunąć dodatkowe pakiety?"
 
-#: ../client/pk-console.c:768 ../client/pk-generate-pack.c:523
+#: ../client/pk-console.c:807 ../client/pk-generate-pack.c:528
 #: ../client/pk-generate-pack-main.c:131
 msgid "Cancelled!"
 msgstr "Anulowano!"
 
-#: ../client/pk-console.c:802
+#: ../client/pk-console.c:841
 msgid "Could not find package to download"
 msgstr "Nie można znaleźć pakietu do pobrania"
 
-#: ../client/pk-console.c:853
+#: ../client/pk-console.c:893
 msgid "Could not find package to update"
 msgstr "Nie można znaleźć pakietu do zaktualizowania"
 
-#: ../client/pk-console.c:875
+#: ../client/pk-console.c:915
 msgid "Could not find what packages require"
 msgstr "Nie można znaleźć pakietów, które wymagają"
 
-#: ../client/pk-console.c:896
+#: ../client/pk-console.c:936
 msgid "Could not get dependencies for"
 msgstr "Nie można uzyskać zależności dla"
 
-#: ../client/pk-console.c:917
+#: ../client/pk-console.c:957
 msgid "Could not find details for"
 msgstr "Nie można znaleźć szczegółów dla"
 
-#: ../client/pk-console.c:940
+#: ../client/pk-console.c:980
 msgid "Could not find the files for this package"
 msgstr "Nie można znaleźć plików tego pakietu"
 
-#: ../client/pk-console.c:947
+#: ../client/pk-console.c:987
 msgid "Could not get the file list"
 msgstr "Nie można uzyskać listy plików"
 
-#: ../client/pk-console.c:966
+#: ../client/pk-console.c:1006
 msgid "Could not find the update details for"
 msgstr "Nie można znaleźć szczegółów aktualizacji dla"
 
-#: ../client/pk-console.c:1027
+#: ../client/pk-console.c:1067
 msgid "Package description"
 msgstr "Opis pakietu"
 
-#: ../client/pk-console.c:1060
+#: ../client/pk-console.c:1100
 msgid "Package files"
 msgstr "Pliki pakietu"
 
-#: ../client/pk-console.c:1068
+#: ../client/pk-console.c:1108
 msgid "No files"
 msgstr "Brak plików"
 
 #. get user input
-#: ../client/pk-console.c:1100
+#: ../client/pk-console.c:1140
 msgid "Okay to import key?"
 msgstr "Zaimportować klucz?"
 
-#: ../client/pk-console.c:1103
+#: ../client/pk-console.c:1143
 msgid "Did not import key"
 msgstr "Nie zaimportowano klucza"
 
 #. get user input
-#: ../client/pk-console.c:1143
+#: ../client/pk-console.c:1183
 msgid "Do you agree?"
 msgstr "Zgadzasz się?"
 
-#: ../client/pk-console.c:1146
+#: ../client/pk-console.c:1186
 msgid "Did not agree to licence, task will fail"
 msgstr "Nie zaakceptowano licencji, zadanie nie powiedzie się"
 
-#: ../client/pk-console.c:1175
+#: ../client/pk-console.c:1215
 msgid "The daemon crashed mid-transaction!"
 msgstr "Demon zawiesił się w połowie transakcji!"
 
 #. header
-#: ../client/pk-console.c:1228
+#: ../client/pk-console.c:1268
 msgid "PackageKit Console Interface"
 msgstr "Interfejs konsoli PackageKit"
 
-#: ../client/pk-console.c:1228
+#: ../client/pk-console.c:1268
 msgid "Subcommands:"
 msgstr "Podpolecenia:"
 
-#: ../client/pk-console.c:1338 ../client/pk-generate-pack-main.c:64
-#: ../client/pk-monitor.c:104 ../src/pk-main.c:189
+#: ../client/pk-console.c:1378 ../client/pk-generate-pack-main.c:64
+#: ../client/pk-monitor.c:118 ../src/pk-main.c:192
 msgid "Show extra debugging information"
 msgstr "Wyświetla dodatkowe informacje o debugowaniu"
 
-#: ../client/pk-console.c:1340 ../client/pk-monitor.c:106
+#: ../client/pk-console.c:1380 ../client/pk-monitor.c:120
 msgid "Show the program version and exit"
 msgstr "Wyświetla wersję programu i wyłącza"
 
-#: ../client/pk-console.c:1342
+#: ../client/pk-console.c:1382
 msgid "Set the filter, e.g. installed"
 msgstr "Ustawia filtr, np. zainstalowane"
 
-#: ../client/pk-console.c:1344
+#: ../client/pk-console.c:1384
 msgid "Exit without waiting for actions to complete"
 msgstr "Wyłącza bez oczekiwania na zakończenie działań"
 
-#: ../client/pk-console.c:1367
+#: ../client/pk-console.c:1407
 msgid "Could not connect to system DBUS."
 msgstr "Nie można połączyć się z systemowym D-Bus."
 
-#: ../client/pk-console.c:1464
+#: ../client/pk-console.c:1500
 msgid "You need to specify a search type, e.g. name"
 msgstr "Należy podać typ wyszukiwania, np. po nazwie"
 
-#: ../client/pk-console.c:1469 ../client/pk-console.c:1476
-#: ../client/pk-console.c:1483 ../client/pk-console.c:1490
-#: ../client/pk-console.c:1601 ../client/pk-console.c:1611
-#: ../client/pk-console.c:1618 ../client/pk-console.c:1625
+#: ../client/pk-console.c:1505 ../client/pk-console.c:1512
+#: ../client/pk-console.c:1519 ../client/pk-console.c:1526
+#: ../client/pk-console.c:1637 ../client/pk-console.c:1647
+#: ../client/pk-console.c:1654 ../client/pk-console.c:1661
 msgid "You need to specify a search term"
 msgstr "Należy podać termin wyszukiwania"
 
-#: ../client/pk-console.c:1495
+#: ../client/pk-console.c:1531
 msgid "Invalid search type"
 msgstr "Nieprawidłowy typ wyszukiwania"
 
-#: ../client/pk-console.c:1500
+#: ../client/pk-console.c:1536
 msgid "You need to specify a package or file to install"
 msgstr "Należy podać pakiet lub plik do zainstalowania"
 
-#: ../client/pk-console.c:1507
+#: ../client/pk-console.c:1543
 msgid "You need to specify a type, key_id and package_id"
 msgstr "Należy podać typ, key_id i package_id"
 
-#: ../client/pk-console.c:1514
+#: ../client/pk-console.c:1550
 msgid "You need to specify a package to remove"
 msgstr "Należy podać pakiet do usunięcia"
 
-#: ../client/pk-console.c:1520
+#: ../client/pk-console.c:1556
 msgid ""
 "You need to specify the destination directory and then the packages to "
 "download"
 msgstr "Należy podać katalog docelowy, a następnie pakiety do pobrania"
 
-#: ../client/pk-console.c:1525
+#: ../client/pk-console.c:1561
 msgid "Directory not found"
 msgstr "Nie znaleziono katalogu"
 
-#: ../client/pk-console.c:1531
+#: ../client/pk-console.c:1567
 msgid "You need to specify a eula-id"
 msgstr "Należy podać eula-id"
 
-#: ../client/pk-console.c:1547
+#: ../client/pk-console.c:1583
 msgid "You need to specify a package name to resolve"
 msgstr "Należy podać nazwę pakietu do rozwiązania"
 
-#: ../client/pk-console.c:1556 ../client/pk-console.c:1563
+#: ../client/pk-console.c:1592 ../client/pk-console.c:1599
 msgid "You need to specify a repo name"
 msgstr "Należy podać nazwę repozytorium"
 
-#: ../client/pk-console.c:1570
+#: ../client/pk-console.c:1606
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Należy podać nazwę/parametr repozytorium i wartość"
 
-#: ../client/pk-console.c:1583
+#: ../client/pk-console.c:1619
 msgid "You need to specify a time term"
 msgstr "Należy podać termin czasu"
 
-#: ../client/pk-console.c:1588
+#: ../client/pk-console.c:1624
 msgid "You need to specify a correct role"
 msgstr "Należy podać poprawną rolę"
 
-#: ../client/pk-console.c:1593
+#: ../client/pk-console.c:1629
 msgid "Failed to get last time"
 msgstr "Uzyskanie ostatniego czasu nie powiodło się"
 
-#: ../client/pk-console.c:1632
+#: ../client/pk-console.c:1668
 msgid "You need to specify a package to find the details for"
 msgstr "Należy podać pakiet do znalezienia szczegółów dla"
 
-#: ../client/pk-console.c:1639
+#: ../client/pk-console.c:1675
 msgid "You need to specify a package to find the files for"
 msgstr "Należy podać pakiet do znalezienia plików dla"
 
-#: ../client/pk-console.c:1688
+#: ../client/pk-console.c:1724
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "Opcja \"%s\" nie jest obsługiwana"
 
-#: ../client/pk-console.c:1701
+#: ../client/pk-console.c:1737
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Nie posiadasz niezbędnych uprawnień dla tej operacji"
 
-#: ../client/pk-console.c:1703
+#: ../client/pk-console.c:1739
 msgid "Command failed"
 msgstr "Polecenie nie powiodło się"
 
-#: ../client/pk-generate-pack.c:115
+#: ../client/pk-generate-pack.c:117
 msgid "Could not find a package match"
 msgstr "Nie można znaleźć pasującego pakietu"
 
-#: ../client/pk-generate-pack.c:149
+#: ../client/pk-generate-pack.c:151
 msgid "failed to download: invalid package_id and/or directory"
 msgstr "pobranie nie powiodło się: nieprawidłowe package_id i/lub katalog"
 
-#: ../client/pk-generate-pack.c:230
+#: ../client/pk-generate-pack.c:232
 msgid "Could not find a valid metadata file"
 msgstr "Nie można znaleźć prawidłowego pliku metadanych"
 
 #. get user input
-#: ../client/pk-generate-pack.c:519
+#: ../client/pk-generate-pack.c:524
 msgid "Okay to download the additional packages"
 msgstr "Pobrać dodatkowe pakiety?"
 
@@ -290,16 +290,20 @@ msgstr "Utworzenie katalogu nie powiodło się"
 msgid "Failed to create pack"
 msgstr "Utworzenie pakietu serwisowego nie powiodło się"
 
-#: ../client/pk-import-desktop.c:279 ../client/pk-import-specspo.c:177
+#: ../client/pk-import-specspo.c:185
+msgid "Could not set database readonly"
+msgstr "Nie można ustawić bazy danych w tryb tylko do odczytu"
+
+#: ../client/pk-import-specspo.c:192
 #, c-format
 msgid "Could not open database: %s"
 msgstr "Nie można otworzyć bazy danych: %s"
 
-#: ../client/pk-import-desktop.c:280 ../client/pk-import-specspo.c:178
+#: ../client/pk-import-specspo.c:193
 msgid "You probably need to run this program as the root user"
 msgstr "Prawdopodobnie należy uruchomić ten program jako użytkownik root"
 
-#: ../client/pk-monitor.c:117
+#: ../client/pk-monitor.c:131
 msgid "PackageKit Monitor"
 msgstr "Monitor PackageKit"
 
@@ -402,21 +406,21 @@ msgstr "Katalog PackageKit"
 msgid "PackageKit Service Pack"
 msgstr "Pakiet serwisowy PackageKit"
 
-#: ../src/pk-main.c:83
+#: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr ""
 "Uruchomienie nie powiodło się z powodu polityk bezpieczeństwa tego komputera."
 
-#: ../src/pk-main.c:84
+#: ../src/pk-main.c:86
 msgid "This can happen for two reasons:"
 msgstr "Mogło się to wydarzyć z dwóch powodów:"
 
-#: ../src/pk-main.c:85
+#: ../src/pk-main.c:87
 msgid "The correct user is not launching the executable (usually root)"
 msgstr ""
 "Prawidłowy użytkownik nie uruchamiania pliku wykonywalnego (zwykle root)"
 
-#: ../src/pk-main.c:86
+#: ../src/pk-main.c:88
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
 "dbus-1/system.d directory"
@@ -424,39 +428,39 @@ msgstr ""
 "Plik org.freedesktop.PackageKit.conf nie jest zainstalowany w katalogu "
 "systemowym /etc/dbus-1/system.d"
 
-#: ../src/pk-main.c:185
+#: ../src/pk-main.c:188
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Używany moduł przetwarzający, np. dummy"
 
-#: ../src/pk-main.c:187
+#: ../src/pk-main.c:190
 msgid "Daemonize and detach from the terminal"
 msgstr "Tworzy demona i odłącza z terminala"
 
-#: ../src/pk-main.c:191
+#: ../src/pk-main.c:194
 msgid "Disable the idle timer"
 msgstr "Wyłącza licznik czasu bezczynności"
 
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:196
 msgid "Show version and exit"
 msgstr "Wyświetla wersję i wyłącza"
 
-#: ../src/pk-main.c:195
+#: ../src/pk-main.c:198
 msgid "Exit after a small delay"
 msgstr "Wyłącza po małej przerwie"
 
-#: ../src/pk-main.c:197
+#: ../src/pk-main.c:200
 msgid "Exit after the engine has loaded"
 msgstr "Wyłącza po wczytaniu mechanizmu"
 
-#: ../src/pk-main.c:207
+#: ../src/pk-main.c:210
 msgid "PackageKit service"
 msgstr "Usługa PackageKit"
 
-#: ../src/pk-main.c:233
+#: ../src/pk-main.c:246
 msgid "Cannot connect to the system bus"
 msgstr "Nie można połączyć się z magistralą systemową"
 
-#: ../src/pk-main.c:273
+#: ../src/pk-main.c:286
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Błąd podczas próbowania uruchomienia: %s\n"
