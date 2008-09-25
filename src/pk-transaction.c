@@ -1093,6 +1093,19 @@ pk_transaction_commit (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_finished_idle_cb:
+ **/
+static gboolean
+pk_transaction_finished_idle_cb (PkTransaction *transaction)
+{
+	const gchar *exit_text;
+	exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
+	egg_debug ("emitting finished '%s'", exit_text);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
+	return FALSE;
+}
+
+/**
  * pk_transaction_search_check:
  **/
 static gboolean
@@ -1236,7 +1249,6 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 {
 	gboolean ret;
 	GError *error;
-	const gchar *exit_text;
 	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -1275,11 +1287,12 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 		return;
 	}
 
-	exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
-	egg_debug ("emitting finished transaction '%s', %i", exit_text, 0);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
+	/* we are done */
+	g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -1756,18 +1769,13 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 gboolean
 pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, GError **error)
 {
-	const gchar *exit_text;
-
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
 	egg_debug ("GetOldTransactions method called");
 
 	pk_transaction_db_get_list (transaction->priv->transaction_db, number);
-
-	exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
-	egg_debug ("emitting finished transaction '%s', %i", exit_text, 0);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
+	g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 
 	return TRUE;
 }
@@ -2085,10 +2093,8 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 
 	/* if we have nothing to do, i.e. everything was in the cache */
 	if (array->len == 0) {
-		const gchar *exit_text;
-		exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
-		egg_debug ("emitting finished '%s' as no more to process", exit_text);
-		g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
+		/* we are done */
+		g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 		goto out;
 	}
 
@@ -2112,7 +2118,9 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 out:
 	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
-	dbus_g_method_return (context);
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -2166,7 +2174,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	if (updates_cache != NULL) {
 		const PkPackageObj *obj;
 		const gchar *info_text;
-		const gchar *exit_text;
 		guint i;
 		guint length;
 
@@ -2184,11 +2191,11 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		}
 
 		/* we are done */
-		exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
-		egg_debug ("emitting finished '%s'", exit_text);
-		g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
+		g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 
-		dbus_g_method_return (context);
+		/* not set inside the test suite */
+		if (context != NULL)
+			dbus_g_method_return (context);
 		return;
 	}
 
