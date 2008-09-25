@@ -142,11 +142,15 @@ using PackageKit.
 %setup -q
 
 %build
-%configure --enable-yum --enable-smart --with-default-backend=yum --disable-local
-
+# build and test on all architectures
+%configure --enable-dummy --with-default-backend=dummy --enable-tests --enable-local
 make %{?_smp_mflags}
-make check -C src
 make check -C libpackagekit
+make check -C src
+
+# reconfigure with testing off (smaller binaries)
+%configure --enable-yum --enable-smart --with-default-backend=yum --disable-local
+make %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
