@@ -28,60 +28,58 @@ def _to_utf8( obj, errors='replace'):
     return obj
 
 class PackageKitPackage:
-    ''' 
-    container class from values from the Package signal 
     '''
-    def __init__(self,installed,id,summary):
+    container class from values from the Package signal
+    '''
+    def __init__(self, installed, package_id, summary):
         self.installed = (installed == 'installed')
-        self.id = str(id)
+        self.id = str(package_id)
         self.summary = _to_utf8(summary)
-        
+
     def __str__(self):
-        (name,ver,arch,repo) = tuple(self.id.split(";"))
-        p =  "%s-%s.%s" % (name,ver,arch)
+        (name, ver, arch, repo) = tuple(self.id.split(";"))
+        p =  "%s-%s.%s" % (name, ver, arch)
         if self.installed:
             inst = "installed"
         else:
             inst = "available"
         return "%-40s : %s : %s" % (p, inst, self.summary)
-        
-        
+
 class PackageKitDistroUpgrade:
-    ''' 
-    container class from values from the DistroUpgrade signal 
     '''
-    def __init__(self,upgrade_type,name,summary):
+    container class from values from the DistroUpgrade signal
+    '''
+    def __init__(self, upgrade_type, name, summary):
         self.upgrade_type = upgrade_type
         self.name = name
         self.summary = _to_utf8(summary)
-        
+
     def __str__(self):
         return " type : %s, name : %s, summary : %s " % (
-                self.upgrade_type,self.name,self.summmary)        
-
+                self.upgrade_type, self.name, self.summary)
 
 class PackageKitDetails:
-    ''' 
-    container class from values from the Detail signal 
     '''
-    def __init__(self, id, license, group, detail, url, size):
-        self.id = str(id)
-        self.license = license
+    container class from values from the Detail signal
+    '''
+    def __init__(self, package_id, package_license, group, detail, url, size):
+        self.id = str(package_id)
+        self.license = package_license
         self.group = group
         self.detail = _to_utf8(detail)
         self.url = url
         self.size = size
-        
+
 class PackageKitUpdateDetails:
-    ''' 
-    container class from values from the UpdateDetail signal 
     '''
-    def __init__(self, id, updates, obsoletes, vendor_url, bugzilla_url, \
+    container class from values from the UpdateDetail signal
+    '''
+    def __init__(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, \
                  cve_url, restart, update_text, changelog, state, \
                  issued, updated):
-        self.id = str(id)
+        self.id = str(package_id)
         self.updates = updates
-        self.obsoletes = opsoletes
+        self.obsoletes = obsoletes
         self.vendor_url = vendor_url
         self.bugzilla_url = bugzilla_url
         self.cve_url = cve_url
@@ -89,26 +87,23 @@ class PackageKitUpdateDetails:
         self.update_text = update_text
         self.changelog = changelog
         self.state = state
-        self.issued = issued                     
+        self.issued = issued
         self.updated = updated
-        
+
 class PackageKitRepos:
-    ''' 
-    container class from values from the Repos signal 
     '''
-    def __init__(self,id, description, enabled):
-        self.id = str(id)
+    container class from values from the Repos signal
+    '''
+    def __init__(self, package_id, description, enabled):
+        self.id = str(package_id)
         self.description = description
         self.enabled = enabled
-        
-        
+
 class PackageKitFiles:
-    ''' 
-    container class from values from the Files signal 
-    '''        
-    def __init__(self,id, files):
-        self.id = str(id)
+    '''
+    container class from values from the Files signal
+    '''
+    def __init__(self, package_id, files):
+        self.id = str(package_id)
         self.files = files
-        
-            
             

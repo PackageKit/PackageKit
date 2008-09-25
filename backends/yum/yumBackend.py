@@ -97,7 +97,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except yum.Errors.RepoError, e:
                     self.error(ERROR_NO_CACHE, str(e))
 
-
         return wrapper
 
     def __init__(self, args, lock=True):
@@ -116,7 +115,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if lock:
             self.doLock()
 
-    def details(self, id, license, group, desc, url, bytes):
+    def details(self, package_id, package_license, group, desc, url, bytes):
         '''
         Send 'details' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -128,9 +127,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         convert the description to UTF before sending
         '''
         desc = self._to_unicode(desc)
-        PackageKitBaseBackend.details(self, id, license, group, desc, url, bytes)
+        PackageKitBaseBackend.details(self, package_id, package_license, group, desc, url, bytes)
 
-    def package(self, id, status, summary):
+    def package(self, package_id, status, summary):
         '''
         send 'package' signal
         @param info: the enumerated INFO_* string
@@ -139,7 +138,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         convert the summary to UTF before sending
         '''
         summary = self._to_unicode(summary)
-        PackageKitBaseBackend.package(self, id, status, summary)
+        PackageKitBaseBackend.package(self, package_id, status, summary)
 
     def _to_unicode(self, txt, encoding='utf-8'):
         if isinstance(txt, basestring):
@@ -506,33 +505,33 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         (version, release) = tuple(idver.split('-'))
         return epoch, version, release
 
-    def _is_meta_package(self, id):
+    def _is_meta_package(self, package_id):
         grp = None
         if len(id.split(';')) > 1:
             # Split up the id
-            (name, idver, a, repo) = self.get_package_from_id(id)
+            (name, idver, a, repo) = self.get_package_from_id(package_id)
             if repo == 'meta':
                 grp = self.yumbase.comps.return_group(name)
                 if not grp:
                     self.error(ERROR_PACKAGE_NOT_FOUND, "The Group %s dont exist" % name)
         return grp
 
-    def _findPackage(self, id):
+    def _findPackage(self, package_id):
         '''
         find a package based on a package id (name;version;arch;repoid)
         '''
         # Bailout if meta packages, just to be sure
-        if self._is_meta_package(id):
+        if self._is_meta_package(package_id):
             return None, False
 
         # is this an real id or just an name
         if len(id.split(';')) > 1:
             # Split up the id
-            (n, idver, a, d) = self.get_package_from_id(id)
+            (n, idver, a, d) = self.get_package_from_id(package_id)
             # get e, v, r from package id version
             e, v, r = self._getEVR(idver)
         else:
-            n = id
+            n = package_id
             e = v = r = a = d = None
         # search the rpmdb for the nevra
         pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
@@ -786,7 +785,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.yumbase.groupUnremove(grp.groupid)
         return pkgs
 
-
     def get_depends(self, filters, package_ids, recursive_text):
         '''
         Print a list of depends for a given package
@@ -835,7 +833,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # If packages comes from a group, then we show them along with deps.
         if grp_pkgs:
             deps_list.extend(grp_pkgs)
-
 
         # add to correct lists
         for pkg in deps_list:
@@ -1740,8 +1737,8 @@ class DownloadCallback(BaseMeter):
         self.numPkgs = 0
         self.bump = 0.0
 
-    def setPackages(self, pkgs, startPct, numPct):
-        self.pkgs = pkgs
+    def setPackages(self, new_pkgs, startPct, numPct):
+        self.pkgs = new_pkgs
         self.numPkgs = float(len(self.pkgs))
         self.bump = numPct/self.numPkgs
         self.totalPct = startPct
@@ -1900,21 +1897,18 @@ class ProcessTransPackageKitCallback:
             self.base.allow_cancel(True)
             self.base.percentage(10)
             self.base.status(STATUS_DOWNLOAD)
-        if state == PT_DOWNLOAD_PKGS:   # Packages to download
+        elif state == PT_DOWNLOAD_PKGS:   # Packages to download
             self.base.dnlCallback.setPackages(data, 10, 30)
         elif state == PT_GPGCHECK:
             self.base.percentage(40)
             self.base.status(STATUS_SIG_CHECK)
-            pass
         elif state == PT_TEST_TRANS:
             self.base.allow_cancel(False)
             self.base.percentage(45)
             self.base.status(STATUS_TEST_COMMIT)
-            pass
         elif state == PT_TRANSACTION:
             self.base.allow_cancel(False)
             self.base.percentage(50)
-            pass
 
 class DepSolveCallback(object):
 
