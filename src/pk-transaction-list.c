@@ -736,7 +736,7 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_failed (test, "got missing role");
 
 	/************************************************************/
-	egg_test_title (test, "get size one we have in queue");
+	egg_test_title (test, "get size we have in queue");
 	size = pk_transaction_list_get_size (tlist);
 	if (size == 1)
 		egg_test_success (test, NULL);
@@ -797,6 +797,68 @@ pk_transaction_list_test (EggTest *test)
 		egg_test_failed (test, "size %i", size);
 
 	g_free (tid);
+
+	/************************************************************
+	 ***************  Get updates from cache    *****************
+	 ************************************************************/
+	item = pk_transaction_list_test_get_item (tlist);
+	g_signal_connect (item->transaction, "finished",
+			  G_CALLBACK (pk_transaction_list_test_finished_cb), test);
+
+	pk_transaction_get_updates (item->transaction, "none", NULL);
+
+	/* wait for cached results*/
+	egg_test_loop_wait (test, 1000);
+	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "make sure item has correct flags");
+	if (item->running == FALSE && item->committed == FALSE && item->finished == TRUE)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong flags: running[%i] committed[%i] finished[%i]",
+				 item->running, item->committed, item->finished);
+
+	/************************************************************/
+	egg_test_title (test, "get transactions (committed, not finished) in progress (none, as cached)");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
+
+	/************************************************************/
+	egg_test_title (test, "get size we have in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 1)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+
+	/* wait for Cleanup */
+	g_timeout_add_seconds (5, (GSourceFunc) pk_transaction_list_test_delay_cb, test);
+	egg_test_loop_wait (test, 6000);
+	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "get transactions (committed, not finished) in progress (none, as cached)");
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
+	g_strfreev (array);
+
+	/************************************************************/
+	egg_test_title (test, "get size we have in queue");
+	size = pk_transaction_list_get_size (tlist);
+	if (size == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "size %i", size);
 
 	/************************************************************
 	 ****************  Chained transactions    ******************
