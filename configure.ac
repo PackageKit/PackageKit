@@ -241,7 +241,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Checks for contrib/packagekit-plugin
 dnl ---------------------------------------------------------------------------
 
-PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
+PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1 gtk-x11-2.0,
                   build_browser_plugin=yes, build_browser_plugin=no)
 
 AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
