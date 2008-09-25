@@ -9,6 +9,7 @@ TEST_FILES =						\
 	pk-spawn-proxy.sh				\
 	pk-spawn-test-sigquit.sh			\
 	pk-spawn-test-profiling.sh			\
+	pk-spawn-dispatcher.py				\
 	$(NULL)
 
 EXTRA_DIST =						\
