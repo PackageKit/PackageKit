@@ -20,6 +20,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include "config.h"
+
 #include <pk-backend.h>
 #include <pk-backend-dbus.h>
 
@@ -179,6 +181,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 	pk_backend_dbus_get_files (dbus, package_ids);
 }
 
+#ifdef HAVE_PYTHON_META_RELEASE
 /**
  * backend_get_distro_upgrades:
  *  */
@@ -187,6 +190,7 @@ backend_get_distro_upgrades (PkBackend *backend)
 {
 	pk_backend_dbus_get_distro_upgrades (dbus);
 }
+#endif /* HAVE_PYTHON_META_RELEASE */
 
 
 /**
@@ -271,6 +275,7 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 	        pk_backend_dbus_get_packages (dbus, filters);
 }
 
+#ifdef HAVE_PYTHON_SOFTWARE_PROPERTIES
 /**
  *  * pk_backend_get_repo_list:
  *   */
@@ -279,6 +284,17 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	        pk_backend_dbus_get_repo_list (dbus, filters);
 }
+
+/**
+ *  * pk_backend_repo_enable
+ *   */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enable )
+{
+	        pk_backend_dbus_repo_enable (dbus, repo_id, enable);
+}
+#endif /* HAVE_PYTHON_SOFTWARE_PROPERTIES */
+
 
 /**
  *  * pk_backend_get_requires:
@@ -316,15 +332,6 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	        pk_backend_dbus_what_provides (dbus, filters, provides, search);
 }
 
-/**
- *  * pk_backend_repo_enable
- *   */
-static void
-backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enable )
-{
-	        pk_backend_dbus_repo_enable (dbus, repo_id, enable);
-}
-
 
 
 PK_BACKEND_OPTIONS (
@@ -338,10 +345,18 @@ PK_BACKEND_OPTIONS (
 	backend_download_packages,		/* download_packages */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
+#ifdef HAVE_PYTHON_META_RELEASE
 	backend_get_distro_upgrades,		/* get_distro_upgrades */
+#else
+	NULL,					/* get_distro_upgrades */
+#endif /* HAVE_PYTHON_META_RELEASE */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
+#ifdef HAVE_PYTHON_SOFTWARE_PROPERTIES
 	backend_get_repo_list,			/* get_repo_list */
+#else
+	NULL,					/* get_repo_list */
+#endif /* HAVE_PYTHON_SOFTWARE_PROPERTIES */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
@@ -350,7 +365,11 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
+#ifdef HAVE_PYTHON_SOFTWARE_PROPERTIES
 	backend_repo_enable,			/* repo_enable */
+#else
+	NULL,					/* repo_enable */
+#endif /* HAVE_PYTHON_SOFTWARE_PROPERTIES */
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */

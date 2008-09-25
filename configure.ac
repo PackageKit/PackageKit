@@ -456,6 +456,14 @@ AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
 if test x$enable_apt = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
+	PY_CHECK_MOD([UpdateManager.Core.MetaRelease],,
+		     AC_DEFINE(HAVE_PYTHON_META_RELEASE, 1,
+			       "Meta release is available"), 
+		     AC_MSG_WARN([Distro upgrade notification not supported]))
+	PY_CHECK_MOD([softwareproperties.SoftwareProperties],,
+		     AC_DEFINE(HAVE_PYTHON_SOFTWARE_PROPERTIES, 1,
+			       "Python software properties is available"),
+		     AC_MSG_WARN([Repository handling not supported]))
 fi
 
 if test x$enable_box = xyes; then
