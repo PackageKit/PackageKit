@@ -513,6 +513,7 @@ pk_task_list_new (void)
  ***************************************************************************/
 #ifdef EGG_TEST
 #include "egg-test.h"
+#include "pk-connection.h"
 
 static gboolean finished = FALSE;
 
@@ -528,6 +529,7 @@ pk_task_list_test_finished_cb (PkTaskList *tlist, PkClient *client, PkExitEnum e
 void
 pk_task_list_test (EggTest *test)
 {
+	PkConnection *connection;
 	PkTaskList *tlist;
 	PkClient *client;
 	gboolean ret;
@@ -535,6 +537,15 @@ pk_task_list_test (EggTest *test)
 
 	if (!egg_test_start (test, "PkTaskList"))
 		return;
+
+	/* check to see if there is a daemon running */
+	connection = pk_connection_new ();
+	ret = pk_connection_valid (connection);
+	g_object_unref (connection);
+	if (!ret) {
+		egg_warning ("daemon is not running, skipping tests");
+		goto out;
+	}
 
 	/************************************************************/
 	egg_test_title (test, "get client");
@@ -563,7 +574,7 @@ pk_task_list_test (EggTest *test)
 
 	g_object_unref (tlist);
 	g_object_unref (client);
-
+out:
 	egg_test_end (test);
 }
 #endif

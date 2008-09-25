@@ -4040,6 +4040,7 @@ pk_client_test_copy_package_cb (PkClient *client, const PkPackageObj *obj, EggTe
 void
 pk_client_test (EggTest *test)
 {
+	PkConnection *connection;
 	PkClient *client;
 	PkClient *client_copy;
 	gboolean ret;
@@ -4053,6 +4054,15 @@ pk_client_test (EggTest *test)
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
+
+	/* check to see if there is a daemon running */
+	connection = pk_connection_new ();
+	ret = pk_connection_valid (connection);
+	g_object_unref (connection);
+	if (!ret) {
+		egg_warning ("daemon is not running, skipping tests");
+		goto out;
+	}
 
 	/************************************************************/
 	egg_test_title (test, "test resolve NULL");
@@ -4305,7 +4315,7 @@ pk_client_test (EggTest *test)
 		error = NULL;
 	}
 	g_object_unref (client);
-
+out:
 	egg_test_end (test);
 }
 #endif
