@@ -8,6 +8,10 @@ if PK_BUILD_BROWSER_PLUGIN
 SUBDIRS += packagekit-plugin
 endif
 
+if PK_BUILD_GSTREAMER_PLUGIN
+SUBDIRS += gstreamer-plugin
+endif
+
 bashcompletiondir = ${SYSCONFDIR}/bash_completion.d
 dist_bashcompletion_DATA = pk-completion.bash
 
