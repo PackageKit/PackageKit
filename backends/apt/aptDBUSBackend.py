@@ -29,6 +29,7 @@ import re
 import signal
 import shutil
 import socket
+import stat
 import string
 import sys
 import time
@@ -52,6 +53,8 @@ import debfile
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
+
+apt_pkg.InitConfig()
 
 # Xapian database is optionally used to speed up package description search
 XAPIAN_DB_PATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
@@ -83,6 +86,7 @@ except ImportError:
     META_RELEASE_SUPPORT = False
 else:
     META_RELEASE_SUPPORT = True
+
 
 # Set a timeout for the changelog download
 socket.setdefaulttimeout(2)
@@ -137,7 +141,21 @@ SECTION_GROUP_MAP = {
     "alien" : GROUP_UNKNOWN,
     "translations" : GROUP_LOCALIZATION,
     "metapackages" : GROUP_COLLECTIONS }
- 
+
+
+def unlock_cache_afterwards(func):
+    '''
+    Make sure that the package cache is unlocked after the decorated function
+    was called
+    '''
+    def wrapper(*args,**kwargs):
+        backend = args[0]
+        func(*args,**kwargs)
+        backend._unlock_cache()
+    wrapper.__name__ = func.__name__
+    return wrapper
+
+
 class InstallTimeOutPKError(Exception):
     pass
 
@@ -358,7 +376,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         pklog.debug("PM status: %s" % status)
 
     def startUpdate(self):
-        # The apt system lock was set by _acquire_lock() before
+        # The apt system lock was set by _lock_cache() before
         apt_pkg.PkgSystemUnLock()
         self._backend.StatusChanged(STATUS_COMMIT)
         self.last_activity = time.time()
@@ -442,7 +460,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled = threading.Event()
         self._canceled.clear()
         self._lock = threading.Lock()
-        apt_pkg.InitConfig()
+        self._last_cache_refresh = None
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -741,12 +759,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    @unlock_cache_afterwards
     def doUpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
         '''
         pklog.info("Upgrading system")
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -765,12 +784,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    @unlock_cache_afterwards
     def doRemovePackages(self, ids, deps=True, auto=False):
         '''
         Implement the {backend}-remove functionality
         '''
         pklog.info("Removing package(s): id %s" % ids)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -983,12 +1003,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    @unlock_cache_afterwards
     def doUpdatePackages(self, ids):
         '''
         Implement the {backend}-update functionality
         '''
         pklog.info("Updating package with id %s" % ids)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1096,12 +1117,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
  
     @threaded
     @async
+    @unlock_cache_afterwards
     def doInstallPackages(self, ids):
         '''
         Implement the {backend}-install functionality
         '''
         pklog.info("Installing package with id %s" % ids)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1142,13 +1164,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    @unlock_cache_afterwards
     def doInstallFiles(self, trusted, full_paths):
         '''
         Implement install-files for the apt backend
         Install local Debian package files
         '''
         pklog.info("Installing package files: %s" % full_paths)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1185,7 +1208,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         if not self._commit_changes((10,25), (25,50)): return False
         # Install the Debian package files
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         for deb in packages:
             try:
                 res = deb.install(PackageKitDpkgInstallProgress(self))
@@ -1209,12 +1232,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @async
+    @unlock_cache_afterwards
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
         pklog.info("Refresh cache")
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_REFRESH_CACHE)
         self.last_action_time = time.time()
         self.AllowCancel(False);
@@ -1526,7 +1550,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     # Helpers
 
-    def _acquire_lock(self):
+    def _lock_cache(self):
         """
         Emit an error message and return true if the apt system lock cannot
         be acquired.
@@ -1538,6 +1562,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Only use one package management programme at the "
                            "the same time.")
             self.Finished(EXIT_FAILED)
+            return False
+        return True
+
+    def _unlock_cache(self):
+        """
+        Unlock the system package cache
+        """
+        try:
+            apt_pkg.PkgSystemUnLock()
+        except SystemError:
             return False
         return True
 
@@ -1563,6 +1597,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             self.Exit()
             return
+        self._last_cache_refresh = time.time()
 
     def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
         """
@@ -1601,9 +1636,23 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Check if the backend was initialized well and try to recover from
         a broken setup
         '''
-        pklog.debug("Check apt cache and xapian database")
+        pklog.debug("Checking apt cache and xapian database")
+        pkg_cache = os.path.join(apt_pkg.Config["Dir"],
+                                 apt_pkg.Config["Dir::Cache"],
+                                 apt_pkg.Config["Dir::Cache::pkgcache"])
+        src_cache = os.path.join(apt_pkg.Config["Dir"],
+                                 apt_pkg.Config["Dir::Cache"],
+                                 apt_pkg.Config["Dir::Cache::srcpkgcache"])
+        # Check if the cache instance is of the coorect class type, contains
+        # any broken packages and if the dpkg status or apt cache files have 
+        # been changed since the last refresh
         if not isinstance(self._cache, apt.cache.Cache) or \
-           self._cache._depcache.BrokenCount > 0:
+           (self._cache._depcache.BrokenCount > 0) or \
+           (os.stat(apt_pkg.Config["Dir::State::status"])[stat.ST_MTIME] > \
+            self._last_cache_refresh) or \
+           (os.stat(pkg_cache)[stat.ST_MTIME] > self._last_cache_refresh) or \
+           (os.stat(src_cache)[stat.ST_MTIME] > self._last_cache_refresh):
+            pklog.debug("Reloading the cache is required")
             self._open_cache(prange, progress)
         else:
             self._cache.clear()
@@ -2045,6 +2094,10 @@ def main():
                       action="store_true", dest="takeover",
                       help="Exit the currently running backend "
                            "(Only needed by developers)")
+    parser.add_option("-r", "--root",
+                      action="store", type="string", dest="root",
+                      help="Use the given directory as the system root "
+                           "(Only needed by developers)")
     parser.add_option("-p", "--profile",
                       action="store", type="string", dest="profile",
                       help="Store profiling stats in the given file "
@@ -2058,6 +2111,12 @@ def main():
     if options.debug:
         pklog.setLevel(logging.DEBUG)
         sys.excepthook = debug_exception
+
+    if options.root:
+        config = apt_pkg.Config
+        config.Set("Dir", options.root)
+        config.Set("Dir::State::status",
+                   os.path.join(options.root, "/var/lib/dpkg/status"))
 
     if options.takeover:
         takeover()
