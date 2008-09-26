@@ -1,12 +1,22 @@
-#
-# Copyright (C) 2007 Ken VanDine <ken@vandine.org>
-#
+#!/usr/bin/python
 # Licensed under the GNU General Public License Version 2
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# Copyright (C) 2007 Ken VanDine <ken@vandine.org>
+# Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
 
 import sys
 import os
@@ -90,7 +100,7 @@ for (con_cat, pk_group) in groupMap.items():
         revGroupMap[pk_group].append(con_cat)
     else:
         revGroupMap[pk_group] = [con_cat]
-       
+
 #from conary.lib import util
 #sys.excepthook = util.genExcepthook()
 
@@ -136,7 +146,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return ','.join([frzVersion, frzFlavor])
 
     def _thawData(self, data):
-        frzVersion, frzFlavor = data.split(',')
+        frzVersion, frzFlavor = data.split(', ')
         version = versions.ThawVersion(frzVersion)
         flavor = deps.ThawFlavor(frzFlavor)
         return version, flavor
@@ -200,7 +210,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             troveTuple = tuple([name, version, flavor])
             installed = self.check_installed(troveTuple)
 
-            if self._do_filtering(name,fltlist,installed):
+            if self._do_filtering(name, fltlist, installed):
                 self.package(id, installed, summary)
 
     def _get_update(self, applyList, cache=True):
@@ -277,7 +287,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         troveTupleList.sort()
         troveTupleList.reverse()
-        
+
         for troveTuple in troveTupleList:
             troveTuple = tuple([item.encode('UTF-8') for item in troveTuple[0:2]])
             name = troveTuple[0]
@@ -289,8 +299,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             category = category.encode('UTF-8')
             troveTuple = tuple([name, version, flavor])
             installed = self.check_installed(troveTuple)
-            
-            if self._do_filtering(name,fltlist,installed):
+
+            if self._do_filtering(name, fltlist, installed):
                 self.package(id, installed, summary)
 
     @ExceptionHandler
@@ -391,7 +401,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     @ExceptionHandler
     def update_packages(self, package_ids):
         '''
-        Implement the {backend}-{install,update}-packages functionality
+        Implement the {backend}-{install, update}-packages functionality
         '''
         for package_id in package_ids.split('%'):
             name, version, flavor, installed = self._findPackage(package_id)
@@ -464,7 +474,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             result = trove.getMetadata()[field]
         return result
 
-    def _format_list(self,lst):
+    def _format_list(self, lst):
         """
         Convert a multi line string to a list separated by ';'
         """
@@ -473,41 +483,41 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             return ""
 
-    def _get_update_extras(self,id):
+    def _get_update_extras(self, id):
         notice = self._get_metadata(id, 'notice') or " "
         urls = {'jira':[], 'cve' : [], 'vendor': []}
         if notice:
             # Update Details
             desc = notice['description']
-            # Update References (Jira,CVE ...)
+            # Update References (Jira, CVE ...)
             refs = notice['references']
             if refs:
                 for ref in refs:
                     typ = ref['type']
                     href = ref['href']
                     title = ref['title']
-                    if typ in ('jira','cve') and href != None:
+                    if typ in ('jira', 'cve') and href != None:
                         if title == None:
                             title = ""
-                        urls[typ].append("%s;%s" % (href,title))
+                        urls[typ].append("%s;%s" % (href, title))
                     else:
-                        urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
+                        urls['vendor'].append("%s;%s" % (ref['href'], ref['title']))
 
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
                                 reboot = 'system'
             else:
                 reboot = 'none'
-            return self._format_str(desc),urls,reboot
+            return self._format_str(desc), urls, reboot
         else:
-            return "",urls,"none"
+            return "", urls, "none"
 
     def _check_for_reboot(self, name):
         if name in self.rebootpkgs:
-            self.require_restart(RESTART_SYSTEM,"")
+            self.require_restart(RESTART_SYSTEM, "")
 
     @ExceptionHandler
-    def get_update_detail(self,id):
+    def get_update_detail(self, id):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
@@ -518,7 +528,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         #update = self._get_updated(pkg)
         update = ""
         obsolete = ""
-        #desc,urls,reboot = self._get_update_extras(id)
+        #desc, urls, reboot = self._get_update_extras(id)
         #cve_url = self._format_list(urls['cve'])
         cve_url = ""
         #bz_url = self._format_list(urls['jira'])
@@ -527,7 +537,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         vendor_url = ""
         reboot = "none"
         desc = self._get_metadata(id, 'longDesc') or " "
-        self.update_detail(id,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
+        self.update_detail(id, update, obsolete, vendor_url, bz_url, cve_url, reboot, desc)
 
     @ExceptionHandler
     def get_details(self, id):
@@ -547,11 +557,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             categories = self._get_metadata(id, 'categories') or "unknown"
 
             # Package size goes here, but I don't know how to find that for conary packages.
-            self.details(id, None,  categories, longDesc, url, 0)
+            self.details(id, None, categories, longDesc, url, 0)
         else:
-            self.error(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self.error(ERROR_PACKAGE_NOT_FOUND, 'Package was not found')
 
-    def _show_package(self,name, version, flavor, status):
+    def _show_package(self, name, version, flavor, status):
         '''  Show info about package'''
         id = self.get_package_id(name, version, flavor)
         summary = self._get_metadata(id, 'shortDesc') or ""
@@ -614,7 +624,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             return do_print
 
         if do_print:
-            return self._do_extra_filtering(pkg,filterList)
+            return self._do_extra_filtering(pkg, filterList)
         else:
             return do_print
 
@@ -625,7 +635,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             if filter in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
                 continue
             elif filter in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
-                if not self._do_devel_filtering(flt,pkg):
+                if not self._do_devel_filtering(flt, pkg):
                     return False
         return True
 
@@ -895,14 +905,14 @@ class Cache(object):
                     "            AND CCMap.categoryId = CC.categoryId"
                     "       GROUP BY CP.trove, CP.version, CP.flavor"
                     "       ORDER BY CP.trove, CP.version DESC, CP.flavor" % group_string)
-        
+
         try:
             self.cursor.execute(stmt)
             return self.cursor.fetchall()
         except Exception, e:
             print str(e)
             return None
-        
+
     def _insert(self, trove):
         """
         Insert trove into database.
@@ -912,13 +922,13 @@ class Cache(object):
         trove = [pkgId] + trove[:]
 
         values = [str(field) for field in trove]
-        cols = ",".join("?" * len(trove))
+        cols = ", ".join("?" * len(trove))
         sql = "INSERT INTO conary_packages VALUES (%s)" % cols
 
         try:
             self.cursor.execute(sql, values)
             self.conn.commit()
-        except Exception,e:
+        except Exception, e:
             print str(e)
 
     def _clear_table(self, tableName='conary_packages'):
@@ -979,3 +989,10 @@ class Cache(object):
                 #licenses = metadata.get('licenses', [])
                 #for license in licenses:
                 #    self._addPackageLicense(trv, license)
+
+def main():
+    backend = PackageKitYumBackend('', lock=True)
+    backend.dispatcher(sys.argv[1:])
+
+if __name__ == "__main__":
+    main()

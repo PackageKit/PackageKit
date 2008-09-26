@@ -540,7 +540,6 @@ backends/alpm/Makefile
 backends/apt/Makefile
 backends/box/Makefile
 backends/conary/Makefile
-backends/conary/helpers/Makefile
 backends/dummy/Makefile
 backends/opkg/Makefile
 backends/smart/Makefile
