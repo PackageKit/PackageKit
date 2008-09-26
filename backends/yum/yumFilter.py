@@ -20,16 +20,12 @@
 
 # imports
 from packagekit.enums import *
-from packagekit.package import PackagekitPackage
+from packagekit.filter import *
 
 import rpmUtils
 import re
 
 GUI_KEYS = re.compile(r'(qt)|(gtk)')
-
-def _get_nevra(pkg):
-    ''' gets the NEVRA for a pkg '''
-    return "%s-%s:%s-%s.%s" % (pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch)
 
 def _is_main_package(repo):
     if repo.endswith('-debuginfo'):
@@ -51,43 +47,6 @@ def _do_newest_filtering(pkglist):
             continue
         newest[key] = (pkg, state)
     return newest.values()
-
-def _do_installed_filtering(flt, pkg):
-    is_installed = False
-    if flt == FILTER_INSTALLED:
-        want_installed = True
-    else:
-        want_installed = False
-    is_installed = pkg.repo.id == 'installed'
-    return is_installed == want_installed
-
-def _check_for_gui(pkg):
-    '''  Check if the GUI_KEYS regex matches any package requirements'''
-    for req in pkg.requires:
-        reqname = req[0]
-        if GUI_KEYS.search(reqname):
-            return True
-    return False
-
-def _do_devel_filtering(flt, pkg):
-    is_devel = False
-    if flt == FILTER_DEVELOPMENT:
-        want_devel = True
-    else:
-        want_devel = False
-    regex =  re.compile(r'(-devel)|(-debuginfo)|(-static)|(-libs)')
-    if regex.search(pkg.name):
-        is_devel = True
-    return is_devel == want_devel
-
-def _do_gui_filtering(flt, pkg):
-    is_gui = False
-    if flt == FILTER_GUI:
-        want_gui = True
-    else:
-        want_gui = False
-    is_gui = _check_for_gui(pkg)
-    return is_gui == want_gui
 
 def _basename_filter(package_list):
     '''
@@ -132,35 +91,7 @@ def _basename_filter(package_list):
             base_list_already_got.append ((base, version))
     return output_list
 
-class YumFilter(object, PackagekitPackage):
-
-    def __init__(self, fltlist="none"):
-        ''' connect to all enabled repos '''
-        self.fltlist = fltlist
-        self.package_list = [] #we can't do emitting as found if we are post-processing
-        self.installed_nevra = []
-
-    def add_installed(self, pkgs):
-        ''' add a list of packages that are already installed '''
-        for pkg in pkgs:
-            if self.pre_process(pkg):
-                self.package_list.append((pkg, INFO_INSTALLED))
-            self.installed_nevra.append(_get_nevra(pkg))
-
-    def add_available(self, pkgs):
-        # add a list of packages that are available
-        for pkg in pkgs:
-            nevra = _get_nevra(pkg)
-            if nevra not in self.installed_nevra:
-                if self.pre_process(pkg):
-                    self.package_list.append((pkg, INFO_AVAILABLE))
-
-    def add_custom(self, pkg, info):
-        ''' add a custom packages indervidually '''
-        nevra = _get_nevra(pkg)
-        if nevra not in self.installed_nevra:
-            if self.pre_process(pkg):
-                self.package_list.append((pkg, info))
+class YumFilter(PackagekitFilter):
 
     def post_process(self):
         ''' do filtering we couldn't do when generating the list '''
@@ -173,31 +104,38 @@ class YumFilter(object, PackagekitPackage):
 
         return self.package_list
 
-    def pre_process(self, pkg):
-        ''' do extra filtering (gui, devel etc) '''
-        for flt in self.fltlist:
-            if flt in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
-                if not _do_installed_filtering(flt, pkg):
-                    return False
-            elif flt in (FILTER_GUI, FILTER_NOT_GUI):
-                if not _do_gui_filtering(flt, pkg):
-                    return False
-            elif flt in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
-                if not _do_devel_filtering(flt, pkg):
-                    return False
-            elif flt in (FILTER_FREE, FILTER_NOT_FREE):
-                if not self._do_free_filtering(flt, pkg):
-                    return False
-        return True
+    def _pkg_get_unique(self, pkg):
+        '''
+        Return a unique string for the package
+        '''
+        return "%s-%s:%s-%s.%s" % (pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch)
 
-    def _do_free_filtering(self, flt, pkg):
-        is_free = False
-        if flt == FILTER_FREE:
-            want_free = True
-        else:
-            want_free = False
+    def _pkg_is_installed(self, pkg):
+        '''
+        Return if the package is installed.
+        '''
+        return pkg.repo.id == 'installed'
 
-        is_free = self.check_license_field(pkg.license)
+    def _pkg_is_devel(self, pkg):
+        '''
+        Return if the package is development.
+        '''
+        regex = re.compile(r'(-devel)|(-debuginfo)|(-static)|(-libs)')
+        return regex.search(pkg.name)
 
-        return is_free == want_free
+    def _pkg_is_gui(self, pkg):
+        '''
+        Return if the package is a GUI program.
+        '''
+        for req in pkg.requires:
+            reqname = req[0]
+            if GUI_KEYS.search(reqname):
+                return True
+        return False
+
+    def _pkg_is_free(self, pkg):
+        '''
+        Return if the package is free software.
+        '''
+        return self.check_license_field(pkg.license)
 
