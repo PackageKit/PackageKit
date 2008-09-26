@@ -121,7 +121,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
@@ -135,7 +135,7 @@ static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "get-details.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -147,7 +147,7 @@ static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "get-files.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -160,7 +160,7 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "get-requires.py", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
@@ -195,7 +195,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -209,7 +209,7 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (full_paths, "|");
+	package_ids_temp = pk_strv_to_text (full_paths, PK_BACKEND_SPAWN_FILENAME_DELIM);
 	pk_backend_spawn_helper (spawn, "install-files.py", pk_backend_bool_to_text (trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -239,7 +239,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "remove-packages.py", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -309,7 +309,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "update.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -332,7 +332,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 	gchar *filters_text;
 	gchar *package_ids_temp;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_ids_temp, NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);

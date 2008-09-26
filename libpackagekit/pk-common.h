@@ -79,6 +79,9 @@ gchar		*pk_iso8601_from_date			(const GDate	*date);
 GDate		*pk_iso8601_to_date			(const gchar	*iso_date);
 gchar		*pk_get_distro_id			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		*pk_strv_to_text			(gchar		**package_ids,
+							 const gchar	*delimiter)
+							 G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
 

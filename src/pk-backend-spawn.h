@@ -34,6 +34,8 @@ G_BEGIN_DECLS
 #define PK_IS_BACKEND_SPAWN_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_BACKEND_SPAWN))
 #define PK_BACKEND_SPAWN_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnClass))
 
+#define PK_BACKEND_SPAWN_FILENAME_DELIM	"|"
+
 typedef struct PkBackendSpawnPrivate PkBackendSpawnPrivate;
 
 typedef struct

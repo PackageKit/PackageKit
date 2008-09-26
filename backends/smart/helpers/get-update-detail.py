@@ -16,5 +16,5 @@ from smartBackend import PackageKitSmartBackend
 
 package = sys.argv[1]
 backend = PackageKitSmartBackend(sys.argv[1:])
-backend.get_update_detail(package.split('|'))
+backend.get_update_detail(package.split(PACKAGE_IDS_DELIM))
 sys.exit(0)

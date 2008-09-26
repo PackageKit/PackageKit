@@ -29,6 +29,9 @@ sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
 from enums import *
 
+PACKAGE_IDS_DELIM = '&'
+FILENAME_DELIM = '|'
+
 # Classes
 
 class PackageKitBaseBackend:
@@ -446,21 +449,21 @@ class PackageKitBaseBackend:
     def dispatch_command(self, cmd, args):
         if cmd == 'download-packages':
             directory = args[0]
-            pkgs = args[1:]
+            pkgs = args[1].split(PACKAGE_IDS_DELIM)
             self.download_packages(directory, pkgs)
             self.finished()
         elif cmd == 'get-depends':
             filters = args[0]
-            pkgs = args[1].split('|')
+            pkgs = args[1].split(PACKAGE_IDS_DELIM)
             recursive = args[2]
             self.get_depends(filters, pkgs, recursive)
             self.finished()
         elif cmd == 'get-details':
-            pkgs = args[0].split('|')
+            pkgs = args[0].split(PACKAGE_IDS_DELIM)
             self.get_details(pkgs)
             self.finished()
         elif cmd == 'get-files':
-            pkgs = args[0].split('|')
+            pkgs = args[0].split(PACKAGE_IDS_DELIM)
             self.get_files(pkgs)
             self.finished()
         elif cmd == 'get-packages':
@@ -473,12 +476,12 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'get-requires':
             filters = args[0]
-            pkgs = args[1].split('|')
+            pkgs = args[1].split(PACKAGE_IDS_DELIM)
             recursive = args[2]
             self.get_requires(filters, pkgs, recursive)
             self.finished()
         elif cmd == 'get-update-detail':
-            pkgs = args[0].split('|')
+            pkgs = args[0].split(PACKAGE_IDS_DELIM)
             self.get_update_detail(pkgs)
             self.finished()
         elif cmd == 'get-distro-upgrades':
@@ -490,11 +493,11 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'install-files':
             trusted = args[0]
-            files_to_inst = args[1:]
+            files_to_inst = args[1].split(FILENAME_DELIM)
             self.install_files(trusted, files_to_inst)
             self.finished()
         elif cmd == 'install-packages':
-            pkgs = args[0:]
+            pkgs = args[0].split(PACKAGE_IDS_DELIM)
             self.install_packages(pkgs)
             self.finished()
         elif cmd == 'install-signature':
@@ -508,7 +511,7 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'remove-packages':
             allowdeps = args[0]
-            packages = args[1:]
+            packages = args[1].split(PACKAGE_IDS_DELIM)
             self.remove_packages(allowdeps, packages)
             self.finished()
         elif cmd == 'repo-enable':
@@ -524,7 +527,7 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'resolve':
             filters = args[0]
-            packages = args[1:]
+            packages = args[1].split(PACKAGE_IDS_DELIM)
             self.resolve(filters, packages)
             self.finished()
         elif cmd == 'search-details':
@@ -552,7 +555,7 @@ class PackageKitBaseBackend:
             self.repo_signature_install(package)
             self.finished()
         elif cmd == 'update-packages':
-            packages = args[0:]
+            packages = args[0].split(PACKAGE_IDS_DELIM)
             self.update_packages(packages)
             self.finished()
         elif cmd == 'update-system':

@@ -1539,7 +1539,7 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -1603,7 +1603,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
         /* check the PackageIDs here to avoid a round trip if invalid */
         ret = pk_package_ids_check (package_ids);
         if (!ret) {
-                package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+                package_ids_temp = pk_package_ids_to_text (package_ids);
                 pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
                                      "package_ids '%s' are not valid", package_ids_temp);
                 g_free (package_ids_temp);
@@ -1751,7 +1751,7 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -1881,7 +1881,7 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2045,7 +2045,7 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2149,7 +2149,7 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2241,7 +2241,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2422,7 +2422,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2616,7 +2616,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
