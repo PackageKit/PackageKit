@@ -991,7 +991,7 @@ class Cache(object):
                 #    self._addPackageLicense(trv, license)
 
 def main():
-    backend = PackageKitYumBackend('', lock=True)
+    backend = PackageKitConaryBackend('', lock=True)
     backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":
