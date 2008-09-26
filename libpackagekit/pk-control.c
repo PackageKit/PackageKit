@@ -466,15 +466,17 @@ pk_control_set_locale (PkControl *control, const gchar *tid, GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	client = pk_client_new ();
-	ret = pk_client_set_tid (client, tid, error);
+	ret = pk_client_set_tid (client, tid, &error_local);
 	if (!ret) {
-		egg_warning ("failed to set the tid: %s", (*error)->message);
+		egg_warning ("failed to set the tid: %s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
 	/* get the session locale and set th transaction to be in this locale */
 	locale = setlocale (LC_ALL, NULL);
-	ret = pk_client_set_locale (client, locale, error);
+	ret = pk_client_set_locale (client, locale, &error_local);
 	if (!ret) {
 		egg_warning ("SetLocale failed :%s", error_local->message);
 		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
@@ -533,7 +535,7 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 	}
 
 	/* automatically set the locale */
-	ret = pk_control_set_locale (control, tid_local, error);
+	ret = pk_control_set_locale (control, tid_local, &error_local);
 	if (!ret) {
 		egg_warning ("GetTid failed :%s", error_local->message);
 		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
