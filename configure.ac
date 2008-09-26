@@ -552,7 +552,6 @@ backends/urpmi/helpers/urpmi_backend/Makefile
 backends/razor/Makefile
 backends/yum/Makefile
 backends/pisi/Makefile
-backends/pisi/helpers/Makefile
 backends/poldek/Makefile
 backends/zypp/Makefile
 data/Makefile
