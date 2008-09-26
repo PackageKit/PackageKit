@@ -7,4 +7,4 @@ Makefile.in
 *.loT
 *.o
 *~
-
+*.pyc
