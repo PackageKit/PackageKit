@@ -20,6 +20,7 @@
 
 import sys
 import os
+import re
 
 from conary import errors
 from conary.deps import deps
@@ -123,6 +124,25 @@ def ExceptionHandler(func):
         except Exception, e:
             self.error(ERROR_UNKNOWN, display(e), exit=True)
     return wrapper
+
+def _format_str(str):
+    """
+    Convert a multi line string to a list separated by ';'
+    """
+    if str:
+        lines = str.split('\n')
+        return ";".join(lines)
+    else:
+        return ""
+
+def _format_list(lst):
+    """
+    Convert a multi line string to a list separated by ';'
+    """
+    if lst:
+        return ";".join(lst)
+    else:
+        return ""
 
 class PackageKitConaryBackend(PackageKitBaseBackend):
     # Packages there require a reboot
@@ -387,7 +407,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-update functionality
         '''
-        self.allow_cancel(True);
+        self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
@@ -474,15 +494,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             result = trove.getMetadata()[field]
         return result
 
-    def _format_list(self, lst):
-        """
-        Convert a multi line string to a list separated by ';'
-        """
-        if lst:
-            return ";".join(lst)
-        else:
-            return ""
-
     def _get_update_extras(self, id):
         notice = self._get_metadata(id, 'notice') or " "
         urls = {'jira':[], 'cve' : [], 'vendor': []}
@@ -505,10 +516,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
-                                reboot = 'system'
+                reboot = 'system'
             else:
                 reboot = 'none'
-            return self._format_str(desc), urls, reboot
+            return _format_str(desc), urls, reboot
         else:
             return "", urls, "none"
 
@@ -529,11 +540,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         update = ""
         obsolete = ""
         #desc, urls, reboot = self._get_update_extras(id)
-        #cve_url = self._format_list(urls['cve'])
+        #cve_url = _format_list(urls['cve'])
         cve_url = ""
-        #bz_url = self._format_list(urls['jira'])
+        #bz_url = _format_list(urls['jira'])
         bz_url = ""
-        #vendor_url = self._format_list(urls['vendor'])
+        #vendor_url = _format_list(urls['vendor'])
         vendor_url = ""
         reboot = "none"
         desc = self._get_metadata(id, 'longDesc') or " "
@@ -612,7 +623,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _do_filtering(self, pkg, filterList, installed):
         ''' Filter the package, based on the filter in filterList '''
         # do we print to stdout?
-        do_print = False;
+        do_print = False
         if filterList == ['none']: # 'none' = all packages.
             return True
         elif FILTER_INSTALLED in filterList and installed == INFO_INSTALLED:
@@ -631,10 +642,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _do_extra_filtering(self, pkg, filterList):
         ''' do extra filtering (devel etc) '''
 
-        for filter in filterList:
-            if filter in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
+        for flt in filterList:
+            if flt in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
                 continue
-            elif filter in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
+            elif flt in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
                 if not self._do_devel_filtering(flt, pkg):
                     return False
         return True
@@ -694,8 +705,8 @@ class Cache(object):
     dbPath = '/var/cache/conary/'
     jobPath = dbPath + 'jobs'
 
-    """ Class to retrieve and cache package information from label. """
     def __init__(self):
+        """ Class to retrieve and cache package information from label. """
         if not os.path.isdir(self.dbPath):
             os.makedirs(self.dbPath)
         if not os.path.isdir(self.jobPath):
