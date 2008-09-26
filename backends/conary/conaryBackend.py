@@ -32,6 +32,7 @@ from conary import trove
 from packagekit.backend import *
 from packagekit.package import *
 from conaryCallback import UpdateCallback
+from conaryFilter import *
 
 pkpackage = PackagekitPackage()
 
@@ -196,6 +197,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     def _do_search(self, searchlist, filters):
         fltlist = filters.split(';')
+        pkgfilter = ConaryFilter(fltlist)
         troveSpecs = [ updatecmd.parseTroveSpec(searchlist,
                                                 allowEmptyName=False) ]
         # get a hold of cached data
@@ -225,13 +227,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             name = troveTuple[0]
             version = versions.ThawVersion(troveTuple[1])
             flavor = deps.ThawFlavor(troveTuple[2])
-            id = self.get_package_id(name, version, flavor)
-            summary = self._get_metadata(id, 'shortDesc') or " "
             troveTuple = tuple([name, version, flavor])
             installed = self.check_installed(troveTuple)
+            if installed:
+                pkgfilter.add_installed([troveTuple])
+            else:
+                pkgfilter.add_available([troveTuple])
 
-            if self._do_filtering(name, fltlist, installed):
-                self.package(id, installed, summary)
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
 
     def _get_update(self, applyList, cache=True):
         updJob = self.client.newUpdateJob()
@@ -286,6 +291,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             installed = INFO_AVAILABLE
         return installed
 
+    def _pkg_is_installed(self, pkg):
+        '''
+        Return if the package is installed.
+        '''
+        return self.check_installed(pkg)
+
     @ExceptionHandler
     def search_group(self, filters, key):
         '''
@@ -297,6 +308,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
 
         fltlist = filters.split(';')
+        pkgfilter = ConaryFilter(fltlist)
+        pkgfilter = ConaryFilter(fltlist)
         cache = Cache()
 
         try:
@@ -313,15 +326,27 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             name = troveTuple[0]
             version = versions.ThawVersion(troveTuple[1])
             flavor = deps.ThawFlavor(troveTuple[2])
-            id = self.get_package_id(name, version, flavor)
-            summary = self._get_metadata(id, 'shortDesc') or " "
             category = troveTuple[3][0]
             category = category.encode('UTF-8')
             troveTuple = tuple([name, version, flavor])
             installed = self.check_installed(troveTuple)
+            if installed:
+                pkgfilter.add_installed([troveTuple])
+            else:
+                pkgfilter.add_available([troveTuple])
 
-            if self._do_filtering(name, fltlist, installed):
-                self.package(id, installed, summary)
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
+
+    def _show_package_list(self, lst):
+        for (troveTuple, status) in lst:
+            name = troveTuple[0]
+            version = troveTuple[1]
+            flavor = troveTuple[2]
+            package_id = self.get_package_id(name, version, flavor)
+            summary = self._get_metadata(package_id, 'shortDesc') or " "
+            self.package(package_id, status, summary)
 
     @ExceptionHandler
     def search_name(self, options, searchlist):
@@ -619,53 +644,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             troveTuple.append(version)
             installed = self.check_installed(troveTuple)
             self._show_package(name, version, flavor, INFO_NORMAL)
-
-    def _do_filtering(self, pkg, filterList, installed):
-        ''' Filter the package, based on the filter in filterList '''
-        # do we print to stdout?
-        do_print = False
-        if filterList == ['none']: # 'none' = all packages.
-            return True
-        elif FILTER_INSTALLED in filterList and installed == INFO_INSTALLED:
-            do_print = True
-        elif FILTER_NOT_INSTALLED in filterList and installed == INFO_AVAILABLE:
-            do_print = True
-
-        if len(filterList) == 1: # Only one filter, return
-            return do_print
-
-        if do_print:
-            return self._do_extra_filtering(pkg, filterList)
-        else:
-            return do_print
-
-    def _do_extra_filtering(self, pkg, filterList):
-        ''' do extra filtering (devel etc) '''
-
-        for flt in filterList:
-            if flt in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
-                continue
-            elif flt in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
-                if not self._do_devel_filtering(flt, pkg):
-                    return False
-        return True
-
-    def _do_devel_filtering(self, flt, pkg):
-        isDevel = False
-        if flt == FILTER_DEVELOPMENT:
-            wantDevel = True
-        else:
-            wantDevel = False
-        #
-        # TODO: Add Devel detection Code here.Set isDevel = True, if it is a
-        #       devel app.
-        #
-        regex =  re.compile(r'(:devel)')
-        if regex.search(pkg.name):
-            isDevel = True
-        #
-        #
-        return isDevel == wantDevel
 
     def _findPackage(self, id):
         '''
