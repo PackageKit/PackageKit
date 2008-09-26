@@ -27,11 +27,7 @@
 
 static PkBackendSpawn *spawn;
 
-#if 0
-#define BACKEND(x)	x ".py"
-#else
 #define BACKEND(x)	"smartBackend.py", x
-#endif
 
 /**
  * backend_initialize:
