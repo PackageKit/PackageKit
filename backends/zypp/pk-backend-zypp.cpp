@@ -55,6 +55,8 @@
 #include <map>
 #include <list>
 
+#include <pk-package-ids.h>
+
 #include "zypp-utils.h"
 #include "zypp-events.h"
 
@@ -924,11 +926,11 @@ backend_get_update_detail_thread (PkBackend *backend)
 			zypp::sat::SolvableSet content = patch->contents ();
 
 			for (zypp::sat::SolvableSet::const_iterator it = content.begin (); it != content.end (); it++) {
-				//obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), "^", (gchar *)NULL);
+				//obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), PK_PACKAGE_IDS_DELIM, (gchar *)NULL);
 				if (strlen(obsoletes) == 0) {
 					obsoletes = zypp_build_package_id_capabilities (it->obsoletes ());
 				} else {
-					obsoletes = g_strconcat (obsoletes, "^", zypp_build_package_id_capabilities (it->obsoletes ()), (gchar *)NULL);
+					obsoletes = g_strconcat (obsoletes, PK_PACKAGE_IDS_DELIM, zypp_build_package_id_capabilities (it->obsoletes ()), (gchar *)NULL);
 				}
 			}
 		}
