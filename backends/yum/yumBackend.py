@@ -611,8 +611,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             deps_list.append(txmbr.po)
             else:
                 pkg, inst = self._findPackage(package)
-                # FIXME: This is a hack, it simulates a removal of the
-                # package and return the transaction
+                # This simulates the removal of the package
                 if inst and pkg:
                     resolve_list.append(pkg)
                     txmbrs = self.yumbase.remove(po=pkg)
@@ -785,6 +784,52 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.yumbase.groupUnremove(grp.groupid)
         return pkgs
 
+    def _get_depends_not_installed(self, fltlist, package_ids):
+        percentage = 0
+        bump = 100 / len(package_ids)
+        deps_list = []
+        resolve_list = []
+
+        for package in package_ids:
+            self.percentage(percentage)
+            grp = self._is_meta_package(package)
+            if grp:
+                if grp.installed:
+                    self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The Group %s is already installed" % grp.groupid)
+                else:
+                    txmbr = self.yumbase.groupInstall(grp.groupid)
+                    rc, msgs =  self.yumbase.buildTransaction()
+                    if rc != 2:
+                        self.error(ERROR_DEP_RESOLUTION_FAILED, self._format_msgs(msgs))
+                    else:
+                        for txmbr in self.yumbase.tsInfo:
+                            deps_list.append(txmbr.po)
+            else:
+                pkg, inst = self._findPackage(package)
+                # This simulates the addition of the package
+                if not inst and pkg:
+                    resolve_list.append(pkg)
+                    txmbrs = self.yumbase.install(po=pkg)
+                    if txmbrs:
+                        rc, msgs =  self.yumbase.buildTransaction()
+                        if rc != 2:
+                            self.error(ERROR_DEP_RESOLUTION_FAILED, self._format_msgs(msgs))
+                        else:
+                            for txmbr in self.yumbase.tsInfo:
+                                if pkg not in deps_list:
+                                    deps_list.append(txmbr.po)
+            percentage += bump
+
+        # make unique list
+        deps_list = unique(deps_list)
+
+        # each unique name, emit
+        for pkg in deps_list:
+            package_id = self._pkg_to_id(pkg)
+            if package_id not in package_ids:
+                self.package(package_id, INFO_AVAILABLE, pkg.summary)
+        self.percentage(100)
+
     def get_depends(self, filters, package_ids, recursive_text):
         '''
         Print a list of depends for a given package
@@ -794,10 +839,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
         recursive = self._text_to_boolean(recursive_text)
+
+        # before we do an install we do ~installed + recursive true,
+        # which we can emulate quicker by doing a transaction, but not
+        # executing it
+        if filters == FILTER_NOT_INSTALLED and recursive:
+            self._get_depends_not_installed (fltlist, package_ids);
+            return
 
         percentage = 0
         bump = 100 / len(package_ids)
@@ -824,7 +875,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         if grp_pkgs:
             resolve_list.extend(grp_pkgs)
-        # get the best deps
+        # get the best deps -- doing recursive is VERY slow
         deps_list = self._get_best_depends(resolve_list, recursive)
 
         # make unique list
