@@ -17,7 +17,8 @@ packagekitpython_PYTHON =				\
 	progress.py					\
 	package.py					\
 	client.py					\
-	misc.py					\
+	filter.py					\
+	misc.py						\
 	$(NULL)
 
 clean-local :
