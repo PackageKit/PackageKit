@@ -108,7 +108,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "get-depends", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
 }
 
@@ -120,7 +120,7 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "get-updates", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -130,7 +130,7 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_spawn_helper (spawn, "get-update-detail.py", package_id, NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "get-update-detail", package_id, NULL);
 }
 
 /**
@@ -150,7 +150,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids);
-	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "install-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -167,7 +167,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "refresh-cache.py", NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "refresh-cache", NULL);
 }
 
 /**
@@ -178,7 +178,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_text (package_ids);
-	pk_backend_spawn_helper (spawn, "remove-packages.py", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "remove-packages", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 } */
 
@@ -199,7 +199,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids);
-	pk_backend_spawn_helper (spawn, "update-packages.py", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "update-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -209,7 +209,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_update_system (PkBackend *backend)
 {
-	pk_backend_spawn_helper (spawn, "update-system.py", NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "update-system", NULL);
 }
 
 /**
@@ -220,7 +220,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_id, NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "resolve", filters_text, package_id, NULL);
 	g_free (filters_text);
 }
 
@@ -232,7 +232,7 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-repo-list.py", filters_text, NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "get-repo-list", filters_text, NULL);
 	g_free (filters_text);
 }
 
