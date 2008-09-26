@@ -204,7 +204,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def get_repo_list(self):
         """ Prints available repositories """
-        self.allow_cancel(True);
+        self.allow_cancel(True)
         self.percentage(None)
 
         for repo in pisi.api.list_repos():
@@ -225,7 +225,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def get_updates(self, filter):
         """ Prints available updates and types """
-        self.allow_cancel(True);
+        self.allow_cancel(True)
         self.percentage(None)
 
         for package in pisi.api.list_upgradable():
@@ -236,7 +236,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             id = self.get_package_id(pkg.name, version, pkg.architecture, "")
 
             # Internal FIXME: PiSi must provide this information as a single API call :(
-            updates = [i for i in self.packagedb.get_package(package).history 
+            updates = [i for i in self.packagedb.get_package(package).history
                     if pisi.version.Version(i.release) > pisi.version.Version(self.installdb.get_package(package).release)]
             if pisi.util.any(lambda i:i.type == "security", updates):
                 self.package(id, INFO_SECURITY, pkg.summary)
@@ -246,7 +246,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
     def install_files(self, trusted, files):
         """ Installs given package into system"""
         # FIXME: install progress
-        self.allow_cancel(False);
+        self.allow_cancel(False)
         self.percentage(None)
 
         try:
@@ -260,7 +260,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
     def install(self, package_id):
         """ Installs given package into system"""
         # FIXME: fetch/install progress
-        self.allow_cancel(False);
+        self.allow_cancel(False)
         self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
@@ -276,7 +276,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def refresh_cache(self):
         """ Updates repository indexes """
-        self.allow_cancel(False);
+        self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)
 
@@ -292,7 +292,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def remove(self, deps, package_id):
         """ Removes given package from system"""
-        self.allow_cancel(False);
+        self.allow_cancel(False)
         self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
@@ -333,7 +333,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def resolve(self, filters, package):
         """ Turns a single package name into a package_id suitable for the other methods """
-        self.allow_cancel(True);
+        self.allow_cancel(True)
         self.percentage(None)
 
         self.__get_package(package, filters)
@@ -343,7 +343,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        
+
         # Internal FIXME: Use search_details instead of _package when API gains that ability :)
         for pkg in pisi.api.search_package([key]):
             self.__get_package(pkg, filters)
@@ -386,7 +386,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
     def update(self, package_id):
         """ Updates given package to its latest version """
         # FIXME: fetch/install progress
-        self.allow_cancel(False);
+        self.allow_cancel(False)
         self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
@@ -402,7 +402,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
     def update_system(self):
         """ Updates all available packages """
         # FIXME: fetch/install progress
-        self.allow_cancel(False);
+        self.allow_cancel(False)
         self.percentage(None)
 
         if not len(pisi.api.list_upgradable()) > 0:
@@ -412,3 +412,11 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             pisi.api.upgrade(pisi.api.list_upgradable())
         except pisi.Error,e:
             self.error(ERROR_UNKNOWN, e)
+
+def main():
+    backend = PackageKitPisiBackend('', lock=True)
+    backend.dispatcher(sys.argv[1:])
+
+if __name__ == "__main__":
+    main()
+
