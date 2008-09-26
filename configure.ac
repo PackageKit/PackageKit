@@ -543,7 +543,6 @@ backends/conary/Makefile
 backends/dummy/Makefile
 backends/opkg/Makefile
 backends/smart/Makefile
-backends/smart/helpers/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
 backends/urpmi/Makefile
