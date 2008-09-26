@@ -1913,12 +1913,15 @@ class PackageKitCallback(RPMBaseCallback):
         return pct
 
     def _showName(self, status):
+        # curpkg is a yum package object or simple string of the package name
         if type(self.curpkg) in types.StringTypes:
             package_id = self.base.get_package_id(self.curpkg, '', '', '')
+            # we don't know the summary text
+            self.base.package(package_id, status, "")
         else:
             pkgver = self.base._get_package_ver(self.curpkg)
             package_id = self.base.get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, self.curpkg.repo)
-        self.base.package(package_id, status, "")
+            self.base.package(package_id, status, self.curpkg.summary)
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
         if str(package) != str(self.curpkg):
