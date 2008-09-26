@@ -190,7 +190,7 @@ class yumComps:
         self.cursor = None
         self.connection = None
         if not db:
-            db = '/var/cache/yum/packagekit-groups-V2.sqlite'
+            db = '/var/cache/yum/packagekit-groups.sqlite'
         self.db = db
 
     def connect(self):
@@ -300,22 +300,22 @@ class yumComps:
 if __name__ == "__main__":
     import yum
     import os
-    yb = yum.YumBase()
-    db = "packagekit-groupsV2.sqlite"
-    comps = yumComps(yb, db)
+    _yb = yum.YumBase()
+    _db = "./packagekit-groups.sqlite"
+    comps = yumComps(_yb, _db)
     comps.connect()
     comps.refresh()
     print "pk group system"
     print 40 * "="
-    pkgs = comps.get_package_list('system')
-    print pkgs
+    _pkgs = comps.get_package_list('system')
+    print _pkgs
     print "comps group games"
     print 40 * "="
-    pkgs = comps.get_meta_package_list('games')
-    print pkgs
+    _pkgs = comps.get_meta_package_list('games')
+    print _pkgs
     print "comps group kde-desktop"
     print 40 * "="
-    pkgs = comps.get_meta_package_list('kde-desktop')
-    print pkgs
-    os.unlink(db) # kill the db
+    _pkgs = comps.get_meta_package_list('kde-desktop')
+    print _pkgs
+    os.unlink(_db) # kill the db
 
