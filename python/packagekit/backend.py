@@ -335,7 +335,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
 
-    def resolve(self, name):
+    def resolve(self, filters, name):
         '''
         Implement the {backend}-resolve functionality
         Needed to be implemented in a sub class
