@@ -1268,7 +1268,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
         except Exception, e:
             self._recover()
-            self.ErrorCode(ERROR_INTERNAL, "Failed to install dpkg: %s" % e)
+            self.ErrorCode(ERROR_INTERNAL_ERROR, e.message)
             self.Finished(EXIT_FAILED)
             return
         self.PercentageChanged(100)
