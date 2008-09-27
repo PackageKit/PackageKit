@@ -257,9 +257,8 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         Run and monitor a dpkg command line call
         """
         pklog.debug("Executing: %s" % cmd)
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, 
-                             stdin=subprocess.PIPE)
-        self.master_fd = p.stdout.fileno()
+        (self.master_fd, slave) = pty.openpty()
+        p = subprocess.Popen(cmd, stdout=slave, stdin=slave)
         self.child_pid = p.pid
         res = self.waitChild()
         return res
