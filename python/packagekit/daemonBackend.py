@@ -390,12 +390,14 @@ class PackageKitBaseBackend(dbus.service.Object):
                          in_signature='', out_signature='')
     def Exit(self):
         pklog.info("Exit()")
-        gobject.idle_add (self._doExitDelay)
         self.doExit()
 
     def doExit(self):
         '''
         Should be replaced in the corresponding backend sub class
+        
+        Call this method at the end to make sure that dbus can still respond
+        gobject.idle_add (self._doExitDelay)
         '''
         self.ErrorCode(ERROR_NOT_SUPPORTED,
                        "This function is not implemented in this backend")
