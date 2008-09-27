@@ -510,7 +510,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @serialize
     def doExit(self):
-        pass
+        gobject.idle_add(self._doExitDelay)
 
     def doCancel(self):
         pklog.info("Canceling current action")
