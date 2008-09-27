@@ -18,6 +18,7 @@ the Free Software Foundation; either version 2 of the License, or
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 
 import errno
+import fcntl
 import gdbm
 import httplib
 import locale
@@ -258,6 +259,7 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         """
         pklog.debug("Executing: %s" % cmd)
         (self.master_fd, slave) = pty.openpty()
+        fcntl.fcntl(self.master_fd, fcntl.F_SETFL, os.O_NONBLOCK)
         p = subprocess.Popen(cmd, stdout=slave, stdin=slave)
         self.child_pid = p.pid
         res = self.waitChild()
@@ -384,7 +386,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         self.last_activity = None
         self.conffile_prompts = set()
         # insanly long timeout to be able to kill hanging maintainer scripts
-        self.timeout = 10*60
+        self.timeout = 10 * 60
         self.start_time = None
         self.output = ""
 
@@ -406,6 +408,8 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
     def fork(self):
         pklog.debug("fork()")
         (pid, self.master_fd) = pty.fork()
+        if pid != 0:
+            fcntl.fcntl(self.master_fd, fcntl.F_SETFL, os.O_NONBLOCK)
         return pid
 
     def updateInterface(self):
