@@ -31,19 +31,16 @@ class PackageKitPackage:
     '''
     container class from values from the Package signal
     '''
-    def __init__(self, installed, package_id, summary):
-        self.installed = (installed == 'installed')
+    def __init__(self, info, package_id, summary):
+        self.installed = (info == 'installed')
         self.id = str(package_id)
         self.summary = _to_utf8(summary)
+        self.info = info
 
     def __str__(self):
         (name, ver, arch, repo) = tuple(self.id.split(";"))
         p =  "%s-%s.%s" % (name, ver, arch)
-        if self.installed:
-            inst = "installed"
-        else:
-            inst = "available"
-        return "%-40s : %s : %s" % (p, inst, self.summary)
+        return "%-40s : %s : %s" % (p, self.info, self.summary)
 
 class PackageKitDistroUpgrade:
     '''
