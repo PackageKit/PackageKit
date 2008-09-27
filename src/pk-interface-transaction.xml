@@ -1943,11 +1943,9 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A list of package_id's that are to be updated, seporated by <literal>^</literal>.
+              A list of package_id's that are to be updated, seporated by <literal>&amp;</literal>.
               This odd delimited was chosen as <literal>\t</literal> is already being used in the
-              spawned backends, and <literal>^</literal> is a banned character in a package_id.
-              This will change in 0.3.x where <literal>updates</literal> will be a proper string
-              array field.
+              spawned backends, and <literal>&amp;</literal> is a banned character in a package_id.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1956,9 +1954,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A list of package_id's that are to be obsoleted, separated by <literal>^</literal>
-              This will change in 0.3.x where <literal>obsoletes</literal> will be a proper string
-              array field.
+              A list of package_id's that are to be obsoleted, separated by <literal>&amp;</literal>
             </doc:para>
           </doc:summary>
         </doc:doc>

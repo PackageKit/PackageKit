@@ -44,6 +44,7 @@ BuildRequires: intltool
 BuildRequires: gettext
 BuildRequires: xulrunner-devel
 BuildRequires: libarchive-devel
+BuildRequires: gstreamer-devel
 
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
@@ -138,15 +139,29 @@ The PackageKit browser plugin allows web sites to offer the ability to
 users to install and update packages from configured repositories
 using PackageKit.
 
+%package gstreamer-plugin
+Summary: Install GStreamer codecs using PackageKit
+Group: Development/Libraries
+Requires: gstreamer
+Requires: PackageKit-libs = %{version}-%{release}
+
+%description gstreamer-plugin
+The PackageKit GStreamer plugin allows any Gstreamer application to install
+codecs from configured repositories using PackageKit.
+
 %prep
 %setup -q
 
 %build
-%configure --enable-yum --enable-smart --with-default-backend=yum --disable-local
+# build and test on all architectures
+#%configure --enable-dummy --with-default-backend=dummy --enable-tests --enable-local
+#make %{?_smp_mflags}
+#make check -C libpackagekit
+#make check -C src
 
+# reconfigure with testing off (smaller binaries)
+%configure --enable-yum --enable-smart --with-default-backend=yum --disable-local
 make %{?_smp_mflags}
-make check -C src
-make check -C libpackagekit
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -159,6 +174,11 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
+
+# create a binary that GStreamer will recognise
+pushd ${RPM_BUILD_ROOT}%{_libexecdir} > /dev/null
+ln -s pk-gstreamer-install gst-install-plugins-helper
+popd > /dev/null
 
 %find_lang %name
 
@@ -262,6 +282,12 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_libdir}/mozilla
 %dir %{_libdir}/mozilla/plugins
 %{_libdir}/mozilla/plugins/packagekit-plugin.so
+
+%files gstreamer-plugin
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_libexecdir}/pk-gstreamer-install
+%{_libexecdir}/gst-install-plugins-helper
 
 %files devel
 %defattr(-,root,root,-)

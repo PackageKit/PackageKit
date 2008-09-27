@@ -30,7 +30,6 @@ static PkBackendSpawn *spawn;
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
-
 static void
 backend_initialize (PkBackend *backend)
 {
@@ -109,8 +108,8 @@ static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
-	pk_backend_spawn_helper (spawn, "get-details.py", package_ids_temp, NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-details", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -121,8 +120,8 @@ static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
-	pk_backend_spawn_helper (spawn, "get-files.py", package_ids_temp, NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-files", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -134,7 +133,7 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-updates", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -145,8 +144,8 @@ static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
-	pk_backend_spawn_helper (spawn, "get-update-detail.py", package_ids_temp, NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-update-detail", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -166,8 +165,8 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
-	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "install-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -180,8 +179,8 @@ backend_install_files (PkBackend *backend, gboolean trusted, const gchar *full_p
 {
 	gchar *package_ids_temp;
 
-	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
-	pk_backend_spawn_helper (spawn, "install-files.py", full_paths, NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "install-files", pk_backend_bool_to_text (trusted), full_paths, NULL);
 	g_free (package_ids_temp);
 }
  */
@@ -199,7 +198,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "refresh-cache.py", NULL);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "refresh-cache", NULL);
 }
 
 /**
@@ -211,8 +210,8 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
-	pk_backend_spawn_helper (spawn, "remove-packages.py", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "remove-packages", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -224,7 +223,7 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "search-name.py", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "search-name", filters_text, search, NULL);
 	g_free (filters_text);
 }
 
@@ -245,8 +244,8 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "%");
-	pk_backend_spawn_helper (spawn, "update-packages.py", package_ids_temp, NULL);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "update-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -256,7 +255,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_update_system (PkBackend *backend)
 {
-	pk_backend_spawn_helper (spawn, "update-system.py", NULL);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "update-system", NULL);
 }
 
 /**
@@ -267,7 +266,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_ids[0], NULL);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "resolve", filters_text, package_ids[0], NULL);
 	g_free (filters_text);
 }
 
