@@ -21,12 +21,6 @@
 
 # Misc classes and funtions
 
-def _to_utf8( obj, errors='replace'):
-    '''convert 'unicode' to an encoded utf-8 byte string '''
-    if isinstance(obj, unicode):
-        obj = obj.encode('utf-8', errors)
-    return obj
-
 class PackageKitPackage:
     '''
     container class from values from the Package signal
@@ -34,8 +28,8 @@ class PackageKitPackage:
     def __init__(self, info, package_id, summary):
         self.installed = (info == 'installed')
         self.id = str(package_id)
-        self.summary = _to_utf8(summary)
-        self.info = info
+        self.summary = unicode(summary)
+        self.info = str(info)
 
     def __str__(self):
         (name, ver, arch, repo) = tuple(self.id.split(";"))
@@ -49,7 +43,7 @@ class PackageKitDistroUpgrade:
     def __init__(self, upgrade_type, name, summary):
         self.upgrade_type = upgrade_type
         self.name = name
-        self.summary = _to_utf8(summary)
+        self.summary = (summary)
 
     def __str__(self):
         return " type : %s, name : %s, summary : %s " % (
@@ -63,7 +57,7 @@ class PackageKitDetails:
         self.id = str(package_id)
         self.license = package_license
         self.group = group
-        self.detail = _to_utf8(detail)
+        self.detail = unicode(detail)
         self.url = url
         self.size = size
 
