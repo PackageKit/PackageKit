@@ -1246,8 +1246,22 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             d.startUpdate()
             d.install(full_paths)
             d.finishUpdate()
+        except InstallTimeOutPKError, e:
+            self._open_cache(prange=(95,100))
+            #FIXME: should provide more information
+            self.ErrorCode(ERROR_UNKNOWN,
+                           "Transaction was cancelled since the installation "
+                           "of a package hung.\n"
+                           "This can be caused by maintainer scripts which "
+                           "require input on the terminal:\n%s" % e.message)
+            self.Finished(EXIT_KILLED)
+        except PackageManagerFailedPKError, e:
+            self._open_cache(prange=(95,100))
+            self.ErrorCode(ERROR_UNKNOWN, "%s\n%s" % (e.message, e.output))
+            self.Finished(EXIT_FAILED)
         except Exception, e:
-            self.ErrorCode(ERROR_UNKNOWN, "Failed to install dpkg: %s" % e)
+            self._open_cache(prange=(95,100))
+            self.ErrorCode(ERROR_INTERNAL, "Failed to install dpkg: %s" % e)
             self.Finished(EXIT_FAILED)
             return
         self.PercentageChanged(100)
