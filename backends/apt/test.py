@@ -90,7 +90,7 @@ class AptBackendTestCase(unittest.TestCase):
         marked = map(lambda p: p.name, self.cache.getChanges())
         for p in pkgs:
             name = p.id.split(";")[0]
-            if p.status == INFO_BLOCKED:
+            if p.info == INFO_BLOCKED:
                 if name in blocked:
                     blocked.remove(name)
                 else:
