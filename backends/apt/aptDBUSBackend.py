@@ -236,6 +236,14 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
     """
     Class to initiate and monitor installation of local package files with dpkg
     """
+    def recover(self):
+        """
+        Run "dpkg --configure -a"
+        """
+        cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd), 
+               "--configure", "-a"]
+        self.run(cmd)
+
     def install(self, filenames):
         """
         Install the given package using a dpkg command line call
@@ -1247,7 +1255,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             d.install(full_paths)
             d.finishUpdate()
         except InstallTimeOutPKError, e:
-            self._open_cache(prange=(95,100))
+            self._recover()
             #FIXME: should provide more information
             self.ErrorCode(ERROR_UNKNOWN,
                            "Transaction was cancelled since the installation "
@@ -1256,11 +1264,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "require input on the terminal:\n%s" % e.message)
             self.Finished(EXIT_KILLED)
         except PackageManagerFailedPKError, e:
-            self._open_cache(prange=(95,100))
+            self._recover()
             self.ErrorCode(ERROR_UNKNOWN, "%s\n%s" % (e.message, e.output))
             self.Finished(EXIT_FAILED)
         except Exception, e:
-            self._open_cache(prange=(95,100))
+            self._recover()
             self.ErrorCode(ERROR_INTERNAL, "Failed to install dpkg: %s" % e)
             self.Finished(EXIT_FAILED)
             return
@@ -1636,6 +1644,22 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self._last_cache_refresh = time.time()
 
+    def _recover(self, prange=(95,100)):
+        """
+        Try to recover from a package manager failure
+        """
+        self.StatusChanged(STATUS_CLEANUP)
+        self.NoPercentageUpdates()
+        try:
+            apt_pkg.PkgSystemLock()
+            d = PackageKitDpkgInstallProgress(self)
+            d.startUpdate()
+            d.recover()
+            d.finishUpdate()
+        except:
+            pass
+        self._open_cache(prange)
+
     def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
         """
         Commit changes to the cache and handle errors
@@ -1652,6 +1676,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_CANCELLED)
             self._canceled.clear()
         except InstallTimeOutPKError, e:
+            self._recover()
             self._open_cache(prange=(95,100))
             #FIXME: should provide more information
             self.ErrorCode(ERROR_UNKNOWN,
@@ -1661,7 +1686,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "require input on the terminal:\n%s" % e.message)
             self.Finished(EXIT_KILLED)
         except PackageManagerFailedPKError, e:
-            self._open_cache(prange=(95,100))
+            self._recover()
             self.ErrorCode(ERROR_UNKNOWN, "%s\n%s" % (e.message, e.output))
             self.Finished(EXIT_FAILED)
         else:
