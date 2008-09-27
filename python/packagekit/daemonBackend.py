@@ -124,7 +124,7 @@ def threaded(func):
     wrapper.__name__ = func.__name__
     return wrapper
 
-def async(func):
+def serialize(func):
     '''
     Decorator which makes sure no other threads are running before executing function.
     '''
