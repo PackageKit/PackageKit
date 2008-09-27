@@ -47,7 +47,7 @@ import dbus.service
 import dbus.mainloop.glib
 import gobject
 
-from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded, async
+from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded, serialize
 from packagekit.enums import *
 
 import debfile
@@ -508,10 +508,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         self._open_cache(progress=False)
 
+    @serialize
     def doExit(self):
         pass
 
-    @threaded
     def doCancel(self):
         pklog.info("Canceling current action")
         self.StatusChanged(STATUS_CANCEL)
@@ -519,6 +519,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled.wait()
 
     @threaded
+    @serialize
     def doSearchFile(self, filters, filename):
         '''
         Implement the apt2-search-file functionality
@@ -541,6 +542,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doSearchGroup(self, filters, group):
         '''
         Implement the apt2-search-group functionality
@@ -558,6 +560,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doSearchName(self, filters, search):
         '''
         Implement the apt2-search-name functionality
@@ -575,6 +578,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doSearchDetails(self, filters, search):
         '''
         Implement the apt2-search-details functionality
@@ -619,7 +623,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     def doGetDistroUpgrades(self):
         '''
         Implement the {backend}-get-distro-upgrades functionality
@@ -656,7 +660,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-update functionality
@@ -723,6 +727,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doGetUpdateDetail(self, pkg_ids):
         '''
         Implement the {backend}-get-update-details functionality
@@ -762,6 +767,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doGetDetails(self, pkg_ids):
         '''
         Implement the {backend}-get-details functionality
@@ -794,7 +800,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     @unlock_cache_afterwards
     def doUpdateSystem(self):
         '''
@@ -819,7 +825,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     @unlock_cache_afterwards
     def doRemovePackages(self, ids, deps=True, auto=False):
         '''
@@ -870,7 +876,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     def doGetRepoList(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
@@ -951,7 +957,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     def doRepoEnable(self, repo_id, enable):
         '''
         Implement the {backend}-repo-enable functionality
@@ -1038,7 +1044,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     @unlock_cache_afterwards
     def doUpdatePackages(self, ids):
         '''
@@ -1086,7 +1092,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     def doDownloadPackages(self, ids, dest):
         '''
         Implement the {backend}-download-packages functionality
@@ -1152,7 +1158,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
  
     @threaded
-    @async
+    @serialize
     @unlock_cache_afterwards
     def doInstallPackages(self, ids):
         '''
@@ -1199,7 +1205,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     @unlock_cache_afterwards
     def doInstallFiles(self, trusted, full_paths):
         '''
@@ -1279,7 +1285,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     @unlock_cache_afterwards
     def doRefreshCache(self, force):
         '''
@@ -1304,6 +1310,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doGetPackages(self, filters):
         '''
         Implement the apt2-get-packages functionality
@@ -1321,6 +1328,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doResolve(self, filters, names):
         '''
         Implement the apt2-resolve functionality
@@ -1342,6 +1350,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doGetDepends(self, filter, ids, recursive=False):
         '''
         Implement the apt2-get-depends functionality
@@ -1409,6 +1418,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doGetRequires(self, filter, ids, recursive=False):
         '''
         Implement the apt2-get-requires functionality
@@ -1465,6 +1475,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doWhatProvides(self, filters, provides_type, search):
         def get_mapping_db(path):
             """
@@ -1558,6 +1569,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
+    @serialize
     def doGetFiles(self, package_ids):
         """
         Emit the Files signal which includes the files included in a package
