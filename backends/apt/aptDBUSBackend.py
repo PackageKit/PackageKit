@@ -31,6 +31,7 @@ import shutil
 import socket
 import stat
 import string
+import subprocess
 import sys
 import time
 import threading
@@ -156,7 +157,16 @@ def unlock_cache_afterwards(func):
     return wrapper
 
 
-class InstallTimeOutPKError(Exception):
+class PKError(Exception):
+    pass
+
+class PackageManagerFailedPKError(PKError):
+    def __init__(self, msg, pkg, output):
+        self.message = msg
+        self.package = pkg
+        self.output = output
+
+class InstallTimeOutPKError(PKError):
     pass
 
 class PackageKitCache(apt.cache.Cache):
@@ -226,22 +236,23 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
     """
     Class to initiate and monitor installation of local package files with dpkg
     """
-    def run(self, filename):
+    def install(self, filenames):
         """
-        Start installing the given Debian package
+        Install the given package using a dpkg command line call
         """
-        try:
-            self.debname = os.path.basename(filename).split("_")[0]
-        except:
-            self.debname = "unknown"
-        pid = self.fork()
-        if pid == 0:
-            # child
-            dpkg_res = os.system("/usr/bin/dpkg --status-fd %s -i %s" % \
-                                 (self.writefd, filename))
-            res = os.WEXITSTATUS(dpkg_res)
-            os._exit(res)
-        self.child_pid = pid
+        cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd), "-i"]
+        cmd.extend(filenames)
+        self.run(cmd)
+
+    def run(self, cmd):
+        """
+        Run and monitor a dpkg command line call
+        """
+        pklog.debug("Executing: %s" % cmd)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, 
+                             stdin=subprocess.PIPE)
+        self.master_fd = p.stdout.fileno()
+        self.child_pid = p.pid
         res = self.waitChild()
         return res
 
@@ -261,12 +272,13 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         if self.read.endswith("\n"):
             statusl = string.split(self.read, ":")
             if len(statusl) < 3:
-                print "got garbage from dpkg: '%s'" % read
+                pklog.warn("got garbage from dpkg: '%s'" % read)
                 self.read = ""
             status = statusl[2].strip()
+            pkg = statusl[1].strip()
             #print status
             if status == "error":
-                self.error(self.debname, status)
+                self.error(pkg, status)
             elif status == "conffile-prompt":
                 # we get a string like this:
                 # 'current-conffile' 'new-conffile' useredited distedited
@@ -274,6 +286,7 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
                 if match:
                      self.conffile(match.group(1), match.group(2))
             else:
+                pklog.debug("Dpkg status: %s" % status)
                 self.status = status
             self.read = ""
 
@@ -366,6 +379,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         # insanly long timeout to be able to kill hanging maintainer scripts
         self.timeout = 10*60
         self.start_time = None
+        self.output = ""
 
     def statusChange(self, pkg, percent, status):
         self.last_activity = time.time()
@@ -373,7 +387,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         if self.pprev < progress:
             self._backend.PercentageChanged(int(progress))
             self.pprev = progress
-        pklog.debug("PM status: %s" % status)
+        pklog.debug("APT status: %s" % status)
 
     def startUpdate(self):
         # The apt system lock was set by _lock_cache() before
@@ -389,22 +403,30 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
 
     def updateInterface(self):
         apt.progress.InstallProgress.updateInterface(self)
+        # Collect the output from the package manager
         try:
-            pklog.debug("%s" % os.read(self.master_fd, 512))
-        except Exception, e:
-            pklog.debug("ioerror: %s" % e)
-        # we timed out, send ctrl-c
+            out = os.read(self.master_fd, 512)
+            self.output = self.output + out
+            pklog.debug("APT out: %s " % out)
+        except OSError:
+            pass
+        # catch a time out by sending crtl+c
         if self.last_activity + self.timeout < time.time():
             pklog.critical("no activity for %s time sending ctrl-c" \
                            % self.timeout)
             os.write(self.master_fd, chr(3))
-            raise InstallTimeOutPKError
+            #FIXME: include this into the normal install progress and add 
+            #       correct package information
+            raise InstallTimeOutPKError(self.output)
 
     def conffile(self, current, new):
         pklog.warning("Config file prompt: '%s' (sending no)" % current)
         i = os.write(self.master_fd, "n\n")
         pklog.debug("wrote n, send %i bytes" % i)
         self.conffile_prompts.add(new)
+
+    def error(self, pkg, msg):
+        raise PackageManagerFailedPKError(pkg, msg, self.output)
 
     def finishUpdate(self):
         pklog.debug("finishUpdate()")
@@ -424,20 +446,23 @@ class PackageKitDpkgInstallProgress(DpkgInstallProgress,
     """
     Class to integrate the progress of core dpkg operations into PackageKit
     """
-    def run(self, filename):
-        return DpkgInstallProgress.run(self, filename)
+    def run(self, filenames):
+        return DpkgInstallProgress.run(self, filenames)
 
     def updateInterface(self):
         DpkgInstallProgress.updateInterface(self)
         try:
-            pklog.debug("%s" % os.read(self.master_fd, 512))
-        except Exception, e:
-            pklog.debug("ioerror: %s" % e)
+            out = os.read(self.master_fd, 512)
+            self.output += out
+            if out != "": pklog.debug("Dpkg out: %s" % out)
+        except OSError:
+            pass
         # we timed out, send ctrl-c
         if self.last_activity + self.timeout < time.time():
             pklog.critical("no activity for %s time sending "
                            "ctrl-c" % self.timeout)
             os.write(self.master_fd, chr(3))
+            raise InstallTimeOutPKError(self.output)
 
 
 if REPOS_SUPPORT == True:
@@ -1207,26 +1232,24 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
         if not self._commit_changes((10,25), (25,50)): return False
-        # Install the Debian package files
-        if not self._lock_cache(): return
+        # Check for later available packages
         for deb in packages:
-            try:
-                res = deb.install(PackageKitDpkgInstallProgress(self))
-            except Exception, e:
-                self.ErrorCode(ERROR_UNKNOWN, "Failed to install dpkg: %s" % e)
-                self.Finished(EXIT_FAILED)
-                return
-            print res
-            if res != 0:
-                self.ErrorCode(ERROR_UNKNOWN, 
-                               "Failed to install package %s" % deb.pkgname)
-                self.Finished(EXIT_FAILED)
-                return
             # Check if there is a newer version in the cache
             if deb.compareToVersionInCache() == debfile.VERSION_OUTDATED:
                 self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
+        # Install the Debian package files
+        if not self._lock_cache(): return
+        d = PackageKitDpkgInstallProgress(self)
+        try:
+            d.startUpdate()
+            d.install(full_paths)
+            d.finishUpdate()
+        except Exception, e:
+            self.ErrorCode(ERROR_UNKNOWN, "Failed to install dpkg: %s" % e)
+            self.Finished(EXIT_FAILED)
+            return
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
@@ -1614,18 +1637,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._open_cache(prange=(95,100))
             self.Finished(EXIT_CANCELLED)
             self._canceled.clear()
-        except InstallTimeOutPKError:
+        except InstallTimeOutPKError, e:
             self._open_cache(prange=(95,100))
             #FIXME: should provide more information
             self.ErrorCode(ERROR_UNKNOWN,
                            "Transaction was cancelled since the installation "
                            "of a package hung.\n"
                            "This can be caused by maintainer scripts which "
-                           "require input on the terminal.")
+                           "require input on the terminal:\n%s" % e.message)
             self.Finished(EXIT_KILLED)
-        except:
+        except PackageManagerFailedPKError, e:
             self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_UNKNOWN, "Applying changes failed")
+            self.ErrorCode(ERROR_UNKNOWN, "%s\n%s" % (e.message, e.output))
             self.Finished(EXIT_FAILED)
         else:
             return True
