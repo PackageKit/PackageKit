@@ -1012,7 +1012,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         return channels
 
     def _package_is_collection(self, package):
-        return package.name.startswith('^')
+        loader = package.loaders.keys()[0]
+        info = loader.getInfo(package)
+        return package.name.startswith('^') or \
+               info.getGroup() == 'metapackages'
 
     def _add_package(self, package, status=None):
         if not status:
