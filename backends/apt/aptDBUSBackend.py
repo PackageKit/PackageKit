@@ -400,7 +400,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
 
     def startUpdate(self):
         # The apt system lock was set by _lock_cache() before
-        apt_pkg.PkgSystemUnLock()
+        self._backend.unlock_cache()
         self._backend.StatusChanged(STATUS_COMMIT)
         self.last_activity = time.time()
         self.start_time = time.time()
@@ -1667,7 +1667,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_CLEANUP)
         self.NoPercentageUpdates()
         try:
-            apt_pkg.PkgSystemLock()
             d = PackageKitDpkgInstallProgress(self)
             d.startUpdate()
             d.recover()
