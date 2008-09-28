@@ -783,7 +783,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             channels = self._search_channels(packageid)
 
             package = packages[0]
-            # FIXME: Only installed packages have path lists.
             paths = None
             for loader in package.loaders:
                 if channels and loader.getChannel() not in channels:
