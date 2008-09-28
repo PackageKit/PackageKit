@@ -150,9 +150,9 @@ def unlock_cache_afterwards(func):
     Make sure that the package cache is unlocked after the decorated function
     was called
     '''
-    def wrapper(*args,**kwargs):
+    def wrapper(*args, **kwargs):
         backend = args[0]
-        func(*args,**kwargs)
+        func(*args, **kwargs)
         backend._unlock_cache()
     wrapper.__name__ = func.__name__
     return wrapper
@@ -277,11 +277,11 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         except OSError, (error_no, error_str):
             # resource temporarly unavailable is ignored
             if error_no not in [errno.EAGAIN, errno.EWOULDBLOCK]:
-                print err_str
+                print error_str
         if self.read.endswith("\n"):
             statusl = string.split(self.read, ":")
             if len(statusl) < 3:
-                pklog.warn("got garbage from dpkg: '%s'" % read)
+                pklog.warn("got garbage from dpkg: '%s'" % self.read)
                 self.read = ""
             status = statusl[2].strip()
             pkg = statusl[1].strip()
@@ -291,7 +291,8 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
             elif status == "conffile-prompt":
                 # we get a string like this:
                 # 'current-conffile' 'new-conffile' useredited distedited
-                match = re.compile("\s*\'(.*)\'\s*\'(.*)\'.*").match(status_str)
+                #FIXME Not tested
+                match = re.compile("\s*\'(.*)\'\s*\'(.*)\'.*").match(status)
                 if match:
                     self.conffile(match.group(1), match.group(2))
             else:
@@ -389,6 +390,8 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         self.timeout = 10 * 60
         self.start_time = None
         self.output = ""
+        self.master_fd = None
+        self.child_pid = None
 
     def statusChange(self, pkg, percent, status):
         self.last_activity = time.time()
@@ -654,8 +657,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Add support for description
         if meta_release.new_dist != None:
             self.DistroUpgrade("stable", 
-                               "%s %s" % (meta_release.new_dist.name, 
-                                          meta_release_new_dist.version), 
+                               "%s %s" % (meta_release.new_dist.name,
+                                          meta_release.new_dist.version),
                                "The latest stable release")
         self.Finished(EXIT_SUCCESS)
 
@@ -742,7 +745,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkg = self._find_package_by_id(pkg_id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                               "Package %s isn't available" % name)
+                               "Package %s isn't available" % id)
                 self.Finished(EXIT_FAILED)
                 return
             # FIXME add some real data
@@ -782,7 +785,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkg = self._find_package_by_id(pkg_id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                               "Package %s isn't available" % name)
+                               "Package %s isn't available" % id)
                 self.Finished(EXIT_FAILED)
                 return
             desc = self._get_package_description(pkg)
@@ -979,7 +982,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN,
                                "Please make sure that python-software-properties is"
                                "correctly installed.")
-            self.Finished(EXIT_FALIED)
+            self.Finished(EXIT_FAILED)
             return
         repos = PackageKitSoftwareProperties()
 
@@ -1103,7 +1106,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.PercentageChanged(0)
         # Check the destination directory
         if not os.path.isdir(dest) or not os.access(dest, os.W_OK):
-            self.ErrorCode(ERROR_UNKOWN,
+            self.ErrorCode(ERROR_UNKNOWN,
                            "The directory '%s' is not writable" % dest)
             self.Finished(EXIT_FAILED)
             return
@@ -1149,7 +1152,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 shutil.copy(item.DestFile, dest)
             except Exception, e:
                 self.ErrorCode(ERROR_INTERNAL_ERROR,
-                               "Failed to copy %s to %s: %s" % (pkg_path,
+                               "Failed to copy %s to %s: %s" % (item.DestFile,
                                                                 dest, e))
                 self.Finished(EXIT_FAILED)
                 return
@@ -1382,7 +1385,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                               "Package %s isn't available" % name)
+                               "Package %s isn't available" % id)
                 self.Finished(EXIT_FAILED)
                 return
             try:
@@ -1441,7 +1444,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                               "Package %s isn't available" % name)
+                               "Package %s isn't available" % id)
                 self.Finished(EXIT_FAILED)
                 return
             if pkg._pkg.Essential == True:
@@ -1595,10 +1598,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Set a proxy server for http and ftp transfer
         '''
         if http_proxy:
-            pkglog.debug("Set http proxy to %s" % http_proxy)
+            pklog.debug("Set http proxy to %s" % http_proxy)
             apt_pkg.Config.set("http::Proxy", http_proxy)
         if ftp_proxy:
-            pkglog.debug("Set ftp proxy to %s" % ftp_proxy)
+            pklog.debug("Set ftp proxy to %s" % ftp_proxy)
             apt_pkg.Config.set("ftp::Proxy", ftp_proxy)
 
     def doSetLocale(self, code):
@@ -2110,8 +2113,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     line = raw_line
             else:
                 line = raw_line
-                pkglog.debug("invalid line %s in description for %s:\n%s" % \
-                             (i, pkg.name, pkg.rawDescription))
+                pklog.debug("invalid line %s in description for %s:\n%s" % \
+                            (i, pkg.name, pkg.rawDescription))
             # Use dots for lists
             line = re.sub(r"^(\s*)(\*|0|o|-) ", ur"\1\u2022 ", line, 1)
             # Add current line to the description
