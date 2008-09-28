@@ -229,8 +229,8 @@ class PackageKitCache(apt.cache.Cache):
         return providers
 
     def clear(self):
-         """ Unmark all changes """
-         self._depcache.Init()
+        """ Unmark all changes """
+        self._depcache.Init()
 
 
 class DpkgInstallProgress(apt.progress.InstallProgress):
@@ -293,7 +293,7 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
                 # 'current-conffile' 'new-conffile' useredited distedited
                 match = re.compile("\s*\'(.*)\'\s*\'(.*)\'.*").match(status_str)
                 if match:
-                     self.conffile(match.group(1), match.group(2))
+                    self.conffile(match.group(1), match.group(2))
             else:
                 pklog.debug("Dpkg status: %s" % status)
                 self.status = status
@@ -650,7 +650,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         meta_release = MetaReleaseCore(False, False)
         #FIXME: should use a lock
         while meta_release.downloading:
-                time.sleep(1)
+            time.sleep(1)
         #FIXME: Add support for description
         if meta_release.new_dist != None:
             self.DistroUpgrade("stable", 
@@ -678,14 +678,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 # Skip versions which are not later
                 if inst_ver and \
                    apt_pkg.VersionCompare(ver.VerStr, inst_ver.VerStr) <= 0:
-                       continue
+                    continue
                 for(verFileIter, index) in ver.FileList:
                     if verFileIter.Origin in ["Debian", "Ubuntu"] and \
                        (verFileIter.Archive.endswith("-security") or \
                         verFileIter.Label == "Debian-Security"):
-                            indexfile = pkg._list.FindIndex(verFileIter)
-                            if indexfile and indexfile.IsTrusted:
-                                return True
+                        indexfile = pkg._list.FindIndex(verFileIter)
+                        if indexfile and indexfile.IsTrusted:
+                            return True
             return False
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
@@ -718,11 +718,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     elif archive.endswith("-updates"):
                         info = INFO_BUGFIX
                 if origin in ["Backports.org archive"] and trusted == True:
-                        info = INFO_ENHANCEMENT
+                    info = INFO_ENHANCEMENT
                 self._emit_package(pkg, info, force_candidate=True)
         # Report packages that are upgradable but cannot be upgraded
         for missed in updates:
-             self._emit_package(self._cache[missed], INFO_BLOCKED)
+            self._emit_package(self._cache[missed], INFO_BLOCKED)
         self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
@@ -1742,9 +1742,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         corresponding error message and return True
         '''
         if self._canceled.isSet():
-             self.Finished(EXIT_CANCELLED)
-             self._canceled.clear()
-             return True
+            self.Finished(EXIT_CANCELLED)
+            self._canceled.clear()
+            return True
         return False
  
     def get_id_from_package(self, pkg, force_candidate=False):
@@ -2051,8 +2051,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     "until the changes become available or try again " \
                     "later." % (src_pkg, src_ver)
         except IOError, httplib.BadStatusLine:
-                return "Failed to download the list of changes.\nPlease " \
-                        "check your Internet connection."
+            return "Failed to download the list of changes.\nPlease " \
+                   "check your Internet connection."
         return changelog
 
     def _get_package_group(self, pkg):
@@ -2134,10 +2134,10 @@ def debug_exception(type, value, tb):
         # redirected or on syntax errors
         sys.__excepthook__(type, value, tb)
     else:
-       import traceback, pdb
-       traceback.print_exception(type, value, tb)
-       print
-       pdb.pm()
+        import traceback, pdb
+        traceback.print_exception(type, value, tb)
+        print
+        pdb.pm()
 
 def takeover():
     """
