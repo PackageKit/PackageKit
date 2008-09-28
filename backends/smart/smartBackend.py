@@ -1012,7 +1012,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         return channels
 
     def _package_is_collection(self, package):
-        return package.name.startswith('^')
+        loader = package.loaders.keys()[0]
+        info = loader.getInfo(package)
+        return package.name.startswith('^') or \
+               info.getGroup() == 'metapackages'
 
     def _add_package(self, package, status=None):
         if not status:
@@ -1086,7 +1089,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         group = info.getGroup()
         if group in self.GROUPS:
             package = info.getPackage().name
-            if group == 'User Interface/X' and package.find('-fonts') != -1:
+            if group == 'User Interface/X' and \
+            package.find('-fonts') != -1:
                 return GROUP_FONTS
             if group == 'Applications/Productivity' and \
             package.find('-langpack') != -1:
