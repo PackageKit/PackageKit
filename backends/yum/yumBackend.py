@@ -282,7 +282,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if FILTER_COLLECTIONS in fltlist:
                 return
 
-            for (pkg, _) in res:
+            for (pkg, inst) in res:
                 if pkg.repo.id == 'installed':
                     installed.append(pkg)
                 else:
@@ -524,7 +524,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # download each package
         for package in package_ids:
             self.percentage(percentage)
-            pkg, _ = self._findPackage(package)
+            pkg, inst = self._findPackage(package)
             # if we couldn't map package_id -> pkg
             if not pkg:
                 self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find the package %s" % package)
@@ -575,7 +575,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         grp = None
         if len(package_id.split(';')) > 1:
             # Split up the id
-            (name, _, _, repo) = self.get_package_from_id(package_id)
+            (name, idver, a, repo) = self.get_package_from_id(package_id)
             if repo == 'meta':
                 grp = self.yumbase.comps.return_group(name)
                 if not grp:
@@ -751,7 +751,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # first try and find the highest EVR package that is already installed
         for pkgi in pkglist:
-            n, a, e, v, _ = pkgi.pkgtup
+            n, a, e, v, r = pkgi.pkgtup
             pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, arch=a)
             for pkg in pkgs:
                 if best:
@@ -907,7 +907,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 pkgs = self._get_group_packages(grp)
                 grp_pkgs.extend(pkgs)
             else:
-                pkg, _ = self._findPackage(package)
+                pkg, inst = self._findPackage(package)
                 if pkg:
                     resolve_list.append(pkg)
                 else:
@@ -1272,7 +1272,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         txmbrs = []
         try:
             for package in package_ids:
-                pkg, _ = self._findPackage(package)
+                pkg, inst = self._findPackage(package)
                 if pkg:
                     txmbr = self.yumbase.update(po=pkg)
                     txmbrs.extend(txmbr)
@@ -1418,7 +1418,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.details(package_id, "", group, desc, "", size)
 
             else:
-                pkg, _ = self._findPackage(package)
+                pkg, inst = self._findPackage(package)
                 if pkg:
                     self._show_details_pkg(pkg)
                 else:
@@ -1442,7 +1442,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
 
         for package in package_ids:
-            pkg, _ = self._findPackage(package)
+            pkg, inst = self._findPackage(package)
             if pkg:
                 files = pkg.returnFileEntries('dir')
                 files.extend(pkg.returnFileEntries()) # regular files
@@ -1683,7 +1683,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
         self.status(STATUS_INFO)
         for package in package_ids:
-            pkg, _ = self._findPackage(package)
+            pkg, inst = self._findPackage(package)
             update = self._get_updated(pkg)
             obsolete = self._get_obsoleted(pkg.name)
             desc, urls, reboot, changelog, state, issued, updated = self._get_update_extras(pkg)
@@ -1715,7 +1715,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        pkg, _ = self._findPackage(package)
+        pkg, inst = self._findPackage(package)
         if pkg:
             try:
                 self.yumbase.getKeyForPackage(pkg, askcb = lambda x, y, z: True)
