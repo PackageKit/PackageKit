@@ -23,12 +23,14 @@ from smart.interface import Interface
 from smart.progress import Progress
 from smart.fetcher import Fetcher
 from packagekit.backend import PackageKitBaseBackend
+from packagekit.progress import PackagekitProgress
 from packagekit.package import PackagekitPackage
 from packagekit.enums import *
 import re
 import sys
 
 # Global vars
+pkprogress = PackagekitProgress()
 pkpackage = PackagekitPackage()
 
 def needs_cache(func):
