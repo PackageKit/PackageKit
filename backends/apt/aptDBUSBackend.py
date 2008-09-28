@@ -250,7 +250,7 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         Install the given package using a dpkg command line call
         """
         cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd), "-i"]
-        cmd.extend(filenames)
+        cmd.extend(map(lambda f: str(f), filenames))
         self.run(cmd)
 
     def run(self, cmd):
@@ -400,7 +400,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
 
     def startUpdate(self):
         # The apt system lock was set by _lock_cache() before
-        self._backend.unlock_cache()
+        self._backend._unlock_cache()
         self._backend.StatusChanged(STATUS_COMMIT)
         self.last_activity = time.time()
         self.start_time = time.time()
@@ -1240,15 +1240,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
             dependencies.extend(install)
         # Install all dependecies before
-        try:
-            for dep in dependencies:
-                self._cache[dep].markInstall()
-        except:
-            self._cache.clear()
-            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED, "")
-            self.Finished(EXIT_FAILED)
-            return
-        if not self._commit_changes((10,25), (25,50)): return False
+        if len(dependencies) > 0:
+            try:
+                for dep in dependencies:
+                    self._cache[dep].markInstall()
+            except:
+                self._cache.clear()
+                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED, "")
+                self.Finished(EXIT_FAILED)
+                return
+            if not self._commit_changes((10,25), (25,50)): return False
         # Check for later available packages
         for deb in packages:
             # Check if there is a newer version in the cache
@@ -1257,7 +1258,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
         # Install the Debian package files
-        if not self._lock_cache(): return
         d = PackageKitDpkgInstallProgress(self)
         try:
             d.startUpdate()
@@ -1272,10 +1272,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "This can be caused by maintainer scripts which "
                            "require input on the terminal:\n%s" % e.message)
             self.Finished(EXIT_KILLED)
+            return
         except PackageManagerFailedPKError, e:
             self._recover()
             self.ErrorCode(ERROR_UNKNOWN, "%s\n%s" % (e.message, e.output))
             self.Finished(EXIT_FAILED)
+            return
         except Exception, e:
             self._recover()
             self.ErrorCode(ERROR_INTERNAL_ERROR, e.message)
