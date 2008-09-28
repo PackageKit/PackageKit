@@ -29,6 +29,9 @@ from packagekit.enums import *
 import re
 import sys
 
+# TODO: move Groups to a separate class (including the lookup table)
+# TODO: move Filter to a separate class (and use "PackagekitFilter")
+
 # Global vars
 pkprogress = PackagekitProgress()
 pkpackage = PackagekitPackage()
