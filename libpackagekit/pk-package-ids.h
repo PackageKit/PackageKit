@@ -40,6 +40,7 @@ G_BEGIN_DECLS
 #define PK_PACKAGE_IDS_DELIM	"&"
 
 gchar		**pk_package_ids_from_id		(const gchar	*package_id);
+gchar		**pk_package_ids_from_text		(const gchar	*package_id);
 gchar		**pk_package_ids_from_array		(GPtrArray	*array);
 gchar		**pk_package_ids_from_va_list		(const gchar	*package_id_first,
 							 va_list	*args);
