@@ -1089,7 +1089,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         group = info.getGroup()
         if group in self.GROUPS:
             package = info.getPackage().name
-            if group == 'User Interface/X' and package.find('-fonts') != -1:
+            if group == 'User Interface/X' and \
+            package.find('-fonts') != -1:
                 return GROUP_FONTS
             if group == 'Applications/Productivity' and \
             package.find('-langpack') != -1:
