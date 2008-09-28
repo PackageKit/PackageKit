@@ -57,6 +57,21 @@ pk_package_ids_from_id (const gchar *package_id)
 }
 
 /**
+ * pk_package_ids_from_text:
+ * @package_id: A single package_id
+ *
+ * Form a composite string array of package_id's from
+ * a delimited string
+ *
+ * Return value: the string array, or %NULL if invalid, free with g_strfreev()
+ **/
+gchar **
+pk_package_ids_from_text (const gchar *package_id)
+{
+	return g_strsplit (package_id, PK_PACKAGE_IDS_DELIM, 0);
+}
+
+/**
  * pk_package_ids_from_array:
  * @array: the GPtrArray of package_id's
  *
