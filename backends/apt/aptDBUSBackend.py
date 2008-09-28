@@ -144,6 +144,17 @@ SECTION_GROUP_MAP = {
     "translations" : GROUP_LOCALIZATION,
     "metapackages" : GROUP_COLLECTIONS }
 
+# Regular expressions to detect bug numbers in changelogs according to the
+# Debian Policy Chapter 4.4. For details see the footnote 16:
+# http://www.debian.org/doc/debian-policy/footnotes.html#f16
+MATCH_BUG_CLOSES_DEBIAN=r"closes:\s*(?:bug)?\#?\s?\d+(?:,\s*(?:bug)?\#?\s?\d+)*"
+MATCH_BUG_NUMBERS=r"\#?\s?(\d+)"
+# URL pointing to a bug in the Debian bug tracker
+HREF_BUG_DEBIAN="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s"
+
+# Regular expression to find cve references
+MATCH_CVE="CVE-\d{4}-\d{4}"
+HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
 def unlock_cache_afterwards(func):
     '''
@@ -735,6 +746,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-update-details functionality
         '''
+        def get_bug_urls(changelog):
+            """
+            Create a list of urls pointing to closed bugs in the changelog
+            """
+            urls = []
+            #FIXME: Add support for Launchpad/Ubuntu
+            for r in re.findall(MATCH_BUG_CLOSES_DEBIAN, changelog,
+                                re.IGNORECASE | re.MULTILINE):
+                urls.extend(map(lambda b: HREF_BUG_DEBIAN % b,
+                                re.findall(MATCH_BUG_NUMBERS, r)))
+            return urls
+
+        def get_cve_urls(changelog):
+            """
+            Create a list of urls pointing to cves referred in the changelog
+            """
+            return map(lambda c: HREF_CVE % c,
+                       re.findall(MATCH_CVE, changelog, re.MULTILINE))
+
         pklog.info("Get update details of %s" % pkg_ids)
         self.StatusChanged(STATUS_INFO)
         self.NoPercentageUpdates()
@@ -752,20 +782,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             updates = self.get_id_from_package(pkg, force_candidate=False)
             obsoletes = ""
             vendor_url = ""
-            bugzilla_url = ""
-            cvs_url = ""
             restart = ""
             update_text = ""
+            state = ""
+            issued = ""
+            updated = ""
             #FIXME: Replace this method with the python-apt one as soon as the
             #       consolidate branch gets merged
             self.StatusChanged(STATUS_DOWNLOAD_CHANGELOG)
             changelog = self._get_changelog(pkg)
             self.StatusChanged(STATUS_INFO)
-            state = ""
-            issued = ""
-            updated = ""
+            bugzilla_url = ";".join(get_bug_urls(changelog))
+            cve_url = ";".join(get_cve_urls(changelog))
             self.UpdateDetail(pkg_id, updates, obsoletes, vendor_url,
-                              bugzilla_url, cvs_url, restart, update_text,
+                              bugzilla_url, cve_url, restart, update_text,
                               changelog, state, issued, updated)
         self.Finished(EXIT_SUCCESS)
 
