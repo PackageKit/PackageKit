@@ -20,6 +20,11 @@
 #     Tim Lauridsen <timlau@fedoraproject.org>
 
 # Misc classes and funtions
+def _to_unicode( txt, encoding='utf-8'):
+    if isinstance(txt, basestring):
+        if not isinstance(txt, unicode):
+            txt = unicode(txt, encoding, errors='replace')
+    return txt
 
 class PackageKitPackage:
     '''
@@ -28,13 +33,19 @@ class PackageKitPackage:
     def __init__(self, info, package_id, summary):
         self.installed = (info == 'installed')
         self.id = str(package_id)
+        self.summary = _to_unicode(summary)
+        n,v,a,r = self.id.split(';')
+        self.name = n
+        self.ver = v
+        self.arch = a
+        self.repoid = r
         self.summary = unicode(summary)
         self.info = str(info)
 
     def __str__(self):
         (name, ver, arch, repo) = tuple(self.id.split(";"))
         p =  "%s-%s.%s" % (name, ver, arch)
-        return "%-40s : %s : %s" % (p, self.info, self.summary)
+        return p
 
 class PackageKitDistroUpgrade:
     '''
@@ -42,8 +53,8 @@ class PackageKitDistroUpgrade:
     '''
     def __init__(self, upgrade_type, name, summary):
         self.upgrade_type = upgrade_type
-        self.name = name
-        self.summary = (summary)
+        self.name = str(name)
+        self.summary = _to_unicode(summary)
 
     def __str__(self):
         return " type : %s, name : %s, summary : %s " % (
@@ -55,11 +66,11 @@ class PackageKitDetails:
     '''
     def __init__(self, package_id, package_license, group, detail, url, size):
         self.id = str(package_id)
-        self.license = package_license
-        self.group = group
-        self.detail = unicode(detail)
-        self.url = url
-        self.size = size
+        self.license = str(package_license)
+        self.group = str(group)
+        self.detail = _to_unicode(detail)
+        self.url = str(url)
+        self.size = int(size)
 
 class PackageKitUpdateDetails:
     '''
@@ -69,26 +80,26 @@ class PackageKitUpdateDetails:
                  cve_url, restart, update_text, changelog, state, \
                  issued, updated):
         self.id = str(package_id)
-        self.updates = updates
-        self.obsoletes = obsoletes
-        self.vendor_url = vendor_url
-        self.bugzilla_url = bugzilla_url
-        self.cve_url = cve_url
-        self.restart = restart
-        self.update_text = update_text
-        self.changelog = changelog
-        self.state = state
-        self.issued = issued
-        self.updated = updated
+        self.updates = str(updates)
+        self.obsoletes = str(obsoletes)
+        self.vendor_url = str(vendor_url)
+        self.bugzilla_url = str(bugzilla_url)
+        self.cve_url = str(cve_url)
+        self.restart = (restart == 'yes')
+        self.update_text = _to_unicode(update_text)
+        self.changelog = _to_unicode(changelog)
+        self.state = str(state)
+        self.issued = str(issued)
+        self.updated = str(updated)
 
 class PackageKitRepos:
     '''
     container class from values from the Repos signal
     '''
-    def __init__(self, package_id, description, enabled):
-        self.id = str(package_id)
-        self.description = description
-        self.enabled = enabled
+    def __init__(self, repo_id, description, enabled):
+        self.id = str(repo_id)
+        self.description = _to_unicode(description)
+        self.enabled = (enabled == 'yes')
 
 class PackageKitFiles:
     '''
@@ -96,5 +107,5 @@ class PackageKitFiles:
     '''
     def __init__(self, package_id, files):
         self.id = str(package_id)
-        self.files = files
-            
+        self.files = str(files)
+
