@@ -466,9 +466,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if self._package_passes_filters(package, filters):
                 paths = []
                 for loader in package.loaders:
-                    channel = loader.getChannel()
-                    if package.installed and not \
-                       channel.getType().endswith('-sys'):
+                    if package.installed and not loader.getInstalled():
                         continue
                     info = loader.getInfo(package)
                     paths = info.getPathList()
@@ -1066,8 +1064,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             else:
                 status = INFO_UNKNOWN
         for loader in package.loaders:
-            channel = loader.getChannel()
-            if package.installed and not channel.getType().endswith('-sys') \
+            if package.installed and not loader.getInstalled() \
             and not self._package_is_collection(package):
                 continue
             info = loader.getInfo(package)
