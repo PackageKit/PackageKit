@@ -183,6 +183,7 @@ groupMap = {
 'rpmfusion_nonfree;base'                      : GROUP_SYSTEM
 }
 
+__DB_VER__ = '1'
 class yumComps:
 
     def __init__(self, yumbase, db = None):
@@ -203,14 +204,38 @@ class yumComps:
             print 'cannot connect to database %s: %s' % (self.db, str(e))
             return False
 
-        # test if we can get a group for a common package, create if fail
         try:
-            self.cursor.execute('SELECT group_enum FROM groups WHERE name = ?;', ['hal'])
+            version = None
+            # Get the current database version
+            self.cursor.execute('SELECT version FROM version')
+            for row in self.cursor:
+                version = str(row[0])
+                break
+            # Check if we have the right DB version
+            if not version or version != __DB_VER__:
+                print "Wrong database versions : %s needs %s " % (version,__DB_VER__)
+                self._make_database_tables()
         except Exception, e:
-            self.cursor.execute('CREATE TABLE groups (name TEXT, category TEXT, groupid TEXT, group_enum TEXT, pkgtype Text);')
-            self.refresh()
+            # We couldn't get the version, so create a new database
+            self._make_database_tables()
 
         return True
+
+    def _make_database_tables(self):
+        ''' Setup a database for yum category and group information'''
+        print "building new databases"
+        try: # kill the old db
+            self.connection.close()
+            os.unlink(self.db) # kill the db
+            self.connection = sqlite.connect(self.db)
+            self.cursor = self.connection.cursor()
+        except Exception, e:
+            print e
+        self.cursor.execute('CREATE TABLE groups (name TEXT, category TEXT, groupid TEXT, group_enum TEXT, pkgtype Text);')
+        self.cursor.execute('CREATE TABLE version (version TEXT);')
+        self.cursor.execute('INSERT INTO version values(?);', __DB_VER__)
+        self.connection.commit()
+        self.refresh()
 
     def _add_db(self, name, category, groupid, pkgroup, pkgtype):
         ''' add an item into the database '''

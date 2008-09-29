@@ -36,6 +36,7 @@ struct EggObjListPrivate
 	EggObjListNewFunc	 func_new;
 	EggObjListCopyFunc	 func_copy;
 	EggObjListFreeFunc	 func_free;
+	EggObjListCompareFunc	 func_compare;
 	EggObjListToStringFunc	 func_to_string;
 	EggObjListFromStringFunc func_from_string;
 	GPtrArray		*array;
@@ -83,6 +84,20 @@ egg_obj_list_set_free (EggObjList *list, EggObjListFreeFunc func)
 {
 	g_return_if_fail (EGG_IS_OBJ_LIST (list));
 	list->priv->func_free = func;
+}
+
+/**
+ * egg_obj_list_set_compare:
+ * @list: a valid #EggObjList instance
+ * @func: typedef'd function
+ *
+ * Adds a compare func
+ **/
+void
+egg_obj_list_set_compare (EggObjList *list, EggObjListCompareFunc func)
+{
+	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	list->priv->func_compare = func;
 }
 
 /**
@@ -226,12 +241,12 @@ egg_obj_list_add (EggObjList *list, gconstpointer obj)
 }
 
 /**
- * egg_package_list_add_list:
+ * egg_obj_list_add_list:
  *
  * Makes a deep copy of the list
  **/
 void
-egg_package_list_add_list (EggObjList *list, const EggObjList *data)
+egg_obj_list_add_list (EggObjList *list, const EggObjList *data)
 {
 	guint i;
 	gconstpointer obj;
@@ -247,32 +262,146 @@ egg_package_list_add_list (EggObjList *list, const EggObjList *data)
 }
 
 /**
+ * egg_obj_list_remove_list:
+ *
+ * Makes a deep copy of the list
+ **/
+void
+egg_obj_list_remove_list (EggObjList *list, const EggObjList *data)
+{
+	guint i;
+	gconstpointer obj;
+
+	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (EGG_IS_OBJ_LIST (data));
+
+	/* remove data items from list */
+	for (i=0; i < data->len; i++) {
+		obj = egg_obj_list_index (data, i);
+		egg_obj_list_remove (list, obj);
+	}
+}
+
+/**
+ * egg_obj_list_find_obj:
+ * @list: a valid #EggObjList instance
+ * @obj: a valid #gpointer object
+ *
+ * Return value: the object
+ *
+ * Removes an item from a list
+ **/
+static gboolean
+egg_obj_list_obj_equal (EggObjList *list, gconstpointer obj1, gconstpointer obj2)
+{
+	EggObjListCompareFunc func_compare;
+
+	/* two less pointer deferences... */
+	func_compare = list->priv->func_compare;
+
+	/* trivial case */
+	if (func_compare == NULL)
+		return obj1 == obj2;
+
+	/* use helper function */
+	return func_compare (obj1, obj2) == 0;
+}
+
+/**
+ * egg_obj_list_remove_duplicate:
+ *
+ * Removes duplicate entries
+ **/
+void
+egg_obj_list_remove_duplicate (EggObjList *list)
+{
+	guint i, j;
+	gconstpointer obj1;
+	gconstpointer obj2;
+
+	for (i=0; i<list->len; i++) {
+		obj1 = egg_obj_list_index (list, i);
+		for (j=0; j<list->len; j++) {
+			if (i == j)
+				break;
+			obj2 = egg_obj_list_index (list, j);
+			if (egg_obj_list_obj_equal (list, obj1, obj2))
+				egg_obj_list_remove_index (list, i);
+		}
+	}
+}
+
+/**
+ * egg_obj_list_find_obj:
+ * @list: a valid #EggObjList instance
+ * @obj: a valid #gpointer object
+ *
+ * Return value: the object
+ *
+ * Removes an item from a list
+ **/
+static gpointer
+egg_obj_list_find_obj (EggObjList *list, gconstpointer obj)
+{
+	guint i;
+	gconstpointer obj_tmp;
+	EggObjListCompareFunc func_compare;
+
+	/* the pointers point to the same thing */
+	func_compare = list->priv->func_compare;
+	if (func_compare == NULL)
+		return (gpointer) obj;
+
+	/* remove data items from list */
+	for (i=0; i < list->len; i++) {
+		obj_tmp = egg_obj_list_index (list, i);
+		if (func_compare (obj_tmp, obj) == 0)
+			return (gpointer) obj_tmp;
+	}
+
+	/* nothing found */
+	return NULL;
+}
+
+/**
  * egg_obj_list_remove:
  * @list: a valid #EggObjList instance
  * @obj: a valid #gpointer object
  *
  * Return value: TRUE is we removed something
  *
- * Removes an item from a list
+ * Removes all the items from a list matching obj
  **/
 gboolean
 egg_obj_list_remove (EggObjList *list, gconstpointer obj)
 {
 	gboolean ret;
 	gpointer obj_new;
+	gboolean found = FALSE;
 
 	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), FALSE);
 	g_return_val_if_fail (obj != NULL, FALSE);
 	g_return_val_if_fail (list->priv->func_free != NULL, FALSE);
 
-	/* the pointers point to the same thing */
-	obj_new = (gpointer) obj;
-	ret = g_ptr_array_remove (list->priv->array, obj_new);
-	if (!ret)
-		return FALSE;
-	list->priv->func_free (obj_new);
-	list->len = list->priv->array->len;
-	return TRUE;
+	do {
+		/* get the object */
+		obj_new = egg_obj_list_find_obj (list, obj);
+		if (obj_new == NULL)
+			break;
+
+		/* try to remove */
+		ret = g_ptr_array_remove (list->priv->array, obj_new);
+
+		/* no compare function, and pointer not found */
+		if (!ret)
+			break;
+
+		found = TRUE;
+		list->priv->func_free (obj_new);
+		list->len = list->priv->array->len;
+	} while (ret);
+
+	return found;
 }
 
 /**
@@ -497,6 +626,7 @@ egg_obj_list_init (EggObjList *list)
 	list->priv->func_new = NULL;
 	list->priv->func_copy = NULL;
 	list->priv->func_free = NULL;
+	list->priv->func_compare = NULL;
 	list->priv->func_to_string = NULL;
 	list->priv->func_from_string = NULL;
 	list->priv->array = g_ptr_array_new ();

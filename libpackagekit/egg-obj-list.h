@@ -50,6 +50,8 @@ typedef struct
 typedef gpointer (*EggObjListNewFunc)		(void);
 typedef gpointer (*EggObjListCopyFunc)		(gconstpointer		 data);
 typedef void	 (*EggObjListFreeFunc)		(gpointer		 data);
+typedef gint	 (*EggObjListCompareFunc)	(gconstpointer		 data1,
+						 gconstpointer		 data2);
 typedef gpointer (*EggObjListFromStringFunc)	(const gchar		*data);
 typedef gchar	*(*EggObjListToStringFunc)	(gconstpointer		 data);
 
@@ -62,6 +64,8 @@ void		 egg_obj_list_set_copy		(EggObjList		*list,
 						 EggObjListCopyFunc	 func);
 void		 egg_obj_list_set_free		(EggObjList		*list,
 						 EggObjListFreeFunc	 func);
+void		 egg_obj_list_set_compare	(EggObjList		*list,
+						 EggObjListCompareFunc	 func);
 void		 egg_obj_list_set_to_string	(EggObjList		*list,
 						 EggObjListToStringFunc	 func);
 void		 egg_obj_list_set_from_string	(EggObjList		*list,
@@ -78,6 +82,9 @@ void		 egg_obj_list_add		(EggObjList		*list,
 						 gconstpointer		 data);
 void		 egg_obj_list_add_list		(EggObjList		*list,
 						 const EggObjList	*data);
+void		 egg_obj_list_remove_list	(EggObjList		*list,
+						 const EggObjList	*data);
+void		 egg_obj_list_remove_duplicate	(EggObjList		*list);
 gboolean	 egg_obj_list_remove		(EggObjList		*list,
 						 gconstpointer		 data);
 gboolean	 egg_obj_list_remove_index	(EggObjList		*list,
