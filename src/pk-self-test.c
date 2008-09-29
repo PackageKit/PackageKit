@@ -26,6 +26,7 @@
 
 /* prototypes */
 void egg_string_test (EggTest *test);
+void egg_string_list_test (EggTest *test);
 void pk_conf_test (EggTest *test);
 void pk_store_test (EggTest *test);
 void pk_inhibit_test (EggTest *test);
@@ -45,14 +46,14 @@ main (int argc, char **argv)
 {
 	EggTest *test;
 
-	if (! g_thread_supported ()) {
+	if (! g_thread_supported ())
 		g_thread_init (NULL);
-	}
 	g_type_init ();
 	test = egg_test_init ();
 	egg_debug_init (TRUE);
 
 	/* egg */
+	egg_string_list_test (test);
 	egg_string_test (test);
 
 	/* components */
