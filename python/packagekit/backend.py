@@ -80,6 +80,7 @@ class PackageKitBaseBackend:
         @param exit: exit application with rc = 1, if true
         '''
         print "error\t%s\t%s" % (err, description)
+        print "finished"
         sys.stdout.flush()
         if exit:
             if self.isLocked():
