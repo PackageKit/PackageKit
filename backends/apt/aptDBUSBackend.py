@@ -57,6 +57,8 @@ warnings.filterwarnings(action='ignore', category=FutureWarning)
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
 
 apt_pkg.InitConfig()
+apt_pkg.Config.Set("DPkg::Options::", '--force-confdef')
+apt_pkg.Config.Set("DPkg::Options::", '--force-confold')
 
 # Xapian database is optionally used to speed up package description search
 XAPIAN_DB_PATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
@@ -260,7 +262,8 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         """
         Install the given package using a dpkg command line call
         """
-        cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd), "-i"]
+        cmd = ["/usr/bin/dpkg", "--force-confdef", "--force-confold",
+               "--status-fd", str(self.writefd), "-i"]
         cmd.extend(map(lambda f: str(f), filenames))
         self.run(cmd)
 
@@ -445,9 +448,6 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
 
     def conffile(self, current, new):
         pklog.warning("Config file prompt: '%s' (sending no)" % current)
-        time.sleep(1)
-        i = os.write(self.master_fd, "n\n")
-        pklog.debug("wrote n, send %i bytes" % i)
         self.conffile_prompts.add(new)
 
     def error(self, pkg, msg):
