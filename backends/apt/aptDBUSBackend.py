@@ -255,7 +255,7 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         Run "dpkg --configure -a"
         """
         cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd), 
-               "--configure", "-a"]
+               "--force-confdef", "--force-confold", "--configure", "-a"]
         self.run(cmd)
 
     def install(self, filenames):
