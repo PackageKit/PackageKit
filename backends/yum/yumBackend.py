@@ -1538,6 +1538,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
         self.status(STATUS_INFO)
 
+        # yum 'helpfully' keeps an array of updates available
+        self.yumbase._up = None
+
         fltlist = filters.split(';')
         package_list = []
         pkgfilter = YumFilter(fltlist)
