@@ -28,7 +28,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The locale code, for example <literal>en_GB</literal>.
+              The locale code, for example <doc:tt>en_GB</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -119,14 +119,14 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Status</literal> and
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>available</literal> or <literal>installed</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -134,7 +134,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -152,7 +152,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              Either <literal>true</literal> or <literal>false</literal>. If yes then the requirements should be
+              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>. If yes then the requirements should be
               returned for all packages returned.
               This means if gnome-power-manager depends on NetworkManager
               and NetworkManager depends on HAL, then GetDepends on
@@ -170,14 +170,14 @@
         <doc:description>
           <doc:para>
             This method should return all the details about a specific
-            <literal>package_id</literal>.
+            <doc:tt>package_id</doc:tt>.
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Status</literal> and
-            <literal>Error</literal> and
-            <literal>Details</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Details</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -198,14 +198,14 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            This method should return the file list of the <literal>package_id</literal>.
+            This method should return the file list of the <doc:tt>package_id</doc:tt>.
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Status</literal> and
-            <literal>Error</literal> and
-            <literal>Files</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Files</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -272,13 +272,13 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>available</literal> or <literal>installed</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -286,7 +286,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -349,7 +349,7 @@
             This method returns the list of repositories used in the system.
           </doc:para>
           <doc:para>
-            This method should emit <literal>RepoDetail</literal>.
+            This method should emit <doc:tt>RepoDetail</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -357,7 +357,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -371,19 +371,19 @@
         <doc:description>
           <doc:para>
             This method returns packages that depend on this package.
-            This is useful to know, as if <literal>package_id</literal> is being
+            This is useful to know, as if <doc:tt>package_id</doc:tt> is being
             removed, we can warn the user what else would be removed.
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Status</literal> and
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>available</literal> or <literal>installed</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -391,7 +391,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -409,7 +409,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              Either <literal>true</literal> or <literal>false</literal>. If yes then the requirements should be
+              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>. If yes then the requirements should be
               returned for all packages returned.
               This means if gnome-power-manager depends on NetworkManager
               and NetworkManager depends on HAL, then GetRequires on
@@ -443,7 +443,7 @@
           <doc:summary>
             <doc:para>
               The original search terms or package names that are used to start the transaction.
-              Multiple entries are split using <literal>;</literal>.
+              Multiple entries are split using <doc:tt>;</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -480,8 +480,8 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>UpdateDetail</literal> and
-            <literal>Error</literal>
+            <doc:tt>UpdateDetail</doc:tt> and
+            <doc:tt>Error</doc:tt>
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -507,20 +507,20 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>blocked</literal>,
-            <literal>low</literal>,
-            <literal>normal</literal>,
-            <literal>important</literal> or
-            <literal>security</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>blocked</doc:tt>,
+            <doc:tt>low</doc:tt>,
+            <doc:tt>normal</doc:tt>,
+            <doc:tt>important</doc:tt> or
+            <doc:tt>security</doc:tt>.
           </doc:para>
           <doc:para>
-            The status <literal>blocked</literal> signifies the package cannot be
+            The status <doc:tt>blocked</doc:tt> signifies the package cannot be
             updated, probably due to other dependencies not being met.
             This type allows the GUI tools to show to the user that an update
             exists, but cannot be installed.
@@ -528,10 +528,10 @@
             description when doing GetUpdateDetail.
           </doc:para>
           <doc:para>
-            A filter such as <literal>basename</literal> or <literal>gui</literal>
+            A filter such as <doc:tt>basename</doc:tt> or <doc:tt>gui</doc:tt>
             is also useful if you want to do filtering on the method to only show
             the main packages rather than the complete list.
-            The complete list is available but specifying <literal>none</literal>
+            The complete list is available but specifying <doc:tt>none</doc:tt>
             as the filter.
             Using no filter which may be useful in advanced tools or when using
             libpackagekit and searching for an update of a specific name.
@@ -544,7 +544,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -563,8 +563,8 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>DistroUpgrade</literal>,
-            <literal>Error</literal> and
+            <doc:tt>DistroUpgrade</doc:tt>,
+            <doc:tt>Error</doc:tt> and
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -583,17 +583,17 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Status</literal> and
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>downloading</literal>,
-            <literal>updating</literal>,
-            <literal>installing</literal> or
-            <literal>removing</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>downloading</doc:tt>,
+            <doc:tt>updating</doc:tt>,
+            <doc:tt>installing</doc:tt> or
+            <doc:tt>removing</doc:tt>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.localinstall-untrusted</doc:permission>
@@ -633,17 +633,17 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Status</literal> and
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>downloading</literal>,
-            <literal>updating</literal>,
-            <literal>installing</literal> or
-            <literal>removing</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>downloading</doc:tt>,
+            <doc:tt>updating</doc:tt>,
+            <doc:tt>installing</doc:tt> or
+            <doc:tt>removing</doc:tt>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.install</doc:permission>
@@ -674,7 +674,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A key type, e.g. <literal>gpg</literal>
+              A key type, e.g. <doc:tt>gpg</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -683,7 +683,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A key ID, e.g. <literal>BB7576AC</literal>
+              A key ID, e.g. <doc:tt>BB7576AC</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -737,9 +737,9 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.refresh-cache</doc:permission>
@@ -765,17 +765,17 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Status</literal> and
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>downloading</literal>,
-            <literal>updating</literal>,
-            <literal>installing</literal> or
-            <literal>removing</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>downloading</doc:tt>,
+            <doc:tt>updating</doc:tt>,
+            <doc:tt>installing</doc:tt> or
+            <doc:tt>removing</doc:tt>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.remove</doc:permission>
@@ -793,9 +793,9 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              Either <literal>true</literal> or <literal>false</literal>.
-              If <literal>true</literal> allow other packages to be removed with the package,
-              but <literal>false</literal> should cause the script to abort if other packages
+              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>.
+              If <doc:tt>true</doc:tt> allow other packages to be removed with the package,
+              but <doc:tt>false</doc:tt> should cause the script to abort if other packages
               are dependant on the package.
             </doc:para>
           </doc:summary>
@@ -805,13 +805,13 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              Either <literal>true</literal> or <literal>false</literal>.
+              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>.
               This option is only really interesting on embedded devices with a limited amount of
               flash storage.
               It suggests to the packagekit backend that dependencies installed at the same time as
               the package should also be removed if they are not required by anything else.
               For instance, if you install OpenOffice, it might download libneon as a dependency.
-              When <literal>auto_remove</literal> is set to true, and you remove OpenOffice then
+              When <doc:tt>auto_remove</doc:tt> is set to true, and you remove OpenOffice then
               libneon will also get removed automatically.
             </doc:para>
           </doc:summary>
@@ -834,7 +834,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A repository identifier, e.g. <literal>fedora-development-debuginfo</literal>
+              A repository identifier, e.g. <doc:tt>fedora-development-debuginfo</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -843,7 +843,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              <literal>true</literal> if enabled, <literal>false</literal> if disabled.
+              <doc:tt>true</doc:tt> if enabled, <doc:tt>false</doc:tt> if disabled.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -865,7 +865,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A repository identifier, e.g. <literal>fedora-development-debuginfo</literal>
+              A repository identifier, e.g. <doc:tt>fedora-development-debuginfo</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -874,7 +874,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The backend specific value, e.g. <literal>set-download-url</literal>.
+              The backend specific value, e.g. <doc:tt>set-download-url</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -883,7 +883,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The backend specific value, e.g. <literal>http://foo.bar.org/baz</literal>.
+              The backend specific value, e.g. <doc:tt>http://foo.bar.org/baz</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -901,12 +901,12 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>available</literal> or <literal>installed</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -914,7 +914,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -923,7 +923,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              An array of package names, e.g. <literal>scribus-clipart</literal>.
+              An array of package names, e.g. <doc:tt>scribus-clipart</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -968,20 +968,20 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>available</literal> or <literal>installed</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>        </doc:description>
       </doc:doc>
       <arg type="s" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1012,20 +1012,20 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>available</literal> or <literal>installed</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>        </doc:description>
       </doc:doc>
       <arg type="s" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1054,13 +1054,13 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>available</literal> or <literal>installed</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1068,7 +1068,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1077,7 +1077,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              An enumerated group_type, or <literal>unknown</literal>
+              An enumerated group_type, or <doc:tt>unknown</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1096,36 +1096,36 @@
             Do not refresh the package cache. This should be fast.
           </doc:para>
           <doc:para>
-            Try to emit <literal>installed</literal> before
-            <literal>available</literal> packages first, as it allows the client
+            Try to emit <doc:tt>installed</doc:tt> before
+            <doc:tt>available</doc:tt> packages first, as it allows the client
             program to perform the GUI filtering and matching whilst the daemon is
             running the transaction.
           </doc:para>
           <doc:para>
-            If the backend includes <literal>installed</literal> and
-            <literal>available</literal> versions of the same package when searching
-            then the <literal>available</literal> version will have to be filtered
+            If the backend includes <doc:tt>installed</doc:tt> and
+            <doc:tt>available</doc:tt> versions of the same package when searching
+            then the <doc:tt>available</doc:tt> version will have to be filtered
             in the backend.
           </doc:para>
           <doc:para>
             The search query in the backend should not be case sensitive, and
-            should not be sensitive to <literal>_</literal> or <literal>-</literal>.
+            should not be sensitive to <doc:tt>_</doc:tt> or <doc:tt>-</doc:tt>.
           </doc:para>
           <doc:para>
             The search methods should return all results in all repositories.
             This may mean that multiple versions of package are returned.
             If this is not what is wanted by the client program, then the
-            <literal>newest</literal> filter should be used.
+            <doc:tt>newest</doc:tt> filter should be used.
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>available</literal> or <literal>installed</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1133,7 +1133,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1165,10 +1165,10 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Status</literal> and
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.update-package</doc:permission>
@@ -1200,17 +1200,17 @@
         </doc:description>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Error</literal> and
-            <literal>RequireRestart</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>RequireRestart</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>downloading</literal>,
-            <literal>updating</literal>,
-            <literal>installing</literal> or
-            <literal>removing</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>downloading</doc:tt>,
+            <doc:tt>updating</doc:tt>,
+            <doc:tt>installing</doc:tt> or
+            <doc:tt>removing</doc:tt>.
           </doc:para>
         <doc:permission>Callers need the org.freedesktop.packagekit.update-system</doc:permission>
       </doc:doc>
@@ -1228,14 +1228,14 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <literal>Progress</literal>,
-            <literal>Status</literal> and
-            <literal>Error</literal> and
-            <literal>Package</literal>.
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
           </doc:para>
           <doc:para>
-            <literal>Package</literal> enumerated types should be
-            <literal>available</literal> or <literal>installed</literal>.
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1243,7 +1243,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <literal>none</literal> or <literal>installed;~devel</literal>
+              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1252,7 +1252,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A PkProvideType, e.g. <literal>PK_PROVIDES_ENUM_CODEC</literal>.
+              A PkProvideType, e.g. <doc:tt>PK_PROVIDES_ENUM_CODEC</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1332,7 +1332,11 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The license, e.g. <literal>GPLv2+</literal> or <literal>proprietary</literal>.
+              The license string, e.g. <doc:tt>GPLv2+</doc:tt> or <doc:tt>BSD and (MPLv1.1 or GPLv2+)</doc:tt>.
+            </doc:para>
+            <doc:para>
+              More details about the correct way to format licensing strings can be found on the
+              <doc:ulink url="http://fedoraproject.org/wiki/Packaging/LicensingGuidelines">Fedora packaging wiki</doc:ulink>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1393,7 +1397,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              Enumerated type, e.g. <literal>no-network</literal>.
+              Enumerated type, e.g. <doc:tt>no-network</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1402,7 +1406,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              Long description or error, e.g. <literal>failed to connect to mytry.xml</literal>
+              Long description or error, e.g. <doc:tt>failed to connect to mytry.xml</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1431,7 +1435,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The file list, with each file seporated with <literal>;</literal>.
+              The file list, with each file seporated with <doc:tt>;</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1484,8 +1488,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              One of <literal>warning</literal>, <literal>notice</literal>, or
-              <literal>daemon</literal>.
+              One of <doc:tt>warning</doc:tt>, <doc:tt>notice</doc:tt>, or
+              <doc:tt>daemon</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1514,7 +1518,7 @@
           </doc:para>
           <doc:para>
             When returning results from a search always return
-            <literal>installed</literal> before <literal>available</literal> for
+            <doc:tt>installed</doc:tt> before <doc:tt>available</doc:tt> for
             the same package name.
           </doc:para>
         </doc:description>
@@ -1523,7 +1527,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A valid <literal>info</literal> string enumerated type
+              A valid <doc:tt>info</doc:tt> string enumerated type
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1730,7 +1734,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The type of signature used. <literal>gpg</literal>, for example.
+              The type of signature used. <doc:tt>gpg</doc:tt>, for example.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1754,10 +1758,10 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The <literal>eula_id</literal> which identifies the EULA - this is provided
+              The <doc:tt>eula_id</doc:tt> which identifies the EULA - this is provided
               so that if a specific EULA has previously agreed to a EULA from Acme Corp it is
               not asked again.
-              An example <literal>eula_id</literal>'s is <literal>vmware5_single_user</literal>.
+              An example <doc:tt>eula_id</doc:tt>'s is <doc:tt>vmware5_single_user</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1812,8 +1816,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              One of <literal>system</literal>, <literal>application</literal> or
-              <literal>session</literal>.
+              One of <doc:tt>system</doc:tt>, <doc:tt>application</doc:tt> or
+              <doc:tt>session</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1840,7 +1844,7 @@
             This is optional, but highly recommended.
             It gives the GUI tools a chance to show a different icon to show what stage the
             transaction is in, for instance, a downloading icon can be shown whilst in the
-            <literal>download</literal> state.
+            <doc:tt>download</doc:tt> state.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1848,8 +1852,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              One of <literal>download</literal>, <literal>install</literal>,
-              <literal>update</literal> or <literal>remove</literal>.
+              One of <doc:tt>download</doc:tt>, <doc:tt>install</doc:tt>,
+              <doc:tt>update</doc:tt> or <doc:tt>remove</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1943,9 +1947,9 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A list of package_id's that are to be updated, seporated by <literal>&amp;</literal>.
-              This odd delimited was chosen as <literal>\t</literal> is already being used in the
-              spawned backends, and <literal>&amp;</literal> is a banned character in a package_id.
+              A list of package_id's that are to be updated, seporated by <doc:tt>&amp;</doc:tt>.
+              This odd delimited was chosen as <doc:tt>\t</doc:tt> is already being used in the
+              spawned backends, and <doc:tt>&amp;</doc:tt> is a banned character in a package_id.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1954,7 +1958,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A list of package_id's that are to be obsoleted, separated by <literal>&amp;</literal>
+              A list of package_id's that are to be obsoleted, separated by <doc:tt>&amp;</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1966,7 +1970,7 @@
               A URL with more details on the update, e.g. a page with more
               information on the update.
               The format of this command should be
-              <literal>http://www.foo.org/page.html?4567;Update to SELinux</literal>
+              <doc:tt>http://www.foo.org/page.html?4567;Update to SELinux</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1994,7 +1998,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A valid restart type, e.g. <literal>system</literal>.
+              A valid restart type, e.g. <doc:tt>system</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -2004,7 +2008,7 @@
           <doc:summary>
             <doc:para>
               The update text describing the update in a non-localised way.
-              Newlines should be converted to <literal>;</literal> before printed.
+              Newlines should be converted to <doc:tt>;</doc:tt> before printed.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -2022,8 +2026,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The state of the update, e.g. <literal>stable</literal> or
-              <literal>testing</literal>.
+              The state of the update, e.g. <doc:tt>stable</doc:tt> or
+              <doc:tt>testing</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -2062,8 +2066,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A valid upgrade string enumerated type, e.g. <literal>stable</literal>
-              or <literal>unstable</literal>
+              A valid upgrade string enumerated type, e.g. <doc:tt>stable</doc:tt>
+              or <doc:tt>unstable</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -2072,7 +2076,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The short name of the distribution, e.g. <literal>Fedora Core 10 RC1</literal>
+              The short name of the distribution, e.g. <doc:tt>Fedora Core 10 RC1</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>

@@ -26,7 +26,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A list of actions, e.g. <literal>search-name;get-updates;update-system</literal>
+              A list of actions, e.g. <doc:tt>search-name;get-updates;update-system</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -55,7 +55,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The author of the backend, e.g. <literal>Richard Hughes &lt;richard@hughsie.com&gt;</literal>
+              The author of the backend, e.g. <doc:tt>Richard Hughes &lt;richard@hughsie.com&gt;</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -75,7 +75,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The list of filters as a string, e.g. <literal>installed;devel</literal>
+              The list of filters as a string, e.g. <doc:tt>installed;devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -95,7 +95,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The group list, e.g. <literal>accesories;games;system</literal>
+              The group list, e.g. <doc:tt>accesories;games;system</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -115,7 +115,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The tid, e.g. <literal>45_dafeca_checkpoint32</literal>
+              The tid, e.g. <doc:tt>45_dafeca_checkpoint32</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -135,7 +135,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The role, e.g. <literal>update-system</literal>
+              The role, e.g. <doc:tt>update-system</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -186,8 +186,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The reason of the state change. Valid reasons are <literal>resume</literal> or
-              <literal>posttrans</literal>.
+              The reason of the state change. Valid reasons are <doc:tt>resume</doc:tt> or
+              <doc:tt>posttrans</doc:tt>.
               Resume is given a lower priority than posttrans.
             </doc:para>
           </doc:summary>
@@ -221,8 +221,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The network state, e.g. <literal>unknown</literal>,
-              <literal>offline</literal> or <literal>online</literal>.
+              The network state, e.g. <doc:tt>unknown</doc:tt>,
+              <doc:tt>offline</doc:tt> or <doc:tt>online</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -244,7 +244,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The HTTP proxy, e.g. <literal>username:password@server:port</literal>.
+              The HTTP proxy, e.g. <doc:tt>username:password@server:port</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -253,7 +253,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The FTP proxy, e.g. <literal>username:password@server:port</literal>.
+              The FTP proxy, e.g. <doc:tt>username:password@server:port</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
