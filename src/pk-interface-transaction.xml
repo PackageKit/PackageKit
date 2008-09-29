@@ -1332,7 +1332,11 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The license, e.g. <literal>GPLv2+</literal> or <literal>proprietary</literal>.
+              The license string, e.g. <literal>GPLv2+</literal> or <literal>BSD and (MPLv1.1 or GPLv2+)</literal>.
+            </doc:para>
+            <doc:para>
+              More details about the correct way to format licensing strings can be found on the
+              <doc:ulink url="http://fedoraproject.org/wiki/Packaging/LicensingGuidelines">Fedora packaging wiki</doc:ulink>.
             </doc:para>
           </doc:summary>
         </doc:doc>
