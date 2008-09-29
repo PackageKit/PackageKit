@@ -20,6 +20,7 @@
 
 from packagekit.enums import *
 import sqlite3 as sqlite
+import os
 
 groupMap = {
 'desktops;gnome-desktop'                      : GROUP_DESKTOP_GNOME,
@@ -223,7 +224,6 @@ class yumComps:
 
     def _make_database_tables(self):
         ''' Setup a database for yum category and group information'''
-        print "building new databases"
         try: # kill the old db
             self.connection.close()
             os.unlink(self.db) # kill the db
@@ -324,7 +324,6 @@ class yumComps:
 
 if __name__ == "__main__":
     import yum
-    import os
     _yb = yum.YumBase()
     _db = "./packagekit-groups.sqlite"
     comps = yumComps(_yb, _db)
