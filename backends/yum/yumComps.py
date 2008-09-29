@@ -213,7 +213,7 @@ class yumComps:
                 break
             # Check if we have the right DB version
             if not version or version != __DB_VER__:
-                print "Wrong database versions : %s needs %s " % (version,__DB_VER__)
+                print "Wrong database versions : %s needs %s " % (version, __DB_VER__)
                 self._make_database_tables()
         except Exception, e:
             # We couldn't get the version, so create a new database
