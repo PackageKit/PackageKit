@@ -23,7 +23,7 @@ upgradescriptdir = $(datadir)/PackageKit
 upgradescript_SCRIPTS = pk-upgrade-distro.sh
 
 if BACKEND_TYPE_APT
-aptconfdir = ${SYSCONFDIR}/apt.conf.d
+aptconfdir = ${SYSCONFDIR}/apt/apt.conf.d
 aptconf_DATA = 20packagekit
 endif
 
