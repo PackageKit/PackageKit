@@ -27,7 +27,12 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 
+#ifdef PK_BUILD_GIO
+  #include <gio/gio.h>
+#endif
+
 #include "egg-debug.h"
+#include "egg-string-list.h"
 
 #include "pk-refresh.h"
 #include "pk-shared.h"
@@ -243,22 +248,120 @@ out:
 }
 
 /**
+ * pk_refresh_import_desktop_files_get_files:
+ *
+ * Returns a list of all the files in the applicaitons directory
+ **/
+#ifdef PK_BUILD_GIO
+static guint
+pk_refresh_get_filename_mtime (const gchar *filename)
+{
+	GFileInfo *info;
+	GFile *file;
+	GError *error = NULL;
+	GTimeVal time;
+
+	file = g_file_new_for_path (filename);
+	info = g_file_query_info (file, G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
+	if (info == NULL) {
+		egg_warning ("%s", error->message);
+		g_error_free (error);
+		return 0;
+	}
+
+	/* get the mtime */
+	g_file_info_get_modification_time (info, &time);
+	g_object_unref (file);
+	g_object_unref (info);
+
+	return time.tv_sec;
+}
+#else
+static guint
+pk_refresh_get_filename_mtime (const gchar *filename)
+{
+	return 0;
+}
+#endif
+
+/**
+ * pk_refresh_import_desktop_files_get_files:
+ *
+ * Returns a list of all the files in the applicaitons directory
+ **/
+static EggStringList *
+pk_refresh_import_desktop_files_get_files (PkRefresh *refresh)
+{
+	GDir *dir;
+	EggStringList *list;
+	GPatternSpec *pattern;
+	gchar *filename;
+	gboolean match;
+	const gchar *name;
+	const gchar *directory = "/usr/share/applications";
+
+	/* open directory */
+	dir = g_dir_open (directory, 0, NULL);
+	if (dir == NULL) {
+		egg_warning ("not a valid desktop dir!");
+		return NULL;
+	}
+
+	/* find files */
+	pattern = g_pattern_spec_new ("*.desktop");
+	name = g_dir_read_name (dir);
+	list = egg_string_list_new ();
+	while (name != NULL) {
+		/* ITS4: ignore, not used for allocation and has to be NULL terminated */
+		match = g_pattern_match (pattern, strlen (name), name, NULL);
+		if (match) {
+			filename = g_build_filename (directory, name, NULL);
+			egg_obj_list_add (EGG_OBJ_LIST (list), filename);
+		}
+		name = g_dir_read_name (dir);
+	}
+	g_dir_close (dir);
+
+	return list;
+}
+
+/**
+ * pk_refresh_import_desktop_files_get_mtimes:
+ **/
+static EggStringList *
+pk_refresh_import_desktop_files_get_mtimes (const EggStringList *files)
+{
+	guint i;
+	guint mtime;
+	gchar *encode;
+	const gchar *filename;
+	EggStringList *list;
+
+	list = egg_string_list_new ();
+	for (i=0; i<EGG_OBJ_LIST(files)->len; i++) {
+		filename = egg_string_list_index (files, i);
+		mtime = pk_refresh_get_filename_mtime (filename);
+		encode = g_strdup_printf ("%s|%i|v1", filename, mtime);
+		egg_obj_list_add (EGG_OBJ_LIST (list), encode);
+		g_free (encode);
+	}
+	return list;
+}
+
+/**
  * pk_refresh_import_desktop_files:
  **/
 gboolean
 pk_refresh_import_desktop_files (PkRefresh *refresh)
 {
-	GDir *dir;
 	guint i;
-	const gchar *name;
-	GPatternSpec *pattern;
-	gboolean match;
-	gchar *filename;
+	gboolean ret;
 	gchar *package_name;
-	GPtrArray *array;
 	gfloat step;
-
-	const gchar *directory = "/usr/share/applications";
+	EggStringList *files;
+	EggStringList *mtimes;
+	EggStringList *mtimes_old;
+	gchar *filename;
 
 	g_return_val_if_fail (PK_IS_REFRESH (refresh), FALSE);
 
@@ -267,38 +370,41 @@ pk_refresh_import_desktop_files (PkRefresh *refresh)
 		return FALSE;
 	}
 
-	/* open directory */
-	dir = g_dir_open (directory, 0, NULL);
-	if (dir == NULL) {
-		egg_warning ("not a valid desktop dir!");
-		return FALSE;
-	}
-
 	/* use a local backend instance */
 	pk_backend_reset (refresh->priv->backend);
 	pk_refresh_emit_status_changed (refresh, PK_STATUS_ENUM_SCAN_APPLICATIONS);
 
-	/* find files */
-	pattern = g_pattern_spec_new ("*.desktop");
-	name = g_dir_read_name (dir);
-	array = g_ptr_array_new ();
-	while (name != NULL) {
-		/* ITS4: ignore, not used for allocation and has to be NULL terminated */
-		match = g_pattern_match (pattern, strlen (name), name, NULL);
-		if (match) {
-			filename = g_build_filename (directory, name, NULL);
-			g_ptr_array_add (array, filename);
-		}
-		name = g_dir_read_name (dir);
+	egg_debug ("getting old desktop mtimes");
+	mtimes_old = egg_string_list_new ();
+	ret = egg_obj_list_from_file (EGG_OBJ_LIST (mtimes_old), "/var/lib/PackageKit/desktop-mtimes.txt");
+	if (!ret)
+		egg_warning ("failed to get old mtimes of desktop files");
+
+	/* get the file list */
+	files = pk_refresh_import_desktop_files_get_files (refresh);
+
+	/* get the mtimes */
+	mtimes = pk_refresh_import_desktop_files_get_mtimes (files);
+
+	/* remove old desktop files we've already processed */
+	egg_obj_list_remove_list (EGG_OBJ_LIST(mtimes), EGG_OBJ_LIST (mtimes_old));
+
+	/* shortcut, there are no files to scan */
+	if (EGG_OBJ_LIST(mtimes)->len == 0) {
+		egg_debug ("no desktop files needed to scan");
+		goto no_changes;
 	}
-	g_dir_close (dir);
 
 	/* update UI */
 	pk_refresh_emit_progress_changed (refresh, 0);
-	step = 100.0f / array->len;
+	step = 100.0f / EGG_OBJ_LIST(mtimes)->len;
 
-	for (i=0; i<array->len; i++) {
-		filename = g_ptr_array_index (array, i);
+	/* for each new package, process the desktop file */
+	for (i=0; i<EGG_OBJ_LIST(mtimes)->len; i++) {
+
+		/* get the filename from the mtime encoded string */
+		filename = g_strdup (egg_string_list_index (mtimes, i));
+		g_strdelimit (filename, "|", '\0');
 
 		/* get the name */
 		package_name = pk_refresh_import_desktop_files_get_package (refresh, filename);
@@ -309,18 +415,25 @@ pk_refresh_import_desktop_files (PkRefresh *refresh)
 		else
 			egg_warning ("%s ignored, failed to get package name\n", filename);
 		g_free (package_name);
+		g_free (filename);
 
 		/* update UI */
 		pk_refresh_emit_progress_changed (refresh, i * step);
 	}
 
+	/* save new mtimes data */
+	ret = egg_obj_list_to_file (EGG_OBJ_LIST (mtimes), "/var/lib/PackageKit/desktop-mtimes.txt");
+	if (!ret)
+		egg_warning ("failed to set old mtimes of desktop files");
+
+no_changes:
 	/* update UI */
 	pk_refresh_emit_progress_changed (refresh, 100);
 	pk_refresh_emit_status_changed (refresh, PK_STATUS_ENUM_FINISHED);
 
-	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
-	g_ptr_array_free (array, TRUE);
-
+	g_object_unref (files);
+	g_object_unref (mtimes);
+	g_object_unref (mtimes_old);
 	return TRUE;
 }
 
