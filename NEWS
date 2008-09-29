@@ -1,3 +1,60 @@
+Version 0.3.5
+~~~~~~~~~~~~~~
+Released: 2008-09-29
+
+Translations:
+ - Add new Malay translation (Sharuzzaman Ahmat Raslan)
+ - Updated Czech translation (Adam Pribyl)
+ - Updated Polish translation (Piotr Drąg)
+ - Updated Catalan translation (Xavier Conde)
+
+New Features:
+ - Add new API so we can avoid loading data when we are just writing (Richard Hughes)
+ - Add a helper which can be used by GStreamer to install codecs.
+   The conversion code was written by Bastien Nocera (Richard Hughes)
+ - Add an abstract filter object as backends keep getting this wrong (Richard Hughes)
+ - Keep an array of modification times for the desktop files so we don't force
+   processing each unchanged one when we do RefreshCache. Fixes fd#17817 (Richard Hughes)
+
+Bugfixes:
+ - Turn off synchronous fsync when using PkExtra as the data isn't valuable (Richard Hughes)
+ - Don't send ::Finished() when the script exits because of a dispatcher exit (Richard Hughes)
+ - When we have more than one transaction queued, don't try to run them all at once (Richard Hughes)
+ - Check if an instance is already running (Richard Hughes)
+ - Finish a cached transaction in an idle loop (Richard Hughes)
+ - Fix up a couple of potential crashers in PkControl if SetLocale fails (Richard Hughes)
+ - Remove all the funny '^','|',<tab> seporators and make the delimiters all the same (Richard Hughes)
+ - libpackagekit needs sqlite, so mark it as such in the pkgconfig file (Richard Hughes)
+ - Python client: add the right type to obj vars to the Package object (Tim Lauridsen)
+ - Python client: store the whole info in PackageKitPackage (Sebastian Heinlein)
+ - Python client: store 'free' strings as unicodes instead of utf-8 encoded (Sebastian Heinlein)
+
+Backends:
+ - apt: Add a decorator which cleans up the system cache lock (Sebastian Heinlein)
+ - apt: Check if the in memory cache is insync with the file cache (Sebastian Heinlein)
+ - apt: Enhance the test script to a full package client (Sebastian Heinlein)
+ - apt: Do not fork the whole backend to only run dpkg (Sebastian Heinlein)
+ - apt: Use openpty() to create a fd which can be used for stdin and stdout (Sebastian Heinlein)
+ - apt: Do not require to lock the cache before running dpkg (Sebastian Heinlein)
+ - apt: Scan for debian bugs and cves referred to in the changelog (Sebastian Heinlein)
+ - apt: Fix config file prompts in direct dpkg calls and add a small sleep (Sebastian Heinlein)
+ - apt: Instead of catching and answering a config file prompt just set the dpkg options --force-confdef and --force-confold (Sebastian Heinlein)
+ - alpm: Added support for new pacman, resolver stuff changed and moved functions to another thread (Valeriy Lyasotskiy)
+ - smart: Restore the missing installed collections (Anders F Bjorklund)
+ - smart: Always use the dispatcher (Anders F Bjorklund)
+ - smart: Look for apt metapackages as well as yum/yast (Anders F Bjorklund)
+ - pisi: Convert the backend to using a dispatcher (Richard Hughes)
+ - yum: Added set-locale support and return translated collection name & decription (Tim Lauridsen)
+ - yum: Use the LANG environment var to set language of group names & decriptions (Tim Lauridsen)
+ - yum: Make the yum comps db use a version, so we can change the schema in the future (Tim Lauridsen)
+ - yum: Fix the name of the enum when no mirrors are found (Richard Hughes)
+ - yum: Fix up a load of issues with rpmlint in yumBackend (Richard Hughes)
+ - yum: Make the check for additional deps much faster in the specific case where we can emulate a transaction (Richard Hughes)
+ - yum: Use the new PackagekitFilter abstract object (Richard Hughes)
+ - yum: Always enforce a finished call after ErrorCode to avoid a daemon warning (Richard Hughes)
+ - yum: Fix getting the update list after we installed updates (Richard Hughes)
+ - zypp: Fix returning bogus packages by setting ignoreAlreadyRecommended (Scott Reeves)
+
 Version 0.3.4
 ~~~~~~~~~~~~~~
 Released: 2008-09-22
