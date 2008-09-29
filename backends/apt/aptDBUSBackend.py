@@ -302,10 +302,9 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
             elif status == "conffile-prompt":
                 # we get a string like this:
                 # 'current-conffile' 'new-conffile' useredited distedited
-                #FIXME Not tested
-                match = re.compile("\s*\'(.*)\'\s*\'(.*)\'.*").match(status)
-                if match:
-                    self.conffile(match.group(1), match.group(2))
+                match = re.search(".+conffile-prompt : '(.+)' '(.+)'",
+                                  self.read)
+                self.conffile(match.group(1), match.group(2))
             else:
                 pklog.debug("Dpkg status: %s" % status)
                 self.status = status
@@ -446,6 +445,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
 
     def conffile(self, current, new):
         pklog.warning("Config file prompt: '%s' (sending no)" % current)
+        time.sleep(1)
         i = os.write(self.master_fd, "n\n")
         pklog.debug("wrote n, send %i bytes" % i)
         self.conffile_prompts.add(new)
