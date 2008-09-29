@@ -20,6 +20,7 @@
 
 from packagekit.enums import *
 import sqlite3 as sqlite
+import os
 
 groupMap = {
 'desktops;gnome-desktop'                      : GROUP_DESKTOP_GNOME,
