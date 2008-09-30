@@ -22,6 +22,7 @@
 
 #include <gst/gst.h>
 #include <string.h>
+#include <sys/utsname.h>
 #include <dbus/dbus-glib.h>
 
 typedef struct {
@@ -227,6 +228,44 @@ pk_gst_codec_free (codec_info *codec)
 }
 
 /**
+ * pk_gst_get_arch_suffix:
+ *
+ * Return value: something other than blank if we are running on 64 bit.
+ **/
+static const gchar *
+pk_gst_get_arch_suffix (void)
+{
+	gint retval;
+	const gchar *suffix = "";
+	struct utsname buf;
+
+	retval = uname (&buf);
+
+	/* did we get valid value? */
+	if (retval != 0 || buf.machine == NULL) {
+		g_warning ("cannot get machine type");
+		goto out;
+	}
+
+	/* 32 bit machines */
+	if (strcmp (buf.machine, "i386") == 0 ||
+	    strcmp (buf.machine, "i586") == 0 ||
+	    strcmp (buf.machine, "i686") == 0)
+		goto out;
+
+	/* 64 bit machines */
+	if (strcmp (buf.machine, "x86_64") == 0) {
+		suffix = "()(64bit)";
+		goto out;
+	}
+
+	g_warning ("did not recognise machine type: '%s'", buf.machine);
+out:
+	return suffix;
+}
+
+
+/**
  * main:
  **/
 int
@@ -245,6 +284,7 @@ main (int argc, char **argv)
 	gchar **codecs = NULL;
 	gint xid = 0;
 	gint retval = 1;
+	const gchar *suffix;
 
 	const GOptionEntry options[] = {
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
@@ -288,6 +328,8 @@ main (int argc, char **argv)
 		goto out;
 	}
 
+	/* use a ()(64bit) suffix for 64 bit */
+	suffix = pk_gst_get_arch_suffix ();
 
 	/* process argv */
 	array = g_ptr_array_new ();
@@ -301,17 +343,17 @@ main (int argc, char **argv)
 			g_print ("skipping %s\n", codecs[i]);
 			continue;
 		}
+		g_message ("Codec nice name: %s", info->codec_name);
 		if (info->structure != NULL) {
 			s = pk_gst_structure_to_provide (info->structure);
-			type = g_strdup_printf ("gstreamer0.10(%s-%s)%s", info->type_name,
-						gst_structure_get_name (info->structure), s ? s : "");
+			type = g_strdup_printf ("gstreamer0.10(%s-%s)%s%s", info->type_name,
+						gst_structure_get_name (info->structure), s, suffix);
 			g_free (s);
+			g_message ("structure: %s", type);
 		} else {
 			type = g_strdup_printf ("gstreamer0.10(%s)", info->type_name);
+			g_message ("non-structure: %s", type);
 		}
-
-		g_message ("Codec nice name: %s", info->codec_name);
-		g_message ("%s", type);
 
 		/* create (ss) structure */
 		varray = g_value_array_new (2);
