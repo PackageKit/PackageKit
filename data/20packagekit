@@ -1,2 +1,1 @@
-# Call PackageKit's StateHasChanged method after any APT cache updates
-APT::Update::Post-Invoke "dbus-send --system --dest=org.freedesktop.PackageKit --type=method_call --print-reply /org/freedesktop/PackageKit org.freedesktop.PackageKit.StateHasChanged string:'cache-update'";
+APT::Update::Post-Invoke-Success:: { "/usr/bin/dbus-send --system --dest=org.freedesktop.PackageKit --type=method_call /org/freedesktop/PackageKit org.freedesktop.PackageKit.StateHasChanged string:'cache-update'"; };
