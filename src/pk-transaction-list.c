@@ -59,6 +59,8 @@ static void     pk_transaction_list_finalize	(GObject        *object);
 struct PkTransactionListPrivate
 {
 	GPtrArray		*array;
+	guint			 unwedge1_id;
+	guint			 unwedge2_id;
 };
 
 typedef struct {
@@ -78,6 +80,10 @@ static guint signals [PK_TRANSACTION_LIST_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
 static gpointer pk_transaction_list_object = NULL;
+
+/* the interval between each CST */
+#define PK_TRANSACTION_WEDGE_CHECK	10 /* seconds */
+
 
 /**
  * pk_transaction_list_get_from_tid:
@@ -277,6 +283,9 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 	item->running = FALSE;
 	item->finished = TRUE;
 
+	/* if we worked from a cache, we might never have committed this object */
+	item->committed = TRUE;
+
 	/* we have changed what is running */
 	egg_debug ("emmitting ::changed");
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
@@ -452,6 +461,124 @@ pk_transaction_list_get_size (PkTransactionList *tlist)
 }
 
 /**
+ * pk_transaction_list_is_consistent:
+ *
+ * This checks the list for consistency so we don't ever deadlock the daemon
+ * even if the backends are spectacularly shit
+ **/
+static gboolean
+pk_transaction_list_is_consistent (PkTransactionList *tlist)
+{
+	guint i;
+	gboolean ret = TRUE;
+	guint running = 0;
+	guint waiting = 0;
+	guint wrong = 0;
+	guint length;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), 0);
+
+	/* find all the transactions */
+	length = tlist->priv->array->len;
+	if (length == 0)
+		goto out;
+
+	/* get state */
+	egg_debug ("checking consistency");
+	for (i=0; i<length; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+		if (item->running)
+			running++;
+		if (item->committed && !item->finished && !item->running)
+			waiting++;
+		if (!item->committed && item->finished)
+			wrong++;
+		if (item->running && item->finished)
+			wrong++;
+	}
+
+	/* wrong flags */
+	if (wrong != 0) {
+		egg_warning ("inconsistent flags");
+		ret = FALSE;
+		goto out;
+	}
+
+	/* more than one running */
+	if (running > 1) {
+		egg_warning ("more than one running");
+		ret = FALSE;
+		goto out;
+	}
+
+	/* nothing running */
+	if (waiting == length) {
+		egg_warning ("everything is waiting!");
+		ret = FALSE;
+		goto out;
+	}
+out:
+	return ret;
+}
+
+/**
+ * pk_transaction_list_wedge_check2:
+ **/
+static gboolean
+pk_transaction_list_wedge_check2 (PkTransactionList *tlist)
+{
+	guint i;
+	guint length;
+	PkTransactionItem *item;
+	gboolean ret;
+	PkRoleEnum role;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+
+	egg_debug ("checking consistency a second time, as the first was not valid");
+	ret = pk_transaction_list_is_consistent (tlist);
+	if (ret) {
+		egg_debug ("panic over");
+		goto out;
+	}
+
+	/* dump all the state we know */
+	egg_warning ("dumping flags:");
+	length = tlist->priv->array->len;
+	for (i=0; i<length; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+		role = pk_transaction_priv_get_role (item->transaction);
+		g_print ("%0i\t%s\trunning[%i] committed[%i] finished[%i]\n", i,
+			 pk_role_enum_to_text (role), item->running, item->committed, item->finished);
+	}
+out:
+	/* never repeat */
+	return FALSE;
+}
+
+/**
+ * pk_transaction_list_wedge_check1:
+ **/
+static gboolean
+pk_transaction_list_wedge_check1 (PkTransactionList *tlist)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+
+	ret = pk_transaction_list_is_consistent (tlist);
+	if (!ret) {
+		/* we have to do this twice, as we might idle add inbetween a transition */
+		egg_warning ("list is consistent, scheduling another check");
+		tlist->priv->unwedge2_id = g_timeout_add (500, (GSourceFunc) pk_transaction_list_wedge_check2, tlist);
+	}
+
+	/* always repeat */
+	return TRUE;
+}
+
+/**
  * pk_transaction_list_class_init:
  * @klass: The PkTransactionListClass
  **/
@@ -480,6 +607,8 @@ pk_transaction_list_init (PkTransactionList *tlist)
 {
 	tlist->priv = PK_TRANSACTION_LIST_GET_PRIVATE (tlist);
 	tlist->priv->array = g_ptr_array_new ();
+	tlist->priv->unwedge2_id = 0;
+	tlist->priv->unwedge1_id = g_timeout_add_seconds (PK_TRANSACTION_WEDGE_CHECK, (GSourceFunc) pk_transaction_list_wedge_check1, tlist);
 }
 
 /**
@@ -496,6 +625,11 @@ pk_transaction_list_finalize (GObject *object)
 	tlist = PK_TRANSACTION_LIST (object);
 
 	g_return_if_fail (tlist->priv != NULL);
+
+	if (tlist->priv->unwedge1_id != 0)
+		g_source_remove (tlist->priv->unwedge1_id);
+	if (tlist->priv->unwedge2_id != 0)
+		g_source_remove (tlist->priv->unwedge2_id);
 
 	g_ptr_array_foreach (tlist->priv->array, (GFunc) pk_transaction_list_item_free, NULL);
 	g_ptr_array_free (tlist->priv->array, TRUE);
@@ -813,7 +947,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "make sure item has correct flags");
-	if (item->running == FALSE && item->committed == FALSE && item->finished == TRUE)
+	if (item->running == FALSE && item->committed == TRUE && item->finished == TRUE)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "wrong flags: running[%i] committed[%i] finished[%i]",
