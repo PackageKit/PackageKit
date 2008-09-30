@@ -155,14 +155,8 @@ codecs from configured repositories using PackageKit.
 %setup -q
 
 %build
-# build and test on all architectures
-#%configure --enable-dummy --with-default-backend=dummy --enable-tests --enable-local
-#make %{?_smp_mflags}
-#make check -C libpackagekit
-#make check -C src
-
-# reconfigure with testing off (smaller binaries)
 %configure --enable-yum --enable-smart --with-default-backend=yum --disable-local
+
 make %{?_smp_mflags}
 
 %install
@@ -177,7 +171,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
 
-# create a binary that GStreamer will recognise
+# create a link that GStreamer will recognise
 pushd ${RPM_BUILD_ROOT}%{_libexecdir} > /dev/null
 ln -s pk-gstreamer-install gst-install-plugins-helper
 popd > /dev/null
