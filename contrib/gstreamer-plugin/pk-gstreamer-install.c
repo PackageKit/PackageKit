@@ -352,7 +352,7 @@ main (int argc, char **argv)
 			g_free (s);
 			g_message ("PackageKit: structure: %s", type);
 		} else {
-			type = g_strdup_printf ("gstreamer0.10(%s)", info->type_name);
+			type = g_strdup_printf ("gstreamer0.10(%s)%s", info->type_name, suffix);
 			g_message ("PackageKit: non-structure: %s", type);
 		}
 
