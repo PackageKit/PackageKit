@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
 # Licensed under the GNU General Public License Version 2
@@ -20,8 +21,9 @@
 
 import pisi
 from packagekit.backend import *
+from packagekit.package import PackagekitPackage
 
-class PackageKitPisiBackend(PackageKitBaseBackend):
+class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
     # It's an ugly way to sync with PK Groups and PiSi Components
     # Maybe we can provide these with our index?
@@ -150,23 +152,23 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
         return self.package(id, status, pkg.summary)
 
-    def get_depends(self, filters, package_id, recursive):
+    def get_depends(self, filters, package_ids, recursive):
         """ Prints a list of depends for a given package """
         self.allow_cancel(True)
         self.percentage(None)
 
-        package = self.get_package_from_id(package_id)[0]
+        package = self.get_package_from_id(package_ids[0])[0]
 
         for pkg in self.packagedb.get_package(package).runtimeDependencies():
             # Internal FIXME: PiSi API has really inconsistent for return types and arguments!
             self.__get_package(pkg.package)
 
-    def get_details(self, package_id):
+    def get_details(self, package_ids):
         """ Prints a detailed description for a given package """
         self.allow_cancel(True)
         self.percentage(None)
 
-        package = self.get_package_from_id(package_id)[0]
+        package = self.get_package_from_id(package_ids[0])[0]
 
         if self.packagedb.has_package(package):
             pkg = self.packagedb.get_package(package)
@@ -185,12 +187,12 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
 
-    def get_files(self, package_id):
+    def get_files(self, package_ids):
         """ Prints a file list for a given package """
         self.allow_cancel(True)
         self.percentage(None)
 
-        package = self.get_package_from_id(package_id)[0]
+        package = self.get_package_from_id(package_ids[0])[0]
 
         if self.installdb.has_package(package):
             pkg = self.installdb.get_files(package)
@@ -202,7 +204,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
             self.files(package, file_list)
 
-    def get_repo_list(self):
+    def get_repo_list(self, filters):
         """ Prints available repositories """
         self.allow_cancel(True)
         self.percentage(None)
@@ -212,12 +214,12 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             # FIXME: Use repository enabled/disabled state
             self.repo_detail(repo, self.repodb.get_repo(repo).indexuri.get_uri(), "true")
 
-    def get_requires(self, filters, package_id, recursive):
+    def get_requires(self, filters, package_ids, recursive):
         """ Prints a list of requires for a given package """
         self.allow_cancel(True)
         self.percentage(None)
 
-        package = self.get_package_from_id(package_id)[0]
+        package = self.get_package_from_id(package_ids[0])[0]
 
         # FIXME: Handle packages which is not installed from repository
         for pkg in self.packagedb.get_rev_deps(package):
@@ -257,13 +259,13 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             # Force needed?
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, e)
 
-    def install(self, package_id):
+    def install_packages(self, package_ids):
         """ Installs given package into system"""
         # FIXME: fetch/install progress
         self.allow_cancel(False)
         self.percentage(None)
 
-        package = self.get_package_from_id(package_id)[0]
+        package = self.get_package_from_id(package_ids[0])[0]
 
         if self.packagedb.has_package(package):
             self.status(STATUS_INSTALL)
@@ -290,12 +292,12 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
         self.percentage(100)
 
-    def remove(self, deps, package_id):
+    def remove_packages(self, deps, package_ids):
         """ Removes given package from system"""
         self.allow_cancel(False)
         self.percentage(None)
 
-        package = self.get_package_from_id(package_id)[0]
+        package = self.get_package_from_id(package_ids[0])[0]
 
         if self.installdb.has_package(package):
             self.status(STATUS_REMOVE)
@@ -336,7 +338,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
 
-        self.__get_package(package, filters)
+        self.__get_package(package[0], filters)
 
     def search_details(self, filters, key):
         """ Prints a detailed list of packages contains search term """
@@ -383,13 +385,13 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         for pkg in pisi.api.search_package([package]):
             self.__get_package(pkg, filters)
 
-    def update(self, package_id):
+    def update_packages(self, package_ids):
         """ Updates given package to its latest version """
         # FIXME: fetch/install progress
         self.allow_cancel(False)
         self.percentage(None)
 
-        package = self.get_package_from_id(package_id)[0]
+        package = self.get_package_from_id(package_ids[0])[0]
 
         if self.installdb.has_package(package):
             try:
@@ -414,7 +416,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             self.error(ERROR_UNKNOWN, e)
 
 def main():
-    backend = PackageKitPisiBackend('', lock=True)
+    backend = PackageKitPisiBackend('')
     backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":

@@ -23,6 +23,7 @@
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 #include <pk-package-ids.h>
+#include <pk-common.h>
 
 static PkBackendSpawn *spawn;
 
@@ -300,7 +301,6 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
-
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
@@ -310,7 +310,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids);
-	pk_backend_spawn_helper (spawn, "pisiBackend.py", "update", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "update-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
