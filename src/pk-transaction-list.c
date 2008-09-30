@@ -69,6 +69,7 @@ typedef struct {
 	gboolean		 finished;
 	PkTransaction		*transaction;
 	gchar			*tid;
+	guint			 idle_id;
 } PkTransactionItem;
 
 enum {
@@ -199,6 +200,17 @@ pk_transaction_list_remove (PkTransactionList *tlist, const gchar *tid)
 		egg_warning ("already finished, so waiting to timeout");
 		return FALSE;
 	}
+	/* check if we are running, or _just_ about to be run */
+	if (item->running) {
+		if (item->idle_id == 0) {
+			egg_warning ("already running, but no idle_id");
+			return FALSE;
+		}
+		/* just about to be run! */
+		egg_debug ("cancelling the callback to the 'lost' transaction");
+		g_source_remove (item->idle_id);
+		item->idle_id = 0;
+	}
 	ret = pk_transaction_list_remove_internal (tlist, item);
 	return ret;
 }
@@ -237,6 +249,7 @@ pk_transaction_list_run_idle_cb (PkTransactionItem *item)
 		egg_error ("failed to run transaction (fatal)");
 
 	/* never try to idle add this again */
+	item->idle_id = 0;
 	return FALSE;
 }
 
@@ -251,7 +264,7 @@ pk_transaction_list_run_item (PkTransactionList *tlist, PkTransactionItem *item)
 	item->running = TRUE;
 
 	/* add this idle, so that we don't have a deep out-of-order callchain */
-	g_idle_add ((GSourceFunc) pk_transaction_list_run_idle_cb, item);
+	item->idle_id = g_idle_add ((GSourceFunc) pk_transaction_list_run_idle_cb, item);
 }
 
 /**
