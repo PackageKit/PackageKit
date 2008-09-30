@@ -263,7 +263,7 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl - Checks for contrib/gstreamer-plugin
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 glib-2.0 dbus-glib-1,
+PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0 dbus-glib-1,
                   build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
 AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
 AC_SUBST(PK_GSTREAMER_PLUGIN_CFLAGS)
