@@ -52,13 +52,13 @@ pk_gst_parse_codec (const char *codec)
 
 	split = g_strsplit (codec, "|", -1);
 	if (split == NULL || g_strv_length (split) != 5) {
-		g_message ("not a GStreamer codec line");
+		g_message ("PackageKit: not a GStreamer codec line");
 		g_strfreev (split);
 		return NULL;
 	}
 	if (strcmp (split[0], "gstreamer") != 0 ||
 	    strcmp (split[1], "0.10") != 0) {
-		g_message ("not for GStreamer 0.10");
+		g_message ("PackageKit: not for GStreamer 0.10");
 		g_strfreev (split);
 		return NULL;
 	}
@@ -88,7 +88,7 @@ pk_gst_parse_codec (const char *codec)
 
 	s = gst_structure_from_string (caps, NULL);
 	if (s == NULL) {
-		g_message ("failed to parse caps: %s", caps);
+		g_message ("PackageKit: failed to parse caps: %s", caps);
 		g_strfreev (split);
 		g_free (caps);
 		g_free (type_name);
@@ -170,7 +170,7 @@ pk_gst_structure_to_provide (GstStructure *s)
 
 		field_name = gst_structure_nth_field_name (s, i);
 		if (pk_gst_field_get_type (field_name) < 0) {
-			//g_message ("ignoring field named %s", field_name);
+			//g_message ("PackageKit: ignoring field named %s", field_name);
 			continue;
 		}
 
@@ -185,7 +185,7 @@ pk_gst_structure_to_provide (GstStructure *s)
 		field_name = l->data;
 
 		type = gst_structure_get_field_type (s, field_name);
-		//g_message ("field is: %s, type: %s", field_name, g_type_name (type));
+		//g_message ("PackageKit: field is: %s, type: %s", field_name, g_type_name (type));
 
 		if (type == G_TYPE_INT) {
 			int value;
@@ -203,7 +203,7 @@ pk_gst_structure_to_provide (GstStructure *s)
 			value = gst_structure_get_string (s, field_name);
 			g_string_append_printf (string, "(%s=%s)", field_name, value);
 		} else {
-			g_warning ("unhandled type! %s", g_type_name (type));
+			g_warning ("PackageKit: unhandled type! %s", g_type_name (type));
 		}
 
 		g_free (field_name);
@@ -243,7 +243,7 @@ pk_gst_get_arch_suffix (void)
 
 	/* did we get valid value? */
 	if (retval != 0 || buf.machine == NULL) {
-		g_warning ("cannot get machine type");
+		g_warning ("PackageKit: cannot get machine type");
 		goto out;
 	}
 
@@ -259,7 +259,7 @@ pk_gst_get_arch_suffix (void)
 		goto out;
 	}
 
-	g_warning ("did not recognise machine type: '%s'", buf.machine);
+	g_warning ("PackageKit: did not recognise machine type: '%s'", buf.machine);
 out:
 	return suffix;
 }
@@ -343,16 +343,16 @@ main (int argc, char **argv)
 			g_print ("skipping %s\n", codecs[i]);
 			continue;
 		}
-		g_message ("Codec nice name: %s", info->codec_name);
+		g_message ("PackageKit: Codec nice name: %s", info->codec_name);
 		if (info->structure != NULL) {
 			s = pk_gst_structure_to_provide (info->structure);
 			type = g_strdup_printf ("gstreamer0.10(%s-%s)%s%s", info->type_name,
 						gst_structure_get_name (info->structure), s, suffix);
 			g_free (s);
-			g_message ("structure: %s", type);
+			g_message ("PackageKit: structure: %s", type);
 		} else {
 			type = g_strdup_printf ("gstreamer0.10(%s)", info->type_name);
-			g_message ("non-structure: %s", type);
+			g_message ("PackageKit: non-structure: %s", type);
 		}
 
 		/* create (ss) structure */
