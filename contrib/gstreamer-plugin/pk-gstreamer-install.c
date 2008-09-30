@@ -21,6 +21,7 @@
  */
 
 #include <gst/gst.h>
+#include <gst/pbutils/install-plugins.h>
 #include <string.h>
 #include <sys/utsname.h>
 #include <dbus/dbus-glib.h>
@@ -283,7 +284,7 @@ main (int argc, char **argv)
 	guint i;
 	gchar **codecs = NULL;
 	gint xid = 0;
-	gint retval = 1;
+	gint retval = GST_INSTALL_PLUGINS_ERROR;
 	const gchar *suffix;
 
 	const GOptionEntry options[] = {
@@ -389,13 +390,19 @@ main (int argc, char **argv)
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (!ret) {
-		g_error ("Did not install codec: %s", error->message);
+		/* use the error string to return a good GStreamer exit code */
+		retval = GST_INSTALL_PLUGINS_NOT_FOUND;
+		if (g_strrstr (error->message, "did not agree to search") != NULL)
+			retval = GST_INSTALL_PLUGINS_USER_ABORT;
+		else if (g_strrstr (error->message, "not all codecs were installed") != NULL)
+			retval = GST_INSTALL_PLUGINS_PARTIAL_SUCCESS;
+		g_message ("PackageKit: Did not install codec: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
 
 	/* all okay */
-	retval = 0;
+	retval = GST_INSTALL_PLUGINS_SUCCESS;
 
 out:
 	if (array != NULL) {
@@ -404,6 +411,6 @@ out:
 	}
 	if (proxy != NULL)
 		g_object_unref (proxy);
-	return 0;
+	return retval;
 }
 

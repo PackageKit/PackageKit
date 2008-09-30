@@ -45,6 +45,7 @@ BuildRequires: gettext
 BuildRequires: xulrunner-devel
 BuildRequires: libarchive-devel
 BuildRequires: gstreamer-devel
+BuildRequires: gstreamer-plugins-base-devel
 
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
