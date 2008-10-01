@@ -385,6 +385,9 @@ main (int argc, char **argv)
 						G_TYPE_STRING,
 						G_TYPE_INVALID));
 
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
+
 	/* invoke the method */
 	ret = dbus_g_proxy_call (proxy, "InstallGStreamerCodecs", &error,
 				 G_TYPE_UINT, xid,
