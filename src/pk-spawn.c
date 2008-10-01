@@ -49,6 +49,7 @@
 
 #include "pk-spawn.h"
 #include "pk-marshal.h"
+#include "pk-conf.h"
 
 static void     pk_spawn_class_init	(PkSpawnClass *klass);
 static void     pk_spawn_init		(PkSpawn      *spawn);
@@ -72,6 +73,7 @@ struct PkSpawnPrivate
 	GString			*stdout_buf;
 	gchar			*last_argv0;
 	gchar			**last_envp;
+	PkConf			*conf;
 };
 
 enum {
@@ -364,6 +366,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	gboolean ret;
 	guint i;
 	guint len;
+	gint nice;
 	gchar *command;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
@@ -427,8 +430,15 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 				 NULL,
 				 NULL);
 
+	/* get the nice value and ensure we are in the valid range */
+	nice = pk_conf_get_int (spawn->priv->conf, "BackendSpawnNiceValue");
+	nice = CLAMP(nice, -20, 19);
+
 	/* don't completely bog the system down */
-	setpriority (PRIO_PROCESS, spawn->priv->child_pid, PRIO_MIN);
+	if (nice != 0) {
+		egg_debug ("renice to %i", nice);
+		setpriority (PRIO_PROCESS, spawn->priv->child_pid, nice);
+	}
 
 	/* we failed to invoke the helper */
 	if (!ret) {
@@ -504,6 +514,7 @@ pk_spawn_init (PkSpawn *spawn)
 
 	spawn->priv->stdout_buf = g_string_new ("");
 	spawn->priv->exit_loop = g_main_loop_new (NULL, FALSE);
+	spawn->priv->conf = pk_conf_new ();
 }
 
 /**
@@ -539,6 +550,7 @@ pk_spawn_finalize (GObject *object)
 	g_free (spawn->priv->last_argv0);
 	g_strfreev (spawn->priv->last_envp);
 	g_main_loop_unref (spawn->priv->exit_loop);
+	g_object_unref (spawn->priv->conf);
 
 	G_OBJECT_CLASS (pk_spawn_parent_class)->finalize (object);
 }
