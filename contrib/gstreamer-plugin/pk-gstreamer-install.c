@@ -311,6 +311,9 @@ main (int argc, char **argv)
 		goto out;
 	}
 
+	/* this is our parent window */
+	g_message ("PackageKit: xid = %i", xid);
+
 	/* get bus */
 	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
 	if (connection == NULL) {
