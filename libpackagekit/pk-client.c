@@ -3308,6 +3308,10 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     "Cannot connect to PackageKit tid %s", tid);
 		return FALSE;
 	}
+
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
+
 	client->priv->tid = g_strdup (tid);
 	egg_debug ("set tid %s on %p", client->priv->tid, client);
 
