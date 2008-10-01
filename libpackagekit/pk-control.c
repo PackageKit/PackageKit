@@ -270,6 +270,51 @@ out:
 }
 
 /**
+ * pk_control_get_mime_types:
+ * @control: a valid #PkControl instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * The MIME list is the supported package formats.
+ *
+ * Return value: an strv list of the formats the backend supports,
+ * or %NULL if unknown
+ **/
+gchar **
+pk_control_get_mime_types (PkControl *control, GError **error)
+{
+	gboolean ret;
+	GError *error_local = NULL;
+	gchar *type_str = NULL;
+	gchar **types = NULL;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* check to see if we have a valid proxy */
+	if (control->priv->proxy == NULL) {
+		egg_warning ("No proxy for manager");
+		goto out;
+	}
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetMimeTypes", &error_local,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &type_str,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		/* abort as the DBUS method failed */
+		egg_warning ("GetMimeTypes failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* convert to enumerated types */
+	types = g_strsplit (type_str, ";", 0);
+	g_free (type_str);
+out:
+	return types;
+}
+
+/**
  * pk_control_get_network_state:
  * @control: a valid #PkControl instance
  * @error: a %GError to put the error code and message in, or %NULL

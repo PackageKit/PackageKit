@@ -59,6 +59,7 @@ typedef enum
 	PK_ENGINE_ERROR_INVALID_STATE,
 	PK_ENGINE_ERROR_REFUSED_BY_POLICY,
 	PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+	PK_ENGINE_ERROR_NOT_SUPPORTED,
 	PK_ENGINE_ERROR_LAST
 } PkEngineError;
 
@@ -84,6 +85,9 @@ gboolean	 pk_engine_get_filters			(PkEngine	*engine,
 							 GError		**error);
 gboolean	 pk_engine_get_groups			(PkEngine	*engine,
 							 gchar		**groups,
+							 GError		**error);
+gboolean	 pk_engine_get_mime_types		(PkEngine	*engine,
+							 gchar		**types,
 							 GError		**error);
 gboolean	 pk_engine_get_tid			(PkEngine	*engine,
 							 gchar		**tid,

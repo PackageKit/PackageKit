@@ -1463,6 +1463,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,				/* destroy */
 	backend_get_groups,				/* get_groups */
 	backend_get_filters,				/* get_filters */
+	NULL,						/* get_mime_types */
 	backend_cancel,					/* cancel */
 	NULL,						/* download_packages */
 	backend_get_depends,				/* get_depends */

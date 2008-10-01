@@ -111,6 +111,7 @@ struct PkEnginePrivate
 	PkBitfield		 actions;
 	PkBitfield		 groups;
 	PkBitfield		 filters;
+	gchar			*mime_types;
 	guint			 signal_state_priority_timeout;
 	guint			 signal_state_normal_timeout;
 };
@@ -160,6 +161,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_SET_PROXY, "CannotSetProxy"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_NOT_SUPPORTED, "NotSupported"),
 			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -432,6 +434,29 @@ pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
 }
 
 /**
+ * pk_engine_get_mime_types:
+ **/
+gboolean
+pk_engine_get_mime_types (PkEngine *engine, gchar **types, GError **error)
+{
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* not compulsory for backends */
+	if (engine->priv->mime_types == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+			     "Backend does not provide this information");
+		return FALSE;
+	}
+
+	*types = g_strdup (engine->priv->mime_types);
+
+	/* reset the timer */
+	pk_engine_reset_timer (engine);
+
+	return TRUE;
+}
+
+/**
  * pk_engine_get_filters:
  **/
 gboolean
@@ -668,6 +693,7 @@ pk_engine_init (PkEngine *engine)
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->restart_schedule = FALSE;
+	engine->priv->mime_types = NULL;
 
 	/* use the config file */
 	engine->priv->conf = pk_conf_new ();
@@ -700,6 +726,7 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->actions = pk_backend_get_actions (engine->priv->backend);
 	engine->priv->groups = pk_backend_get_groups (engine->priv->backend);
 	engine->priv->filters = pk_backend_get_filters (engine->priv->backend);
+	engine->priv->mime_types = pk_backend_get_mime_types (engine->priv->backend);
 
 	engine->priv->timer = g_timer_new ();
 
@@ -797,6 +824,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->cache);
 	g_object_unref (engine->priv->update_detail_cache);
 	g_object_unref (engine->priv->conf);
+	g_free (engine->priv->mime_types);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }
