@@ -202,6 +202,7 @@ typedef struct {
 	void		(*destroy)			(PkBackend	*backend);
 	PkBitfield	(*get_groups)			(PkBackend	*backend);
 	PkBitfield	(*get_filters)			(PkBackend	*backend);
+	gchar		*(*get_mime_types)		(PkBackend	*backend);
 	void		(*cancel)			(PkBackend	*backend);
 	void		(*download_packages)		(PkBackend	*backend,
 							 gchar		**package_ids,
@@ -279,7 +280,7 @@ typedef struct {
 	gpointer	padding[10];
 } PkBackendDesc;
 
-#define PK_BACKEND_OPTIONS(description, author, initialize, destroy, get_groups, get_filters, cancel, download_packages, \
+#define PK_BACKEND_OPTIONS(description, author, initialize, destroy, get_groups, get_filters, get_mime_types, cancel, download_packages, \
 			   get_depends, get_details, get_distro_upgrades, get_files, get_packages, get_repo_list, get_requires,	\
 			   get_update_detail, get_updates, install_files, install_packages,		\
 			   install_signature, refresh_cache, remove_packages, repo_enable,		\
@@ -292,6 +293,7 @@ typedef struct {
 		destroy,		\
 		get_groups,		\
 		get_filters,		\
+		get_mime_types,		\
 		cancel,			\
 		download_packages,	\
 		get_depends,		\
