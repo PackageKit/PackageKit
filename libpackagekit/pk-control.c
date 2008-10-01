@@ -832,6 +832,9 @@ pk_control_init (PkControl *control)
 	if (control->priv->proxy == NULL)
 		egg_error ("Cannot connect to PackageKit.");
 
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (control->priv->proxy, INT_MAX);
+
 	dbus_g_proxy_add_signal (control->priv->proxy, "TransactionListChanged",
 				 G_TYPE_STRV, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (control->priv->proxy, "TransactionListChanged",
