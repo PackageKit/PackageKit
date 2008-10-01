@@ -147,8 +147,8 @@ Summary: Install GStreamer codecs using PackageKit
 Group: Development/Libraries
 Requires: gstreamer
 Requires: PackageKit-libs = %{version}-%{release}
-Obsoletes: codeina < 0.10.1-8
-Provides:  codeina = 0.10.1-8
+Obsoletes: codeina < 0.10.1
+Provides:  codeina = 0.10.1
 
 %description gstreamer-plugin
 The PackageKit GStreamer plugin allows any Gstreamer application to install
