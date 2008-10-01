@@ -30,6 +30,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/resource.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
@@ -425,6 +426,9 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 				 &spawn->priv->stdout_fd,
 				 NULL,
 				 NULL);
+
+	/* don't completely bog the system down */
+	setpriority (PRIO_PROCESS, spawn->priv->child_pid, PRIO_MIN);
 
 	/* we failed to invoke the helper */
 	if (!ret) {
