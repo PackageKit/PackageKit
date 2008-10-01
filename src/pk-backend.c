@@ -152,6 +152,21 @@ pk_backend_get_groups (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_mime_types:
+ **/
+gchar *
+pk_backend_get_mime_types (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
+
+	/* not compulsory */
+	if (backend->desc->get_mime_types == NULL)
+		return g_strdup ("");
+	return backend->desc->get_mime_types (backend);
+}
+
+/**
  * pk_backend_get_filters:
  **/
 PkBitfield
