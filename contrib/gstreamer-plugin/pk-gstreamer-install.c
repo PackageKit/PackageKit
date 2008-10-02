@@ -311,6 +311,9 @@ main (int argc, char **argv)
 		goto out;
 	}
 
+	/* this is our parent window */
+	g_message ("PackageKit: xid = %i", xid);
+
 	/* get bus */
 	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
 	if (connection == NULL) {
@@ -381,6 +384,9 @@ main (int argc, char **argv)
 						G_TYPE_STRING,
 						G_TYPE_STRING,
 						G_TYPE_INVALID));
+
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
 
 	/* invoke the method */
 	ret = dbus_g_proxy_call (proxy, "InstallGStreamerCodecs", &error,

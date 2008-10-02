@@ -181,6 +181,8 @@ groupMap = {
 'rpmfusion_free;system-tools'                 : GROUP_SYSTEM,
 'rpmfusion_nonfree;games'                     : GROUP_GAMES,
 'rpmfusion_nonfree;hardware-support'          : GROUP_SYSTEM,
+'rpmfusion_nonfree;misc-tools'                : GROUP_SYSTEM,
+'rpmfusion_nonfree;emulators'                 : GROUP_OTHER,
 'rpmfusion_nonfree;base'                      : GROUP_SYSTEM
 }
 

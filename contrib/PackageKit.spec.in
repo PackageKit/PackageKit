@@ -19,8 +19,8 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: PackageKit-libs = %{version}-%{release}
-Requires: yum-packagekit = %{version}-%{release}
-Requires: udev-packagekit = %{version}-%{release}
+Requires: PackageKit-udev-helper = %{version}-%{release}
+Requires: PackageKit-yum-plugin = %{version}-%{release}
 Requires: PackageKit-yum = %{version}-%{release}
 Requires: shared-mime-info
 Requires: python-sqlite2
@@ -78,25 +78,27 @@ Requires: %{name} = %{version}-%{release}
 %description docs
 API docs for PackageKit.
 
-%package -n udev-packagekit
+%package udev-helper
 Summary: Tell PackageKit to install firmware that udev requires
 Group: System Environment/Base
 Requires: udev
 Requires: PackageKit
+Obsoletes: udev-packagekit
 
-%description -n udev-packagekit
-udev-packagekit tells PackageKit that firmware was not available and was
+%description udev-helper
+PackageKit-udev-helper tells PackageKit that firmware was not available and was
 needed. This allows PackageKit to do the right thing and prompt for
 the firmware to be installed.
 
-%package -n yum-packagekit
+%package yum-plugin
 Summary: Tell PackageKit to check for updates when yum exits
 Group: System Environment/Base
 Requires: yum >= 3.0
 Requires: PackageKit
+Obsoletes: yum-packagekit
 
-%description -n yum-packagekit
-yum-packagekit tells PackageKit to check for updates when yum exits.
+%description yum-plugin
+PackageKit-yum-plugin tells PackageKit to check for updates when yum exits.
 This way, if you run 'yum update' and install all available updates, puplet
 will almost instantly update itself to reflect this.
 
@@ -145,8 +147,8 @@ Summary: Install GStreamer codecs using PackageKit
 Group: Development/Libraries
 Requires: gstreamer
 Requires: PackageKit-libs = %{version}-%{release}
-Obsoletes: codeina < 0.10.1-8
-Provides:  codeina = 0.10.1-8
+Obsoletes: codeina < 0.10.1
+Provides:  codeina = 0.10.1
 
 %description gstreamer-plugin
 The PackageKit GStreamer plugin allows any Gstreamer application to install
@@ -249,13 +251,13 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_datadir}/PackageKit/helpers/yum
 %{_datadir}/PackageKit/helpers/yum/*
 
-%files -n yum-packagekit
+%files yum-plugin
 %defattr(-, root, root)
 %doc README AUTHORS NEWS COPYING
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/refresh-packagekit.conf
 /usr/lib/yum-plugins/refresh-packagekit.*
 
-%files -n udev-packagekit
+%files udev-helper
 %defattr(-, root, root)
 %doc README AUTHORS NEWS COPYING
 %{_sysconfdir}/udev/rules.d/*.rules
