@@ -68,6 +68,7 @@ struct PkSpawnPrivate
 	guint			 kill_id;
 	gboolean		 finished;
 	gboolean		 is_sending_exit;
+	gboolean		 is_changing_dispatcher;
 	PkSpawnExitType		 exit;
 	GMainLoop		*exit_loop;
 	GString			*stdout_buf;
@@ -204,12 +205,13 @@ pk_spawn_check_child (PkSpawn *spawn)
 	ret = g_main_loop_is_running (spawn->priv->exit_loop);
 	if (ret) {
 		g_main_loop_quit (spawn->priv->exit_loop);
-		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED;
-	}
 
-	/* are we doing pk_spawn_exit */
-	if (spawn->priv->is_sending_exit)
-		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT;
+		/* are we doing pk_spawn_exit for a good reason? */
+		if (spawn->priv->is_changing_dispatcher)
+			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED;
+		else if (spawn->priv->is_sending_exit)
+			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT;
+	}
 
 	/* don't emit if we just closed an invalid dispatcher */
 	egg_debug ("emitting exit %i", spawn->priv->exit);
@@ -331,7 +333,7 @@ out:
 /**
  * pk_spawn_exit:
  *
- * Just write "exit" into the open fd and hope the backend does the right thing
+ * Just write "exit" into the open fd and wait for backend to close
  *
  **/
 gboolean
@@ -347,8 +349,17 @@ pk_spawn_exit (PkSpawn *spawn)
 		return FALSE;
 	}
 
+	/* send command */
 	spawn->priv->is_sending_exit = TRUE;
 	ret = pk_spawn_send_stdin (spawn, "exit");
+
+	/* wait for the script to exit */
+	if (ret) {
+		g_main_loop_run (spawn->priv->exit_loop);
+		egg_debug ("instance exited");
+	}
+
+	spawn->priv->is_sending_exit = FALSE;
 	return ret;
 }
 
@@ -405,15 +416,12 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 
 		/* kill off existing instance */
 		egg_debug ("changing dispatcher (exit old instance)");
+		spawn->priv->is_changing_dispatcher = TRUE;
 		pk_spawn_exit (spawn);
-
-		/* wait for the script to exit */
-		g_main_loop_run (spawn->priv->exit_loop);
-		egg_debug ("old instance exited");
+		spawn->priv->is_changing_dispatcher = FALSE;
 	}
 
 	/* create spawned object for tracking */
-	spawn->priv->is_sending_exit = FALSE;
 	spawn->priv->finished = FALSE;
 	egg_debug ("creating new instance of %s", argv[0]);
 	ret = g_spawn_async_with_pipes (NULL, argv, envp,
@@ -502,6 +510,7 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->kill_id = 0;
 	spawn->priv->finished = FALSE;
 	spawn->priv->is_sending_exit = FALSE;
+	spawn->priv->is_changing_dispatcher = FALSE;
 	spawn->priv->last_argv0 = NULL;
 	spawn->priv->last_envp = NULL;
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
