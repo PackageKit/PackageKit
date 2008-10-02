@@ -252,8 +252,6 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 /**
  * pk_spawn_kill:
  *
- * THIS IS A VERY DANGEROUS THING TO DO!
- *
  * We send SIGQUIT and after a few ms SIGKILL
  *
  **/
@@ -292,7 +290,7 @@ pk_spawn_kill (PkSpawn *spawn)
 /**
  * pk_spawn_send_stdin:
  *
- * Just write "exit" into the open fd and hope the backend does the right thing
+ * Send new comands to a running (but idle) dispatcher script
  *
  **/
 static gboolean
@@ -373,10 +371,6 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	g_return_val_if_fail (argv != NULL, FALSE);
 
 	len = g_strv_length (argv);
-	if (len > 5) {
-		egg_debug ("limiting debugging to 5 entries");
-		len = 5;
-	}
 	for (i=0; i<len; i++)
 		egg_debug ("argv[%i] '%s'", i, argv[i]);
 	if (envp != NULL) {
