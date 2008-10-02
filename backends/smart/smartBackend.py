@@ -694,7 +694,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     # APT
     "metapackages"                            : GROUP_COLLECTIONS,
     # Slack
-    "Slackware"                               : GROUP_UNKNOWN
+    "Slackware"                               : GROUP_UNKNOWN,
+    # Arch
+    "Archlinux"                               : GROUP_UNKNOWN
     }
     
     @needs_cache
