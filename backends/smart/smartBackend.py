@@ -45,6 +45,7 @@ def needs_cache(func):
             obj.ctrl.reloadChannels()
         result = None
         try:
+            obj.reset()
             result = func(obj, *args, **kwargs)
         except UnicodeDecodeError, e:
             pass
