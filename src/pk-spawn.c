@@ -390,6 +390,12 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 			egg_debug ("envp[%i] '%s'", i, envp[i]);
 	}
 
+	/* check we are not using a closing instance */
+	if (spawn->priv->is_sending_exit) {
+		egg_warning ("trying to use instance that is in the process of exiting");
+		return FALSE;
+	}
+
 	/* we can reuse the dispatcher if:
 	 *  - it's still running
 	 *  - argv[0] (executable name is the same)
