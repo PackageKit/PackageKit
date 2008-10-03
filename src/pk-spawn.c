@@ -582,9 +582,8 @@ pk_spawn_new (void)
  ***************************************************************************/
 #ifdef EGG_TEST
 #include "egg-test.h"
-#define BAD_EXIT 999
 
-PkSpawnExitType mexit = BAD_EXIT;
+PkSpawnExitType mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 guint stdout_count = 0;
 guint finished_count = 0;
 
@@ -667,7 +666,7 @@ pk_spawn_test (EggTest *test)
 	 **********           Generic tests               ***********
 	 ************************************************************/
 	egg_test_title (test, "make sure return error for missing file");
-	mexit = BAD_EXIT;
+	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	argv = g_strsplit ("pk-spawn-test-xxx.sh", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_strfreev (argv);
@@ -678,7 +677,7 @@ pk_spawn_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "make sure finished wasn't called");
-	if (mexit == BAD_EXIT)
+	if (mexit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "Called finish for bad file!");
@@ -753,7 +752,7 @@ pk_spawn_test (EggTest *test)
 	 **********           Killing tests               ***********
 	 ************************************************************/
 	egg_test_title (test, "make sure run correct helper, and kill it");
-	mexit = BAD_EXIT;
+	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	path = egg_test_get_data_file ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
@@ -781,7 +780,7 @@ pk_spawn_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "make sure run correct helper, and quit it");
-	mexit = BAD_EXIT;
+	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	path = egg_test_get_data_file ("pk-spawn-test-sigquit.sh");
 	argv = g_strsplit (path, " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
@@ -823,7 +822,7 @@ pk_spawn_test (EggTest *test)
 	 **********  Can we send commands to a dispatcher ***********
 	 ************************************************************/
 	egg_test_title (test, "run the dispatcher");
-	mexit = BAD_EXIT;
+	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	file = egg_test_get_data_file ("pk-spawn-dispatcher.py");
 	path = g_strdup_printf ("%s\tsearch-name\tnone\tpower manager", file);
 	argv = g_strsplit (path, "\t", 0);
