@@ -182,6 +182,9 @@ main (int argc, char *argv[])
 	PkConf *conf = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
+	const gchar *env_pk_verbose;
+	const gchar *env_pk_console;
+	const gchar *env_pk_logging;
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
@@ -250,7 +253,13 @@ main (int argc, char *argv[])
 
 	/* we don't actually need to do this, except it rules out the
 	 * 'it works from the command line but not service activation' bugs */
+	env_pk_verbose = g_getenv (EGG_VERBOSE);
+	env_pk_console = g_getenv (EGG_CONSOLE);
+	env_pk_logging = g_getenv (EGG_LOGGING);
 	clearenv ();
+	g_setenv (EGG_VERBOSE, env_pk_verbose, FALSE);
+	g_setenv (EGG_CONSOLE, env_pk_console, FALSE);
+	g_setenv (EGG_LOGGING, env_pk_logging, FALSE);
 
 	/* get values from the config file */
 	conf = pk_conf_new ();
