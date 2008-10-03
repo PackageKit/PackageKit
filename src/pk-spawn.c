@@ -631,6 +631,21 @@ new_spawn_object (EggTest *test, PkSpawn **pspawn)
 	stdout_count = 0;
 }
 
+static gboolean
+idle_cb (gpointer data)
+{
+	EggTest *test = (EggTest*) data;
+
+	egg_test_title (test, "make sure dispatcher has closed when run idle add");
+	if (mexit == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "mexit was %i", mexit);
+
+	/* never repeat */
+	return FALSE;
+}
+
 void
 pk_spawn_test (EggTest *test)
 {
@@ -861,6 +876,9 @@ pk_spawn_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not get a package");
+
+	/* see if pk_spawn_exit blocks (required) */
+	g_idle_add (idle_cb, test);
 
 	/************************************************************/
 	egg_test_title (test, "ask dispatcher to close");
