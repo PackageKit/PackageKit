@@ -209,7 +209,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{python_sitelib}/packagekit/*py*
 %dir %{_sysconfdir}/bash_completion.d
 %config %{_sysconfdir}/bash_completion.d/pk-completion.bash
-%config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
+%config(noreplace) %{_sysconfdir}/PackageKit/*.conf
 %config %{_sysconfdir}/dbus-1/system.d/*
 %dir %{_datadir}/PackageKit/helpers/test_spawn
 %{_datadir}/PackageKit/helpers/test_spawn/*
