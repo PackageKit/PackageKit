@@ -9,6 +9,9 @@ INCLUDES = \
 	-I$(top_srcdir)/libpackagekit				\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"		\
+	-DEGG_VERBOSE="\"PK_VERBOSE\""			\
+	-DEGG_LOGGING="\"PK_LOGGING\""			\
+	-DEGG_CONSOLE="\"PK_CONSOLE\""			\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 

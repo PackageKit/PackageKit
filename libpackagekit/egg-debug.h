@@ -62,6 +62,8 @@ G_BEGIN_DECLS
 void		egg_debug_init			(gboolean	 debug);
 void		egg_debug_set_logging		(gboolean	 enabled);
 gboolean	egg_debug_enabled		(void);
+gboolean	egg_debug_is_logging		(void);
+gboolean	egg_debug_is_console		(void);
 void		egg_debug_backtrace		(void);
 void		egg_debug_real			(const gchar	*func,
 						 const gchar	*file,

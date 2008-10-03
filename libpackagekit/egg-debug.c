@@ -53,22 +53,7 @@
 #define CONSOLE_CYAN		36
 #define CONSOLE_WHITE		37
 
-static gboolean do_verbose = FALSE;	/* if we should print out debugging */
-static gboolean do_logging = FALSE;	/* if we should write to a file */
-static gboolean is_console = FALSE;
 static gint fd = -1;
-
-/**
- * egg_debug_set_logging:
- **/
-void
-egg_debug_set_logging (gboolean enabled)
-{
-	do_logging = enabled;
-	if (enabled) {
-		egg_debug ("now logging to %s", EGG_LOG_FILE);
-	}
-}
 
 /**
  * pk_set_console_mode:
@@ -79,9 +64,9 @@ pk_set_console_mode (guint console_code)
 	gchar command[13];
 
 	/* don't put extra commands into logs */
-	if (!is_console) {
+	if (!egg_debug_is_console ())
 		return;
-	}
+
 	/* Command is the control command to the terminal */
 	g_snprintf (command, 13, "%c[%dm", 0x1B, console_code);
 	printf ("%s", command);
@@ -123,21 +108,18 @@ pk_log_line (const gchar *buffer)
 	if (fd == -1) {
 		/* ITS4: ignore, /var/log/foo is owned by root, and this is just debug text */
 		fd = open (EGG_LOG_FILE, O_WRONLY|O_APPEND|O_CREAT, 0777);
-		if (fd == -1) {
+		if (fd == -1)
 			g_error ("could not open log: '%s'", EGG_LOG_FILE);
-		}
 	}
 
 	/* ITS4: ignore, debug text always NULL terminated */
 	count = write (fd, buffer, strlen (buffer));
-	if (count == -1) {
+	if (count == -1)
 		g_warning ("could not write %s", buffer);
-	}
 	/* newline */
 	count = write (fd, "\n", 1);
-	if (count == -1) {
+	if (count == -1)
 		g_warning ("could not write newline");
-	}
 }
 
 /**
@@ -170,7 +152,7 @@ pk_print_line (const gchar *func, const gchar *file, const int line, const gchar
 	pk_set_console_mode (CONSOLE_RESET);
 
 	/* log to a file */
-	if (do_logging) {
+	if (egg_debug_is_logging ()) {
 		pk_log_line (header);
 		pk_log_line (buffer);
 	}
@@ -190,9 +172,8 @@ egg_debug_real (const gchar *func, const gchar *file, const int line, const gcha
 	va_list args;
 	gchar *buffer = NULL;
 
-	if (do_verbose == FALSE) {
+	if (!egg_debug_enabled ())
 		return;
-	}
 
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
@@ -212,18 +193,16 @@ egg_warning_real (const gchar *func, const gchar *file, const int line, const gc
 	va_list args;
 	gchar *buffer = NULL;
 
-	if (do_verbose == FALSE) {
+	if (!egg_debug_enabled ())
 		return;
-	}
 
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
 	/* do extra stuff for a warning */
-	if (!is_console) {
+	if (!egg_debug_is_console ())
 		printf ("*** WARNING ***\n");
-	}
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 
 	g_free(buffer);
@@ -243,9 +222,8 @@ egg_error_real (const gchar *func, const gchar *file, const int line, const gcha
 	va_end (args);
 
 	/* do extra stuff for a warning */
-	if (!is_console) {
+	if (!egg_debug_is_console ())
 		printf ("*** ERROR ***\n");
-	}
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 	g_free(buffer);
 
@@ -263,7 +241,50 @@ egg_error_real (const gchar *func, const gchar *file, const int line, const gcha
 gboolean
 egg_debug_enabled (void)
 {
-	return do_verbose;
+	const gchar *env;
+	env = g_getenv (EGG_VERBOSE);
+	return (g_strcmp0 (env, "1") == 0);
+}
+
+/**
+ * egg_debug_is_logging:
+ *
+ * Returns: TRUE if we have logging enabled
+ **/
+gboolean
+egg_debug_is_logging (void)
+{
+	const gchar *env;
+	env = g_getenv (EGG_LOGGING);
+	return (g_strcmp0 (env, "1") == 0);
+}
+
+/**
+ * egg_debug_is_console:
+ *
+ * Returns: TRUE if we have debugging enabled
+ **/
+gboolean
+egg_debug_is_console (void)
+{
+	const gchar *env;
+	env = g_getenv (EGG_CONSOLE);
+	return (g_strcmp0 (env, "1") == 0);
+}
+
+/**
+ * egg_debug_set_logging:
+ **/
+void
+egg_debug_set_logging (gboolean enabled)
+{
+	if (enabled)
+		g_setenv (EGG_LOGGING, "1", FALSE);
+	else
+		g_setenv (EGG_LOGGING, "0", FALSE);
+
+	if (egg_debug_is_logging ())
+		egg_debug ("logging to %s", EGG_LOG_FILE);
 }
 
 /**
@@ -273,11 +294,15 @@ egg_debug_enabled (void)
 void
 egg_debug_init (gboolean debug)
 {
-	do_verbose = debug;
 	/* check if we are on console */
-	if (isatty (fileno (stdout)) == 1) {
-		is_console = TRUE;
-	}
-	egg_debug ("Verbose debugging %i (on console %i)", do_verbose, is_console);
+	if (isatty (fileno (stdout)) == 1)
+		g_setenv (EGG_CONSOLE, "1", FALSE);
+	else
+		g_setenv (EGG_CONSOLE, "0", FALSE);
+	if (debug)
+		g_setenv (EGG_VERBOSE, "1", FALSE);
+	else
+		g_setenv (EGG_VERBOSE, "0", FALSE);
+	egg_debug ("Verbose debugging %i (on console %i)%s", egg_debug_enabled (), egg_debug_is_console (), EGG_VERBOSE);
 }
 
