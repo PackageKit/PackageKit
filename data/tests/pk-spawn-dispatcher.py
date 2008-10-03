@@ -28,7 +28,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def unLock(self):
         PackageKitBaseBackend.unLock(self)
         # simulate doing something
-        time.sleep(1)
+        time.sleep(0.5)
 
     def search_name(self,filters,key):
         # check we escape spaces properly
