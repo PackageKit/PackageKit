@@ -15,11 +15,20 @@
 # Dispacher script to run pk commands from stdin
 
 import sys
+import time
 from packagekit.backend import *
 
 class PackageKitYumBackend(PackageKitBaseBackend):
     def __init__(self,args,lock=True):
         PackageKitBaseBackend.__init__(self,args)
+        PackageKitBaseBackend.doLock(self)
+        # simulate doing something
+        time.sleep(2)
+
+    def unLock(self):
+        PackageKitBaseBackend.unLock(self)
+        # simulate doing something
+        time.sleep(1)
 
     def search_name(self,filters,key):
         # check we escape spaces properly

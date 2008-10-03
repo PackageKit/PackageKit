@@ -821,11 +821,11 @@ pk_spawn_test (EggTest *test)
 		egg_test_failed (test, "did not run dispatcher");
 
 	/************************************************************/
-	egg_test_title (test, "wait 2 seconds for the dispatcher");
+	egg_test_title (test, "wait 2+2 seconds for the dispatcher");
 	/* wait 2 seconds, and make sure we are still running */
-	egg_test_loop_wait (test, 2000);
+	egg_test_loop_wait (test, 4000);
 	elapsed = egg_test_elapsed (test);
-	if (elapsed > 1900 && elapsed < 2100)
+	if (elapsed > 3900 && elapsed < 4100)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "dispatcher exited");
