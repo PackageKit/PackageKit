@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: policycoreutils.HEAD.de\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-09-25 00:31+0000\n"
-"PO-Revision-Date: 2008-09-30 00:44+0200\n"
+"PO-Revision-Date: 2008-10-03 14:17+0200\n"
 "Last-Translator: Fabian Affolter <fab@fedoraproject.org>\n"
 "Language-Team:  <en@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -26,7 +26,7 @@ msgstr ""
 
 #: ../client/pk-console.c:274
 msgid "Update detail"
-msgstr ""
+msgstr "Details werden aktualisiert"
 
 #: ../client/pk-console.c:491
 msgid "A system restart is required"
@@ -42,7 +42,7 @@ msgstr "Ein Programm-Neustart wird benötigt"
 
 #: ../client/pk-console.c:588 ../client/pk-generate-pack.c:126
 msgid "There are multiple package matches"
-msgstr ""
+msgstr "Es passen mehrere Packete"
 
 #. find out what package the user wants to use
 #: ../client/pk-console.c:595 ../client/pk-generate-pack.c:133
@@ -55,16 +55,16 @@ msgstr ""
 
 #: ../client/pk-console.c:735
 msgid "Could not find package to remove"
-msgstr ""
+msgstr "Die Packete zum Löschen konnten nicht gefunden werden"
 
 #: ../client/pk-console.c:796
 msgid "The following packages have to be removed"
-msgstr ""
+msgstr "Die folgenden Packete müssen entfernt werden"
 
 #. get user input
 #: ../client/pk-console.c:803
 msgid "Okay to remove additional packages?"
-msgstr ""
+msgstr "Dürfen die zusätzlichen Packete entfernt werden?"
 
 #: ../client/pk-console.c:807 ../client/pk-generate-pack.c:528
 #: ../client/pk-generate-pack-main.c:131
@@ -92,19 +92,17 @@ msgid "Could not find details for"
 msgstr "Konnte keine Details finden für"
 
 #: ../client/pk-console.c:980
-#, fuzzy
 msgid "Could not find the files for this package"
-msgstr "Konnte Datei-Kontexte nicht auflisten"
+msgstr "Die Dateien für dieses Packet konnte nicht gefunden werden"
 
 #: ../client/pk-console.c:987
 #, fuzzy
 msgid "Could not get the file list"
-msgstr "Konnte Datei-Kontexte nicht auflisten"
+msgstr "Die Dateiliste konnte nicht geholt werden"
 
 #: ../client/pk-console.c:1006
-#, fuzzy
 msgid "Could not find the update details for"
-msgstr "Konnte Schlüssel für %s nicht kreieren"
+msgstr "Die Aktualisierungsdetails konnten nicht gefunden werden für"
 
 #: ../client/pk-console.c:1067
 msgid "Package description"
@@ -112,7 +110,7 @@ msgstr "Packet-Beschreibung"
 
 #: ../client/pk-console.c:1100
 msgid "Package files"
-msgstr ""
+msgstr "Packet-Dateien"
 
 #: ../client/pk-console.c:1108
 msgid "No files"
@@ -121,7 +119,7 @@ msgstr "Keine Dateien"
 #. get user input
 #: ../client/pk-console.c:1140
 msgid "Okay to import key?"
-msgstr ""
+msgstr "Darf der Schlüssel importiert werden?"
 
 #: ../client/pk-console.c:1143
 msgid "Did not import key"
@@ -164,12 +162,11 @@ msgstr "Setze den Filter, z.B. installiert"
 
 #: ../client/pk-console.c:1384
 msgid "Exit without waiting for actions to complete"
-msgstr ""
+msgstr "Beende ohne auf fertigzustellende Aktionen zu warten"
 
 #: ../client/pk-console.c:1407
-#, fuzzy
 msgid "Could not connect to system DBUS."
-msgstr "Konnte exec-Kontext nicht auf %s setzen.\n"
+msgstr "Konnte nicht mit dem System-DBUS verbinden."
 
 #: ../client/pk-console.c:1500
 msgid "You need to specify a search type, e.g. name"
@@ -298,7 +295,7 @@ msgstr ""
 
 #: ../client/pk-generate-pack-main.c:129
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr ""
+msgstr "Ein Packet mit dem selben Namen existiert bereits, möchten Sie es überschreiben?"
 
 #: ../client/pk-generate-pack-main.c:142
 #, fuzzy
@@ -322,7 +319,7 @@ msgstr "Konnte Datei %s nicht öffnen\n"
 
 #: ../client/pk-import-specspo.c:193
 msgid "You probably need to run this program as the root user"
-msgstr ""
+msgstr "Sie müssen dieses Programm vermutlich als root starten"
 
 #: ../client/pk-monitor.c:131
 msgid "PackageKit Monitor"
@@ -335,7 +332,7 @@ msgstr "Ports müssen zahlen zwischen 1 und %d sein"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:300
 msgid "Getting package information..."
-msgstr ""
+msgstr "Packet-Informationen werden geholt"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:304
 #, c-format
@@ -365,6 +362,8 @@ msgid ""
 "\n"
 "<span color='#%06x' underline='single'>Run version %s now</span>"
 msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Version %s wird jetzt ausgeführt</span>"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:321
 #, c-format
@@ -372,6 +371,8 @@ msgid ""
 "\n"
 "<span color='#%06x' underline='single'>Run now</span>"
 msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Wird jetzt ausgeführt</span>"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:325
 #, c-format
@@ -379,12 +380,15 @@ msgid ""
 "\n"
 "<span color='#%06x' underline='single'>Upgrade to version %s</span>"
 msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Aktualisierung zu Version %s</span>"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
 msgid ""
 "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
 msgstr ""
+"<span color='#%06x' underline='single' size='larger'>%s wird jetzt installiert</span>"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:333
 #, c-format
@@ -400,6 +404,8 @@ msgid ""
 "\n"
 "<small>No packages found for your system</small>"
 msgstr ""
+"\n"
+"<small>Es wurden keine Packete für Ihr System gefunden</small>"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:341
 msgid ""
@@ -411,7 +417,7 @@ msgstr ""
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
-msgstr ""
+msgstr "PackageKit Katalog"
 
 #: ../data/packagekit-pack.xml.in.h:1
 msgid "PackageKit Service Pack"
@@ -433,7 +439,7 @@ msgstr ""
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
 "dbus-1/system.d directory"
-msgstr ""
+msgstr "Die org.freedesktop.PackageKit.conf-Datei ist nicht auf Ihrem Rechner in /etc/dbus-1/system.d installiert"
 
 #: ../src/pk-main.c:188
 msgid "Packaging backend to use, e.g. dummy"
