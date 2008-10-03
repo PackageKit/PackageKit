@@ -70,7 +70,6 @@ struct PkSpawnPrivate
 	gboolean		 is_sending_exit;
 	gboolean		 is_changing_dispatcher;
 	PkSpawnExitType		 exit;
-	GMainLoop		*exit_loop;
 	GString			*stdout_buf;
 	gchar			*last_argv0;
 	gchar			**last_envp;
@@ -150,7 +149,6 @@ static gboolean
 pk_spawn_check_child (PkSpawn *spawn)
 {
 	int status;
-	gboolean ret;
 	static guint limit_printing = 0;
 
 	/* this shouldn't happen */
@@ -201,17 +199,11 @@ pk_spawn_check_child (PkSpawn *spawn)
 		spawn->priv->kill_id = 0;
 	}
 
-	/* are we waiting for a "exit" from the dispatcher? */
-	ret = g_main_loop_is_running (spawn->priv->exit_loop);
-	if (ret) {
-		g_main_loop_quit (spawn->priv->exit_loop);
-
-		/* are we doing pk_spawn_exit for a good reason? */
-		if (spawn->priv->is_changing_dispatcher)
-			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED;
-		else if (spawn->priv->is_sending_exit)
-			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT;
-	}
+	/* are we doing pk_spawn_exit for a good reason? */
+	if (spawn->priv->is_changing_dispatcher)
+		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED;
+	else if (spawn->priv->is_sending_exit)
+		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT;
 
 	/* don't emit if we just closed an invalid dispatcher */
 	egg_debug ("emitting exit %i", spawn->priv->exit);
@@ -340,6 +332,7 @@ gboolean
 pk_spawn_exit (PkSpawn *spawn)
 {
 	gboolean ret;
+	guint count = 0;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 
@@ -352,13 +345,23 @@ pk_spawn_exit (PkSpawn *spawn)
 	/* send command */
 	spawn->priv->is_sending_exit = TRUE;
 	ret = pk_spawn_send_stdin (spawn, "exit");
+	if (!ret)
+		goto out;
 
-	/* wait for the script to exit */
-	if (ret) {
-		g_main_loop_run (spawn->priv->exit_loop);
-		egg_debug ("instance exited");
-	}
+	/* block until the previous script exited */
+	do {
+		egg_debug ("waiting for exit");
+		/* Usleep rather than g_main_loop_run -- we have to block.
+		 * If we run the loop, other idle events can be processed,
+		 * and this includes sending data to a new instance,
+		 * which of course will fail as the 'old' script is exiting */
+		g_usleep (100*1000); /* 100 ms */
+		ret = pk_spawn_check_child (spawn);
+	} while (ret && count++ < 50);
 
+	/* the script exited okay */
+	ret = TRUE;
+out:
 	spawn->priv->is_sending_exit = FALSE;
 	return ret;
 }
@@ -522,7 +525,6 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 
 	spawn->priv->stdout_buf = g_string_new ("");
-	spawn->priv->exit_loop = g_main_loop_new (NULL, FALSE);
 	spawn->priv->conf = pk_conf_new ();
 }
 
@@ -558,7 +560,6 @@ pk_spawn_finalize (GObject *object)
 	g_string_free (spawn->priv->stdout_buf, TRUE);
 	g_free (spawn->priv->last_argv0);
 	g_strfreev (spawn->priv->last_envp);
-	g_main_loop_unref (spawn->priv->exit_loop);
 	g_object_unref (spawn->priv->conf);
 
 	G_OBJECT_CLASS (pk_spawn_parent_class)->finalize (object);
