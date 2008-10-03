@@ -79,12 +79,15 @@ class PackageKitBaseBackend:
         @param description: Error description
         @param exit: exit application with rc = 1, if true
         '''
+        # unlock before we emit if we are going to exit
+        if exit and self.isLocked():
+            self.unLock()
+
+        # this should be fast now
         print "error\t%s\t%s" % (err, description)
         print "finished"
         sys.stdout.flush()
         if exit:
-            if self.isLocked():
-                self.unLock()
             sys.exit(1)
 
     def message(self, typ, msg):
