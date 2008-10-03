@@ -506,7 +506,8 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
 
 	/* do some optional extra actions when we've finished refreshing the cache */
-	if (transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+	if (exit == PK_EXIT_ENUM_SUCCESS &&
+	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		PkRefresh *refresh;
 		refresh = pk_refresh_new ();
 
