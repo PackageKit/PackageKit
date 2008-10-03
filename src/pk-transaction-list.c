@@ -197,7 +197,7 @@ pk_transaction_list_remove (PkTransactionList *tlist, const gchar *tid)
 		return FALSE;
 	}
 	if (item->finished) {
-		egg_warning ("already finished, so waiting to timeout");
+		egg_debug ("already finished, so waiting to timeout");
 		return FALSE;
 	}
 	/* check if we are running, or _just_ about to be run */
@@ -489,6 +489,7 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 	guint wrong = 0;
 	guint length;
 	PkTransactionItem *item;
+	PkRoleEnum role;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), 0);
 
@@ -498,7 +499,7 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 		goto out;
 
 	/* get state */
-	egg_debug ("checking consistency");
+	egg_debug ("checking consistency as length %i", length);
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		if (item->running)
@@ -509,6 +510,11 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 			wrong++;
 		if (item->running && item->finished)
 			wrong++;
+
+		/* print */
+		role = pk_transaction_priv_get_role (item->transaction);
+		g_print ("%0i\t%s\trunning[%i] committed[%i] finished[%i]\n", i,
+			 pk_role_enum_to_text (role), item->running, item->committed, item->finished);
 	}
 
 	/* wrong flags */
