@@ -590,6 +590,11 @@ class PackageKitBaseBackend:
             args = line.split('\t')
             self.dispatch_command(args[0], args[1:])
 
+        # unlock backend and exit with success
+        if self.isLocked():
+            self.unLock()
+        sys.exit(0)
+
 def exceptionHandler(typ, value, tb, base):
     # Restore original exception handler
     sys.excepthook = sys.__excepthook__
