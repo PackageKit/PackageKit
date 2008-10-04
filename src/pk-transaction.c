@@ -170,6 +170,7 @@ enum {
 	PK_TRANSACTION_STATUS_CHANGED,
 	PK_TRANSACTION_TRANSACTION,
 	PK_TRANSACTION_UPDATE_DETAIL,
+	PK_TRANSACTION_DESTROY,
 	PK_TRANSACTION_LAST_SIGNAL
 };
 
@@ -3730,6 +3731,10 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      G_TYPE_NONE, 12, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TRANSACTION_DESTROY] =
+		g_signal_new ("destroy",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
 	g_type_class_add_private (klass, sizeof (PkTransactionPrivate));
 }
@@ -3801,6 +3806,10 @@ pk_transaction_finalize (GObject *object)
 
 	transaction = PK_TRANSACTION (object);
 	g_return_if_fail (transaction->priv != NULL);
+
+	/* send signal to clients that we are about to be destroyed */
+	egg_debug ("emitting destroy %s", transaction->priv->tid);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_DESTROY], 0);
 
 	g_free (transaction->priv->last_package_id);
 	g_free (transaction->priv->dbus_name);

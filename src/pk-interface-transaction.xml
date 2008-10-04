@@ -2092,6 +2092,18 @@
       </arg>
     </signal>
 
+    <!--*****************************************************************************************-->
+    <signal name="Destroy">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is sent when the transaction has been destroyed and is
+            no longer available for use.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </signal>
+
   </interface>
 </node>
 
