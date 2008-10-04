@@ -87,6 +87,10 @@ struct PkTransactionPrivate
 {
 	PkRoleEnum		 role;
 	PkStatusEnum		 status;
+	guint			 percentage;
+	guint			 subpercentage;
+	guint			 elapsed;
+	guint			 remaining;
 	gboolean		 finished;
 	gboolean		 running;
 	gboolean		 has_been_run;
@@ -359,15 +363,31 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_allow_cancel_cb:
+ * pk_transaction_progress_changed_emit:
  **/
 static void
-pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTransaction *transaction)
+pk_transaction_progress_changed_emit (PkTransaction *transaction, guint percentage, guint subpercentage, guint elapsed, guint remaining)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("AllowCancel now %i", allow_cancel);
+	/* save so we can do GetProgress on a queued or finished transaction */
+	transaction->priv->percentage = percentage;
+	transaction->priv->subpercentage = subpercentage;
+	transaction->priv->elapsed = elapsed;
+	transaction->priv->remaining = remaining;
+
+	egg_debug ("emitting percentage-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_PROGRESS_CHANGED], 0, percentage, subpercentage, elapsed, remaining);
+}
+
+/**
+ * pk_transaction_allow_cancel_emit:
+ **/
+static void
+pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_cancel)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+
 	transaction->priv->allow_cancel = allow_cancel;
 
 	/* remove or add the hal inhibit */
@@ -376,8 +396,50 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
 	else
 		pk_inhibit_add (transaction->priv->inhibit, transaction);
 
-	egg_debug ("emitting allow-interrpt %i", allow_cancel);
+	egg_debug ("emitting allow-cancel %i", allow_cancel);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_ALLOW_CANCEL], 0, allow_cancel);
+}
+
+/**
+ * pk_transaction_status_changed_emit:
+ **/
+static void
+pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum status)
+{
+	const gchar *status_text;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	transaction->priv->status = status;
+	status_text = pk_status_enum_to_text (status);
+
+	egg_debug ("emitting status-changed '%s'", status_text);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_STATUS_CHANGED], 0, status_text);
+}
+
+/**
+ * pk_transaction_finished_emit:
+ **/
+static void
+pk_transaction_finished_emit (PkTransaction *transaction, PkExitEnum exit, guint time)
+{
+	const gchar *exit_text;
+	exit_text = pk_exit_enum_to_text (exit);
+	egg_debug ("emitting finished '%s', %i", exit_text, time);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, time);
+}
+
+/**
+ * pk_transaction_allow_cancel_cb:
+ **/
+static void
+pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTransaction *transaction)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	pk_transaction_allow_cancel_emit (transaction, allow_cancel);
 }
 
 /**
@@ -475,7 +537,6 @@ static void
 pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *transaction)
 {
 	gboolean ret;
-	const gchar *exit_text;
 	guint time;
 	gchar *packages;
 
@@ -583,9 +644,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
-	exit_text = pk_exit_enum_to_text (exit);
-	egg_debug ("emitting finished '%s', %i", exit_text, time);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, time);
+	pk_transaction_finished_emit (transaction, exit, time);
 }
 
 /**
@@ -684,10 +743,7 @@ pk_transaction_progress_changed_cb (PkBackend *backend, guint percentage, guint 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("emitting percentage-changed %i, %i, %i, %i",
-		  percentage, subpercentage, elapsed, remaining);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_PROGRESS_CHANGED], 0,
-		       percentage, subpercentage, elapsed, remaining);
+	pk_transaction_progress_changed_emit (transaction, percentage, subpercentage, elapsed, remaining);
 }
 
 /**
@@ -774,8 +830,6 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, co
 static void
 pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTransaction *transaction)
 {
-	const gchar *status_text;
-
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -785,11 +839,7 @@ pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTra
 		return;
 	}
 
-	transaction->priv->status = status;
-	status_text = pk_status_enum_to_text (status);
-
-	egg_debug ("emitting status-changed '%s'", status_text);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_STATUS_CHANGED], 0, status_text);
+	pk_transaction_status_changed_emit (transaction, status);
 }
 
 /**
@@ -1099,10 +1149,7 @@ pk_transaction_commit (PkTransaction *transaction)
 static gboolean
 pk_transaction_finished_idle_cb (PkTransaction *transaction)
 {
-	const gchar *exit_text;
-	exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
-	egg_debug ("emitting finished '%s'", exit_text);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
+	pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SUCCESS, 0);
 	return FALSE;
 }
 
@@ -1417,7 +1464,6 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_directory = g_strdup (directory);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
 
 	/* try to commit this */
@@ -1508,7 +1554,6 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DEPENDS);
 
 	/* try to commit this */
@@ -1573,7 +1618,6 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS);
 
 	/* try to commit this */
@@ -1623,7 +1667,6 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 	}
 
 	/* save so we can run later */
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
 
 	/* try to commit this */
@@ -1689,7 +1732,6 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_FILES);
 
 	/* try to commit this */
@@ -1747,7 +1789,6 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_PACKAGES);
 
 	/* try to commit this */
@@ -1809,19 +1850,15 @@ pk_transaction_get_progress (PkTransaction *transaction,
 			     guint *percentage, guint *subpercentage,
 			     guint *elapsed, guint *remaining, GError **error)
 {
-	gboolean ret;
-
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	egg_debug ("GetProgress method called");
+	egg_debug ("GetProgress method called, using cached values");
+	*percentage = transaction->priv->percentage;
+	*subpercentage = transaction->priv->subpercentage;
+	*elapsed = transaction->priv->elapsed;
+	*remaining = transaction->priv->remaining;
 
-	ret = pk_backend_get_progress (transaction->priv->backend, percentage, subpercentage, elapsed, remaining);
-	if (!ret) {
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE,
-			     "No progress data available");
-		return FALSE;
-	}
 	return TRUE;
 }
 
@@ -1866,7 +1903,6 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REPO_LIST);
 
 	/* try to commit this */
@@ -1941,7 +1977,6 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REQUIRES);
 
 	/* try to commit this */
@@ -2059,7 +2094,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 
 	/* try and reuse cache */
@@ -2167,7 +2201,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
 
 	/* try and reuse cache */
@@ -2466,7 +2499,6 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	/* save so we can run later */
 	transaction->priv->cached_trusted = trusted;
 	transaction->priv->cached_full_paths = g_strdupv (full_paths);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_FILES);
 
 	/* try to commit this */
@@ -2541,7 +2573,6 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_PACKAGES);
 
 	/* try to commit this */
@@ -2621,7 +2652,6 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	/* save so we can run later */
 	transaction->priv->cached_package_id = g_strdup (package_id);
 	transaction->priv->cached_key_id = g_strdup (key_id);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_SIGNATURE);
 
 	/* try to commit this */
@@ -2698,7 +2728,6 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 
 	/* save so we can run later */
 	transaction->priv->cached_force = force;
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REFRESH_CACHE);
 
 	/* try to commit this */
@@ -2774,7 +2803,6 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	/* save so we can run later */
 	transaction->priv->cached_allow_deps = allow_deps;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REMOVE_PACKAGES);
 
 	/* try to commit this */
@@ -2844,7 +2872,6 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	/* save so we can run later */
 	transaction->priv->cached_repo_id = g_strdup (repo_id);
 	transaction->priv->cached_enabled = enabled;
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPO_ENABLE);
 
 	/* try to commit this */
@@ -2916,7 +2943,6 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	transaction->priv->cached_repo_id = g_strdup (repo_id);
 	transaction->priv->cached_parameter = g_strdup (parameter);
 	transaction->priv->cached_value = g_strdup (value);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPO_SET_DATA);
 
 	/* try to commit this */
@@ -2993,7 +3019,6 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (packages);
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_RESOLVE);
 
 	/* try to commit this */
@@ -3062,7 +3087,6 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 
 	/* save so we can run later */
 	transaction->priv->cached_transaction_id = g_strdup (transaction_id);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_ROLLBACK);
 
 	/* try to commit this */
@@ -3129,7 +3153,6 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_DETAILS);
 
 	/* try to commit this */
@@ -3196,7 +3219,6 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_FILE);
 
 	/* try to commit this */
@@ -3263,7 +3285,6 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_GROUP);
 
 	/* try to commit this */
@@ -3330,7 +3351,6 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_NAME);
 
 	/* try to commit this */
@@ -3364,7 +3384,6 @@ pk_transaction_service_pack (PkTransaction *transaction, const gchar *location, 
 	/* save so we can run later */
 	transaction->priv->cached_enabled = enabled;
 	transaction->priv->cached_full_path = g_strdup (location);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SERVICE_PACK);
 	return TRUE;
 }
@@ -3447,7 +3466,6 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPDATE_PACKAGES);
 
 	/* try to commit this */
@@ -3512,7 +3530,6 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 		return;
 	}
 
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPDATE_SYSTEM);
 
 	/* try to commit this */
@@ -3589,7 +3606,6 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->cached_provides = provides;
-	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_WHAT_PROVIDES);
 
 	/* try to commit this */
@@ -3742,7 +3758,11 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->tid = NULL;
 	transaction->priv->locale = NULL;
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
-
+	transaction->priv->status = PK_STATUS_ENUM_WAIT;
+	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
+	transaction->priv->subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	transaction->priv->elapsed = 0;
+	transaction->priv->remaining = 0;
 	transaction->priv->backend = pk_backend_new ();
 	transaction->priv->security = pk_security_new ();
 	transaction->priv->cache = pk_cache_new ();
