@@ -592,6 +592,10 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 		g_object_unref (refresh);
 	}
 
+	/* if we did not send this, ensure the GUI has the right state */
+	if (transaction->priv->allow_cancel)
+		pk_transaction_allow_cancel_emit (transaction, FALSE);
+
 	/* we should get no more from the backend with this tid */
 	transaction->priv->finished = TRUE;
 
@@ -976,6 +980,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* mark running */
 	transaction->priv->running = TRUE;
 	transaction->priv->has_been_run = TRUE;
+	transaction->priv->allow_cancel = FALSE;
 
 	/* set all possible arguments for backend */
 	store = pk_backend_get_store (priv->backend);
@@ -1356,8 +1361,11 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 
 	/* if it's never been run, just remove this transaction from the list */
 	if (!transaction->priv->has_been_run) {
-		pk_transaction_list_remove (transaction->priv->transaction_list,
-					    transaction->priv->tid);
+		pk_transaction_progress_changed_emit (transaction, 100, 100, 0, 0);
+		pk_transaction_allow_cancel_emit (transaction, FALSE);
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
+		pk_transaction_list_remove (transaction->priv->transaction_list, transaction->priv->tid);
 		return TRUE;
 	}
 
@@ -2023,8 +2031,7 @@ pk_transaction_get_role (PkTransaction *transaction,
  * pk_transaction_get_status:
  **/
 gboolean
-pk_transaction_get_status (PkTransaction *transaction,
-			   const gchar **status, GError **error)
+pk_transaction_get_status (PkTransaction *transaction, const gchar **status, GError **error)
 {
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
@@ -3738,7 +3745,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->finished = FALSE;
 	transaction->priv->running = FALSE;
 	transaction->priv->has_been_run = FALSE;
-	transaction->priv->allow_cancel = FALSE;
+	transaction->priv->allow_cancel = TRUE;
 	transaction->priv->emit_eula_required = FALSE;
 	transaction->priv->emit_signature_required = FALSE;
 	transaction->priv->dbus_name = NULL;
