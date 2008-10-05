@@ -254,8 +254,10 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         """
         Run "dpkg --configure -a"
         """
-        cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd), 
-               "--force-confdef", "--force-confold", "--configure", "-a"]
+        cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd),
+               "--root", apt_pkg.Config["Dir"],
+               "--force-confdef", "--force-confold", 
+               "--configure", "-a"]
         self.run(cmd)
 
     def install(self, filenames):
@@ -263,7 +265,8 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         Install the given package using a dpkg command line call
         """
         cmd = ["/usr/bin/dpkg", "--force-confdef", "--force-confold",
-               "--status-fd", str(self.writefd), "-i"]
+               "--status-fd", str(self.writefd), 
+               "--root", apt_pkg.Config["Dir"], "-i"]
         cmd.extend(map(lambda f: str(f), filenames))
         self.run(cmd)
 
