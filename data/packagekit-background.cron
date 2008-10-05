@@ -26,9 +26,9 @@ sleep $RANDOM
 
 # do action
 if [ "$CHECK_ONLY" == "yes" ]; then
-	pkcon get updates > $PKTMP
+	pkcon get-updates > $PKTMP
 else
-	pkcon update-system > $PKTMP
+	pkcon update > $PKTMP
 fi
 
 # send email
