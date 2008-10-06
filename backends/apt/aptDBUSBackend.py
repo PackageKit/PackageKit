@@ -1254,7 +1254,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,10))
-        dependencies = []
         packages = []
         # Collect all dependencies which need to be installed
         self.StatusChanged(STATUS_DEP_RESOLVE)
@@ -1274,26 +1273,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "before: %s" % remove)
                 self.Finished(EXIT_FAILED)
                 return
-            dependencies.extend(install)
-        # Install all dependecies before
-        if len(dependencies) > 0:
-            try:
-                for dep in dependencies:
-                    self._cache[dep].markInstall()
-            except:
-                self._cache.clear()
-                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED, "")
-                self.Finished(EXIT_FAILED)
-                return
-            if not self._commit_changes((10,25), (25,50)): return False
-        # Check for later available packages
-        for deb in packages:
-            # Check if there is a newer version in the cache
             if deb.compareToVersionInCache() == debfile.VERSION_OUTDATED:
                 self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
-        # Install the Debian package files
+        if len(self._cache.getChanges()) > 0 and not \
+           self._commit_changes((10,25), (25,50)): 
+            return False
+       # Install the Debian package files
         d = PackageKitDpkgInstallProgress(self)
         try:
             d.startUpdate()
