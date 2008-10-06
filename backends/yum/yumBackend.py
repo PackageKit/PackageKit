@@ -342,19 +342,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         Handle the special collection group
         """
         # Fixme: Add some real code.
+        self.percentage(None)
         collections = self.comps.get_meta_packages()
-        self.percentage(20)
+        if len(collections) == 0:
+            self.error(ERROR_GROUP_LIST_INVALID, 'No groups could be found. A cache refresh should fix this.')
 
-        step = int(800/len(collections))
-        print step
         pct = 20
-        i = 0
+        old_pct = -1;
+        step = (100.0 - pct) / len(collections)
         for col in collections:
-            i += 1
-            if i % 10 == 0:
-                pct += step
-                self.percentage(pct)
             self._show_meta_package(col, fltlist)
+            pct += step
+            if int(pct) != int(old_pct):
+                self.percentage(pct)
+                old_pct = pct
         self.percentage(100)
 
     def _show_meta_package(self, grpid, fltlist):
