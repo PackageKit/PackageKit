@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: policycoreutils.HEAD.de\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-25 00:31+0000\n"
-"PO-Revision-Date: 2008-10-03 14:17+0200\n"
+"POT-Creation-Date: 2008-10-01 20:51+0000\n"
+"PO-Revision-Date: 2008-10-07 00:19+0200\n"
 "Last-Translator: Fabian Affolter <fab@fedoraproject.org>\n"
 "Language-Team:  <en@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -42,7 +42,7 @@ msgstr "Ein Programm-Neustart wird benötigt"
 
 #: ../client/pk-console.c:588 ../client/pk-generate-pack.c:126
 msgid "There are multiple package matches"
-msgstr "Es passen mehrere Packete"
+msgstr "Es passen mehrere Packete zu Ihrer Anfrage"
 
 #. find out what package the user wants to use
 #: ../client/pk-console.c:595 ../client/pk-generate-pack.c:133
@@ -51,20 +51,20 @@ msgstr "Bitte geben Sie die Packet-Nummer ein: "
 
 #: ../client/pk-console.c:629
 msgid "Could not find package to install"
-msgstr ""
+msgstr "Packet zum Installieren konnte nicht gefunden werden"
 
 #: ../client/pk-console.c:735
 msgid "Could not find package to remove"
-msgstr "Die Packete zum Löschen konnten nicht gefunden werden"
+msgstr "Packet zum Löschen konnte nicht gefunden werden"
 
 #: ../client/pk-console.c:796
 msgid "The following packages have to be removed"
-msgstr "Die folgenden Packete müssen entfernt werden"
+msgstr "Die folgenden Packeten müssen entfernt werden"
 
 #. get user input
 #: ../client/pk-console.c:803
 msgid "Okay to remove additional packages?"
-msgstr "Dürfen die zusätzlichen Packete entfernt werden?"
+msgstr "Sollen die zusätzlichen Packete entfernt werden?"
 
 #: ../client/pk-console.c:807 ../client/pk-generate-pack.c:528
 #: ../client/pk-generate-pack-main.c:131
@@ -73,15 +73,15 @@ msgstr "Abbruch!"
 
 #: ../client/pk-console.c:841
 msgid "Could not find package to download"
-msgstr ""
+msgstr "Das Packet zum Herunterladen konnte nicht gefunden werden"
 
 #: ../client/pk-console.c:893
 msgid "Could not find package to update"
-msgstr ""
+msgstr "Das Packet zum Aktualisieren konnte nicht gefunden werden"
 
 #: ../client/pk-console.c:915
 msgid "Could not find what packages require"
-msgstr ""
+msgstr "Konnte nicht herausfinden, was die Packete benötigen"
 
 #: ../client/pk-console.c:936
 msgid "Could not get dependencies for"
@@ -93,16 +93,15 @@ msgstr "Konnte keine Details finden für"
 
 #: ../client/pk-console.c:980
 msgid "Could not find the files for this package"
-msgstr "Die Dateien für dieses Packet konnte nicht gefunden werden"
+msgstr "Die Dateien für dieses Packet konnten nicht gefunden werden"
 
 #: ../client/pk-console.c:987
-#, fuzzy
 msgid "Could not get the file list"
-msgstr "Die Dateiliste konnte nicht geholt werden"
+msgstr "Die Datei-Liste konnte nicht erstellt werden"
 
 #: ../client/pk-console.c:1006
 msgid "Could not find the update details for"
-msgstr "Die Aktualisierungsdetails konnten nicht gefunden werden für"
+msgstr "Konnte keine Aktualisierungsdetails nicht finden für"
 
 #: ../client/pk-console.c:1067
 msgid "Package description"
@@ -119,7 +118,7 @@ msgstr "Keine Dateien"
 #. get user input
 #: ../client/pk-console.c:1140
 msgid "Okay to import key?"
-msgstr "Darf der Schlüssel importiert werden?"
+msgstr "Soll der Schlüssel importiert werden?"
 
 #: ../client/pk-console.c:1143
 msgid "Did not import key"
@@ -132,16 +131,16 @@ msgstr "Sind Sie einverstanden?"
 
 #: ../client/pk-console.c:1186
 msgid "Did not agree to licence, task will fail"
-msgstr ""
+msgstr "Sie stimmten der Lizenz nicht zu, die Aufgabe wird fehlschlagen"
 
 #: ../client/pk-console.c:1215
 msgid "The daemon crashed mid-transaction!"
-msgstr ""
+msgstr "Der Dämon stürzte während der Transaktion ab!"
 
 #. header
 #: ../client/pk-console.c:1268
 msgid "PackageKit Console Interface"
-msgstr ""
+msgstr "PackageKit-Konsolen-Interface"
 
 #: ../client/pk-console.c:1268
 msgid "Subcommands:"
@@ -150,7 +149,7 @@ msgstr "Unterbefehle:"
 #: ../client/pk-console.c:1378 ../client/pk-generate-pack-main.c:64
 #: ../client/pk-monitor.c:118 ../src/pk-main.c:192
 msgid "Show extra debugging information"
-msgstr ""
+msgstr "Zeige extra Debup-Informationen"
 
 #: ../client/pk-console.c:1380 ../client/pk-monitor.c:120
 msgid "Show the program version and exit"
@@ -162,15 +161,15 @@ msgstr "Setze den Filter, z.B. installiert"
 
 #: ../client/pk-console.c:1384
 msgid "Exit without waiting for actions to complete"
-msgstr "Beende ohne auf fertigzustellende Aktionen zu warten"
+msgstr "Beende, ohne auf Beendigung der Aktionen zu warten"
 
 #: ../client/pk-console.c:1407
 msgid "Could not connect to system DBUS."
-msgstr "Konnte nicht mit dem System-DBUS verbinden."
+msgstr "Konnte nicht zum System-DBUS verbinden"
 
 #: ../client/pk-console.c:1500
 msgid "You need to specify a search type, e.g. name"
-msgstr ""
+msgstr "Sie müssen einen Suchtyp angeben, z.B. einen Namen"
 
 #: ../client/pk-console.c:1505 ../client/pk-console.c:1512
 #: ../client/pk-console.c:1519 ../client/pk-console.c:1526
@@ -185,66 +184,62 @@ msgstr "Ungültiger Suchtyp"
 
 #: ../client/pk-console.c:1536
 msgid "You need to specify a package or file to install"
-msgstr ""
+msgstr "Sie müssen ein Packet oder eine Datei zum Installieren angeben"
 
 #: ../client/pk-console.c:1543
 msgid "You need to specify a type, key_id and package_id"
-msgstr ""
+msgstr "Sie müssen einen Typ, Schlüssel_id und Packet_id auswählen"
 
 #: ../client/pk-console.c:1550
 msgid "You need to specify a package to remove"
-msgstr ""
+msgstr "Sie müssen ein Packet zum Löschen angeben"
 
 #: ../client/pk-console.c:1556
 msgid ""
 "You need to specify the destination directory and then the packages to "
 "download"
 msgstr ""
+"Sie müssen ein Zielverzeichnis und dann die Packete zum Herunterladen angeben"
 
 #: ../client/pk-console.c:1561
 msgid "Directory not found"
 msgstr "Verzeichnis nicht gefunden"
 
 #: ../client/pk-console.c:1567
-#, fuzzy
 msgid "You need to specify a eula-id"
-msgstr "Sie müssen einen Wert angeben"
+msgstr "Sie müssen eine eula-id auswählen"
 
 #: ../client/pk-console.c:1583
 msgid "You need to specify a package name to resolve"
-msgstr ""
+msgstr "Sie müssen einen Packetnamen zum Auflösen angeben"
 
 #: ../client/pk-console.c:1592 ../client/pk-console.c:1599
-#, fuzzy
 msgid "You need to specify a repo name"
-msgstr "Sie müssen einen Wert angeben"
+msgstr "Sie müssen einen Repository-Namen angeben"
 
 #: ../client/pk-console.c:1606
 msgid "You need to specify a repo name/parameter and value"
-msgstr ""
+msgstr "Sie müssen einen Repositorynamen/Parameter und Wert angeben"
 
 #: ../client/pk-console.c:1619
-#, fuzzy
 msgid "You need to specify a time term"
-msgstr "Sie müssen einen Wert angeben"
+msgstr "Sie müssen einen Zeit-Begriff angeben"
 
 #: ../client/pk-console.c:1624
-#, fuzzy
 msgid "You need to specify a correct role"
-msgstr "Sie müssen einen Wert angeben"
+msgstr "Sie müssen eine korrekte Rolle angeben"
 
 #: ../client/pk-console.c:1629
-#, fuzzy
 msgid "Failed to get last time"
-msgstr "Erwerb des neuen Kontexts fehlgeschlagen.\n"
+msgstr "Die letzte Zeit konnte nicht herausgefunden werden"
 
 #: ../client/pk-console.c:1668
 msgid "You need to specify a package to find the details for"
-msgstr ""
+msgstr "Sie müssen ein Packet, für das nach Details gesucht wird, angeben"
 
 #: ../client/pk-console.c:1675
 msgid "You need to specify a package to find the files for"
-msgstr ""
+msgstr "Sie müssen ein Packet, für das nach Dateien gesucht wird, angeben"
 
 #: ../client/pk-console.c:1724
 #, c-format
@@ -253,7 +248,7 @@ msgstr "Optino '%s' nicht unterstützt"
 
 #: ../client/pk-console.c:1737
 msgid "You don't have the necessary privileges for this operation"
-msgstr ""
+msgstr "Sie haben nicht die notwendigen Privilegien für diese Operation"
 
 #: ../client/pk-console.c:1739
 msgid "Command failed"
@@ -261,83 +256,84 @@ msgstr "Befehl fehlgeschlagen"
 
 #: ../client/pk-generate-pack.c:117
 msgid "Could not find a package match"
-msgstr ""
+msgstr "Es konnte kein Packet gefunden werden"
 
 #: ../client/pk-generate-pack.c:151
+#, fuzzy
 msgid "failed to download: invalid package_id and/or directory"
-msgstr ""
+msgstr "Fehler beim Runterladen: Ungültige package_id und/oder ungültiges Verzeichnis"
 
 #: ../client/pk-generate-pack.c:232
 #, fuzzy
 msgid "Could not find a valid metadata file"
-msgstr "Kann keinen gültigen Eintrag in der \"passwd\"-Datei finden.\n"
+msgstr "Eine gültige Metadata–Datei konnte nicht gefunden werden"
 
 #. get user input
 #: ../client/pk-generate-pack.c:524
 msgid "Okay to download the additional packages"
-msgstr ""
+msgstr "Möchten Sie die zusätzlichen Packete herunterladen"
 
 #: ../client/pk-generate-pack-main.c:66
+#, fuzzy
 msgid ""
 "Set the path of the file with the list of packages/dependencies to be "
 "excluded"
 msgstr ""
+"Setze den Pfad der Datei mit der Packet-/Abhängigkeitsliste, die ausgeschlossen werden"
 
 #: ../client/pk-generate-pack-main.c:111
 msgid "You need to specify the pack name and packages to be packed\n"
-msgstr ""
+msgstr "Sie müssen einen Packnamen und Packete zum Packen angeben\n"
 
 #: ../client/pk-generate-pack-main.c:117
 msgid ""
 "Invalid name for the service pack, Specify a name with .servicepack "
 "extension\n"
 msgstr ""
+"Ungültiger Name für ein Service Pack, geben Sie einen Namen an mit .servicepack als Endung\n"
 
 #: ../client/pk-generate-pack-main.c:129
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "Ein Packet mit dem selben Namen existiert bereits, möchten Sie es überschreiben?"
+msgstr "Ein Pack mit dem selben Namen existiert bereits, möchten Sie es überschreiben?"
 
 #: ../client/pk-generate-pack-main.c:142
-#, fuzzy
 msgid "Failed to create directory"
-msgstr "Schliessen von TTY fehlgeschlagen\n"
+msgstr "Verzeichnis konnte nicht erstellt werden"
 
 #: ../client/pk-generate-pack-main.c:149
-#, fuzzy
 msgid "Failed to create pack"
-msgstr "Schliessen von TTY fehlgeschlagen\n"
+msgstr "Pack konnte nicht erstellt werden"
 
 #: ../client/pk-import-specspo.c:185
-#, fuzzy
 msgid "Could not set database readonly"
-msgstr "semanage-Transaktion konnte nicht gestartet werden"
+msgstr "Datenbank konnte nicht nur-lesbar gesetzt werden"
 
 #: ../client/pk-import-specspo.c:192
-#, fuzzy, c-format
+#, c-format
 msgid "Could not open database: %s"
-msgstr "Konnte Datei %s nicht öffnen\n"
+msgstr "Datenbank %s konnte nicht geöffnet werden"
 
 #: ../client/pk-import-specspo.c:193
 msgid "You probably need to run this program as the root user"
-msgstr "Sie müssen dieses Programm vermutlich als root starten"
+msgstr "Sie sollten dieses Programm vermutlich als Benutzer root ausführen"
 
 #: ../client/pk-monitor.c:131
 msgid "PackageKit Monitor"
-msgstr ""
+msgstr "PackageKit Monitor"
 
 #: ../client/pk-tools-common.c:51
-#, fuzzy, c-format
+#, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Ports müssen zahlen zwischen 1 und %d sein"
+msgstr "Bitte geben Sie eine Zahl zwischen 1 und %i ein: "
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:300
 msgid "Getting package information..."
-msgstr "Packet-Informationen werden geholt"
+msgstr "Bekomme Packet-Informationen..."
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:304
 #, c-format
 msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
-msgstr ""
+msgstr "<span color='#%06x' underline='single' size='larger'>%s wird ausgeführt</span>"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:308
 #: ../contrib/packagekit-plugin/src/contents.cpp:313
@@ -381,7 +377,7 @@ msgid ""
 "<span color='#%06x' underline='single'>Upgrade to version %s</span>"
 msgstr ""
 "\n"
-"<span color='#%06x' underline='single'>Aktualisierung zu Version %s</span>"
+"<span color='#%06x' underline='single'>Aktualisiere zu Version %s</span>"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
@@ -405,7 +401,7 @@ msgid ""
 "<small>No packages found for your system</small>"
 msgstr ""
 "\n"
-"<small>Es wurden keine Packete für Ihr System gefunden</small>"
+"<small>Es wurden keine Packete für Ihren Rechner gefunden</small>"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:341
 msgid ""
@@ -421,11 +417,11 @@ msgstr "PackageKit Katalog"
 
 #: ../data/packagekit-pack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr ""
+msgstr "PackageKit Service Pack"
 
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
-msgstr ""
+msgstr "Startfehler wegen Sicherheitseinstellungen auf diesem Rechner"
 
 #: ../src/pk-main.c:86
 msgid "This can happen for two reasons:"
@@ -433,13 +429,14 @@ msgstr "Dies kann aus zwei Gründen passieren:"
 
 #: ../src/pk-main.c:87
 msgid "The correct user is not launching the executable (usually root)"
-msgstr ""
+msgstr "Der korrekte Benutzer führt nicht das Programm aus (normalerweise root)"
 
 #: ../src/pk-main.c:88
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
 "dbus-1/system.d directory"
-msgstr "Die org.freedesktop.PackageKit.conf-Datei ist nicht auf Ihrem Rechner in /etc/dbus-1/system.d installiert"
+msgstr ""
+"Die org.freedesktop.PackageKit.conf-Datei ist nicht auf Ihrem Rechner im Verzeichnis /etc/dbus-1/system.d installiert."
 
 #: ../src/pk-main.c:188
 msgid "Packaging backend to use, e.g. dummy"
@@ -447,7 +444,7 @@ msgstr ""
 
 #: ../src/pk-main.c:190
 msgid "Daemonize and detach from the terminal"
-msgstr ""
+msgstr "Dämonisiere und löse vom Terminal ab"
 
 #: ../src/pk-main.c:194
 msgid "Disable the idle timer"
@@ -455,30 +452,29 @@ msgstr ""
 
 #: ../src/pk-main.c:196
 msgid "Show version and exit"
-msgstr ""
+msgstr "Zeige Version und beende"
 
 #: ../src/pk-main.c:198
 msgid "Exit after a small delay"
 msgstr "Beende nach kurzer Verzögerung"
 
 #: ../src/pk-main.c:200
+#, fuzzy
 msgid "Exit after the engine has loaded"
-msgstr ""
+msgstr "Beende, nachdem die Maschine angeworfen wurde"
 
 #: ../src/pk-main.c:210
-#, fuzzy
 msgid "PackageKit service"
-msgstr "Name-Dienst"
+msgstr "PackageKIt-Dienst"
 
 #: ../src/pk-main.c:246
-#, fuzzy
 msgid "Cannot connect to the system bus"
-msgstr "Fehler beim Verbinden für Systemprüfung.\n"
+msgstr "Konnte nicht zum System-Bus verbinden"
 
 #: ../src/pk-main.c:286
-#, fuzzy, c-format
+#, c-format
 msgid "Error trying to start: %s\n"
-msgstr "Fehler beim Verbinden für Systemprüfung.\n"
+msgstr "Fehler beim Starten von: %s\n"
 
 #~ msgid ""
 #~ "USAGE: run_init <script> <args ...>\n"
