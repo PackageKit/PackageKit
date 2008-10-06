@@ -642,7 +642,6 @@ backend_destroy (PkBackend *backend)
 static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	// TODO: Provide support for groups in alpm
 	return pk_bitfield_from_enums (
 		PK_GROUP_ENUM_DESKTOP_GNOME,
 		PK_GROUP_ENUM_DESKTOP_KDE,
@@ -861,11 +860,11 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 				match = strstr (alpm_pkg_get_name (pkg), needle) != NULL;
 				break;
 			case PK_ALPM_SEARCH_TYPE_DETAILS:
-				/* TODO: strcasestr() is a non-standard extension, replace it? */
 				/* workaround for buggy packages with no description */
 				if (alpm_pkg_get_desc (pkg) == NULL)
 					match = FALSE;
 				else
+					/* TODO: strcasestr is a non-standard extension, replace it? */
 					match = strcasestr (alpm_pkg_get_desc (pkg), needle) != NULL;
 				break;
 			case PK_ALPM_SEARCH_TYPE_GROUP:
