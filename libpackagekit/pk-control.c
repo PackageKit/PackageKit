@@ -270,6 +270,51 @@ out:
 }
 
 /**
+ * pk_control_get_mime_types:
+ * @control: a valid #PkControl instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * The MIME list is the supported package formats.
+ *
+ * Return value: an strv list of the formats the backend supports,
+ * or %NULL if unknown
+ **/
+gchar **
+pk_control_get_mime_types (PkControl *control, GError **error)
+{
+	gboolean ret;
+	GError *error_local = NULL;
+	gchar *type_str = NULL;
+	gchar **types = NULL;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* check to see if we have a valid proxy */
+	if (control->priv->proxy == NULL) {
+		egg_warning ("No proxy for manager");
+		goto out;
+	}
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetMimeTypes", &error_local,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &type_str,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		/* abort as the DBUS method failed */
+		egg_warning ("GetMimeTypes failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* convert to enumerated types */
+	types = g_strsplit (type_str, ";", 0);
+	g_free (type_str);
+out:
+	return types;
+}
+
+/**
  * pk_control_get_network_state:
  * @control: a valid #PkControl instance
  * @error: a %GError to put the error code and message in, or %NULL
@@ -466,15 +511,17 @@ pk_control_set_locale (PkControl *control, const gchar *tid, GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	client = pk_client_new ();
-	ret = pk_client_set_tid (client, tid, error);
+	ret = pk_client_set_tid (client, tid, &error_local);
 	if (!ret) {
-		egg_warning ("failed to set the tid: %s", (*error)->message);
+		egg_warning ("failed to set the tid: %s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
 	/* get the session locale and set th transaction to be in this locale */
 	locale = setlocale (LC_ALL, NULL);
-	ret = pk_client_set_locale (client, locale, error);
+	ret = pk_client_set_locale (client, locale, &error_local);
 	if (!ret) {
 		egg_warning ("SetLocale failed :%s", error_local->message);
 		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
@@ -533,7 +580,7 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 	}
 
 	/* automatically set the locale */
-	ret = pk_control_set_locale (control, tid_local, error);
+	ret = pk_control_set_locale (control, tid_local, &error_local);
 	if (!ret) {
 		egg_warning ("GetTid failed :%s", error_local->message);
 		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
@@ -830,6 +877,9 @@ pk_control_init (PkControl *control)
 	if (control->priv->proxy == NULL)
 		egg_error ("Cannot connect to PackageKit.");
 
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (control->priv->proxy, INT_MAX);
+
 	dbus_g_proxy_add_signal (control->priv->proxy, "TransactionListChanged",
 				 G_TYPE_STRV, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (control->priv->proxy, "TransactionListChanged",
@@ -927,17 +977,28 @@ pk_control_new (void)
 void
 pk_control_test (EggTest *test)
 {
+	gboolean ret;
 	PkControl *control;
+	PkConnection *connection;
 
 	if (!egg_test_start (test, "PkControl"))
 		return;
+
+	/* check to see if there is a daemon running */
+	connection = pk_connection_new ();
+	ret = pk_connection_valid (connection);
+	g_object_unref (connection);
+	if (!ret) {
+		egg_warning ("daemon is not running, skipping tests");
+		goto out;
+	}
 
 	/************************************************************/
 	egg_test_title (test, "get control");
 	control = pk_control_new ();
 	egg_test_assert (test, control != NULL);
 	g_object_unref (control);
-
+out:
 	egg_test_end (test);
 }
 #endif

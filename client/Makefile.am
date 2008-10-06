@@ -15,6 +15,9 @@ INCLUDES =						\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
+	-DEGG_VERBOSE="\"PK_VERBOSE\""			\
+	-DEGG_LOGGING="\"PK_LOGGING\""			\
+	-DEGG_CONSOLE="\"PK_CONSOLE\""			\
 	-I$(top_srcdir)/libpackagekit			\
 	$(NULL)
 
@@ -29,9 +32,7 @@ bin_PROGRAMS =						\
 	$(NULL)
 
 libexec_PROGRAMS =					\
-	pk-import-desktop				\
 	pk-import-specspo				\
-	pk-generate-package-list			\
 	$(NULL)
 
 pkcon_SOURCES =						\
@@ -78,33 +79,6 @@ pkgenpack_LDADD = 					\
 	$(ARCHIVE_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(PK_LIBS)					\
-	$(NULL)
-
-pk_generate_package_list_SOURCES =			\
-	egg-debug.c					\
-	egg-debug.h					\
-	pk-generate-package-list.c			\
-	$(NULL)
-
-pk_generate_package_list_LDADD =			\
-	$(GLIB_LIBS)					\
-	$(PK_LIBS)					\
-	$(NULL)
-
-pk_import_desktop_SOURCES =				\
-	egg-debug.c					\
-	egg-debug.h					\
-	egg-string.c					\
-	egg-string.h					\
-	pk-import-common.c				\
-	pk-import-common.h				\
-	pk-import-desktop.c				\
-	$(NULL)
-
-pk_import_desktop_LDADD =				\
-	$(GLIB_LIBS)					\
-	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
 	$(NULL)
 

@@ -32,6 +32,8 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "egg-debug.h"
+#include "egg-dbus-monitor.h"
+
 #include "pk-conf.h"
 #include "pk-engine.h"
 #include "pk-transaction.h"
@@ -167,6 +169,7 @@ main (int argc, char *argv[])
 {
 	GMainLoop *loop;
 	DBusGConnection *system_connection;
+	EggDbusMonitor *monitor;
 	gboolean ret;
 	gboolean verbose = FALSE;
 	gboolean disable_timer = FALSE;
@@ -179,6 +182,9 @@ main (int argc, char *argv[])
 	PkConf *conf = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
+	const gchar *env_pk_verbose;
+	const gchar *env_pk_console;
+	const gchar *env_pk_logging;
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
@@ -215,6 +221,16 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
+	/* check if an instance is already running */
+	monitor = egg_dbus_monitor_new ();
+	egg_dbus_monitor_assign (monitor, EGG_DBUS_MONITOR_SYSTEM, PK_DBUS_SERVICE);
+	ret = egg_dbus_monitor_is_connected (monitor);
+	g_object_unref (monitor);
+	if (ret) {
+		g_print ("Already running service which provides %s\n", PK_DBUS_SERVICE);
+		goto exit_program;
+	}
+
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_main_sigint_handler);
 
@@ -237,7 +253,13 @@ main (int argc, char *argv[])
 
 	/* we don't actually need to do this, except it rules out the
 	 * 'it works from the command line but not service activation' bugs */
+	env_pk_verbose = g_getenv (EGG_VERBOSE);
+	env_pk_console = g_getenv (EGG_CONSOLE);
+	env_pk_logging = g_getenv (EGG_LOGGING);
 	clearenv ();
+	g_setenv (EGG_VERBOSE, env_pk_verbose, FALSE);
+	g_setenv (EGG_CONSOLE, env_pk_console, FALSE);
+	g_setenv (EGG_LOGGING, env_pk_logging, FALSE);
 
 	/* get values from the config file */
 	conf = pk_conf_new ();

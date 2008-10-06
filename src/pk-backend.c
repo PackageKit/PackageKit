@@ -74,7 +74,7 @@
  * This delay is required as some threads may take some time to cancel or a
  * spawned executable to disappear of the system DBUS.
  */
-#define PK_BACKEND_FINISHED_TIMEOUT_GRACE	50 /* ms */
+#define PK_BACKEND_FINISHED_TIMEOUT_GRACE	10 /* ms */
 
 struct _PkBackendPrivate
 {
@@ -149,6 +149,21 @@ pk_backend_get_groups (PkBackend *backend)
 	if (backend->desc->get_groups == NULL)
 		return PK_GROUP_ENUM_UNKNOWN;
 	return backend->desc->get_groups (backend);
+}
+
+/**
+ * pk_backend_get_mime_types:
+ **/
+gchar *
+pk_backend_get_mime_types (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
+
+	/* not compulsory */
+	if (backend->desc->get_mime_types == NULL)
+		return g_strdup ("");
+	return backend->desc->get_mime_types (backend);
 }
 
 /**
@@ -2132,14 +2147,16 @@ pk_backend_test (EggTest *test)
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* wait for finished */
-	egg_test_loop_wait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 200);
+	egg_test_loop_wait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 400);
 	egg_test_loop_check (test);
 
+#ifdef PK_IS_DEVELOPER
 	egg_test_title (test, "check we enforce finished after error_code");
 	if (number_messages == 1)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "we messaged %i times!", number_messages);
+#endif
 
 	g_object_unref (backend);
 

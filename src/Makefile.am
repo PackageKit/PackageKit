@@ -27,6 +27,9 @@ INCLUDES =						\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" 		\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
+	-DEGG_VERBOSE="\"PK_VERBOSE\""			\
+	-DEGG_LOGGING="\"PK_LOGGING\""			\
+	-DEGG_CONSOLE="\"PK_CONSOLE\""			\
 	-I$(top_srcdir)/libpackagekit			\
 	$(NULL)
 
@@ -42,6 +45,10 @@ shared_SOURCES =					\
 	egg-debug.h					\
 	egg-string.c					\
 	egg-string.h					\
+	egg-obj-list.c					\
+	egg-obj-list.h					\
+	egg-string-list.c				\
+	egg-string-list.h				\
 	egg-dbus-monitor.c				\
 	egg-dbus-monitor.h				\
 	pk-marshal.c					\

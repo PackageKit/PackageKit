@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
+#
 # Copyright (C) 2007
 #    Tim Lauridsen <timlau@fedoraproject.org>
 #    Tom Parker <palfrey@tevp.net>
@@ -22,37 +22,37 @@
 import dbus
 
 class PackageKitException(Exception):
-	def __init__(self,e=None):
-		Exception.__init__(self)
-		if e == None:
-			self._pk_name = None
-			self._full_str = None
-		else:
-			if not isinstance(e,dbus.exceptions.DBusException):
-				raise Exception,"Can only handle DBusExceptions"
-			self._pk_name = str(e.get_dbus_name())
-			self._full_str = str(e)
+    def __init__(self, e=None):
+        Exception.__init__(self)
+        if e == None:
+            self._pk_name = None
+            self._full_str = None
+        else:
+            if not isinstance(e, dbus.exceptions.DBusException):
+                raise Exception, "Can only handle DBusExceptions"
+            self._pk_name = str(e.get_dbus_name())
+            self._full_str = str(e)
 
-	def get_backend_name(self):
-		return self._pk_name
+    def get_backend_name(self):
+        return self._pk_name
 
-	def __str__(self):
-		if self._full_str!=None:
-			return self._full_str
-		else:
-			return ""
+    def __str__(self):
+        if self._full_str != None:
+            return self._full_str
+        else:
+            return ""
 
 class PackageKitNotStarted(PackageKitException):
-	pass
+    pass
 
 class PackageKitAccessDenied(PackageKitException):
-	pass
+    pass
 
 class PackageKitTransactionFailure(PackageKitException):
-	pass
+    pass
 
 class PackageKitBackendFailure(PackageKitException):
-	pass
+    pass
 
 class PackageKitBackendNotLocked(PackageKitException):
-	pass
+    pass

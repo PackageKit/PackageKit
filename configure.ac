@@ -1,6 +1,6 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.3.5)
+AC_INIT(PackageKit, 0.3.7)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -18,8 +18,8 @@ DEVELOPMENT_RELEASE=no
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-LT_CURRENT=7
-LT_REVISION=0
+LT_CURRENT=8
+LT_REVISION=1
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -58,6 +58,9 @@ if test "$GCC" = "yes"; then
 	CPPFLAGS="$CPPFLAGS -Wall -Wreturn-type"
 #	CPPFLAGS="$CPPFLAGS -Wformat-security"
 	CPPFLAGS="$CPPFLAGS -Werror"
+	CPPFLAGS="$CPPFLAGS -DG_DISABLE_SINGLE_INCLUDES -DGTK_DISABLE_SINGLE_INCLUDES"
+	CPPFLAGS="$CPPFLAGS -DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED"
+	CPPFLAGS="$CPPFLAGS -DGDK_MULTIHEAD_SAFE -DGTK_MULTIHEAD_SAFE"
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -237,15 +240,11 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl - Checks for contrib/packagekit-plugin
 dnl ---------------------------------------------------------------------------
-
 PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
                   build_browser_plugin=yes, build_browser_plugin=no)
-
 AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
-
 AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
 AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
-
 if test $build_browser_plugin = "yes"; then
 	# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
 
@@ -260,6 +259,15 @@ if test $build_browser_plugin = "yes"; then
 	CPPFLAGS="$packagekit_save_CPPFLAGS"
 	LDFLAGS="$packagekit_save_LDFLAGS"
 fi
+
+dnl ---------------------------------------------------------------------------
+dnl - Checks for contrib/gstreamer-plugin
+dnl ---------------------------------------------------------------------------
+PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0 dbus-glib-1,
+                  build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
+AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
+AC_SUBST(PK_GSTREAMER_PLUGIN_CFLAGS)
+AC_SUBST(PK_GSTREAMER_PLUGIN_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - Other tests
@@ -453,6 +461,14 @@ AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
 if test x$enable_apt = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
+	PY_CHECK_MOD([UpdateManager.Core.MetaRelease],,
+		     AC_DEFINE(HAVE_PYTHON_META_RELEASE, 1,
+			       "Meta release is available"), 
+		     AC_MSG_WARN([Distro upgrade notification not supported]))
+	PY_CHECK_MOD([softwareproperties.SoftwareProperties],,
+		     AC_DEFINE(HAVE_PYTHON_SOFTWARE_PROPERTIES, 1,
+			       "Python software properties is available"),
+		     AC_MSG_WARN([Repository handling not supported]))
 fi
 
 if test x$enable_box = xyes; then
@@ -516,6 +532,7 @@ docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
 contrib/packagekit-plugin/Makefile
+contrib/gstreamer-plugin/Makefile
 contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
@@ -523,11 +540,9 @@ backends/alpm/Makefile
 backends/apt/Makefile
 backends/box/Makefile
 backends/conary/Makefile
-backends/conary/helpers/Makefile
 backends/dummy/Makefile
 backends/opkg/Makefile
 backends/smart/Makefile
-backends/smart/helpers/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
 backends/urpmi/Makefile
@@ -537,7 +552,6 @@ backends/urpmi/helpers/urpmi_backend/Makefile
 backends/razor/Makefile
 backends/yum/Makefile
 backends/pisi/Makefile
-backends/pisi/helpers/Makefile
 backends/poldek/Makefile
 backends/zypp/Makefile
 data/Makefile
@@ -573,6 +587,7 @@ echo "
         Networking stack:          ${with_networking_stack}
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
+        GStreamer plugin:          ${build_gstreamer_plugin}
 
         Backends:
         ALPM backend:              ${enable_alpm}

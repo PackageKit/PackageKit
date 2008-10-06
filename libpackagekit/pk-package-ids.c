@@ -53,7 +53,22 @@
 gchar **
 pk_package_ids_from_id (const gchar *package_id)
 {
-	return g_strsplit (package_id, "|", 1);
+	return g_strsplit (package_id, PK_PACKAGE_IDS_DELIM, 1);
+}
+
+/**
+ * pk_package_ids_from_text:
+ * @package_id: A single package_id
+ *
+ * Form a composite string array of package_id's from
+ * a delimited string
+ *
+ * Return value: the string array, or %NULL if invalid, free with g_strfreev()
+ **/
+gchar **
+pk_package_ids_from_text (const gchar *package_id)
+{
+	return g_strsplit (package_id, PK_PACKAGE_IDS_DELIM, 0);
 }
 
 /**
@@ -109,9 +124,8 @@ pk_package_ids_check (gchar **package_ids)
 	for (i=0; i<size; i++) {
 		package_id = package_ids[i];
 		ret = pk_package_id_check (package_id);
-		if (!ret) {
+		if (!ret)
 			return FALSE;
-		}
 	}
 	return TRUE;
 }
@@ -164,40 +178,12 @@ pk_package_ids_size (gchar **package_ids)
  * Return value: a string representation of all the package_id's.
  **/
 gchar *
-pk_package_ids_to_text (gchar **package_ids, const gchar *delimiter)
+pk_package_ids_to_text (gchar **package_ids)
 {
-	guint i;
-	guint size;
-	GString *string;
-	gchar *string_ret;
-
-	g_return_val_if_fail (delimiter != NULL, NULL);
-
 	/* special case as this is allowed */
-	if (package_ids == NULL) {
+	if (package_ids == NULL)
 		return g_strdup ("(null)");
-	}
-
-	string = g_string_new ("");
-
-	/* print all */
-	size = g_strv_length (package_ids);
-	for (i=0; i<size; i++) {
-		g_string_append (string, package_ids[i]);
-		g_string_append (string, delimiter);
-	}
-
-	/* ITS4: ignore, we check this for validity */
-	size = strlen (delimiter);
-
-	/* remove trailing delimiter */
-	if (string->len > size) {
-		g_string_set_size (string, string->len-size);
-	}
-
-	string_ret = g_string_free (string, FALSE);
-
-	return string_ret;
+	return pk_strv_to_text (package_ids, PK_PACKAGE_IDS_DELIM);
 }
 
 /***************************************************************************
@@ -228,7 +214,6 @@ void
 pk_package_ids_test (EggTest *test)
 {
 	gboolean ret;
-	gchar *text;
 	gchar **package_ids;
 	guint size;
 
@@ -267,15 +252,6 @@ pk_package_ids_test (EggTest *test)
 	egg_test_title (test, "print");
 	ret = pk_package_ids_print (package_ids);
 	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "to text");
-	text = pk_package_ids_to_text (package_ids, "\t");
-	if (egg_strequal (text, "foo;0.0.1;i386;fedora\tbar;0.1.1;noarch;livna"))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-	g_free (text);
 
 	g_strfreev (package_ids);
 

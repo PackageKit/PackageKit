@@ -26,7 +26,21 @@
 
 G_BEGIN_DECLS
 
+/* rationalle:
+ *
+ * '%': breaks printf
+ * '|': used as the filename seporator
+ * '~': conary
+ * '@': conary
+ *
+ * If this has to be changed, also change:
+ * - backends/urpmi/helpers/urpmi-dispatched-backend.pl
+ * - python/packagekit/backend.py
+ */
+#define PK_PACKAGE_IDS_DELIM	"&"
+
 gchar		**pk_package_ids_from_id		(const gchar	*package_id);
+gchar		**pk_package_ids_from_text		(const gchar	*package_id);
 gchar		**pk_package_ids_from_array		(GPtrArray	*array);
 gchar		**pk_package_ids_from_va_list		(const gchar	*package_id_first,
 							 va_list	*args);
@@ -34,8 +48,7 @@ gboolean	 pk_package_ids_check			(gchar		**package_ids)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_package_ids_print			(gchar		**package_ids);
 guint		 pk_package_ids_size			(gchar		**package_ids);
-gchar		*pk_package_ids_to_text			(gchar		**package_ids,
-							 const gchar	*delimiter)
+gchar		*pk_package_ids_to_text			(gchar		**package_ids)
 							 G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS

@@ -74,6 +74,7 @@ PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_actions			(PkBackend	*backend);
 PkStore		*pk_backend_get_store			(PkBackend	*backend);
+gchar		*pk_backend_get_mime_types		(PkBackend	*backend);
 
 G_END_DECLS
 

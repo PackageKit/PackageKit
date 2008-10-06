@@ -1,0 +1,488 @@
+# packagekit Bahasa Melayu (Malay) (ms)
+# Copyright (C) 2008 Fedora Project
+# This file is distributed under the same license as the packagekit package.
+# Sharuzzaman Ahmat Raslan <sharuzzaman@myrealbox.com>, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: packagekit\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-09-23 11:26+0000\n"
+"PO-Revision-Date: 2008-09-25 23:36+0800\n"
+"Last-Translator: Sharuzzaman Ahmat Raslan <sharuzzaman@myrealbox.com>\n"
+"Language-Team: Malay <translation-team-ms@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../client/pk-console.c:274
+#, fuzzy
+msgid "Update detail"
+msgstr " Auto Kemaskini"
+
+#: ../client/pk-console.c:491
+#, fuzzy
+msgid "A system restart is required"
+msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
+
+#: ../client/pk-console.c:493
+msgid "A logout and login is required"
+msgstr ""
+
+#: ../client/pk-console.c:495
+#, fuzzy
+msgid "An application restart is required"
+msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
+
+#: ../client/pk-console.c:588
+#: ../client/pk-generate-pack.c:126
+msgid "There are multiple package matches"
+msgstr ""
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:595
+#: ../client/pk-generate-pack.c:133
+#, fuzzy
+msgid "Please enter the package number: "
+msgstr "Sila masukkan %(instkey) anda."
+
+#: ../client/pk-console.c:629
+#, fuzzy
+msgid "Could not find package to install"
+msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+
+#: ../client/pk-console.c:735
+#, fuzzy
+msgid "Could not find package to remove"
+msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+
+#: ../client/pk-console.c:796
+#, fuzzy
+msgid "The following packages have to be removed"
+msgstr "Memeriksa untuk membuang pakej berikut"
+
+#. get user input
+#: ../client/pk-console.c:803
+#, fuzzy
+msgid "Okay to remove additional packages?"
+msgstr "Memeriksa untuk membuang pakej berikut"
+
+#: ../client/pk-console.c:807
+#: ../client/pk-generate-pack.c:528
+#: ../client/pk-generate-pack-main.c:131
+#, fuzzy
+msgid "Cancelled!"
+msgstr "Dibatalkan"
+
+#: ../client/pk-console.c:841
+#, fuzzy
+msgid "Could not find package to download"
+msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+
+#: ../client/pk-console.c:893
+#, fuzzy
+msgid "Could not find package to update"
+msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+
+#: ../client/pk-console.c:915
+msgid "Could not find what packages require"
+msgstr ""
+
+#: ../client/pk-console.c:936
+#, fuzzy
+msgid "Could not get dependencies for"
+msgstr "Tidak dapat memperoleh kekunci OpenPGP."
+
+#: ../client/pk-console.c:957
+#, fuzzy
+msgid "Could not find details for"
+msgstr "Tidak dapat mencari subkekunci OpenPGP."
+
+#: ../client/pk-console.c:980
+msgid "Could not find the files for this package"
+msgstr ""
+
+#: ../client/pk-console.c:987
+#, fuzzy
+msgid "Could not get the file list"
+msgstr "Tidak dapat menulis kepada fail %s"
+
+#: ../client/pk-console.c:1006
+msgid "Could not find the update details for"
+msgstr ""
+
+#: ../client/pk-console.c:1067
+#, fuzzy
+msgid "Package description"
+msgstr "Tiada keterangan"
+
+#: ../client/pk-console.c:1100
+#, fuzzy
+msgid "Package files"
+msgstr "  -l             - senaraikan fail dalam pakej.\n"
+
+#: ../client/pk-console.c:1108
+#, fuzzy
+msgid "No files"
+msgstr "Tiada fail boleh ditukar nama dijumpai."
+
+#. get user input
+#: ../client/pk-console.c:1140
+#, fuzzy
+msgid "Okay to import key?"
+msgstr "tidak dapat mengimport fail pubkey \"%s\""
+
+#: ../client/pk-console.c:1143
+#, fuzzy
+msgid "Did not import key"
+msgstr "Tidak dapat memperoleh kekunci OpenPGP."
+
+#. get user input
+#: ../client/pk-console.c:1183
+#, fuzzy
+msgid "Do you agree?"
+msgstr "Anda ada Cekera jurupacu?"
+
+#: ../client/pk-console.c:1186
+msgid "Did not agree to licence, task will fail"
+msgstr ""
+
+#: ../client/pk-console.c:1215
+msgid "The daemon crashed mid-transaction!"
+msgstr ""
+
+#. header
+#: ../client/pk-console.c:1268
+#, fuzzy
+msgid "PackageKit Console Interface"
+msgstr "Bahasa Antaramuka Pengguna"
+
+#: ../client/pk-console.c:1268
+msgid "Subcommands:"
+msgstr ""
+
+#: ../client/pk-console.c:1378
+#: ../client/pk-generate-pack-main.c:64
+#: ../client/pk-monitor.c:118
+#: ../src/pk-main.c:189
+msgid "Show extra debugging information"
+msgstr ""
+
+#: ../client/pk-console.c:1380
+#: ../client/pk-monitor.c:120
+#, fuzzy
+msgid "Show the program version and exit"
+msgstr "Papar maklumat program, nombor versi, dan hakcipta"
+
+#: ../client/pk-console.c:1382
+#, fuzzy
+msgid "Set the filter, e.g. installed"
+msgstr " tiada pemandu dipasang."
+
+#: ../client/pk-console.c:1384
+msgid "Exit without waiting for actions to complete"
+msgstr ""
+
+#: ../client/pk-console.c:1407
+msgid "Could not connect to system DBUS."
+msgstr ""
+
+#: ../client/pk-console.c:1500
+#, fuzzy
+msgid "You need to specify a search type, e.g. name"
+msgstr "(anda tidak perlu menaip domain selepas nama)"
+
+#: ../client/pk-console.c:1505
+#: ../client/pk-console.c:1512
+#: ../client/pk-console.c:1519
+#: ../client/pk-console.c:1526
+#: ../client/pk-console.c:1637
+#: ../client/pk-console.c:1647
+#: ../client/pk-console.c:1654
+#: ../client/pk-console.c:1661
+#, fuzzy
+msgid "You need to specify a search term"
+msgstr "Anda perlu menyatakan fail untuk dibuka!"
+
+#: ../client/pk-console.c:1531
+#, fuzzy
+msgid "Invalid search type"
+msgstr "Jenis Senarai Semasa"
+
+#: ../client/pk-console.c:1536
+msgid "You need to specify a package or file to install"
+msgstr ""
+
+#: ../client/pk-console.c:1543
+msgid "You need to specify a type, key_id and package_id"
+msgstr ""
+
+#: ../client/pk-console.c:1550
+#, fuzzy
+msgid "You need to specify a package to remove"
+msgstr "Anda perlu menyatakan fail untuk dibuka!"
+
+#: ../client/pk-console.c:1556
+msgid "You need to specify the destination directory and then the packages to download"
+msgstr ""
+
+#: ../client/pk-console.c:1561
+#, fuzzy
+msgid "Directory not found"
+msgstr "Fail %s tidak dijumpai"
+
+#: ../client/pk-console.c:1567
+#, fuzzy
+msgid "You need to specify a eula-id"
+msgstr "Anda perlu menyatakan fail untuk dibuka!"
+
+#: ../client/pk-console.c:1583
+msgid "You need to specify a package name to resolve"
+msgstr ""
+
+#: ../client/pk-console.c:1592
+#: ../client/pk-console.c:1599
+#, fuzzy
+msgid "You need to specify a repo name"
+msgstr "Anda perlu menyatakan fail untuk dibuka!"
+
+#: ../client/pk-console.c:1606
+msgid "You need to specify a repo name/parameter and value"
+msgstr ""
+
+#: ../client/pk-console.c:1619
+#, fuzzy
+msgid "You need to specify a time term"
+msgstr "Anda perlu menyatakan fail untuk dibuka!"
+
+#: ../client/pk-console.c:1624
+#, fuzzy
+msgid "You need to specify a correct role"
+msgstr "Anda perlu menyatakan fail untuk dibuka!"
+
+#: ../client/pk-console.c:1629
+msgid "Failed to get last time"
+msgstr ""
+
+#: ../client/pk-console.c:1668
+msgid "You need to specify a package to find the details for"
+msgstr ""
+
+#: ../client/pk-console.c:1675
+msgid "You need to specify a package to find the files for"
+msgstr ""
+
+#: ../client/pk-console.c:1724
+#, fuzzy, c-format
+msgid "Option '%s' not supported"
+msgstr "Format Tidak Disokong"
+
+#: ../client/pk-console.c:1737
+msgid "You don't have the necessary privileges for this operation"
+msgstr ""
+
+#: ../client/pk-console.c:1739
+#, fuzzy
+msgid "Command failed"
+msgstr "Sambungan Gagal"
+
+#: ../client/pk-generate-pack.c:117
+#, fuzzy
+msgid "Could not find a package match"
+msgstr "Tidak dapat mencari subkekunci OpenPGP."
+
+#: ../client/pk-generate-pack.c:151
+msgid "failed to download: invalid package_id and/or directory"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:232
+msgid "Could not find a valid metadata file"
+msgstr ""
+
+#. get user input
+#: ../client/pk-generate-pack.c:524
+msgid "Okay to download the additional packages"
+msgstr ""
+
+#: ../client/pk-generate-pack-main.c:66
+msgid "Set the path of the file with the list of packages/dependencies to be excluded"
+msgstr ""
+
+#: ../client/pk-generate-pack-main.c:111
+msgid "You need to specify the pack name and packages to be packed\n"
+msgstr ""
+
+#: ../client/pk-generate-pack-main.c:117
+msgid "Invalid name for the service pack, Specify a name with .servicepack extension\n"
+msgstr ""
+
+#: ../client/pk-generate-pack-main.c:129
+msgid "A pack with the same name already exists, do you want to overwrite it?"
+msgstr ""
+
+#: ../client/pk-generate-pack-main.c:142
+#, fuzzy
+msgid "Failed to create directory"
+msgstr "gagal untuk mencipta direktori %s: %s\n"
+
+#: ../client/pk-generate-pack-main.c:149
+#, fuzzy
+msgid "Failed to create pack"
+msgstr "gagal untuk mencipta direktori %s: %s\n"
+
+#: ../client/pk-import-desktop.c:305
+#: ../client/pk-import-specspo.c:185
+#, fuzzy, c-format
+msgid "Could not open database: %s"
+msgstr "Tak dapat membuka fail %s."
+
+#: ../client/pk-import-desktop.c:306
+#: ../client/pk-import-specspo.c:186
+msgid "You probably need to run this program as the root user"
+msgstr ""
+
+#: ../client/pk-monitor.c:131
+#, fuzzy
+msgid "PackageKit Monitor"
+msgstr "Monitor Rangkaian"
+
+#: ../client/pk-tools-common.c:51
+#, fuzzy, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Pilih nombor latihan dari 1 hingga 10."
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:300
+#, fuzzy
+msgid "Getting package information..."
+msgstr "Lebih maklumat pada pakej %s"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:308
+#: ../contrib/packagekit-plugin/src/contents.cpp:313
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#: ../contrib/packagekit-plugin/src/contents.cpp:340
+#, c-format
+msgid "<big>%s</big>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:310
+#, fuzzy, c-format
+msgid ""
+"\n"
+"<small>Installed version: %s</small>"
+msgstr "Versi dipasang semasa:"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:316
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run version %s now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:321
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:325
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:333
+#, fuzzy, c-format
+msgid ""
+"\n"
+"<small>Version: %s</small>"
+msgstr "Sejarah versi"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:337
+msgid ""
+"\n"
+"<small>No packages found for your system</small>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:341
+#, fuzzy
+msgid ""
+"\n"
+"<small>Installing...</small>"
+msgstr "Memasang pemuatboot..."
+
+#: ../data/packagekit-catalog.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Catalog"
+msgstr "Kembalikan Dari Katalog"
+
+#: ../data/packagekit-pack.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Service Pack"
+msgstr "Konfigur penemuan servis"
+
+#: ../src/pk-main.c:83
+msgid "Startup failed due to security policies on this machine."
+msgstr ""
+
+#: ../src/pk-main.c:84
+msgid "This can happen for two reasons:"
+msgstr ""
+
+#: ../src/pk-main.c:85
+msgid "The correct user is not launching the executable (usually root)"
+msgstr ""
+
+#: ../src/pk-main.c:86
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/dbus-1/system.d directory"
+msgstr ""
+
+#: ../src/pk-main.c:185
+msgid "Packaging backend to use, e.g. dummy"
+msgstr ""
+
+#: ../src/pk-main.c:187
+msgid "Daemonize and detach from the terminal"
+msgstr ""
+
+#: ../src/pk-main.c:191
+#, fuzzy
+msgid "Disable the idle timer"
+msgstr "Widget penetapan pemasa"
+
+#: ../src/pk-main.c:193
+msgid "Show version and exit"
+msgstr "Papar versi dan keluar"
+
+#: ../src/pk-main.c:195
+msgid "Exit after a small delay"
+msgstr ""
+
+#: ../src/pk-main.c:197
+msgid "Exit after the engine has loaded"
+msgstr ""
+
+#: ../src/pk-main.c:207
+msgid "PackageKit service"
+msgstr "Servis PackageKit"
+
+#: ../src/pk-main.c:233
+msgid "Cannot connect to the system bus"
+msgstr ""
+
+#: ../src/pk-main.c:273
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "Ralat cuba untuk memulakan: %s\n"
+

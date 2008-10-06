@@ -18,6 +18,7 @@ the Free Software Foundation; either version 2 of the License, or
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 
 import errno
+import fcntl
 import gdbm
 import httplib
 import locale
@@ -29,7 +30,9 @@ import re
 import signal
 import shutil
 import socket
+import stat
 import string
+import subprocess
 import sys
 import time
 import threading
@@ -44,7 +47,7 @@ import dbus.service
 import dbus.mainloop.glib
 import gobject
 
-from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded, async
+from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded, serialize
 from packagekit.enums import *
 
 import debfile
@@ -52,6 +55,10 @@ import debfile
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
+
+apt_pkg.InitConfig()
+apt_pkg.Config.Set("DPkg::Options::", '--force-confdef')
+apt_pkg.Config.Set("DPkg::Options::", '--force-confold')
 
 # Xapian database is optionally used to speed up package description search
 XAPIAN_DB_PATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
@@ -83,6 +90,7 @@ except ImportError:
     META_RELEASE_SUPPORT = False
 else:
     META_RELEASE_SUPPORT = True
+
 
 # Set a timeout for the changelog download
 socket.setdefaulttimeout(2)
@@ -137,8 +145,42 @@ SECTION_GROUP_MAP = {
     "alien" : GROUP_UNKNOWN,
     "translations" : GROUP_LOCALIZATION,
     "metapackages" : GROUP_COLLECTIONS }
- 
-class InstallTimeOutPKError(Exception):
+
+# Regular expressions to detect bug numbers in changelogs according to the
+# Debian Policy Chapter 4.4. For details see the footnote 16:
+# http://www.debian.org/doc/debian-policy/footnotes.html#f16
+MATCH_BUG_CLOSES_DEBIAN=r"closes:\s*(?:bug)?\#?\s?\d+(?:,\s*(?:bug)?\#?\s?\d+)*"
+MATCH_BUG_NUMBERS=r"\#?\s?(\d+)"
+# URL pointing to a bug in the Debian bug tracker
+HREF_BUG_DEBIAN="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s"
+
+# Regular expression to find cve references
+MATCH_CVE="CVE-\d{4}-\d{4}"
+HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
+
+def unlock_cache_afterwards(func):
+    '''
+    Make sure that the package cache is unlocked after the decorated function
+    was called
+    '''
+    def wrapper(*args, **kwargs):
+        backend = args[0]
+        func(*args, **kwargs)
+        backend._unlock_cache()
+    wrapper.__name__ = func.__name__
+    return wrapper
+
+
+class PKError(Exception):
+    pass
+
+class PackageManagerFailedPKError(PKError):
+    def __init__(self, msg, pkg, output):
+        self.message = msg
+        self.package = pkg
+        self.output = output
+
+class InstallTimeOutPKError(PKError):
     pass
 
 class PackageKitCache(apt.cache.Cache):
@@ -200,30 +242,43 @@ class PackageKitCache(apt.cache.Cache):
         return providers
 
     def clear(self):
-         """ Unmark all changes """
-         self._depcache.Init()
+        """ Unmark all changes """
+        self._depcache.Init()
 
 
 class DpkgInstallProgress(apt.progress.InstallProgress):
     """
     Class to initiate and monitor installation of local package files with dpkg
     """
-    def run(self, filename):
+    def recover(self):
         """
-        Start installing the given Debian package
+        Run "dpkg --configure -a"
         """
-        try:
-            self.debname = os.path.basename(filename).split("_")[0]
-        except:
-            self.debname = "unknown"
-        pid = self.fork()
-        if pid == 0:
-            # child
-            dpkg_res = os.system("/usr/bin/dpkg --status-fd %s -i %s" % \
-                                 (self.writefd, filename))
-            res = os.WEXITSTATUS(dpkg_res)
-            os._exit(res)
-        self.child_pid = pid
+        cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd),
+               "--root", apt_pkg.Config["Dir"],
+               "--force-confdef", "--force-confold", 
+               "--configure", "-a"]
+        self.run(cmd)
+
+    def install(self, filenames):
+        """
+        Install the given package using a dpkg command line call
+        """
+        cmd = ["/usr/bin/dpkg", "--force-confdef", "--force-confold",
+               "--status-fd", str(self.writefd), 
+               "--root", apt_pkg.Config["Dir"], "-i"]
+        cmd.extend(map(lambda f: str(f), filenames))
+        self.run(cmd)
+
+    def run(self, cmd):
+        """
+        Run and monitor a dpkg command line call
+        """
+        pklog.debug("Executing: %s" % cmd)
+        (self.master_fd, slave) = pty.openpty()
+        fcntl.fcntl(self.master_fd, fcntl.F_SETFL, os.O_NONBLOCK)
+        p = subprocess.Popen(cmd, stdout=slave, stdin=slave)
+        self.child_pid = p.pid
         res = self.waitChild()
         return res
 
@@ -239,23 +294,25 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         except OSError, (error_no, error_str):
             # resource temporarly unavailable is ignored
             if error_no not in [errno.EAGAIN, errno.EWOULDBLOCK]:
-                print err_str
+                print error_str
         if self.read.endswith("\n"):
             statusl = string.split(self.read, ":")
             if len(statusl) < 3:
-                print "got garbage from dpkg: '%s'" % read
+                pklog.warn("got garbage from dpkg: '%s'" % self.read)
                 self.read = ""
             status = statusl[2].strip()
+            pkg = statusl[1].strip()
             #print status
             if status == "error":
-                self.error(self.debname, status)
+                self.error(pkg, status)
             elif status == "conffile-prompt":
                 # we get a string like this:
                 # 'current-conffile' 'new-conffile' useredited distedited
-                match = re.compile("\s*\'(.*)\'\s*\'(.*)\'.*").match(status_str)
-                if match:
-                     self.conffile(match.group(1), match.group(2))
+                match = re.search(".+conffile-prompt : '(.+)' '(.+)'",
+                                  self.read)
+                self.conffile(match.group(1), match.group(2))
             else:
+                pklog.debug("Dpkg status: %s" % status)
                 self.status = status
             self.read = ""
 
@@ -346,8 +403,11 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         self.last_activity = None
         self.conffile_prompts = set()
         # insanly long timeout to be able to kill hanging maintainer scripts
-        self.timeout = 10*60
+        self.timeout = 10 * 60
         self.start_time = None
+        self.output = ""
+        self.master_fd = None
+        self.child_pid = None
 
     def statusChange(self, pkg, percent, status):
         self.last_activity = time.time()
@@ -355,11 +415,11 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         if self.pprev < progress:
             self._backend.PercentageChanged(int(progress))
             self.pprev = progress
-        pklog.debug("PM status: %s" % status)
+        pklog.debug("APT status: %s" % status)
 
     def startUpdate(self):
-        # The apt system lock was set by _acquire_lock() before
-        apt_pkg.PkgSystemUnLock()
+        # The apt system lock was set by _lock_cache() before
+        self._backend._unlock_cache()
         self._backend.StatusChanged(STATUS_COMMIT)
         self.last_activity = time.time()
         self.start_time = time.time()
@@ -367,26 +427,34 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
     def fork(self):
         pklog.debug("fork()")
         (pid, self.master_fd) = pty.fork()
+        if pid != 0:
+            fcntl.fcntl(self.master_fd, fcntl.F_SETFL, os.O_NONBLOCK)
         return pid
 
     def updateInterface(self):
         apt.progress.InstallProgress.updateInterface(self)
+        # Collect the output from the package manager
         try:
-            pklog.debug("%s" % os.read(self.master_fd, 512))
-        except Exception, e:
-            pklog.debug("ioerror: %s" % e)
-        # we timed out, send ctrl-c
+            out = os.read(self.master_fd, 512)
+            self.output = self.output + out
+            pklog.debug("APT out: %s " % out)
+        except OSError:
+            pass
+        # catch a time out by sending crtl+c
         if self.last_activity + self.timeout < time.time():
             pklog.critical("no activity for %s time sending ctrl-c" \
                            % self.timeout)
             os.write(self.master_fd, chr(3))
-            raise InstallTimeOutPKError
+            #FIXME: include this into the normal install progress and add 
+            #       correct package information
+            raise InstallTimeOutPKError(self.output)
 
     def conffile(self, current, new):
         pklog.warning("Config file prompt: '%s' (sending no)" % current)
-        i = os.write(self.master_fd, "n\n")
-        pklog.debug("wrote n, send %i bytes" % i)
         self.conffile_prompts.add(new)
+
+    def error(self, pkg, msg):
+        raise PackageManagerFailedPKError(pkg, msg, self.output)
 
     def finishUpdate(self):
         pklog.debug("finishUpdate()")
@@ -406,20 +474,23 @@ class PackageKitDpkgInstallProgress(DpkgInstallProgress,
     """
     Class to integrate the progress of core dpkg operations into PackageKit
     """
-    def run(self, filename):
-        return DpkgInstallProgress.run(self, filename)
+    def run(self, filenames):
+        return DpkgInstallProgress.run(self, filenames)
 
     def updateInterface(self):
         DpkgInstallProgress.updateInterface(self)
         try:
-            pklog.debug("%s" % os.read(self.master_fd, 512))
-        except Exception, e:
-            pklog.debug("ioerror: %s" % e)
+            out = os.read(self.master_fd, 512)
+            self.output += out
+            if out != "": pklog.debug("Dpkg out: %s" % out)
+        except OSError:
+            pass
         # we timed out, send ctrl-c
         if self.last_activity + self.timeout < time.time():
             pklog.critical("no activity for %s time sending "
                            "ctrl-c" % self.timeout)
             os.write(self.master_fd, chr(3))
+            raise InstallTimeOutPKError(self.output)
 
 
 if REPOS_SUPPORT == True:
@@ -442,7 +513,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled = threading.Event()
         self._canceled.clear()
         self._lock = threading.Lock()
-        apt_pkg.InitConfig()
+        self._last_cache_refresh = None
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -454,10 +525,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         self._open_cache(progress=False)
 
+    @serialize
     def doExit(self):
-        pass
+        gobject.idle_add(self._doExitDelay)
 
-    @threaded
     def doCancel(self):
         pklog.info("Canceling current action")
         self.StatusChanged(STATUS_CANCEL)
@@ -465,6 +536,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled.wait()
 
     @threaded
+    @serialize
     def doSearchFile(self, filters, filename):
         '''
         Implement the apt2-search-file functionality
@@ -487,6 +559,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doSearchGroup(self, filters, group):
         '''
         Implement the apt2-search-group functionality
@@ -504,6 +577,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doSearchName(self, filters, search):
         '''
         Implement the apt2-search-name functionality
@@ -521,6 +595,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doSearchDetails(self, filters, search):
         '''
         Implement the apt2-search-details functionality
@@ -565,7 +640,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     def doGetDistroUpgrades(self):
         '''
         Implement the {backend}-get-distro-upgrades functionality
@@ -592,17 +667,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         meta_release = MetaReleaseCore(False, False)
         #FIXME: should use a lock
         while meta_release.downloading:
-                time.sleep(1)
+            time.sleep(1)
         #FIXME: Add support for description
         if meta_release.new_dist != None:
             self.DistroUpgrade("stable", 
-                               "%s %s" % (meta_release.new_dist.name, 
-                                          meta_release_new_dist.version), 
+                               "%s %s" % (meta_release.new_dist.name,
+                                          meta_release.new_dist.version),
                                "The latest stable release")
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-update functionality
@@ -620,14 +695,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 # Skip versions which are not later
                 if inst_ver and \
                    apt_pkg.VersionCompare(ver.VerStr, inst_ver.VerStr) <= 0:
-                       continue
+                    continue
                 for(verFileIter, index) in ver.FileList:
                     if verFileIter.Origin in ["Debian", "Ubuntu"] and \
                        (verFileIter.Archive.endswith("-security") or \
                         verFileIter.Label == "Debian-Security"):
-                            indexfile = pkg._list.FindIndex(verFileIter)
-                            if indexfile and indexfile.IsTrusted:
-                                return True
+                        indexfile = pkg._list.FindIndex(verFileIter)
+                        if indexfile and indexfile.IsTrusted:
+                            return True
             return False
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
@@ -660,19 +735,39 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     elif archive.endswith("-updates"):
                         info = INFO_BUGFIX
                 if origin in ["Backports.org archive"] and trusted == True:
-                        info = INFO_ENHANCEMENT
+                    info = INFO_ENHANCEMENT
                 self._emit_package(pkg, info, force_candidate=True)
         # Report packages that are upgradable but cannot be upgraded
         for missed in updates:
-             self._emit_package(self._cache[missed], INFO_BLOCKED)
+            self._emit_package(self._cache[missed], INFO_BLOCKED)
         self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doGetUpdateDetail(self, pkg_ids):
         '''
         Implement the {backend}-get-update-details functionality
         '''
+        def get_bug_urls(changelog):
+            """
+            Create a list of urls pointing to closed bugs in the changelog
+            """
+            urls = []
+            #FIXME: Add support for Launchpad/Ubuntu
+            for r in re.findall(MATCH_BUG_CLOSES_DEBIAN, changelog,
+                                re.IGNORECASE | re.MULTILINE):
+                urls.extend(map(lambda b: HREF_BUG_DEBIAN % b,
+                                re.findall(MATCH_BUG_NUMBERS, r)))
+            return urls
+
+        def get_cve_urls(changelog):
+            """
+            Create a list of urls pointing to cves referred in the changelog
+            """
+            return map(lambda c: HREF_CVE % c,
+                       re.findall(MATCH_CVE, changelog, re.MULTILINE))
+
         pklog.info("Get update details of %s" % pkg_ids)
         self.StatusChanged(STATUS_INFO)
         self.NoPercentageUpdates()
@@ -683,31 +778,32 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkg = self._find_package_by_id(pkg_id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                               "Package %s isn't available" % name)
+                               "Package %s isn't available" % id)
                 self.Finished(EXIT_FAILED)
                 return
             # FIXME add some real data
             updates = self.get_id_from_package(pkg, force_candidate=False)
             obsoletes = ""
             vendor_url = ""
-            bugzilla_url = ""
-            cvs_url = ""
             restart = ""
             update_text = ""
+            state = ""
+            issued = ""
+            updated = ""
             #FIXME: Replace this method with the python-apt one as soon as the
             #       consolidate branch gets merged
             self.StatusChanged(STATUS_DOWNLOAD_CHANGELOG)
             changelog = self._get_changelog(pkg)
             self.StatusChanged(STATUS_INFO)
-            state = ""
-            issued = ""
-            updated = ""
+            bugzilla_url = ";".join(get_bug_urls(changelog))
+            cve_url = ";".join(get_cve_urls(changelog))
             self.UpdateDetail(pkg_id, updates, obsoletes, vendor_url,
-                              bugzilla_url, cvs_url, restart, update_text,
+                              bugzilla_url, cve_url, restart, update_text,
                               changelog, state, issued, updated)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doGetDetails(self, pkg_ids):
         '''
         Implement the {backend}-get-details functionality
@@ -722,7 +818,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkg = self._find_package_by_id(pkg_id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                               "Package %s isn't available" % name)
+                               "Package %s isn't available" % id)
                 self.Finished(EXIT_FAILED)
                 return
             desc = self._get_package_description(pkg)
@@ -740,13 +836,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
+    @unlock_cache_afterwards
     def doUpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
         '''
         pklog.info("Upgrading system")
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -764,13 +861,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
+    @unlock_cache_afterwards
     def doRemovePackages(self, ids, deps=True, auto=False):
         '''
         Implement the {backend}-remove functionality
         '''
         pklog.info("Removing package(s): id %s" % ids)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -814,7 +912,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     def doGetRepoList(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
@@ -895,7 +993,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     def doRepoEnable(self, repo_id, enable):
         '''
         Implement the {backend}-repo-enable functionality
@@ -917,7 +1015,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.ErrorCode(ERROR_UNKNOWN,
                                "Please make sure that python-software-properties is"
                                "correctly installed.")
-            self.Finished(EXIT_FALIED)
+            self.Finished(EXIT_FAILED)
             return
         repos = PackageKitSoftwareProperties()
 
@@ -982,13 +1080,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
+    @unlock_cache_afterwards
     def doUpdatePackages(self, ids):
         '''
         Implement the {backend}-update functionality
         '''
         pklog.info("Updating package with id %s" % ids)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1029,7 +1128,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
     def doDownloadPackages(self, ids, dest):
         '''
         Implement the {backend}-download-packages functionality
@@ -1040,7 +1139,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.PercentageChanged(0)
         # Check the destination directory
         if not os.path.isdir(dest) or not os.access(dest, os.W_OK):
-            self.ErrorCode(ERROR_UNKOWN,
+            self.ErrorCode(ERROR_UNKNOWN,
                            "The directory '%s' is not writable" % dest)
             self.Finished(EXIT_FAILED)
             return
@@ -1086,7 +1185,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 shutil.copy(item.DestFile, dest)
             except Exception, e:
                 self.ErrorCode(ERROR_INTERNAL_ERROR,
-                               "Failed to copy %s to %s: %s" % (pkg_path,
+                               "Failed to copy %s to %s: %s" % (item.DestFile,
                                                                 dest, e))
                 self.Finished(EXIT_FAILED)
                 return
@@ -1095,13 +1194,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
  
     @threaded
-    @async
+    @serialize
+    @unlock_cache_afterwards
     def doInstallPackages(self, ids):
         '''
         Implement the {backend}-install functionality
         '''
         pklog.info("Installing package with id %s" % ids)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -1141,19 +1241,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
+    @unlock_cache_afterwards
     def doInstallFiles(self, trusted, full_paths):
         '''
         Implement install-files for the apt backend
         Install local Debian package files
         '''
         pklog.info("Installing package files: %s" % full_paths)
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,10))
-        dependencies = []
         packages = []
         # Collect all dependencies which need to be installed
         self.StatusChanged(STATUS_DEP_RESOLVE)
@@ -1173,48 +1273,51 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "before: %s" % remove)
                 self.Finished(EXIT_FAILED)
                 return
-            dependencies.extend(install)
-        # Install all dependecies before
-        try:
-            for dep in dependencies:
-                self._cache[dep].markInstall()
-        except:
-            self._cache.clear()
-            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED, "")
-            self.Finished(EXIT_FAILED)
-            return
-        if not self._commit_changes((10,25), (25,50)): return False
-        # Install the Debian package files
-        if not self._acquire_lock(): return
-        for deb in packages:
-            try:
-                res = deb.install(PackageKitDpkgInstallProgress(self))
-            except Exception, e:
-                self.ErrorCode(ERROR_UNKNOWN, "Failed to install dpkg: %s" % e)
-                self.Finished(EXIT_FAILED)
-                return
-            print res
-            if res != 0:
-                self.ErrorCode(ERROR_UNKNOWN, 
-                               "Failed to install package %s" % deb.pkgname)
-                self.Finished(EXIT_FAILED)
-                return
-            # Check if there is a newer version in the cache
             if deb.compareToVersionInCache() == debfile.VERSION_OUTDATED:
                 self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
+        if len(self._cache.getChanges()) > 0 and not \
+           self._commit_changes((10,25), (25,50)): 
+            return False
+       # Install the Debian package files
+        d = PackageKitDpkgInstallProgress(self)
+        try:
+            d.startUpdate()
+            d.install(full_paths)
+            d.finishUpdate()
+        except InstallTimeOutPKError, e:
+            self._recover()
+            #FIXME: should provide more information
+            self.ErrorCode(ERROR_UNKNOWN,
+                           "Transaction was cancelled since the installation "
+                           "of a package hung.\n"
+                           "This can be caused by maintainer scripts which "
+                           "require input on the terminal:\n%s" % e.message)
+            self.Finished(EXIT_KILLED)
+            return
+        except PackageManagerFailedPKError, e:
+            self._recover()
+            self.ErrorCode(ERROR_UNKNOWN, "%s\n%s" % (e.message, e.output))
+            self.Finished(EXIT_FAILED)
+            return
+        except Exception, e:
+            self._recover()
+            self.ErrorCode(ERROR_INTERNAL_ERROR, e.message)
+            self.Finished(EXIT_FAILED)
+            return
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @async
+    @serialize
+    @unlock_cache_afterwards
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
         pklog.info("Refresh cache")
-        if not self._acquire_lock(): return
+        if not self._lock_cache(): return
         self.StatusChanged(STATUS_REFRESH_CACHE)
         self.last_action_time = time.time()
         self.AllowCancel(False);
@@ -1232,6 +1335,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doGetPackages(self, filters):
         '''
         Implement the apt2-get-packages functionality
@@ -1249,6 +1353,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doResolve(self, filters, names):
         '''
         Implement the apt2-resolve functionality
@@ -1270,6 +1375,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doGetDepends(self, filter, ids, recursive=False):
         '''
         Implement the apt2-get-depends functionality
@@ -1299,7 +1405,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                               "Package %s isn't available" % name)
+                               "Package %s isn't available" % id)
                 self.Finished(EXIT_FAILED)
                 return
             try:
@@ -1337,6 +1443,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doGetRequires(self, filter, ids, recursive=False):
         '''
         Implement the apt2-get-requires functionality
@@ -1357,7 +1464,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                               "Package %s isn't available" % name)
+                               "Package %s isn't available" % id)
                 self.Finished(EXIT_FAILED)
                 return
             if pkg._pkg.Essential == True:
@@ -1393,6 +1500,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @serialize
     def doWhatProvides(self, filters, provides_type, search):
         def get_mapping_db(path):
             """
@@ -1432,35 +1540,29 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         if provides_type == PROVIDES_CODEC:
             # The search term from the codec helper looks like this one:
-            # "gstreamer.net|0.10|totem|DivX MPEG-4 Version 5 decoder|" \
-            # "decoder-video/x-divx, divxversion=(int)5 (DivX MPEG-4 Version " \
-            # "5 decoder)"
-            try:
-                (origin, version, app, descr, term) = search.split("|")
-            except ValueError, e:
+            match = re.match(r"gstreamer(.+)\((.+)\)\((.+)\)", search)
+            if not match:
                 self.ErrorCode(ERROR_UNKNOWN,
                                "The search term is invalid")
                 self.Finished(EXIT_FAILED)
                 return
+            codec = "%s:%s" % (match.group(1), match.group(2))
             db = get_mapping_db("/var/cache/app-install/gai-codec-map.gdbm")
             if db == None:
+                self.ErrorCode(ERROR_INTERNAL_ERROR,
+                               "Failed to open codec mapping database")
                 self.Finished(EXIT_FAILED)
                 return
-            handlers = set()
-            for k in db.keys():
-                codec = k
-                if ":" in codec:
-                    codec = codec.split(":")[1]
-                if codec in term:
-                    # The codec mapping db stores the packages as a string
-                    # separated by spaces. Each package has its section
-                    # prefixed and separated by a slash
-                    # FIXME: Should make use of the section and emit a 
-                    #        RepositoryRequired signal if the package does 
-                    #        not exist
-                    handlers.update(set(map(lambda s: s.split("/")[1],
-                                        db[k].split(" "))))
-            self._emit_visible_packages_by_name(filters, handlers)
+            if db.has_key(codec):
+                # The codec mapping db stores the packages as a string
+                # separated by spaces. Each package has its section
+                # prefixed and separated by a slash
+                # FIXME: Should make use of the section and emit a 
+                #        RepositoryRequired signal if the package does 
+                #        not exist
+                pkgs = map(lambda s: s.split("/")[1],
+                           db[codec].split(" "))
+                self._emit_visible_packages_by_name(filters, pkgs)
         elif provides_type == PROVIDES_MIMETYPE:
             # Emit packages that contain an application that can handle
             # the given mime type
@@ -1486,6 +1588,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
+    @serialize
     def doGetFiles(self, package_ids):
         """
         Emit the Files signal which includes the files included in a package
@@ -1508,10 +1612,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Set a proxy server for http and ftp transfer
         '''
         if http_proxy:
-            pkglog.debug("Set http proxy to %s" % http_proxy)
+            pklog.debug("Set http proxy to %s" % http_proxy)
             apt_pkg.Config.set("http::Proxy", http_proxy)
         if ftp_proxy:
-            pkglog.debug("Set ftp proxy to %s" % ftp_proxy)
+            pklog.debug("Set ftp proxy to %s" % ftp_proxy)
             apt_pkg.Config.set("ftp::Proxy", ftp_proxy)
 
     def doSetLocale(self, code):
@@ -1526,7 +1630,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     # Helpers
 
-    def _acquire_lock(self):
+    def _lock_cache(self):
         """
         Emit an error message and return true if the apt system lock cannot
         be acquired.
@@ -1538,6 +1642,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Only use one package management programme at the "
                            "the same time.")
             self.Finished(EXIT_FAILED)
+            return False
+        return True
+
+    def _unlock_cache(self):
+        """
+        Unlock the system package cache
+        """
+        try:
+            apt_pkg.PkgSystemUnLock()
+        except SystemError:
             return False
         return True
 
@@ -1563,6 +1677,22 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             self.Exit()
             return
+        self._last_cache_refresh = time.time()
+
+    def _recover(self, prange=(95,100)):
+        """
+        Try to recover from a package manager failure
+        """
+        self.StatusChanged(STATUS_CLEANUP)
+        self.NoPercentageUpdates()
+        try:
+            d = PackageKitDpkgInstallProgress(self)
+            d.startUpdate()
+            d.recover()
+            d.finishUpdate()
+        except:
+            pass
+        self._open_cache(prange)
 
     def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
         """
@@ -1579,18 +1709,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._open_cache(prange=(95,100))
             self.Finished(EXIT_CANCELLED)
             self._canceled.clear()
-        except InstallTimeOutPKError:
+        except InstallTimeOutPKError, e:
+            self._recover()
             self._open_cache(prange=(95,100))
             #FIXME: should provide more information
             self.ErrorCode(ERROR_UNKNOWN,
                            "Transaction was cancelled since the installation "
                            "of a package hung.\n"
                            "This can be caused by maintainer scripts which "
-                           "require input on the terminal.")
+                           "require input on the terminal:\n%s" % e.message)
             self.Finished(EXIT_KILLED)
-        except:
-            self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_UNKNOWN, "Applying changes failed")
+        except PackageManagerFailedPKError, e:
+            self._recover()
+            self.ErrorCode(ERROR_UNKNOWN, "%s\n%s" % (e.message, e.output))
             self.Finished(EXIT_FAILED)
         else:
             return True
@@ -1601,9 +1732,23 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Check if the backend was initialized well and try to recover from
         a broken setup
         '''
-        pklog.debug("Check apt cache and xapian database")
+        pklog.debug("Checking apt cache and xapian database")
+        pkg_cache = os.path.join(apt_pkg.Config["Dir"],
+                                 apt_pkg.Config["Dir::Cache"],
+                                 apt_pkg.Config["Dir::Cache::pkgcache"])
+        src_cache = os.path.join(apt_pkg.Config["Dir"],
+                                 apt_pkg.Config["Dir::Cache"],
+                                 apt_pkg.Config["Dir::Cache::srcpkgcache"])
+        # Check if the cache instance is of the coorect class type, contains
+        # any broken packages and if the dpkg status or apt cache files have 
+        # been changed since the last refresh
         if not isinstance(self._cache, apt.cache.Cache) or \
-           self._cache._depcache.BrokenCount > 0:
+           (self._cache._depcache.BrokenCount > 0) or \
+           (os.stat(apt_pkg.Config["Dir::State::status"])[stat.ST_MTIME] > \
+            self._last_cache_refresh) or \
+           (os.stat(pkg_cache)[stat.ST_MTIME] > self._last_cache_refresh) or \
+           (os.stat(src_cache)[stat.ST_MTIME] > self._last_cache_refresh):
+            pklog.debug("Reloading the cache is required")
             self._open_cache(prange, progress)
         else:
             self._cache.clear()
@@ -1614,9 +1759,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         corresponding error message and return True
         '''
         if self._canceled.isSet():
-             self.Finished(EXIT_CANCELLED)
-             self._canceled.clear()
-             return True
+            self.Finished(EXIT_CANCELLED)
+            self._canceled.clear()
+            return True
         return False
  
     def get_id_from_package(self, pkg, force_candidate=False):
@@ -1923,8 +2068,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     "until the changes become available or try again " \
                     "later." % (src_pkg, src_ver)
         except IOError, httplib.BadStatusLine:
-                return "Failed to download the list of changes.\nPlease " \
-                        "check your Internet connection."
+            return "Failed to download the list of changes.\nPlease " \
+                   "check your Internet connection."
         return changelog
 
     def _get_package_group(self, pkg):
@@ -1982,8 +2127,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     line = raw_line
             else:
                 line = raw_line
-                pkglog.debug("invalid line %s in description for %s:\n%s" % \
-                             (i, pkg.name, pkg.rawDescription))
+                pklog.debug("invalid line %s in description for %s:\n%s" % \
+                            (i, pkg.name, pkg.rawDescription))
             # Use dots for lists
             line = re.sub(r"^(\s*)(\*|0|o|-) ", ur"\1\u2022 ", line, 1)
             # Add current line to the description
@@ -2006,10 +2151,10 @@ def debug_exception(type, value, tb):
         # redirected or on syntax errors
         sys.__excepthook__(type, value, tb)
     else:
-       import traceback, pdb
-       traceback.print_exception(type, value, tb)
-       print
-       pdb.pm()
+        import traceback, pdb
+        traceback.print_exception(type, value, tb)
+        print
+        pdb.pm()
 
 def takeover():
     """
@@ -2045,6 +2190,10 @@ def main():
                       action="store_true", dest="takeover",
                       help="Exit the currently running backend "
                            "(Only needed by developers)")
+    parser.add_option("-r", "--root",
+                      action="store", type="string", dest="root",
+                      help="Use the given directory as the system root "
+                           "(Only needed by developers)")
     parser.add_option("-p", "--profile",
                       action="store", type="string", dest="profile",
                       help="Store profiling stats in the given file "
@@ -2058,6 +2207,12 @@ def main():
     if options.debug:
         pklog.setLevel(logging.DEBUG)
         sys.excepthook = debug_exception
+
+    if options.root:
+        config = apt_pkg.Config
+        config.Set("Dir", options.root)
+        config.Set("Dir::State::status",
+                   os.path.join(options.root, "/var/lib/dpkg/status"))
 
     if options.takeover:
         takeover()

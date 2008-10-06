@@ -22,7 +22,7 @@ import sys
 from packagekit.client import PackageKitClient
 from packagekit.enums import *
 
-def show_packages(pk,pkgs,details=False,limit=None):
+def show_packages(pkit, pkgs, details=False, limit=None):
     i = 0
     for pkg in pkgs:
         i += 1
@@ -30,9 +30,9 @@ def show_packages(pk,pkgs,details=False,limit=None):
             break
         show_package(pkg)
         if details:
-            details = pk.GetDetails(pkg.id)
+            detail = pkit.GetDetails(pkg.id)
             print 79 *"-"
-            print details[0].detail
+            print detail[0].detail
             print 79 *"="
 
 def show_package(pkg):
@@ -63,12 +63,12 @@ if __name__ == '__main__':
     if 'all' in cmd or "get-packages" in cmd:
         print '---- GetPackages() ----'
         packages = pk.GetPackages(FILTER_INSTALLED)
-        show_packages(pk,packages,details=True,limit=20)
+        show_packages(pk, packages, details=True, limit=20)
 
     if 'all' in cmd or "search-file" in cmd:
         print '---- SearchFile() ----'
         pkgs = pk.SearchFile(FILTER_INSTALLED,"/usr/bin/yum")
-        show_packages(pk,pkgs)
+        show_packages(pk, pkgs)
 
     if 'all' in cmd or "get-updates" in cmd:
         print '---- GetUpdates() ----'
@@ -85,8 +85,8 @@ if __name__ == '__main__':
 
     if  "search-group" in cmd:
         print '---- SearchGroup() -----'
-        show_packages(pk,pk.SearchGroup(FILTER_NONE, GROUP_GAMES))
-        show_packages(pk,pk.SearchGroup(FILTER_NONE, GROUP_COLLECTIONS))
+        show_packages(pk, pk.SearchGroup(FILTER_NONE, GROUP_GAMES))
+        show_packages(pk, pk.SearchGroup(FILTER_NONE, GROUP_COLLECTIONS))
 
     if  "get-distro-upgrades" in cmd:
         print '---- GetDistroUpgrades() -----'
@@ -97,8 +97,9 @@ if __name__ == '__main__':
             print "No distribution upgrades"
 
 
-    def cb(status, pc, spc, el, rem, c):
-        print 'install pkg: %s, %i%%, cancel allowed: %s' % (status, pc, str(c))
+    def cb(status, pct, spct, elem, rem, cancel):
+        print 'install pkg: %s, %i%%, cancel allowed: %s' % \
+              (status, pct, str(cancel))
         return True
         #return pc < 12
 

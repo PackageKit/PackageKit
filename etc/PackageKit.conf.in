@@ -30,6 +30,15 @@ ShutdownTimeout=300
 # default=5
 BackendShutdownTimeout=5
 
+# Set the priority of the spawned backend to this priority.
+# This ensures the process does not hog the system when performing actions.
+#
+# Values range from -20 (most favorable) to 19 (least favorable)
+# A niceness value of 0 will not attempt to set any priority.
+#
+# default=10
+BackendSpawnNiceValue=10
+
 # Default backend, as chosen in the configure script. This will be used where
 # no --backend="foo" option is given to the daemon.
 #
@@ -50,13 +59,13 @@ DefaultBackend=@defaultbackend@
 #
 # NOTE: Don't enable this for backends that are slow doing SearchFile()
 #
-# default=false
-RefreshCacheScanDesktopFiles=false
+# default=true
+RefreshCacheScanDesktopFiles=true
 
 # Update the package list when we RefreshCache
 #
 # NOTE: Don't enable this for backends that are slow doing GetPackages()
 #
-# default=false
-RefreshCacheUpdatePackageList=false
+# default=true
+RefreshCacheUpdatePackageList=true
 

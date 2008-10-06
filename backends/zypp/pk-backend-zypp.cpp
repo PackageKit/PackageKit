@@ -55,6 +55,8 @@
 #include <map>
 #include <list>
 
+#include <pk-package-ids.h>
+
 #include "zypp-utils.h"
 #include "zypp-events.h"
 
@@ -924,11 +926,11 @@ backend_get_update_detail_thread (PkBackend *backend)
 			zypp::sat::SolvableSet content = patch->contents ();
 
 			for (zypp::sat::SolvableSet::const_iterator it = content.begin (); it != content.end (); it++) {
-				//obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), "^", (gchar *)NULL);
+				//obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), PK_PACKAGE_IDS_DELIM, (gchar *)NULL);
 				if (strlen(obsoletes) == 0) {
 					obsoletes = zypp_build_package_id_capabilities (it->obsoletes ());
 				} else {
-					obsoletes = g_strconcat (obsoletes, "^", zypp_build_package_id_capabilities (it->obsoletes ()), (gchar *)NULL);
+					obsoletes = g_strconcat (obsoletes, PK_PACKAGE_IDS_DELIM, zypp_build_package_id_capabilities (it->obsoletes ()), (gchar *)NULL);
 				}
 			}
 		}
@@ -1763,17 +1765,17 @@ backend_what_provides_thread (PkBackend *backend)
 	zypp::sat::WhatProvides prov (cap);
 
 	if((provides == PK_PROVIDES_ENUM_HARDWARE_DRIVER) || g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
-
-
 		// solver run
 		zypp::ResPool pool = zypp_build_pool(true);
 		zypp::Resolver solver(pool);
+		solver.setIgnoreAlreadyRecommended (TRUE);
 
 		if (solver.resolvePool () == FALSE) {
 			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
 			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
 				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
+			solver.setIgnoreAlreadyRecommended (FALSE);
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
 			pk_backend_finished (backend);
 			return FALSE;
@@ -1804,9 +1806,7 @@ backend_what_provides_thread (PkBackend *backend)
 			}
 			it->statusReset ();
 		}
-
-
-
+		solver.setIgnoreAlreadyRecommended (FALSE);
 	}else{
 		for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
 			gchar *package_id = zypp_build_package_id_from_resolvable (*it);
@@ -1841,6 +1841,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
+	NULL,					/* get_mime_types */
 	NULL,					/* cancel */
 	NULL,					/* download_packages */
 	backend_get_depends,			/* get_depends */

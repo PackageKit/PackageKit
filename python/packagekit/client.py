@@ -80,7 +80,6 @@ class PackageKitClient:
         if self._error_enum:
             raise PackageKitError(self._error_enum)
 
-
     def _wrapBasicCall(self, pk_xn, method):
         return self._wrapCall(pk_xn, method, {})
 
@@ -105,11 +104,10 @@ class PackageKitClient:
         '''
 
         result = []
-        distup_cb = lambda typ,name,summary: result.append(
-            PackageKitDistroUpgrade(typ,name,summary))
+        distup_cb = lambda typ, name, summary: result.append(
+            PackageKitDistroUpgrade(typ, name, summary))
         self._wrapCall(pk_xn, method, {'DistroUpgrade' : distup_cb})
         return result
-
 
     def _wrapDetailsCall(self, pk_xn, method):
         '''
@@ -164,7 +162,6 @@ class PackageKitClient:
         self._wrapCall(pk_xn, method, {'Files' : files_cb})
         return result
 
-
     def SuggestDaemonQuit(self):
         '''Ask the PackageKit daemon to shutdown.'''
 
@@ -174,9 +171,9 @@ class PackageKitClient:
             # not initialized, or daemon timed out
             pass
 
-    def Resolve(self, filter, package):
+    def Resolve(self, filters, package):
         '''
-        Resolve a package name to a PackageKit package_id filter and
+        Resolve a package name to a PackageKit package_id filters and
         package are directly passed to the PackageKit transaction
         D-BUS method Resolve()
 
@@ -186,8 +183,7 @@ class PackageKitClient:
         '''
         package = self._to_list(package) # Make sure we have a list
         xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.Resolve(filter, package))
-
+        return self._wrapPackageCall(xn, lambda : xn.Resolve(filters, package))
 
     def GetDetails(self, package_ids):
         '''
@@ -200,35 +196,35 @@ class PackageKitClient:
         xn = self._get_xn()
         return self._wrapDetailsCall(xn, lambda : xn.GetDetails(package_ids))
 
-    def SearchName(self, filter, name):
+    def SearchName(self, filters, name):
         '''
         Search a package by name.
         '''
         xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.SearchName(filter, name))
+        return self._wrapPackageCall(xn, lambda : xn.SearchName(filters, name))
 
-    def SearchGroup(self, filter, group_id):
+    def SearchGroup(self, filters, group_id):
         '''
         Search for a group.
         '''
         xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.SearchGroup(filter, group_id))
+        return self._wrapPackageCall(xn, lambda : xn.SearchGroup(filters, group_id))
 
-    def SearchDetails(self, filter, name):
+    def SearchDetails(self, filters, name):
         '''
         Search a packages details.
         '''
         xn = self._get_xn()
         return self._wrapPackageCall(xn,
-                                     lambda : xn.SearchDetails(filter, name))
+                                     lambda : xn.SearchDetails(filters, name))
 
-    def SearchFile(self, filter, search):
+    def SearchFile(self, filters, search):
         '''
         Search for a file.
         '''
         xn = self._get_xn()
         return self._wrapPackageCall(xn,
-                                     lambda : xn.SearchFile(filter, search))
+                                     lambda : xn.SearchFile(filters, search))
 
     def InstallPackages(self, package_ids, progress_cb=None):
         '''Install a list of package IDs.
@@ -285,8 +281,7 @@ class PackageKitClient:
         xn = self._get_xn()
         self._wrapBasicCall(xn, lambda : xn.RefreshCache(force))
 
-
-    def GetRepoList(self, filter=FILTER_NONE):
+    def GetRepoList(self, filters=FILTER_NONE):
         '''
         Returns the list of repositories used in the system
 
@@ -294,8 +289,7 @@ class PackageKitClient:
 
         '''
         xn = self._get_xn()
-        return self._wrapReposCall(xn, lambda : xn.GetRepoList(filter))
-
+        return self._wrapReposCall(xn, lambda : xn.GetRepoList(filters))
 
     def RepoEnable(self, repo_id, enabled):
         '''
@@ -309,7 +303,7 @@ class PackageKitClient:
         xn = self._get_xn()
         self._wrapBasicCall(xn, lambda : xn.RepoEnable(repo_id, enabled))
 
-    def GetUpdates(self, filter=FILTER_NONE):
+    def GetUpdates(self, filters=FILTER_NONE):
         '''
         This method should return a list of packages that are installed and
         are upgradable.
@@ -317,15 +311,15 @@ class PackageKitClient:
         It should only return the newest update for each installed package.
         '''
         xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.GetUpdates(filter))
+        return self._wrapPackageCall(xn, lambda : xn.GetUpdates(filters))
 
-    def GetPackages(self, filter=FILTER_NONE):
+    def GetPackages(self, filters=FILTER_NONE):
         '''
-        This method should return a total list of packages, limmited by the
-        filter used
+        This method should return a total list of packages, limited by the
+        filters used
         '''
         xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.GetPackages(filter))
+        return self._wrapPackageCall(xn, lambda : xn.GetPackages(filters))
 
     def UpdateSystem(self):
         '''
@@ -337,36 +331,35 @@ class PackageKitClient:
         xn = self._get_xn()
         self._wrapPackageCall(xn, lambda : xn.UpdateSystem())
 
-    def DownloadPackages(self,package_ids):
+    def DownloadPackages(self, package_ids):
         package_ids = self._to_list(package_ids) # Make sure we have a list
         xn = self._get_xn()
-        return self._wrapFilesCall(xn,lambda : xn.DownloadPackages(package_ids))
+        return self._wrapFilesCall(xn, lambda : xn.DownloadPackages(package_ids))
 
-    def GetDepends(self,filter,package_ids,recursive=False):
+    def GetDepends(self, filters, package_ids, recursive=False):
         '''
         Search for dependencies for packages
         '''
         package_ids = self._to_list(package_ids) # Make sure we have a list
         xn = self._get_xn()
         return self._wrapPackageCall(xn,
-                                     lambda : xn.GetDepends(filter,package_ids,recursive))
+                                     lambda : xn.GetDepends(filters, package_ids, recursive))
 
-    def GetFiles(self,package_ids):
+    def GetFiles(self, package_ids):
         package_ids = self._to_list(package_ids) # Make sure we have a list
         xn = self._get_xn()
-        return self._wrapFilesCall(xn,lambda : xn.GetFiles(package_ids))
+        return self._wrapFilesCall(xn, lambda : xn.GetFiles(package_ids))
 
-
-    def GetRequires(self,filter,package_ids,recursive=False):
+    def GetRequires(self, filters, package_ids, recursive=False):
         '''
         Search for requirements for packages
         '''
         package_ids = self._to_list(package_ids) # Make sure we have a list
         xn = self._get_xn()
         return self._wrapPackageCall(xn,
-                                     lambda : xn.GetRequires(filter,package_ids,recursive))
+                                     lambda : xn.GetRequires(filters, package_ids, recursive))
 
-    def GetUpdateDetail(self,package_ids):
+    def GetUpdateDetail(self, package_ids):
         '''
         Get details for updates
         '''
@@ -378,44 +371,42 @@ class PackageKitClient:
         xn = self._get_xn()
         return self._wrapPackageCall(xn, lambda : xn.GetDistroUpgrades())
 
-    def InstallFiles(self,trusted,files):
+    def InstallFiles(self, trusted, files):
         raise PackageKitError(ERROR_NOT_SUPPORTED)
 
-    def InstallSignatures(self,sig_type,key_id,package_id):
+    def InstallSignatures(self, sig_type, key_id, package_id):
         '''
         Install packages signing keys used to validate packages
         '''
         xn = self._get_xn()
-        self._wrapBasicCall(xn, lambda : xn.InstallSignatures(sig_type,key_id,package_id))
+        self._wrapBasicCall(xn, lambda : xn.InstallSignatures(sig_type, key_id, package_id))
 
-    def RepoSetData(self,repo_id,parameter,value):
+    def RepoSetData(self, repo_id, parameter, value):
         '''
         Change custom parameter in Repository Configuration
         '''
         xn = self._get_xn()
-        self._wrapBasicCall(xn, lambda : xn.RepoSetData(repo_id,parameter,value))
+        self._wrapBasicCall(xn, lambda : xn.RepoSetData(repo_id, parameter, value))
 
-    def Rollback(self,transaction_id):
+    def Rollback(self, transaction_id):
         xn = self._get_xn()
         self._wrapBasicCall(xn, lambda : xn.Rollback(transaction_id))
 
-    def WhatProvides(self,provide_type,search):
+    def WhatProvides(self, provide_type, search):
         '''
         Search for packages that provide the supplied attributes
         '''
         xn = self._get_xn()
         return self._wrapPackageCall(xn,
-                                     lambda : xn.WhatProvides(provide_type,search))
+                                     lambda : xn.WhatProvides(provide_type, search))
 
-    def SetLocale(self,code):
+    def SetLocale(self, code):
         xn = self._get_xn()
         self._wrapBasicCall(xn, lambda : xn.SetLocale(code))
 
-    def AcceptEula(self,eula_id):
+    def AcceptEula(self, eula_id):
         xn = self._get_xn()
         self._wrapBasicCall(xn, lambda : xn.AcceptEula(eula_id))
-
-
 
     #
     # Internal helper functions
@@ -480,13 +471,13 @@ class PackageKitClient:
             'org.freedesktop.PolicyKit.AuthenticationAgent', '/',
             'org.freedesktop.PolicyKit.AuthenticationAgent')
         if(policykit == None):
-           print("Error: Could not get PolicyKit D-Bus Interface\n")
+            print("Error: Could not get PolicyKit D-Bus Interface\n")
         granted = policykit.ObtainAuthorization("org.freedesktop.packagekit.update-system",
                                                 (dbus.UInt32)(xid),
                                                 (dbus.UInt32)(os.getpid()))
 
     def _doPackages(self, pk_xn, method, progress_cb):
-        '''Shared implementation of InstallPackages,UpdatePackages and RemovePackages.'''
+        '''Shared implementation of InstallPackages, UpdatePackages and RemovePackages.'''
 
         self._status = None
         self._allow_cancel = False
@@ -526,7 +517,6 @@ class PackageKitClient:
 class PermissionDeniedByPolicy(dbus.DBusException):
     _dbus_error_name = 'org.freedesktop.PackageKit.Transaction.RefusedByPolicy'
 
-
 def polkit_auth_wrapper(fn, *args, **kwargs):
     '''Function call wrapper for PolicyKit authentication.
 
@@ -553,8 +543,6 @@ def polkit_auth_wrapper(fn, *args, **kwargs):
             raise PermissionDeniedByPolicy(priv + ' ' + auth_result)
         else:
             raise
-
-
 
 if __name__ == '__main__':
     pass

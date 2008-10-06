@@ -23,14 +23,11 @@
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 #include <pk-package-ids.h>
+#include <pk-common.h>
 
 static PkBackendSpawn *spawn;
 
-#if 0
-#define BACKEND(x)	x ".py"
-#else
 #define BACKEND(x)	"smartBackend.py", x
-#endif
 
 /**
  * backend_initialize:
@@ -114,6 +111,20 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_mime_types:
+ */
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+	return g_strdup ("application/x-rpm;"
+	                 "application/x-deb;"
+	                 "application/x-gzip;"	/* .tgz */
+	                 "application/x-bzip2;"	/* .tbz */
+	                 "application/x-lzma;"	/* .tlz */
+	                 "application/x-arch-pkg");
+}
+
+/**
  * pk_backend_bool_to_text:
  */
 static const gchar *
@@ -144,7 +155,7 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND("download-packages"), directory, package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -157,7 +168,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, BACKEND("get-depends"), filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
@@ -171,7 +182,7 @@ static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND("get-details"), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -183,7 +194,7 @@ static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND("get-files"), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -195,7 +206,7 @@ static void
 backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, BACKEND("get-requires"), filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
@@ -234,7 +245,7 @@ static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND("get-update-detail"), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -255,7 +266,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND("install-packages"), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -269,7 +280,7 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 	gchar *full_paths_temp;
 
 	/* send the complete list as stdin */
-	full_paths_temp = pk_package_ids_to_text (full_paths, "|");
+	full_paths_temp = pk_strv_to_text (full_paths, PK_BACKEND_SPAWN_FILENAME_DELIM);
 	pk_backend_spawn_helper (spawn, BACKEND("install-files"), pk_backend_bool_to_text (trusted), full_paths_temp, NULL);
 	g_free (full_paths_temp);
 }
@@ -299,7 +310,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	/* FIXME: Use autoremove */
 	pk_backend_spawn_helper (spawn, BACKEND("remove-packages"), pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
 	g_free (package_ids_temp);
@@ -369,7 +380,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND("update-packages"), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -392,7 +403,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 	gchar *filters_text;
 	gchar *package_ids_temp;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND("resolve"), filters_text, package_ids_temp, NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
@@ -453,6 +464,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,				/* destroy */
 	backend_get_groups,				/* get_groups */
 	backend_get_filters,				/* get_filters */
+	backend_get_mime_types,				/* get_mime_types */
 	backend_cancel,					/* cancel */
 	backend_download_packages,			/* download_packages */
 	backend_get_depends,				/* get_depends */

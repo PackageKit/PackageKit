@@ -57,6 +57,12 @@ struct _PkExtraClass
 	GObjectClass	parent_class;
 };
 
+typedef enum {
+	PK_EXTRA_ACCESS_READ_ONLY,
+	PK_EXTRA_ACCESS_WRITE_ONLY,
+	PK_EXTRA_ACCESS_READ_WRITE
+} PkExtraAccess;
+
 GType		 pk_extra_get_type			(void) G_GNUC_CONST;
 PkExtra		*pk_extra_new				(void);
 
@@ -66,6 +72,8 @@ const gchar	*pk_extra_get_locale			(PkExtra	*extra);
 gboolean	 pk_extra_set_database			(PkExtra	*extra,
 							 const gchar	*filename)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_extra_set_access			(PkExtra	*extra,
+							 PkExtraAccess	 access);
 
 const gchar	*pk_extra_get_summary			(PkExtra	*extra,
 							 const gchar	*package);

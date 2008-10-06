@@ -306,7 +306,7 @@ pk_str_case_contains (const gchar *haystack, const gchar *needle)
 
 	/* search case insensitive */
 	for (i=0; i<haystack_length - needle_length; i++) {
-		ret = g_strncasecmp (haystack+i, needle, needle_length);
+		ret = g_ascii_strncasecmp (haystack+i, needle, needle_length);
 		if (ret == 0) {
 			return TRUE;
 		}
@@ -401,6 +401,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
 	backend_get_filters,			/* get_filters */
+	NULL,					/* get_mime_types */
 	NULL,					/* cancel */
 	NULL,					/* download_packages */
 	NULL,					/* get_depends */

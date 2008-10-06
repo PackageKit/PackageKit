@@ -125,6 +125,7 @@ typedef enum {
 	PK_CLIENT_CALLER_ACTIVE_CHANGED,
 	PK_CLIENT_REPO_DETAIL,
 	PK_CLIENT_ALLOW_CANCEL,
+	PK_CLIENT_DESTROY,
 	PK_CLIENT_LAST_SIGNAL
 } PkSignals;
 
@@ -474,6 +475,17 @@ pk_client_get_package_list (PkClient *client)
 	list = client->priv->package_list;
 	g_object_ref (list);
 	return list;
+}
+
+/**
+ * pk_client_destroy_cb:
+ */
+static void
+pk_client_destroy_cb (DBusGProxy *proxy, PkClient *client)
+{
+	g_return_if_fail (PK_IS_CLIENT (client));
+	egg_debug ("emit destroy %s", client->priv->tid);
+	g_signal_emit (client, signals [PK_CLIENT_DESTROY], 0);
 }
 
 /**
@@ -1539,7 +1551,7 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -1603,7 +1615,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
         /* check the PackageIDs here to avoid a round trip if invalid */
         ret = pk_package_ids_check (package_ids);
         if (!ret) {
-                package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+                package_ids_temp = pk_package_ids_to_text (package_ids);
                 pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
                                      "package_ids '%s' are not valid", package_ids_temp);
                 g_free (package_ids_temp);
@@ -1751,7 +1763,7 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -1881,7 +1893,7 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2045,7 +2057,7 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2149,7 +2161,7 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2241,7 +2253,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2422,7 +2434,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2616,7 +2628,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids);
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -3308,6 +3320,10 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     "Cannot connect to PackageKit tid %s", tid);
 		return FALSE;
 	}
+
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
+
 	client->priv->tid = g_strdup (tid);
 	egg_debug ("set tid %s on %p", client->priv->tid, client);
 
@@ -3346,6 +3362,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 	dbus_g_proxy_add_signal (proxy, "Message", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "CallerActiveChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "AllowCancel", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Destroy", G_TYPE_INVALID);
 
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_client_finished_cb), client, NULL);
@@ -3381,6 +3398,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     G_CALLBACK (pk_client_caller_active_changed_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "AllowCancel",
 				     G_CALLBACK (pk_client_allow_cancel_cb), client, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Destroy",
+				     G_CALLBACK (pk_client_destroy_cb), client, NULL);
 	client->priv->proxy = proxy;
 
 	return TRUE;
@@ -3667,6 +3686,19 @@ pk_client_class_init (PkClientClass *klass)
 			      NULL, NULL, pk_marshal_VOID__UINT_UINT,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
 
+	/**
+	 * PkClient::destroy:
+	 * @client: the #PkClient instance that emitted the signal
+	 *
+	 * The ::destroy signal is emitted when the transaction has been
+	 * destroyed and is no longer available for use.
+	 **/
+	signals [PK_CLIENT_DESTROY] =
+		g_signal_new ("destroy",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkClientClass, finished),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
 	g_type_class_add_private (klass, sizeof (PkClientPrivate));
 }
 
@@ -3729,6 +3761,8 @@ pk_client_disconnect_proxy (PkClient *client)
 					G_CALLBACK (pk_client_caller_active_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "AllowCancel",
 				        G_CALLBACK (pk_client_allow_cancel_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Destroy",
+				        G_CALLBACK (pk_client_destroy_cb), client);
 	g_object_unref (G_OBJECT (client->priv->proxy));
 	client->priv->proxy = NULL;
 	return TRUE;
@@ -4040,6 +4074,7 @@ pk_client_test_copy_package_cb (PkClient *client, const PkPackageObj *obj, EggTe
 void
 pk_client_test (EggTest *test)
 {
+	PkConnection *connection;
 	PkClient *client;
 	PkClient *client_copy;
 	gboolean ret;
@@ -4053,6 +4088,15 @@ pk_client_test (EggTest *test)
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
+
+	/* check to see if there is a daemon running */
+	connection = pk_connection_new ();
+	ret = pk_connection_valid (connection);
+	g_object_unref (connection);
+	if (!ret) {
+		egg_warning ("daemon is not running, skipping tests");
+		goto out;
+	}
 
 	/************************************************************/
 	egg_test_title (test, "test resolve NULL");
@@ -4305,7 +4349,7 @@ pk_client_test (EggTest *test)
 		error = NULL;
 	}
 	g_object_unref (client);
-
+out:
 	egg_test_end (test);
 }
 #endif
