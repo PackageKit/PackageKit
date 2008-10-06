@@ -1540,7 +1540,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         if provides_type == PROVIDES_CODEC:
             # The search term from the codec helper looks like this one:
-            match = re.match(r"gstreamer(.+)\((.+)\)\((.+)\)", search)
+            match = re.match(r"gstreamer([0-9\.]+)\((.+?)\)", search)
             if not match:
                 self.ErrorCode(ERROR_UNKNOWN,
                                "The search term is invalid")
