@@ -225,6 +225,25 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         summary = _to_unicode(summary)
         PackageKitBaseBackend.package(self, package_id, status, summary)
 
+    def category(self, parent_id, cat_id, name, summary, icon):
+        '''
+        Send 'category' signal
+        parent_id : A parent id, e.g. "admin" or "" if there is no parent
+        cat_id    : a unique category id, e.g. "admin;network"
+        name      : a verbose category name in current locale.
+        summery   : a summary of the category in current locale.
+        icon      : an icon name to represent the category
+        '''
+        name = self._to_unicode(name)
+        summary = self._to_unicode(summary)
+        PackageKitBaseBackend.category(self, parent_id, cat_id, name, summary, icon)
+
+    def _to_unicode(self, txt, encoding='utf-8'):
+        if isinstance(txt, basestring):
+            if not isinstance(txt, unicode):
+                txt = unicode(txt, encoding, errors='replace')
+        return txt
+
     def doLock(self):
         ''' Lock Yum'''
         retries = 0

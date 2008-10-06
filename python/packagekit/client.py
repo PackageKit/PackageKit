@@ -122,6 +122,19 @@ class PackageKitClient:
         self._wrapCall(pk_xn, method, {'Details' : details_cb})
         return result
 
+    def _wrapCategoryCall(self, pk_xn, method):
+        '''
+        Wraps a call which emits Finished, ErrorCode on completion and
+        Details for information returns a list of dicts with 'id',
+        'license', 'group', 'description', 'upstream_url', 'size'.keys
+        '''
+        result = []
+        details_cb = lambda  parent_id, cat_id, name, summary, icon: result.append(
+            PackageKitCategory( parent_id, cat_id, name, summary, icon))
+
+        self._wrapCall(pk_xn, method, {'Category' : category_cb})
+        return result
+
     def _wrapUpdateDetailsCall(self, pk_xn, method):
         '''
         Wraps a call which emits Finished, ErrorCode on completion and
@@ -312,6 +325,13 @@ class PackageKitClient:
         '''
         xn = self._get_xn()
         return self._wrapPackageCall(xn, lambda : xn.GetUpdates(filters))
+
+    def GetCategories(self):
+        '''
+        This method should return a list of Categories
+        '''
+        xn = self._get_xn()
+        return self._wrapCategoryCall(xn, lambda : xn.GetCategories())
 
     def GetPackages(self, filters=FILTER_NONE):
         '''
