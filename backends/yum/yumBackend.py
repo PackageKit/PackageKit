@@ -1305,6 +1305,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             rc, msgs =  self.yumbase.buildTransaction()
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+        except:
+            self.error(ERROR_INTERNAL_ERROR, str(e))
         if rc != 2:
             self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
         else:
@@ -1351,6 +1353,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_PACKAGE_CONFLICTS, message)
                 else:
                     self.error(ERROR_TRANSACTION_ERROR, message)
+            except:
+                self.error(ERROR_INTERNAL_ERROR, str(e))
 
     def remove_packages(self, allowdep, package_ids):
         '''
