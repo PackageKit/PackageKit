@@ -109,3 +109,14 @@ class PackageKitFiles:
         self.id = str(package_id)
         self.files = str(files)
 
+class PackageKitCategory:
+    '''
+    container class from values from the Category signal
+    '''
+    def __init__(self, parent_id, cat_id, name, summary, icon):
+        self.parent_id = str(parent_id)
+        self.cat_id = str(cat_id)
+        self.name = _to_unicode(name)
+        self.summary = _to_unicode(summary)
+        self.icon = str(icon)
+

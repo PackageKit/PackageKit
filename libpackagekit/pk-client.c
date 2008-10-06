@@ -104,7 +104,7 @@ struct _PkClientPrivate
 	gchar			*cached_search;
 	gchar			*cached_directory;
 	PkProvidesEnum		 cached_provides;
-	PkBitfield	 cached_filters;
+	PkBitfield		 cached_filters;
 };
 
 typedef enum {
@@ -125,6 +125,7 @@ typedef enum {
 	PK_CLIENT_CALLER_ACTIVE_CHANGED,
 	PK_CLIENT_REPO_DETAIL,
 	PK_CLIENT_ALLOW_CANCEL,
+	PK_CLIENT_CATEGORY,
 	PK_CLIENT_DESTROY,
 	PK_CLIENT_LAST_SIGNAL
 } PkSignals;

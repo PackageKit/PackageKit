@@ -110,6 +110,23 @@
     </method>
 
     <!--*****************************************************************************************-->
+    <method name="GetCategories">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method return the collection categories
+          </doc:para>
+        </doc:description>
+          <doc:para>
+            This method typically emits
+            <literal>Categories</literal>,
+            <literal>Error</literal> and
+          </doc:para>
+      </doc:doc>
+    </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetDepends">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
@@ -1304,6 +1321,73 @@
           <doc:summary>
             <doc:para>
               If the caller is active, usually FALSE.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </signal>
+
+    <!--*****************************************************************************************-->
+    <signal name="Category">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal send information about a collection category
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="parent_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The parent identifier, e.g. <doc:tt>applications</doc:tt>.
+              If the category is a root entry, use a blank parent.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="cat_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The category identifier, e.g. <doc:tt>applications;system-tools</doc:tt>.
+              The identifier does not have to be related to the <doc:tt>parent_id</doc:tt>
+              in any way.
+              A menu tree is made from multiple Category signals.
+              The tree does not have any depth or bredth limits, although it should be kept
+              to less than about 100 entries as this will be shown to the user in a menu.
+            </doc:para>
+            <doc:para>
+              The <doc:tt>cat_id</doc:tt> will be sent as a parameter to <doc:tt>SearchGroup</doc:tt>
+              so you may have to prefix or otherwise identify the ID to not confuse the search method.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="name" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The localised name of the category, e.g. <doc:tt>System Tools</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="summary" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The localised category summary, e.g. <doc:tt>Tools for mangaing system state</doc:tt>.
+              This is not normally shown in the menus, but may be shown in helper popups.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="icon" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The icon name for the category, e.g. <doc:tt>server-cfg</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>

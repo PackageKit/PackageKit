@@ -66,6 +66,7 @@ PkBackendDbus	*pk_backend_dbus_new			(void);
 gboolean	 pk_backend_dbus_refresh_cache		(PkBackendDbus		*backend_dbus,
 							 gboolean		 force);
 gboolean	 pk_backend_dbus_update_system		(PkBackendDbus		*backend_dbus);
+gboolean	 pk_backend_dbus_get_categories		(PkBackendDbus		*backend_dbus);
 gboolean	 pk_backend_dbus_resolve		(PkBackendDbus		*backend_dbus,
 							 PkBitfield	 filters,
 							 gchar			**packages);

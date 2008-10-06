@@ -32,6 +32,7 @@ __pkcon_commandlist="
     get-transactions
     get-update-detail
     get-updates
+    get-categories
     install
     refresh
     remove

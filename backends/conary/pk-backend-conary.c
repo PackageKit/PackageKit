@@ -280,6 +280,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_mime_types */
 	backend_cancel,				/* cancel */
 	NULL,					/* download_packages */
+	NULL,					/* get_categories */
 	NULL,					/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_distro_upgrades */

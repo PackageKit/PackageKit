@@ -33,6 +33,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_mime_types */
 	NULL,					/* cancel */
 	NULL,					/* download_packages */
+	NULL,					/* get_categories */
 	NULL,					/* get_depends */
 	NULL,					/* get_details */
 	NULL,					/* get_distro_upgrades */
