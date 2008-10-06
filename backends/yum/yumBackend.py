@@ -225,6 +225,25 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         summary = _to_unicode(summary)
         PackageKitBaseBackend.package(self, package_id, status, summary)
 
+    def category(self, parent_id, cat_id, name, summary, icon):
+        '''
+        Send 'category' signal
+        parent_id : A parent id, e.g. "admin" or "" if there is no parent
+        cat_id    : a unique category id, e.g. "admin;network"
+        name      : a verbose category name in current locale.
+        summery   : a summary of the category in current locale.
+        icon      : an icon name to represent the category
+        '''
+        name = self._to_unicode(name)
+        summary = self._to_unicode(summary)
+        PackageKitBaseBackend.category(self, parent_id, cat_id, name, summary, icon)
+
+    def _to_unicode(self, txt, encoding='utf-8'):
+        if isinstance(txt, basestring):
+            if not isinstance(txt, unicode):
+                txt = unicode(txt, encoding, errors='replace')
+        return txt
+
     def doLock(self):
         ''' Lock Yum'''
         retries = 0
@@ -342,19 +361,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         Handle the special collection group
         """
         # Fixme: Add some real code.
+        self.percentage(None)
         collections = self.comps.get_meta_packages()
-        self.percentage(20)
+        if len(collections) == 0:
+            self.error(ERROR_GROUP_LIST_INVALID, 'No groups could be found. A cache refresh should fix this.')
 
-        step = int(800/len(collections))
-        print step
         pct = 20
-        i = 0
+        old_pct = -1;
+        step = (100.0 - pct) / len(collections)
         for col in collections:
-            i += 1
-            if i % 10 == 0:
-                pct += step
-                self.percentage(pct)
             self._show_meta_package(col, fltlist)
+            pct += step
+            if int(pct) != int(old_pct):
+                self.percentage(pct)
+                old_pct = pct
         self.percentage(100)
 
     def _show_meta_package(self, grpid, fltlist):
@@ -1305,6 +1325,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             rc, msgs =  self.yumbase.buildTransaction()
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+        except:
+            self.error(ERROR_INTERNAL_ERROR, str(e))
         if rc != 2:
             self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
         else:
@@ -1351,6 +1373,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_PACKAGE_CONFLICTS, message)
                 else:
                     self.error(ERROR_TRANSACTION_ERROR, message)
+            except:
+                self.error(ERROR_INTERNAL_ERROR, str(e))
 
     def remove_packages(self, allowdep, package_ids):
         '''

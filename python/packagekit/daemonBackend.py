@@ -609,15 +609,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def Resolve(self, filters, name):
+                         in_signature='sas', out_signature='')
+    def Resolve(self, filters, names):
         '''
         Implement the {backend}-resolve functionality
         '''
-        pklog.info("Resolve(%s, %s)" % (filters, name))
-        self.doResolve(filters, name)
+        pklog.info("Resolve(%s, %s)" % (filters, names))
+        self.doResolve(filters, names)
 
-    def doResolve(self, filters, name):
+    def doResolve(self, filters, names):
         '''
         Should be replaced in the corresponding backend sub class
         '''

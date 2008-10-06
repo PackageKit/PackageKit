@@ -1,6 +1,6 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.3.6)
+AC_INIT(PackageKit, 0.3.7)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -19,7 +19,7 @@ DEVELOPMENT_RELEASE=no
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=8
-LT_REVISION=0
+LT_REVISION=1
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -263,7 +263,7 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl - Checks for contrib/gstreamer-plugin
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 glib-2.0 dbus-glib-1,
+PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0 dbus-glib-1,
                   build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
 AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
 AC_SUBST(PK_GSTREAMER_PLUGIN_CFLAGS)

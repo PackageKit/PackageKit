@@ -131,6 +131,7 @@ enum {
 	PK_BACKEND_FINISHED,
 	PK_BACKEND_ALLOW_CANCEL,
 	PK_BACKEND_REPO_DETAIL,
+	PK_BACKEND_CATEGORY,
 	PK_BACKEND_LAST_SIGNAL
 };
 
@@ -149,6 +150,21 @@ pk_backend_get_groups (PkBackend *backend)
 	if (backend->desc->get_groups == NULL)
 		return PK_GROUP_ENUM_UNKNOWN;
 	return backend->desc->get_groups (backend);
+}
+
+/**
+ * pk_backend_get_mime_types:
+ **/
+gchar *
+pk_backend_get_mime_types (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
+
+	/* not compulsory */
+	if (backend->desc->get_mime_types == NULL)
+		return g_strdup ("");
+	return backend->desc->get_mime_types (backend);
 }
 
 /**
@@ -232,6 +248,8 @@ pk_backend_get_actions (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_SET_DATA);
 	if (desc->get_distro_upgrades != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
+	if (desc->get_categories != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_CATEGORIES);
 	return roles;
 }
 
@@ -1198,6 +1216,34 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 }
 
 /**
+ * pk_backend_category:
+ **/
+gboolean
+pk_backend_category (PkBackend *backend, const gchar *parent_id, const gchar *cat_id, const gchar *name, const gchar *summary, const gchar *icon)
+{
+	gchar *summary_safe;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (cat_id != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		egg_warning ("already set error, cannot process: category %s", cat_id);
+		return FALSE;
+	}
+
+	/* replace unsafe chars */
+	summary_safe = pk_strsafe (summary);
+
+	egg_debug ("emit category %s, %s, %s, %s, %s", parent_id, cat_id, name, summary_safe, icon);
+	g_signal_emit (backend, signals [PK_BACKEND_CATEGORY], 0, parent_id, cat_id, name, summary, icon);
+	g_free (summary_safe);
+	return TRUE;
+
+}
+
+/**
  * pk_backend_error_timeout_delay_cb:
  *
  * We have to call Finished() within PK_BACKEND_FINISHED_ERROR_TIMEOUT of ErrorCode(), enforce this.
@@ -1762,6 +1808,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL,
 			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
+	signals [PK_BACKEND_CATEGORY] =
+		g_signal_new ("category",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	g_type_class_add_private (klass, sizeof (PkBackendPrivate));
 }
 

@@ -30,6 +30,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/resource.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
@@ -48,6 +49,7 @@
 
 #include "pk-spawn.h"
 #include "pk-marshal.h"
+#include "pk-conf.h"
 
 static void     pk_spawn_class_init	(PkSpawnClass *klass);
 static void     pk_spawn_init		(PkSpawn      *spawn);
@@ -66,11 +68,12 @@ struct PkSpawnPrivate
 	guint			 kill_id;
 	gboolean		 finished;
 	gboolean		 is_sending_exit;
+	gboolean		 is_changing_dispatcher;
 	PkSpawnExitType		 exit;
-	GMainLoop		*exit_loop;
 	GString			*stdout_buf;
 	gchar			*last_argv0;
 	gchar			**last_envp;
+	PkConf			*conf;
 };
 
 enum {
@@ -146,7 +149,6 @@ static gboolean
 pk_spawn_check_child (PkSpawn *spawn)
 {
 	int status;
-	gboolean ret;
 	static guint limit_printing = 0;
 
 	/* this shouldn't happen */
@@ -197,15 +199,10 @@ pk_spawn_check_child (PkSpawn *spawn)
 		spawn->priv->kill_id = 0;
 	}
 
-	/* are we waiting for a "exit" from the dispatcher? */
-	ret = g_main_loop_is_running (spawn->priv->exit_loop);
-	if (ret) {
-		g_main_loop_quit (spawn->priv->exit_loop);
+	/* are we doing pk_spawn_exit for a good reason? */
+	if (spawn->priv->is_changing_dispatcher)
 		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED;
-	}
-
-	/* are we doing pk_spawn_exit */
-	if (spawn->priv->is_sending_exit)
+	else if (spawn->priv->is_sending_exit)
 		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT;
 
 	/* don't emit if we just closed an invalid dispatcher */
@@ -249,8 +246,6 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 /**
  * pk_spawn_kill:
  *
- * THIS IS A VERY DANGEROUS THING TO DO!
- *
  * We send SIGQUIT and after a few ms SIGKILL
  *
  **/
@@ -289,7 +284,7 @@ pk_spawn_kill (PkSpawn *spawn)
 /**
  * pk_spawn_send_stdin:
  *
- * Just write "exit" into the open fd and hope the backend does the right thing
+ * Send new comands to a running (but idle) dispatcher script
  *
  **/
 static gboolean
@@ -330,13 +325,14 @@ out:
 /**
  * pk_spawn_exit:
  *
- * Just write "exit" into the open fd and hope the backend does the right thing
+ * Just write "exit" into the open fd and wait for backend to close
  *
  **/
 gboolean
 pk_spawn_exit (PkSpawn *spawn)
 {
 	gboolean ret;
+	guint count = 0;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 
@@ -346,8 +342,27 @@ pk_spawn_exit (PkSpawn *spawn)
 		return FALSE;
 	}
 
+	/* send command */
 	spawn->priv->is_sending_exit = TRUE;
 	ret = pk_spawn_send_stdin (spawn, "exit");
+	if (!ret)
+		goto out;
+
+	/* block until the previous script exited */
+	do {
+		egg_debug ("waiting for exit");
+		/* Usleep rather than g_main_loop_run -- we have to block.
+		 * If we run the loop, other idle events can be processed,
+		 * and this includes sending data to a new instance,
+		 * which of course will fail as the 'old' script is exiting */
+		g_usleep (100*1000); /* 100 ms */
+		ret = pk_spawn_check_child (spawn);
+	} while (ret && count++ < 50);
+
+	/* the script exited okay */
+	ret = TRUE;
+out:
+	spawn->priv->is_sending_exit = FALSE;
 	return ret;
 }
 
@@ -363,22 +378,25 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	gboolean ret;
 	guint i;
 	guint len;
+	gint nice;
 	gchar *command;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 	g_return_val_if_fail (argv != NULL, FALSE);
 
 	len = g_strv_length (argv);
-	if (len > 5) {
-		egg_debug ("limiting debugging to 5 entries");
-		len = 5;
-	}
 	for (i=0; i<len; i++)
 		egg_debug ("argv[%i] '%s'", i, argv[i]);
 	if (envp != NULL) {
 		len = g_strv_length (envp);
 		for (i=0; i<len; i++)
 			egg_debug ("envp[%i] '%s'", i, envp[i]);
+	}
+
+	/* check we are not using a closing instance */
+	if (spawn->priv->is_sending_exit) {
+		egg_warning ("trying to use instance that is in the process of exiting");
+		return FALSE;
 	}
 
 	/* we can reuse the dispatcher if:
@@ -407,15 +425,12 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 
 		/* kill off existing instance */
 		egg_debug ("changing dispatcher (exit old instance)");
+		spawn->priv->is_changing_dispatcher = TRUE;
 		pk_spawn_exit (spawn);
-
-		/* wait for the script to exit */
-		g_main_loop_run (spawn->priv->exit_loop);
-		egg_debug ("old instance exited");
+		spawn->priv->is_changing_dispatcher = FALSE;
 	}
 
 	/* create spawned object for tracking */
-	spawn->priv->is_sending_exit = FALSE;
 	spawn->priv->finished = FALSE;
 	egg_debug ("creating new instance of %s", argv[0]);
 	ret = g_spawn_async_with_pipes (NULL, argv, envp,
@@ -425,6 +440,16 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 				 &spawn->priv->stdout_fd,
 				 NULL,
 				 NULL);
+
+	/* get the nice value and ensure we are in the valid range */
+	nice = pk_conf_get_int (spawn->priv->conf, "BackendSpawnNiceValue");
+	nice = CLAMP(nice, -20, 19);
+
+	/* don't completely bog the system down */
+	if (nice != 0) {
+		egg_debug ("renice to %i", nice);
+		setpriority (PRIO_PROCESS, spawn->priv->child_pid, nice);
+	}
 
 	/* we failed to invoke the helper */
 	if (!ret) {
@@ -494,12 +519,13 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->kill_id = 0;
 	spawn->priv->finished = FALSE;
 	spawn->priv->is_sending_exit = FALSE;
+	spawn->priv->is_changing_dispatcher = FALSE;
 	spawn->priv->last_argv0 = NULL;
 	spawn->priv->last_envp = NULL;
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 
 	spawn->priv->stdout_buf = g_string_new ("");
-	spawn->priv->exit_loop = g_main_loop_new (NULL, FALSE);
+	spawn->priv->conf = pk_conf_new ();
 }
 
 /**
@@ -534,7 +560,7 @@ pk_spawn_finalize (GObject *object)
 	g_string_free (spawn->priv->stdout_buf, TRUE);
 	g_free (spawn->priv->last_argv0);
 	g_strfreev (spawn->priv->last_envp);
-	g_main_loop_unref (spawn->priv->exit_loop);
+	g_object_unref (spawn->priv->conf);
 
 	G_OBJECT_CLASS (pk_spawn_parent_class)->finalize (object);
 }
@@ -557,9 +583,8 @@ pk_spawn_new (void)
  ***************************************************************************/
 #ifdef EGG_TEST
 #include "egg-test.h"
-#define BAD_EXIT 999
 
-PkSpawnExitType mexit = BAD_EXIT;
+PkSpawnExitType mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 guint stdout_count = 0;
 guint finished_count = 0;
 
@@ -606,6 +631,21 @@ new_spawn_object (EggTest *test, PkSpawn **pspawn)
 	stdout_count = 0;
 }
 
+static gboolean
+idle_cb (gpointer data)
+{
+	EggTest *test = (EggTest*) data;
+
+	egg_test_title (test, "make sure dispatcher has closed when run idle add");
+	if (mexit == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "mexit was %i", mexit);
+
+	/* never repeat */
+	return FALSE;
+}
+
 void
 pk_spawn_test (EggTest *test)
 {
@@ -627,7 +667,7 @@ pk_spawn_test (EggTest *test)
 	 **********           Generic tests               ***********
 	 ************************************************************/
 	egg_test_title (test, "make sure return error for missing file");
-	mexit = BAD_EXIT;
+	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	argv = g_strsplit ("pk-spawn-test-xxx.sh", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_strfreev (argv);
@@ -638,7 +678,7 @@ pk_spawn_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "make sure finished wasn't called");
-	if (mexit == BAD_EXIT)
+	if (mexit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "Called finish for bad file!");
@@ -713,7 +753,7 @@ pk_spawn_test (EggTest *test)
 	 **********           Killing tests               ***********
 	 ************************************************************/
 	egg_test_title (test, "make sure run correct helper, and kill it");
-	mexit = BAD_EXIT;
+	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	path = egg_test_get_data_file ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
@@ -741,7 +781,7 @@ pk_spawn_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "make sure run correct helper, and quit it");
-	mexit = BAD_EXIT;
+	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	path = egg_test_get_data_file ("pk-spawn-test-sigquit.sh");
 	argv = g_strsplit (path, " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL);
@@ -783,7 +823,7 @@ pk_spawn_test (EggTest *test)
 	 **********  Can we send commands to a dispatcher ***********
 	 ************************************************************/
 	egg_test_title (test, "run the dispatcher");
-	mexit = BAD_EXIT;
+	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	file = egg_test_get_data_file ("pk-spawn-dispatcher.py");
 	path = g_strdup_printf ("%s\tsearch-name\tnone\tpower manager", file);
 	argv = g_strsplit (path, "\t", 0);
@@ -796,11 +836,11 @@ pk_spawn_test (EggTest *test)
 		egg_test_failed (test, "did not run dispatcher");
 
 	/************************************************************/
-	egg_test_title (test, "wait 2 seconds for the dispatcher");
+	egg_test_title (test, "wait 2+2 seconds for the dispatcher");
 	/* wait 2 seconds, and make sure we are still running */
-	egg_test_loop_wait (test, 2000);
+	egg_test_loop_wait (test, 4000);
 	elapsed = egg_test_elapsed (test);
-	if (elapsed > 1900 && elapsed < 2100)
+	if (elapsed > 3900 && elapsed < 4100)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "dispatcher exited");
@@ -836,6 +876,9 @@ pk_spawn_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not get a package");
+
+	/* see if pk_spawn_exit blocks (required) */
+	g_idle_add (idle_cb, test);
 
 	/************************************************************/
 	egg_test_title (test, "ask dispatcher to close");

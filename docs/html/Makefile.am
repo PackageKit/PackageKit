@@ -12,6 +12,7 @@ HTML_FILES =				\
 	pk-profiles.html		\
 	pk-reference.html		\
 	pk-screenshots.html		\
+	pk-package-not-found.html	\
 	pk-using.html
 
 EXTRA_DIST = 				\

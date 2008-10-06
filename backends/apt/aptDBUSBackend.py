@@ -254,8 +254,10 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         """
         Run "dpkg --configure -a"
         """
-        cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd), 
-               "--force-confdef", "--force-confold", "--configure", "-a"]
+        cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd),
+               "--root", apt_pkg.Config["Dir"],
+               "--force-confdef", "--force-confold", 
+               "--configure", "-a"]
         self.run(cmd)
 
     def install(self, filenames):
@@ -263,7 +265,8 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
         Install the given package using a dpkg command line call
         """
         cmd = ["/usr/bin/dpkg", "--force-confdef", "--force-confold",
-               "--status-fd", str(self.writefd), "-i"]
+               "--status-fd", str(self.writefd), 
+               "--root", apt_pkg.Config["Dir"], "-i"]
         cmd.extend(map(lambda f: str(f), filenames))
         self.run(cmd)
 
@@ -1251,7 +1254,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,10))
-        dependencies = []
         packages = []
         # Collect all dependencies which need to be installed
         self.StatusChanged(STATUS_DEP_RESOLVE)
@@ -1271,26 +1273,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "before: %s" % remove)
                 self.Finished(EXIT_FAILED)
                 return
-            dependencies.extend(install)
-        # Install all dependecies before
-        if len(dependencies) > 0:
-            try:
-                for dep in dependencies:
-                    self._cache[dep].markInstall()
-            except:
-                self._cache.clear()
-                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED, "")
-                self.Finished(EXIT_FAILED)
-                return
-            if not self._commit_changes((10,25), (25,50)): return False
-        # Check for later available packages
-        for deb in packages:
-            # Check if there is a newer version in the cache
             if deb.compareToVersionInCache() == debfile.VERSION_OUTDATED:
                 self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
-        # Install the Debian package files
+        if len(self._cache.getChanges()) > 0 and not \
+           self._commit_changes((10,25), (25,50)): 
+            return False
+       # Install the Debian package files
         d = PackageKitDpkgInstallProgress(self)
         try:
             d.startUpdate()
@@ -1550,35 +1540,29 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         if provides_type == PROVIDES_CODEC:
             # The search term from the codec helper looks like this one:
-            # "gstreamer.net|0.10|totem|DivX MPEG-4 Version 5 decoder|" \
-            # "decoder-video/x-divx, divxversion=(int)5 (DivX MPEG-4 Version " \
-            # "5 decoder)"
-            try:
-                (origin, version, app, descr, term) = search.split("|")
-            except ValueError, e:
+            match = re.match(r"gstreamer(.+)\((.+)\)\((.+)\)", search)
+            if not match:
                 self.ErrorCode(ERROR_UNKNOWN,
                                "The search term is invalid")
                 self.Finished(EXIT_FAILED)
                 return
+            codec = "%s:%s" % (match.group(1), match.group(2))
             db = get_mapping_db("/var/cache/app-install/gai-codec-map.gdbm")
             if db == None:
+                self.ErrorCode(ERROR_INTERNAL_ERROR,
+                               "Failed to open codec mapping database")
                 self.Finished(EXIT_FAILED)
                 return
-            handlers = set()
-            for k in db.keys():
-                codec = k
-                if ":" in codec:
-                    codec = codec.split(":")[1]
-                if codec in term:
-                    # The codec mapping db stores the packages as a string
-                    # separated by spaces. Each package has its section
-                    # prefixed and separated by a slash
-                    # FIXME: Should make use of the section and emit a 
-                    #        RepositoryRequired signal if the package does 
-                    #        not exist
-                    handlers.update(set(map(lambda s: s.split("/")[1],
-                                        db[k].split(" "))))
-            self._emit_visible_packages_by_name(filters, handlers)
+            if db.has_key(codec):
+                # The codec mapping db stores the packages as a string
+                # separated by spaces. Each package has its section
+                # prefixed and separated by a slash
+                # FIXME: Should make use of the section and emit a 
+                #        RepositoryRequired signal if the package does 
+                #        not exist
+                pkgs = map(lambda s: s.split("/")[1],
+                           db[codec].split(" "))
+                self._emit_visible_packages_by_name(filters, pkgs)
         elif provides_type == PROVIDES_MIMETYPE:
             # Emit packages that contain an application that can handle
             # the given mime type

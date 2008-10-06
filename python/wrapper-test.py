@@ -19,6 +19,7 @@
 #    Tim Lauridsen <timlau@fedoraproject.org>
 
 import sys
+
 from packagekit.client import PackageKitClient
 from packagekit.enums import *
 
@@ -39,7 +40,8 @@ def show_package(pkg):
     if pkg:
         if isinstance(pkg, list):
             pkg = pkg[0]
-        print str(pkg)
+        print pkg
+        print pkg.summary
     else:
         print "no package found"
 
@@ -127,6 +129,12 @@ if __name__ == '__main__':
         if pkg:
             print "Installing : %s " % pkg[0].id
             print pk.DownloadPackages(pkg[0].id)
+
+    if "get-categories" in cmd:
+        print '---- GetCategories() -----'
+        cats = pk.GetCategories()
+        for cat in cats:
+            print cat.name
 
     pk.SuggestDaemonQuit()
 

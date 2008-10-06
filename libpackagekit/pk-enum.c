@@ -117,6 +117,7 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_ACCEPT_EULA,		"accept-eula"},
 	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,	"download-packages"},
 	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,	"get-distro-upgrades"},
+	{PK_ROLE_ENUM_GET_CATEGORIES,		"get-categories"},
 	{0, NULL}
 };
 
@@ -256,6 +257,7 @@ static const PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_DOCUMENTATION,		"documentation"},
 	{PK_GROUP_ENUM_ELECTRONICS,		"electronics"},
 	{PK_GROUP_ENUM_COLLECTIONS,		"collections"},
+	{PK_GROUP_ENUM_VENDOR,			"vendor"},
 	{0, NULL}
 };
 

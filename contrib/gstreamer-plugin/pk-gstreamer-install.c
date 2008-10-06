@@ -21,7 +21,9 @@
  */
 
 #include <gst/gst.h>
+#include <gst/pbutils/install-plugins.h>
 #include <string.h>
+#include <sys/utsname.h>
 #include <dbus/dbus-glib.h>
 
 typedef struct {
@@ -51,13 +53,13 @@ pk_gst_parse_codec (const char *codec)
 
 	split = g_strsplit (codec, "|", -1);
 	if (split == NULL || g_strv_length (split) != 5) {
-		g_message ("not a GStreamer codec line");
+		g_message ("PackageKit: not a GStreamer codec line");
 		g_strfreev (split);
 		return NULL;
 	}
 	if (strcmp (split[0], "gstreamer") != 0 ||
 	    strcmp (split[1], "0.10") != 0) {
-		g_message ("not for GStreamer 0.10");
+		g_message ("PackageKit: not for GStreamer 0.10");
 		g_strfreev (split);
 		return NULL;
 	}
@@ -87,7 +89,7 @@ pk_gst_parse_codec (const char *codec)
 
 	s = gst_structure_from_string (caps, NULL);
 	if (s == NULL) {
-		g_message ("failed to parse caps: %s", caps);
+		g_message ("PackageKit: failed to parse caps: %s", caps);
 		g_strfreev (split);
 		g_free (caps);
 		g_free (type_name);
@@ -169,7 +171,7 @@ pk_gst_structure_to_provide (GstStructure *s)
 
 		field_name = gst_structure_nth_field_name (s, i);
 		if (pk_gst_field_get_type (field_name) < 0) {
-			//g_message ("ignoring field named %s", field_name);
+			//g_message ("PackageKit: ignoring field named %s", field_name);
 			continue;
 		}
 
@@ -184,7 +186,7 @@ pk_gst_structure_to_provide (GstStructure *s)
 		field_name = l->data;
 
 		type = gst_structure_get_field_type (s, field_name);
-		//g_message ("field is: %s, type: %s", field_name, g_type_name (type));
+		//g_message ("PackageKit: field is: %s, type: %s", field_name, g_type_name (type));
 
 		if (type == G_TYPE_INT) {
 			int value;
@@ -202,7 +204,7 @@ pk_gst_structure_to_provide (GstStructure *s)
 			value = gst_structure_get_string (s, field_name);
 			g_string_append_printf (string, "(%s=%s)", field_name, value);
 		} else {
-			g_warning ("unhandled type! %s", g_type_name (type));
+			g_warning ("PackageKit: unhandled type! %s", g_type_name (type));
 		}
 
 		g_free (field_name);
@@ -227,6 +229,44 @@ pk_gst_codec_free (codec_info *codec)
 }
 
 /**
+ * pk_gst_get_arch_suffix:
+ *
+ * Return value: something other than blank if we are running on 64 bit.
+ **/
+static const gchar *
+pk_gst_get_arch_suffix (void)
+{
+	gint retval;
+	const gchar *suffix = "";
+	struct utsname buf;
+
+	retval = uname (&buf);
+
+	/* did we get valid value? */
+	if (retval != 0 || buf.machine == NULL) {
+		g_warning ("PackageKit: cannot get machine type");
+		goto out;
+	}
+
+	/* 32 bit machines */
+	if (strcmp (buf.machine, "i386") == 0 ||
+	    strcmp (buf.machine, "i586") == 0 ||
+	    strcmp (buf.machine, "i686") == 0)
+		goto out;
+
+	/* 64 bit machines */
+	if (strcmp (buf.machine, "x86_64") == 0) {
+		suffix = "()(64bit)";
+		goto out;
+	}
+
+	g_warning ("PackageKit: did not recognise machine type: '%s'", buf.machine);
+out:
+	return suffix;
+}
+
+
+/**
  * main:
  **/
 int
@@ -244,7 +284,8 @@ main (int argc, char **argv)
 	guint i;
 	gchar **codecs = NULL;
 	gint xid = 0;
-	gint retval = 1;
+	gint retval = GST_INSTALL_PLUGINS_ERROR;
+	const gchar *suffix;
 
 	const GOptionEntry options[] = {
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
@@ -270,6 +311,9 @@ main (int argc, char **argv)
 		goto out;
 	}
 
+	/* this is our parent window */
+	g_message ("PackageKit: xid = %i", xid);
+
 	/* get bus */
 	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
 	if (connection == NULL) {
@@ -288,6 +332,8 @@ main (int argc, char **argv)
 		goto out;
 	}
 
+	/* use a ()(64bit) suffix for 64 bit */
+	suffix = pk_gst_get_arch_suffix ();
 
 	/* process argv */
 	array = g_ptr_array_new ();
@@ -301,17 +347,17 @@ main (int argc, char **argv)
 			g_print ("skipping %s\n", codecs[i]);
 			continue;
 		}
+		g_message ("PackageKit: Codec nice name: %s", info->codec_name);
 		if (info->structure != NULL) {
 			s = pk_gst_structure_to_provide (info->structure);
-			type = g_strdup_printf ("gstreamer0.10(%s-%s)%s", info->type_name,
-						gst_structure_get_name (info->structure), s ? s : "");
+			type = g_strdup_printf ("gstreamer0.10(%s-%s)%s%s", info->type_name,
+						gst_structure_get_name (info->structure), s, suffix);
 			g_free (s);
+			g_message ("PackageKit: structure: %s", type);
 		} else {
-			type = g_strdup_printf ("gstreamer0.10(%s)", info->type_name);
+			type = g_strdup_printf ("gstreamer0.10(%s)%s", info->type_name, suffix);
+			g_message ("PackageKit: non-structure: %s", type);
 		}
-
-		g_message ("Codec nice name: %s", info->codec_name);
-		g_message ("%s", type);
 
 		/* create (ss) structure */
 		varray = g_value_array_new (2);
@@ -339,6 +385,9 @@ main (int argc, char **argv)
 						G_TYPE_STRING,
 						G_TYPE_INVALID));
 
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
+
 	/* invoke the method */
 	ret = dbus_g_proxy_call (proxy, "InstallGStreamerCodecs", &error,
 				 G_TYPE_UINT, xid,
@@ -347,13 +396,19 @@ main (int argc, char **argv)
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (!ret) {
-		g_error ("Did not install codec: %s", error->message);
+		/* use the error string to return a good GStreamer exit code */
+		retval = GST_INSTALL_PLUGINS_NOT_FOUND;
+		if (g_strrstr (error->message, "did not agree to search") != NULL)
+			retval = GST_INSTALL_PLUGINS_USER_ABORT;
+		else if (g_strrstr (error->message, "not all codecs were installed") != NULL)
+			retval = GST_INSTALL_PLUGINS_PARTIAL_SUCCESS;
+		g_message ("PackageKit: Did not install codec: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
 
 	/* all okay */
-	retval = 0;
+	retval = GST_INSTALL_PLUGINS_SUCCESS;
 
 out:
 	if (array != NULL) {
@@ -362,6 +417,6 @@ out:
 	}
 	if (proxy != NULL)
 		g_object_unref (proxy);
-	return 0;
+	return retval;
 }
 

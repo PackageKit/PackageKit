@@ -80,8 +80,10 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
+	NULL,					/* get_mime_types */
 	backend_cancel,				/* cancel */
 	NULL,					/* download_packages */
+	NULL,					/* get_categories */
 	NULL,					/* get_depends */
 	NULL,					/* get_details */
 	NULL,					/* get_distro_upgrades */

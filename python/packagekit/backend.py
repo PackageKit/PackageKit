@@ -79,12 +79,15 @@ class PackageKitBaseBackend:
         @param description: Error description
         @param exit: exit application with rc = 1, if true
         '''
+        # unlock before we emit if we are going to exit
+        if exit and self.isLocked():
+            self.unLock()
+
+        # this should be fast now
         print "error\t%s\t%s" % (err, description)
         print "finished"
         sys.stdout.flush()
         if exit:
-            if self.isLocked():
-                self.unLock()
             sys.exit(1)
 
     def message(self, typ, msg):
@@ -159,6 +162,18 @@ class PackageKitBaseBackend:
         @param file_list: List of the files in the package, separated by ';'
         '''
         print >> sys.stdout, "files\t%s\t%s" % (package_id, file_list)
+        sys.stdout.flush()
+
+    def category(self, parent_id, cat_id, name, summary, icon):
+        '''
+        Send 'category' signal
+        parent_id : A parent id, e.g. "admin" or "" if there is no parent
+        cat_id    : a unique category id, e.g. "admin;network"
+        name      : a verbose category name in current locale.
+        summery   : a summary of the category in current locale.
+        icon      : an icon name to represent the category
+        '''
+        print >> sys.stdout,"category\t%s\t%s\t%s\t%s\t%s" % (parent_id, cat_id, name, summary, icon)
         sys.stdout.flush()
 
     def finished(self):
@@ -427,6 +442,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
 
+    def get_categories(self):
+        '''
+        Implement the {backend}-get-categories functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
     def customTracebackHandler(self, tb):
         '''
         Custom Traceback Handler
@@ -572,6 +594,9 @@ class PackageKitBaseBackend:
             code = args[0]
             self.set_locale(code)
             self.finished()
+        elif cmd == 'get-categories':
+            self.get_categories()
+            self.finished()
         else:
             errmsg = "command '%s' is not known" % cmd
             self.error(ERROR_INTERNAL_ERROR, errmsg, exit=False)
@@ -586,6 +611,11 @@ class PackageKitBaseBackend:
                 break
             args = line.split('\t')
             self.dispatch_command(args[0], args[1:])
+
+        # unlock backend and exit with success
+        if self.isLocked():
+            self.unLock()
+        sys.exit(0)
 
 def exceptionHandler(typ, value, tb, base):
     # Restore original exception handler

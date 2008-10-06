@@ -104,7 +104,7 @@ struct _PkClientPrivate
 	gchar			*cached_search;
 	gchar			*cached_directory;
 	PkProvidesEnum		 cached_provides;
-	PkBitfield	 cached_filters;
+	PkBitfield		 cached_filters;
 };
 
 typedef enum {
@@ -125,6 +125,8 @@ typedef enum {
 	PK_CLIENT_CALLER_ACTIVE_CHANGED,
 	PK_CLIENT_REPO_DETAIL,
 	PK_CLIENT_ALLOW_CANCEL,
+	PK_CLIENT_CATEGORY,
+	PK_CLIENT_DESTROY,
 	PK_CLIENT_LAST_SIGNAL
 } PkSignals;
 
@@ -474,6 +476,17 @@ pk_client_get_package_list (PkClient *client)
 	list = client->priv->package_list;
 	g_object_ref (list);
 	return list;
+}
+
+/**
+ * pk_client_destroy_cb:
+ */
+static void
+pk_client_destroy_cb (DBusGProxy *proxy, PkClient *client)
+{
+	g_return_if_fail (PK_IS_CLIENT (client));
+	egg_debug ("emit destroy %s", client->priv->tid);
+	g_signal_emit (client, signals [PK_CLIENT_DESTROY], 0);
 }
 
 /**
@@ -3308,6 +3321,10 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     "Cannot connect to PackageKit tid %s", tid);
 		return FALSE;
 	}
+
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
+
 	client->priv->tid = g_strdup (tid);
 	egg_debug ("set tid %s on %p", client->priv->tid, client);
 
@@ -3346,6 +3363,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 	dbus_g_proxy_add_signal (proxy, "Message", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "CallerActiveChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "AllowCancel", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Destroy", G_TYPE_INVALID);
 
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_client_finished_cb), client, NULL);
@@ -3381,6 +3399,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     G_CALLBACK (pk_client_caller_active_changed_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "AllowCancel",
 				     G_CALLBACK (pk_client_allow_cancel_cb), client, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Destroy",
+				     G_CALLBACK (pk_client_destroy_cb), client, NULL);
 	client->priv->proxy = proxy;
 
 	return TRUE;
@@ -3667,6 +3687,19 @@ pk_client_class_init (PkClientClass *klass)
 			      NULL, NULL, pk_marshal_VOID__UINT_UINT,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
 
+	/**
+	 * PkClient::destroy:
+	 * @client: the #PkClient instance that emitted the signal
+	 *
+	 * The ::destroy signal is emitted when the transaction has been
+	 * destroyed and is no longer available for use.
+	 **/
+	signals [PK_CLIENT_DESTROY] =
+		g_signal_new ("destroy",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkClientClass, finished),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
 	g_type_class_add_private (klass, sizeof (PkClientPrivate));
 }
 
@@ -3729,6 +3762,8 @@ pk_client_disconnect_proxy (PkClient *client)
 					G_CALLBACK (pk_client_caller_active_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "AllowCancel",
 				        G_CALLBACK (pk_client_allow_cancel_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Destroy",
+				        G_CALLBACK (pk_client_destroy_cb), client);
 	g_object_unref (G_OBJECT (client->priv->proxy));
 	client->priv->proxy = NULL;
 	return TRUE;

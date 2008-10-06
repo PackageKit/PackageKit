@@ -97,6 +97,15 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * backend_get_mime_types:
+ */
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+	return g_strdup ("application/x-rpm");
+}
+
+/**
  * pk_backend_bool_to_text:
  */
 static const gchar *
@@ -457,8 +466,10 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
+	backend_get_mime_types,			/* get_mime_types */
 	backend_cancel,				/* cancel */
 	backend_download_packages,		/* download_packages */
+	NULL,					/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	backend_get_distro_upgrades,		/* get_distro_upgrades */

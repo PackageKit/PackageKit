@@ -384,6 +384,25 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 
 		ret = pk_backend_distro_upgrade (backend_spawn->priv->backend, distro_upgrade_enum, sections[2], sections[3]);
 		goto out;
+	} else if (egg_strequal (command, "category")) {
+
+		if (size != 5) {
+			egg_warning ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		if (egg_strzero (sections[2])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "cat_id cannot not blank");
+			ret = FALSE;
+			goto out;
+		}
+		if (egg_strzero (sections[3])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "name cannot not blank");
+			ret = FALSE;
+			goto out;
+		}
+		ret = pk_backend_category (backend_spawn->priv->backend, sections[1], sections[2], sections[3], sections[4], sections[5]);
+		goto out;
 	} else {
 		egg_warning ("invalid command '%s'", command);
 	}
