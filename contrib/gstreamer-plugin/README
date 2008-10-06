@@ -1,0 +1,21 @@
+README:
+
+PackageKit installs missing GStreamer plugins as it requested: this is how
+the whole system is designed to work.
+
+Introduction:
+
+ 1. Package installs pk-gstreamer-install into /usr/libexec
+ 2. _If_ the distro wants PackageKit to handle the codec install, and
+    not an application like codeina then you need to symlink
+    pk-gstreamer-install to gst-install-plugins-helper
+ 4. Distribution patches /etc/PackageKit/Vendor.conf with URLs to wiki pages.
+ 3. Done. It's really that simple.
+
+Notes:
+
+ * You will need to restart any applications using GStreamer before they will
+   request plugings using PackageKit.
+ * Although PackageKit 0.3.4 supports codec installing, 0.3.6 is the first
+   release that returns the correct return valus to GStreamer.
+
