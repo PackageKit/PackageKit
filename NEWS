@@ -1,3 +1,49 @@
+Version 0.3.6
+~~~~~~~~~~~~~~
+Released: 2008-10-06
+
+Translations:
+ - Updated German Translation (Thomas Spura)
+
+New Features:
+ - Add the GetMimeTypes method to get the MIME types of packages supported (Richard Hughes)
+ - Add a Destroy signal when we destroy the interface (Richard Hughes)
+ - Do a self check in PkTransaction so backends cannot wedge the daemon (Richard Hughes)
+ - Add Vendor.conf so vendors to change the URLs used in the frontend programs (Richard Hughes)
+ - Renice the spawned process so that we don't hog the system when doing automatic updates (Richard Hughes)
+ - Add a way for a big company to change the name of the vendor enumerated group (Richard Hughes)
+
+Bugfixes:
+ - Remove items about to be run from the transaction list without crashing (Richard Hughes)
+ - Use a 64 bit codec suffix for the codec provides on 64 bit machines (Richard Hughes)
+ - Make the GStreamer helper use proper GStreamer exit codes (Richard Hughes)
+ - Set the default timeout to the maximum as dbus-glib times out after 25 seconds (Richard Hughes)
+ - Fix a theoretical hang where we could try to reuse a exiting instance (Richard Hughes)
+ - Unlock the backend before we send finished on ErrorCode as unlocking may take some time (Richard Hughes)
+ - When we exit the dispatcher with 'exit' ensure we unlock if locked (Richard Hughes)
+ - If the refresh cache fails, don't do the PkRefresh actions (Richard Hughes)
+ - If a caller does GetTid and then crashes, the daemon should timeout the transaction (Richard Hughes)
+ - Use environent variables rather than static instance variables to hold the debugging state,
+   so that we can get access to libpackagekit debugging when linked in (Richard Hughes)
+ - When we query the progress of a transaction, use the cached transaction values rather
+   than querying the backend, as it might not be the transaction actually running (Richard Hughes)
+ - We are allowed to cancel queued (and not running) transactions (Richard Hughes)
+ - Use the correct command names in packagekit-background.cron. Fixes fd#17875 (Richard Hughes)
+ - Catch all errors in a transaction to even catch attribute errors in yum. Fixes fd#17920 (Richard Hughes)
+
+
+Backends:
+ - apt: Fix StateHasChanged call after a cache update (Sebastian Heinlein)
+ - apt: Instead of using the raw codec string in WhatProvides use the one (Sebastian Heinlein)
+ - apt: Add a note about implementing the codec search using debtags (will (Sebastian Heinlein)
+ - apt: Dpkg calls should use the same system root as the apt cache (Sebastian Heinlein)
+ - apt: There is no need to mark the required changes of local package (Sebastian Heinlein)
+ - pisi: Trivial changes for pisi-dispatcher work (S.Çağlar Onur)
+ - smart: Use loader.getInstalled() instead of channel.getType (Anders F Bjorklund)
+ - smart: Implement GetMimeTypes (Anders F Bjorklund)
+ - smart: Restore the backend.reset() that got lost in refactoring (Anders F Bjorklund)
+ - yum: Don't backtrace when we search group on no collections. Fixes rh#465722 (Richard Hughes)
+
 Version 0.3.5
 ~~~~~~~~~~~~~~
 Released: 2008-09-29

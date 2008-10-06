@@ -19,7 +19,7 @@ DEVELOPMENT_RELEASE=no
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=8
-LT_REVISION=0
+LT_REVISION=1
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
