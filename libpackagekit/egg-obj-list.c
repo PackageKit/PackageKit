@@ -288,7 +288,6 @@ egg_obj_list_add_array (EggObjList *list, const GPtrArray *data)
 	gconstpointer obj;
 
 	g_return_if_fail (EGG_IS_OBJ_LIST (list));
-	g_return_if_fail (EGG_IS_OBJ_LIST (data));
 
 	/* add data items to list */
 	for (i=0; i < data->len; i++) {
