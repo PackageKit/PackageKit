@@ -346,6 +346,7 @@ gboolean	 pk_client_repo_set_data		(PkClient	*client,
 /* cached stuff */
 PkPackageList	*pk_client_get_package_list		(PkClient	*client);
 PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
+const GPtrArray	*pk_client_get_cached_objects		(PkClient	*client);
 
 /* not job specific */
 gboolean	 pk_client_reset			(PkClient	*client,
