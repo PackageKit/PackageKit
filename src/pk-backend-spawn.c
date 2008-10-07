@@ -386,7 +386,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		goto out;
 	} else if (egg_strequal (command, "category")) {
 
-		if (size != 5) {
+		if (size != 6) {
 			egg_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
