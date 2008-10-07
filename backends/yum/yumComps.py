@@ -310,7 +310,7 @@ class yumComps:
     def get_meta_package_list(self, groupid):
         ''' for a comps group, get the packagelist for this group (mandatory, default)'''
         all_packages = []
-        self.cursor.execute('SELECT name FROM groups WHERE groupid = ? AND ( pkgtype = "mandatory" OR pkgtype = "default");', [groupid])
+        self.cursor.execute('SELECT name FROM groups WHERE groupid = ? ;', [groupid])
         for row in self.cursor:
             all_packages.append(row[0])
         return all_packages
@@ -323,6 +323,13 @@ class yumComps:
             category = row[0]
             break
         return category
+
+    def get_groups(self,cat_id):
+        grps = set()
+        self.cursor.execute('SELECT groupid FROM groups WHERE category = ?',[cat_id])
+        for row in self.cursor:
+            grps.add(row[0])
+        return list(grps)
 
 if __name__ == "__main__":
     import yum
