@@ -275,6 +275,29 @@ egg_obj_list_add_list (EggObjList *list, const EggObjList *data)
 }
 
 /**
+ * egg_obj_list_add_array:
+ *
+ * Makes a deep copy of the data in the array.
+ * The data going into the list MUST be the correct type,
+ * else bad things will happen.
+ **/
+void
+egg_obj_list_add_array (EggObjList *list, const GPtrArray *data)
+{
+	guint i;
+	gconstpointer obj;
+
+	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (EGG_IS_OBJ_LIST (data));
+
+	/* add data items to list */
+	for (i=0; i < data->len; i++) {
+		obj = g_ptr_array_index (data, i);
+		egg_obj_list_add (list, obj);
+	}
+}
+
+/**
  * egg_obj_list_remove_list:
  *
  * Makes a deep copy of the list

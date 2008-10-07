@@ -82,6 +82,8 @@ void		 egg_obj_list_add		(EggObjList		*list,
 						 gconstpointer		 data);
 void		 egg_obj_list_add_list		(EggObjList		*list,
 						 const EggObjList	*data);
+void		 egg_obj_list_add_array		(EggObjList		*list,
+						 const GPtrArray	*data);
 void		 egg_obj_list_remove_list	(EggObjList		*list,
 						 const EggObjList	*data);
 void		 egg_obj_list_remove_duplicate	(EggObjList		*list);
