@@ -61,6 +61,7 @@
 #include "pk-control.h"
 #include "pk-update-detail-obj.h"
 #include "pk-details-obj.h"
+#include "pk-category-obj.h"
 #include "pk-distro-upgrade-obj.h"
 
 static void     pk_client_class_init	(PkClientClass *klass);
@@ -676,6 +677,25 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 }
 
 /**
+ * pk_client_category_cb:
+ */
+static void
+pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *cat_id,
+		       const gchar *name, const gchar *summary, const gchar *icon, PkClient *client)
+{
+	PkCategoryObj *category;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	egg_debug ("emit category %s, %s, %s, %s, %s", parent_id, cat_id, name, summary, icon);
+
+	category = pk_category_obj_new_from_data (parent_id, cat_id, name, summary, icon);
+	g_signal_emit (client, signals [PK_CLIENT_CATEGORY], 0, category);
+
+	pk_category_obj_free (category);
+}
+
+/**
  * pk_client_details_cb:
  */
 static void
@@ -1210,6 +1230,50 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
+	if (ret && !client->priv->is_finished) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous)
+			g_main_loop_run (client->priv->loop);
+	}
+	pk_client_error_fixup (error);
+	return ret;
+}
+
+/**
+ * pk_client_get_categories:
+ * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Get a list of all categories supported
+ *
+ * Return value: %TRUE if we got told the daemon to get the category list
+ **/
+gboolean
+pk_client_get_categories (PkClient *client, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret)
+		return FALSE;
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_CATEGORIES;
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetCategories", error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -3279,6 +3343,8 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_update_system (client, error);
 	else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST)
 		ret = pk_client_get_repo_list (client, priv->cached_filters, error);
+	else if (priv->role == PK_ROLE_ENUM_GET_CATEGORIES)
+		ret = pk_client_get_categories (client, error);
 	else {
 		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
@@ -3364,6 +3430,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 	dbus_g_proxy_add_signal (proxy, "CallerActiveChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "AllowCancel", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Destroy", G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Category", G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_client_finished_cb), client, NULL);
@@ -3399,6 +3467,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     G_CALLBACK (pk_client_caller_active_changed_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "AllowCancel",
 				     G_CALLBACK (pk_client_allow_cancel_cb), client, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Category",
+				     G_CALLBACK (pk_client_category_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Destroy",
 				     G_CALLBACK (pk_client_destroy_cb), client, NULL);
 	client->priv->proxy = proxy;
@@ -3672,6 +3742,19 @@ pk_client_class_init (PkClientClass *klass)
 			      G_STRUCT_OFFSET (PkClientClass, caller_active_changed),
 			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	/**
+	 * PkClient::category:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @details: a pointer to a PkCategoryObj structure describing the category
+	 *
+	 * The ::category signal is emitted when GetCategories() is called.
+	 **/
+	signals [PK_CLIENT_CATEGORY] =
+		g_signal_new ("category",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkClientClass, category),
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	/**
 	 * PkClient::finished:
 	 * @client: the #PkClient instance that emitted the signal
@@ -3959,6 +4042,10 @@ pk_client_init (PkClient *client)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
 					   G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+	/* Category */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 }
 
 /**

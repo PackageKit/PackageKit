@@ -41,6 +41,7 @@
 #include <pk-common.h>
 #include <pk-connection.h>
 #include <pk-update-detail-obj.h>
+#include <pk-category-obj.h>
 #include <pk-distro-upgrade-obj.h>
 
 #include "pk-tools-common.h"
@@ -257,6 +258,23 @@ pk_console_distro_upgrade_cb (PkClient *client, const PkDistroUpgradeObj *obj, g
 	g_print ("Distro       : %s\n", obj->name);
 	g_print (" type        : %s\n", pk_update_state_enum_to_text (obj->state));
 	g_print (" summary     : %s\n", obj->summary);
+}
+
+/**
+ * pk_console_category_cb:
+ **/
+static void
+pk_console_category_cb (PkClient *client, const PkCategoryObj *obj, gpointer user_data)
+{
+	if (awaiting_space) {
+		g_print ("\n");
+	}
+	g_print ("Category  : %s\n", obj->name);
+	g_print (" cat_id   : %s\n", obj->cat_id);
+	g_print (" parent   : %s\n", obj->parent_id);
+	g_print (" name     : %s\n", obj->name);
+	g_print (" summary  : %s\n", obj->summary);
+	g_print (" icon     : %s\n", obj->icon);
 }
 
 /**
@@ -1343,6 +1361,9 @@ pk_console_get_summary (PkBitfield roles)
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_ACCEPT_EULA)) {
 		g_string_append_printf (string, "  %s\n", "accept-eula [eula-id]");
 	}
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_CATEGORIES)) {
+		g_string_append_printf (string, "  %s\n", "get-categories");
+	}
 	return g_string_free (string, FALSE);
 }
 
@@ -1447,6 +1468,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_transaction_cb), NULL);
 	g_signal_connect (client, "distro-upgrade",
 			  G_CALLBACK (pk_console_distro_upgrade_cb), NULL);
+	g_signal_connect (client, "category",
+			  G_CALLBACK (pk_console_category_cb), NULL);
 	g_signal_connect (client, "details",
 			  G_CALLBACK (pk_console_details_cb), NULL);
 	g_signal_connect (client, "files",
@@ -1679,6 +1702,9 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-updates") == 0) {
 		ret = pk_client_get_updates (client, filters, &error);
+
+	} else if (strcmp (mode, "get-categories") == 0) {
+		ret = pk_client_get_categories (client, &error);
 
 	} else if (strcmp (mode, "get-packages") == 0) {
 		ret = pk_client_get_packages (client, filters, &error);

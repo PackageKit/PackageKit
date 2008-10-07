@@ -143,12 +143,17 @@ struct _PkClientClass
 	void		(* finished)			(PkClient	*client,
 							 PkExitEnum	 exit,
 							 guint		 runtime);
+	void		(* category)			(PkClient	*client,
+							 const gchar	*parent_id,
+							 const gchar	*cat_id,
+							 const gchar	*name,
+							 const gchar	*summary,
+							 const gchar	*icon);
 	/* Padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
 	void (*_pk_reserved3) (void);
 	void (*_pk_reserved4) (void);
-	void (*_pk_reserved5) (void);
 };
 
 GQuark		 pk_client_error_quark			(void);
@@ -262,6 +267,9 @@ gboolean	 pk_client_get_distro_upgrades		(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_get_files			(PkClient	*client,
 							 gchar		**package_ids,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_client_get_categories		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_remove_packages		(PkClient	*client,
