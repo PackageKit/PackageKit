@@ -91,6 +91,7 @@ gboolean	 egg_obj_list_remove_index	(EggObjList		*list,
 						 guint			 index);
 gconstpointer	 egg_obj_list_index		(const EggObjList	*list,
 						 guint			 index);
+const GPtrArray	*egg_obj_list_get_array		(const EggObjList	*list);
 
 G_END_DECLS
 

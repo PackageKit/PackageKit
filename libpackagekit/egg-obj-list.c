@@ -129,6 +129,19 @@ egg_obj_list_set_from_string (EggObjList *list, EggObjListFromStringFunc func)
 }
 
 /**
+ * egg_obj_list_get_array:
+ * @list: a valid #EggObjList instance
+ *
+ * Gets a GPtrArray representation of the package list
+ **/
+const GPtrArray	*
+egg_obj_list_get_array (const EggObjList *list)
+{
+	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), NULL);
+	return list->priv->array;
+}
+
+/**
  * egg_obj_list_clear:
  * @list: a valid #EggObjList instance
  *
