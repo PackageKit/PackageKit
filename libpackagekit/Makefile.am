@@ -28,6 +28,7 @@ libpackagekit_include_HEADERS =					\
 	pk-package-ids.h					\
 	pk-package-obj.h					\
 	pk-package-list.h					\
+	pk-category-obj.h					\
 	pk-update-detail-obj.h					\
 	pk-distro-upgrade-obj.h					\
 	pk-details-obj.h					\
@@ -63,6 +64,8 @@ libpackagekit_la_SOURCES =					\
 	pk-package-obj.h					\
 	pk-package-list.c					\
 	pk-package-list.h					\
+	pk-category-obj.c					\
+	pk-category-obj.h					\
 	pk-update-detail-obj.c					\
 	pk-update-detail-obj.h					\
 	pk-distro-upgrade-obj.c					\
