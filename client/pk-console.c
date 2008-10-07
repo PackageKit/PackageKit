@@ -271,9 +271,11 @@ pk_console_category_cb (PkClient *client, const PkCategoryObj *obj, gpointer use
 	}
 	g_print ("Category  : %s\n", obj->name);
 	g_print (" cat_id   : %s\n", obj->cat_id);
-	g_print (" parent   : %s\n", obj->parent_id);
+	if (!egg_strzero (obj->parent_id))
+		g_print (" parent   : %s\n", obj->parent_id);
 	g_print (" name     : %s\n", obj->name);
-	g_print (" summary  : %s\n", obj->summary);
+	if (!egg_strzero (obj->summary))
+		g_print (" summary  : %s\n", obj->summary);
 	g_print (" icon     : %s\n", obj->icon);
 }
 
