@@ -386,8 +386,13 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		goto out;
 	} else if (egg_strequal (command, "category")) {
 
-		if (size != 5) {
+		if (size != 6) {
 			egg_warning ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		if (egg_strequal (sections[1], sections[2])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "cat_id cannot be the same as parent_id");
 			ret = FALSE;
 			goto out;
 		}
@@ -398,6 +403,16 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		if (egg_strzero (sections[3])) {
 			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "name cannot not blank");
+			ret = FALSE;
+			goto out;
+		}
+		if (egg_strzero (sections[5])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "icon cannot not blank");
+			ret = FALSE;
+			goto out;
+		}
+		if (g_str_has_prefix (sections[5], "/")) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "icon '%s' should be a named icon, not a path", sections[5]);
 			ret = FALSE;
 			goto out;
 		}

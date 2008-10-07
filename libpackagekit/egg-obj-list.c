@@ -129,6 +129,19 @@ egg_obj_list_set_from_string (EggObjList *list, EggObjListFromStringFunc func)
 }
 
 /**
+ * egg_obj_list_get_array:
+ * @list: a valid #EggObjList instance
+ *
+ * Gets a GPtrArray representation of the package list
+ **/
+const GPtrArray	*
+egg_obj_list_get_array (const EggObjList *list)
+{
+	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), NULL);
+	return list->priv->array;
+}
+
+/**
  * egg_obj_list_clear:
  * @list: a valid #EggObjList instance
  *
@@ -257,6 +270,28 @@ egg_obj_list_add_list (EggObjList *list, const EggObjList *data)
 	/* add data items to list */
 	for (i=0; i < data->len; i++) {
 		obj = egg_obj_list_index (data, i);
+		egg_obj_list_add (list, obj);
+	}
+}
+
+/**
+ * egg_obj_list_add_array:
+ *
+ * Makes a deep copy of the data in the array.
+ * The data going into the list MUST be the correct type,
+ * else bad things will happen.
+ **/
+void
+egg_obj_list_add_array (EggObjList *list, const GPtrArray *data)
+{
+	guint i;
+	gconstpointer obj;
+
+	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+
+	/* add data items to list */
+	for (i=0; i < data->len; i++) {
+		obj = g_ptr_array_index (data, i);
 		egg_obj_list_add (list, obj);
 	}
 }
