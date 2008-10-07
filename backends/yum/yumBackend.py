@@ -236,7 +236,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         name = self._to_unicode(name)
         summary = self._to_unicode(summary)
-        PackageKitBaseBackend.category(self,parent_id,cat_id, name, summary, icon)
+        PackageKitBaseBackend.category(self, parent_id, cat_id, name, summary, icon)
 
     def _to_unicode(self, txt, encoding='utf-8'):
         if isinstance(txt, basestring):
@@ -367,7 +367,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_GROUP_LIST_INVALID, 'No groups could be found. A cache refresh should fix this.')
 
         pct = 20
-        old_pct = -1;
+        old_pct = -1
         step = (100.0 - pct) / len(collections)
         for col in collections:
             self._show_meta_package(col, fltlist)
@@ -411,10 +411,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # handle dynamic groups (yum comps group)
         if group_key[0] == '@':
-            id = group_key[1:]
-            print id
+            cat_id = group_key[1:]
              # get the packagelist for this group
-            all_packages = self.comps.get_meta_package_list(id)
+            all_packages = self.comps.get_meta_package_list(cat_id)
         else: # this is an group_enum
             # get the packagelist for this group enum
             all_packages = self.comps.get_package_list(group_key)
@@ -543,21 +542,21 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         for cat in self.yumbase.comps.categories:
-            id = cat.categoryid
+            cat_id = cat.categoryid
             # yum >= 3.2.10
             # name = cat.nameByLang(self._lang)
             # summary = cat.descriptionByLang(self._lang)
             name = cat.name
             summary = cat.description
-            fn = "/usr/share/pixmaps/comps/%s.png" % id
+            fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
             if os.access(fn, os.R_OK):
-                icon = fn
+                icon = cat_id
             else:
-                icon = ""
-            self.category("",id,name,summary,icon)
-            self._get_groups(id)
+                icon = "image-missing"
+            self.category("", cat_id, name, summary, icon)
+            self._get_groups(cat_id)
 
-    def _get_groups(self,cat_id):
+    def _get_groups(self, cat_id):
         '''
         Implement the {backend}-get-collections functionality
         '''
@@ -572,20 +571,18 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for grp_id in grps:
                 grp = self.yumbase.comps.return_group(grp_id)
                 if grp:
-                    id = "@%s" % (grp_id)
+                    cat_id = "@%s" % (grp_id)
                     name = grp.nameByLang(self._lang)
                     summary = grp.descriptionByLang(self._lang)
-                    icon = ""
+                    icon = "image-missing"
                     fn = "/usr/share/pixmaps/comps/%s.png" % grp_id
                     if os.access(fn, os.R_OK):
-                        icon = fn
+                        icon = grp_id
                     else:
-                        fn = "/usr/share/pixmaps/comps/%s.png" % cat
+                        fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
                         if os.access(fn, os.R_OK):
-                            icon = fn
-                    self.category(cat, id, name, summary, icon)
-
-
+                            icon = cat_id
+                    self.category(cat, cat_id, name, summary, icon)
 
     def download_packages(self, directory, package_ids):
         '''
@@ -969,7 +966,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # which we can emulate quicker by doing a transaction, but not
         # executing it
         if filters == FILTER_NOT_INSTALLED:
-            self._get_depends_not_installed (fltlist, package_ids,recursive)
+            self._get_depends_not_installed (fltlist, package_ids, recursive)
             return
 
         percentage = 0
