@@ -48,6 +48,7 @@
 
 #include "egg-debug.h"
 #include "egg-string.h"
+#include "egg-obj-list.h"
 
 #include "pk-enum.h"
 #include "pk-bitfield.h"
@@ -86,6 +87,7 @@ struct _PkClientPrivate
 	gboolean		 synchronous;
 	gchar			*tid;
 	PkControl		*control;
+	EggObjList		*cached_data;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
 	gulong			 pconnection_signal_id;
@@ -480,6 +482,25 @@ pk_client_get_package_list (PkClient *client)
 }
 
 /**
+ * pk_client_get_cached_objects:
+ * @client: a valid #PkClient instance
+ *
+ * Return the cached object list
+ *
+ * Return value: The #GPtrArray of cached objects or %NULL if invalid
+ **/
+const GPtrArray	*
+pk_client_get_cached_objects (PkClient *client)
+{
+	const GPtrArray *array;
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	if (!client->priv->use_buffer)
+		return NULL;
+	array = egg_obj_list_get_array (client->priv->cached_data);
+	return array;
+}
+
+/**
  * pk_client_destroy_cb:
  */
 static void
@@ -629,6 +650,11 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 	obj = pk_distro_upgrade_obj_new_from_data  (type, name, summary);
 	egg_debug ("emitting distro_upgrade %s, %s, %s", type_text, name, summary);
 	g_signal_emit (client, signals [PK_CLIENT_DISTRO_UPGRADE], 0, obj);
+
+	/* cache */
+	if (client->priv->use_buffer || client->priv->synchronous)
+		egg_obj_list_add (client->priv->cached_data, obj);
+
 	pk_distro_upgrade_obj_free (obj);
 }
 
@@ -668,6 +694,10 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 						     issued, updated);
 	g_signal_emit (client, signals [PK_CLIENT_UPDATE_DETAIL], 0, detail);
 
+	/* cache */
+	if (client->priv->use_buffer || client->priv->synchronous)
+		egg_obj_list_add (client->priv->cached_data, detail);
+
 	if (issued != NULL)
 		g_date_free (issued);
 	if (updated != NULL)
@@ -691,6 +721,10 @@ pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *
 
 	category = pk_category_obj_new_from_data (parent_id, cat_id, name, summary, icon);
 	g_signal_emit (client, signals [PK_CLIENT_CATEGORY], 0, category);
+
+	/* cache */
+	if (client->priv->use_buffer || client->priv->synchronous)
+		egg_obj_list_add (client->priv->cached_data, category);
 
 	pk_category_obj_free (category);
 }
@@ -717,6 +751,11 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 
 	details = pk_details_obj_new_from_data (id, license, group, description, url, size);
 	g_signal_emit (client, signals [PK_CLIENT_DETAILS], 0, details);
+
+	/* cache */
+	if (client->priv->use_buffer || client->priv->synchronous)
+		egg_obj_list_add (client->priv->cached_data, details);
+
 	pk_package_id_free (id);
 	pk_details_obj_free (details);
 }
@@ -1266,6 +1305,10 @@ pk_client_get_categories (PkClient *client, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_CATEGORIES;
+
+	/* we use the cached objects support */
+	egg_obj_list_set_copy (client->priv->cached_data, (EggObjListCopyFunc) pk_category_obj_copy);
+	egg_obj_list_set_free (client->priv->cached_data, (EggObjListFreeFunc) pk_category_obj_free);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -1974,6 +2017,10 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
 	client->priv->cached_package_ids = g_strdupv (package_ids);
 
+	/* we use the cached objects support */
+	egg_obj_list_set_copy (client->priv->cached_data, (EggObjListCopyFunc) pk_update_detail_obj_copy);
+	egg_obj_list_set_free (client->priv->cached_data, (EggObjListFreeFunc) pk_update_detail_obj_free);
+
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
@@ -2134,6 +2181,10 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 	if (!ret)
 		return FALSE;
 
+	/* we use the cached objects support */
+	egg_obj_list_set_copy (client->priv->cached_data, (EggObjListCopyFunc) pk_details_obj_copy);
+	egg_obj_list_set_free (client->priv->cached_data, (EggObjListFreeFunc) pk_details_obj_free);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DETAILS;
 	client->priv->cached_package_ids = g_strdupv (package_ids);
@@ -2183,6 +2234,10 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
+
+	/* we use the cached objects support */
+	egg_obj_list_set_copy (client->priv->cached_data, (EggObjListCopyFunc) pk_distro_upgrade_obj_copy);
+	egg_obj_list_set_free (client->priv->cached_data, (EggObjListFreeFunc) pk_distro_upgrade_obj_free);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -3299,6 +3354,7 @@ pk_client_requeue (PkClient *client, GError **error)
 
 	/* clear package list */
 	pk_package_list_clear (client->priv->package_list);
+	egg_obj_list_clear (client->priv->cached_data);
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS)
@@ -3919,6 +3975,7 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->is_finished = FALSE;
 
 	pk_package_list_clear (client->priv->package_list);
+	egg_obj_list_clear (client->priv->cached_data);
 	return TRUE;
 }
 
@@ -3941,6 +3998,7 @@ pk_client_init (PkClient *client)
 	client->priv->is_finished = FALSE;
 	client->priv->is_finishing = FALSE;
 	client->priv->package_list = pk_package_list_new ();
+	client->priv->cached_data = egg_obj_list_new ();
 	client->priv->cached_package_id = NULL;
 	client->priv->cached_package_ids = NULL;
 	client->priv->cached_transaction_id = NULL;
@@ -4081,6 +4139,7 @@ pk_client_finalize (GObject *object)
 	pk_client_disconnect_proxy (client);
 	g_object_unref (client->priv->pconnection);
 	g_object_unref (client->priv->package_list);
+	g_object_unref (client->priv->cached_data);
 	g_object_unref (client->priv->control);
 
 	G_OBJECT_CLASS (pk_client_parent_class)->finalize (object);
