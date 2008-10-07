@@ -1388,6 +1388,7 @@
           <doc:summary>
             <doc:para>
               The icon name for the category, e.g. <doc:tt>server-cfg</doc:tt>.
+              If the icon is not known, then it should be set to <doc:tt>image-missing</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
