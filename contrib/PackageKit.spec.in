@@ -24,6 +24,7 @@ Requires: PackageKit-yum-plugin = %{version}-%{release}
 Requires: PackageKit-yum = %{version}-%{release}
 Requires: shared-mime-info
 Requires: python-sqlite2
+Requires: comps-extras
 
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: dbus-devel  >= %{dbus_version}
@@ -179,6 +180,14 @@ pushd ${RPM_BUILD_ROOT}%{_libexecdir} > /dev/null
 ln -s pk-gstreamer-install gst-install-plugins-helper
 popd > /dev/null
 
+# create a link that from the comps icons to PK, as PackageKit frontends
+# cannot add /usr/share/pixmaps/comps to the icon search path as some distros
+# do not use comps. Patching this in the frontend is not a good idea, as there
+# are multiple frontends in multiple programming languages.
+pushd ${RPM_BUILD_ROOT}%{_datadir}/PackageKit > /dev/null
+ln -s ../pixmaps/comps icons
+popd > /dev/null
+
 %find_lang %name
 
 %clean
@@ -212,6 +221,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %config(noreplace) %{_sysconfdir}/PackageKit/*.conf
 %config %{_sysconfdir}/dbus-1/system.d/*
 %dir %{_datadir}/PackageKit/helpers/test_spawn
+%dir %{_datadir}/PackageKit/icons
 %{_datadir}/PackageKit/helpers/test_spawn/*
 %{_datadir}/man/man1/*.1.gz
 %{_datadir}/PolicyKit/policy/*.policy
