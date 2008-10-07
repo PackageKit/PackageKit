@@ -606,8 +606,8 @@ class PackageKitBaseBackend:
         if len(args) > 0:
             self.dispatch_command(args[0], args[1:])
         while True:
-            line = raw_input('')
-            if line == 'exit':
+            line = sys.stdin.readline().strip('\n')
+            if not line or line == 'exit':
                 break
             args = line.split('\t')
             self.dispatch_command(args[0], args[1:])
