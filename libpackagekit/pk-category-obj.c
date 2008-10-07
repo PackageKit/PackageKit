@@ -48,7 +48,6 @@ pk_category_obj_new (void)
 {
 	PkCategoryObj *obj;
 	obj = g_new0 (PkCategoryObj, 1);
-	obj->parent = NULL;
 	obj->parent_id = NULL;
 	obj->cat_id = NULL;
 	obj->name = NULL;

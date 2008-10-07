@@ -33,7 +33,6 @@ G_BEGIN_DECLS
  **/
 typedef struct
 {
-	struct PkCategoryObj		*parent;
 	gchar				*parent_id;
 	gchar				*cat_id;
 	gchar				*name;
