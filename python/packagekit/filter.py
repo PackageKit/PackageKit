@@ -28,27 +28,28 @@ class PackagekitFilter(object, PackagekitPackage):
         ''' save state '''
         self.fltlist = fltlist
         self.package_list = [] #we can't do emitting as found if we are post-processing
-        self.installed_unique = []
+        self.installed_unique = {}
 
     def add_installed(self, pkgs):
         ''' add a list of packages that are already installed '''
         for pkg in pkgs:
             if self.pre_process(pkg):
                 self.package_list.append((pkg, INFO_INSTALLED))
-            self.installed_unique.append(self._pkg_get_unique(pkg))
+            nevra = self._pkg_get_unique(pkg)
+            self.installed_unique[nevra] = pkg
 
     def add_available(self, pkgs):
         ''' add a list of packages that are available '''
         for pkg in pkgs:
             nevra = self._pkg_get_unique(pkg)
-            if nevra not in self.installed_unique:
+            if not self.installed_unique.has_key(nevra):
                 if self.pre_process(pkg):
                     self.package_list.append((pkg, INFO_AVAILABLE))
 
     def add_custom(self, pkg, info):
         ''' add a custom packages indervidually '''
         nevra = self._pkg_get_unique(pkg)
-        if nevra not in self.installed_unique:
+        if not self.installed_unique.has_key(nevra):
             if self.pre_process(pkg):
                 self.package_list.append((pkg, info))
 
