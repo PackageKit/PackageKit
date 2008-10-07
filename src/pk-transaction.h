@@ -104,6 +104,8 @@ void		 pk_transaction_download_packages	(PkTransaction  *transaction,
 gboolean	 pk_transaction_get_allow_cancel	(PkTransaction	*transaction,
 							 gboolean	*allow_cancel,
 							 GError		**error);
+void		 pk_transaction_get_categories		(PkTransaction	*transaction,
+							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_depends		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 gchar		**package_ids,

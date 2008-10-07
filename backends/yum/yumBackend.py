@@ -225,6 +225,25 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         summary = _to_unicode(summary)
         PackageKitBaseBackend.package(self, package_id, status, summary)
 
+    def category(self, parent_id, cat_id, name, summary, icon):
+        '''
+        Send 'category' signal
+        parent_id : A parent id, e.g. "admin" or "" if there is no parent
+        cat_id    : a unique category id, e.g. "admin;network"
+        name      : a verbose category name in current locale.
+        summery   : a summary of the category in current locale.
+        icon      : an icon name to represent the category
+        '''
+        name = self._to_unicode(name)
+        summary = self._to_unicode(summary)
+        PackageKitBaseBackend.category(self, parent_id, cat_id, name, summary, icon)
+
+    def _to_unicode(self, txt, encoding='utf-8'):
+        if isinstance(txt, basestring):
+            if not isinstance(txt, unicode):
+                txt = unicode(txt, encoding, errors='replace')
+        return txt
+
     def doLock(self):
         ''' Lock Yum'''
         retries = 0
@@ -348,7 +367,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_GROUP_LIST_INVALID, 'No groups could be found. A cache refresh should fix this.')
 
         pct = 20
-        old_pct = -1;
+        old_pct = -1
         step = (100.0 - pct) / len(collections)
         for col in collections:
             self._show_meta_package(col, fltlist)
@@ -390,8 +409,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self._handle_collections(fltlist)
             return
 
-        # get the packagelist for this group
-        all_packages = self.comps.get_package_list(group_key)
+        # handle dynamic groups (yum comps group)
+        if group_key[0] == '@':
+            cat_id = group_key[1:]
+             # get the packagelist for this group
+            all_packages = self.comps.get_meta_package_list(cat_id)
+        else: # this is an group_enum
+            # get the packagelist for this group enum
+            all_packages = self.comps.get_package_list(group_key)
 
         # group don't exits, just bail out
         if not all_packages:
@@ -510,6 +535,55 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
 
+    def get_categories(self):
+        '''
+        Implement the {backend}-get-categories functionality
+        '''
+        self.status(STATUS_QUERY)
+        self.allow_cancel(True)
+        for cat in self.yumbase.comps.categories:
+            cat_id = cat.categoryid
+            # yum >= 3.2.10
+            # name = cat.nameByLang(self._lang)
+            # summary = cat.descriptionByLang(self._lang)
+            name = cat.name
+            summary = cat.description
+            fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
+            if os.access(fn, os.R_OK):
+                icon = cat_id
+            else:
+                icon = "image-missing"
+            self.category("", cat_id, name, summary, icon)
+            self._get_groups(cat_id)
+
+    def _get_groups(self, cat_id):
+        '''
+        Implement the {backend}-get-collections functionality
+        '''
+        self.status(STATUS_QUERY)
+        self.allow_cancel(True)
+        if cat_id:
+            cats = [cat_id]
+        else:
+            cats =  [cat.categoryid for cat in self.yumbase.comps.categories]
+        for cat in cats:
+            grps = self.comps.get_groups(cat)
+            for grp_id in grps:
+                grp = self.yumbase.comps.return_group(grp_id)
+                if grp:
+                    cat_id = "@%s" % (grp_id)
+                    name = grp.nameByLang(self._lang)
+                    summary = grp.descriptionByLang(self._lang)
+                    icon = "image-missing"
+                    fn = "/usr/share/pixmaps/comps/%s.png" % grp_id
+                    if os.access(fn, os.R_OK):
+                        icon = grp_id
+                    else:
+                        fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
+                        if os.access(fn, os.R_OK):
+                            icon = cat_id
+                    self.category(cat, cat_id, name, summary, icon)
+
     def download_packages(self, directory, package_ids):
         '''
         Implement the {backend}-download-packages functionality
@@ -577,10 +651,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if len(package_id.split(';')) > 1:
             # Split up the id
             (name, idver, a, repo) = self.get_package_from_id(package_id)
+            isGroup = False
             if repo == 'meta':
                 grp = self.yumbase.comps.return_group(name)
-                if not grp:
-                    self.error(ERROR_PACKAGE_NOT_FOUND, "The Group %s dont exist" % name)
+                isGroup = True
+            elif name[0] == '@':
+                grp = self.yumbase.comps.return_group(name[1:])
+                isGroup = True
+            if isGroup and not grp:
+                self.error(ERROR_PACKAGE_NOT_FOUND, "The Group %s dont exist" % name)
         return grp
 
     def _findPackage(self, package_id):
@@ -646,28 +725,26 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if not grp.installed:
                     self.error(ERROR_PACKAGE_NOT_INSTALLED, "The Group %s is not installed" % grp.groupid)
                 else:
-                    txmbr = self.yumbase.groupRemove(grp.groupid)
-                    rc, msgs =  self.yumbase.buildTransaction()
-                    if rc != 2:
-                        self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
-                    else:
-                        for txmbr in self.yumbase.tsInfo:
-                            deps_list.append(txmbr.po)
+                    txmbrs = self.yumbase.groupRemove(grp.groupid)
+                    for txmbr in self.yumbase.tsInfo:
+                        deps_list.append(txmbr.po)
             else:
                 pkg, inst = self._findPackage(package)
                 # This simulates the removal of the package
                 if inst and pkg:
                     resolve_list.append(pkg)
                     txmbrs = self.yumbase.remove(po=pkg)
-                    if txmbrs:
-                        rc, msgs =  self.yumbase.buildTransaction()
-                        if rc != 2:
-                            self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
-                        else:
-                            for txmbr in self.yumbase.tsInfo:
-                                if pkg not in deps_list:
-                                    deps_list.append(txmbr.po)
             percentage += bump
+
+        # do the depsolve to pull in deps
+        if len(self.yumbase.tsInfo) > 0  and recursive:
+            rc, msgs =  self.yumbase.buildTransaction()
+            if rc != 2:
+                self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
+            else:
+                for txmbr in self.yumbase.tsInfo:
+                    if txmbr.po not in deps_list:
+                        deps_list.append(txmbr.po)
 
         # remove any of the original names
         for pkg in resolve_list:
@@ -828,7 +905,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.yumbase.groupUnremove(grp.groupid)
         return pkgs
 
-    def _get_depends_not_installed(self, fltlist, package_ids):
+    def _get_depends_not_installed(self, fltlist, package_ids, recursive):
         percentage = 0
         bump = 100 / len(package_ids)
         deps_list = []
@@ -841,28 +918,26 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if grp.installed:
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The Group %s is already installed" % grp.groupid)
                 else:
-                    txmbr = self.yumbase.selectGroup(grp.groupid)
-                    rc, msgs =  self.yumbase.buildTransaction()
-                    if rc != 2:
-                        self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
-                    else:
-                        for txmbr in self.yumbase.tsInfo:
-                            deps_list.append(txmbr.po)
+                    txmbrs = self.yumbase.selectGroup(grp.groupid)
+                    for txmbr in self.yumbase.tsInfo:
+                        deps_list.append(txmbr.po)
             else:
                 pkg, inst = self._findPackage(package)
                 # This simulates the addition of the package
                 if not inst and pkg:
                     resolve_list.append(pkg)
                     txmbrs = self.yumbase.install(po=pkg)
-                    if txmbrs:
-                        rc, msgs =  self.yumbase.buildTransaction()
-                        if rc != 2:
-                            self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
-                        else:
-                            for txmbr in self.yumbase.tsInfo:
-                                if pkg not in deps_list:
-                                    deps_list.append(txmbr.po)
             percentage += bump
+
+        if len(self.yumbase.tsInfo) > 0 and recursive:
+            rc, msgs =  self.yumbase.buildTransaction()
+            if rc != 2:
+                self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
+            else:
+                for txmbr in self.yumbase.tsInfo:
+                    if txmbr.po not in deps_list:
+                        deps_list.append(txmbr.po)
+
 
         # make unique list
         deps_list = unique(deps_list)
@@ -890,8 +965,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # before we do an install we do ~installed + recursive true,
         # which we can emulate quicker by doing a transaction, but not
         # executing it
-        if filters == FILTER_NOT_INSTALLED and recursive:
-            self._get_depends_not_installed (fltlist, package_ids)
+        if filters == FILTER_NOT_INSTALLED:
+            self._get_depends_not_installed (fltlist, package_ids, recursive)
             return
 
         percentage = 0

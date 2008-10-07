@@ -164,6 +164,18 @@ class PackageKitBaseBackend:
         print >> sys.stdout, "files\t%s\t%s" % (package_id, file_list)
         sys.stdout.flush()
 
+    def category(self, parent_id, cat_id, name, summary, icon):
+        '''
+        Send 'category' signal
+        parent_id : A parent id, e.g. "admin" or "" if there is no parent
+        cat_id    : a unique category id, e.g. "admin;network"
+        name      : a verbose category name in current locale.
+        summery   : a summary of the category in current locale.
+        icon      : an icon name to represent the category
+        '''
+        print >> sys.stdout,"category\t%s\t%s\t%s\t%s\t%s" % (parent_id, cat_id, name, summary, icon)
+        sys.stdout.flush()
+
     def finished(self):
         '''
         Send 'finished' signal
@@ -430,6 +442,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
 
+    def get_categories(self):
+        '''
+        Implement the {backend}-get-categories functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
     def customTracebackHandler(self, tb):
         '''
         Custom Traceback Handler
@@ -575,6 +594,9 @@ class PackageKitBaseBackend:
             code = args[0]
             self.set_locale(code)
             self.finished()
+        elif cmd == 'get-categories':
+            self.get_categories()
+            self.finished()
         else:
             errmsg = "command '%s' is not known" % cmd
             self.error(ERROR_INTERNAL_ERROR, errmsg, exit=False)
@@ -584,8 +606,8 @@ class PackageKitBaseBackend:
         if len(args) > 0:
             self.dispatch_command(args[0], args[1:])
         while True:
-            line = raw_input('')
-            if line == 'exit':
+            line = sys.stdin.readline().strip('\n')
+            if not line or line == 'exit':
                 break
             args = line.split('\t')
             self.dispatch_command(args[0], args[1:])

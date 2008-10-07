@@ -1,0 +1,44 @@
+README:
+
+PackageKit installs missing GStreamer plugins as it requested: this is how
+the whole system is designed to work.
+
+Introduction:
+
+ 1. Package installs pk-gstreamer-install into /usr/libexec
+ 2. _If_ the distro wants PackageKit to handle the codec install, and
+    not an application like codeina then you need to symlink
+    pk-gstreamer-install to gst-install-plugins-helper
+ 4. Distribution patches /etc/PackageKit/Vendor.conf with URLs to wiki pages.
+ 3. Done. It's really that simple.
+
+Detecting the calling application:
+
+When an application calls the DBUS interface to install plugins or codecs
+then the XID and timestamp along with the codec string is passed on the
+interface.
+
+The caller (the exe from ConsoleKit) is then sent to SearchFile and the result
+used in the GUI. This ensures that all applications can use the interface,
+but they cannot pretend to be other applications by changing application
+window properties.
+
+This of course, causes a problem as all installs will be resolved to the
+PackageKit-gstreamer-plugin as this owns the /usr/libexec/pk-gstreamer-install
+file.
+
+This file, /usr/libexec/pk-gstreamer-install is treated specially (as it is
+compiled, and cannot be modified without root access). In this special case
+we use the XID of the calling window (provided by GStreamer) and lookup the
+program name and icon from the window properties.
+
+Notes:
+
+ * You will need to restart any applications using GStreamer before they will
+   request plugings using PackageKit.
+ * Although PackageKit 0.3.4 supports codec installing, 0.3.6 is the first
+   release that returns the correct return values to GStreamer.
+ * Totem versions less than 2.24.1 have a bug where it sends the wrong XID,
+   you need to upgrade for focus stealing prevention to work and for the title
+   and icon to be set correctly.
+

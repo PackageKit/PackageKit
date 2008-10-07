@@ -459,6 +459,15 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	g_free (filters_text);
 }
 
+/**
+ * pk_backend_get_categories:
+ */
+static void
+backend_get_categories (PkBackend *backend)
+{
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "get-categories", NULL);
+}
+
 PK_BACKEND_OPTIONS (
 	"YUM",					/* description */
 	"Tim Lauridsen <timlau@fedoraproject.org>, Richard Hughes <richard@hughsie.com>",	/* author */
@@ -469,6 +478,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_mime_types,			/* get_mime_types */
 	backend_cancel,				/* cancel */
 	backend_download_packages,		/* download_packages */
+	backend_get_categories,			/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	backend_get_distro_upgrades,		/* get_distro_upgrades */

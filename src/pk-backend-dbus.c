@@ -164,6 +164,17 @@ pk_backend_dbus_distro_upgrade_cb (DBusGProxy *proxy,
 }
 
 /**
+ * pk_backend_dbus_category_cb:
+ **/
+static void
+pk_backend_dbus_category_cb (DBusGProxy *proxy, const gchar *parent_id, const gchar *cat_id, const gchar *name,
+			     const gchar *summary, const gchar *icon, PkBackendDbus *backend_dbus)
+{
+	egg_debug ("got signal");
+	pk_backend_category (backend_dbus->priv->backend, parent_id, cat_id, name, summary, icon);
+}
+
+/**
  * pk_backend_dbus_files_cb:
  **/
 static void
@@ -358,6 +369,8 @@ pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
 					G_CALLBACK (pk_backend_dbus_repo_signature_required_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "EulaRequired",
 					G_CALLBACK (pk_backend_dbus_eula_required_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Category",
+					G_CALLBACK (pk_backend_dbus_category_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "DistroUpgrade",
 					G_CALLBACK (pk_backend_dbus_distro_upgrade_cb), backend_dbus);
 	return TRUE;
@@ -497,6 +510,9 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Files",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Category",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
@@ -538,6 +554,8 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				     G_CALLBACK (pk_backend_dbus_details_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Files",
 				     G_CALLBACK (pk_backend_dbus_files_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Category",
+				     G_CALLBACK (pk_backend_dbus_category_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
 				     G_CALLBACK (pk_backend_dbus_update_detail_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Finished",
@@ -758,6 +776,33 @@ pk_backend_dbus_update_system (PkBackendDbus *backend_dbus)
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "UpdateSystem", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		egg_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
+	}
+	if (ret)
+		pk_backend_dbus_time_check (backend_dbus);
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_get_categories:
+ **/
+gboolean
+pk_backend_dbus_get_categories (PkBackendDbus *backend_dbus)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
+	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetCategories", &error,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		egg_warning ("%s", error->message);
@@ -1538,6 +1583,10 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_INVALID);
+	/* Category */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Repo Signature Required */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
