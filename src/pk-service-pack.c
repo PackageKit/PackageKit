@@ -234,7 +234,8 @@ pk_service_pack_check_valid (PkServicePack *pack, GError **error)
 out:
 	g_rmdir (directory);
 	g_free (directory);
-	g_dir_close (dir);
+	if (dir != NULL)
+		g_dir_close (dir);
 	return ret;
 }
 
