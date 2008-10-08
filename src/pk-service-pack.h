@@ -52,7 +52,6 @@ PkServicePack	*pk_service_pack_new				(void);
 
 /* used by the server */
 gboolean	 pk_service_pack_check_valid			(PkServicePack	*pack,
-								 const gchar	*filename,
 								 GError		**error);
 
 /* used by clients */

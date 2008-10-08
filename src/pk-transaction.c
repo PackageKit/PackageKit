@@ -2378,7 +2378,8 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		/* valid */
 		if (g_str_has_suffix (full_paths[i], ".servicepack")) {
 			service_pack = pk_service_pack_new ();
-			ret = pk_service_pack_check_valid (service_pack, full_paths[i], &error_local);
+			pk_service_pack_set_filename (service_pack, full_paths[i]);
+			ret = pk_service_pack_check_valid (service_pack, &error_local);
 			g_object_unref (service_pack);
 			if (!ret) {
 				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", error_local->message);
