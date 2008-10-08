@@ -86,28 +86,12 @@ out:
  * pk_generate_pack_exclude_packages:
  **/
 gboolean
-pk_generate_pack_exclude_packages (PkPackageList *list, const gchar *package_list)
+pk_generate_pack_exclude_packages (PkPackageList *list, PkPackageList *list_packages)
 {
 	guint i;
 	guint length;
 	gboolean found;
-	PkPackageList *list_packages;
 	const PkPackageObj *obj;
-	gboolean ret;
-
-	list_packages = pk_package_list_new ();
-
-	/* check for NULL values */
-	if (package_list == NULL) {
-		egg_warning ("Cannot find the list of packages to be excluded");
-		ret = FALSE;
-		goto out;
-	}
-
-	/* load a list of packages already found on the users system */
-	ret = pk_package_list_add_file (list_packages, package_list);
-	if (!ret)
-		goto out;
 
 	/* do not just download everything, uselessly */
 	length = pk_package_list_get_size (list_packages);
@@ -118,10 +102,7 @@ pk_generate_pack_exclude_packages (PkPackageList *list, const gchar *package_lis
 		if (found)
 			egg_debug ("removed %s", obj->id->name);
 	}
-
-out:
-	g_object_unref (list_packages);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -357,7 +338,7 @@ out:
  * pk_generate_pack_main:
  **/
 gboolean
-pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const gchar *package_id, const gchar *package_list, GError **error)
+pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const gchar *package_id, PkPackageList *exclude_list, GError **error)
 {
 
 	gchar **package_ids;
@@ -406,11 +387,7 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	list = pk_client_get_package_list (client);
 
 	/* remove some deps */
-	ret = pk_generate_pack_exclude_packages (list, package_list);
-	if (!ret) {
-		egg_warning ("failed to exclude packages");
-		goto out;
-	}
+	pk_generate_pack_exclude_packages (list, exclude_list);
 
 	/* list deps */
 	length = pk_package_list_get_size (list);
@@ -519,35 +496,6 @@ pk_genpack_test (EggTest *test)
 		egg_test_failed (test, NULL);
 	g_strfreev (package_ids);
 	g_object_unref (client);
-
-	/************************************************************/
-	egg_test_title (test, "exclude NULL");
-	list = pk_package_list_new ();
-	ret = pk_generate_pack_exclude_packages (list, NULL);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "exclude /var/lib/PackageKit/package-list.txt");
-	list = pk_package_list_new ();
-	ret = pk_generate_pack_exclude_packages (list, "/var/lib/PackageKit/package-list.txt");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-	g_object_unref (list);
-
-	/************************************************************/
-	egg_test_title (test, "exclude false.txt");
-	list = pk_package_list_new ();
-	ret = pk_generate_pack_exclude_packages (list, "/media/USB/false.txt");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-	g_object_unref (list);
 
 	/************************************************************/
 	egg_test_title (test, "metadata NULL");
