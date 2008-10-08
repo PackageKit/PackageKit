@@ -32,7 +32,6 @@ static gulong _signal_timeout = 0;
 static gchar **_package_ids;
 static const gchar *_search;
 static guint _package_current = 0;
-static gboolean _has_service_pack = FALSE;
 static gboolean _repo_enabled_local = FALSE;
 static gboolean _repo_enabled_fedora = TRUE;
 static gboolean _repo_enabled_devel = TRUE;
@@ -765,10 +764,6 @@ static void
 backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	if (_has_service_pack) {
-		pk_backend_repo_detail (backend, "local",
-					"Local PackageKit volume", _repo_enabled_local);
-	}
 	pk_backend_repo_detail (backend, "fedora",
 				"Fedora - 9", _repo_enabled_fedora);
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
@@ -814,29 +809,6 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	egg_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_service_pack:
- */
-static void
-backend_service_pack (PkBackend *backend, const gchar *location, gboolean enabled)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_RUNNING);
-	egg_warning ("service pack %i on %s device", enabled, location);
-
-	/*
-	 * VERY IMPORTANT: THE REPO MUST BE DISABLED IF IT IS ADDED!
-	 * (else it's a security flaw, think of a user with a malicious USB key)
-	 */
-	if (enabled) {
-		_repo_enabled_local = FALSE;
-		/* we tell the daemon what the new repo is called */
-		pk_backend_repo_detail (backend, "local", NULL, FALSE);
-	}
-	_has_service_pack = enabled;
-
 	pk_backend_finished (backend);
 }
 
@@ -964,7 +936,6 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_service_pack,			/* service_pack */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_what_provides			/* what_provides */

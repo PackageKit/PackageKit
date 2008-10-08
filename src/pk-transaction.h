@@ -213,9 +213,6 @@ void		 pk_transaction_search_name		(PkTransaction	*transaction,
 gboolean	 pk_transaction_set_locale		(PkTransaction	*transaction,
 							 const gchar	*code,
 							 GError		**error);
-gboolean	 pk_transaction_service_pack		(PkTransaction	*transaction,
-							 const gchar	*location,
-							 gboolean	 enabled);
 void		 pk_transaction_update_packages		(PkTransaction	*transaction,
 							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);

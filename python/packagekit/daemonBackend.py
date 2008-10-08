@@ -661,23 +661,6 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def ServicePack (self, location, enabled):
-        '''
-        Implement the {backend}-service-pack functionality
-        '''
-        pklog.info("ServicePack(%s, %s)" % (location, enabled))
-        self.doServicePack(location, enabled)
-
-    def doServicePack(self, location, enabled):
-        '''
-        Should be replaced in the corresponding backend sub class
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,
-                       "This function is not implemented in this backend")
-        self.Finished(EXIT_FAILED)
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='as', out_signature='')
     def UpdatePackages(self, package_ids):
         '''

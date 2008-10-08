@@ -343,14 +343,6 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
 
-    def service_pack (self, location):
-        '''
-        Implement the {backend}-service-pack functionality
-        Update the computer from a service pack in location
-        Needed to be implemented in a sub class
-        '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
-
     def resolve(self, filters, name):
         '''
         Implement the {backend}-resolve functionality

@@ -269,7 +269,6 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	NULL,					/* service_pack */
 	backend_update_package,			/* update_package */
 	backend_update_system,			/* update_system */
 	NULL					/* what_provides */

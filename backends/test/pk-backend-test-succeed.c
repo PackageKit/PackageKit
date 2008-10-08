@@ -290,15 +290,6 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 }
 
 /**
- * backend_service_pack:
- */
-static void
-backend_service_pack (PkBackend *backend, const gchar *location, gboolean enabled)
-{
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_what_provides:
  */
 static void
@@ -349,7 +340,6 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_service_pack,			/* service_pack */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_what_provides			/* what_provides */

@@ -114,9 +114,6 @@ gboolean	 pk_backend_dbus_update_packages	(PkBackendDbus		*backend_dbus,
 gboolean	 pk_backend_dbus_install_files		(PkBackendDbus		*backend_dbus,
 							 gboolean		 trusted,
 							 gchar			**full_paths);
-gboolean	 pk_backend_dbus_service_pack		(PkBackendDbus		*backend_dbus,
-							 const gchar		*location,
-							 gboolean		 enabled);
 gboolean	 pk_backend_dbus_what_provides		(PkBackendDbus		*backend_dbus,
 							 PkBitfield	 filters,
 							 PkProvidesEnum		 provides,
