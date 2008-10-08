@@ -41,11 +41,6 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#ifdef HAVE_ARCHIVE_H
-#include <archive.h>
-#include <archive_entry.h>
-#endif /* HAVE_ARCHIVE_H */
-
 #include <pk-common.h>
 #include <pk-package-id.h>
 #include <pk-package-ids.h>
@@ -72,6 +67,7 @@
 #include "pk-notify.h"
 #include "pk-security.h"
 #include "pk-refresh.h"
+#include "pk-service-pack.h"
 
 static void     pk_transaction_class_init	(PkTransactionClass *klass);
 static void     pk_transaction_init		(PkTransaction      *transaction);
@@ -2335,185 +2331,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 }
 
 /**
- * pk_transaction_check_metadata_conf:
- **/
-static gboolean
-pk_transaction_check_metadata_conf (const gchar *full_path)
-{
-	GKeyFile *file;
-	gboolean ret;
-	GError *error = NULL;
-	gchar *distro_id = NULL;
-	gchar *distro_id_us = NULL;
-
-	/* load the file */
-	file = g_key_file_new ();
-	ret = g_key_file_load_from_file (file, full_path, G_KEY_FILE_NONE, &error);
-	if (!ret) {
-		egg_warning ("failed to load file: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* read the value */
-	distro_id = g_key_file_get_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", &error);
-	if (!ret) {
-		egg_warning ("failed to get value: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* get this system id */
-	distro_id_us = pk_get_distro_id ();
-
-	/* do we match? */
-	ret = egg_strequal (distro_id_us, distro_id);
-
-out:
-	g_key_file_free (file);
-	g_free (distro_id);
-	g_free (distro_id_us);
-	return ret;
-}
-
-/**
- * pk_transaction_archive_extract:
- * @directory: the directory to unpack into
- * @error: a valid %GError
- *
- * Decompress a tar file
- *
- * Return value: %TRUE if the file was decompressed
- **/
-#ifdef HAVE_ARCHIVE_H
-gboolean
-pk_transaction_archive_extract (const gchar *filename, const gchar *directory, GError **error)
-{
-	gboolean ret = FALSE;
-	struct archive *arch = NULL;
-	struct archive_entry *entry;
-	int r;
-	int retval;
-	gchar *retcwd;
-	gchar buf[PATH_MAX];
-
-	/* save the PWD as we chdir to extract */
-	retcwd = getcwd (buf, PATH_MAX);
-	if (retcwd == NULL) {
-		*error = g_error_new (1, 0, "failed to get cwd");
-		goto out;
-	}
-
-	/* we can only read tar achives */
-	arch = archive_read_new ();
-	archive_read_support_format_tar (arch);
-
-	/* open the tar file */
-	r = archive_read_open_file (arch, filename, 10240);
-	if (r) {
-		*error = g_error_new (1, 0, "cannot open: %s", archive_error_string (arch));
-		goto out;
-	}
-
-	/* switch to our destination directory */
-	retval = chdir (directory);
-	if (retval != 0) {
-		*error = g_error_new (1, 0, "failed chdir to %s", directory);
-		goto out;
-	}
-
-	/* decompress each file */
-	for (;;) {
-		r = archive_read_next_header (arch, &entry);
-		if (r == ARCHIVE_EOF)
-			break;
-		if (r != ARCHIVE_OK) {
-			*error = g_error_new (1, 0, "cannot read header: %s", archive_error_string (arch));
-			goto out;
-		}
-		r = archive_read_extract (arch, entry, 0);
-		if (r != ARCHIVE_OK) {
-			*error = g_error_new (1, 0, "cannot extract: %s", archive_error_string (arch));
-			goto out;
-		}
-	}
-
-	/* completed all okay */
-	ret = TRUE;
-out:
-	/* close the archive */
-	if (arch != NULL) {
-		archive_read_close (arch);
-		archive_read_finish (arch);
-	}
-
-	/* switch back to PWD */
-	retval = chdir (buf);
-	if (retval != 0)
-		egg_warning ("cannot chdir back!");
-
-	return ret;
-}
-#else /* HAVE_ARCHIVE_H */
-gboolean
-pk_transaction_archive_extract (const gchar *filename, const gchar *directory, GError **error)
-{
-	*error = g_error_new (1, 0, "Cannot check PackageKit as not built with libarchive support");
-	return FALSE;
-}
-#endif /* HAVE_ARCHIVE_H */
-
-/**
- * pk_transaction_check_pack_distro_id:
- **/
-static gboolean
-pk_transaction_check_pack_distro_id (const gchar *full_path, gchar **failure)
-{
-	gboolean ret = TRUE;
-	gchar *meta_src = NULL;
-	gchar *metafile = NULL;
-	GDir *dir = NULL;
-	const gchar *filename;
-	GError *error = NULL;
-
-	/* ITS4: ignore, the user has no control over the daemon envp  */
-	meta_src = g_build_filename (g_get_tmp_dir (), "meta", NULL);
-	ret = pk_transaction_archive_extract (full_path, meta_src, &error);
-	if (!ret) {
-		*failure = g_strdup_printf ("failed to check %s: %s", full_path, error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* get the files */
-	dir = g_dir_open (meta_src, 0, NULL);
-	if (dir == NULL) {
-		*failure = g_strdup_printf ("failed to get directory for %s", meta_src);
-		ret = FALSE;
-		goto out;
-	}
-
-	/* find the file, and check the metadata */
-	while ((filename = g_dir_read_name (dir))) {
-		metafile = g_build_filename (meta_src, filename, NULL);
-		if (egg_strequal (filename, "metadata.conf")) {
-			ret = pk_transaction_check_metadata_conf (metafile);
-			if (!ret) {
-				*failure = g_strdup_printf ("Service Pack %s not compatible with your distro", full_path);
-				ret = FALSE;
-				goto out;
-			}
-		}
-		g_free (metafile);
-	}
-out:
-	g_rmdir (meta_src);
-	g_free (meta_src);
-	g_dir_close (dir);
-	return ret;
-}
-
-/**
  * pk_transaction_install_files:
  **/
 void
@@ -2523,8 +2340,9 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	gchar *full_paths_temp;
 	gboolean ret;
 	GError *error;
+	GError *error_local = NULL;
+	PkServicePack *service_pack;
 	gchar *sender;
-	gchar *failure = NULL;
 	guint length;
 	guint i;
 
@@ -2547,6 +2365,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 
 	/* check all files exists and are valid */
 	length = g_strv_length (full_paths);
+
 	for (i=0; i<length; i++) {
 		/* exists */
 		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
@@ -2558,11 +2377,14 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		}
 		/* valid */
 		if (g_str_has_suffix (full_paths[i], ".servicepack")) {
-			ret = pk_transaction_check_pack_distro_id (full_paths[i], &failure);
+			service_pack = pk_service_pack_new ();
+			pk_service_pack_set_filename (service_pack, full_paths[i]);
+			ret = pk_service_pack_check_valid (service_pack, &error_local);
+			g_object_unref (service_pack);
 			if (!ret) {
-				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", failure);
+				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", error_local->message);
 				dbus_g_method_return_error (context, error);
-				g_free (failure);
+				g_error_free (error_local);
 				return;
 			}
 		}
