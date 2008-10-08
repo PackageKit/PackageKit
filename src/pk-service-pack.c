@@ -203,6 +203,7 @@ pk_service_pack_check_valid (PkServicePack *pack, GError **error)
 
 	/* ITS4: ignore, the user has no control over the daemon envp  */
 	directory = g_build_filename (g_get_tmp_dir (), "meta", NULL);
+	g_mkdir (directory, 0700);
 	ret = pk_service_pack_extract (pack->priv->filename, directory, &error_local);
 	if (!ret) {
 		*error = g_error_new (1, 0, "failed to check %s: %s", pack->priv->filename, error_local->message);
