@@ -69,8 +69,6 @@ pkgenpack_SOURCES =					\
 	egg-string.c					\
 	egg-string.h					\
 	pk-generate-pack-main.c				\
-	pk-generate-pack.c				\
-	pk-generate-pack.h				\
 	pk-service-pack.c				\
 	pk-service-pack.h				\
 	pk-tools-common.c				\

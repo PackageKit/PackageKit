@@ -37,7 +37,6 @@
 #include <pk-client.h>
 
 #include "pk-tools-common.h"
-#include "pk-generate-pack.h"
 #include "pk-service-pack.h"
 
 /**
@@ -292,14 +291,6 @@ main (int argc, char *argv[])
 		ret = pk_service_pack_create_for_updates (pack, &error);
 	else
 		ret = pk_service_pack_create_for_package_id (pack, package_id, &error);
-
-	/* old method */
-	ret = pk_service_pack_main (filename, tempdir, package_id, list, &error);
-	if (!ret) {
-		g_print ("%s: %s\n", _("Failed to create pack"), error->message);
-		g_error_free (error);
-		goto out;
-	}
 	g_print ("%s\n", _("Done!"));
 
 out:
