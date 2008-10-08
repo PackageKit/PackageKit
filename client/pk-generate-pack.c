@@ -49,93 +49,6 @@
 
 #include "pk-tools-common.h"
 
-
-/**
- * pk_generate_pack_package_resolve:
- **/
-gchar *
-pk_generate_pack_package_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
-{
-	gboolean ret;
-	gboolean valid;
-	guint i;
-	guint length;
-	const PkPackageObj *obj;
-	PkPackageList *list;
-	gchar **packages;
-
-	/* check for NULL values */
-	if (package == NULL) {
-		egg_warning ("Cannot resolve the package: invalid package");
-		return NULL;
-	}
-
-	/* have we passed a complete package_id? */
-	valid = pk_package_id_check (package);
-	if (valid)
-		return g_strdup (package);
-
-	ret = pk_client_reset (client, error);
-	if (ret == FALSE) {
-		egg_warning ("failed to reset client task");
-		return NULL;
-	}
-
-	/* we need to resolve it */
-	packages = pk_package_ids_from_id (package);
-	ret = pk_client_resolve (client, filter, packages, error);
-	g_strfreev (packages);
-	if (ret == FALSE) {
-		egg_warning ("Resolve failed");
-		return NULL;
-	}
-
-	/* get length of items found */
-	list = pk_client_get_package_list (client);
-	length = pk_package_list_get_size (list);
-	g_object_unref (list);
-
-	/* didn't resolve to anything, try to get a provide */
-	if (length == 0) {
-		ret = pk_client_reset (client, error);
-		if (ret == FALSE) {
-			egg_warning ("failed to reset client task");
-			return NULL;
-		}
-		ret = pk_client_what_provides (client, filter, PK_PROVIDES_ENUM_ANY, package, error);
-		if (ret == FALSE) {
-			egg_warning ("WhatProvides is not supported in this backend");
-			return NULL;
-		}
-	}
-
-	/* get length of items found again (we might have had success) */
-	list = pk_client_get_package_list (client);
-	length = pk_package_list_get_size (list);
-	if (length == 0) {
-		egg_warning (_("Could not find a package match"));
-		return NULL;
-	}
-
-	/* only found one, great! */
-	if (length == 1) {
-		obj = pk_package_list_get_obj (list, 0);
-		return pk_package_id_to_string (obj->id);
-	}
-	g_print ("%s\n", _("There are multiple package matches"));
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (list, i);
-		g_print ("%i. %s-%s.%s\n", i+1, obj->id->name, obj->id->version, obj->id->arch);
-	}
-
-	/* find out what package the user wants to use */
-	i = pk_console_get_number (_("Please enter the package number: "), length);
-	obj = pk_package_list_get_obj (list, i-1);
-	g_object_unref (list);
-
-	return pk_package_id_to_string (obj->id);
-}
-
 /**
  * pk_generate_pack_download_only:
  **/
@@ -587,28 +500,6 @@ pk_genpack_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "test perhaps resolve NULL");
-	retval = pk_client_reset (client, &error);
-	file = pk_generate_pack_package_resolve (client, PK_FILTER_ENUM_NONE, NULL, &error);
-	if (file == NULL)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed to resolve %s", error->message);
-		g_error_free (error);
-	}
-	g_free (file);
-
-	/************************************************************/
-	egg_test_title (test, "test perhaps resolve gitk");
-	retval = pk_client_reset(client, &error);
-	file = pk_generate_pack_package_resolve (client, PK_FILTER_ENUM_NONE, "gitk;1.5.5.1-1.fc9;i386;installed", &error);
-	if (file != NULL && egg_strequal (file, "gitk;1.5.5.1-1.fc9;i386;installed"))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "got: %s", file);
-	g_free (file);
 
 	/************************************************************/
 	egg_test_title (test, "download only NULL");
