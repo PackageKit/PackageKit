@@ -23,6 +23,8 @@
 #  include <config.h>
 #endif
 
+#include <fcntl.h>
+
 #ifdef HAVE_ARCHIVE_H
 #include <archive.h>
 #include <archive_entry.h>
@@ -35,6 +37,8 @@
 #include "egg-string.h"
 
 #include <pk-common.h>
+#include <pk-client.h>
+#include <pk-package-ids.h>
 
 #include "pk-service-pack.h"
 
@@ -45,6 +49,7 @@ struct PkServicePackPrivate
 	PkPackageList		*exclude_list;
 	gchar			*filename;
 	gchar			*directory;
+	PkClient		*client;
 };
 
 G_DEFINE_TYPE (PkServicePack, pk_service_pack, G_TYPE_OBJECT)
@@ -273,16 +278,385 @@ pk_service_pack_set_exclude_list (PkServicePack *pack, PkPackageList *list)
 }
 
 /**
+ * pk_service_pack_download_package_ids:
+ **/
+static gboolean
+pk_service_pack_download_package_ids (PkServicePack *pack, gchar **package_ids)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
+
+	egg_debug ("download+ %s", package_ids[0]);
+	ret = pk_client_reset (pack->priv->client, &error);
+	if (!ret) {
+		egg_warning ("failed to download: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	ret = pk_client_download_packages (pack->priv->client, package_ids, pack->priv->directory, &error);
+	if (!ret) {
+		egg_warning ("failed to download: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	return ret;
+}
+
+/**
+ * pk_service_pack_exclude_packages:
+ **/
+static gboolean
+pk_service_pack_exclude_packages (PkServicePack *pack, PkPackageList *list)
+{
+	guint i;
+	guint length;
+	gboolean found;
+	const PkPackageObj *obj;
+
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (pack->priv->exclude_list != NULL, FALSE);
+
+	/* do not just download everything, uselessly */
+	length = pk_package_list_get_size (pack->priv->exclude_list);
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (pack->priv->exclude_list, i);
+		/* will just ignore if the obj is not there */
+		found = pk_package_list_remove_obj (list, obj);
+		if (found)
+			egg_debug ("removed %s", obj->id->name);
+	}
+	return TRUE;
+}
+
+/**
+ * pk_service_pack_create_metadata_file:
+ **/
+static gboolean
+pk_service_pack_create_metadata_file (const gchar *filename)
+{
+	gboolean ret = FALSE;
+	gchar *distro_id = NULL;
+	gchar *iso_time = NULL;
+	GError *error = NULL;
+	GKeyFile *file = NULL;
+	gchar *data = NULL;
+
+	g_return_val_if_fail (filename != NULL, FALSE);
+
+	file = g_key_file_new ();
+
+	/* get needed data */
+	distro_id = pk_get_distro_id ();
+	if (distro_id == NULL)
+		goto out;
+	iso_time = pk_iso8601_present ();
+	if (iso_time == NULL)
+		goto out;
+
+	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", distro_id);
+	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "created", iso_time);
+
+	/* convert to text */
+	data = g_key_file_to_data (file, NULL, &error);
+	if (data == NULL) {
+		egg_warning ("failed to convert to text: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* save contents */
+	ret = g_file_set_contents (filename, data, -1, &error);
+	if (!ret) {
+		egg_warning ("failed to save file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+out:
+	g_key_file_free (file);
+	g_free (data);
+	g_free (distro_id);
+	g_free (iso_time);
+	return ret;
+}
+
+#ifdef HAVE_ARCHIVE_H
+/**
+ * pk_service_pack_archive_add_file:
+ **/
+static gboolean
+pk_service_pack_archive_add_file (struct archive *arch, const gchar *filename, GError **error)
+{
+	int retval;
+	int len;
+	int fd = -1;
+	int wrote;
+	gboolean ret = FALSE;
+	gchar *filename_basename = NULL;
+	struct archive_entry *entry = NULL;
+	struct stat st;
+	gchar buff[8192];
+
+	/* stat file */
+	retval = stat (filename, &st);
+	if (retval != 0) {
+		*error = g_error_new (1, 0, "file not found %s", filename);
+		goto out;
+	}
+	egg_debug ("stat(%s), size=%lu bytes\n", filename, st.st_size);
+
+	/* create new entry */
+	entry = archive_entry_new ();
+	archive_entry_copy_stat (entry, &st);
+	filename_basename = g_path_get_basename (filename);
+	archive_entry_set_pathname (entry, filename_basename);
+
+	/* ._BIG FAT BUG_. We should not have to do this, as it should be
+	 * set from archive_entry_copy_stat() */
+	archive_entry_set_size (entry, st.st_size);
+
+	/* write header */
+	retval = archive_write_header (arch, entry);
+	if (retval != ARCHIVE_OK) {
+		*error = g_error_new (1, 0, "failed to write header: %s\n", archive_error_string (arch));
+		goto out;
+	}
+
+	/* open file to copy */
+	fd = open (filename, O_RDONLY);
+	if (fd < 0) {
+		*error = g_error_new (1, 0, "failed to get fd for %s", filename);
+		goto out;
+	}
+
+	/* ITS4: ignore, buffer statically preallocated  */
+	len = read (fd, buff, sizeof (buff));
+	/* write data to archive -- how come no convenience function? */
+	while (len > 0) {
+		wrote = archive_write_data (arch, buff, len);
+		if (wrote != len)
+			egg_warning("wrote %i instead of %i\n", wrote, len);
+		/* ITS4: ignore, buffer statically preallocated  */
+		len = read (fd, buff, sizeof (buff));
+	}
+	ret = TRUE;
+out:
+	if (fd >= 0)
+		close (fd);
+	if (entry != NULL)
+		archive_entry_free (entry);
+	g_free (filename_basename);
+	return ret;
+}
+
+/**
+ * pk_service_pack_create_from_files:
+ **/
+static gboolean
+pk_service_pack_create_from_files (PkServicePack *pack, GPtrArray *file_array, GError **error)
+{
+	struct archive *arch = NULL;
+	gboolean ret = FALSE;
+	const gchar *src;
+	guint i;
+	gchar *filename;
+
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (file_array != NULL, FALSE);
+	g_return_val_if_fail (error != NULL, FALSE);
+
+	/* create a file with metadata in it */
+	filename = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
+	ret = pk_service_pack_create_metadata_file (filename);
+	if (!ret) {
+	        *error = g_error_new (1, 0, "failed to generate metadata file %s", filename);
+	        goto out;
+	}
+	g_ptr_array_add (file_array, g_strdup (filename));
+
+	/* we can only write tar achives */
+	arch = archive_write_new ();
+	archive_write_set_compression_none (arch);
+	archive_write_set_format_ustar (arch);
+	archive_write_open_filename (arch, pack->priv->filename);
+
+	/* for each filename */
+	for (i=0; i<file_array->len; i++) {
+		src = (const gchar *) g_ptr_array_index (file_array, i);
+		/* try to add to archive */
+		ret = pk_service_pack_archive_add_file (arch, src, error);
+		if (!ret)
+			goto out;
+	}
+
+	/* completed all okay */
+	ret = TRUE;
+out:
+	g_free (filename);
+	/* delete each filename */
+	for (i=0; i<file_array->len; i++) {
+		src = (const gchar *) g_ptr_array_index (file_array, i);
+		g_remove (src);
+	}
+
+	/* close the archive */
+	if (arch != NULL) {
+		archive_write_close (arch);
+		archive_write_finish (arch);
+	}
+	return ret;
+}
+#else
+/**
+ * pk_service_pack_create_from_files:
+ **/
+static gboolean
+pk_service_pack_create_from_files (PkServicePack *pack, GPtrArray *file_array, GError **error)
+{
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	*error = g_error_new (1, 0, "Cannot create pack as PackageKit as not built with libarchive support");
+	return FALSE;
+}
+#endif
+
+/**
+ * pk_service_pack_scan_files_in_directory:
+ **/
+static GPtrArray *
+pk_service_pack_scan_files_in_directory (PkServicePack *pack)
+{
+	gchar *src;
+	GPtrArray *file_array = NULL;
+	GDir *dir;
+	const gchar *filename;
+
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
+
+	/* try and open the directory */
+	dir = g_dir_open (pack->priv->directory, 0, NULL);
+	if (dir == NULL) {
+		egg_warning ("failed to get directory for %s", pack->priv->directory);
+		goto out;
+	}
+
+	/* add each file to an array */
+	file_array = g_ptr_array_new ();
+	while ((filename = g_dir_read_name (dir))) {
+		src = g_build_filename (pack->priv->directory, filename, NULL);
+		g_ptr_array_add (file_array, src);
+	}
+	g_dir_close (dir);
+out:
+	return file_array;
+}
+
+/**
  * pk_service_pack_create_for_package_id:
  **/
 gboolean
 pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package_id, GError **error)
 {
+	gchar **package_ids = NULL;
+	PkPackageList *list = NULL;
+	guint length;
+	guint i;
+	const PkPackageObj *obj;
+	GPtrArray *file_array = NULL;
+	GError *error_local = NULL;
+	gboolean ret = FALSE;
+	gchar *text;
+
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
-	return TRUE;
+
+	/* download this package */
+	package_ids = pk_package_ids_from_id (package_id);
+	ret = pk_service_pack_download_package_ids (pack, package_ids);
+	g_strfreev (package_ids);
+	if (!ret) {
+		*error = g_error_new (1, 0, "failed to download main package: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* get depends */
+	ret = pk_client_reset (pack->priv->client, &error_local);
+	if (!ret) {
+		*error = g_error_new (1, 0, "failed to reset: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	egg_debug ("Getting depends for %s", package_id);
+	ret = pk_client_get_depends (pack->priv->client, PK_FILTER_ENUM_NONE, package_ids, TRUE, &error_local);
+	if (!ret) {
+		*error = g_error_new (1, 0, "failed to get depends: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* get the deps */
+	list = pk_client_get_package_list (pack->priv->client);
+
+	/* remove some deps */
+	pk_service_pack_exclude_packages (pack, list);
+
+	/* list deps */
+	length = pk_package_list_get_size (list);
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (list, i);
+		text = pk_package_obj_to_string (obj);
+		g_print ("downloading %s\n", text);
+		g_free (text);
+	}
+
+	/* confirm we want the deps */
+	if (length != 0) {
+		/* download additional package_ids */
+		package_ids = pk_package_list_to_strv (list);
+		ret = pk_service_pack_download_package_ids (pack, package_ids);
+		g_strfreev (package_ids);
+
+		/* failed to get deps */
+		if (!ret) {
+			*error = g_error_new (1, 0, "xxxxxxxxxxxxxxxxxx: %s", error_local->message);
+			egg_warning ("failed to download deps of package: %s", package_id);
+			goto out;
+		}
+	}
+
+
+	/* find packages that were downloaded */
+	file_array = pk_service_pack_scan_files_in_directory (pack);
+	if (file_array == NULL) {
+		*error = g_error_new (1, 0, "failed to scan directory: %s", pack->priv->directory);
+		goto out;
+	}
+
+	/* generate pack file */
+	ret = pk_service_pack_create_from_files (pack, file_array, &error_local);
+	if (!ret) {
+		*error = g_error_new (1, 0, "failed to create archive: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+out:
+	if (list != NULL)
+		g_object_unref (list);
+	if (file_array != NULL) {
+		g_ptr_array_foreach (file_array, (GFunc) g_free, NULL);
+		g_ptr_array_free (file_array, TRUE);
+	}
+	return ret;
 }
 
 /**
@@ -294,6 +668,7 @@ pk_service_pack_create_for_updates (PkServicePack *pack, GError **error)
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
+	*error = g_error_new (1, 0, "not yet supported");
 	return TRUE;
 }
 
@@ -311,6 +686,7 @@ pk_service_pack_finalize (GObject *object)
 
 	if (pack->priv->exclude_list != NULL)
 		g_object_unref (pack->priv->exclude_list);
+	g_object_unref (pack->priv->client);
 	g_free (pack->priv->directory);
 	g_free (pack->priv->filename);
 
@@ -338,6 +714,9 @@ pk_service_pack_init (PkServicePack *pack)
 	pack->priv->exclude_list = NULL;
 	pack->priv->filename = NULL;
 	pack->priv->directory = NULL;
+	pack->priv->client = pk_client_new ();
+	pk_client_set_use_buffer (pack->priv->client, TRUE, NULL);
+	pk_client_set_synchronous (pack->priv->client, TRUE, NULL);
 }
 
 /**
