@@ -31,45 +31,75 @@
 #include <glib/gstdio.h>
 #include <dbus/dbus-glib.h>
 
-#include <egg-debug.h>
+#include "egg-debug.h"
+
 #include <pk-client.h>
 #include <pk-control.h>
-
+#include <pk-common.h>
 
 #include "pk-tools-common.h"
 #include "pk-generate-pack.h"
+
+/**
+ * pk_generate_pack_get_filename:
+ **/
+static gchar *
+pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
+{
+	gchar *filename = NULL;
+	gchar *distro_id;
+	gchar *iso_time = NULL;
+
+	distro_id = pk_get_distro_id ();
+	if (name != NULL) {
+		filename = g_strdup_printf ("%s/%s-%s.servicepack", directory, name, distro_id);
+	} else {
+		iso_time = pk_iso8601_present ();
+		filename = g_strdup_printf ("%s/updates-%s-%s.servicepack", directory, iso_time, distro_id);
+	}
+	g_free (distro_id);
+	g_free (iso_time);
+	return filename;
+}
 
 int
 main (int argc, char *argv[])
 {
 	GError *error = NULL;
-	gboolean verbose = FALSE;
-	gchar *with_package_list = NULL;
 	GOptionContext *context;
 	gchar *options_help;
 	gboolean ret;
 	guint retval;
-	const gchar *package = NULL;
-	gchar *pack_filename = NULL;
-	gchar *packname = NULL;
+	gchar *filename = NULL;
 	PkControl *control = NULL;
 	PkBitfield roles;
-	const gchar *package_list = NULL;
 	gchar *tempdir = NULL;
 	gboolean exists;
 	gboolean overwrite;
 
+	gboolean verbose = FALSE;
+	gchar *directory = NULL;
+	gchar *package_list = NULL;
+	gchar *package = NULL;
+	gboolean updates = FALSE;
+
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 			_("Show extra debugging information"), NULL },
-		{ "with-package-list", '\0', 0, G_OPTION_ARG_STRING, &with_package_list,
+		{ "with-package-list", 'l', 0, G_OPTION_ARG_STRING, &package_list,
 			_("Set the path of the file with the list of packages/dependencies to be excluded"), NULL},
+		{ "output", 'o', 0, G_OPTION_ARG_STRING, &directory,
+			_("The directory to put the pack file, or the current directory if ommitted"), NULL},
+		{ "package", 'i', 0, G_OPTION_ARG_STRING, &package,
+			_("The package to be put into the ServicePack"), NULL},
+		{ "updates", 'u', 0, G_OPTION_ARG_NONE, &updates,
+			_("Put all updates available in the ServicePack"), NULL},
 		{ NULL}
 	};
 
-	if (! g_thread_supported ()) {
+	if (! g_thread_supported ())
 		g_thread_init (NULL);
-	}
+
 	dbus_g_thread_init ();
 	g_type_init ();
 
@@ -81,16 +111,27 @@ main (int argc, char *argv[])
 	g_option_context_free (context);
 	egg_debug_init (verbose);
 
-	if (with_package_list != NULL) {
-		package_list = with_package_list;
-	} else {
-		package_list = "/var/lib/PackageKit/package-list.txt";
-	}
-
-	if (argc < 2) {
+	/* neither options selected */
+	if (package == NULL && !updates) {
+		g_print ("%s\n", _("Neither option selected"));
 		g_print ("%s", options_help);
 		return 1;
 	}
+
+	/* both options selected */
+	if (package != NULL && updates) {
+		g_print ("%s\n", _("Both optiosn selected"));
+		g_print ("%s", options_help);
+		return 1;
+	}
+
+	/* fall back to the system copy */
+	if (package_list == NULL)
+		package_list = g_strdup ("/var/lib/PackageKit/package-list.txt");
+
+	/* fall back to CWD */
+	if (directory == NULL)
+		directory = g_get_current_dir ();
 
 	/* are we dumb and can't check for depends? */
 	control = pk_control_new ();
@@ -100,29 +141,14 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
-	/* get the arguments */
-	pack_filename = argv[1];
-	if (argc > 2) {
-		package = argv[2];
-	}
-
-	/* have we specified the right things */
-	if (pack_filename == NULL || package == NULL) {
-		g_print (_("You need to specify the pack name and packages to be packed\n"));
-		goto out;
-	}
-
-	/* check the suffix */
-	if (!g_str_has_suffix (pack_filename,".servicepack")) {
-		g_print(_("Invalid name for the service pack, Specify a name with .servicepack extension\n"));
-		goto out;
-	}
+	/* get fn */
+	filename = pk_generate_pack_get_filename (package, directory);
 
 	/* download packages to a temporary directory */
 	tempdir = g_build_filename (g_get_tmp_dir (), "pack", NULL);
 
 	/* check if file exists before we overwrite it */
-	exists = g_file_test (pack_filename, G_FILE_TEST_EXISTS);
+	exists = g_file_test (filename, G_FILE_TEST_EXISTS);
 
 	/*ask user input*/
 	if (exists) {
@@ -143,20 +169,29 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+	/* not yet */
+	if (updates) {
+		g_print ("Not working yet...\n");
+		return 1;
+	}
+
 	/* generate the pack */
-	ret = pk_generate_pack_main (pack_filename, tempdir, package, package_list, &error);
+	g_print (_("Creating service pack: %s\n"), filename);
+	ret = pk_generate_pack_main (filename, tempdir, package, package_list, &error);
 	if (!ret) {
 		g_print ("%s: %s\n", _("Failed to create pack"), error->message);
 		g_error_free (error);
 		goto out;
 	}
+	g_print ("%s\n", _("Done!"));
 
 out:
 	/* get rid of temp directory */
 	g_rmdir (tempdir);
 	g_free (tempdir);
-	g_free (packname);
-	g_free (with_package_list);
+	g_free (filename);
+	g_free (directory);
+	g_free (package_list);
 	g_free (options_help);
 	g_object_unref (control);
 	return 0;
