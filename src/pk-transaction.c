@@ -644,8 +644,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	}
 
 	/* the repo list will have changed */
-	if (transaction->priv->role == PK_ROLE_ENUM_SERVICE_PACK ||
-	    transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
+	if (transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
 		pk_notify_repo_list_changed (transaction->priv->notify);
 	}
@@ -1064,8 +1063,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 		desc->install_files (priv->backend, priv->cached_trusted, priv->cached_full_paths);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE)
 		desc->install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
-	else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK)
-		desc->service_pack (priv->backend, priv->cached_full_path, priv->cached_enabled);
 	else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE)
 		desc->refresh_cache (priv->backend,  priv->cached_force);
 	else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES)
@@ -3274,27 +3271,6 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	/* not set inside the test suite */
 	if (context != NULL)
 		dbus_g_method_return (context);
-}
-
-/**
- * pk_transaction_service_pack:
- */
-gboolean
-pk_transaction_service_pack (PkTransaction *transaction, const gchar *location, gboolean enabled)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	/* not implemented yet */
-	if (transaction->priv->backend->desc->service_pack == NULL) {
-		egg_debug ("Not implemented yet: ServicePack");
-		return FALSE;
-	}
-	/* save so we can run later */
-	transaction->priv->cached_enabled = enabled;
-	transaction->priv->cached_full_path = g_strdup (location);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SERVICE_PACK);
-	return TRUE;
 }
 
 /**
