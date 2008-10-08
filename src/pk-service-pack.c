@@ -55,6 +55,44 @@ struct PkServicePackPrivate
 
 G_DEFINE_TYPE (PkServicePack, pk_service_pack, G_TYPE_OBJECT)
 
+/**
+ * pk_service_pack_error_quark:
+ *
+ * Return value: Our personal error quark.
+ **/
+GQuark
+pk_service_pack_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("pk_service_pack_error");
+	return quark;
+}
+
+/**
+ * pk_service_pack_error_get_type:
+ **/
+#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
+GType
+pk_service_pack_error_get_type (void)
+{
+	static GType etype = 0;
+
+	if (etype == 0) {
+		static const GEnumValue values[] =
+		{
+			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_FAILED_SETUP, "FailedSetup"),
+			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_FAILED_DOWNLOAD, "FailedDownload"),
+			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION, "FailedExtraction"),
+			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_FAILED_CREATE, "FailedCreate"),
+			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_NOTHING_TO_DO, "NothingToDo"),
+			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_NOT_COMPATIBLE, "NotCompatible"),
+			{ 0, NULL, NULL }
+		};
+		etype = g_enum_register_static ("PkServicePackError", values);
+	}
+	return etype;
+}
 
 /**
  * pk_service_pack_check_metadata_file:
@@ -122,7 +160,8 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 	/* save the PWD as we chdir to extract */
 	retcwd = getcwd (buf, PATH_MAX);
 	if (retcwd == NULL) {
-		*error = g_error_new (1, 0, "failed to get cwd");
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+				      "failed to get cwd");
 		goto out;
 	}
 
@@ -133,14 +172,16 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 	/* open the tar file */
 	r = archive_read_open_file (arch, filename, 10240);
 	if (r) {
-		*error = g_error_new (1, 0, "cannot open: %s", archive_error_string (arch));
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
+				      "cannot open: %s", archive_error_string (arch));
 		goto out;
 	}
 
 	/* switch to our destination directory */
 	retval = chdir (directory);
 	if (retval != 0) {
-		*error = g_error_new (1, 0, "failed chdir to %s", directory);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+				      "failed chdir to %s", directory);
 		goto out;
 	}
 
@@ -150,12 +191,14 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 		if (r == ARCHIVE_EOF)
 			break;
 		if (r != ARCHIVE_OK) {
-			*error = g_error_new (1, 0, "cannot read header: %s", archive_error_string (arch));
+			*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
+					      "cannot read header: %s", archive_error_string (arch));
 			goto out;
 		}
 		r = archive_read_extract (arch, entry, 0);
 		if (r != ARCHIVE_OK) {
-			*error = g_error_new (1, 0, "cannot extract: %s", archive_error_string (arch));
+			*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
+					      "cannot extract: %s", archive_error_string (arch));
 			goto out;
 		}
 	}
@@ -180,7 +223,8 @@ out:
 gboolean
 pk_service_pack_extract (const gchar *filename, const gchar *directory, GError **error)
 {
-	*error = g_error_new (1, 0, "Cannot check PackageKit as not built with libarchive support");
+	*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
+			      "Cannot check PackageKit as not built with libarchive support");
 	return FALSE;
 }
 #endif /* HAVE_ARCHIVE_H */
@@ -206,7 +250,8 @@ pk_service_pack_check_valid (PkServicePack *pack, GError **error)
 	g_mkdir (directory, 0700);
 	ret = pk_service_pack_extract (pack->priv->filename, directory, &error_local);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to check %s: %s", pack->priv->filename, error_local->message);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, error_local->code,
+				      "failed to check %s: %s", pack->priv->filename, error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -214,7 +259,8 @@ pk_service_pack_check_valid (PkServicePack *pack, GError **error)
 	/* get the files */
 	dir = g_dir_open (directory, 0, NULL);
 	if (dir == NULL) {
-		*error = g_error_new (1, 0, "failed to get directory for %s", directory);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+				      "failed to get directory for %s", directory);
 		ret = FALSE;
 		goto out;
 	}
@@ -225,7 +271,8 @@ pk_service_pack_check_valid (PkServicePack *pack, GError **error)
 		if (egg_strequal (filename_entry, "metadata.conf")) {
 			ret = pk_service_pack_check_metadata_file (metafile);
 			if (!ret) {
-				*error = g_error_new (1, 0, "Service Pack %s not compatible with your distro", pack->priv->filename);
+				*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_NOT_COMPATIBLE,
+						      "Service Pack %s not compatible with your distro", pack->priv->filename);
 				ret = FALSE;
 				goto out;
 			}
@@ -408,7 +455,8 @@ pk_service_pack_archive_add_file (struct archive *arch, const gchar *filename, G
 	/* stat file */
 	retval = stat (filename, &st);
 	if (retval != 0) {
-		*error = g_error_new (1, 0, "file not found %s", filename);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+				      "file not found %s", filename);
 		goto out;
 	}
 	egg_debug ("stat(%s), size=%lu bytes\n", filename, st.st_size);
@@ -426,14 +474,16 @@ pk_service_pack_archive_add_file (struct archive *arch, const gchar *filename, G
 	/* write header */
 	retval = archive_write_header (arch, entry);
 	if (retval != ARCHIVE_OK) {
-		*error = g_error_new (1, 0, "failed to write header: %s\n", archive_error_string (arch));
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+				      "failed to write header: %s\n", archive_error_string (arch));
 		goto out;
 	}
 
 	/* open file to copy */
 	fd = open (filename, O_RDONLY);
 	if (fd < 0) {
-		*error = g_error_new (1, 0, "failed to get fd for %s", filename);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+				      "failed to get fd for %s", filename);
 		goto out;
 	}
 
@@ -477,7 +527,8 @@ pk_service_pack_create_from_files (PkServicePack *pack, GPtrArray *file_array, G
 	filename = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
 	ret = pk_service_pack_create_metadata_file (filename);
 	if (!ret) {
-	        *error = g_error_new (1, 0, "failed to generate metadata file %s", filename);
+	        *error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+				      "failed to generate metadata file %s", filename);
 	        goto out;
 	}
 	g_ptr_array_add (file_array, g_strdup (filename));
@@ -522,7 +573,8 @@ static gboolean
 pk_service_pack_create_from_files (PkServicePack *pack, GPtrArray *file_array, GError **error)
 {
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
-	*error = g_error_new (1, 0, "Cannot create pack as PackageKit as not built with libarchive support");
+	*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+			      "Cannot create pack as PackageKit as not built with libarchive support");
 	return FALSE;
 }
 #endif
@@ -600,7 +652,8 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 	/* download this package */
 	ret = pk_service_pack_download_package_ids (pack, package_ids);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to download main package: %s", error_local->message);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, error_local->code,
+				      "failed to download main package: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -608,7 +661,8 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 	/* get depends */
 	ret = pk_client_reset (pack->priv->client, &error_local);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to reset: %s", error_local->message);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+				      "failed to reset: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -616,7 +670,8 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 	egg_debug ("Getting depends for %s", package_ids[0]);
 	ret = pk_client_get_depends (pack->priv->client, PK_FILTER_ENUM_NONE, package_ids, TRUE, &error_local);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to get depends: %s", error_local->message);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+				      "failed to get depends: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -645,7 +700,8 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 
 		/* failed to get deps */
 		if (!ret) {
-			*error = g_error_new (1, 0, "failed to download deps of package: %s", package_ids[0]);
+			*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_DOWNLOAD,
+					      "failed to download deps of package: %s", package_ids[0]);
 			goto out;
 		}
 	}
@@ -653,14 +709,16 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 	/* find packages that were downloaded */
 	file_array = pk_service_pack_scan_files_in_directory (pack);
 	if (file_array == NULL) {
-		*error = g_error_new (1, 0, "failed to scan directory: %s", pack->priv->directory);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+				      "failed to scan directory: %s", pack->priv->directory);
 		goto out;
 	}
 
 	/* generate pack file */
 	ret = pk_service_pack_create_from_files (pack, file_array, &error_local);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to create archive: %s", error_local->message);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, error_local->code,
+				      "failed to create archive: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -705,6 +763,7 @@ pk_service_pack_create_for_updates (PkServicePack *pack, GError **error)
 	GError *error_local = NULL;
 	gboolean ret = FALSE;
 	PkPackageList *list;
+	guint len;
 
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
@@ -716,7 +775,8 @@ pk_service_pack_create_for_updates (PkServicePack *pack, GError **error)
 	/* get updates */
 	ret = pk_client_reset (pack->priv->client, &error_local);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to reset: %s", error_local->message);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+				      "failed to reset: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -724,13 +784,24 @@ pk_service_pack_create_for_updates (PkServicePack *pack, GError **error)
 	egg_debug ("Getting updates");
 	ret = pk_client_get_updates (pack->priv->client, PK_FILTER_ENUM_NONE, &error_local);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to get updates: %s", error_local->message);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+				      "failed to get updates: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
 
 	/* get the updates, and download them with deps */
 	list = pk_client_get_package_list (pack->priv->client);
+	len = pk_package_list_get_size (list);
+
+	/* no updates */
+	if (len == 0) {
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_NOTHING_TO_DO,
+				      "there are no updates to download");
+		ret = FALSE;
+		goto out;
+	}
+
 	package_ids = pk_package_list_to_strv (list);
 	g_object_unref (list);
 	ret = pk_service_pack_create_for_package_ids (pack, package_ids, error);
