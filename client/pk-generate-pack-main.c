@@ -36,9 +36,11 @@
 #include <pk-client.h>
 #include <pk-control.h>
 #include <pk-common.h>
+#include <pk-package-list.h>
 
 #include "pk-tools-common.h"
 #include "pk-generate-pack.h"
+#include "pk-service-pack.h"
 
 /**
  * pk_generate_pack_get_filename:
@@ -76,6 +78,8 @@ main (int argc, char *argv[])
 	gchar *tempdir = NULL;
 	gboolean exists;
 	gboolean overwrite;
+	PkServicePack *pack = NULL;
+	PkPackageList *list = NULL;
 
 	gboolean verbose = FALSE;
 	gchar *directory = NULL;
@@ -175,6 +179,20 @@ main (int argc, char *argv[])
 		return 1;
 	}
 
+	/* get the exclude list */
+	list = pk_package_list_new ();
+	ret = pk_package_list_add_file (list, package_list);
+	if (!ret) {
+		g_print ("%s: %s\n", _("Failed to open package list"), package_list);
+		goto out;
+	}
+
+	/* create pack and set initial values */
+	pack = pk_service_pack_new ();
+	pk_service_pack_set_filename (pack, filename);
+	pk_service_pack_set_temp_directory (pack, tempdir);
+	pk_service_pack_set_exclude_list (pack, list);
+
 	/* generate the pack */
 	g_print (_("Creating service pack: %s\n"), filename);
 	ret = pk_generate_pack_main (filename, tempdir, package, package_list, &error);
@@ -188,6 +206,11 @@ main (int argc, char *argv[])
 out:
 	/* get rid of temp directory */
 	g_rmdir (tempdir);
+
+	if (pack != NULL)
+		g_object_unref (pack);
+	if (list != NULL)
+		g_object_unref (list);
 	g_free (tempdir);
 	g_free (filename);
 	g_free (directory);
