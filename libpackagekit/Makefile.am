@@ -46,8 +46,6 @@ libpackagekit_la_SOURCES =					\
 	egg-debug.h						\
 	egg-string.c						\
 	egg-string.h						\
-	egg-dbus-monitor.c					\
-	egg-dbus-monitor.h					\
 	egg-obj-list.c						\
 	egg-obj-list.h						\
 	pk-marshal.c						\

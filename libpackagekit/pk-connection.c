@@ -41,7 +41,9 @@
 #endif /* HAVE_UNISTD_H */
 
 #include <glib/gi18n.h>
-#include <egg-dbus-monitor.h>
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
+#include <dbus/dbus.h>
 
 #include "egg-debug.h"
 #include "pk-common.h"
@@ -56,7 +58,8 @@
  **/
 struct _PkConnectionPrivate
 {
-	EggDbusMonitor			*monitor;
+	DBusGProxy		*proxy;
+	DBusGConnection		*connection;
 };
 
 enum {
@@ -78,7 +81,58 @@ G_DEFINE_TYPE (PkConnection, pk_connection, G_TYPE_OBJECT)
 gboolean
 pk_connection_valid (PkConnection *connection)
 {
-	return egg_dbus_monitor_is_connected (connection->priv->monitor);
+	DBusError error;
+	DBusConnection *conn;
+	gboolean ret;
+	g_return_val_if_fail (PK_IS_CONNECTION (connection), FALSE);
+
+	/* get raw connection */
+	conn = dbus_g_connection_get_connection (connection->priv->connection);
+	dbus_error_init (&error);
+	ret = dbus_bus_name_has_owner (conn, PK_DBUS_SERVICE, &error);
+	if (dbus_error_is_set (&error)) {
+		egg_debug ("error: %s", error.message);
+		dbus_error_free (&error);
+	}
+
+	return ret;
+}
+
+/**
+ * egg_dbus_connection_name_owner_changed_cb:
+ **/
+static void
+egg_dbus_connection_name_owner_changed_cb (DBusGProxy *proxy, const gchar *name,
+				       const gchar *prev, const gchar *new,
+				       PkConnection *connection)
+{
+	guint new_len;
+	guint prev_len;
+
+	g_return_if_fail (PK_IS_CONNECTION (connection));
+	if (connection->priv->proxy == NULL)
+		return;
+
+	/* not us */
+	if (strcmp (name, PK_DBUS_SERVICE) != 0)
+		return;
+
+	/* ITS4: ignore, not used for allocation */
+	new_len = strlen (new);
+	/* ITS4: ignore, not used for allocation */
+	prev_len = strlen (prev);
+
+	/* something --> nothing */
+	if (prev_len != 0 && new_len == 0) {
+		g_signal_emit (connection , signals [CONNECTION_CHANGED], 0, FALSE);
+		return;
+	}
+
+	/* nothing --> something */
+	if (prev_len == 0 && new_len != 0) {
+		g_signal_emit (connection , signals [CONNECTION_CHANGED], 0, TRUE);
+		return;
+	}
 }
 
 /**
@@ -93,7 +147,7 @@ pk_connection_finalize (GObject *object)
 	connection = PK_CONNECTION (object);
 	g_return_if_fail (connection->priv != NULL);
 
-	g_object_unref (connection->priv->monitor);
+	g_object_unref (connection->priv->proxy);
 
 	G_OBJECT_CLASS (pk_connection_parent_class)->finalize (object);
 }
@@ -121,28 +175,34 @@ pk_connection_class_init (PkConnectionClass *klass)
 }
 
 /**
- * pk_connection_connection_changed_cb:
- **/
-static void
-pk_connection_connection_changed_cb (EggDbusMonitor *egg_dbus_monitor, gboolean connected, PkConnection *connection)
-{
-	egg_debug ("emit connection-changed: %i", connected);
-	g_signal_emit (connection , signals [CONNECTION_CHANGED], 0, connected);
-}
-
-/**
  * pk_connection_init:
  **/
 static void
 pk_connection_init (PkConnection *connection)
 {
+	GError *error = NULL;
 	connection->priv = PK_CONNECTION_GET_PRIVATE (connection);
-	connection->priv->monitor = egg_dbus_monitor_new ();
-	g_signal_connect (connection->priv->monitor, "connection-changed",
-			  G_CALLBACK (pk_connection_connection_changed_cb), connection);
 
-	/* hardcode to PackageKit */
-	egg_dbus_monitor_assign (connection->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, PK_DBUS_SERVICE);
+	/* connect to correct bus */
+	connection->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
+	if (error != NULL) {
+		egg_warning ("Cannot connect to bus: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+	connection->priv->proxy = dbus_g_proxy_new_for_name_owner (connection->priv->connection,
+								   DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+								   DBUS_INTERFACE_DBUS, &error);
+	if (error != NULL) {
+		egg_warning ("Cannot connect to proxy: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+	dbus_g_proxy_add_signal (connection->priv->proxy, "NameOwnerChanged",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (connection->priv->proxy, "NameOwnerChanged",
+				     G_CALLBACK (egg_dbus_connection_name_owner_changed_cb),
+				     connection, NULL);
 }
 
 /**
