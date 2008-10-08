@@ -52,7 +52,7 @@
 /**
  * pk_generate_pack_download_only:
  **/
-gboolean
+static gboolean
 pk_generate_pack_download_only (PkClient *client, gchar **package_ids, const gchar *directory)
 {
 	gboolean ret;
@@ -85,7 +85,7 @@ out:
 /**
  * pk_generate_pack_exclude_packages:
  **/
-gboolean
+static gboolean
 pk_generate_pack_exclude_packages (PkPackageList *list, PkPackageList *list_packages)
 {
 	guint i;
@@ -108,7 +108,7 @@ pk_generate_pack_exclude_packages (PkPackageList *list, PkPackageList *list_pack
 /**
  * pk_generate_pack_set_metadata:
  **/
-gboolean
+static gboolean
 pk_generate_pack_set_metadata (const gchar *full_path)
 {
 	gboolean ret = FALSE;
@@ -233,7 +233,7 @@ out:
 /**
  * pk_generate_pack_create:
  **/
-gboolean
+static gboolean
 pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError **error)
 {
 	struct archive *arch = NULL;
@@ -291,7 +291,7 @@ out:
 /**
  * pk_generate_pack_create:
  **/
-gboolean
+static gboolean
 pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError **error)
 {
 	*error = g_error_new (1, 0, "Cannot create pack as PackageKit as not built with libtar support");
@@ -302,7 +302,7 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 /**
  * pk_generate_pack_scan_dir:
  **/
-GPtrArray *
+static GPtrArray *
 pk_generate_pack_scan_dir (const gchar *directory)
 {
 	gchar *src;
