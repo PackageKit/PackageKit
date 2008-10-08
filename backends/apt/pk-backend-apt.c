@@ -116,13 +116,6 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	// check network state
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend);
-		return;
-	}
-
 	pk_backend_dbus_refresh_cache(dbus, force);
 }
 

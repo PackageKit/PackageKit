@@ -129,7 +129,7 @@ class PackageKitClient:
         'license', 'group', 'description', 'upstream_url', 'size'.keys
         '''
         result = []
-        details_cb = lambda  parent_id, cat_id, name, summary, icon: result.append(
+        category_cb = lambda  parent_id, cat_id, name, summary, icon: result.append(
             PackageKitCategory( parent_id, cat_id, name, summary, icon))
 
         self._wrapCall(pk_xn, method, {'Category' : category_cb})

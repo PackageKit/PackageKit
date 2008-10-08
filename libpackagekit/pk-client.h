@@ -143,12 +143,17 @@ struct _PkClientClass
 	void		(* finished)			(PkClient	*client,
 							 PkExitEnum	 exit,
 							 guint		 runtime);
+	void		(* category)			(PkClient	*client,
+							 const gchar	*parent_id,
+							 const gchar	*cat_id,
+							 const gchar	*name,
+							 const gchar	*summary,
+							 const gchar	*icon);
 	/* Padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
 	void (*_pk_reserved3) (void);
 	void (*_pk_reserved4) (void);
-	void (*_pk_reserved5) (void);
 };
 
 GQuark		 pk_client_error_quark			(void);
@@ -264,6 +269,9 @@ gboolean	 pk_client_get_files			(PkClient	*client,
 							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_client_get_categories		(PkClient	*client,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_remove_packages		(PkClient	*client,
 							 gchar		**package_ids,
 							 gboolean	 allow_deps,
@@ -338,6 +346,7 @@ gboolean	 pk_client_repo_set_data		(PkClient	*client,
 /* cached stuff */
 PkPackageList	*pk_client_get_package_list		(PkClient	*client);
 PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
+const GPtrArray	*pk_client_get_cached_objects		(PkClient	*client);
 
 /* not job specific */
 gboolean	 pk_client_reset			(PkClient	*client,

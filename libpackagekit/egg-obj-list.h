@@ -82,6 +82,8 @@ void		 egg_obj_list_add		(EggObjList		*list,
 						 gconstpointer		 data);
 void		 egg_obj_list_add_list		(EggObjList		*list,
 						 const EggObjList	*data);
+void		 egg_obj_list_add_array		(EggObjList		*list,
+						 const GPtrArray	*data);
 void		 egg_obj_list_remove_list	(EggObjList		*list,
 						 const EggObjList	*data);
 void		 egg_obj_list_remove_duplicate	(EggObjList		*list);
@@ -91,6 +93,7 @@ gboolean	 egg_obj_list_remove_index	(EggObjList		*list,
 						 guint			 index);
 gconstpointer	 egg_obj_list_index		(const EggObjList	*list,
 						 guint			 index);
+const GPtrArray	*egg_obj_list_get_array		(const EggObjList	*list);
 
 G_END_DECLS
 
