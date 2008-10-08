@@ -149,6 +149,19 @@ pk_generate_pack_package_resolve (PkClient *client, PkBitfield filter, const gch
 	return pk_package_id_to_string (obj->id);
 }
 
+/**
+ * pk_generate_pack_package_cb:
+ **/
+static void
+pk_generate_pack_package_cb (PkServicePack *pack, const PkPackageObj *obj, gpointer data)
+{
+	g_return_if_fail (obj != NULL);
+	g_print ("%s %s-%s.%s\n", _("Downloading"), obj->id->name, obj->id->version, obj->id->arch);
+}
+
+/**
+ * main:
+ **/
 int
 main (int argc, char *argv[])
 {
@@ -283,6 +296,8 @@ main (int argc, char *argv[])
 
 	/* create pack and set initial values */
 	pack = pk_service_pack_new ();
+	g_signal_connect (pack, "package",
+			  G_CALLBACK (pk_generate_pack_package_cb), pack);
 	pk_service_pack_set_filename (pack, filename);
 	pk_service_pack_set_temp_directory (pack, tempdir);
 	pk_service_pack_set_exclude_list (pack, list);

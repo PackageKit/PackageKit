@@ -57,6 +57,14 @@ typedef struct
 typedef struct
 {
 	GObjectClass	parent_class;
+	void		(* package)			(PkServicePack		*pack,
+							 const PkPackageObj	*obj);
+	/* Padding for future expansion */
+	void (*_pk_reserved1) (void);
+	void (*_pk_reserved2) (void);
+	void (*_pk_reserved3) (void);
+	void (*_pk_reserved4) (void);
+	void (*_pk_reserved5) (void);
 } PkServicePackClass;
 
 GQuark		 pk_service_pack_error_quark			(void);
