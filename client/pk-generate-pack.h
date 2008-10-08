@@ -39,7 +39,7 @@ gboolean	 pk_generate_pack_create 			(const gchar *tarfilename,
 GPtrArray 	*pk_generate_pack_scan_dir			(const gchar *directory);
 gboolean	 pk_generate_pack_main				(const gchar *pack_filename,
 								 const gchar *directory,
-								 const gchar *package,
+								 const gchar *package_id,
 								 const gchar *package_list,
 								 GError **error);
 

@@ -273,13 +273,13 @@ pk_service_pack_set_exclude_list (PkServicePack *pack, PkPackageList *list)
 }
 
 /**
- * pk_service_pack_create_for_package:
+ * pk_service_pack_create_for_package_id:
  **/
 gboolean
-pk_service_pack_create_for_package (PkServicePack *pack, const gchar *package, GError **error)
+pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package_id, GError **error)
 {
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
-	g_return_val_if_fail (package != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
 	return TRUE;
