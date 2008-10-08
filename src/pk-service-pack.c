@@ -23,10 +23,18 @@
 #  include <config.h>
 #endif
 
+#ifdef HAVE_ARCHIVE_H
+#include <archive.h>
+#include <archive_entry.h>
+#endif /* HAVE_ARCHIVE_H */
+
 #include <glib.h>
-#include <glib/gi18n.h>
+#include <glib/gstdio.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
+
+#include <pk-common.h>
 
 #include "pk-service-pack.h"
 
@@ -39,14 +47,186 @@ struct PkServicePackPrivate
 
 G_DEFINE_TYPE (PkServicePack, pk_service_pack, G_TYPE_OBJECT)
 
+
+/**
+ * pk_service_pack_check_metadata_file:
+ **/
+static gboolean
+pk_service_pack_check_metadata_file (const gchar *full_path)
+{
+	GKeyFile *file;
+	gboolean ret;
+	GError *error = NULL;
+	gchar *distro_id = NULL;
+	gchar *distro_id_us = NULL;
+
+	/* load the file */
+	file = g_key_file_new ();
+	ret = g_key_file_load_from_file (file, full_path, G_KEY_FILE_NONE, &error);
+	if (!ret) {
+		egg_warning ("failed to load file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* read the value */
+	distro_id = g_key_file_get_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", &error);
+	if (!ret) {
+		egg_warning ("failed to get value: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get this system id */
+	distro_id_us = pk_get_distro_id ();
+
+	/* do we match? */
+	ret = egg_strequal (distro_id_us, distro_id);
+
+out:
+	g_key_file_free (file);
+	g_free (distro_id);
+	g_free (distro_id_us);
+	return ret;
+}
+
+/**
+ * pk_service_pack_extract:
+ * @directory: the directory to unpack into
+ * @error: a valid %GError
+ *
+ * Decompress a tar file
+ *
+ * Return value: %TRUE if the file was decompressed
+ **/
+#ifdef HAVE_ARCHIVE_H
+static gboolean
+pk_service_pack_extract (const gchar *filename, const gchar *directory, GError **error)
+{
+	gboolean ret = FALSE;
+	struct archive *arch = NULL;
+	struct archive_entry *entry;
+	int r;
+	int retval;
+	gchar *retcwd;
+	gchar buf[PATH_MAX];
+
+	/* save the PWD as we chdir to extract */
+	retcwd = getcwd (buf, PATH_MAX);
+	if (retcwd == NULL) {
+		*error = g_error_new (1, 0, "failed to get cwd");
+		goto out;
+	}
+
+	/* we can only read tar achives */
+	arch = archive_read_new ();
+	archive_read_support_format_tar (arch);
+
+	/* open the tar file */
+	r = archive_read_open_file (arch, filename, 10240);
+	if (r) {
+		*error = g_error_new (1, 0, "cannot open: %s", archive_error_string (arch));
+		goto out;
+	}
+
+	/* switch to our destination directory */
+	retval = chdir (directory);
+	if (retval != 0) {
+		*error = g_error_new (1, 0, "failed chdir to %s", directory);
+		goto out;
+	}
+
+	/* decompress each file */
+	for (;;) {
+		r = archive_read_next_header (arch, &entry);
+		if (r == ARCHIVE_EOF)
+			break;
+		if (r != ARCHIVE_OK) {
+			*error = g_error_new (1, 0, "cannot read header: %s", archive_error_string (arch));
+			goto out;
+		}
+		r = archive_read_extract (arch, entry, 0);
+		if (r != ARCHIVE_OK) {
+			*error = g_error_new (1, 0, "cannot extract: %s", archive_error_string (arch));
+			goto out;
+		}
+	}
+
+	/* completed all okay */
+	ret = TRUE;
+out:
+	/* close the archive */
+	if (arch != NULL) {
+		archive_read_close (arch);
+		archive_read_finish (arch);
+	}
+
+	/* switch back to PWD */
+	retval = chdir (buf);
+	if (retval != 0)
+		egg_warning ("cannot chdir back!");
+
+	return ret;
+}
+#else /* HAVE_ARCHIVE_H */
+gboolean
+pk_service_pack_extract (const gchar *filename, const gchar *directory, GError **error)
+{
+	*error = g_error_new (1, 0, "Cannot check PackageKit as not built with libarchive support");
+	return FALSE;
+}
+#endif /* HAVE_ARCHIVE_H */
+
 /**
  * pk_service_pack_check_valid:
  **/
 gboolean
 pk_service_pack_check_valid (PkServicePack *pack, const gchar *filename, GError **error)
 {
+	gboolean ret = TRUE;
+	gchar *directory = NULL;
+	gchar *metafile = NULL;
+	GDir *dir = NULL;
+	const gchar *filename_entry;
+	GError *error_local = NULL;
+
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
-	return TRUE;
+
+	/* ITS4: ignore, the user has no control over the daemon envp  */
+	directory = g_build_filename (g_get_tmp_dir (), "meta", NULL);
+	ret = pk_service_pack_extract (filename, directory, &error_local);
+	if (!ret) {
+		*error = g_error_new (1, 0, "failed to check %s: %s", filename, error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* get the files */
+	dir = g_dir_open (directory, 0, NULL);
+	if (dir == NULL) {
+		*error = g_error_new (1, 0, "failed to get directory for %s", directory);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* find the file, and check the metadata */
+	while ((filename_entry = g_dir_read_name (dir))) {
+		metafile = g_build_filename (directory, filename_entry, NULL);
+		if (egg_strequal (filename_entry, "metadata.conf")) {
+			ret = pk_service_pack_check_metadata_file (metafile);
+			if (!ret) {
+				*error = g_error_new (1, 0, "Service Pack %s not compatible with your distro", filename);
+				ret = FALSE;
+				goto out;
+			}
+		}
+		g_free (metafile);
+	}
+out:
+	g_rmdir (directory);
+	g_free (directory);
+	g_dir_close (dir);
+	return ret;
 }
 
 /**
