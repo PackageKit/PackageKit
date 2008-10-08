@@ -682,11 +682,39 @@ pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package
 gboolean
 pk_service_pack_create_for_updates (PkServicePack *pack, GError **error)
 {
+	gchar **package_ids = NULL;
+	GError *error_local = NULL;
+	gboolean ret = FALSE;
+	PkPackageList *list;
+
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
-	*error = g_error_new (1, 0, "not yet supported");
-	return TRUE;
+
+	/* get updates */
+	ret = pk_client_reset (pack->priv->client, &error_local);
+	if (!ret) {
+		*error = g_error_new (1, 0, "failed to reset: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	egg_debug ("Getting updates");
+	ret = pk_client_get_updates (pack->priv->client, PK_FILTER_ENUM_NONE, &error_local);
+	if (!ret) {
+		*error = g_error_new (1, 0, "failed to get updates: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* get the updates, and download them with deps */
+	list = pk_client_get_package_list (pack->priv->client);
+	package_ids = pk_package_list_to_strv (list);
+	g_object_unref (list);
+	ret = pk_service_pack_create_for_package_ids (pack, package_ids, error);
+out:
+	g_strfreev (package_ids);
+	return ret;
 }
 
 /**
