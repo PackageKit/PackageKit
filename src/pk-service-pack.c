@@ -558,6 +558,20 @@ out:
 }
 
 /**
+ * pk_service_pack_setup_client:
+ **/
+static gboolean
+pk_service_pack_setup_client (PkServicePack *pack)
+{
+	if (pack->priv->client != NULL)
+		return FALSE;
+	pack->priv->client = pk_client_new ();
+	pk_client_set_use_buffer (pack->priv->client, TRUE, NULL);
+	pk_client_set_synchronous (pack->priv->client, TRUE, NULL);
+	return TRUE;
+}
+
+/**
  * pk_service_pack_create_for_package_ids:
  **/
 gboolean
@@ -577,6 +591,9 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
+
+	/* don't setup by default to not block the server */
+	pk_service_pack_setup_client (pack);
 
 	/* download this package */
 	ret = pk_service_pack_download_package_ids (pack, package_ids);
@@ -691,6 +708,9 @@ pk_service_pack_create_for_updates (PkServicePack *pack, GError **error)
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
 
+	/* don't setup by default to not block the server */
+	pk_service_pack_setup_client (pack);
+
 	/* get updates */
 	ret = pk_client_reset (pack->priv->client, &error_local);
 	if (!ret) {
@@ -731,7 +751,8 @@ pk_service_pack_finalize (GObject *object)
 
 	if (pack->priv->exclude_list != NULL)
 		g_object_unref (pack->priv->exclude_list);
-	g_object_unref (pack->priv->client);
+	if (pack->priv->client != NULL)
+		g_object_unref (pack->priv->client);
 	g_free (pack->priv->directory);
 	g_free (pack->priv->filename);
 
@@ -759,9 +780,6 @@ pk_service_pack_init (PkServicePack *pack)
 	pack->priv->exclude_list = NULL;
 	pack->priv->filename = NULL;
 	pack->priv->directory = NULL;
-	pack->priv->client = pk_client_new ();
-	pk_client_set_use_buffer (pack->priv->client, TRUE, NULL);
-	pk_client_set_synchronous (pack->priv->client, TRUE, NULL);
 }
 
 /**
