@@ -176,7 +176,7 @@ main (int argc, char *argv[])
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 			_("Show extra debugging information"), NULL },
 		{ "with-package-list", 'l', 0, G_OPTION_ARG_STRING, &package_list,
-			_("Set the path of the file with the list of packages/dependencies to be excluded"), NULL},
+			_("Set the filename of dependencies to be excluded"), NULL},
 		{ "output", 'o', 0, G_OPTION_ARG_STRING, &directory,
 			_("The directory to put the pack file, or the current directory if ommitted"), NULL},
 		{ "package", 'p', 0, G_OPTION_ARG_STRING, &package,
