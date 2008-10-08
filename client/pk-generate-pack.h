@@ -40,7 +40,7 @@ GPtrArray 	*pk_generate_pack_scan_dir			(const gchar *directory);
 gboolean	 pk_generate_pack_main				(const gchar *pack_filename,
 								 const gchar *directory,
 								 const gchar *package_id,
-								 const gchar *package_list,
+								 PkPackageList *exclude_list,
 								 GError **error);
 
 #endif /* __PK_GENERATE_PACK_H */
