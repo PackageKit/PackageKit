@@ -106,14 +106,14 @@ pk_service_pack_exclude_packages (PkPackageList *list, PkPackageList *list_packa
 }
 
 /**
- * pk_service_pack_create_metadata_file:
+ * pk_service_pack_create_from_files_metadata_file:
  **/
 static gboolean
-pk_service_pack_create_metadata_file (const gchar *filename)
+pk_service_pack_create_from_files_metadata_file (const gchar *filename)
 {
 	gboolean ret = FALSE;
 	gchar *distro_id = NULL;
-	gchar *datetime = NULL;
+	gchar *iso_time = NULL;
 	GError *error = NULL;
 	GKeyFile *file = NULL;
 	gchar *data = NULL;
@@ -130,12 +130,12 @@ pk_service_pack_create_metadata_file (const gchar *filename)
 	distro_id = pk_get_distro_id ();
 	if (distro_id == NULL)
 		goto out;
-	datetime = pk_iso8601_present ();
-	if (datetime == NULL)
+	iso_time = pk_iso8601_present ();
+	if (iso_time == NULL)
 		goto out;
 
 	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", distro_id);
-	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "created", datetime);
+	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "created", iso_time);
 
 	/* convert to text */
 	data = g_key_file_to_data (file, NULL, &error);
@@ -157,7 +157,7 @@ out:
 	g_key_file_free (file);
 	g_free (data);
 	g_free (distro_id);
-	g_free (datetime);
+	g_free (iso_time);
 	return ret;
 }
 
@@ -231,10 +231,10 @@ out:
 }
 
 /**
- * pk_service_pack_create:
+ * pk_service_pack_create_from_files:
  **/
 static gboolean
-pk_service_pack_create (const gchar *filename, GPtrArray *file_array, GError **error)
+pk_service_pack_create_from_files (const gchar *filename, GPtrArray *file_array, GError **error)
 {
 	struct archive *arch = NULL;
 	gboolean ret = FALSE;
@@ -248,7 +248,7 @@ pk_service_pack_create (const gchar *filename, GPtrArray *file_array, GError **e
 
 	/* create a file with metadata in it */
 	metadata_filename = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
-	ret = pk_service_pack_create_metadata_file (metadata_filename);
+	ret = pk_service_pack_create_from_files_metadata_file (metadata_filename);
 	if (!ret) {
 	        *error = g_error_new (1, 0, "failed to generate metadata file %s", metadata_filename);
 	        goto out;
@@ -289,10 +289,10 @@ out:
 }
 #else
 /**
- * pk_service_pack_create:
+ * pk_service_pack_create_from_files:
  **/
 static gboolean
-pk_service_pack_create (const gchar *filename, GPtrArray *file_array, GError **error)
+pk_service_pack_create_from_files (const gchar *filename, GPtrArray *file_array, GError **error)
 {
 	*error = g_error_new (1, 0, "Cannot create pack as PackageKit as not built with libarchive support");
 	return FALSE;
@@ -419,7 +419,7 @@ pk_service_pack_main (const gchar *pack_filename, const gchar *directory, const 
 	}
 
 	/* generate pack file */
-	ret = pk_service_pack_create (pack_filename, file_array, &error_local);
+	ret = pk_service_pack_create_from_files (pack_filename, file_array, &error_local);
 	if (!ret) {
 		egg_warning ("failed to create archive: %s", error_local->message);
 		g_error_free (error_local);
@@ -488,7 +488,7 @@ pk_genpack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "metadata NULL");
-	ret = pk_service_pack_create_metadata_file (NULL);
+	ret = pk_service_pack_create_from_files_metadata_file (NULL);
 	if (!ret)
 		egg_test_success (test, NULL);
 	else
@@ -496,7 +496,7 @@ pk_genpack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "metadata /tmp/metadata.conf");
-	ret = pk_service_pack_create_metadata_file ("/tmp/metadata.conf");
+	ret = pk_service_pack_create_from_files_metadata_file ("/tmp/metadata.conf");
 	if (ret)
 		egg_test_success (test, NULL);
 	else
@@ -524,7 +524,7 @@ pk_genpack_test (EggTest *test)
 	file_array = g_ptr_array_new ();
 	src = g_build_filename ("/tmp", "gitk-1.5.5.1-1.fc9.i386.rpm", NULL);
 	g_ptr_array_add (file_array, src);
-	ret = pk_service_pack_create ("/tmp/gitk.servicepack", file_array, &error);
+	ret = pk_service_pack_create_from_files ("/tmp/gitk.servicepack", file_array, &error);
 	if (!ret) {
 		if (error != NULL) {
 			egg_test_failed (test, "failed to create pack %s" , error->message);
