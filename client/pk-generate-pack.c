@@ -50,10 +50,10 @@
 #include "pk-tools-common.h"
 
 /**
- * pk_generate_pack_download_only:
+ * pk_service_pack_download_package_ids:
  **/
 static gboolean
-pk_generate_pack_download_only (PkClient *client, gchar **package_ids, const gchar *directory)
+pk_service_pack_download_package_ids (PkClient *client, gchar **package_ids, const gchar *directory)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -83,10 +83,10 @@ out:
 }
 
 /**
- * pk_generate_pack_exclude_packages:
+ * pk_service_pack_exclude_packages:
  **/
 static gboolean
-pk_generate_pack_exclude_packages (PkPackageList *list, PkPackageList *list_packages)
+pk_service_pack_exclude_packages (PkPackageList *list, PkPackageList *list_packages)
 {
 	guint i;
 	guint length;
@@ -106,10 +106,10 @@ pk_generate_pack_exclude_packages (PkPackageList *list, PkPackageList *list_pack
 }
 
 /**
- * pk_generate_pack_set_metadata:
+ * pk_service_pack_create_metadata_file:
  **/
 static gboolean
-pk_generate_pack_set_metadata (const gchar *full_path)
+pk_service_pack_create_metadata_file (const gchar *filename)
 {
 	gboolean ret = FALSE;
 	gchar *distro_id = NULL;
@@ -121,7 +121,7 @@ pk_generate_pack_set_metadata (const gchar *full_path)
 	file = g_key_file_new ();
 
 	/* check for NULL values */
-	if (full_path == NULL) {
+	if (filename == NULL) {
 		egg_warning (_("Could not find a valid metadata file"));
 		goto out;
 	}
@@ -146,7 +146,7 @@ pk_generate_pack_set_metadata (const gchar *full_path)
 	}
 
 	/* save contents */
-	ret = g_file_set_contents (full_path, data, -1, &error);
+	ret = g_file_set_contents (filename, data, -1, &error);
 	if (!ret) {
 		egg_warning ("failed to save file: %s", error->message);
 		g_error_free (error);
@@ -163,10 +163,10 @@ out:
 
 #ifdef HAVE_ARCHIVE_H
 /**
- * pk_generate_pack_archive_add_file:
+ * pk_service_pack_archive_add_file:
  **/
 static gboolean
-pk_generate_pack_archive_add_file (struct archive *arch, const gchar *filename, GError **error)
+pk_service_pack_archive_add_file (struct archive *arch, const gchar *filename, GError **error)
 {
 	int retval;
 	int len;
@@ -231,10 +231,10 @@ out:
 }
 
 /**
- * pk_generate_pack_create:
+ * pk_service_pack_create:
  **/
 static gboolean
-pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError **error)
+pk_service_pack_create (const gchar *filename, GPtrArray *file_array, GError **error)
 {
 	struct archive *arch = NULL;
 	gboolean ret = FALSE;
@@ -242,13 +242,13 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	guint i;
 	gchar *metadata_filename;
 
-	g_return_val_if_fail (tarfilename != NULL, FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
 	g_return_val_if_fail (file_array != NULL, FALSE);
 	g_return_val_if_fail (error != NULL, FALSE);
 
 	/* create a file with metadata in it */
 	metadata_filename = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
-	ret = pk_generate_pack_set_metadata (metadata_filename);
+	ret = pk_service_pack_create_metadata_file (metadata_filename);
 	if (!ret) {
 	        *error = g_error_new (1, 0, "failed to generate metadata file %s", metadata_filename);
 	        goto out;
@@ -259,13 +259,13 @@ pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError
 	arch = archive_write_new ();
 	archive_write_set_compression_none (arch);
 	archive_write_set_format_ustar (arch);
-	archive_write_open_filename (arch, tarfilename);
+	archive_write_open_filename (arch, filename);
 
 	/* for each filename */
 	for (i=0; i<file_array->len; i++) {
 		src = (const gchar *) g_ptr_array_index (file_array, i);
 		/* try to add to archive */
-		ret = pk_generate_pack_archive_add_file (arch, src, error);
+		ret = pk_service_pack_archive_add_file (arch, src, error);
 		if (!ret)
 			goto out;
 	}
@@ -289,21 +289,21 @@ out:
 }
 #else
 /**
- * pk_generate_pack_create:
+ * pk_service_pack_create:
  **/
 static gboolean
-pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError **error)
+pk_service_pack_create (const gchar *filename, GPtrArray *file_array, GError **error)
 {
-	*error = g_error_new (1, 0, "Cannot create pack as PackageKit as not built with libtar support");
+	*error = g_error_new (1, 0, "Cannot create pack as PackageKit as not built with libarchive support");
 	return FALSE;
 }
 #endif
 
 /**
- * pk_generate_pack_scan_dir:
+ * pk_service_pack_scan_files_in_directory:
  **/
 static GPtrArray *
-pk_generate_pack_scan_dir (const gchar *directory)
+pk_service_pack_scan_files_in_directory (const gchar *directory)
 {
 	gchar *src;
 	GPtrArray *file_array = NULL;
@@ -335,16 +335,15 @@ out:
 }
 
 /**
- * pk_generate_pack_main:
+ * pk_service_pack_main:
  **/
 gboolean
-pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const gchar *package_id, PkPackageList *exclude_list, GError **error)
+pk_service_pack_main (const gchar *pack_filename, const gchar *directory, const gchar *package_id, PkPackageList *exclude_list, GError **error)
 {
 
 	gchar **package_ids;
 	PkPackageList *list = NULL;
 	guint length;
-	gboolean download;
 	guint i;
 	const PkPackageObj *obj;
 	GPtrArray *file_array = NULL;
@@ -359,7 +358,7 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 
 	/* download this package */
 	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_generate_pack_download_only (client, package_ids, directory);
+	ret = pk_service_pack_download_package_ids (client, package_ids, directory);
 	if (!ret) {
 		egg_warning ("failed to download main package: %s", error_local->message);
 		g_error_free (error_local);
@@ -387,7 +386,7 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	list = pk_client_get_package_list (client);
 
 	/* remove some deps */
-	pk_generate_pack_exclude_packages (list, exclude_list);
+	pk_service_pack_exclude_packages (list, exclude_list);
 
 	/* list deps */
 	length = pk_package_list_get_size (list);
@@ -400,19 +399,9 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 
 	/* confirm we want the deps */
 	if (length != 0) {
-		/* get user input */
-		download = pk_console_get_prompt (_("Okay to download the additional packages"), TRUE);
-
-		/* we chickened out */
-		if (download == FALSE) {
-			g_print ("%s\n", _("Cancelled!"));
-			ret = FALSE;
-			goto out;
-		}
-
-		/* convert to list of package_ids */
+		/* download additional package_ids */
 		package_ids = pk_package_list_to_strv (list);
-		ret = pk_generate_pack_download_only (client, package_ids, directory);
+		ret = pk_service_pack_download_package_ids (client, package_ids, directory);
 		g_strfreev (package_ids);
 	}
 
@@ -423,14 +412,14 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	}
 
 	/* find packages that were downloaded */
-	file_array = pk_generate_pack_scan_dir (directory);
+	file_array = pk_service_pack_scan_files_in_directory (directory);
 	if (file_array == NULL) {
 		egg_warning ("failed to scan directory: %s", directory);
 		goto out;
 	}
 
 	/* generate pack file */
-	ret = pk_generate_pack_create (pack_filename, file_array, &error_local);
+	ret = pk_service_pack_create (pack_filename, file_array, &error_local);
 	if (!ret) {
 		egg_warning ("failed to create archive: %s", error_local->message);
 		g_error_free (error_local);
@@ -480,7 +469,7 @@ pk_genpack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "download only NULL");
-	ret = pk_generate_pack_download_only (client, NULL, NULL);
+	ret = pk_service_pack_download_package_ids (client, NULL, NULL);
 	if (!ret)
 		egg_test_success (test, NULL);
 	else
@@ -489,7 +478,7 @@ pk_genpack_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "download only gitk");
 	package_ids = pk_package_ids_from_id ("gitk;1.5.5.1-1.fc9;i386;installed");
-	ret = pk_generate_pack_download_only (client, package_ids, "/tmp");
+	ret = pk_service_pack_download_package_ids (client, package_ids, "/tmp");
 	if (ret)
 		egg_test_success (test, NULL);
 	else
@@ -499,7 +488,7 @@ pk_genpack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "metadata NULL");
-	ret = pk_generate_pack_set_metadata (NULL);
+	ret = pk_service_pack_create_metadata_file (NULL);
 	if (!ret)
 		egg_test_success (test, NULL);
 	else
@@ -507,7 +496,7 @@ pk_genpack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "metadata /tmp/metadata.conf");
-	ret = pk_generate_pack_set_metadata ("/tmp/metadata.conf");
+	ret = pk_service_pack_create_metadata_file ("/tmp/metadata.conf");
 	if (ret)
 		egg_test_success (test, NULL);
 	else
@@ -516,7 +505,7 @@ pk_genpack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "scandir NULL");
-	file_array = pk_generate_pack_scan_dir (NULL);
+	file_array = pk_service_pack_scan_files_in_directory (NULL);
 	if (file_array == NULL)
 		egg_test_success (test, NULL);
 	else
@@ -524,7 +513,7 @@ pk_genpack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "scandir /tmp");
-	file_array = pk_generate_pack_scan_dir ("/tmp");
+	file_array = pk_service_pack_scan_files_in_directory ("/tmp");
 	if (file_array != NULL)
 		egg_test_success (test, NULL);
 	else
@@ -535,7 +524,7 @@ pk_genpack_test (EggTest *test)
 	file_array = g_ptr_array_new ();
 	src = g_build_filename ("/tmp", "gitk-1.5.5.1-1.fc9.i386.rpm", NULL);
 	g_ptr_array_add (file_array, src);
-	ret = pk_generate_pack_create ("/tmp/gitk.servicepack", file_array, &error);
+	ret = pk_service_pack_create ("/tmp/gitk.servicepack", file_array, &error);
 	if (!ret) {
 		if (error != NULL) {
 			egg_test_failed (test, "failed to create pack %s" , error->message);
