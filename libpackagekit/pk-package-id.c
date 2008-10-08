@@ -263,6 +263,58 @@ pk_package_id_free (PkPackageId *id)
 }
 
 /**
+ * pk_arch_base_ix86:
+ **/
+static gboolean
+pk_arch_base_ix86 (const gchar *arch)
+{
+	if (egg_strequal (arch, "i386") ||
+	    egg_strequal (arch, "i486") ||
+	    egg_strequal (arch, "i586") ||
+	    egg_strequal (arch, "i686"))
+		return TRUE;
+	return FALSE;
+}
+
+/**
+ * pk_arch_fuzzy_equal:
+ * @arch1: the first %PkPackageId
+ * @arch2: the second %PkPackageId
+ *
+ * Compare the architectures in a fuzzy way
+ *
+ * Return value: %TRUE if the archs can be considered equal.
+ **/
+static gboolean
+pk_arch_fuzzy_equal (const gchar *arch1, const gchar *arch2)
+{
+	if (egg_strequal (arch1, arch2))
+		return TRUE;
+	if (pk_arch_base_ix86 (arch1) && pk_arch_base_ix86 (arch2))
+		return TRUE;
+	return FALSE;
+}
+
+/**
+ * pk_package_id_equal_fuzzy_arch:
+ * @id1: the first %PkPackageId
+ * @id2: the second %PkPackageId
+ *
+ * Only compare the name, version, and arch
+ *
+ * Return value: %TRUE if the ids can be considered equal.
+ **/
+gboolean
+pk_package_id_equal_fuzzy_arch (const PkPackageId *id1, const PkPackageId *id2)
+{
+	if (egg_strequal (id1->name, id2->name) &&
+	    egg_strequal (id1->version, id2->version) &&
+	    pk_arch_fuzzy_equal (id1->arch, id2->arch))
+		return TRUE;
+	return FALSE;
+}
+
+/**
  * pk_package_id_equal:
  * @id1: the first %PkPackageId
  * @id2: the second %PkPackageId

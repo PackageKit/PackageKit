@@ -63,10 +63,22 @@ static void     pk_package_list_finalize	(GObject            *object);
  **/
 struct _PkPackageListPrivate
 {
-	GPtrArray	*array;
+	GPtrArray		*array;
+	gboolean		 fuzzy_arch;
 };
 
 G_DEFINE_TYPE (PkPackageList, pk_package_list, G_TYPE_OBJECT)
+
+/**
+ * pk_package_list_set_fuzzy_arch:
+ **/
+gboolean
+pk_package_list_set_fuzzy_arch (PkPackageList *plist, gboolean fuzzy_arch)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	plist->priv->fuzzy_arch = fuzzy_arch;
+	return TRUE;
+}
 
 /**
  * pk_package_list_add:
@@ -393,7 +405,11 @@ pk_package_list_remove_obj (PkPackageList *plist, const PkPackageObj *obj)
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
 		obj_temp = g_ptr_array_index (plist->priv->array, i);
-		if (pk_package_obj_equal (obj_temp, obj)) {
+		if (plist->priv->fuzzy_arch)
+			ret = pk_package_obj_equal_fuzzy_arch (obj_temp, obj);
+		else
+			ret = pk_package_obj_equal (obj_temp, obj);
+		if (ret) {
 			pk_package_obj_free (obj_temp);
 			g_ptr_array_remove_index (plist->priv->array, i);
 			ret = TRUE;
@@ -420,10 +436,12 @@ pk_package_list_contains_obj (const PkPackageList *plist, const PkPackageObj *ob
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
 		obj_temp = g_ptr_array_index (plist->priv->array, i);
-		ret = pk_package_obj_equal (obj_temp, obj);
-		if (ret) {
+		if (plist->priv->fuzzy_arch)
+			ret = pk_package_obj_equal_fuzzy_arch (obj_temp, obj);
+		else
+			ret = pk_package_obj_equal (obj_temp, obj);
+		if (ret)
 			break;
-		}
 	}
 	return ret;
 }
@@ -532,6 +550,7 @@ pk_package_list_init (PkPackageList *plist)
 
 	plist->priv = PK_PACKAGE_LIST_GET_PRIVATE (plist);
 	plist->priv->array = g_ptr_array_new ();
+	plist->priv->fuzzy_arch = FALSE;
 }
 
 /**

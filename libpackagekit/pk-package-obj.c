@@ -93,6 +93,19 @@ pk_package_obj_equal (const PkPackageObj *obj1, const PkPackageObj *obj2)
 }
 
 /**
+ * pk_package_obj_equal_fuzzy_arch:
+ *
+ * Only compares the package_id's and the info enum, being a bit fuzzy on the arch
+ **/
+gboolean
+pk_package_obj_equal_fuzzy_arch (const PkPackageObj *obj1, const PkPackageObj *obj2)
+{
+	if (obj1 == NULL || obj2 == NULL)
+		return FALSE;
+	return (obj1->info == obj2->info && pk_package_id_equal_fuzzy_arch (obj1->id, obj2->id));
+}
+
+/**
  * pk_package_obj_copy:
  *
  * Copy a PkPackageObj
@@ -211,7 +224,7 @@ pk_package_obj_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "add entry");
-	id = pk_package_id_new_from_string ("gnome-do;1.23;i386;data");
+	id = pk_package_id_new_from_string ("gnome;1.23;i586;data");
 	obj2 = pk_package_obj_new (PK_INFO_ENUM_INSTALLED, id, "GNOME doo!");
 	egg_test_assert (test, obj2 != NULL);
 
@@ -219,6 +232,11 @@ pk_package_obj_test (EggTest *test)
 	egg_test_title (test, "check !equal");
 	ret = pk_package_obj_equal (obj1, obj2);
 	egg_test_assert (test, !ret);
+
+	/************************************************************/
+	egg_test_title (test, "check equal when fuzzy");
+	ret = pk_package_obj_equal_fuzzy_arch (obj1, obj2);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "check to string");

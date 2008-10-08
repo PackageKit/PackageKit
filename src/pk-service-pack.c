@@ -626,6 +626,10 @@ pk_service_pack_package_cb (PkClient *client, const PkPackageObj *obj, PkService
 	g_return_if_fail (PK_IS_SERVICE_PACK (pack));
 	g_return_if_fail (obj != NULL);
 
+	/* only shown downloading */
+	if (obj->info != PK_INFO_ENUM_DOWNLOADING)
+		return;
+
 	egg_debug ("emit package %s", obj->id->name);
 	g_signal_emit (pack, signals [PK_SERVICE_PACK_PACKAGE], 0, obj);
 }
@@ -701,6 +705,7 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 	list = pk_client_get_package_list (pack->priv->client);
 
 	/* remove some deps */
+	pk_package_list_set_fuzzy_arch (list, TRUE);
 	pk_service_pack_exclude_packages (pack, list);
 
 	/* list deps */
