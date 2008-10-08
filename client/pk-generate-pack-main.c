@@ -306,7 +306,7 @@ main (int argc, char *argv[])
 		ret = pk_service_pack_create_for_package_id (pack, package_id, &error);
 
 	/* old method */
-	ret = pk_generate_pack_main (filename, tempdir, package_id, list, &error);
+	ret = pk_service_pack_main (filename, tempdir, package_id, list, &error);
 	if (!ret) {
 		g_print ("%s: %s\n", _("Failed to create pack"), error->message);
 		g_error_free (error);

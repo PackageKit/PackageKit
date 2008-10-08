@@ -23,21 +23,7 @@
 #ifndef __PK_GENERATE_PACK_H
 #define __PK_GENERATE_PACK_H
 
-gchar		*pk_generate_pack_perhaps_resolve		(PkClient *client,
-								 PkBitfield filter,
-								 const gchar *package,
-								 GError **error);
-gboolean	 pk_generate_pack_download_only 		(PkClient *client,
-								 gchar **package_ids,
-								 const gchar *directory);
-gboolean	 pk_generate_pack_exclude_packages		(PkPackageList *list,
-								 const gchar *package_list);
-gboolean	 pk_generate_pack_set_metadata			(const gchar *full_path);
-gboolean	 pk_generate_pack_create 			(const gchar *tarfilename,
-								 GPtrArray *file_array,
-								 GError **error);
-GPtrArray 	*pk_generate_pack_scan_dir			(const gchar *directory);
-gboolean	 pk_generate_pack_main				(const gchar *pack_filename,
+gboolean	 pk_service_pack_main				(const gchar *pack_filename,
 								 const gchar *directory,
 								 const gchar *package_id,
 								 PkPackageList *exclude_list,
