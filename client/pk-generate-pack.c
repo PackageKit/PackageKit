@@ -54,6 +54,8 @@ pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
 		filename = g_strdup_printf ("%s/%s-%s.servicepack", directory, name, distro_id);
 	} else {
 		iso_time = pk_iso8601_present ();
+		/* don't include the time, just use the date prefix */
+		iso_time[10] = '\0';
 		filename = g_strdup_printf ("%s/updates-%s-%s.servicepack", directory, iso_time, distro_id);
 	}
 	g_free (distro_id);
@@ -286,12 +288,17 @@ main (int argc, char *argv[])
 	pk_service_pack_set_exclude_list (pack, list);
 
 	/* generate the pack */
-	g_print (_("Creating service pack: %s\n"), filename);
+	g_print (_("Service pack to create: %s\n"), filename);
 	if (updates)
 		ret = pk_service_pack_create_for_updates (pack, &error);
 	else
 		ret = pk_service_pack_create_for_package_id (pack, package_id, &error);
-	g_print ("%s\n", _("Done!"));
+	if (ret)
+		g_print ("%s\n", _("Done!"));
+	else {
+		g_print ("%s: %s\n", _("Failed"), error->message);
+		g_error_free (error);
+	}
 
 out:
 	/* get rid of temp directory */
