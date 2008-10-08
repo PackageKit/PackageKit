@@ -22,14 +22,9 @@
 
 #include "config.h"
 
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
-#include <dbus/dbus-glib.h>
 
 #include "egg-debug.h"
 
@@ -195,7 +190,6 @@ main (int argc, char *argv[])
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
 
-	dbus_g_thread_init ();
 	g_type_init ();
 
 	context = g_option_context_new ("PackageKit Pack Generator");
@@ -262,12 +256,6 @@ main (int argc, char *argv[])
 	if (retval != 0) {
 		g_print ("%s: %s\n", _("Failed to create directory"), tempdir);
 		goto out;
-	}
-
-	/* not yet */
-	if (updates) {
-		g_print ("Not working yet...\n");
-		return 1;
 	}
 
 	/* get the exclude list */
