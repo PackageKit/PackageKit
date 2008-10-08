@@ -37,6 +37,9 @@
 #include <pk-control.h>
 #include <pk-common.h>
 #include <pk-package-list.h>
+#include <pk-package-id.h>
+#include <pk-package-ids.h>
+#include <pk-client.h>
 
 #include "pk-tools-common.h"
 #include "pk-generate-pack.h"
@@ -64,6 +67,92 @@ pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
 	return filename;
 }
 
+/**
+ * pk_generate_pack_package_resolve:
+ **/
+static gchar *
+pk_generate_pack_package_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
+{
+	gboolean ret;
+	gboolean valid;
+	guint i;
+	guint length;
+	const PkPackageObj *obj;
+	PkPackageList *list;
+	gchar **packages;
+
+	/* check for NULL values */
+	if (package == NULL) {
+		egg_warning ("Cannot resolve the package: invalid package");
+		return NULL;
+	}
+
+	/* have we passed a complete package_id? */
+	valid = pk_package_id_check (package);
+	if (valid)
+		return g_strdup (package);
+
+	ret = pk_client_reset (client, error);
+	if (ret == FALSE) {
+		egg_warning ("failed to reset client task");
+		return NULL;
+	}
+
+	/* we need to resolve it */
+	packages = pk_package_ids_from_id (package);
+	ret = pk_client_resolve (client, filter, packages, error);
+	g_strfreev (packages);
+	if (ret == FALSE) {
+		egg_warning ("Resolve failed");
+		return NULL;
+	}
+
+	/* get length of items found */
+	list = pk_client_get_package_list (client);
+	length = pk_package_list_get_size (list);
+	g_object_unref (list);
+
+	/* didn't resolve to anything, try to get a provide */
+	if (length == 0) {
+		ret = pk_client_reset (client, error);
+		if (ret == FALSE) {
+			egg_warning ("failed to reset client task");
+			return NULL;
+		}
+		ret = pk_client_what_provides (client, filter, PK_PROVIDES_ENUM_ANY, package, error);
+		if (ret == FALSE) {
+			egg_warning ("WhatProvides is not supported in this backend");
+			return NULL;
+		}
+	}
+
+	/* get length of items found again (we might have had success) */
+	list = pk_client_get_package_list (client);
+	length = pk_package_list_get_size (list);
+	if (length == 0) {
+		egg_warning (_("Could not find a package match"));
+		return NULL;
+	}
+
+	/* only found one, great! */
+	if (length == 1) {
+		obj = pk_package_list_get_obj (list, 0);
+		return pk_package_id_to_string (obj->id);
+	}
+	g_print ("%s\n", _("There are multiple package matches"));
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (list, i);
+		g_print ("%i. %s-%s.%s\n", i+1, obj->id->name, obj->id->version, obj->id->arch);
+	}
+
+	/* find out what package the user wants to use */
+	i = pk_console_get_number (_("Please enter the package number: "), length);
+	obj = pk_package_list_get_obj (list, i-1);
+	g_object_unref (list);
+
+	return pk_package_id_to_string (obj->id);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -80,6 +169,8 @@ main (int argc, char *argv[])
 	gboolean overwrite;
 	PkServicePack *pack = NULL;
 	PkPackageList *list = NULL;
+	PkClient *client = NULL;
+	gchar *package_id = NULL;
 
 	gboolean verbose = FALSE;
 	gchar *directory = NULL;
@@ -94,7 +185,7 @@ main (int argc, char *argv[])
 			_("Set the path of the file with the list of packages/dependencies to be excluded"), NULL},
 		{ "output", 'o', 0, G_OPTION_ARG_STRING, &directory,
 			_("The directory to put the pack file, or the current directory if ommitted"), NULL},
-		{ "package", 'i', 0, G_OPTION_ARG_STRING, &package,
+		{ "package", 'p', 0, G_OPTION_ARG_STRING, &package,
 			_("The package to be put into the ServicePack"), NULL},
 		{ "updates", 'u', 0, G_OPTION_ARG_NONE, &updates,
 			_("Put all updates available in the ServicePack"), NULL},
@@ -187,6 +278,20 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+	/* resolve package name to package_id */
+	if (!updates) {
+		client = pk_client_new ();
+		pk_client_set_use_buffer (client, TRUE, NULL);
+		pk_client_set_synchronous (client, TRUE, NULL);
+		g_print ("%s\n", _("Resolving package name to remote object"));
+		package_id = pk_generate_pack_package_resolve (client, PK_FILTER_ENUM_NONE, package, &error);
+		if (package_id == NULL) {
+			g_print (_("Failed to find package '%s': %s"), package, error->message);
+			g_error_free (error);
+			goto out;
+		}
+	}
+
 	/* create pack and set initial values */
 	pack = pk_service_pack_new ();
 	pk_service_pack_set_filename (pack, filename);
@@ -195,7 +300,13 @@ main (int argc, char *argv[])
 
 	/* generate the pack */
 	g_print (_("Creating service pack: %s\n"), filename);
-	ret = pk_generate_pack_main (filename, tempdir, package, package_list, &error);
+	if (updates)
+		ret = pk_service_pack_create_for_updates (pack, &error);
+	else
+		ret = pk_service_pack_create_for_package_id (pack, package_id, &error);
+
+	/* old method */
+	ret = pk_generate_pack_main (filename, tempdir, package_id, package_list, &error);
 	if (!ret) {
 		g_print ("%s: %s\n", _("Failed to create pack"), error->message);
 		g_error_free (error);
@@ -209,10 +320,13 @@ out:
 
 	if (pack != NULL)
 		g_object_unref (pack);
+	if (client != NULL)
+		g_object_unref (client);
 	if (list != NULL)
 		g_object_unref (list);
 	g_free (tempdir);
 	g_free (filename);
+	g_free (package_id);
 	g_free (directory);
 	g_free (package_list);
 	g_free (options_help);

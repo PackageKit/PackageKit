@@ -31,10 +31,10 @@
 #include <glib/gstdio.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-package-ids.h>
 #include <pk-client.h>
 #include <pk-control.h>
 #include <pk-package-id.h>
+#include <pk-package-ids.h>
 #include <pk-common.h>
 #ifdef HAVE_ARCHIVE_H
 #include <archive.h>
@@ -51,10 +51,10 @@
 
 
 /**
- * pk_generate_pack_perhaps_resolve:
+ * pk_generate_pack_package_resolve:
  **/
 gchar *
-pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
+pk_generate_pack_package_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gboolean valid;
@@ -72,9 +72,8 @@ pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gch
 
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package);
-	if (valid) {
+	if (valid)
 		return g_strdup (package);
-	}
 
 	ret = pk_client_reset (client, error);
 	if (ret == FALSE) {
@@ -445,10 +444,9 @@ out:
  * pk_generate_pack_main:
  **/
 gboolean
-pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const gchar *package, const gchar *package_list, GError **error)
+pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const gchar *package_id, const gchar *package_list, GError **error)
 {
 
-	gchar *package_id;
 	gchar **package_ids;
 	PkPackageList *list = NULL;
 	guint length;
@@ -464,14 +462,6 @@ pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const
 	client = pk_client_new ();
 	pk_client_set_use_buffer (client, TRUE, NULL);
 	pk_client_set_synchronous (client, TRUE, NULL);
-
-	/* resolve package */
-	package_id = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, &error_local);
-	if (package_id == NULL) {
-		egg_warning ("failed to resolve: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
 
 	/* download this package */
 	package_ids = pk_package_ids_from_id (package_id);
@@ -561,7 +551,6 @@ out:
 	g_object_unref (client);
 	if (list != NULL)
 		g_object_unref (list);
-	g_free (package_id);
 	if (file_array != NULL) {
 		g_ptr_array_foreach (file_array, (GFunc) g_free, NULL);
 		g_ptr_array_free (file_array, TRUE);
@@ -602,7 +591,7 @@ pk_genpack_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "test perhaps resolve NULL");
 	retval = pk_client_reset (client, &error);
-	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, NULL, &error);
+	file = pk_generate_pack_package_resolve (client, PK_FILTER_ENUM_NONE, NULL, &error);
 	if (file == NULL)
 		egg_test_success (test, NULL);
 	else {
@@ -614,7 +603,7 @@ pk_genpack_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "test perhaps resolve gitk");
 	retval = pk_client_reset(client, &error);
-	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, "gitk;1.5.5.1-1.fc9;i386;installed", &error);
+	file = pk_generate_pack_package_resolve (client, PK_FILTER_ENUM_NONE, "gitk;1.5.5.1-1.fc9;i386;installed", &error);
 	if (file != NULL && egg_strequal (file, "gitk;1.5.5.1-1.fc9;i386;installed"))
 		egg_test_success (test, NULL);
 	else

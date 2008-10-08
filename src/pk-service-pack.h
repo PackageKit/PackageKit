@@ -62,8 +62,8 @@ gboolean	 pk_service_pack_set_temp_directory		(PkServicePack	*pack,
 gboolean	 pk_service_pack_set_exclude_list		(PkServicePack	*pack,
 								 PkPackageList	*list);
 
-gboolean	 pk_service_pack_create_for_package		(PkServicePack	*pack,
-								 const gchar	*package,
+gboolean	 pk_service_pack_create_for_package_id		(PkServicePack	*pack,
+								 const gchar	*package_id,
 								 GError		**error);
 gboolean	 pk_service_pack_create_for_updates		(PkServicePack	*pack,
 								 GError		**error);
