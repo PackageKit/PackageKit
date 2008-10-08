@@ -40,7 +40,7 @@ main (int argc, char **argv)
 	egg_debug_init (TRUE);
 
 	/* tests go here */
-	pk_genpack_test (test);
+	//pk_genpack_test (test);
 	
 	return (egg_test_finish (test));
 }

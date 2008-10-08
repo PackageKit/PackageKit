@@ -2,7 +2,7 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 client/pk-console.c
-client/pk-generate-pack-main.c
+client/pk-generate-pack.c
 client/pk-import-specspo.c
 client/pk-monitor.c
 client/pk-tools-common.c
