@@ -42,7 +42,9 @@
 
 struct PkServicePackPrivate
 {
-	PkPackageList		*list;
+	PkPackageList		*exclude_list;
+	gchar			*filename;
+	gchar			*directory;
 };
 
 G_DEFINE_TYPE (PkServicePack, pk_service_pack, G_TYPE_OBJECT)
@@ -181,7 +183,7 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
  * pk_service_pack_check_valid:
  **/
 gboolean
-pk_service_pack_check_valid (PkServicePack *pack, const gchar *filename, GError **error)
+pk_service_pack_check_valid (PkServicePack *pack, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar *directory = NULL;
@@ -191,12 +193,13 @@ pk_service_pack_check_valid (PkServicePack *pack, const gchar *filename, GError 
 	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 
 	/* ITS4: ignore, the user has no control over the daemon envp  */
 	directory = g_build_filename (g_get_tmp_dir (), "meta", NULL);
-	ret = pk_service_pack_extract (filename, directory, &error_local);
+	ret = pk_service_pack_extract (pack->priv->filename, directory, &error_local);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to check %s: %s", filename, error_local->message);
+		*error = g_error_new (1, 0, "failed to check %s: %s", pack->priv->filename, error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -215,7 +218,7 @@ pk_service_pack_check_valid (PkServicePack *pack, const gchar *filename, GError 
 		if (egg_strequal (filename_entry, "metadata.conf")) {
 			ret = pk_service_pack_check_metadata_file (metafile);
 			if (!ret) {
-				*error = g_error_new (1, 0, "Service Pack %s not compatible with your distro", filename);
+				*error = g_error_new (1, 0, "Service Pack %s not compatible with your distro", pack->priv->filename);
 				ret = FALSE;
 				goto out;
 			}
@@ -230,6 +233,71 @@ out:
 }
 
 /**
+ * pk_service_pack_set_filename:
+ **/
+gboolean
+pk_service_pack_set_filename (PkServicePack *pack, const gchar *filename)
+{
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
+	g_free (pack->priv->filename);
+	pack->priv->filename = g_strdup (filename);
+	return TRUE;
+}
+
+/**
+ * pk_service_pack_set_temp_directory:
+ **/
+gboolean
+pk_service_pack_set_temp_directory (PkServicePack *pack, const gchar *directory)
+{
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (directory != NULL, FALSE);
+	g_free (pack->priv->directory);
+	pack->priv->directory = g_strdup (directory);
+	return TRUE;
+}
+
+/**
+ * pk_service_pack_set_exclude_list:
+ **/
+gboolean
+pk_service_pack_set_exclude_list (PkServicePack *pack, PkPackageList *list)
+{
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (list != NULL, FALSE);
+	if (pack->priv->exclude_list != NULL)
+		g_object_unref (pack->priv->exclude_list);
+	pack->priv->exclude_list = g_object_ref (list);
+	return TRUE;
+}
+
+/**
+ * pk_service_pack_create_for_package:
+ **/
+gboolean
+pk_service_pack_create_for_package (PkServicePack *pack, const gchar *package, GError **error)
+{
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (package != NULL, FALSE);
+	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
+	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
+	return TRUE;
+}
+
+/**
+ * pk_service_pack_create_for_updates:
+ **/
+gboolean
+pk_service_pack_create_for_updates (PkServicePack *pack, GError **error)
+{
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
+	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
+	return TRUE;
+}
+
+/**
  * pk_service_pack_finalize:
  **/
 static void
@@ -240,6 +308,11 @@ pk_service_pack_finalize (GObject *object)
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_SERVICE_PACK (object));
 	pack = PK_SERVICE_PACK (object);
+
+	if (pack->priv->exclude_list != NULL)
+		g_object_unref (pack->priv->exclude_list);
+	g_free (pack->priv->directory);
+	g_free (pack->priv->filename);
 
 	G_OBJECT_CLASS (pk_service_pack_parent_class)->finalize (object);
 }
@@ -262,6 +335,9 @@ static void
 pk_service_pack_init (PkServicePack *pack)
 {
 	pack->priv = PK_SERVICE_PACK_GET_PRIVATE (pack);
+	pack->priv->exclude_list = NULL;
+	pack->priv->filename = NULL;
+	pack->priv->directory = NULL;
 }
 
 /**
