@@ -65,6 +65,9 @@ gboolean	 pk_service_pack_set_exclude_list		(PkServicePack	*pack,
 gboolean	 pk_service_pack_create_for_package_id		(PkServicePack	*pack,
 								 const gchar	*package_id,
 								 GError		**error);
+gboolean	 pk_service_pack_create_for_package_ids		(PkServicePack	*pack,
+								 gchar		**package_ids,
+								 GError		**error);
 gboolean	 pk_service_pack_create_for_updates		(PkServicePack	*pack,
 								 GError		**error);
 

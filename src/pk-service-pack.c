@@ -558,12 +558,12 @@ out:
 }
 
 /**
- * pk_service_pack_create_for_package_id:
+ * pk_service_pack_create_for_package_ids:
  **/
 gboolean
-pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package_id, GError **error)
+pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids, GError **error)
 {
-	gchar **package_ids = NULL;
+	gchar **package_ids_deps = NULL;
 	PkPackageList *list = NULL;
 	guint length;
 	guint i;
@@ -574,14 +574,12 @@ pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package
 	gchar *text;
 
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
 
 	/* download this package */
-	package_ids = pk_package_ids_from_id (package_id);
 	ret = pk_service_pack_download_package_ids (pack, package_ids);
-	g_strfreev (package_ids);
 	if (!ret) {
 		*error = g_error_new (1, 0, "failed to download main package: %s", error_local->message);
 		g_error_free (error_local);
@@ -596,7 +594,7 @@ pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package
 		goto out;
 	}
 
-	egg_debug ("Getting depends for %s", package_id);
+	egg_debug ("Getting depends for %s", package_ids[0]);
 	ret = pk_client_get_depends (pack->priv->client, PK_FILTER_ENUM_NONE, package_ids, TRUE, &error_local);
 	if (!ret) {
 		*error = g_error_new (1, 0, "failed to get depends: %s", error_local->message);
@@ -622,18 +620,16 @@ pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package
 	/* confirm we want the deps */
 	if (length != 0) {
 		/* download additional package_ids */
-		package_ids = pk_package_list_to_strv (list);
-		ret = pk_service_pack_download_package_ids (pack, package_ids);
-		g_strfreev (package_ids);
+		package_ids_deps = pk_package_list_to_strv (list);
+		ret = pk_service_pack_download_package_ids (pack, package_ids_deps);
+		g_strfreev (package_ids_deps);
 
 		/* failed to get deps */
 		if (!ret) {
-			*error = g_error_new (1, 0, "xxxxxxxxxxxxxxxxxx: %s", error_local->message);
-			egg_warning ("failed to download deps of package: %s", package_id);
+			*error = g_error_new (1, 0, "failed to download deps of package: %s", package_ids[0]);
 			goto out;
 		}
 	}
-
 
 	/* find packages that were downloaded */
 	file_array = pk_service_pack_scan_files_in_directory (pack);
@@ -657,6 +653,26 @@ out:
 		g_ptr_array_foreach (file_array, (GFunc) g_free, NULL);
 		g_ptr_array_free (file_array, TRUE);
 	}
+	return ret;
+}
+
+/**
+ * pk_service_pack_create_for_package_id:
+ **/
+gboolean
+pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package_id, GError **error)
+{
+	gchar **package_ids;
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
+	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
+
+	package_ids = pk_package_ids_from_id (package_id);
+	ret = pk_service_pack_create_for_package_ids (pack, package_ids, error);
+	g_strfreev (package_ids);
 	return ret;
 }
 
