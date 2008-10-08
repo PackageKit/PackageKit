@@ -53,6 +53,12 @@ struct PkServicePackPrivate
 	PkClient		*client;
 };
 
+typedef enum {
+	PK_SERVICE_PACK_PACKAGE,
+	PK_SERVICE_PACK_LAST_SIGNAL
+} PkSignals;
+
+static guint signals [PK_SERVICE_PACK_LAST_SIGNAL] = { 0 };
 G_DEFINE_TYPE (PkServicePack, pk_service_pack, G_TYPE_OBJECT)
 
 /**
@@ -612,6 +618,19 @@ out:
 }
 
 /**
+ * pk_service_pack_package_cb:
+ **/
+static void
+pk_service_pack_package_cb (PkClient *client, const PkPackageObj *obj, PkServicePack *pack)
+{
+	g_return_if_fail (PK_IS_SERVICE_PACK (pack));
+	g_return_if_fail (obj != NULL);
+
+	egg_debug ("emit package %s", obj->id->name);
+	g_signal_emit (pack, signals [PK_SERVICE_PACK_PACKAGE], 0, obj);
+}
+
+/**
  * pk_service_pack_setup_client:
  **/
 static gboolean
@@ -620,6 +639,8 @@ pk_service_pack_setup_client (PkServicePack *pack)
 	if (pack->priv->client != NULL)
 		return FALSE;
 	pack->priv->client = pk_client_new ();
+	g_signal_connect (pack->priv->client, "package",
+			  G_CALLBACK (pk_service_pack_package_cb), pack);
 	pk_client_set_use_buffer (pack->priv->client, TRUE, NULL);
 	pk_client_set_synchronous (pack->priv->client, TRUE, NULL);
 	return TRUE;
@@ -840,6 +861,21 @@ pk_service_pack_class_init (PkServicePackClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_service_pack_finalize;
+
+	/**
+	 * PkServicePack::package:
+	 * @pack: the #PkServicePack instance that emitted the signal
+	 * @obj: the #PkPackageObj that has just been downloaded
+	 *
+	 * The ::package signal is emitted when a file is being downloaded.
+	 **/
+	signals [PK_SERVICE_PACK_PACKAGE] =
+		g_signal_new ("package",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkServicePackClass, package),
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+
 	g_type_class_add_private (klass, sizeof (PkServicePackPrivate));
 }
 
