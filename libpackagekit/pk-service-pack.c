@@ -40,8 +40,7 @@
 #include <pk-common.h>
 #include <pk-client.h>
 #include <pk-package-ids.h>
-
-#include "pk-service-pack.h"
+#include <pk-service-pack.h>
 
 #define PK_SERVICE_PACK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SERVICE_PACK, PkServicePackPrivate))
 
@@ -55,6 +54,7 @@ struct PkServicePackPrivate
 
 typedef enum {
 	PK_SERVICE_PACK_PACKAGE,
+	PK_SERVICE_PACK_PERCENTAGE,
 	PK_SERVICE_PACK_LAST_SIGNAL
 } PkSignals;
 
@@ -421,26 +421,28 @@ pk_service_pack_set_exclude_list (PkServicePack *pack, PkPackageList *list)
  * pk_service_pack_download_package_ids:
  **/
 static gboolean
-pk_service_pack_download_package_ids (PkServicePack *pack, gchar **package_ids)
+pk_service_pack_download_package_ids (PkServicePack *pack, gchar **package_ids, GError **error)
 {
 	gboolean ret;
-	GError *error = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
 
 	egg_debug ("download+ %s", package_ids[0]);
-	ret = pk_client_reset (pack->priv->client, &error);
+	ret = pk_client_reset (pack->priv->client, &error_local);
 	if (!ret) {
-		egg_warning ("failed to download: %s", error->message);
-		g_error_free (error);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+				      "failed to reset: %s", error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
-	ret = pk_client_download_packages (pack->priv->client, package_ids, pack->priv->directory, &error);
+	ret = pk_client_download_packages (pack->priv->client, package_ids, pack->priv->directory, &error_local);
 	if (!ret) {
-		egg_warning ("failed to download: %s", error->message);
-		g_error_free (error);
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_DOWNLOAD,
+				      "failed to download: %s", error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 out:
@@ -473,6 +475,7 @@ pk_service_pack_exclude_packages (PkServicePack *pack, PkPackageList *list)
 	return TRUE;
 }
 
+#ifdef HAVE_ARCHIVE_H
 /**
  * pk_service_pack_create_metadata_file:
  **/
@@ -525,7 +528,6 @@ out:
 	return ret;
 }
 
-#ifdef HAVE_ARCHIVE_H
 /**
  * pk_service_pack_archive_add_file:
  **/
@@ -719,6 +721,17 @@ pk_service_pack_package_cb (PkClient *client, const PkPackageObj *obj, PkService
 }
 
 /**
+ * pk_service_pack_progress_changed_cb:
+ **/
+static void
+pk_service_pack_progress_changed_cb (PkClient *client, guint percentage, guint subpercentage,
+				     guint elapsed, guint remaining, PkServicePack *pack)
+{
+	egg_debug ("emit percentage %i", percentage);
+	g_signal_emit (pack, signals [PK_SERVICE_PACK_PERCENTAGE], 0, percentage);
+}
+
+/**
  * pk_service_pack_setup_client:
  **/
 static gboolean
@@ -729,6 +742,8 @@ pk_service_pack_setup_client (PkServicePack *pack)
 	pack->priv->client = pk_client_new ();
 	g_signal_connect (pack->priv->client, "package",
 			  G_CALLBACK (pk_service_pack_package_cb), pack);
+	g_signal_connect (pack->priv->client, "progress-changed",
+			  G_CALLBACK (pk_service_pack_progress_changed_cb), pack);
 	pk_client_set_use_buffer (pack->priv->client, TRUE, NULL);
 	pk_client_set_synchronous (pack->priv->client, TRUE, NULL);
 	return TRUE;
@@ -759,6 +774,7 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
 
@@ -766,7 +782,7 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 	pk_service_pack_setup_client (pack);
 
 	/* download this package */
-	ret = pk_service_pack_download_package_ids (pack, package_ids);
+	ret = pk_service_pack_download_package_ids (pack, package_ids, &error_local);
 	if (!ret) {
 		*error = g_error_new (PK_SERVICE_PACK_ERROR, error_local->code,
 				      "failed to download main package: %s", error_local->message);
@@ -812,13 +828,14 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 	if (length != 0) {
 		/* download additional package_ids */
 		package_ids_deps = pk_package_list_to_strv (list);
-		ret = pk_service_pack_download_package_ids (pack, package_ids_deps);
+		ret = pk_service_pack_download_package_ids (pack, package_ids_deps, &error_local);
 		g_strfreev (package_ids_deps);
 
 		/* failed to get deps */
 		if (!ret) {
-			*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_DOWNLOAD,
-					      "failed to download deps of package: %s", package_ids[0]);
+			*error = g_error_new (PK_SERVICE_PACK_ERROR, error_local->code,
+					      "failed to download deps of package: %s", error_local->message);
+			g_error_free (error_local);
 			goto out;
 		}
 	}
@@ -868,6 +885,7 @@ pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package
 
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (error != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
 
@@ -896,6 +914,7 @@ pk_service_pack_create_for_updates (PkServicePack *pack, GError **error)
 	guint len;
 
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (error != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
 
@@ -985,6 +1004,20 @@ pk_service_pack_class_init (PkServicePackClass *klass)
 			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
 			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 
+	/**
+	 * PkServicePack::percentage:
+	 * @pack: the #PkServicePack instance that emitted the signal
+	 * @percentage: the #PkPackageObj that has just been downloaded
+	 *
+	 * The ::package signal is emitted when a file is being downloaded.
+	 **/
+	signals [PK_SERVICE_PACK_PERCENTAGE] =
+		g_signal_new ("percentage",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkServicePackClass, percentage),
+			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
+
 	g_type_class_add_private (klass, sizeof (PkServicePackPrivate));
 }
 
@@ -1019,7 +1052,7 @@ pk_service_pack_new (void)
 #include "egg-test.h"
 
 void
-egg_test_service_pack (EggTest *test)
+pk_service_pack_test (EggTest *test)
 {
 	PkServicePack *pack;
 
@@ -1030,7 +1063,6 @@ egg_test_service_pack (EggTest *test)
 	egg_test_title (test, "get an instance");
 	pack = pk_service_pack_new ();
 	egg_test_assert (test, pack != NULL);
-
 	g_object_unref (pack);
 
 	egg_test_end (test);
