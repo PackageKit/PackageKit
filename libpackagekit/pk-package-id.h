@@ -51,6 +51,8 @@ PkPackageId	*pk_package_id_copy			(const PkPackageId	*id)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_package_id_equal			(const PkPackageId	*id1,
 							 const PkPackageId	*id2);
+gboolean	 pk_package_id_equal_fuzzy_arch		(const PkPackageId	*id1,
+							 const PkPackageId	*id2);
 gchar		*pk_package_id_to_string		(const PkPackageId	*id)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_package_id_free			(PkPackageId		*id);

@@ -68,9 +68,9 @@ pkgenpack_SOURCES =					\
 	egg-debug.h					\
 	egg-string.c					\
 	egg-string.h					\
-	pk-generate-pack-main.c				\
 	pk-generate-pack.c				\
-	pk-generate-pack.h				\
+	pk-service-pack.c				\
+	pk-service-pack.h				\
 	pk-tools-common.c				\
 	pk-tools-common.h				\
 	$(NULL)
@@ -111,9 +111,6 @@ pk_self_test_SOURCES =					\
 	egg-test.c					\
 	egg-test.h					\
 	pk-self-test.c					\
-	pk-generate-pack.c				\
-	pk-tools-common.c				\
-	pk-tools-common.h				\
 	$(shared_SOURCES)				\
 	$(NULL)
 

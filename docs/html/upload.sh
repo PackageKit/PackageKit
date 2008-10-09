@@ -18,4 +18,8 @@ scp *.css $USER@$SERVER:/$LOCATION/
 scp ../api/html/*.html $USER@$SERVER:/$LOCATION/gtk-doc/
 scp ../api/html/*.png $USER@$SERVER:/$LOCATION/gtk-doc/
 scp ../api/html/*.css $USER@$SERVER:/$LOCATION/gtk-doc/
+docbook2pdf ../../man/pkcon.xml --output ./man
+docbook2pdf ../../man/pkmon.xml --output ./man
+docbook2pdf ../../man/pkgenpack.xml --output ./man
+scp man/*.pdf $USER@$SERVER:/$LOCATION/files/
 

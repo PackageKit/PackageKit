@@ -571,7 +571,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for grp_id in grps:
                 grp = self.yumbase.comps.return_group(grp_id)
                 if grp:
-                    cat_id = "@%s" % (grp_id)
+                    cat_id_name = "@%s" % (grp_id)
                     name = grp.nameByLang(self._lang)
                     summary = grp.descriptionByLang(self._lang)
                     icon = "image-missing"
@@ -582,7 +582,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
                         if os.access(fn, os.R_OK):
                             icon = cat_id
-                    self.category(cat, cat_id, name, summary, icon)
+                    self.category(cat, cat_id_name, name, summary, icon)
 
     def download_packages(self, directory, package_ids):
         '''
@@ -1381,7 +1381,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             rc, msgs =  self.yumbase.buildTransaction()
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
-        except:
+        except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, str(e))
         if rc != 2:
             self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
@@ -1429,7 +1429,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_PACKAGE_CONFLICTS, message)
                 else:
                     self.error(ERROR_TRANSACTION_ERROR, message)
-            except:
+            except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, str(e))
 
     def remove_packages(self, allowdep, package_ids):

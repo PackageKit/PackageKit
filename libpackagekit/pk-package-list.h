@@ -84,6 +84,8 @@ gboolean		 pk_package_list_to_file	(const PkPackageList	*plist,
 							 const gchar		*filename);
 gboolean		 pk_package_list_add_file	(PkPackageList		*plist,
 							 const gchar		*filename);
+gboolean		 pk_package_list_set_fuzzy_arch	(PkPackageList		*plist,
+							 gboolean		 fuzzy_arch);
 
 G_END_DECLS
 

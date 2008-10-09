@@ -22,39 +22,52 @@
 
 #include "config.h"
 
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
-#include <dbus/dbus-glib.h>
-
-#include <pk-package-ids.h>
-#include <pk-client.h>
-#include <pk-control.h>
-#include <pk-package-id.h>
-#include <pk-common.h>
-#ifdef HAVE_ARCHIVE_H
-#include <archive.h>
-#include <archive_entry.h>
-#endif /* HAVE_ARCHIVE_H */
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <dirent.h>
 
 #include "egg-debug.h"
-#include "egg-string.h"
+
+#include <pk-client.h>
+#include <pk-control.h>
+#include <pk-common.h>
+#include <pk-package-list.h>
+#include <pk-package-id.h>
+#include <pk-package-ids.h>
+#include <pk-client.h>
 
 #include "pk-tools-common.h"
-
+#include "pk-service-pack.h"
 
 /**
- * pk_generate_pack_perhaps_resolve:
+ * pk_generate_pack_get_filename:
  **/
-gchar *
-pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
+static gchar *
+pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
+{
+	gchar *filename = NULL;
+	gchar *distro_id;
+	gchar *iso_time = NULL;
+
+	distro_id = pk_get_distro_id ();
+	if (name != NULL) {
+		filename = g_strdup_printf ("%s/%s-%s.servicepack", directory, name, distro_id);
+	} else {
+		iso_time = pk_iso8601_present ();
+		/* don't include the time, just use the date prefix */
+		iso_time[10] = '\0';
+		filename = g_strdup_printf ("%s/updates-%s-%s.servicepack", directory, iso_time, distro_id);
+	}
+	g_free (distro_id);
+	g_free (iso_time);
+	return filename;
+}
+
+/**
+ * pk_generate_pack_package_resolve:
+ **/
+static gchar *
+pk_generate_pack_package_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gboolean valid;
@@ -72,9 +85,8 @@ pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gch
 
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package);
-	if (valid) {
+	if (valid)
 		return g_strdup (package);
-	}
 
 	ret = pk_client_reset (client, error);
 	if (ret == FALSE) {
@@ -138,593 +150,187 @@ pk_generate_pack_perhaps_resolve (PkClient *client, PkBitfield filter, const gch
 }
 
 /**
- * pk_generate_pack_download_only:
+ * pk_generate_pack_package_cb:
  **/
-gboolean
-pk_generate_pack_download_only (PkClient *client, gchar **package_ids, const gchar *directory)
+static void
+pk_generate_pack_package_cb (PkServicePack *pack, const PkPackageObj *obj, gpointer data)
 {
-	gboolean ret;
+	g_return_if_fail (obj != NULL);
+	g_print ("%s %s-%s.%s\n", _("Downloading"), obj->id->name, obj->id->version, obj->id->arch);
+}
+
+/**
+ * main:
+ **/
+int
+main (int argc, char *argv[])
+{
 	GError *error = NULL;
-
-	/* check for NULL values */
-	if (package_ids == NULL || directory == NULL) {
-		egg_warning (_("failed to download: invalid package_id and/or directory"));
-		ret = FALSE;
-		goto out;
-	}
-
-	egg_debug ("download+ %s %s", package_ids[0], directory);
-	ret = pk_client_reset (client, &error);
-	if (!ret) {
-		egg_warning ("failed to download: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-	ret = pk_client_download_packages (client, package_ids, directory, &error);
-	if (!ret) {
-		egg_warning ("failed to download: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-out:
-	return ret;
-}
-
-/**
- * pk_generate_pack_exclude_packages:
- **/
-gboolean
-pk_generate_pack_exclude_packages (PkPackageList *list, const gchar *package_list)
-{
-	guint i;
-	guint length;
-	gboolean found;
-	PkPackageList *list_packages;
-	const PkPackageObj *obj;
+	GOptionContext *context;
+	gchar *options_help;
 	gboolean ret;
-
-	list_packages = pk_package_list_new ();
-
-	/* check for NULL values */
-	if (package_list == NULL) {
-		egg_warning ("Cannot find the list of packages to be excluded");
-		ret = FALSE;
-		goto out;
-	}
-
-	/* load a list of packages already found on the users system */
-	ret = pk_package_list_add_file (list_packages, package_list);
-	if (!ret)
-		goto out;
-
-	/* do not just download everything, uselessly */
-	length = pk_package_list_get_size (list_packages);
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (list_packages, i);
-		/* will just ignore if the obj is not there */
-		found = pk_package_list_remove_obj (list, obj);
-		if (found)
-			egg_debug ("removed %s", obj->id->name);
-	}
-
-out:
-	g_object_unref (list_packages);
-	return ret;
-}
-
-/**
- * pk_generate_pack_set_metadata:
- **/
-gboolean
-pk_generate_pack_set_metadata (const gchar *full_path)
-{
-	gboolean ret = FALSE;
-	gchar *distro_id = NULL;
-	gchar *datetime = NULL;
-	GError *error = NULL;
-	GKeyFile *file = NULL;
-	gchar *data = NULL;
-
-	file = g_key_file_new ();
-
-	/* check for NULL values */
-	if (full_path == NULL) {
-		egg_warning (_("Could not find a valid metadata file"));
-		goto out;
-	}
-
-	/* get needed data */
-	distro_id = pk_get_distro_id ();
-	if (distro_id == NULL)
-		goto out;
-	datetime = pk_iso8601_present ();
-	if (datetime == NULL)
-		goto out;
-
-	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", distro_id);
-	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "created", datetime);
-
-	/* convert to text */
-	data = g_key_file_to_data (file, NULL, &error);
-	if (data == NULL) {
-		egg_warning ("failed to convert to text: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* save contents */
-	ret = g_file_set_contents (full_path, data, -1, &error);
-	if (!ret) {
-		egg_warning ("failed to save file: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-out:
-	g_key_file_free (file);
-	g_free (data);
-	g_free (distro_id);
-	g_free (datetime);
-	return ret;
-}
-
-#ifdef HAVE_ARCHIVE_H
-/**
- * pk_generate_pack_archive_add_file:
- **/
-static gboolean
-pk_generate_pack_archive_add_file (struct archive *arch, const gchar *filename, GError **error)
-{
-	int retval;
-	int len;
-	int fd = -1;
-	int wrote;
-	gboolean ret = FALSE;
-	gchar *filename_basename = NULL;
-	struct archive_entry *entry = NULL;
-	struct stat st;
-	gchar buff[8192];
-
-	/* stat file */
-	retval = stat (filename, &st);
-	if (retval != 0) {
-		*error = g_error_new (1, 0, "file not found %s", filename);
-		goto out;
-	}
-	egg_debug ("stat(%s), size=%lu bytes\n", filename, st.st_size);
-
-	/* create new entry */
-	entry = archive_entry_new ();
-	archive_entry_copy_stat (entry, &st);
-	filename_basename = g_path_get_basename (filename);
-	archive_entry_set_pathname (entry, filename_basename);
-
-	/* ._BIG FAT BUG_. We should not have to do this, as it should be
-	 * set from archive_entry_copy_stat() */
-	archive_entry_set_size (entry, st.st_size);
-
-	/* write header */
-	retval = archive_write_header (arch, entry);
-	if (retval != ARCHIVE_OK) {
-		*error = g_error_new (1, 0, "failed to write header: %s\n", archive_error_string (arch));
-		goto out;
-	}
-
-	/* open file to copy */
-	fd = open (filename, O_RDONLY);
-	if (fd < 0) {
-		*error = g_error_new (1, 0, "failed to get fd for %s", filename);
-		goto out;
-	}
-
-	/* ITS4: ignore, buffer statically preallocated  */
-	len = read (fd, buff, sizeof (buff));
-	/* write data to archive -- how come no convenience function? */
-	while (len > 0) {
-		wrote = archive_write_data (arch, buff, len);
-		if (wrote != len)
-			egg_warning("wrote %i instead of %i\n", wrote, len);
-		/* ITS4: ignore, buffer statically preallocated  */
-		len = read (fd, buff, sizeof (buff));
-	}
-	ret = TRUE;
-out:
-	if (fd >= 0)
-		close (fd);
-	if (entry != NULL)
-		archive_entry_free (entry);
-	g_free (filename_basename);
-	return ret;
-}
-
-/**
- * pk_generate_pack_create:
- **/
-gboolean
-pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError **error)
-{
-	struct archive *arch = NULL;
-	gboolean ret = FALSE;
-	const gchar *src;
-	guint i;
-	gchar *metadata_filename;
-
-	g_return_val_if_fail (tarfilename != NULL, FALSE);
-	g_return_val_if_fail (file_array != NULL, FALSE);
-	g_return_val_if_fail (error != NULL, FALSE);
-
-	/* create a file with metadata in it */
-	metadata_filename = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
-	ret = pk_generate_pack_set_metadata (metadata_filename);
-	if (!ret) {
-	        *error = g_error_new (1, 0, "failed to generate metadata file %s", metadata_filename);
-	        goto out;
-	}
-	g_ptr_array_add (file_array, g_strdup (metadata_filename));
-
-	/* we can only write tar achives */
-	arch = archive_write_new ();
-	archive_write_set_compression_none (arch);
-	archive_write_set_format_ustar (arch);
-	archive_write_open_filename (arch, tarfilename);
-
-	/* for each filename */
-	for (i=0; i<file_array->len; i++) {
-		src = (const gchar *) g_ptr_array_index (file_array, i);
-		/* try to add to archive */
-		ret = pk_generate_pack_archive_add_file (arch, src, error);
-		if (!ret)
-			goto out;
-	}
-
-	/* completed all okay */
-	ret = TRUE;
-out:
-	g_free (metadata_filename);
-	/* delete each filename */
-	for (i=0; i<file_array->len; i++) {
-		src = (const gchar *) g_ptr_array_index (file_array, i);
-		g_remove (src);
-	}
-
-	/* close the archive */
-	if (arch != NULL) {
-		archive_write_close (arch);
-		archive_write_finish (arch);
-	}
-	return ret;
-}
-#else
-/**
- * pk_generate_pack_create:
- **/
-gboolean
-pk_generate_pack_create (const gchar *tarfilename, GPtrArray *file_array, GError **error)
-{
-	*error = g_error_new (1, 0, "Cannot create pack as PackageKit as not built with libtar support");
-	return FALSE;
-}
-#endif
-
-/**
- * pk_generate_pack_scan_dir:
- **/
-GPtrArray *
-pk_generate_pack_scan_dir (const gchar *directory)
-{
-	gchar *src;
-	GPtrArray *file_array = NULL;
-	GDir *dir;
-	const gchar *filename;
-
-	/* check for NULL values */
-	if (directory == NULL) {
-		egg_warning ("failed to get directory");
-		goto out;
-	}
-
-	/* try and open the directory */
-	dir = g_dir_open (directory, 0, NULL);
-	if (dir == NULL) {
-		egg_warning ("failed to get directory for %s", directory);
-		goto out;
-	}
-
-	/* add each file to an array */
-	file_array = g_ptr_array_new ();
-	while ((filename = g_dir_read_name (dir))) {
-		src = g_build_filename (directory, filename, NULL);
-		g_ptr_array_add (file_array, src);
-	}
-	g_dir_close (dir);
-out:
-	return file_array;
-}
-
-/**
- * pk_generate_pack_main:
- **/
-gboolean
-pk_generate_pack_main (const gchar *pack_filename, const gchar *directory, const gchar *package, const gchar *package_list, GError **error)
-{
-
-	gchar *package_id;
-	gchar **package_ids;
+	guint retval;
+	gchar *filename = NULL;
+	PkControl *control = NULL;
+	PkBitfield roles;
+	gchar *tempdir = NULL;
+	gboolean exists;
+	gboolean overwrite;
+	PkServicePack *pack = NULL;
 	PkPackageList *list = NULL;
-	guint length;
-	gboolean download;
-	guint i;
-	const PkPackageObj *obj;
-	GPtrArray *file_array = NULL;
-	PkClient *client;
-	GError *error_local = NULL;
-	gboolean ret = FALSE;
-	gchar *text;
+	PkClient *client = NULL;
+	gchar *package_id = NULL;
 
-	client = pk_client_new ();
-	pk_client_set_use_buffer (client, TRUE, NULL);
-	pk_client_set_synchronous (client, TRUE, NULL);
+	gboolean verbose = FALSE;
+	gchar *directory = NULL;
+	gchar *package_list = NULL;
+	gchar *package = NULL;
+	gboolean updates = FALSE;
 
-	/* resolve package */
-	package_id = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, &error_local);
-	if (package_id == NULL) {
-		egg_warning ("failed to resolve: %s", error_local->message);
-		g_error_free (error_local);
+	const GOptionEntry options[] = {
+		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
+			_("Show extra debugging information"), NULL },
+		{ "with-package-list", 'l', 0, G_OPTION_ARG_STRING, &package_list,
+			_("Set the filename of dependencies to be excluded"), NULL},
+		{ "output", 'o', 0, G_OPTION_ARG_STRING, &directory,
+			_("The directory to put the pack file, or the current directory if ommitted"), NULL},
+		{ "package", 'p', 0, G_OPTION_ARG_STRING, &package,
+			_("The package to be put into the ServicePack"), NULL},
+		{ "updates", 'u', 0, G_OPTION_ARG_NONE, &updates,
+			_("Put all updates available in the ServicePack"), NULL},
+		{ NULL}
+	};
+
+	if (! g_thread_supported ())
+		g_thread_init (NULL);
+
+	g_type_init ();
+
+	context = g_option_context_new ("PackageKit Pack Generator");
+	g_option_context_add_main_entries (context, options, NULL);
+	g_option_context_parse (context, &argc, &argv, NULL);
+	/* Save the usage string in case command parsing fails. */
+	options_help = g_option_context_get_help (context, TRUE, NULL);
+	g_option_context_free (context);
+	egg_debug_init (verbose);
+
+	/* neither options selected */
+	if (package == NULL && !updates) {
+		g_print ("%s\n", _("Neither option selected"));
+		g_print ("%s", options_help);
+		return 1;
+	}
+
+	/* both options selected */
+	if (package != NULL && updates) {
+		g_print ("%s\n", _("Both optiosn selected"));
+		g_print ("%s", options_help);
+		return 1;
+	}
+
+	/* fall back to the system copy */
+	if (package_list == NULL)
+		package_list = g_strdup ("/var/lib/PackageKit/package-list.txt");
+
+	/* fall back to CWD */
+	if (directory == NULL)
+		directory = g_get_current_dir ();
+
+	/* are we dumb and can't check for depends? */
+	control = pk_control_new ();
+	roles = pk_control_get_actions (control, NULL);
+	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
+		g_print ("Please use a backend that supports GetDepends!\n");
 		goto out;
 	}
 
-	/* download this package */
-	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_generate_pack_download_only (client, package_ids, directory);
-	if (!ret) {
-		egg_warning ("failed to download main package: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
+	/* get fn */
+	filename = pk_generate_pack_get_filename (package, directory);
 
-	/* get depends */
-	ret = pk_client_reset (client, &error_local);
-	if (!ret) {
-		egg_warning ("failed to reset: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
+	/* download packages to a temporary directory */
+	tempdir = g_build_filename (g_get_tmp_dir (), "pack", NULL);
 
-	egg_debug ("Getting depends for %s", package_id);
-	ret = pk_client_get_depends (client, PK_FILTER_ENUM_NONE, package_ids, TRUE, &error_local);
-	if (!ret) {
-		egg_warning ("failed to get depends: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-	g_strfreev (package_ids);
+	/* check if file exists before we overwrite it */
+	exists = g_file_test (filename, G_FILE_TEST_EXISTS);
 
-	/* get the deps */
-	list = pk_client_get_package_list (client);
-
-	/* remove some deps */
-	ret = pk_generate_pack_exclude_packages (list, package_list);
-	if (!ret) {
-		egg_warning ("failed to exclude packages");
-		goto out;
-	}
-
-	/* list deps */
-	length = pk_package_list_get_size (list);
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (list, i);
-		text = pk_package_obj_to_string (obj);
-		g_print ("%s\n", text);
-		g_free (text);
-	}
-
-	/* confirm we want the deps */
-	if (length != 0) {
-		/* get user input */
-		download = pk_console_get_prompt (_("Okay to download the additional packages"), TRUE);
-
-		/* we chickened out */
-		if (download == FALSE) {
+	/*ask user input*/
+	if (exists) {
+		overwrite = pk_console_get_prompt (_("A pack with the same name already exists, do you want to overwrite it?"), FALSE);
+		if (!overwrite) {
 			g_print ("%s\n", _("Cancelled!"));
-			ret = FALSE;
 			goto out;
 		}
-
-		/* convert to list of package_ids */
-		package_ids = pk_package_list_to_strv (list);
-		ret = pk_generate_pack_download_only (client, package_ids, directory);
-		g_strfreev (package_ids);
 	}
 
-	/* failed to get deps */
+	/* get rid of temp directory if it already exists */
+	g_rmdir (tempdir);
+
+	/* make the temporary directory */
+	retval = g_mkdir_with_parents (tempdir, 0777);
+	if (retval != 0) {
+		g_print ("%s: %s\n", _("Failed to create directory"), tempdir);
+		goto out;
+	}
+
+	/* get the exclude list */
+	list = pk_package_list_new ();
+	ret = pk_package_list_add_file (list, package_list);
 	if (!ret) {
-		egg_warning ("failed to download deps of package: %s", package_id);
+		g_print ("%s: %s\n", _("Failed to open package list"), package_list);
 		goto out;
 	}
 
-	/* find packages that were downloaded */
-	file_array = pk_generate_pack_scan_dir (directory);
-	if (file_array == NULL) {
-		egg_warning ("failed to scan directory: %s", directory);
-		goto out;
+	/* resolve package name to package_id */
+	if (!updates) {
+		client = pk_client_new ();
+		pk_client_set_use_buffer (client, TRUE, NULL);
+		pk_client_set_synchronous (client, TRUE, NULL);
+		g_print ("%s\n", _("Resolving package name to remote object"));
+		package_id = pk_generate_pack_package_resolve (client, PK_FILTER_ENUM_NONE, package, &error);
+		if (package_id == NULL) {
+			g_print (_("Failed to find package '%s': %s"), package, error->message);
+			g_error_free (error);
+			goto out;
+		}
 	}
 
-	/* generate pack file */
-	ret = pk_generate_pack_create (pack_filename, file_array, &error_local);
-	if (!ret) {
-		egg_warning ("failed to create archive: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
+	/* create pack and set initial values */
+	pack = pk_service_pack_new ();
+	g_signal_connect (pack, "package",
+			  G_CALLBACK (pk_generate_pack_package_cb), pack);
+	pk_service_pack_set_filename (pack, filename);
+	pk_service_pack_set_temp_directory (pack, tempdir);
+	pk_service_pack_set_exclude_list (pack, list);
+
+	/* generate the pack */
+	g_print (_("Service pack to create: %s\n"), filename);
+	if (updates)
+		ret = pk_service_pack_create_for_updates (pack, &error);
+	else
+		ret = pk_service_pack_create_for_package_id (pack, package_id, &error);
+	if (ret)
+		g_print ("%s\n", _("Done!"));
+	else {
+		g_print ("%s: %s\n", _("Failed"), error->message);
+		g_error_free (error);
 	}
 
 out:
-	g_object_unref (client);
+	/* get rid of temp directory */
+	g_rmdir (tempdir);
+
+	if (pack != NULL)
+		g_object_unref (pack);
+	if (client != NULL)
+		g_object_unref (client);
 	if (list != NULL)
 		g_object_unref (list);
+	g_free (tempdir);
+	g_free (filename);
 	g_free (package_id);
-	if (file_array != NULL) {
-		g_ptr_array_foreach (file_array, (GFunc) g_free, NULL);
-		g_ptr_array_free (file_array, TRUE);
-	}
-	return ret;
+	g_free (directory);
+	g_free (package_list);
+	g_free (options_help);
+	g_object_unref (control);
+	return 0;
 }
-
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-pk_genpack_test (EggTest *test)
-{
-	PkClient *client = NULL;
-	gboolean ret;
-	gboolean retval;
-	GError *error = NULL;
-	gchar *file;
-	PkPackageList *list = NULL;
-	GPtrArray *file_array = NULL;
-	gchar *src;
-	gchar **package_ids;
-
-	if (!egg_test_start (test, "PkGeneratePack"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get client");
-	client = pk_client_new ();
-	if (client != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "test perhaps resolve NULL");
-	retval = pk_client_reset (client, &error);
-	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, NULL, &error);
-	if (file == NULL)
-		egg_test_success (test, NULL);
-	else {
-		egg_test_failed (test, "failed to resolve %s", error->message);
-		g_error_free (error);
-	}
-	g_free (file);
-
-	/************************************************************/
-	egg_test_title (test, "test perhaps resolve gitk");
-	retval = pk_client_reset(client, &error);
-	file = pk_generate_pack_perhaps_resolve (client, PK_FILTER_ENUM_NONE, "gitk;1.5.5.1-1.fc9;i386;installed", &error);
-	if (file != NULL && egg_strequal (file, "gitk;1.5.5.1-1.fc9;i386;installed"))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "got: %s", file);
-	g_free (file);
-
-	/************************************************************/
-	egg_test_title (test, "download only NULL");
-	ret = pk_generate_pack_download_only (client, NULL, NULL);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "download only gitk");
-	package_ids = pk_package_ids_from_id ("gitk;1.5.5.1-1.fc9;i386;installed");
-	ret = pk_generate_pack_download_only (client, package_ids, "/tmp");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-	g_strfreev (package_ids);
-	g_object_unref (client);
-
-	/************************************************************/
-	egg_test_title (test, "exclude NULL");
-	list = pk_package_list_new ();
-	ret = pk_generate_pack_exclude_packages (list, NULL);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "exclude /var/lib/PackageKit/package-list.txt");
-	list = pk_package_list_new ();
-	ret = pk_generate_pack_exclude_packages (list, "/var/lib/PackageKit/package-list.txt");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-	g_object_unref (list);
-
-	/************************************************************/
-	egg_test_title (test, "exclude false.txt");
-	list = pk_package_list_new ();
-	ret = pk_generate_pack_exclude_packages (list, "/media/USB/false.txt");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-	g_object_unref (list);
-
-	/************************************************************/
-	egg_test_title (test, "metadata NULL");
-	ret = pk_generate_pack_set_metadata (NULL);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "metadata /tmp/metadata.conf");
-	ret = pk_generate_pack_set_metadata ("/tmp/metadata.conf");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-	g_remove ("/tmp/metadata.conf");
-
-	/************************************************************/
-	egg_test_title (test, "scandir NULL");
-	file_array = pk_generate_pack_scan_dir (NULL);
-	if (file_array == NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "scandir /tmp");
-	file_array = pk_generate_pack_scan_dir ("/tmp");
-	if (file_array != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	/************************************************************/
-	egg_test_title (test, "generate pack /tmp/gitk.servicepack gitk");
-	file_array = g_ptr_array_new ();
-	src = g_build_filename ("/tmp", "gitk-1.5.5.1-1.fc9.i386.rpm", NULL);
-	g_ptr_array_add (file_array, src);
-	ret = pk_generate_pack_create ("/tmp/gitk.servicepack", file_array, &error);
-	if (!ret) {
-		if (error != NULL) {
-			egg_test_failed (test, "failed to create pack %s" , error->message);
-			g_error_free (error);
-		} else {
-			egg_test_failed (test, "could not set error");
-		}
-	} else
-		egg_test_success (test, NULL);
-
-	if (file_array != NULL) {
-		g_ptr_array_foreach (file_array, (GFunc) g_free, NULL);
-		g_ptr_array_free (file_array, TRUE);
-	}
-	g_remove ("/tmp/gitk.servicepack");
-
-	/************************************************************/
-	egg_test_end (test);
-}
-#endif

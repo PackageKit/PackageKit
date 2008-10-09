@@ -44,9 +44,12 @@ manpage.1: manpage.xml
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&package;</command>
-      <arg><option>options</option></arg>
-      <arg><option>path</option></arg>
-      <arg><option>package ..</option></arg>
+      <arg><option>--help</option></arg>
+      <arg><option>--verbose</option></arg>
+      <arg><option>--with-package-list</option></arg>
+      <arg><option>--output</option></arg>
+      <arg><option>--package</option></arg>
+      <arg><option>--updates</option></arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -61,80 +64,130 @@ manpage.1: manpage.xml
   <refsect1>
     <title>What is a Service Pack?</title>
     <para>
-      A service pack is a tarball which contains the particular package and its dependencies.
-      The user can select the dependencies to be packed using the --with-package-list option.
+      A service pack is a tarball which contains a set of packages and their dependencies.
+      The user can reduce the dependencies to be packed using the --with-package-list option.
       Along with the dependencies, a service pack has a file named metadata.conf which contains
-      the information like distro_id and date of creation of the pack.
+      the information about the distribution and creation date of the pack.
     </para>
   </refsect1>
   <refsect1>
     <title>Creating a Service Pack?</title>
     <para>
-      A service pack can be created using pkgenpack. When creating a pack, the user needs to specify
-      a valid path for the service pack and the package for which the pack has to be created.
+      A service pack is created using the command <command>pkgenpack</command>.
     </para>
   </refsect1>
   <refsect1>
     <title>Options</title>
     <para>
-      --with-package-list
+      This program follows the usual &gnu; command line syntax, with long options
+      starting with two dashes (`-').
+      A summary of options is included below.
     </para>
-    <para>
-      allows the user to explicitly specify the file list of packages from which the dependencies
-        are to be excluded. Generally, the file list of packages is generated using
-      pk-generate-package-list on the target system. If not used, pkgenpack
-        uses /var/lib/PackageKit/package-list.txt by default.
-    </para>
-    <para>
-      --verbose or -v
-    </para>
-    <para>
-      presents the debugging details to the user.
-    </para>
+    <variablelist>
+      <varlistentry>
+        <term>
+          <option>--help</option>
+        </term>
+        <listitem>
+          <para>Show summary of options.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--verbose</option>
+        </term>
+        <listitem>
+          <para>Show extra debugging information.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--with-package-list</option>
+        </term>
+        <listitem>
+          <para>Set the filename of dependencies to be excluded.</para>
+          <para>
+            Generally, the file list of packages is generated using
+            <command>pk-generate-package-list</command> on the target system.
+            If not specified, <command>pkgenpack</command> uses
+            /var/lib/PackageKit/package-list.txt by default.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--output</option>
+        </term>
+        <listitem>
+          <para>The directory to put the pack file, or the current directory if omitted.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--package</option>
+        </term>
+        <listitem>
+          <para>The package to be put into the ServicePack.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--update</option>
+        </term>
+        <listitem>
+          <para>Put all updates available in the ServicePack.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
   </refsect1>
   <refsect1>
     <title>Naming a Service Pack</title>
     <para>
-     The only valid extension for a service pack is ".servicepack". The user needs to specify
-     the full path of the pack, when using pkgenpack to generate a service pack.
+     The only valid extension for a service pack is ".servicepack".
     </para>
   </refsect1>
   <refsect1>
     <title>Examples</title>
     <para>
-      1. Tim is facing problems with his Internet connection at home. He needs a service pack
-      with valgrind and it's dependancies for his system. He asks James to generate a pack for him. Both know
-      James's system should contain similar packages as Tim's system, as both of them
-      have installed Fedora 9 two days ago. James simply runs:
+      1. Tim is facing problems with his Internet connection at home.
+      He needs a service pack with valgrind and it's dependencies for his system.
+      He asks James to generate a pack for him.
+      Both know James's system should contain similar packages as Tim's system,
+      as both of them have installed Fedora 9 two days ago. James simply runs:
     </para>
     <para>
-      [james@jamesbook:~]$pkgenpack /media/USB/TimPacks/valgrind.servicepack valgrind
+      [james@jamesbook:~]$ pkgenpack --output=/media/USB/TimPacks --package=valgrind
     </para>
     <para>
-     This generates a file valgrind.servicepack on the USB key Tim gave to James. Tim can now go home,
-     insert the USB key and double click on the valgrind.servicepack to be prompted to install these packages.
+     This generates a file /media/USB/TimPacks/valgrind-fedora-9-i686.servicepack
+     on the USB key Tim gave to James.
+     Tim can now go home, insert the USB key and double clicks on the
+     valgrind-fedora-9-i686.servicepack file to be prompted to install these packages.
     </para>
     <para>
-      2. Bill wants to create a service pack named kdegames.servicepack for his new system which does not have
-      an internet connection. He generates a list of packages on his system using pk-generate-package-list
-      and copies that list to his USB key. He then gives that USB to Rishi who has a good internet connectivity.
+      2. Bill wants to create a service pack named kdegames-fedora-9-i686.servicepack for
+      his new system which does not have an internet connection.
+      He generates a list of packages on his system using <command>pk-generate-package-list</command>
+      and copies that list to his USB key.
+      He then gives that USB to Rishi who has a good internet connectivity.
       Rishi runs the following command on his system:
     </para>
     <para>
-      [rishi@devils-temple:~]$pkgenpack --with-package-list /media/USB/package-list.txt /home/rishi/Desktop/kdegames.servicepack kdegames
+      [rishi@devils-temple:~]$ pkgenpack --with-package-list=/media/USB/package-list.txt --output=/home/rishi/Desktop --program=kdegames
     </para>
     <para>
-      This generates a service pack, kdegames.servicepack, on Rishi's Desktop, which can be distributed
-      to Bill and users with similar requirements.
+      This generates a service pack, kdegames-fedora-9-i686.servicepack, on Rishi's
+      Desktop, which can be distributed to Bill and users with similar requirements.
     </para>
   </refsect1>
   <refsect1>
     <title>Installing A Service Pack</title>
     <para>
-      Service Packs can be installed using pkcon by specifying the valid path. For example:
+      Service Packs can be installed using pkcon.
+      For example:
     </para>
     <para>
-      [hacker@tim-lounge:~]$pkcon install /home/USB/TimPacks/valgrind.servicepack
+      [hacker@tim-lounge:~]$ pkcon install /home/USB/TimPacks/valgrind-fedora-9-i686.servicepack
     </para>
   </refsect1>
   <refsect1>
