@@ -793,6 +793,7 @@ backend_install_files_thread (PkBackend *backend)
 		tmpRepo.setAutorefresh (true);
 		tmpRepo.setAlias ("PK_TMP_DIR");
 		tmpRepo.setName ("PK_TMP_DIR");
+		zypp_build_pool(true);
 
 		// add Repo to pool
 
