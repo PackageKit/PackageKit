@@ -35,9 +35,9 @@
 #include <pk-package-id.h>
 #include <pk-package-ids.h>
 #include <pk-client.h>
+#include <pk-service-pack.h>
 
 #include "pk-tools-common.h"
-#include "pk-service-pack.h"
 
 /**
  * pk_generate_pack_get_filename:

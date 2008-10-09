@@ -39,6 +39,7 @@ libpackagekit_include_HEADERS =					\
 	pk-catalog.h						\
 	pk-control.h						\
 	pk-task-list.h						\
+	pk-service-pack.h					\
 	$(NULL)
 
 libpackagekit_la_SOURCES =					\
@@ -54,6 +55,8 @@ libpackagekit_la_SOURCES =					\
 	pk-extra.h						\
 	pk-connection.c						\
 	pk-connection.h						\
+	pk-service-pack.c					\
+	pk-service-pack.h					\
 	pk-package-id.c						\
 	pk-package-id.h						\
 	pk-package-ids.c					\
@@ -91,6 +94,7 @@ libpackagekit_la_LIBADD =					\
 	$(DBUS_LIBS)						\
 	$(POLKIT_LIBS)						\
 	$(SQLITE_LIBS)						\
+	$(ARCHIVE_LIBS)						\
 	$(NULL)
 
 libpackagekit_la_LDFLAGS =					\
@@ -117,6 +121,7 @@ pk_self_test_LDADD =						\
 	$(SELFTEST_LIBS)					\
 	$(POLKIT_LIBS)						\
 	$(SQLITE_LIBS)						\
+	$(ARCHIVE_LIBS)						\
 	$(NULL)
 
 pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS)

@@ -53,8 +53,6 @@ shared_SOURCES =					\
 	egg-dbus-monitor.h				\
 	pk-marshal.c					\
 	pk-marshal.h					\
-	pk-service-pack.c				\
-	pk-service-pack.h				\
 	pk-transaction.c				\
 	pk-transaction.h				\
 	pk-backend.c					\

@@ -40,8 +40,7 @@
 #include <pk-common.h>
 #include <pk-client.h>
 #include <pk-package-ids.h>
-
-#include "pk-service-pack.h"
+#include <pk-service-pack.h>
 
 #define PK_SERVICE_PACK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SERVICE_PACK, PkServicePackPrivate))
 
@@ -1019,7 +1018,7 @@ pk_service_pack_new (void)
 #include "egg-test.h"
 
 void
-egg_test_service_pack (EggTest *test)
+pk_service_pack_test (EggTest *test)
 {
 	PkServicePack *pack;
 
@@ -1030,7 +1029,6 @@ egg_test_service_pack (EggTest *test)
 	egg_test_title (test, "get an instance");
 	pack = pk_service_pack_new ();
 	egg_test_assert (test, pack != NULL);
-
 	g_object_unref (pack);
 
 	egg_test_end (test);
