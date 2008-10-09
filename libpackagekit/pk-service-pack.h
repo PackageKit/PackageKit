@@ -59,6 +59,8 @@ typedef struct
 	GObjectClass	parent_class;
 	void		(* package)			(PkServicePack		*pack,
 							 const PkPackageObj	*obj);
+	void		(* percentage)			(PkServicePack		*pack,
+							 guint			 percentage);
 	/* Padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
