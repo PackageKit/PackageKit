@@ -30,6 +30,7 @@ IMAGE_FILES =					\
 	gpk-repo-more.png			\
 	gpk-require-restart.png			\
 	gpk-log.png				\
+	gpk-service-pack.png			\
 	gpk-updates.png				\
 	gpk-updates-warning.png			\
 	gpk-waiting.png				\
