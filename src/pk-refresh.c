@@ -31,6 +31,8 @@
   #include <gio/gio.h>
 #endif
 
+#include <pk-common.h>
+
 #include "egg-debug.h"
 #include "egg-string-list.h"
 
@@ -472,7 +474,7 @@ pk_refresh_update_package_list (PkRefresh *refresh)
 	pk_refresh_emit_progress_changed (refresh, 90);
 
 	/* convert to a file */
-	ret = pk_package_list_to_file (refresh->priv->list, "/var/lib/PackageKit/package-list.txt");
+	ret = pk_package_list_to_file (refresh->priv->list, PK_SYSTEM_PACKAGE_LIST_FILENAME);
 	if (!ret)
 		egg_warning ("failed to save to file");
 

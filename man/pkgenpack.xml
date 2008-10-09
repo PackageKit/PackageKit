@@ -110,7 +110,7 @@ manpage.1: manpage.xml
             Generally, the file list of packages is generated using
             <command>pk-generate-package-list</command> on the target system.
             If not specified, <command>pkgenpack</command> uses
-            /var/lib/PackageKit/package-list.txt by default.
+            /var/lib/PackageKit/system.package-list by default.
           </para>
         </listitem>
       </varlistentry>
@@ -173,7 +173,7 @@ manpage.1: manpage.xml
       Rishi runs the following command on his system:
     </para>
     <para>
-      [rishi@devils-temple:~]$ pkgenpack --with-package-list=/media/USB/package-list.txt --output=/home/rishi/Desktop --program=kdegames
+      [rishi@devils-temple:~]$ pkgenpack --with-package-list=/media/USB/bill.package-list --output=/home/rishi/Desktop --program=kdegames
     </para>
     <para>
       This generates a service pack, kdegames-fedora-9-i686.servicepack, on Rishi's

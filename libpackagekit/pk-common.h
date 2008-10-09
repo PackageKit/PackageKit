@@ -61,6 +61,13 @@ G_BEGIN_DECLS
  */
 #define	PK_SERVICE_PACK_GROUP_NAME	"PackageKit Service Pack"
 
+/**
+ * PK_PACKAGE_LIST_FILENAME:
+ *
+ * The default location of the package list
+ */
+#define	PK_SYSTEM_PACKAGE_LIST_FILENAME	"/var/lib/PackageKit/system.package-list"
+
 gboolean	 pk_strvalidate				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_strsafe				(const gchar	*text)
