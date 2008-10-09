@@ -5,406 +5,546 @@
 # Copyright (C) 2008 Lubomir Kundrak
 # This file is distributed under the same license as the PackageKit package.
 # Lubomir Kundrak <lkundrak@redhat.com>, 2008.
+# Pavol Šimo <palo.simo@gmail.com>, 2008.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-18 16:49+0100\n"
-"PO-Revision-Date: 2008-04-18 20:25+0100\n"
-"Last-Translator: Lubomir Kundrak <lkundrak@redhat.com>\n"
+"POT-Creation-Date: 2008-09-25 00:31+0000\n"
+"PO-Revision-Date: 2008-10-09 08:28+0200\n"
+"Last-Translator: Pavol Šimo <palo.simo@gmail.com>\n"
 "Language-Team: Fedora Project <fedora-cs-list@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Language: Slovak\n"
-"X-Poedit-Country: SLOVAKIA\n"
+"Content-Transfer-Encoding: 8bit"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr "Prijať licenčné podmienky"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr "Na prijatie licenčných podmienok je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr "Na úpravu zdrojov softvéru je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-msgid "Authentication is required to install a local file"
-msgstr "Na inštaláciu z lokálneho súboru je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-msgid "Authentication is required to install a package"
-msgstr "Na inštaláciu balíčka je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-msgid "Authentication is required to install a security signature"
-msgstr "Na inštaláciu bezpečnostný podpisu je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Authentication is required to refresh the package lists"
-msgstr "Na obnovenie zoznamu balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr "Na odstránenie balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr "Na navrátenie transakcie je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid "Authentication is required to update all packages"
-msgstr "Na aktualizáciu všetkých balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr "Na aktualizáciu balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr "Zmeniť parametre zdrojov softvéru"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr "Inštalovať z lokálneho súboru"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install package"
-msgstr "Inštalovať balíček"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Install security signature"
-msgstr "Inštalovať bezpečnostný podpis"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Refresh package lists"
-msgstr "Obnoviť zoznam balíčkov"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Remove package"
-msgstr "Odstrániť balíček"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Rollback to a previous transaction"
-msgstr "Navrátiť sa k stavu pred transakciou"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Update all packages"
-msgstr "Aktualizovať všetky balíčky"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Update package"
-msgstr "Aktualizovať balíček"
-
-#: ../client/pk-console.c:208
+#: ../client/pk-console.c:274
 msgid "Update detail"
-msgstr "Podrobnosti o aktualizácií"
+msgstr "Podrobnosti o aktualizácii"
 
-#: ../client/pk-console.c:400
+#: ../client/pk-console.c:491
 msgid "A system restart is required"
 msgstr "Je potrebný reštart systému"
 
-#: ../client/pk-console.c:402
+#: ../client/pk-console.c:493
 msgid "A logout and login is required"
 msgstr "Je potrebné sa odhásiť a znovu prihlásiť"
 
-#: ../client/pk-console.c:404
+#: ../client/pk-console.c:495
 msgid "An application restart is required"
 msgstr "Je potrebné aplikáciu ukončiť a znovu spustiť"
 
-#: ../client/pk-console.c:443
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Zadajte prosím číslo od 1 do %i: "
-
-#: ../client/pk-console.c:493
-msgid "Could not find a package match"
-msgstr "Nebolo močné nájsť zodpovedajúci balíček"
-
-#: ../client/pk-console.c:507
+#: ../client/pk-console.c:588 ../client/pk-generate-pack.c:126
 msgid "There are multiple package matches"
 msgstr "Zadaniu vyhovuje viac balíčkov"
 
 #. find out what package the user wants to use
-#: ../client/pk-console.c:514
+#: ../client/pk-console.c:595 ../client/pk-generate-pack.c:133
 msgid "Please enter the package number: "
 msgstr "Zadajte prosím číslo balíčka: "
 
-#: ../client/pk-console.c:530
-msgid "Could not find a package with that name to install, or package already installed"
-msgstr "Nebolo možné nájsť balíček zadaného mena na inštaláciu, alebo je už balíček nainštalovaný"
+#: ../client/pk-console.c:629
+msgid "Could not find package to install"
+msgstr "Nebolo možné nájsť balíček na inštalovanie"
 
-#: ../client/pk-console.c:612
-msgid "Could not find a package with that name to remove"
-msgstr "Nebolo možné nájsť balíček zadaného mena na odstránenie"
+#: ../client/pk-console.c:735
+msgid "Could not find package to remove"
+msgstr "Nebolo možné nájsť balíček na odstránenie"
 
-#: ../client/pk-console.c:652
+#: ../client/pk-console.c:796
 msgid "The following packages have to be removed"
 msgstr "Nasledujúce balíčky budú musieť byť odstránené"
 
 #. get user input
-#: ../client/pk-console.c:661
+#: ../client/pk-console.c:803
 msgid "Okay to remove additional packages?"
-msgstr "Chcete odstrániť dalšie balíčky?"
+msgstr "Môžu sa odstrániť doplnkové balíčky?"
 
-#: ../client/pk-console.c:665
+#: ../client/pk-console.c:807 ../client/pk-generate-pack.c:528
+#: ../client/pk-generate-pack-main.c:131
 msgid "Cancelled!"
 msgstr "Zrušené!"
 
-#: ../client/pk-console.c:687
-msgid "Could not find a package with that name to update"
-msgstr "Nebolo možné nájsť balíček zadaného mena na aktualizáciu"
+#: ../client/pk-console.c:841
+msgid "Could not find package to download"
+msgstr "Nebolo možné nájsť balíček na stiahnutie"
 
-#: ../client/pk-console.c:705
-msgid "Could not find what packages require this package"
-msgstr "Nebolo možné určiť ktoré balíčky na tomto balíčku závisia"
+#: ../client/pk-console.c:893
+msgid "Could not find package to update"
+msgstr "Nebolo možné nájsť balíček na aktualizovanie"
 
-#: ../client/pk-console.c:723
-msgid "Could not get dependencies for this package"
-msgstr "Nebolo možné získať závislosti tohoto balíčka"
+#: ../client/pk-console.c:915
+msgid "Could not find what packages require"
+msgstr "Nebolo možné určiť čo vyžadujú balíčky"
 
-#: ../client/pk-console.c:741
-msgid "Could not find a description for this package"
-msgstr "Nebolo možné získať popis tohoto balíčka"
+#: ../client/pk-console.c:936
+msgid "Could not get dependencies for"
+msgstr "Nebolo možné získať závislosti pre"
 
-#: ../client/pk-console.c:759
-#, c-format
+#: ../client/pk-console.c:957
+msgid "Could not find details for"
+msgstr "Nebolo možné získať detaily pre"
+
+#: ../client/pk-console.c:980
 msgid "Could not find the files for this package"
-msgstr "Nebolo možné získať zoznam súborov tohoto balíčka"
+msgstr "Nebolo možné získať zoznam súborov tohto balíčka"
 
-#: ../client/pk-console.c:819
+#: ../client/pk-console.c:987
+msgid "Could not get the file list"
+msgstr "Nebolo možné získať zoznam súborov"
+
+#: ../client/pk-console.c:1006
+msgid "Could not find the update details for"
+msgstr "Nebolo možné získať detaily aktualizácie pre"
+
+#: ../client/pk-console.c:1067
 msgid "Package description"
 msgstr "Popis balíčka"
 
-#: ../client/pk-console.c:842
+#: ../client/pk-console.c:1100
 msgid "Package files"
 msgstr "Zonam súborov v balíčku"
 
-#: ../client/pk-console.c:850
+#: ../client/pk-console.c:1108
 msgid "No files"
 msgstr "Žiadne súbory"
 
 #. get user input
-#: ../client/pk-console.c:882
+#: ../client/pk-console.c:1140
 msgid "Okay to import key?"
 msgstr "Importovať kľúč?"
 
-#: ../client/pk-console.c:885
+#: ../client/pk-console.c:1143
 msgid "Did not import key"
-msgstr "Kľúč bol importovaný"
+msgstr "Kľúč nebol importovaný"
 
 #. get user input
-#: ../client/pk-console.c:925
+#: ../client/pk-console.c:1183
 msgid "Do you agree?"
 msgstr "Súhlasíte?"
 
-#: ../client/pk-console.c:928
+#: ../client/pk-console.c:1186
 msgid "Did not agree to licence, task will fail"
-msgstr "Zadaná úloha neuspeje, pretože ste nesúhlasili ste s licenciou"
+msgstr "Zadaná úloha neuspeje, pretože ste nesúhlasili s licenciou"
 
-#: ../client/pk-console.c:957
+#: ../client/pk-console.c:1215
 msgid "The daemon crashed mid-transaction!"
 msgstr "Služba na pozadí neočakávne skončila počas transakcie!"
 
 #. header
-#: ../client/pk-console.c:1010
+#: ../client/pk-console.c:1268
 msgid "PackageKit Console Interface"
 msgstr "Konzola PackageKit"
 
-#: ../client/pk-console.c:1010
+#: ../client/pk-console.c:1268
 msgid "Subcommands:"
 msgstr "Podpríkazy:"
 
-#: ../client/pk-console.c:1114
-#: ../client/pk-monitor.c:100
-#: ../src/pk-main.c:189
+#: ../client/pk-console.c:1378 ../client/pk-generate-pack-main.c:64
+#: ../client/pk-monitor.c:118 ../src/pk-main.c:192
 msgid "Show extra debugging information"
 msgstr "Zobrazovať dodatočné ladiace informácie"
 
-#: ../client/pk-console.c:1116
-#: ../client/pk-monitor.c:102
+#: ../client/pk-console.c:1380 ../client/pk-monitor.c:120
 msgid "Show the program version and exit"
 msgstr "Zobraziť verziu programu a skončiť"
 
-#: ../client/pk-console.c:1118
+#: ../client/pk-console.c:1382
 msgid "Set the filter, e.g. installed"
 msgstr "Nastaviť filter, napríklad \"nainštalované\""
 
-#: ../client/pk-console.c:1120
+#: ../client/pk-console.c:1384
 msgid "Exit without waiting for actions to complete"
 msgstr "Nečakať na dokončenie úloh a skončiť"
 
-#: ../client/pk-console.c:1143
+#: ../client/pk-console.c:1407
 msgid "Could not connect to system DBUS."
-msgstr "Pokus o pripojenie k systémovej DBUS neuspel."
+msgstr "Pokus o pripojenie k systémovej zbernici DBUS neuspel."
 
-#: ../client/pk-console.c:1231
-#, c-format
-msgid "You need to specify a search type"
-msgstr "Je potrebné určiť typ vyhľadávania"
+#: ../client/pk-console.c:1500
+msgid "You need to specify a search type, e.g. name"
+msgstr "Je potrebné určiť typ vyhľadávania, napríklad názov"
 
-#: ../client/pk-console.c:1236
-#: ../client/pk-console.c:1243
-#: ../client/pk-console.c:1250
-#: ../client/pk-console.c:1257
-#: ../client/pk-console.c:1361
-#: ../client/pk-console.c:1368
-#: ../client/pk-console.c:1375
-#: ../client/pk-console.c:1382
-#, c-format
+#: ../client/pk-console.c:1505 ../client/pk-console.c:1512
+#: ../client/pk-console.c:1519 ../client/pk-console.c:1526
+#: ../client/pk-console.c:1637 ../client/pk-console.c:1647
+#: ../client/pk-console.c:1654 ../client/pk-console.c:1661
 msgid "You need to specify a search term"
 msgstr "Je potrebné určiť kľúčové slová na vyhľadávanie"
 
-#: ../client/pk-console.c:1262
-#, c-format
+#: ../client/pk-console.c:1531
 msgid "Invalid search type"
 msgstr "Neplatný typ vyhľadávania"
 
-#: ../client/pk-console.c:1267
-#, c-format
+#: ../client/pk-console.c:1536
 msgid "You need to specify a package or file to install"
 msgstr "Je potrebné určiť balíček alebo súbor na inštaláciu"
 
-#: ../client/pk-console.c:1280
-#, c-format
+#: ../client/pk-console.c:1543
 msgid "You need to specify a type, key_id and package_id"
 msgstr "Je potrebné určiť typ, key_id a package_id"
 
-#: ../client/pk-console.c:1287
-#, c-format
+#: ../client/pk-console.c:1550
 msgid "You need to specify a package to remove"
 msgstr "Je potrebné určit balíček na odstránenie"
 
-#: ../client/pk-console.c:1294
-#, c-format
+#: ../client/pk-console.c:1556
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
+msgstr "Je potrebné určiť cieľový priečinok a následne balíčky na stiahnutie"
+
+#: ../client/pk-console.c:1561
+msgid "Directory not found"
+msgstr "Priečinok nenájdený"
+
+#: ../client/pk-console.c:1567
 msgid "You need to specify a eula-id"
 msgstr "Je potrebné určiť eula-id"
 
-#: ../client/pk-console.c:1309
-#, c-format
+#: ../client/pk-console.c:1583
 msgid "You need to specify a package name to resolve"
-msgstr "Je potrebné určiť meno balíčka na vyhľadanie"
+msgstr "Je potrebné určiť názov balíčka na vyhľadanie"
 
-#: ../client/pk-console.c:1316
-#: ../client/pk-console.c:1323
-#, c-format
+#: ../client/pk-console.c:1592 ../client/pk-console.c:1599
 msgid "You need to specify a repo name"
-msgstr "Je potrebné určiť meno repozitára"
+msgstr "Je potrebné určiť názov repozitára"
 
-#: ../client/pk-console.c:1330
-#, c-format
+#: ../client/pk-console.c:1606
 msgid "You need to specify a repo name/parameter and value"
-msgstr "Je potrebné určiť meno repozitára/parameter a hodnotu"
+msgstr "Je potrebné určiť názov repozitára/parameter a hodnotu"
 
-#: ../client/pk-console.c:1343
-#, c-format
+#: ../client/pk-console.c:1619
 msgid "You need to specify a time term"
 msgstr "Je potrebné určiť čas"
 
-#: ../client/pk-console.c:1348
-#, c-format
+#: ../client/pk-console.c:1624
 msgid "You need to specify a correct role"
 msgstr "Je potrebné určiť správnu rolu"
 
 # XXX
-#: ../client/pk-console.c:1353
-#, c-format
+#: ../client/pk-console.c:1629
 msgid "Failed to get last time"
-msgstr "Nebolo možné získať posledného vykonania"
+msgstr "Nebolo možné získať čas ostatného vykonania"
 
-#: ../client/pk-console.c:1389
-#, c-format
-msgid "You need to specify a package to find the description for"
-msgstr "Je potrebné určiť balíček, ktorého popis sa má vyhľadať"
+#: ../client/pk-console.c:1668
+msgid "You need to specify a package to find the details for"
+msgstr "Je potrebné určiť balíček, ktorého detaily sa majú získať"
 
-#: ../client/pk-console.c:1396
-#, c-format
+#: ../client/pk-console.c:1675
 msgid "You need to specify a package to find the files for"
 msgstr "Je potrebné určiť balíček, zoznam súborov ktorého sa má získať"
 
-#: ../client/pk-console.c:1441
+#: ../client/pk-console.c:1724
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "Voľba '%s' nie je podporovaná"
 
-#: ../client/pk-console.c:1452
-msgid "Command failed"
-msgstr "Príkaz neuspel"
-
-#: ../client/pk-console.c:1456
+#: ../client/pk-console.c:1737
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Na vykonanie úlohy nemáte dostatočné privilégiá"
 
-#: ../client/pk-monitor.c:113
-msgid "PackageKit Monitor"
-msgstr "Monitor PackageKit"
+#: ../client/pk-console.c:1739
+msgid "Command failed"
+msgstr "Príkaz neuspel"
 
-#: ../client/pk-import-desktop.c:283
-#: ../client/pk-import-specspo.c:169
+#: ../client/pk-generate-pack.c:117
+msgid "Could not find a package match"
+msgstr "Nebolo močné nájsť zodpovedajúci balíček"
+
+#: ../client/pk-generate-pack.c:151
+msgid "failed to download: invalid package_id and/or directory"
+msgstr "získavanie zlyhalo: neplatné package_id a/alebo priečinok"
+
+#: ../client/pk-generate-pack.c:232
+msgid "Could not find a valid metadata file"
+msgstr "Nebolo možné nájsť platný súbor metadát"
+
+#. get user input
+#: ../client/pk-generate-pack.c:524
+msgid "Okay to download the additional packages"
+msgstr "Chcete stiahnuť dodatočné balíčky"
+
+#: ../client/pk-generate-pack-main.c:66
+msgid ""
+"Set the path of the file with the list of packages/dependencies to be "
+"excluded"
+msgstr "Nastavte cestu k súboru so zoznamom balíčkov/závislostí, ktoré "
+"sa majú vynechať"
+
+#: ../client/pk-generate-pack-main.c:111
+msgid "You need to specify the pack name and packages to be packed\n"
+msgstr "Je potrebné určit názov archívu a balíčky, ktoré sa majú zabaliť\n"
+
+#: ../client/pk-generate-pack-main.c:117
+msgid ""
+"Invalid name for the service pack, Specify a name with .servicepack "
+"extension\n"
+msgstr "Neplatný názov pre service pack, špecifikujte názov s platnou príponou pre "
+"service pack\n"
+
+#: ../client/pk-generate-pack-main.c:129
+msgid "A pack with the same name already exists, do you want to overwrite it?"
+msgstr "Archív s rovnakým názvom už existuje, chcete ho nahradiť?"
+
+# XXX
+#: ../client/pk-generate-pack-main.c:142
+msgid "Failed to create directory"
+msgstr "Nebolo možné vytvoriť priečinok"
+
+# XXX
+#: ../client/pk-generate-pack-main.c:149
+msgid "Failed to create pack"
+msgstr "Nebolo možné vytvoriť archív"
+
+#: ../client/pk-import-specspo.c:185
+msgid "Could not set database readonly"
+msgstr "Pokus o nastavenie databázy do režimu len pre čítanie neuspel"
+
+#: ../client/pk-import-specspo.c:192
 #, c-format
 msgid "Could not open database: %s"
 msgstr "Pokus o otvorenie databázy neuspel: %s"
 
-#: ../client/pk-import-desktop.c:284
-#: ../client/pk-import-specspo.c:170
+#: ../client/pk-import-specspo.c:193
 msgid "You probably need to run this program as the root user"
-msgstr "Tento program budete pravdepodobne musieť spustiť ako privilegovaný používateľ root"
+msgstr ""
+"Tento program budete pravdepodobne musieť spustiť ako privilegovaný "
+"používateľ (root)"
 
-#: ../src/pk-main.c:83
-msgid "Startup failed due to security policies on this machine."
-msgstr "Bezpečnostné politky tohoto počítača zabránili spusteniu."
+#: ../client/pk-monitor.c:131
+msgid "PackageKit Monitor"
+msgstr "Monitor PackageKit"
 
-#: ../src/pk-main.c:84
-msgid "This can happen for two reasons:"
-msgstr "Toto sa môže stať z dvoch dôvodov:"
+#: ../client/pk-tools-common.c:51
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Zadajte prosím číslo od 1 do %i: "
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:300
+msgid "Getting package information..."
+msgstr "Získavanie informácií o balíčku..."
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
+msgstr "<span color='#%06x' underline='single' size='larger'>Spustiť %s</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:308
+#: ../contrib/packagekit-plugin/src/contents.cpp:313
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#: ../contrib/packagekit-plugin/src/contents.cpp:340
+#, c-format
+msgid "<big>%s</big>"
+msgstr "<big>%s</big>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:310
+#, c-format
+msgid ""
+"\n"
+"<small>Installed version: %s</small>"
+msgstr ""
+"\n"
+"<small>Nainštalovaná verzia: %s</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:316
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run version %s now</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Spustiť verziu %s teraz</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:321
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run now</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Spustiť teraz</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:325
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Aktualizovať na verziu %s</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
+#, c-format
+msgid ""
+"<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
+msgstr ""
+"<span color='#%06x' underline='single' size='larger'>Inštalovať %s teraz</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:333
+#, c-format
+msgid ""
+"\n"
+"<small>Version: %s</small>"
+msgstr ""
+"\n"
+"<small>Verzia: %s</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:337
+msgid ""
+"\n"
+"<small>No packages found for your system</small>"
+msgstr ""
+"\n"
+"<small>Pre váš systém neboli nájdené žiadne balíčky</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:341
+msgid ""
+"\n"
+"<small>Installing...</small>"
+msgstr ""
+"\n"
+"<small>Inštalovanie...</small>"
+
+#: ../data/packagekit-catalog.xml.in.h:1
+msgid "PackageKit Catalog"
+msgstr "Katalóg PackageKit"
+
+#: ../data/packagekit-pack.xml.in.h:1
+msgid "PackageKit Service Pack"
+msgstr "Service pack PackageKit"
 
 #: ../src/pk-main.c:85
-msgid "The correct user is not launching the executable (usually root)"
-msgstr "Je potrebné určiť balíček, ktorého zoznam súborov sa má vyhľadať"
+msgid "Startup failed due to security policies on this machine."
+msgstr "Bezpečnostné politky tohto počítača zabránili spusteniu."
 
 #: ../src/pk-main.c:86
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/dbus-1/system.d directory"
-msgstr "Súbor org.freedesktop.PackageKit.conf nieje nainštalovaný v adresári /etc/dbus-1/system.d"
+msgid "This can happen for two reasons:"
+msgstr "Toto môže nastať z dvoch dôvodov:"
 
-#: ../src/pk-main.c:185
+#: ../src/pk-main.c:87
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "Program nebol spustený správnym používateľom (obvykle root)"
+
+#: ../src/pk-main.c:88
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
+msgstr ""
+"Súbor org.freedesktop.PackageKit.conf nieje nainštalovaný v priečinku /etc/"
+"dbus-1/system.d"
+
+#: ../src/pk-main.c:188
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Rozhranie balíčkoveho systému ktoré sa má použiť, napríklad \"dummy\""
 
-#: ../src/pk-main.c:187
+#: ../src/pk-main.c:190
 msgid "Daemonize and detach from the terminal"
 msgstr "Uvoľniť terminál a presunúť sa na pozadie"
 
-#: ../src/pk-main.c:191
+#: ../src/pk-main.c:194
 msgid "Disable the idle timer"
 msgstr "Vypnúť počítadlo nečinnosti"
 
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:196
 msgid "Show version and exit"
 msgstr "Zobraziť verziu a skončiť"
 
-#: ../src/pk-main.c:195
+#: ../src/pk-main.c:198
 msgid "Exit after a small delay"
 msgstr "Skončiť po krátkej prestávke"
 
 # XXX
-#: ../src/pk-main.c:197
+#: ../src/pk-main.c:200
 msgid "Exit after the engine has loaded"
 msgstr "Skončiť po načítaní enginu"
 
-#: ../src/pk-main.c:207
+#: ../src/pk-main.c:210
 msgid "PackageKit service"
 msgstr "Služba PackageKit"
 
-#: ../src/pk-main.c:233
+#: ../src/pk-main.c:246
 msgid "Cannot connect to the system bus"
 msgstr "Pokus o pripojenie k systémovej zbernici neuspel"
 
-#: ../src/pk-main.c:273
+#: ../src/pk-main.c:286
 #, c-format
 msgid "Error trying to start: %s\n"
-msgstr "Chyba pri pokuse spustiť: %s\n"
+msgstr "Chyba pri pokuse o spustenie: %s\n"
 
+#~ msgid "Accept EULA"
+#~ msgstr "Prijať licenčné podmienky"
+
+#~ msgid "Authentication is required to accept a EULA"
+#~ msgstr "Na prijatie licenčných podmienok je nutná autentifikácia"
+
+#~ msgid "Authentication is required to change software source parameters"
+#~ msgstr "Na úpravu zdrojov softvéru je nutná autentifikácia"
+
+#~ msgid "Authentication is required to install a local file"
+#~ msgstr "Na inštaláciu z lokálneho súboru je nutná autentifikácia"
+
+#~ msgid "Authentication is required to install a package"
+#~ msgstr "Na inštaláciu balíčka je nutná autentifikácia"
+
+#~ msgid "Authentication is required to install a security signature"
+#~ msgstr "Na inštaláciu bezpečnostný podpisu je nutná autentifikácia"
+
+#~ msgid "Authentication is required to refresh the package lists"
+#~ msgstr "Na obnovenie zoznamu balíčkov je nutná autentifikácia"
+
+#~ msgid "Authentication is required to remove packages"
+#~ msgstr "Na odstránenie balíčkov je nutná autentifikácia"
+
+#~ msgid "Authentication is required to rollback a transaction"
+#~ msgstr "Na navrátenie transakcie je nutná autentifikácia"
+
+#~ msgid "Authentication is required to update all packages"
+#~ msgstr "Na aktualizáciu všetkých balíčkov je nutná autentifikácia"
+
+#~ msgid "Authentication is required to update packages"
+#~ msgstr "Na aktualizáciu balíčkov je nutná autentifikácia"
+
+#~ msgid "Change software source parameters"
+#~ msgstr "Zmeniť parametre zdrojov softvéru"
+
+#~ msgid "Install local file"
+#~ msgstr "Inštalovať z lokálneho súboru"
+
+#~ msgid "Install package"
+#~ msgstr "Inštalovať balíček"
+
+#~ msgid "Install security signature"
+#~ msgstr "Inštalovať bezpečnostný podpis"
+
+#~ msgid "Refresh package lists"
+#~ msgstr "Obnoviť zoznam balíčkov"
+
+#~ msgid "Remove package"
+#~ msgstr "Odstrániť balíček"
+
+#~ msgid "Rollback to a previous transaction"
+#~ msgstr "Navrátiť sa k stavu pred transakciou"
+
+#~ msgid "Update all packages"
+#~ msgstr "Aktualizovať všetky balíčky"
+
+#~ msgid "Update package"
+#~ msgstr "Aktualizovať balíček"
+
+#~ msgid ""
+#~ "Could not find a package with that name to install, or package already "
+#~ "installed"
+#~ msgstr ""
+#~ "Nebolo možné nájsť balíček zadaného mena na inštaláciu, alebo je už "
+#~ "balíček nainštalovaný"
+
+#~ msgid "Could not find a package with that name to update"
+#~ msgstr "Nebolo možné nájsť balíček zadaného mena na aktualizáciu"
+
+#~ msgid "Could not find a description for this package"
+#~ msgstr "Nebolo možné získať popis tohoto balíčka"
+
+#~ msgid "You need to specify a package to find the description for"
+#~ msgstr "Je potrebné určiť balíček, ktorého popis sa má vyhľadať"
