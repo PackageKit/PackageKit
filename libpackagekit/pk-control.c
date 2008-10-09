@@ -66,6 +66,7 @@ struct _PkControlPrivate
 	DBusGConnection		*connection;
 	PkConnection		*pconnection;
 	gchar			**array;
+	guint			 idle_id;
 };
 
 enum {
@@ -653,6 +654,26 @@ pk_control_transaction_list_refresh (PkControl *control, GError **error)
 }
 
 /**
+ * pk_control_transaction_list_refresh_idle_cb:
+ * @control: This class instance
+ **/
+static gboolean
+pk_control_transaction_list_refresh_idle_cb (PkControl *control)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	/* refresh the internal lists */
+	ret = pk_control_transaction_list_refresh (control, &error);
+	if (!ret) {
+		egg_warning ("failed to get list: %s", error->message);
+		g_error_free (error);
+	}
+	control->priv->idle_id = 0;
+	return FALSE;
+}
+
+/**
  * pk_control_transaction_list_get:
  **/
 const gchar **
@@ -685,8 +706,8 @@ static void
 pk_control_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkControl *control)
 {
 	/* force a refresh so we have valid data*/
-	if (connected)
-		pk_control_transaction_list_refresh (control, NULL);
+	if (connected && control->priv->idle_id == 0)
+		control->priv->idle_id = g_idle_add ((GSourceFunc) pk_control_transaction_list_refresh_idle_cb, control);
 }
 
 /**
@@ -851,7 +872,6 @@ pk_control_class_init (PkControlClass *klass)
 static void
 pk_control_init (PkControl *control)
 {
-	gboolean ret;
 	GError *error = NULL;
 
 	control->priv = PK_CONTROL_GET_PRIVATE (control);
@@ -865,6 +885,7 @@ pk_control_init (PkControl *control)
 
 	/* we maintain a local copy */
 	control->priv->array = NULL;
+	control->priv->idle_id = 0;
 
 	/* watch for PackageKit on the bus, and try to connect up at start */
 	control->priv->pconnection = pk_connection_new ();
@@ -908,12 +929,8 @@ pk_control_init (PkControl *control)
 	dbus_g_proxy_connect_signal (control->priv->proxy, "Locked",
 				     G_CALLBACK (pk_control_locked_cb), control, NULL);
 
-	/* force a refresh so we have valid data*/
-	ret = pk_control_transaction_list_refresh (control, &error);
-	if (!ret) {
-		egg_warning ("failed to get list: %s", error->message);
-		g_error_free (error);
-	}
+	/* idle add a refresh so we have valid data */
+	control->priv->idle_id = g_idle_add ((GSourceFunc) pk_control_transaction_list_refresh_idle_cb, control);
 }
 
 /**
@@ -944,7 +961,8 @@ pk_control_finalize (GObject *object)
 	dbus_g_proxy_disconnect_signal (control->priv->proxy, "RestartSchedule",
 				        G_CALLBACK (pk_control_restart_schedule_cb), control);
 
-	/* free the proxy */
+	if (control->priv->idle_id != 0)
+		g_source_remove (control->priv->idle_id);
 	g_object_unref (G_OBJECT (control->priv->proxy));
 	g_strfreev (control->priv->array);
 
