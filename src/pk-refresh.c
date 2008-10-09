@@ -219,10 +219,14 @@ pk_refresh_import_desktop_files_get_package (PkRefresh *refresh, const gchar *fi
 	guint size;
 	gchar *name = NULL;
 	const PkPackageObj *obj;
+	PkStore *store;
 
 	/* use PK to find the correct package */
 	pk_package_list_clear (refresh->priv->list);
 	pk_backend_reset (refresh->priv->backend);
+	store = pk_backend_get_store (refresh->priv->backend);
+	pk_store_set_uint (store, "filters", pk_bitfield_value (PK_FILTER_ENUM_INSTALLED));
+	pk_store_set_string (store, "search", filename);
 	refresh->priv->backend->desc->search_file (refresh->priv->backend, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), filename);
 
 	/* wait for finished */
@@ -465,6 +469,7 @@ pk_refresh_update_package_list (PkRefresh *refresh)
 
 	/* get the new package list */
 	pk_backend_reset (refresh->priv->backend);
+	pk_store_set_uint (pk_backend_get_store (refresh->priv->backend), "filters", pk_bitfield_value (PK_FILTER_ENUM_NONE));
 	refresh->priv->backend->desc->get_packages (refresh->priv->backend, PK_FILTER_ENUM_NONE);
 
 	/* wait for finished */
