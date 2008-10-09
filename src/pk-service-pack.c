@@ -236,7 +236,70 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 #endif /* HAVE_ARCHIVE_H */
 
 /**
+ * pk_service_pack_get_random:
+ **/
+static gchar *
+pk_service_pack_get_random (const gchar *prefix, guint length)
+{
+	guint32 n;
+	gchar *str;
+	guint i;
+	guint prefix_len;
+
+	/* make a string to hold both parts */
+	prefix_len = egg_strlen (prefix, 28);
+	str = g_strnfill (length + prefix_len, 'X');
+
+	/* copy over prefix */
+	for (i=0; i<prefix_len; i++)
+		str[i] = prefix[i];
+
+	/* use random string */
+	for (i=prefix_len; i<length+prefix_len; i++) {
+		n = g_random_int_range (97, 122);
+		str[i] = (gchar) n;
+	}
+	return str;
+}
+
+/**
+ * pk_service_pack_create_temporary_directory:
+ **/
+static gchar *
+pk_service_pack_create_temporary_directory (const gchar *prefix)
+{
+	gboolean ret;
+	gchar *random;
+	gchar *directory = NULL;
+
+	/* ensure path does not already exist */
+	do {
+		/* last iter results, or NULL */
+		g_free (directory);
+
+		/* get a random path */
+		random = pk_service_pack_get_random (prefix, 8);
+
+		/* ITS4: ignore, the user has no control over the daemon envp  */
+		directory = g_build_filename (g_get_tmp_dir (), random, NULL);
+		g_free (random);
+		ret = g_file_test (directory, G_FILE_TEST_IS_DIR);
+	} while (ret);
+
+	/* create so only user (root) has rwx access */
+	g_mkdir (directory, 0700);
+
+	return directory;
+}
+
+/**
  * pk_service_pack_check_valid:
+ * @pack: a valid #PkServicePack instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Checks to see if a service pack file is valid, and usable with this system.
+ *
+ * Return value: %TRUE if the service pack is valid
  **/
 gboolean
 pk_service_pack_check_valid (PkServicePack *pack, GError **error)
@@ -251,9 +314,8 @@ pk_service_pack_check_valid (PkServicePack *pack, GError **error)
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	g_return_val_if_fail (pack->priv->filename != NULL, FALSE);
 
-	/* ITS4: ignore, the user has no control over the daemon envp  */
-	directory = g_build_filename (g_get_tmp_dir (), "meta", NULL);
-	g_mkdir (directory, 0700);
+	/* create a random directory */
+	directory = pk_service_pack_create_temporary_directory ("PackageKit-");
 	ret = pk_service_pack_extract (pack->priv->filename, directory, &error_local);
 	if (!ret) {
 		*error = g_error_new (PK_SERVICE_PACK_ERROR, error_local->code,
@@ -295,6 +357,12 @@ out:
 
 /**
  * pk_service_pack_set_filename:
+ * @pack: a valid #PkServicePack instance
+ * @filename: the filename to use
+ *
+ * Sets the filename to use when reading or writing a service pack
+ *
+ * Return value: %TRUE if the name was set
  **/
 gboolean
 pk_service_pack_set_filename (PkServicePack *pack, const gchar *filename)
@@ -308,19 +376,35 @@ pk_service_pack_set_filename (PkServicePack *pack, const gchar *filename)
 
 /**
  * pk_service_pack_set_temp_directory:
+ * @pack: a valid #PkServicePack instance
+ * @directory: the directory to use, or %NULL to use the default
+ *
+ * Sets the directory to use when decompressing the service pack
+ *
+ * Return value: %TRUE if the directory was set
  **/
 gboolean
 pk_service_pack_set_temp_directory (PkServicePack *pack, const gchar *directory)
 {
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
-	g_return_val_if_fail (directory != NULL, FALSE);
 	g_free (pack->priv->directory);
+
+	/* use default */
+	if (directory == NULL)
+		directory = pk_service_pack_create_temporary_directory ("PackageKit-");
+
 	pack->priv->directory = g_strdup (directory);
 	return TRUE;
 }
 
 /**
  * pk_service_pack_set_exclude_list:
+ * @pack: a valid #PkServicePack instance
+ * @list: the list of packages to exclude
+ *
+ * Sets the list of packages to exclude from the dependency downloads.
+ *
+ * Return value: %TRUE if the list was set
  **/
 gboolean
 pk_service_pack_set_exclude_list (PkServicePack *pack, PkPackageList *list)
@@ -652,6 +736,13 @@ pk_service_pack_setup_client (PkServicePack *pack)
 
 /**
  * pk_service_pack_create_for_package_ids:
+ * @pack: a valid #PkServicePack instance
+ * @package_ids: A list of package_ids to download
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Adds the packages specified to a service pack.
+ *
+ * Return value: %TRUE if the service pack was created successfully
  **/
 gboolean
 pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids, GError **error)
@@ -761,6 +852,13 @@ out:
 
 /**
  * pk_service_pack_create_for_package_id:
+ * @pack: a valid #PkServicePack instance
+ * @package_id: A single package_id to download
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Adds the package specified to a service pack.
+ *
+ * Return value: %TRUE if the service pack was created successfully
  **/
 gboolean
 pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package_id, GError **error)
@@ -781,6 +879,12 @@ pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package
 
 /**
  * pk_service_pack_create_for_updates:
+ * @pack: a valid #PkServicePack instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Adds any pending updates to a service pack.
+ *
+ * Return value: %TRUE if the service pack was created successfully
  **/
 gboolean
 pk_service_pack_create_for_updates (PkServicePack *pack, GError **error)
