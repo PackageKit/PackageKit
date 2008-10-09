@@ -39,6 +39,8 @@
 
 #include "pk-tools-common.h"
 
+static guint last_percentage = 0;
+
 /**
  * pk_generate_pack_get_filename:
  **/
@@ -156,7 +158,16 @@ static void
 pk_generate_pack_package_cb (PkServicePack *pack, const PkPackageObj *obj, gpointer data)
 {
 	g_return_if_fail (obj != NULL);
-	g_print ("%s %s-%s.%s\n", _("Downloading"), obj->id->name, obj->id->version, obj->id->arch);
+	g_print ("%i%%\t%s %s-%s.%s\n", last_percentage, _("Downloading"), obj->id->name, obj->id->version, obj->id->arch);
+}
+
+/**
+ * pk_generate_pack_percentage_cb:
+ **/
+static void
+pk_generate_pack_percentage_cb (PkServicePack *pack, guint percentage, gpointer data)
+{
+	last_percentage = percentage;
 }
 
 /**
@@ -296,8 +307,8 @@ main (int argc, char *argv[])
 
 	/* create pack and set initial values */
 	pack = pk_service_pack_new ();
-	g_signal_connect (pack, "package",
-			  G_CALLBACK (pk_generate_pack_package_cb), pack);
+	g_signal_connect (pack, "package", G_CALLBACK (pk_generate_pack_package_cb), pack);
+	g_signal_connect (pack, "percentage", G_CALLBACK (pk_generate_pack_percentage_cb), pack);
 	pk_service_pack_set_filename (pack, filename);
 	pk_service_pack_set_temp_directory (pack, tempdir);
 	pk_service_pack_set_exclude_list (pack, list);
