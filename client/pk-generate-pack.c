@@ -230,7 +230,7 @@ main (int argc, char *argv[])
 
 	/* fall back to the system copy */
 	if (package_list == NULL)
-		package_list = g_strdup ("/var/lib/PackageKit/package-list.txt");
+		package_list = g_strdup (PK_SYSTEM_PACKAGE_LIST_FILENAME);
 
 	/* fall back to CWD */
 	if (directory == NULL)
