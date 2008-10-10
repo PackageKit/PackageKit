@@ -44,6 +44,7 @@ void pk_task_list_test (EggTest *test);
 void pk_catalog_test (EggTest *test);
 void pk_update_detail_test (EggTest *test);
 void pk_details_test (EggTest *test);
+void pk_service_pack_test (EggTest *test);
 
 int
 main (int argc, char **argv)
@@ -71,6 +72,7 @@ main (int argc, char **argv)
 	pk_task_list_test (test);
 	pk_update_detail_test (test);
 	pk_details_test (test);
+	pk_service_pack_test (test);
 
 	return (egg_test_finish (test));
 }

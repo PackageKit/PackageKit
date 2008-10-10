@@ -110,7 +110,6 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_SEARCH_FILE,		"search-file"},
 	{PK_ROLE_ENUM_SEARCH_GROUP,		"search-group"},
 	{PK_ROLE_ENUM_SEARCH_NAME,		"search-name"},
-	{PK_ROLE_ENUM_SERVICE_PACK,		"service-pack"},
 	{PK_ROLE_ENUM_UPDATE_PACKAGES,		"update-packages"},
 	{PK_ROLE_ENUM_UPDATE_SYSTEM,		"update-system"},
 	{PK_ROLE_ENUM_WHAT_PROVIDES,		"what-provides"},

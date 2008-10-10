@@ -35,9 +35,11 @@
 #include <pk-package-id.h>
 #include <pk-package-ids.h>
 #include <pk-client.h>
+#include <pk-service-pack.h>
 
 #include "pk-tools-common.h"
-#include "pk-service-pack.h"
+
+static guint last_percentage = 0;
 
 /**
  * pk_generate_pack_get_filename:
@@ -54,6 +56,8 @@ pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
 		filename = g_strdup_printf ("%s/%s-%s.servicepack", directory, name, distro_id);
 	} else {
 		iso_time = pk_iso8601_present ();
+		/* don't include the time, just use the date prefix */
+		iso_time[10] = '\0';
 		filename = g_strdup_printf ("%s/updates-%s-%s.servicepack", directory, iso_time, distro_id);
 	}
 	g_free (distro_id);
@@ -147,6 +151,28 @@ pk_generate_pack_package_resolve (PkClient *client, PkBitfield filter, const gch
 	return pk_package_id_to_string (obj->id);
 }
 
+/**
+ * pk_generate_pack_package_cb:
+ **/
+static void
+pk_generate_pack_package_cb (PkServicePack *pack, const PkPackageObj *obj, gpointer data)
+{
+	g_return_if_fail (obj != NULL);
+	g_print ("%i%%\t%s %s-%s.%s\n", last_percentage, _("Downloading"), obj->id->name, obj->id->version, obj->id->arch);
+}
+
+/**
+ * pk_generate_pack_percentage_cb:
+ **/
+static void
+pk_generate_pack_percentage_cb (PkServicePack *pack, guint percentage, gpointer data)
+{
+	last_percentage = percentage;
+}
+
+/**
+ * main:
+ **/
 int
 main (int argc, char *argv[])
 {
@@ -215,7 +241,7 @@ main (int argc, char *argv[])
 
 	/* fall back to the system copy */
 	if (package_list == NULL)
-		package_list = g_strdup ("/var/lib/PackageKit/package-list.txt");
+		package_list = g_strdup (PK_SYSTEM_PACKAGE_LIST_FILENAME);
 
 	/* fall back to CWD */
 	if (directory == NULL)
@@ -281,17 +307,24 @@ main (int argc, char *argv[])
 
 	/* create pack and set initial values */
 	pack = pk_service_pack_new ();
+	g_signal_connect (pack, "package", G_CALLBACK (pk_generate_pack_package_cb), pack);
+	g_signal_connect (pack, "percentage", G_CALLBACK (pk_generate_pack_percentage_cb), pack);
 	pk_service_pack_set_filename (pack, filename);
 	pk_service_pack_set_temp_directory (pack, tempdir);
 	pk_service_pack_set_exclude_list (pack, list);
 
 	/* generate the pack */
-	g_print (_("Creating service pack: %s\n"), filename);
+	g_print (_("Service pack to create: %s\n"), filename);
 	if (updates)
 		ret = pk_service_pack_create_for_updates (pack, &error);
 	else
 		ret = pk_service_pack_create_for_package_id (pack, package_id, &error);
-	g_print ("%s\n", _("Done!"));
+	if (ret)
+		g_print ("%s\n", _("Done!"));
+	else {
+		g_print ("%s: %s\n", _("Failed"), error->message);
+		g_error_free (error);
+	}
 
 out:
 	/* get rid of temp directory */

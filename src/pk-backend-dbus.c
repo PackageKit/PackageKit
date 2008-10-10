@@ -1410,36 +1410,6 @@ pk_backend_dbus_install_files (PkBackendDbus *backend_dbus, gboolean trusted, gc
 }
 
 /**
- * pk_backend_dbus_service_pack:
- **/
-gboolean
-pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location, gboolean enabled)
-{
-	gboolean ret;
-	GError *error = NULL;
-
-	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
-	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (location != NULL, FALSE);
-
-	/* new sync method call */
-	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "ServicePack", &error,
-				 G_TYPE_STRING, location,
-				 G_TYPE_BOOLEAN, enabled,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (error != NULL) {
-		egg_warning ("%s", error->message);
-		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
-		pk_backend_finished (backend_dbus->priv->backend);
-		g_error_free (error);
-	}
-	if (ret)
-		pk_backend_dbus_time_check (backend_dbus);
-	return ret;
-}
-
-/**
  * pk_backend_dbus_what_provides:
  **/
 gboolean

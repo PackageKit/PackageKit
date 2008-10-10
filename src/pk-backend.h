@@ -274,9 +274,6 @@ typedef struct {
 	void		(*search_name)			(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 const gchar	*search);
-	void		(*service_pack)			(PkBackend	*backend,
-							 const gchar	*location,
-							 gboolean	 enabled);
 	void		(*update_packages)		(PkBackend	*backend,
 							 gchar		**package_ids);
 	void		(*update_system)		(PkBackend	*backend);
@@ -293,7 +290,7 @@ typedef struct {
 			   get_update_detail, get_updates, install_files, install_packages,		\
 			   install_signature, refresh_cache, remove_packages, repo_enable,		\
 			   repo_set_data, resolve, rollback, search_details, search_file, search_group,	\
-			   search_name, service_pack, update_packages, update_system, what_provides)	\
+			   search_name, update_packages, update_system, what_provides)	\
 	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { 					\
 		description,		\
 		author,			\
@@ -327,7 +324,6 @@ typedef struct {
 		search_file,		\
 		search_group,		\
 		search_name,		\
-		service_pack,		\
 		update_packages,	\
 		update_system,		\
 		what_provides,		\

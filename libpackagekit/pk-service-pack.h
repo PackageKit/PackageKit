@@ -33,8 +33,20 @@ G_BEGIN_DECLS
 #define PK_IS_SERVICE_PACK(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_SERVICE_PACK))
 #define PK_IS_SERVICE_PACK_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_SERVICE_PACK))
 #define PK_SERVICE_PACK_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_SERVICE_PACK, PkServicePackClass))
+#define PK_SERVICE_PACK_ERROR	 	(pk_service_pack_error_quark ())
+#define PK_SERVICE_PACK_TYPE_ERROR	(pk_service_pack_error_get_type ())
 
 typedef struct PkServicePackPrivate PkServicePackPrivate;
+
+typedef enum
+{
+	PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+	PK_SERVICE_PACK_ERROR_FAILED_DOWNLOAD,
+	PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
+	PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+	PK_SERVICE_PACK_ERROR_NOTHING_TO_DO,
+	PK_SERVICE_PACK_ERROR_NOT_COMPATIBLE
+} PkServicePackError;
 
 typedef struct
 {
@@ -45,8 +57,20 @@ typedef struct
 typedef struct
 {
 	GObjectClass	parent_class;
+	void		(* package)			(PkServicePack		*pack,
+							 const PkPackageObj	*obj);
+	void		(* percentage)			(PkServicePack		*pack,
+							 guint			 percentage);
+	/* Padding for future expansion */
+	void (*_pk_reserved1) (void);
+	void (*_pk_reserved2) (void);
+	void (*_pk_reserved3) (void);
+	void (*_pk_reserved4) (void);
+	void (*_pk_reserved5) (void);
 } PkServicePackClass;
 
+GQuark		 pk_service_pack_error_quark			(void);
+GType		 pk_service_pack_error_get_type			(void);
 GType		 pk_service_pack_get_type			(void) G_GNUC_CONST;
 PkServicePack	*pk_service_pack_new				(void);
 
