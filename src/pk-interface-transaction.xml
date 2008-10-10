@@ -1549,7 +1549,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The amount of time in ms that the transaction ran for.
+              The amount of time in milliseconds that the transaction ran for.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1994,7 +1994,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The duration of the transaction in seconds.
+              The duration of the transaction in milliseconds.
             </doc:para>
           </doc:summary>
         </doc:doc>

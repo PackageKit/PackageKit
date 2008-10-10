@@ -629,7 +629,7 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	role = pk_role_enum_from_text (role_text);
-	egg_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec,
+	egg_debug ("emitting transaction %s, %s, %i, %s, %ims, %s", old_tid, timespec,
 		  succeeded, role_text, duration, data);
 	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec,
 		       succeeded, role, duration, data);
@@ -3597,7 +3597,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * @timespec: the iso8601 date and time the transaction completed
 	 * @succeeded: if the transaction succeeded
 	 * @role: the #PkRoleEnum of the transaction, e.g. PK_ROLE_ENUM_REFRESH_CACHE
-	 * @duration: the duration in seconds of the transaction
+	 * @duration: the duration in milliseconds of the transaction
 	 * @data: the data of the transaction, typiically a list of package_id's
 	 *
 	 * The ::transaction is emitted when the method GetOldTransactions() is
