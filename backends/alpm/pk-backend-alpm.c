@@ -51,7 +51,6 @@
 int progress_percentage;
 int subprogress_percentage;
 PkBackend *backend_instance = NULL;
-alpm_list_t *local_result = NULL;
 gchar *dl_file_name;
 
 GHashTable *group_map;
@@ -834,10 +833,13 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 int
-backend_pkg_cmp (const void *data1, const void *data2) {
+backend_pkg_cmp (pmpkg_t *pkg1, pmpkg_t *pkg2) {
 	int comparison;
-	pmpkg_t *pkg1 = (pmpkg_t *) data1;
-	pmpkg_t *pkg2 = (pmpkg_t *) data2;
+	/* check for no package */
+	if (pkg1 == NULL)
+		return -1;
+	if (pkg2 == NULL)
+		return 1;
 	/* compare package names */
 	comparison = strcmp (alpm_pkg_get_name (pkg1), alpm_pkg_get_name (pkg2));
 	if (comparison != 0)
@@ -912,11 +914,9 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 				match = FALSE;
 		}
 
-		if (match && (repo_is_local || alpm_list_find (local_result, pkg, backend_pkg_cmp) == NULL)) {
+		if (match && (repo_is_local || backend_pkg_cmp (pkg, alpm_db_get_pkg (alpm_option_get_localdb (), alpm_pkg_get_name (pkg))) != 0)) {
 			/* we found what we wanted */
 			emit_package (backend, pkg, repo_name, info);
-			if (repo_is_local)
-				local_result = alpm_list_add (local_result, pkg);
 		}
 	}
 }
@@ -931,7 +931,6 @@ backend_get_packages_thread (PkBackend *backend)
 
 	gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 	gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
-	local_result = NULL;
 
 	if (!search_not_installed) {
 		/* search in local db */
@@ -945,8 +944,6 @@ backend_get_packages_thread (PkBackend *backend)
 		for (repos = alpm_option_get_syncdbs (); repos; repos = alpm_list_next (repos))
 			backend_search (backend, alpm_list_getdata (repos), NULL, PK_ALPM_SEARCH_TYPE_NULL);
 	}
-
-	alpm_list_free (local_result);
 
 	pk_backend_finished (backend);
 	return TRUE;
@@ -1326,7 +1323,6 @@ backend_resolve_thread (PkBackend *backend)
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
 		gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 		gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
-		local_result = NULL;
 
 		if (!search_not_installed) {
 			/* search in local db */
@@ -1340,8 +1336,6 @@ backend_resolve_thread (PkBackend *backend)
 			for (repos = alpm_option_get_syncdbs (); repos; repos = alpm_list_next (repos))
 				backend_search (backend, alpm_list_getdata (repos), package_ids[iterator], PK_ALPM_SEARCH_TYPE_RESOLVE);
 		}
-
-		alpm_list_free (local_result);
 	}
 
 	pk_backend_finished (backend);
@@ -1372,7 +1366,6 @@ backend_search_thread (PkBackend *backend)
 
 	gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 	gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
-	local_result = NULL;
 
 	if (!search_not_installed) {
 		/* search in local db */
@@ -1386,8 +1379,6 @@ backend_search_thread (PkBackend *backend)
 		for (repos = alpm_option_get_syncdbs (); repos; repos = alpm_list_next (repos))
 			backend_search (backend, alpm_list_getdata (repos), search, search_type);
 	}
-
-	alpm_list_free (local_result);
 
 	pk_backend_finished (backend);
 	return TRUE;
