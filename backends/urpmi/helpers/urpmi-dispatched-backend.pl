@@ -146,10 +146,8 @@ sub get_depends {
   my ($urpm, $args) = @_;
   
   my @filterstab = split(/;/, @{$args}[0]);
-  shift @{$args};
-  my $recursive_text = pop @{$args};
-  my $recursive_option = $recursive_text eq "yes" ? 1 : 0;
-  my @packageidstab = @{$args};
+  my $recursive_option = @{$args}[1] eq "yes" ? 1 : 0;
+  my @packageidstab = split(/&/, @{$args}[2]);
   
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
   
@@ -201,7 +199,7 @@ sub get_details {
 
   my ($urpm, $args) = @_;
   
-  my @packageidstab = @{$args};
+  my @packageidstab = split(/&/, @{$args}[0]);
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
   foreach (@packageidstab) {
@@ -256,7 +254,7 @@ sub get_files {
   
   my ($urpm, $args) = @_;
   
-  my @packageidstab = @{$args};
+  my @packageidstab = split(/&/, @{$args}[0]);
   pk_print_status(PK_STATUS_ENUM_QUERY);
   
   foreach (@packageidstab) {
@@ -303,10 +301,8 @@ sub get_requires {
   my ($urpm, $args) = @_;
   
   my @filterstab = split(/;/, @{$args}[0]);
-  shift @{$args};
-  my $recursive_text = pop @{$args};
-  my $recursive_option = $recursive_text eq "yes" ? 1 : 0;
-  my @packageidstab = @{$args};
+  my $recursive_option = @{$args}[1] eq "yes" ? 1 : 0;
+  my @packageidstab = split(/&/, @{$args}[2]);
   
   my @pkgnames;
   foreach (@packageidstab) {
@@ -335,7 +331,7 @@ sub get_update_detail {
   my ($urpm, $args) = @_;
   
   pk_print_status(PK_STATUS_ENUM_QUERY);
-  my @packageidstab = @{$args};
+  my @packageidstab = split(/&/, @{$args}[0]);
   
   foreach (@packageidstab) {
     _print_package_update_details($urpm, $_);
@@ -377,7 +373,7 @@ sub install_packages {
 
   my ($urpm, $args) = @_;
 
-  my @packageidstab = @{$args};
+  my @packageidstab = split(/&/, @{$args}[0]);
   
   my @names;
   foreach(@packageidstab) {
@@ -476,9 +472,8 @@ sub remove_packages {
 
   my $urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 1);
 
-  my $allowdeps_text = shift @{$args};
-  my $allowdeps_option = $allowdeps_text eq "yes" ? 1 : 0;
-  my @packageidstab = @{$args};
+  my $allowdeps_option = @{$args}[0] eq "yes" ? 1 : 0;
+  my @packageidstab = split(/&/, @{$args}[1]);
 
   my @names;
   foreach(@packageidstab) {
@@ -530,8 +525,7 @@ sub resolve {
   my ($urpm, $args) = @_;
 
   my @filters = split(/;/, @{$args}[0]);
-  shift @{$args};
-  my @patterns = @{$args};
+  my @patterns = split(/&/, @{$args}[1]);
 
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
@@ -569,8 +563,7 @@ sub search_details {
 
   my ($urpm, $args) = @_;
   my @filters = split(/;/, @{$args}[0]);
-  shift @{$args};
-  my $search_term = pop @{$args};
+  my $search_term = @{$args}[1];
 
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
@@ -669,8 +662,10 @@ sub update_packages {
 
   my ($urpm, $args) = @_;
 
+  my @packageidstab = split(/&/, @{$args}[0]);
+
   my @names;
-  foreach(@{$args}) {
+  foreach(@packageidstab) {
     my @pkgid = split(/;/, $_);
     push @names, $pkgid[0];
   }
