@@ -12,6 +12,7 @@ SERVER="packagekit.org"
 LOCATION="/srv/www/html"
 
 scp img/*.png $USER@$SERVER:/$LOCATION/img/
+scp img/thumbnails/*.png $USER@$SERVER:/$LOCATION/img/thumbnails/
 scp *.html $USER@$SERVER:/$LOCATION/
 scp *.css $USER@$SERVER:/$LOCATION/
 scp ../api/html/*.html $USER@$SERVER:/$LOCATION/gtk-doc/
