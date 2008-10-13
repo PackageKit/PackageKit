@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-18 16:49+0100\n"
+"POT-Creation-Date: 2008-10-13 17:25+0100\n"
 "PO-Revision-Date: 2008-04-19 14:38+0100\n"
 "Last-Translator: Goran Rakić <grakic@devbase.net>\n"
 "Language-Team: Serbian (sr) <gnom@prevod.org>\n"
@@ -18,6 +18,424 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4;    plural=n==1? 3 : n%10==1 && n%100!=11 ? 0 :    n"
 "%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+
+#: ../client/pk-console.c:294
+msgid "Update detail"
+msgstr "Više o nadogradnji"
+
+#: ../client/pk-console.c:511
+msgid "A system restart is required"
+msgstr "Neophodno je ponovno pokretanje sistema"
+
+#: ../client/pk-console.c:513
+msgid "A logout and login is required"
+msgstr "Neophodno je odjavljivanje i ponovna prijava"
+
+#: ../client/pk-console.c:515
+msgid "An application restart is required"
+msgstr "Neophodno je ponovno pokretanje programa"
+
+#: ../client/pk-console.c:608 ../client/pk-generate-pack.c:140
+msgid "There are multiple package matches"
+msgstr "Postoji više paketa koji odgovaraju upitu"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:615 ../client/pk-generate-pack.c:147
+msgid "Please enter the package number: "
+msgstr "Unesi broj paketa: "
+
+#: ../client/pk-console.c:649
+#, fuzzy
+msgid "Could not find package to install"
+msgstr "Ne mogu da pronađem paket"
+
+#: ../client/pk-console.c:755
+#, fuzzy
+msgid "Could not find package to remove"
+msgstr "Ne mogu da pronađem traženi paket za uklanjanje"
+
+#: ../client/pk-console.c:816
+msgid "The following packages have to be removed"
+msgstr "Sledeći paketi će biti uklonjeni"
+
+#. get user input
+#: ../client/pk-console.c:823
+msgid "Okay to remove additional packages?"
+msgstr "Da li je u redu da uklonim ove dodatne pakete?"
+
+#: ../client/pk-console.c:827 ../client/pk-generate-pack.c:271
+msgid "Cancelled!"
+msgstr "Prekinuto!"
+
+#: ../client/pk-console.c:861
+#, fuzzy
+msgid "Could not find package to download"
+msgstr "Ne mogu da pronađem paket"
+
+#: ../client/pk-console.c:913
+#, fuzzy
+msgid "Could not find package to update"
+msgstr "Ne mogu da pronađem paket"
+
+#: ../client/pk-console.c:935
+#, fuzzy
+msgid "Could not find what packages require"
+msgstr "Ne mogu da pronađem koji paketi zahtevaju ovaj paket"
+
+#: ../client/pk-console.c:956
+#, fuzzy
+msgid "Could not get dependencies for"
+msgstr "Ne mogu da pribavim međuzavisnosti za ovaj paket"
+
+#: ../client/pk-console.c:977
+#, fuzzy
+msgid "Could not find details for"
+msgstr "Ne mogu da pribavim spisak datoteka iz ovog paketa"
+
+#: ../client/pk-console.c:1000
+msgid "Could not find the files for this package"
+msgstr "Ne mogu da pribavim spisak datoteka iz ovog paketa"
+
+#: ../client/pk-console.c:1007
+#, fuzzy
+msgid "Could not get the file list"
+msgstr "Ne mogu da pribavim spisak datoteka iz ovog paketa"
+
+#: ../client/pk-console.c:1026
+#, fuzzy
+msgid "Could not find the update details for"
+msgstr "Ne mogu da pribavim spisak datoteka iz ovog paketa"
+
+#: ../client/pk-console.c:1087
+msgid "Package description"
+msgstr "Opis paketa"
+
+#: ../client/pk-console.c:1120
+msgid "Package files"
+msgstr "Spisak datoteka"
+
+#: ../client/pk-console.c:1128
+msgid "No files"
+msgstr "Nema datoteka"
+
+#. get user input
+#: ../client/pk-console.c:1160
+msgid "Okay to import key?"
+msgstr "Da li je u redu da uvezem ključ potpisa?"
+
+#: ../client/pk-console.c:1163
+msgid "Did not import key"
+msgstr "Ključ potpisa nije uvezen"
+
+#. get user input
+#: ../client/pk-console.c:1203
+msgid "Do you agree?"
+msgstr "Saglasni?"
+
+#: ../client/pk-console.c:1206
+msgid "Did not agree to licence, task will fail"
+msgstr "Nema saglasnosti sa uslovima licence, zadatak neće biti izvršen"
+
+#: ../client/pk-console.c:1235
+msgid "The daemon crashed mid-transaction!"
+msgstr "Uslužni program se iznenada prekinuo u pola posla!"
+
+#. header
+#: ../client/pk-console.c:1288
+msgid "PackageKit Console Interface"
+msgstr "Tekstualno sučelje programa PaketKit"
+
+#: ../client/pk-console.c:1288
+msgid "Subcommands:"
+msgstr "Komande:"
+
+#: ../client/pk-console.c:1401 ../client/pk-generate-pack.c:203
+#: ../client/pk-monitor.c:118 ../src/pk-main.c:195
+msgid "Show extra debugging information"
+msgstr "Prikaži dodatne podatke za otkrivanje grešaka"
+
+#: ../client/pk-console.c:1403 ../client/pk-monitor.c:120
+msgid "Show the program version and exit"
+msgstr "Prikaži verziju programa i završi rad"
+
+#: ../client/pk-console.c:1405
+msgid "Set the filter, e.g. installed"
+msgstr "Postavi filter, npr. instalirani"
+
+#: ../client/pk-console.c:1407
+msgid "Exit without waiting for actions to complete"
+msgstr "Završi rad bez čekanja da se poslovi završe"
+
+#: ../client/pk-console.c:1430
+msgid "Could not connect to system DBUS."
+msgstr "Ne mogu da se povežem na sistemsku komunikacionu magistralu."
+
+#: ../client/pk-console.c:1525
+#, fuzzy
+msgid "You need to specify a search type, e.g. name"
+msgstr "Moraš navesti tip pretrage"
+
+#: ../client/pk-console.c:1530 ../client/pk-console.c:1537
+#: ../client/pk-console.c:1544 ../client/pk-console.c:1551
+#: ../client/pk-console.c:1662 ../client/pk-console.c:1672
+#: ../client/pk-console.c:1679 ../client/pk-console.c:1686
+msgid "You need to specify a search term"
+msgstr "Moraš navesti uslov pretrage"
+
+#: ../client/pk-console.c:1556
+msgid "Invalid search type"
+msgstr "Neispravan tip pretrage"
+
+#: ../client/pk-console.c:1561
+msgid "You need to specify a package or file to install"
+msgstr "Moraš navesti paket ili datoteku za instaliranje"
+
+#: ../client/pk-console.c:1568
+msgid "You need to specify a type, key_id and package_id"
+msgstr "Moraš navesti tip, key_id i package_id"
+
+#: ../client/pk-console.c:1575
+msgid "You need to specify a package to remove"
+msgstr "Moraš navesti paket za uklanjanje"
+
+#: ../client/pk-console.c:1581
+#, fuzzy
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
+msgstr "Moraš navesti tip, key_id i package_id"
+
+#: ../client/pk-console.c:1586
+msgid "Directory not found"
+msgstr ""
+
+#: ../client/pk-console.c:1592
+msgid "You need to specify a eula-id"
+msgstr "Moraš navesti eula-id"
+
+#: ../client/pk-console.c:1608
+msgid "You need to specify a package name to resolve"
+msgstr "Moraš navesti ime paketa za upit"
+
+#: ../client/pk-console.c:1617 ../client/pk-console.c:1624
+msgid "You need to specify a repo name"
+msgstr "Moraš navesti ime skladišta"
+
+#: ../client/pk-console.c:1631
+msgid "You need to specify a repo name/parameter and value"
+msgstr "Moraš navesti ime ili parametar skladišta i vrednost"
+
+#: ../client/pk-console.c:1644
+msgid "You need to specify a time term"
+msgstr "Moraš navesti vremensku odrednicu"
+
+#: ../client/pk-console.c:1649
+msgid "You need to specify a correct role"
+msgstr "Moraš navesti ispravnu rolu"
+
+#: ../client/pk-console.c:1654
+msgid "Failed to get last time"
+msgstr ""
+
+#: ../client/pk-console.c:1693
+#, fuzzy
+msgid "You need to specify a package to find the details for"
+msgstr "Moraš navesti ime paketa za prikaz liste datoteka"
+
+#: ../client/pk-console.c:1700
+msgid "You need to specify a package to find the files for"
+msgstr "Moraš navesti ime paketa za prikaz liste datoteka"
+
+#: ../client/pk-console.c:1752
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "Opcija „%s“ nije podržana"
+
+#: ../client/pk-console.c:1765
+msgid "You don't have the necessary privileges for this operation"
+msgstr "Nemaš neophodne privilegije za ovu operaciju"
+
+#: ../client/pk-console.c:1767
+msgid "Command failed"
+msgstr "Komanda nije uspela"
+
+#: ../client/pk-generate-pack.c:131
+msgid "Could not find a package match"
+msgstr "Ne mogu da pronađem paket"
+
+#: ../client/pk-generate-pack.c:161
+msgid "Downloading"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:205
+msgid "Set the filename of dependencies to be excluded"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:207
+msgid ""
+"The directory to put the pack file, or the current directory if ommitted"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:209
+msgid "The package to be put into the ServicePack"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:211
+msgid "Put all updates available in the ServicePack"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:230
+msgid "Neither option selected"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:237
+msgid "Both optiosn selected"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:269
+msgid "A pack with the same name already exists, do you want to overwrite it?"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:282
+msgid "Failed to create directory"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:290
+#, fuzzy
+msgid "Failed to open package list"
+msgstr "Osveži listu paketa"
+
+#: ../client/pk-generate-pack.c:299
+#, fuzzy
+msgid "Resolving package name to remote object"
+msgstr "Sledeći paketi će biti uklonjeni"
+
+#: ../client/pk-generate-pack.c:302
+#, c-format
+msgid "Failed to find package '%s': %s"
+msgstr ""
+
+#. generate the pack
+#: ../client/pk-generate-pack.c:317
+#, c-format
+msgid "Service pack to create: %s\n"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:323
+msgid "Done!"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:325
+msgid "Failed"
+msgstr ""
+
+#: ../client/pk-import-specspo.c:185
+#, fuzzy
+msgid "Could not set database readonly"
+msgstr "Ne mogu da otvorim bazu: %s"
+
+#: ../client/pk-import-specspo.c:192
+#, c-format
+msgid "Could not open database: %s"
+msgstr "Ne mogu da otvorim bazu: %s"
+
+#: ../client/pk-import-specspo.c:193
+msgid "You probably need to run this program as the root user"
+msgstr "Verovatno trebaš pokrenuti program kao korisnik „root“"
+
+#: ../client/pk-monitor.c:131
+msgid "PackageKit Monitor"
+msgstr "PaketKit redar"
+
+#: ../client/pk-tools-common.c:51
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Unesi broj između 1 i %i: "
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:300
+msgid "Getting package information..."
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:308
+#: ../contrib/packagekit-plugin/src/contents.cpp:313
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#: ../contrib/packagekit-plugin/src/contents.cpp:340
+#, c-format
+msgid "<big>%s</big>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:310
+#, c-format
+msgid ""
+"\n"
+"<small>Installed version: %s</small>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:316
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run version %s now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:321
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:325
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
+#, c-format
+msgid ""
+"<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:333
+#, c-format
+msgid ""
+"\n"
+"<small>Version: %s</small>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:337
+msgid ""
+"\n"
+"<small>No packages found for your system</small>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:341
+msgid ""
+"\n"
+"<small>Installing...</small>"
+msgstr ""
+
+#: ../data/packagekit-catalog.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Catalog"
+msgstr "PaketKit redar"
+
+#: ../data/packagekit-servicepack.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Service Pack"
+msgstr "Servis PaketKita"
+
+#: ../data/packagekit-package-list.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Package List"
+msgstr "PaketKit redar"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:1
 msgid "Accept EULA"
@@ -32,19 +450,25 @@ msgid "Authentication is required to change software source parameters"
 msgstr "Neophodna je autentifikacija za izmenu postavki skladišta softvera"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
-msgid "Authentication is required to install a local file"
-msgstr "Neophodna je autentifikacija za instaliranje lokalne datoteke"
+#, fuzzy
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr "Neophodna je autentifikacija za osvežavanje liste paketa"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:5
-msgid "Authentication is required to install a package"
+#, fuzzy
+msgid "Authentication is required to install a signed package"
 msgstr "Neophodna je autentifikacija za instaliranje paketa"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
-msgid "Authentication is required to install a security signature"
-msgstr "Neophodna je autentifikacija za instaliranje sigurnosnog digitalnog potpisa"
+#, fuzzy
+msgid "Authentication is required to install an untrusted package"
+msgstr "Neophodna je autentifikacija za instaliranje paketa"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Authentication is required to refresh the package lists"
+#, fuzzy
+msgid "Authentication is required to refresh the system sources"
 msgstr "Neophodna je autentifikacija za osvežavanje liste paketa"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
@@ -56,8 +480,11 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Neophodna je autentifikacija za poništavanje sve-ili-ništa promena"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid "Authentication is required to update all packages"
-msgstr "Neophodna je autentifikacija za nadogradnju svih paketa"
+#, fuzzy
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr "Neophodna je autentifikacija za uklanjanje paketa"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid "Authentication is required to update packages"
@@ -72,336 +499,125 @@ msgid "Install local file"
 msgstr "Instaliraj lokalnu datoteku"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install package"
-msgstr "Instaliraj paket"
+#, fuzzy
+msgid "Install untrusted local file"
+msgstr "Instaliraj lokalnu datoteku"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Install security signature"
-msgstr "Instaliraj sigurnosni potpis"
+msgid "Refresh system sources"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Refresh package lists"
-msgstr "Osveži listu paketa"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Remove package"
 msgstr "Ukloni paket"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Rollback to a previous transaction"
 msgstr "Vrati se na stanje prethodne promene"
 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Update all packages"
-msgstr "Nadogradi sve pakete"
+msgid "Trust a key used for signing packages"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Update package"
+#, fuzzy
+msgid "Update packages"
 msgstr "Nadogradi paket"
 
-#: ../client/pk-console.c:208
-msgid "Update detail"
-msgstr "Više o nadogradnji"
-
-#: ../client/pk-console.c:400
-msgid "A system restart is required"
-msgstr "Neophodno je ponovno pokretanje sistema"
-
-#: ../client/pk-console.c:402
-msgid "A logout and login is required"
-msgstr "Neophodno je odjavljivanje i ponovna prijava"
-
-#: ../client/pk-console.c:404
-msgid "An application restart is required"
-msgstr "Neophodno je ponovno pokretanje programa"
-
-#: ../client/pk-console.c:443
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Unesi broj između 1 i %i: "
-
-#: ../client/pk-console.c:493
-msgid "Could not find a package match"
-msgstr "Ne mogu da pronađem paket"
-
-#: ../client/pk-console.c:507
-msgid "There are multiple package matches"
-msgstr "Postoji više paketa koji odgovaraju upitu"
-
-#. find out what package the user wants to use
-#: ../client/pk-console.c:514
-msgid "Please enter the package number: "
-msgstr "Unesi broj paketa: "
-
-#: ../client/pk-console.c:530
-msgid ""
-"Could not find a package with that name to install, or package already "
-"installed"
-msgstr ""
-"Ne mogu da pronađem traženi paket ili je paket već instaliran"
-
-#: ../client/pk-console.c:612
-msgid "Could not find a package with that name to remove"
-msgstr "Ne mogu da pronađem traženi paket za uklanjanje"
-
-#: ../client/pk-console.c:652
-msgid "The following packages have to be removed"
-msgstr "Sledeći paketi će biti uklonjeni"
-
-#. get user input
-#: ../client/pk-console.c:661
-msgid "Okay to remove additional packages?"
-msgstr "Da li je u redu da uklonim ove dodatne pakete?"
-
-#: ../client/pk-console.c:665
-msgid "Cancelled!"
-msgstr "Prekinuto!"
-
-#: ../client/pk-console.c:687
-msgid "Could not find a package with that name to update"
-msgstr "Ne mogu da pronađem traženi paket za nadogradnju"
-
-#: ../client/pk-console.c:705
-msgid "Could not find what packages require this package"
-msgstr "Ne mogu da pronađem koji paketi zahtevaju ovaj paket"
-
-#: ../client/pk-console.c:723
-msgid "Could not get dependencies for this package"
-msgstr "Ne mogu da pribavim međuzavisnosti za ovaj paket"
-
-#: ../client/pk-console.c:741
-msgid "Could not find a description for this package"
-msgstr "Ne mogu da pribavim opis za ovaj paket"
-
-#: ../client/pk-console.c:759
-#, c-format
-msgid "Could not find the files for this package"
-msgstr "Ne mogu da pribavim spisak datoteka iz ovog paketa"
-
-#: ../client/pk-console.c:819
-msgid "Package description"
-msgstr "Opis paketa"
-
-#: ../client/pk-console.c:842
-msgid "Package files"
-msgstr "Spisak datoteka"
-
-#: ../client/pk-console.c:850
-msgid "No files"
-msgstr "Nema datoteka"
-
-#. get user input
-#: ../client/pk-console.c:882
-msgid "Okay to import key?"
-msgstr "Da li je u redu da uvezem ključ potpisa?"
-
-#: ../client/pk-console.c:885
-msgid "Did not import key"
-msgstr "Ključ potpisa nije uvezen"
-
-#. get user input
-#: ../client/pk-console.c:925
-msgid "Do you agree?"
-msgstr "Saglasni?"
-
-#: ../client/pk-console.c:928
-msgid "Did not agree to licence, task will fail"
-msgstr "Nema saglasnosti sa uslovima licence, zadatak neće biti izvršen"
-
-#: ../client/pk-console.c:957
-msgid "The daemon crashed mid-transaction!"
-msgstr "Uslužni program se iznenada prekinuo u pola posla!"
-
-#. header
-#: ../client/pk-console.c:1010
-msgid "PackageKit Console Interface"
-msgstr "Tekstualno sučelje programa PaketKit"
-
-#: ../client/pk-console.c:1010
-msgid "Subcommands:"
-msgstr "Komande:"
-
-#: ../client/pk-console.c:1114 ../client/pk-monitor.c:100 ../src/pk-main.c:189
-msgid "Show extra debugging information"
-msgstr "Prikaži dodatne podatke za otkrivanje grešaka"
-
-#: ../client/pk-console.c:1116 ../client/pk-monitor.c:102
-msgid "Show the program version and exit"
-msgstr "Prikaži verziju programa i završi rad"
-
-#: ../client/pk-console.c:1118
-msgid "Set the filter, e.g. installed"
-msgstr "Postavi filter, npr. instalirani"
-
-#: ../client/pk-console.c:1120
-msgid "Exit without waiting for actions to complete"
-msgstr "Završi rad bez čekanja da se poslovi završe"
-
-#: ../client/pk-console.c:1143
-msgid "Could not connect to system DBUS."
-msgstr "Ne mogu da se povežem na sistemsku komunikacionu magistralu."
-
-#: ../client/pk-console.c:1231
-#, c-format
-msgid "You need to specify a search type"
-msgstr "Moraš navesti tip pretrage"
-
-#: ../client/pk-console.c:1236 ../client/pk-console.c:1243
-#: ../client/pk-console.c:1250 ../client/pk-console.c:1257
-#: ../client/pk-console.c:1361 ../client/pk-console.c:1368
-#: ../client/pk-console.c:1375 ../client/pk-console.c:1382
-#, c-format
-msgid "You need to specify a search term"
-msgstr "Moraš navesti uslov pretrage"
-
-#: ../client/pk-console.c:1262
-#, c-format
-msgid "Invalid search type"
-msgstr "Neispravan tip pretrage"
-
-#: ../client/pk-console.c:1267
-#, c-format
-msgid "You need to specify a package or file to install"
-msgstr "Moraš navesti paket ili datoteku za instaliranje"
-
-#: ../client/pk-console.c:1280
-#, c-format
-msgid "You need to specify a type, key_id and package_id"
-msgstr "Moraš navesti tip, key_id i package_id"
-
-#: ../client/pk-console.c:1287
-#, c-format
-msgid "You need to specify a package to remove"
-msgstr "Moraš navesti paket za uklanjanje"
-
-#: ../client/pk-console.c:1294
-#, c-format
-msgid "You need to specify a eula-id"
-msgstr "Moraš navesti eula-id"
-
-#: ../client/pk-console.c:1309
-#, c-format
-msgid "You need to specify a package name to resolve"
-msgstr "Moraš navesti ime paketa za upit"
-
-#: ../client/pk-console.c:1316 ../client/pk-console.c:1323
-#, c-format
-msgid "You need to specify a repo name"
-msgstr "Moraš navesti ime skladišta"
-
-#: ../client/pk-console.c:1330
-#, c-format
-msgid "You need to specify a repo name/parameter and value"
-msgstr "Moraš navesti ime ili parametar skladišta i vrednost"
-
-#: ../client/pk-console.c:1343
-#, c-format
-msgid "You need to specify a time term"
-msgstr "Moraš navesti vremensku odrednicu"
-
-#: ../client/pk-console.c:1348
-#, c-format
-msgid "You need to specify a correct role"
-msgstr "Moraš navesti ispravnu rolu"
-
-#: ../client/pk-console.c:1353
-#, c-format
-#,fuzzy
-msgid "Failed to get last time"
-msgstr ""
-#msgstr "Nisam uspeo da otkrijem prethodno vreme"
-#msgstr "Prošli put nisam uspeo da preuzmem"
-
-#: ../client/pk-console.c:1389
-#, c-format
-msgid "You need to specify a package to find the description for"
-msgstr "Moraš navesti ime paketa za prikaz opisa"
-
-#: ../client/pk-console.c:1396
-#, c-format
-msgid "You need to specify a package to find the files for"
-msgstr "Moraš navesti ime paketa za prikaz liste datoteka"
-
-#: ../client/pk-console.c:1441
-#, c-format
-msgid "Option '%s' not supported"
-msgstr "Opcija „%s“ nije podržana"
-
-#: ../client/pk-console.c:1452
-msgid "Command failed"
-msgstr "Komanda nije uspela"
-
-#: ../client/pk-console.c:1456
-msgid "You don't have the necessary privileges for this operation"
-msgstr "Nemaš neophodne privilegije za ovu operaciju"
-
-#: ../client/pk-monitor.c:113
-msgid "PackageKit Monitor"
-msgstr "PaketKit redar"
-
-#: ../client/pk-import-desktop.c:283 ../client/pk-import-specspo.c:169
-#, c-format
-msgid "Could not open database: %s"
-msgstr "Ne mogu da otvorim bazu: %s"
-
-#: ../client/pk-import-desktop.c:284 ../client/pk-import-specspo.c:170
-msgid "You probably need to run this program as the root user"
-msgstr "Verovatno trebaš pokrenuti program kao korisnik „root“"
-
-#: ../src/pk-main.c:83
+#: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "Pokretanje nije uspelo usled sistemske sigurnosne politike."
 
-#: ../src/pk-main.c:84
+#: ../src/pk-main.c:86
 msgid "This can happen for two reasons:"
 msgstr "Dva su moguća razloga:"
 
-#: ../src/pk-main.c:85
+#: ../src/pk-main.c:87
 msgid "The correct user is not launching the executable (usually root)"
 msgstr "Program ne pokreće odgovarajući korisnik (najčešće treba „root“)"
 
-#: ../src/pk-main.c:86
+#: ../src/pk-main.c:88
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
 "dbus-1/system.d directory"
 msgstr ""
-"Datoteka „org.freedesktop.PackageKit.conf“ nije instalirana u sistemski “/etc/"
-"dbus-1/system.d“ direktorijum"
+"Datoteka „org.freedesktop.PackageKit.conf“ nije instalirana u sistemski “/"
+"etc/dbus-1/system.d“ direktorijum"
 
-#: ../src/pk-main.c:185
+#: ../src/pk-main.c:191
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Pozadinski sistem u upotrebi, npr. „dummy“ (probni)"
 
-#: ../src/pk-main.c:187
+#: ../src/pk-main.c:193
 msgid "Daemonize and detach from the terminal"
 msgstr "Odvoji od terminala i nastavi rad kao uslužni"
 
-#: ../src/pk-main.c:191
-#,fuzzy
+#: ../src/pk-main.c:197
+#, fuzzy
 msgid "Disable the idle timer"
 msgstr "Onemogući merač čekanja"
 
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:199
 msgid "Show version and exit"
 msgstr "Prikaži verziju i završi rad"
 
-#: ../src/pk-main.c:195
+#: ../src/pk-main.c:201
 msgid "Exit after a small delay"
 msgstr "Sačekaj malo i završi rad"
 
-#: ../src/pk-main.c:197
+#: ../src/pk-main.c:203
 msgid "Exit after the engine has loaded"
 msgstr "Završi rad nakon što se učita pozadinski sistem"
 
-#: ../src/pk-main.c:207
+#: ../src/pk-main.c:213
 msgid "PackageKit service"
 msgstr "Servis PaketKita"
 
-#: ../src/pk-main.c:233
+#: ../src/pk-main.c:249
 msgid "Cannot connect to the system bus"
 msgstr "Ne mogu da se povežem na sistemsku magistralu"
 
-#: ../src/pk-main.c:273
+#: ../src/pk-main.c:295
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Greška pri pokretanju: %s\n"
+
+#~ msgid "Authentication is required to install a local file"
+#~ msgstr "Neophodna je autentifikacija za instaliranje lokalne datoteke"
+
+#~ msgid "Authentication is required to install a security signature"
+#~ msgstr ""
+#~ "Neophodna je autentifikacija za instaliranje sigurnosnog digitalnog "
+#~ "potpisa"
+
+#~ msgid "Authentication is required to update all packages"
+#~ msgstr "Neophodna je autentifikacija za nadogradnju svih paketa"
+
+#~ msgid "Install package"
+#~ msgstr "Instaliraj paket"
+
+#~ msgid "Install security signature"
+#~ msgstr "Instaliraj sigurnosni potpis"
+
+#~ msgid "Update all packages"
+#~ msgstr "Nadogradi sve pakete"
+
+#~ msgid ""
+#~ "Could not find a package with that name to install, or package already "
+#~ "installed"
+#~ msgstr "Ne mogu da pronađem traženi paket ili je paket već instaliran"
+
+#~ msgid "Could not find a package with that name to update"
+#~ msgstr "Ne mogu da pronađem traženi paket za nadogradnju"
+
+#~ msgid "Could not find a description for this package"
+#~ msgstr "Ne mogu da pribavim opis za ovaj paket"
+
+# msgstr "Nisam uspeo da otkrijem prethodno vreme"
+# msgstr "Prošli put nisam uspeo da preuzmem"
+#~ msgid "You need to specify a package to find the description for"
+#~ msgstr "Moraš navesti ime paketa za prikaz opisa"

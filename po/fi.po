@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-08-26 01:23+0000\n"
+"POT-Creation-Date: 2008-10-13 17:25+0100\n"
 "PO-Revision-Date: 2008-09-01 00:51+0300\n"
 "Last-Translator: Ville-Pekka Vainio <vpivaini@cs.helsinki.fi>\n"
 "Language-Team: Finnish <laatu@lokalisointi.org>\n"
@@ -15,293 +15,323 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../client/pk-console.c:235
+#: ../client/pk-console.c:294
 msgid "Update detail"
 msgstr "Päivityksen tiedot"
 
-#: ../client/pk-console.c:452
+#: ../client/pk-console.c:511
 msgid "A system restart is required"
 msgstr "Järjestelmä on käynnistettävä uudelleen"
 
-#: ../client/pk-console.c:454
+#: ../client/pk-console.c:513
 msgid "A logout and login is required"
 msgstr "On kirjauduttava ulos ja takaisin sisään"
 
-#: ../client/pk-console.c:456
+#: ../client/pk-console.c:515
 msgid "An application restart is required"
 msgstr "Sovellus on käynnistettävä uudelleen"
 
-#: ../client/pk-console.c:549 ../client/pk-generate-pack.c:124
+#: ../client/pk-console.c:608 ../client/pk-generate-pack.c:140
 msgid "There are multiple package matches"
 msgstr "Useita vastaavia paketteja saatavilla"
 
 #. find out what package the user wants to use
-#: ../client/pk-console.c:556 ../client/pk-generate-pack.c:131
+#: ../client/pk-console.c:615 ../client/pk-generate-pack.c:147
 msgid "Please enter the package number: "
 msgstr "Anna paketin numero:"
 
-#: ../client/pk-console.c:590
+#: ../client/pk-console.c:649
 msgid "Could not find package to install"
 msgstr "Asennettavaksi pyydettyä pakettia ei löytynyt"
 
-#: ../client/pk-console.c:696
+#: ../client/pk-console.c:755
 msgid "Could not find package to remove"
 msgstr "Poistettavaksi pyydettyä pakettia ei löytynyt"
 
-#: ../client/pk-console.c:757
+#: ../client/pk-console.c:816
 msgid "The following packages have to be removed"
 msgstr "Seuraavat paketit on poistettava"
 
 #. get user input
-#: ../client/pk-console.c:764
+#: ../client/pk-console.c:823
 msgid "Okay to remove additional packages?"
 msgstr "Poistetaanko lisäpaketteja?"
 
-#: ../client/pk-console.c:768 ../client/pk-generate-pack.c:523
-#: ../client/pk-generate-pack-main.c:131
+#: ../client/pk-console.c:827 ../client/pk-generate-pack.c:271
 msgid "Cancelled!"
 msgstr "Peruttu!"
 
-#: ../client/pk-console.c:802
+#: ../client/pk-console.c:861
 msgid "Could not find package to download"
 msgstr "Ladattavaksi pyydettyä pakettia ei löytynyt"
 
-#: ../client/pk-console.c:853
+#: ../client/pk-console.c:913
 msgid "Could not find package to update"
 msgstr "Päivitettäväksi pyydettyä pakettia ei löytynyt"
 
-#: ../client/pk-console.c:875
+#: ../client/pk-console.c:935
 msgid "Could not find what packages require"
 msgstr "Ei löydetty, mitkä paketti vaativat tämän paketin"
 
-#: ../client/pk-console.c:896
+#: ../client/pk-console.c:956
 msgid "Could not get dependencies for"
 msgstr "Ei voitu hakea riippuvuuksia tälle paketille"
 
-#: ../client/pk-console.c:917
+#: ../client/pk-console.c:977
 msgid "Could not find details for"
 msgstr "Tämän paketin tietoja ei löydetty"
 
-#: ../client/pk-console.c:940
+#: ../client/pk-console.c:1000
 msgid "Could not find the files for this package"
 msgstr "Tämän paketin tiedostoja ei löydetty"
 
-#: ../client/pk-console.c:947
+#: ../client/pk-console.c:1007
 msgid "Could not get the file list"
 msgstr "Tiedostoluetteloa ei voitu hakea"
 
-#: ../client/pk-console.c:966
+#: ../client/pk-console.c:1026
 msgid "Could not find the update details for"
 msgstr "Tämän paketin päivitystietoja ei löydetty"
 
-#: ../client/pk-console.c:1027
+#: ../client/pk-console.c:1087
 msgid "Package description"
 msgstr "Paketin kuvaus"
 
-#: ../client/pk-console.c:1060
+#: ../client/pk-console.c:1120
 msgid "Package files"
 msgstr "Paketin tiedostot"
 
-#: ../client/pk-console.c:1068
+#: ../client/pk-console.c:1128
 msgid "No files"
 msgstr "Ei tiedostoja"
 
 #. get user input
-#: ../client/pk-console.c:1100
+#: ../client/pk-console.c:1160
 msgid "Okay to import key?"
 msgstr "Tuodaanko avain?"
 
-#: ../client/pk-console.c:1103
+#: ../client/pk-console.c:1163
 msgid "Did not import key"
 msgstr "Avainta ei tuotu"
 
 #. get user input
-#: ../client/pk-console.c:1143
+#: ../client/pk-console.c:1203
 msgid "Do you agree?"
 msgstr "Hyväksytkö?"
 
-#: ../client/pk-console.c:1146
+#: ../client/pk-console.c:1206
 msgid "Did not agree to licence, task will fail"
 msgstr "Käyttöoikeussopimusta ei hyväksytty, tehtävä epäonnistuu"
 
-#: ../client/pk-console.c:1175
+#: ../client/pk-console.c:1235
 msgid "The daemon crashed mid-transaction!"
 msgstr "Taustaprosessi kaatui kesken toimenpiteen"
 
 #. header
-#: ../client/pk-console.c:1228
+#: ../client/pk-console.c:1288
 msgid "PackageKit Console Interface"
 msgstr "PackageKitin konsolikäyttöliittymä"
 
-#: ../client/pk-console.c:1228
+#: ../client/pk-console.c:1288
 msgid "Subcommands:"
 msgstr "Alikomennot:"
 
-#: ../client/pk-console.c:1338 ../client/pk-generate-pack-main.c:64
-#: ../client/pk-monitor.c:104 ../src/pk-main.c:189
+#: ../client/pk-console.c:1401 ../client/pk-generate-pack.c:203
+#: ../client/pk-monitor.c:118 ../src/pk-main.c:195
 msgid "Show extra debugging information"
 msgstr "Näytä ylimääräisiä virheenjäljitystietoja"
 
-#: ../client/pk-console.c:1340 ../client/pk-monitor.c:106
+#: ../client/pk-console.c:1403 ../client/pk-monitor.c:120
 msgid "Show the program version and exit"
 msgstr "Näytä ohjelman versio ja lopeta"
 
-#: ../client/pk-console.c:1342
+#: ../client/pk-console.c:1405
 msgid "Set the filter, e.g. installed"
 msgstr "Aseta suodin, esim. asennettu"
 
-#: ../client/pk-console.c:1344
+#: ../client/pk-console.c:1407
 msgid "Exit without waiting for actions to complete"
 msgstr "Lopeta odottamatta toimintojen valmistumista"
 
-#: ../client/pk-console.c:1367
+#: ../client/pk-console.c:1430
 msgid "Could not connect to system DBUS."
 msgstr "Järjestelmän DBUSiin yhdistäminen ei onnistunut."
 
-#: ../client/pk-console.c:1464
+#: ../client/pk-console.c:1525
 msgid "You need to specify a search type, e.g. name"
 msgstr "Haun tyyppi on annettava, esim. nimi"
 
-#: ../client/pk-console.c:1469 ../client/pk-console.c:1476
-#: ../client/pk-console.c:1483 ../client/pk-console.c:1490
-#: ../client/pk-console.c:1601 ../client/pk-console.c:1611
-#: ../client/pk-console.c:1618 ../client/pk-console.c:1625
+#: ../client/pk-console.c:1530 ../client/pk-console.c:1537
+#: ../client/pk-console.c:1544 ../client/pk-console.c:1551
+#: ../client/pk-console.c:1662 ../client/pk-console.c:1672
+#: ../client/pk-console.c:1679 ../client/pk-console.c:1686
 msgid "You need to specify a search term"
 msgstr "Hakutermi on annettava"
 
-#: ../client/pk-console.c:1495
+#: ../client/pk-console.c:1556
 msgid "Invalid search type"
 msgstr "Virheellinen haun tyyppi"
 
-#: ../client/pk-console.c:1500
+#: ../client/pk-console.c:1561
 msgid "You need to specify a package or file to install"
 msgstr "Asennettava paketti tai tiedosto on annettava"
 
-#: ../client/pk-console.c:1507
+#: ../client/pk-console.c:1568
 msgid "You need to specify a type, key_id and package_id"
 msgstr "Tyyppi, key_id ja package_id on annettava"
 
-#: ../client/pk-console.c:1514
+#: ../client/pk-console.c:1575
 msgid "You need to specify a package to remove"
 msgstr "Poistettava paketti on annettava"
 
-#: ../client/pk-console.c:1520
+#: ../client/pk-console.c:1581
 msgid ""
 "You need to specify the destination directory and then the packages to "
 "download"
 msgstr "Kohdehakemisto ja ladattavat paketit on annettava"
 
-#: ../client/pk-console.c:1525
+#: ../client/pk-console.c:1586
 msgid "Directory not found"
 msgstr "Hakemistoa ei löytynyt"
 
-#: ../client/pk-console.c:1531
+#: ../client/pk-console.c:1592
 msgid "You need to specify a eula-id"
 msgstr "Eula-id on annettava"
 
-#: ../client/pk-console.c:1547
+#: ../client/pk-console.c:1608
 msgid "You need to specify a package name to resolve"
 msgstr "Ratkaistavan paketin nimi on annettava"
 
-#: ../client/pk-console.c:1556 ../client/pk-console.c:1563
+#: ../client/pk-console.c:1617 ../client/pk-console.c:1624
 msgid "You need to specify a repo name"
 msgstr "Asennuslähteen nimi on annettava"
 
-#: ../client/pk-console.c:1570
+#: ../client/pk-console.c:1631
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Asennuslähteen nimi/parametri ja arvo on annettava"
 
-#: ../client/pk-console.c:1583
+#: ../client/pk-console.c:1644
 msgid "You need to specify a time term"
 msgstr "Aika on annettava"
 
-#: ../client/pk-console.c:1588
+#: ../client/pk-console.c:1649
 msgid "You need to specify a correct role"
 msgstr "Sopiva rooli on annettava"
 
-#: ../client/pk-console.c:1593
+#: ../client/pk-console.c:1654
 msgid "Failed to get last time"
 msgstr "Edellistä aikaa ei saatu"
 
-#: ../client/pk-console.c:1632
+#: ../client/pk-console.c:1693
 msgid "You need to specify a package to find the details for"
 msgstr "On annettava paketti, jonka tietoja etsitään"
 
-#: ../client/pk-console.c:1639
+#: ../client/pk-console.c:1700
 msgid "You need to specify a package to find the files for"
 msgstr "On annettava paketti, jonka tiedostoja etsitään"
 
-#: ../client/pk-console.c:1688
+#: ../client/pk-console.c:1752
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "Valitsin ”%s” ei ole tuettu"
 
-#: ../client/pk-console.c:1701
+#: ../client/pk-console.c:1765
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Sinulla ei ole tähän toimintoon tarvittavia oikeuksia"
 
-#: ../client/pk-console.c:1703
+#: ../client/pk-console.c:1767
 msgid "Command failed"
 msgstr "Komento epäonnistui"
 
-#: ../client/pk-generate-pack.c:115
+#: ../client/pk-generate-pack.c:131
 msgid "Could not find a package match"
 msgstr "Vastaavaa pakettia ei löytynyt"
 
-#: ../client/pk-generate-pack.c:149
-msgid "failed to download: invalid package_id and/or directory"
-msgstr "Lataaminen epäonnistui: virheellinen package_id ja/tai hakemisto"
+#: ../client/pk-generate-pack.c:161
+msgid "Downloading"
+msgstr ""
 
-#: ../client/pk-generate-pack.c:230
-msgid "Could not find a valid metadata file"
-msgstr "Kelvollista metadata-tiedostoa ei löytynyt"
-
-#. get user input
-#: ../client/pk-generate-pack.c:519
-msgid "Okay to download the additional packages"
-msgstr "Ladataanko lisäpaketit?"
-
-#: ../client/pk-generate-pack-main.c:66
-msgid ""
-"Set the path of the file with the list of packages/dependencies to be "
-"excluded"
+#: ../client/pk-generate-pack.c:205
+#, fuzzy
+msgid "Set the filename of dependencies to be excluded"
 msgstr ""
 "Aseta polku tiedostoon, jossa on pois jätettävien pakettien/riippuvuuksien "
 "luettelo"
 
-#: ../client/pk-generate-pack-main.c:111
-msgid "You need to specify the pack name and packages to be packed\n"
-msgstr "Pakkauksen nimi ja pakattavat paketit on annettava\n"
-
-#: ../client/pk-generate-pack-main.c:117
+#: ../client/pk-generate-pack.c:207
 msgid ""
-"Invalid name for the service pack, Specify a name with .servicepack "
-"extension\n"
+"The directory to put the pack file, or the current directory if ommitted"
 msgstr ""
-"Virheellinen nimi huoltopakkaukselle, nimessä on oltava .servicepack-pääte\n"
 
-#: ../client/pk-generate-pack-main.c:129
+#: ../client/pk-generate-pack.c:209
+#, fuzzy
+msgid "The package to be put into the ServicePack"
+msgstr "PackageKit-huoltopakkaus"
+
+#: ../client/pk-generate-pack.c:211
+msgid "Put all updates available in the ServicePack"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:230
+msgid "Neither option selected"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:237
+msgid "Both optiosn selected"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:269
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "Samalla nimellä on jo olemassa pakkaus, haluatko korvata sen?"
 
-#: ../client/pk-generate-pack-main.c:142
+#: ../client/pk-generate-pack.c:282
 msgid "Failed to create directory"
 msgstr "Hakemiston luominen epäonnistui"
 
-#: ../client/pk-generate-pack-main.c:149
-msgid "Failed to create pack"
+#: ../client/pk-generate-pack.c:290
+#, fuzzy
+msgid "Failed to open package list"
 msgstr "Pakkauksen luominen epäonnistui"
 
-#: ../client/pk-import-desktop.c:279 ../client/pk-import-specspo.c:177
+#: ../client/pk-generate-pack.c:299
+#, fuzzy
+msgid "Resolving package name to remote object"
+msgstr "Seuraavat paketit on poistettava"
+
+#: ../client/pk-generate-pack.c:302
+#, fuzzy, c-format
+msgid "Failed to find package '%s': %s"
+msgstr "Asennettavaksi pyydettyä pakettia ei löytynyt"
+
+#. generate the pack
+#: ../client/pk-generate-pack.c:317
+#, c-format
+msgid "Service pack to create: %s\n"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:323
+msgid "Done!"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:325
+msgid "Failed"
+msgstr ""
+
+#: ../client/pk-import-specspo.c:185
+#, fuzzy
+msgid "Could not set database readonly"
+msgstr "Ei voitu avata tietokantaa: %s"
+
+#: ../client/pk-import-specspo.c:192
 #, c-format
 msgid "Could not open database: %s"
 msgstr "Ei voitu avata tietokantaa: %s"
 
-#: ../client/pk-import-desktop.c:280 ../client/pk-import-specspo.c:178
+#: ../client/pk-import-specspo.c:193
 msgid "You probably need to run this program as the root user"
 msgstr "Tämä ohjelma on luultavasti suoritettava root-käyttäjänä"
 
-#: ../client/pk-monitor.c:117
+#: ../client/pk-monitor.c:131
 msgid "PackageKit Monitor"
 msgstr "PackageKit-tarkkailija"
 
@@ -399,24 +429,113 @@ msgstr ""
 msgid "PackageKit Catalog"
 msgstr "PackageKit-katalogi"
 
-#: ../data/packagekit-pack.xml.in.h:1
+#: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
 msgstr "PackageKit-huoltopakkaus"
 
-#: ../src/pk-main.c:83
+#: ../data/packagekit-package-list.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Package List"
+msgstr "PackageKit-katalogi"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a signed package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install an untrusted package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install untrusted local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Refresh system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Remove package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Rollback to a previous transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Trust a key used for signing packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Update packages"
+msgstr ""
+
+#: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "Käynnistys epäonnistui tämän koneen turvakäytäntöjen vuoksi"
 
-#: ../src/pk-main.c:84
+#: ../src/pk-main.c:86
 msgid "This can happen for two reasons:"
 msgstr "Näin voi tapahtua kahdesta syystä:"
 
-#: ../src/pk-main.c:85
+#: ../src/pk-main.c:87
 msgid "The correct user is not launching the executable (usually root)"
 msgstr ""
 "Oikea käyttäjä (yleensä root) ei ole käynnistämässä suoritettavaa ohjelmaa"
 
-#: ../src/pk-main.c:86
+#: ../src/pk-main.c:88
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
 "dbus-1/system.d directory"
@@ -424,42 +543,61 @@ msgstr ""
 "Tiedostoa org.freedesktop.PackageKit.conf ei ole asennettu järjestelmän /etc/"
 "dbus-1/system.d-hakemistoon"
 
-#: ../src/pk-main.c:185
+#: ../src/pk-main.c:191
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Käytettävä paketinhallintajärjestelmä-taustaosa, esim. dummy"
 
-#: ../src/pk-main.c:187
+#: ../src/pk-main.c:193
 msgid "Daemonize and detach from the terminal"
 msgstr "Tee taustaprosessiksi ja irrota päätteestä"
 
-#: ../src/pk-main.c:191
+#: ../src/pk-main.c:197
 msgid "Disable the idle timer"
 msgstr "Poista toimettomuusajastin käytöstä"
 
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:199
 msgid "Show version and exit"
 msgstr "Näytä versio ja lopeta"
 
-#: ../src/pk-main.c:195
+#: ../src/pk-main.c:201
 msgid "Exit after a small delay"
 msgstr "Sulje pienen viiveen jälkeen"
 
-#: ../src/pk-main.c:197
+#: ../src/pk-main.c:203
 msgid "Exit after the engine has loaded"
 msgstr "Sulje sen jälkeen, kun moottori on ladattu"
 
-#: ../src/pk-main.c:207
+#: ../src/pk-main.c:213
 msgid "PackageKit service"
 msgstr "PackageKit-palvelu"
 
-#: ../src/pk-main.c:233
+#: ../src/pk-main.c:249
 msgid "Cannot connect to the system bus"
 msgstr "Ei voida yhdistää järjestelmäväylään"
 
-#: ../src/pk-main.c:273
+#: ../src/pk-main.c:295
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Virhe yritettäessä käynnistää: %s\n"
+
+#~ msgid "failed to download: invalid package_id and/or directory"
+#~ msgstr "Lataaminen epäonnistui: virheellinen package_id ja/tai hakemisto"
+
+#~ msgid "Could not find a valid metadata file"
+#~ msgstr "Kelvollista metadata-tiedostoa ei löytynyt"
+
+#~ msgid "Okay to download the additional packages"
+#~ msgstr "Ladataanko lisäpaketit?"
+
+#~ msgid "You need to specify the pack name and packages to be packed\n"
+#~ msgstr "Pakkauksen nimi ja pakattavat paketit on annettava\n"
+
+#~ msgid ""
+#~ "Invalid name for the service pack, Specify a name with .servicepack "
+#~ "extension\n"
+#~ msgstr ""
+#~ "Virheellinen nimi huoltopakkaukselle, nimessä on oltava .servicepack-"
+#~ "pääte\n"
 
 #~ msgid ""
 #~ "Could not find a package with that name to install, or package already "

@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-25 00:31+0000\n"
+"POT-Creation-Date: 2008-10-13 17:25+0100\n"
 "PO-Revision-Date: 2008-09-28 12:27+0100\n"
 "Last-Translator: Pere Argelich <bakidok@gmail.com>\n"
 "Language-Team: Catalan <fedora@softcatala.net>\n"
@@ -29,285 +29,308 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: ../client/pk-console.c:274
+#: ../client/pk-console.c:294
 msgid "Update detail"
 msgstr "Detalls de l'actualització"
 
-#: ../client/pk-console.c:491
+#: ../client/pk-console.c:511
 msgid "A system restart is required"
 msgstr "Es requereix reiniciar el sistema"
 
-#: ../client/pk-console.c:493
+#: ../client/pk-console.c:513
 msgid "A logout and login is required"
 msgstr "Es requereix sortir de la sessió"
 
-#: ../client/pk-console.c:495
+#: ../client/pk-console.c:515
 msgid "An application restart is required"
 msgstr "Es requereix reiniciar l'aplicació"
 
-#: ../client/pk-console.c:588 ../client/pk-generate-pack.c:126
+#: ../client/pk-console.c:608 ../client/pk-generate-pack.c:140
 msgid "There are multiple package matches"
 msgstr "Existeixen coincidències amb múltiples paquets"
 
 #. find out what package the user wants to use
-#: ../client/pk-console.c:595 ../client/pk-generate-pack.c:133
+#: ../client/pk-console.c:615 ../client/pk-generate-pack.c:147
 msgid "Please enter the package number: "
 msgstr "Si us plau, introduïu el número de paquet:"
 
-#: ../client/pk-console.c:629
+#: ../client/pk-console.c:649
 msgid "Could not find package to install"
 msgstr "No s'ha trobat cap paquet per a instal·lar"
 
-#: ../client/pk-console.c:735
+#: ../client/pk-console.c:755
 msgid "Could not find package to remove"
 msgstr "No s'ha trobat cap paquet per a eliminar"
 
-#: ../client/pk-console.c:796
+#: ../client/pk-console.c:816
 msgid "The following packages have to be removed"
 msgstr "Els següents paquets seran eliminats"
 
 #. get user input
-#: ../client/pk-console.c:803
+#: ../client/pk-console.c:823
 msgid "Okay to remove additional packages?"
 msgstr "Esteu d'acord en eliminar els paquets adicionals?"
 
-#: ../client/pk-console.c:807 ../client/pk-generate-pack.c:528
-#: ../client/pk-generate-pack-main.c:131
+#: ../client/pk-console.c:827 ../client/pk-generate-pack.c:271
 msgid "Cancelled!"
 msgstr "Cancel·lat"
 
-#: ../client/pk-console.c:841
+#: ../client/pk-console.c:861
 msgid "Could not find package to download"
 msgstr "No s'ha trobat cap paquet per a baixar"
 
-#: ../client/pk-console.c:893
+#: ../client/pk-console.c:913
 msgid "Could not find package to update"
 msgstr "No s'ha trobat cap paquet per a actualitzar"
 
-#: ../client/pk-console.c:915
+#: ../client/pk-console.c:935
 msgid "Could not find what packages require"
 msgstr "No s'ha trobat cap paquet requerit"
 
-#: ../client/pk-console.c:936
+#: ../client/pk-console.c:956
 msgid "Could not get dependencies for"
 msgstr "No s'han pogut obtenir les dependències per a"
 
-#: ../client/pk-console.c:957
+#: ../client/pk-console.c:977
 msgid "Could not find details for"
 msgstr "No s'han pogut trobar els detalls per a"
 
-#: ../client/pk-console.c:980
+#: ../client/pk-console.c:1000
 msgid "Could not find the files for this package"
 msgstr "No s'han pogut trobar els fitxers per a aquest paquet"
 
-#: ../client/pk-console.c:987
+#: ../client/pk-console.c:1007
 msgid "Could not get the file list"
 msgstr "No s'ha pogut obtenir la llista de fitxers"
 
-#: ../client/pk-console.c:1006
+#: ../client/pk-console.c:1026
 msgid "Could not find the update details for"
 msgstr "No s'han trobat els detalls per a actualitzar"
 
-#: ../client/pk-console.c:1067
+#: ../client/pk-console.c:1087
 msgid "Package description"
 msgstr "Descripció del paquet"
 
-#: ../client/pk-console.c:1100
+#: ../client/pk-console.c:1120
 msgid "Package files"
 msgstr "Fitxers del paquet"
 
-#: ../client/pk-console.c:1108
+#: ../client/pk-console.c:1128
 msgid "No files"
 msgstr "No hi ha fitxers"
 
 #. get user input
-#: ../client/pk-console.c:1140
+#: ../client/pk-console.c:1160
 msgid "Okay to import key?"
 msgstr "Esteu d'acord en importar la clau?"
 
-#: ../client/pk-console.c:1143
+#: ../client/pk-console.c:1163
 msgid "Did not import key"
 msgstr "No importis la clau"
 
 #. get user input
-#: ../client/pk-console.c:1183
+#: ../client/pk-console.c:1203
 msgid "Do you agree?"
 msgstr "Esteu d'acord?"
 
-#: ../client/pk-console.c:1186
+#: ../client/pk-console.c:1206
 msgid "Did not agree to licence, task will fail"
 msgstr "La llicència no ha estat acceptada, la tasca fallarà"
 
-#: ../client/pk-console.c:1215
+#: ../client/pk-console.c:1235
 msgid "The daemon crashed mid-transaction!"
 msgstr "El servei ha fallat a meitat de la transacció!"
 
 #. header
-#: ../client/pk-console.c:1268
+#: ../client/pk-console.c:1288
 msgid "PackageKit Console Interface"
 msgstr "Interfície de consola de PackageKit"
 
-#: ../client/pk-console.c:1268
+#: ../client/pk-console.c:1288
 msgid "Subcommands:"
 msgstr "Subordres:"
 
-#: ../client/pk-console.c:1378 ../client/pk-generate-pack-main.c:64
-#: ../client/pk-monitor.c:118 ../src/pk-main.c:192
+#: ../client/pk-console.c:1401 ../client/pk-generate-pack.c:203
+#: ../client/pk-monitor.c:118 ../src/pk-main.c:195
 msgid "Show extra debugging information"
 msgstr "Mostra la informació extra de la depuració"
 
-#: ../client/pk-console.c:1380 ../client/pk-monitor.c:120
+#: ../client/pk-console.c:1403 ../client/pk-monitor.c:120
 msgid "Show the program version and exit"
 msgstr "Mostra la versió del programa i surt"
 
-#: ../client/pk-console.c:1382
+#: ../client/pk-console.c:1405
 msgid "Set the filter, e.g. installed"
 msgstr "Defineix el filtre, p.ex. instal·lat"
 
-#: ../client/pk-console.c:1384
+#: ../client/pk-console.c:1407
 msgid "Exit without waiting for actions to complete"
 msgstr "Surt sense esperar que es completin les accions"
 
-#: ../client/pk-console.c:1407
+#: ../client/pk-console.c:1430
 msgid "Could not connect to system DBUS."
 msgstr "No s'ha pogut connectar al sistema DBUS."
 
-#: ../client/pk-console.c:1500
+#: ../client/pk-console.c:1525
 msgid "You need to specify a search type, e.g. name"
 msgstr "Cal que especifiqueu un tipus de cerca, p.e. per nom"
 
-#: ../client/pk-console.c:1505 ../client/pk-console.c:1512
-#: ../client/pk-console.c:1519 ../client/pk-console.c:1526
-#: ../client/pk-console.c:1637 ../client/pk-console.c:1647
-#: ../client/pk-console.c:1654 ../client/pk-console.c:1661
+#: ../client/pk-console.c:1530 ../client/pk-console.c:1537
+#: ../client/pk-console.c:1544 ../client/pk-console.c:1551
+#: ../client/pk-console.c:1662 ../client/pk-console.c:1672
+#: ../client/pk-console.c:1679 ../client/pk-console.c:1686
 msgid "You need to specify a search term"
 msgstr "Cal que especifiqueu un terme per a la cerca"
 
-#: ../client/pk-console.c:1531
+#: ../client/pk-console.c:1556
 msgid "Invalid search type"
 msgstr "El tipus de cerca no és vàlid"
 
-#: ../client/pk-console.c:1536
+#: ../client/pk-console.c:1561
 msgid "You need to specify a package or file to install"
 msgstr "Cal que especifiqueu un paquet o un fitxer a instal·lar"
 
-#: ../client/pk-console.c:1543
+#: ../client/pk-console.c:1568
 msgid "You need to specify a type, key_id and package_id"
 msgstr ""
 "Cal que especifiqueu un tipus, un identificador de clau i un identificador "
 "de paquet"
 
-#: ../client/pk-console.c:1550
+#: ../client/pk-console.c:1575
 msgid "You need to specify a package to remove"
 msgstr "Cal que especifiqueu un paquet a eliminar"
 
-#: ../client/pk-console.c:1556
+#: ../client/pk-console.c:1581
 msgid ""
 "You need to specify the destination directory and then the packages to "
 "download"
-msgstr ""
-"Cal que especifiqueu el directori destí i els paquets a baixar"
+msgstr "Cal que especifiqueu el directori destí i els paquets a baixar"
 
-#: ../client/pk-console.c:1561
+#: ../client/pk-console.c:1586
 msgid "Directory not found"
 msgstr "No s'ha trobat el directori"
 
-#: ../client/pk-console.c:1567
+#: ../client/pk-console.c:1592
 msgid "You need to specify a eula-id"
 msgstr "Cal que especifiqueu un identificador de EULA"
 
-#: ../client/pk-console.c:1583
+#: ../client/pk-console.c:1608
 msgid "You need to specify a package name to resolve"
 msgstr "Cal que especifiqueu un nom de paquet a resoldre"
 
-#: ../client/pk-console.c:1592 ../client/pk-console.c:1599
+#: ../client/pk-console.c:1617 ../client/pk-console.c:1624
 msgid "You need to specify a repo name"
 msgstr "Cal que especifiqueu un nom de repositori"
 
-#: ../client/pk-console.c:1606
+#: ../client/pk-console.c:1631
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Cal que especifiqueu un nom / paràmetre de repositori i un valor"
 
-#: ../client/pk-console.c:1619
+#: ../client/pk-console.c:1644
 msgid "You need to specify a time term"
 msgstr "Cal que especifiqueu un valor per a l'hora"
 
-#: ../client/pk-console.c:1624
+#: ../client/pk-console.c:1649
 msgid "You need to specify a correct role"
 msgstr "Cal que especifiqueu un rol correcte"
 
-#: ../client/pk-console.c:1629
+#: ../client/pk-console.c:1654
 msgid "Failed to get last time"
 msgstr "S'ha produït un error en obtenir l'última hora"
 
-#: ../client/pk-console.c:1668
+#: ../client/pk-console.c:1693
 msgid "You need to specify a package to find the details for"
 msgstr "Cal que especifiqueu un paquet per cercar-ne els detalls"
 
-#: ../client/pk-console.c:1675
+#: ../client/pk-console.c:1700
 msgid "You need to specify a package to find the files for"
 msgstr "Cal que especifiqueu un paquet per cercar-ne fitxers"
 
-#: ../client/pk-console.c:1724
+#: ../client/pk-console.c:1752
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "L'opció '%s' no està disponible"
 
-#: ../client/pk-console.c:1737
+#: ../client/pk-console.c:1765
 msgid "You don't have the necessary privileges for this operation"
 msgstr "No teniu suficients privilegis per a aquesta operació"
 
-#: ../client/pk-console.c:1739
+#: ../client/pk-console.c:1767
 msgid "Command failed"
 msgstr "L'ordre ha fallat"
 
-#: ../client/pk-generate-pack.c:117
+#: ../client/pk-generate-pack.c:131
 msgid "Could not find a package match"
 msgstr "No s'han trobat coincidències en cap paquet"
 
-#: ../client/pk-generate-pack.c:151
-msgid "failed to download: invalid package_id and/or directory"
-msgstr "no s'ha pogut baixar: directori i/o id de paquet invàlids"
+#: ../client/pk-generate-pack.c:161
+msgid "Downloading"
+msgstr ""
 
-#: ../client/pk-generate-pack.c:232
-msgid "Could not find a valid metadata file"
-msgstr "No s'ha trobat un fitxer de metadades invàlid"
-
-#. get user input
-#: ../client/pk-generate-pack.c:524
-msgid "Okay to download the additional packages"
-msgstr "Esteu d'acord en baixar els paquets adicionals?"
-
-#: ../client/pk-generate-pack-main.c:66
-msgid ""
-"Set the path of the file with the list of packages/dependencies to be "
-"excluded"
+#: ../client/pk-generate-pack.c:205
+#, fuzzy
+msgid "Set the filename of dependencies to be excluded"
 msgstr ""
 "Establiu el camí del fitxer amb la llista de paquets/dependències a excloure"
 
-#: ../client/pk-generate-pack-main.c:111
-msgid "You need to specify the pack name and packages to be packed\n"
-msgstr "Cal que especifiqueu el nom del paquet i els paquets a empaquetar\n"
-
-#: ../client/pk-generate-pack-main.c:117
+#: ../client/pk-generate-pack.c:207
 msgid ""
-"Invalid name for the service pack, Specify a name with .servicepack "
-"extension\n"
+"The directory to put the pack file, or the current directory if ommitted"
 msgstr ""
-"Nom invàlid per als grup de paquets de servei. Especifiqueu un nom amb l'extensió "
-".servicepack\n"
 
-#: ../client/pk-generate-pack-main.c:129
+#: ../client/pk-generate-pack.c:209
+#, fuzzy
+msgid "The package to be put into the ServicePack"
+msgstr "Grup de paquets de servei del PackageKit"
+
+#: ../client/pk-generate-pack.c:211
+msgid "Put all updates available in the ServicePack"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:230
+msgid "Neither option selected"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:237
+msgid "Both optiosn selected"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:269
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "Existeix un grup de paquets amb el mateix nom, voleu sobreescriure'l?"
 
-#: ../client/pk-generate-pack-main.c:142
+#: ../client/pk-generate-pack.c:282
 msgid "Failed to create directory"
 msgstr "S'ha produït un error en crear el directori"
 
-#: ../client/pk-generate-pack-main.c:149
-msgid "Failed to create pack"
+#: ../client/pk-generate-pack.c:290
+#, fuzzy
+msgid "Failed to open package list"
 msgstr "S'ha produït un error en crear el grup de paquets"
+
+#: ../client/pk-generate-pack.c:299
+#, fuzzy
+msgid "Resolving package name to remote object"
+msgstr "Els següents paquets seran eliminats"
+
+#: ../client/pk-generate-pack.c:302
+#, fuzzy, c-format
+msgid "Failed to find package '%s': %s"
+msgstr "No s'ha trobat cap paquet per a instal·lar"
+
+#. generate the pack
+#: ../client/pk-generate-pack.c:317
+#, c-format
+msgid "Service pack to create: %s\n"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:323
+msgid "Done!"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:325
+msgid "Failed"
+msgstr ""
 
 #: ../client/pk-import-specspo.c:185
 msgid "Could not set database readonly"
@@ -421,9 +444,98 @@ msgstr ""
 msgid "PackageKit Catalog"
 msgstr "Catàleg del Packagekit"
 
-#: ../data/packagekit-pack.xml.in.h:1
+#: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
 msgstr "Grup de paquets de servei del PackageKit"
+
+#: ../data/packagekit-package-list.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Package List"
+msgstr "Catàleg del Packagekit"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a signed package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install an untrusted package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install untrusted local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Refresh system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Remove package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Rollback to a previous transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Trust a key used for signing packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Update packages"
+msgstr ""
 
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
@@ -448,42 +560,61 @@ msgstr ""
 "El fitxer org.freedesktop.PackageKit.conf no està instal·lat al directori "
 "del sistema /etc/dbus-1/system.d"
 
-#: ../src/pk-main.c:188
+#: ../src/pk-main.c:191
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Administrador de paquets a usar, p.ex. dummy"
 
-#: ../src/pk-main.c:190
+#: ../src/pk-main.c:193
 msgid "Daemonize and detach from the terminal"
 msgstr "Inicia el servei i separa del terminal"
 
-#: ../src/pk-main.c:194
+#: ../src/pk-main.c:197
 msgid "Disable the idle timer"
 msgstr "Desactiva el temporitzador d'inactivitat"
 
-#: ../src/pk-main.c:196
+#: ../src/pk-main.c:199
 msgid "Show version and exit"
 msgstr "Mostra la versió i surt"
 
-#: ../src/pk-main.c:198
+#: ../src/pk-main.c:201
 msgid "Exit after a small delay"
 msgstr "Surt després d'una petita pausa"
 
-#: ../src/pk-main.c:200
+#: ../src/pk-main.c:203
 msgid "Exit after the engine has loaded"
 msgstr "Surt després de que el motor s'hagi cargat"
 
-#: ../src/pk-main.c:210
+#: ../src/pk-main.c:213
 msgid "PackageKit service"
 msgstr "Servei del PackageKit"
 
-#: ../src/pk-main.c:246
+#: ../src/pk-main.c:249
 msgid "Cannot connect to the system bus"
 msgstr "No s'ha pogut connectar al bus del sistema"
 
-#: ../src/pk-main.c:286
+#: ../src/pk-main.c:295
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "S'ha produït un error en intentar iniciar: %s\n"
+
+#~ msgid "failed to download: invalid package_id and/or directory"
+#~ msgstr "no s'ha pogut baixar: directori i/o id de paquet invàlids"
+
+#~ msgid "Could not find a valid metadata file"
+#~ msgstr "No s'ha trobat un fitxer de metadades invàlid"
+
+#~ msgid "Okay to download the additional packages"
+#~ msgstr "Esteu d'acord en baixar els paquets adicionals?"
+
+#~ msgid "You need to specify the pack name and packages to be packed\n"
+#~ msgstr "Cal que especifiqueu el nom del paquet i els paquets a empaquetar\n"
+
+#~ msgid ""
+#~ "Invalid name for the service pack, Specify a name with .servicepack "
+#~ "extension\n"
+#~ msgstr ""
+#~ "Nom invàlid per als grup de paquets de servei. Especifiqueu un nom amb "
+#~ "l'extensió .servicepack\n"
 
 #~ msgid ""
 #~ "Could not find a package with that name to install, or package already "

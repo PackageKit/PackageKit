@@ -8,13 +8,432 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-18 16:49+0100\n"
+"POT-Creation-Date: 2008-10-13 17:25+0100\n"
 "PO-Revision-Date: 2008-04-19 21:40+0800\n"
 "Last-Translator: Chen Yu <jcomee@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: ../client/pk-console.c:294
+msgid "Update detail"
+msgstr "更新细节"
+
+#: ../client/pk-console.c:511
+msgid "A system restart is required"
+msgstr "需要重启系统"
+
+#: ../client/pk-console.c:513
+msgid "A logout and login is required"
+msgstr "需要注销和登录"
+
+#: ../client/pk-console.c:515
+msgid "An application restart is required"
+msgstr "需要重启应用程序"
+
+#: ../client/pk-console.c:608 ../client/pk-generate-pack.c:140
+msgid "There are multiple package matches"
+msgstr "有多个匹配的包"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:615 ../client/pk-generate-pack.c:147
+msgid "Please enter the package number: "
+msgstr "请输入包的号码"
+
+#: ../client/pk-console.c:649
+#, fuzzy
+msgid "Could not find package to install"
+msgstr "未能找到匹配的包"
+
+#: ../client/pk-console.c:755
+#, fuzzy
+msgid "Could not find package to remove"
+msgstr "未能找到这个名字的包来删除"
+
+#: ../client/pk-console.c:816
+msgid "The following packages have to be removed"
+msgstr "下面的包必须删除"
+
+#. get user input
+#: ../client/pk-console.c:823
+msgid "Okay to remove additional packages?"
+msgstr "同意删除额外的包吗？"
+
+#: ../client/pk-console.c:827 ../client/pk-generate-pack.c:271
+msgid "Cancelled!"
+msgstr "已取消"
+
+#: ../client/pk-console.c:861
+#, fuzzy
+msgid "Could not find package to download"
+msgstr "未能找到匹配的包"
+
+#: ../client/pk-console.c:913
+#, fuzzy
+msgid "Could not find package to update"
+msgstr "未能找到匹配的包"
+
+#: ../client/pk-console.c:935
+#, fuzzy
+msgid "Could not find what packages require"
+msgstr "未能找到是哪些包需要这个包"
+
+#: ../client/pk-console.c:956
+#, fuzzy
+msgid "Could not get dependencies for"
+msgstr "未能得到这个包的依赖"
+
+#: ../client/pk-console.c:977
+#, fuzzy
+msgid "Could not find details for"
+msgstr "未能找到这个包所包含的文件"
+
+#: ../client/pk-console.c:1000
+msgid "Could not find the files for this package"
+msgstr "未能找到这个包所包含的文件"
+
+#: ../client/pk-console.c:1007
+#, fuzzy
+msgid "Could not get the file list"
+msgstr "未能找到这个包所包含的文件"
+
+#: ../client/pk-console.c:1026
+#, fuzzy
+msgid "Could not find the update details for"
+msgstr "未能找到这个包所包含的文件"
+
+#: ../client/pk-console.c:1087
+msgid "Package description"
+msgstr "包的描述"
+
+#: ../client/pk-console.c:1120
+msgid "Package files"
+msgstr "包中的文件"
+
+#: ../client/pk-console.c:1128
+msgid "No files"
+msgstr "无文件"
+
+#. get user input
+#: ../client/pk-console.c:1160
+msgid "Okay to import key?"
+msgstr "同意导入 key？"
+
+#: ../client/pk-console.c:1163
+msgid "Did not import key"
+msgstr "没有导入 key"
+
+#. get user input
+#: ../client/pk-console.c:1203
+msgid "Do you agree?"
+msgstr "您接受吗？"
+
+#: ../client/pk-console.c:1206
+msgid "Did not agree to licence, task will fail"
+msgstr "不接受许可，任务将终止"
+
+#: ../client/pk-console.c:1235
+msgid "The daemon crashed mid-transaction!"
+msgstr ""
+
+#. header
+#: ../client/pk-console.c:1288
+msgid "PackageKit Console Interface"
+msgstr "PackageKit 控制台界面"
+
+#: ../client/pk-console.c:1288
+msgid "Subcommands:"
+msgstr "子命令"
+
+#: ../client/pk-console.c:1401 ../client/pk-generate-pack.c:203
+#: ../client/pk-monitor.c:118 ../src/pk-main.c:195
+msgid "Show extra debugging information"
+msgstr "显示额外的调试信息"
+
+#: ../client/pk-console.c:1403 ../client/pk-monitor.c:120
+msgid "Show the program version and exit"
+msgstr "显示程序版本并退出"
+
+#: ../client/pk-console.c:1405
+msgid "Set the filter, e.g. installed"
+msgstr "设置过滤器，比如，已安装的"
+
+#: ../client/pk-console.c:1407
+msgid "Exit without waiting for actions to complete"
+msgstr "不等动作完成即退出"
+
+#: ../client/pk-console.c:1430
+msgid "Could not connect to system DBUS."
+msgstr "未能链接系统 DBUS"
+
+#: ../client/pk-console.c:1525
+#, fuzzy
+msgid "You need to specify a search type, e.g. name"
+msgstr "您要求通过指定一个搜索类型"
+
+#: ../client/pk-console.c:1530 ../client/pk-console.c:1537
+#: ../client/pk-console.c:1544 ../client/pk-console.c:1551
+#: ../client/pk-console.c:1662 ../client/pk-console.c:1672
+#: ../client/pk-console.c:1679 ../client/pk-console.c:1686
+msgid "You need to specify a search term"
+msgstr "您需要指定一个搜索条件"
+
+#: ../client/pk-console.c:1556
+msgid "Invalid search type"
+msgstr "无效的搜索类型"
+
+#: ../client/pk-console.c:1561
+msgid "You need to specify a package or file to install"
+msgstr "您要指定一个包或文件来安装"
+
+#: ../client/pk-console.c:1568
+msgid "You need to specify a type, key_id and package_id"
+msgstr "您要通过指定一个类型，key_id 和 package_id"
+
+#: ../client/pk-console.c:1575
+msgid "You need to specify a package to remove"
+msgstr "您要通过指定一个包来删除"
+
+#: ../client/pk-console.c:1581
+#, fuzzy
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
+msgstr "您要通过指定一个类型，key_id 和 package_id"
+
+#: ../client/pk-console.c:1586
+msgid "Directory not found"
+msgstr ""
+
+#: ../client/pk-console.c:1592
+msgid "You need to specify a eula-id"
+msgstr "你要指定一个 eula-id"
+
+#: ../client/pk-console.c:1608
+msgid "You need to specify a package name to resolve"
+msgstr "您要指定一个包的名字来解释"
+
+#: ../client/pk-console.c:1617 ../client/pk-console.c:1624
+msgid "You need to specify a repo name"
+msgstr "您要指定一个库名"
+
+#: ../client/pk-console.c:1631
+msgid "You need to specify a repo name/parameter and value"
+msgstr "您要指定一个库名/参数和值"
+
+#: ../client/pk-console.c:1644
+msgid "You need to specify a time term"
+msgstr "您要指定一个时间项目"
+
+#: ../client/pk-console.c:1649
+msgid "You need to specify a correct role"
+msgstr "您要指定一个正确的角色"
+
+#: ../client/pk-console.c:1654
+msgid "Failed to get last time"
+msgstr "获取上一次失败"
+
+#: ../client/pk-console.c:1693
+#, fuzzy
+msgid "You need to specify a package to find the details for"
+msgstr "您要指定一个包来查找文件"
+
+#: ../client/pk-console.c:1700
+msgid "You need to specify a package to find the files for"
+msgstr "您要指定一个包来查找文件"
+
+#: ../client/pk-console.c:1752
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "不支持 '%s'选项"
+
+#: ../client/pk-console.c:1765
+msgid "You don't have the necessary privileges for this operation"
+msgstr "您没有此操作所需的特权"
+
+#: ../client/pk-console.c:1767
+msgid "Command failed"
+msgstr "命令失败"
+
+#: ../client/pk-generate-pack.c:131
+msgid "Could not find a package match"
+msgstr "未能找到匹配的包"
+
+#: ../client/pk-generate-pack.c:161
+msgid "Downloading"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:205
+msgid "Set the filename of dependencies to be excluded"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:207
+msgid ""
+"The directory to put the pack file, or the current directory if ommitted"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:209
+msgid "The package to be put into the ServicePack"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:211
+msgid "Put all updates available in the ServicePack"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:230
+msgid "Neither option selected"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:237
+msgid "Both optiosn selected"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:269
+msgid "A pack with the same name already exists, do you want to overwrite it?"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:282
+#, fuzzy
+msgid "Failed to create directory"
+msgstr "获取上一次失败"
+
+#: ../client/pk-generate-pack.c:290
+#, fuzzy
+msgid "Failed to open package list"
+msgstr "获取上一次失败"
+
+#: ../client/pk-generate-pack.c:299
+#, fuzzy
+msgid "Resolving package name to remote object"
+msgstr "下面的包必须删除"
+
+#: ../client/pk-generate-pack.c:302
+#, c-format
+msgid "Failed to find package '%s': %s"
+msgstr ""
+
+#. generate the pack
+#: ../client/pk-generate-pack.c:317
+#, c-format
+msgid "Service pack to create: %s\n"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:323
+msgid "Done!"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:325
+msgid "Failed"
+msgstr ""
+
+#: ../client/pk-import-specspo.c:185
+#, fuzzy
+msgid "Could not set database readonly"
+msgstr "未能打开数据库: %s"
+
+#: ../client/pk-import-specspo.c:192
+#, c-format
+msgid "Could not open database: %s"
+msgstr "未能打开数据库: %s"
+
+#: ../client/pk-import-specspo.c:193
+msgid "You probably need to run this program as the root user"
+msgstr "您可能要以根用户身份来运行这个程序"
+
+#: ../client/pk-monitor.c:131
+msgid "PackageKit Monitor"
+msgstr "PackageKit 监视器"
+
+#: ../client/pk-tools-common.c:51
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "请输入的号码从 1 到 %i:"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:300
+msgid "Getting package information..."
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:308
+#: ../contrib/packagekit-plugin/src/contents.cpp:313
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#: ../contrib/packagekit-plugin/src/contents.cpp:340
+#, c-format
+msgid "<big>%s</big>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:310
+#, c-format
+msgid ""
+"\n"
+"<small>Installed version: %s</small>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:316
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run version %s now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:321
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:325
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
+#, c-format
+msgid ""
+"<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:333
+#, c-format
+msgid ""
+"\n"
+"<small>Version: %s</small>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:337
+msgid ""
+"\n"
+"<small>No packages found for your system</small>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:341
+msgid ""
+"\n"
+"<small>Installing...</small>"
+msgstr ""
+
+#: ../data/packagekit-catalog.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Catalog"
+msgstr "PackageKit 监视器"
+
+#: ../data/packagekit-servicepack.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Service Pack"
+msgstr "PackageKit 服务"
+
+#: ../data/packagekit-package-list.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Package List"
+msgstr "PackageKit 监视器"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:1
 msgid "Accept EULA"
@@ -29,19 +448,25 @@ msgid "Authentication is required to change software source parameters"
 msgstr "改变软件源要求通过验证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
-msgid "Authentication is required to install a local file"
-msgstr "安装本地文件要求通过验证"
+#, fuzzy
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr "刷新包列表要求通过验证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:5
-msgid "Authentication is required to install a package"
+#, fuzzy
+msgid "Authentication is required to install a signed package"
 msgstr "安装软件要求通过验证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
-msgid "Authentication is required to install a security signature"
-msgstr "安转安全签名要求通过验证"
+#, fuzzy
+msgid "Authentication is required to install an untrusted package"
+msgstr "安装软件要求通过验证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Authentication is required to refresh the package lists"
+#, fuzzy
+msgid "Authentication is required to refresh the system sources"
 msgstr "刷新包列表要求通过验证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
@@ -53,8 +478,11 @@ msgid "Authentication is required to rollback a transaction"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid "Authentication is required to update all packages"
-msgstr "更新全部包要求通过验证"
+#, fuzzy
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr "删除包要求通过验证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid "Authentication is required to update packages"
@@ -69,329 +497,121 @@ msgid "Install local file"
 msgstr "安装本地文件"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install package"
-msgstr "安装包"
+#, fuzzy
+msgid "Install untrusted local file"
+msgstr "安装本地文件"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Install security signature"
-msgstr "安装安全签名"
+msgid "Refresh system sources"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Refresh package lists"
-msgstr "刷新包列表"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Remove package"
 msgstr "删除包"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Rollback to a previous transaction"
 msgstr ""
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Update all packages"
-msgstr "更新所有包"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Update package"
-msgstr "更新包"
-
-#: ../client/pk-console.c:208
-msgid "Update detail"
-msgstr "更新细节"
-
-#: ../client/pk-console.c:400
-msgid "A system restart is required"
-msgstr "需要重启系统"
-
-#: ../client/pk-console.c:402
-msgid "A logout and login is required"
-msgstr "需要注销和登录"
-
-#: ../client/pk-console.c:404
-msgid "An application restart is required"
-msgstr "需要重启应用程序"
-
-#: ../client/pk-console.c:443
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "请输入的号码从 1 到 %i:"
-
-#: ../client/pk-console.c:493
-msgid "Could not find a package match"
-msgstr "未能找到匹配的包"
-
-#: ../client/pk-console.c:507
-msgid "There are multiple package matches"
-msgstr "有多个匹配的包"
-
-#. find out what package the user wants to use
-#: ../client/pk-console.c:514
-msgid "Please enter the package number: "
-msgstr "请输入包的号码"
-
-#: ../client/pk-console.c:530
-msgid ""
-"Could not find a package with that name to install, or package already "
-"installed"
-msgstr "未能找到这个名字的包来安装，或包已经安装"
-
-#: ../client/pk-console.c:612
-msgid "Could not find a package with that name to remove"
-msgstr "未能找到这个名字的包来删除"
-
-#: ../client/pk-console.c:652
-msgid "The following packages have to be removed"
-msgstr "下面的包必须删除"
-
-#. get user input
-#: ../client/pk-console.c:661
-msgid "Okay to remove additional packages?"
-msgstr "同意删除额外的包吗？"
-
-#: ../client/pk-console.c:665
-msgid "Cancelled!"
-msgstr "已取消"
-
-#: ../client/pk-console.c:687
-msgid "Could not find a package with that name to update"
-msgstr "未能找到这个名字的包来升级"
-
-#: ../client/pk-console.c:705
-msgid "Could not find what packages require this package"
-msgstr "未能找到是哪些包需要这个包"
-
-#: ../client/pk-console.c:723
-msgid "Could not get dependencies for this package"
-msgstr "未能得到这个包的依赖"
-
-#: ../client/pk-console.c:741
-msgid "Could not find a description for this package"
-msgstr "未能找到这个包的描述"
-
-#: ../client/pk-console.c:759
-#, c-format
-msgid "Could not find the files for this package"
-msgstr "未能找到这个包所包含的文件"
-
-#: ../client/pk-console.c:819
-msgid "Package description"
-msgstr "包的描述"
-
-#: ../client/pk-console.c:842
-msgid "Package files"
-msgstr "包中的文件"
-
-#: ../client/pk-console.c:850
-msgid "No files"
-msgstr "无文件"
-
-#. get user input
-#: ../client/pk-console.c:882
-msgid "Okay to import key?"
-msgstr "同意导入 key？"
-
-#: ../client/pk-console.c:885
-msgid "Did not import key"
-msgstr "没有导入 key"
-
-#. get user input
-#: ../client/pk-console.c:925
-msgid "Do you agree?"
-msgstr "您接受吗？"
-
-#: ../client/pk-console.c:928
-msgid "Did not agree to licence, task will fail"
-msgstr "不接受许可，任务将终止"
-
-#: ../client/pk-console.c:957
-msgid "The daemon crashed mid-transaction!"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
 msgstr ""
 
-#. header
-#: ../client/pk-console.c:1010
-msgid "PackageKit Console Interface"
-msgstr "PackageKit 控制台界面"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Trust a key used for signing packages"
+msgstr ""
 
-#: ../client/pk-console.c:1010
-msgid "Subcommands:"
-msgstr "子命令"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+#, fuzzy
+msgid "Update packages"
+msgstr "更新包"
 
-#: ../client/pk-console.c:1114 ../client/pk-monitor.c:100 ../src/pk-main.c:189
-msgid "Show extra debugging information"
-msgstr "显示额外的调试信息"
-
-#: ../client/pk-console.c:1116 ../client/pk-monitor.c:102
-msgid "Show the program version and exit"
-msgstr "显示程序版本并退出"
-
-#: ../client/pk-console.c:1118
-msgid "Set the filter, e.g. installed"
-msgstr "设置过滤器，比如，已安装的"
-
-#: ../client/pk-console.c:1120
-msgid "Exit without waiting for actions to complete"
-msgstr "不等动作完成即退出"
-
-#: ../client/pk-console.c:1143
-msgid "Could not connect to system DBUS."
-msgstr "未能链接系统 DBUS"
-
-#: ../client/pk-console.c:1231
-#, c-format
-msgid "You need to specify a search type"
-msgstr "您要求通过指定一个搜索类型"
-
-#: ../client/pk-console.c:1236 ../client/pk-console.c:1243
-#: ../client/pk-console.c:1250 ../client/pk-console.c:1257
-#: ../client/pk-console.c:1361 ../client/pk-console.c:1368
-#: ../client/pk-console.c:1375 ../client/pk-console.c:1382
-#, c-format
-msgid "You need to specify a search term"
-msgstr "您需要指定一个搜索条件"
-
-#: ../client/pk-console.c:1262
-#, c-format
-msgid "Invalid search type"
-msgstr "无效的搜索类型"
-
-#: ../client/pk-console.c:1267
-#, c-format
-msgid "You need to specify a package or file to install"
-msgstr "您要指定一个包或文件来安装"
-
-#: ../client/pk-console.c:1280
-#, c-format
-msgid "You need to specify a type, key_id and package_id"
-msgstr "您要通过指定一个类型，key_id 和 package_id"
-
-#: ../client/pk-console.c:1287
-#, c-format
-msgid "You need to specify a package to remove"
-msgstr "您要通过指定一个包来删除"
-
-#: ../client/pk-console.c:1294
-#, c-format
-msgid "You need to specify a eula-id"
-msgstr "你要指定一个 eula-id"
-
-#: ../client/pk-console.c:1309
-#, c-format
-msgid "You need to specify a package name to resolve"
-msgstr "您要指定一个包的名字来解释"
-
-#: ../client/pk-console.c:1316 ../client/pk-console.c:1323
-#, c-format
-msgid "You need to specify a repo name"
-msgstr "您要指定一个库名"
-
-#: ../client/pk-console.c:1330
-#, c-format
-msgid "You need to specify a repo name/parameter and value"
-msgstr "您要指定一个库名/参数和值"
-
-#: ../client/pk-console.c:1343
-#, c-format
-msgid "You need to specify a time term"
-msgstr "您要指定一个时间项目"
-
-#: ../client/pk-console.c:1348
-#, c-format
-msgid "You need to specify a correct role"
-msgstr "您要指定一个正确的角色"
-
-#: ../client/pk-console.c:1353
-#, c-format
-msgid "Failed to get last time"
-msgstr "获取上一次失败"
-
-#: ../client/pk-console.c:1389
-#, c-format
-msgid "You need to specify a package to find the description for"
-msgstr "您要指定一个包来查找描述"
-
-#: ../client/pk-console.c:1396
-#, c-format
-msgid "You need to specify a package to find the files for"
-msgstr "您要指定一个包来查找文件"
-
-#: ../client/pk-console.c:1441
-#, c-format
-msgid "Option '%s' not supported"
-msgstr "不支持 '%s'选项"
-
-#: ../client/pk-console.c:1452
-msgid "Command failed"
-msgstr "命令失败"
-
-#: ../client/pk-console.c:1456
-msgid "You don't have the necessary privileges for this operation"
-msgstr "您没有此操作所需的特权"
-
-#: ../client/pk-monitor.c:113
-msgid "PackageKit Monitor"
-msgstr "PackageKit 监视器"
-
-#: ../client/pk-import-desktop.c:283 ../client/pk-import-specspo.c:169
-#, c-format
-msgid "Could not open database: %s"
-msgstr "未能打开数据库: %s"
-
-#: ../client/pk-import-desktop.c:284 ../client/pk-import-specspo.c:170
-msgid "You probably need to run this program as the root user"
-msgstr "您可能要以根用户身份来运行这个程序"
-
-#: ../src/pk-main.c:83
+#: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "因为本机的安全策略导致启动失败"
 
-#: ../src/pk-main.c:84
+#: ../src/pk-main.c:86
 msgid "This can happen for two reasons:"
 msgstr "这可能有两个原因"
 
-#: ../src/pk-main.c:85
+#: ../src/pk-main.c:87
 msgid "The correct user is not launching the executable (usually root)"
 msgstr ""
 
-#: ../src/pk-main.c:86
+#: ../src/pk-main.c:88
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
 "dbus-1/system.d directory"
 msgstr "文件 org.freedesktop.PackageKit.conf 没有被安装在系统的 /etc/ 中"
 
-#: ../src/pk-main.c:185
+#: ../src/pk-main.c:191
 msgid "Packaging backend to use, e.g. dummy"
 msgstr ""
 
-#: ../src/pk-main.c:187
+#: ../src/pk-main.c:193
 msgid "Daemonize and detach from the terminal"
 msgstr "后台进程和"
 
-#: ../src/pk-main.c:191
+#: ../src/pk-main.c:197
 msgid "Disable the idle timer"
 msgstr "关闭空闲计时器"
 
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:199
 msgid "Show version and exit"
 msgstr "显示版本后退出"
 
-#: ../src/pk-main.c:195
+#: ../src/pk-main.c:201
 msgid "Exit after a small delay"
 msgstr "稍微延迟再退出"
 
-#: ../src/pk-main.c:197
+#: ../src/pk-main.c:203
 msgid "Exit after the engine has loaded"
 msgstr "引擎加载后退出"
 
-#: ../src/pk-main.c:207
+#: ../src/pk-main.c:213
 msgid "PackageKit service"
 msgstr "PackageKit 服务"
 
-#: ../src/pk-main.c:233
+#: ../src/pk-main.c:249
 msgid "Cannot connect to the system bus"
 msgstr "未能链接系统总线"
 
-#: ../src/pk-main.c:273
+#: ../src/pk-main.c:295
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "尝试启动出错\n"
+
+#~ msgid "Authentication is required to install a local file"
+#~ msgstr "安装本地文件要求通过验证"
+
+#~ msgid "Authentication is required to install a security signature"
+#~ msgstr "安转安全签名要求通过验证"
+
+#~ msgid "Authentication is required to update all packages"
+#~ msgstr "更新全部包要求通过验证"
+
+#~ msgid "Install package"
+#~ msgstr "安装包"
+
+#~ msgid "Install security signature"
+#~ msgstr "安装安全签名"
+
+#~ msgid "Refresh package lists"
+#~ msgstr "刷新包列表"
+
+#~ msgid "Update all packages"
+#~ msgstr "更新所有包"
+
+#~ msgid ""
+#~ "Could not find a package with that name to install, or package already "
+#~ "installed"
+#~ msgstr "未能找到这个名字的包来安装，或包已经安装"
+
+#~ msgid "Could not find a package with that name to update"
+#~ msgstr "未能找到这个名字的包来升级"
+
+#~ msgid "Could not find a description for this package"
+#~ msgstr "未能找到这个包的描述"
+
+#~ msgid "You need to specify a package to find the description for"
+#~ msgstr "您要指定一个包来查找描述"
