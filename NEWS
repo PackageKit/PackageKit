@@ -1,3 +1,45 @@
+Version 0.3.7
+~~~~~~~~~~~~~~
+Released: 2008-10-13
+
+Translations:
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Greek translation (Nikos Charonitakis)
+ - Updated Slovak translation (Pavol Šimo)
+ - Updated German Translation (Thomas Spura)
+
+New Features:
+ - Add a GetCategories method and Category signal so we can build a dynamic
+   group list (Richard Hughes, Tim Lauridsen)
+ - Add support for getting the category list in PkClient (Richard Hughes)
+ - Speed up filtering by nearly an order of magnitude (Richard Hughes)
+ - Make the command line parsing on pkgenpack more sane (Richard Hughes)
+ - Add a -u option to pkgenpack so we can generate a pack of updates (Richard Hughes)
+ - Show progress as the packages are downloaded in pkgenpack (Richard Hughes)
+ - More PkServicePack into libpackagekit for GUI client tools (Richard Hughes)
+ - Lots of updates to the pkgenpack manpage (Richard Hughes)
+
+Bugfixes:
+ - Add some functionality to compare PackageIDs with a fuzzy arch (Richard Hughes)
+ - Don't crash the client tools if PkControl launches the daemon (Richard Hughes)
+ - Change the docs as the duration of the transaction is measured in ms (Richard Hughes)
+ - Register the mime-type x-package-list as we are using it for service packs (Richard Hughes)
+ - Mime type of a service pack is x-servicepack, not x-pack (Richard Hughes)
+ - Fix refresh cache actions to set store values for threaded backends (Scott Reeves)
+ - python: fixed cut & paste error (Tim Lauridsen)
+ - python: use stdin.readline as it behaves better when terminating (Tim Lauridsen)
+
+Backends:
+ - alpm: Add get_mime_types (Valeriy Lyasotskiy)
+ - alpm: Don't list available packages with the same version as installed (Valeriy Lyasotskiy)
+ - apt: Dix the gstreamer whatprovides regular expression (Sebastian Heinlein)
+ - apt: Do not require to be online to make a refresh (Sebastian Heinlein)
+ - urpmi: Fix in backend with new package ids delimiter (Aurelien Lefebvre)
+ - yum: Add support for categories (Tim Lauridsen)
+ - yum: Don't emit full paths for icons, just emit the icon name (Richard Hughes)
+ - zypp: Changes for zypp 4.14.0 (Stefan Haas)
+ - zypp: fixed BNC#402372 (Stefan Haas)
+
 Version 0.3.6
 ~~~~~~~~~~~~~~
 Released: 2008-10-06
