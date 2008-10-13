@@ -32,7 +32,7 @@ mimedir = $(datadir)/mime/packages
 mime_in_files = 					\
 	packagekit-catalog.xml.in			\
 	packagekit-package-list.xml.in			\
-	packagekit-pack.xml.in				\
+	packagekit-servicepack.xml.in			\
 	$(NULL)						
 mime_DATA = $(mime_in_files:.xml.in=.xml)
 
