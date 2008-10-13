@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-13 17:25+0100\n"
-"PO-Revision-Date: 2008-09-26 00:25+0200\n"
+"POT-Creation-Date: 2008-10-13 22:38+0200\n"
+"PO-Revision-Date: 2008-10-13 23:13+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -247,35 +247,34 @@ msgstr "Nie można znaleźć pasującego pakietu"
 
 #: ../client/pk-generate-pack.c:161
 msgid "Downloading"
-msgstr ""
+msgstr "Pobieranie"
 
 #: ../client/pk-generate-pack.c:205
-#, fuzzy
 msgid "Set the filename of dependencies to be excluded"
-msgstr ""
-"Proszę ustawić ścieżkę pliku z listą pakietów/zależności do wykluczenia"
+msgstr "Proszę ustawić nazwy plików zależności do wykluczenia"
 
 #: ../client/pk-generate-pack.c:207
 msgid ""
 "The directory to put the pack file, or the current directory if ommitted"
 msgstr ""
+"Katalog do umieszczenia pliku pakietu, lub bieżący katalog, jeśli zostanie "
+"pominięty"
 
 #: ../client/pk-generate-pack.c:209
-#, fuzzy
 msgid "The package to be put into the ServicePack"
-msgstr "Pakiet serwisowy PackageKit"
+msgstr "Pakiet do umieszczenia w pakiecie serwisowym"
 
 #: ../client/pk-generate-pack.c:211
 msgid "Put all updates available in the ServicePack"
-msgstr ""
+msgstr "Wszystkie dostępne aktualizacje w pakiecie serwisowym"
 
 #: ../client/pk-generate-pack.c:230
 msgid "Neither option selected"
-msgstr ""
+msgstr "Nie wybrano żadnej opcji"
 
 #: ../client/pk-generate-pack.c:237
 msgid "Both optiosn selected"
-msgstr ""
+msgstr "Wybrano obie opcje"
 
 #: ../client/pk-generate-pack.c:269
 msgid "A pack with the same name already exists, do you want to overwrite it?"
@@ -286,33 +285,31 @@ msgid "Failed to create directory"
 msgstr "Utworzenie katalogu nie powiodło się"
 
 #: ../client/pk-generate-pack.c:290
-#, fuzzy
 msgid "Failed to open package list"
-msgstr "Utworzenie pakietu serwisowego nie powiodło się"
+msgstr "Otwarcie listy pakietów nie powiodło się"
 
 #: ../client/pk-generate-pack.c:299
-#, fuzzy
 msgid "Resolving package name to remote object"
-msgstr "Następujące pakiety muszą zostać usunięte"
+msgstr "Rozwiązywanie nazwy pakietu dla zdalnego obiektu"
 
 #: ../client/pk-generate-pack.c:302
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to find package '%s': %s"
-msgstr "Nie można znaleźć pakietu do zainstalowania"
+msgstr "Nie można znaleźć pakietu \"%s\": %s"
 
 #. generate the pack
 #: ../client/pk-generate-pack.c:317
 #, c-format
 msgid "Service pack to create: %s\n"
-msgstr ""
+msgstr "Pakiet serwisowy do utworzenia: %s\n"
 
 #: ../client/pk-generate-pack.c:323
 msgid "Done!"
-msgstr ""
+msgstr "Zakończono!"
 
 #: ../client/pk-generate-pack.c:325
 msgid "Failed"
-msgstr ""
+msgstr "Niepowodzenie"
 
 #: ../client/pk-import-specspo.c:185
 msgid "Could not set database readonly"
@@ -426,98 +423,102 @@ msgstr ""
 msgid "PackageKit Catalog"
 msgstr "Katalog PackageKit"
 
+#: ../data/packagekit-package-list.xml.in.h:1
+msgid "PackageKit Package List"
+msgstr "Lista pakietów PackageKit"
+
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
 msgstr "Pakiet serwisowy PackageKit"
 
-#: ../data/packagekit-package-list.xml.in.h:1
-#, fuzzy
-msgid "PackageKit Package List"
-msgstr "Katalog PackageKit"
-
 #: ../policy/org.freedesktop.packagekit.policy.in.h:1
 msgid "Accept EULA"
-msgstr ""
+msgstr "Akceptacja licencji"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:2
 msgid "Authentication is required to accept a EULA"
-msgstr ""
+msgstr "Wymagane jest uwierzytelnienie, aby zaakceptować licencję"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:3
 msgid "Authentication is required to change software source parameters"
 msgstr ""
+"Wymagane jest uwierzytelnienie, aby zmienić parametry źródeł oprogramowania"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
 msgstr ""
+"Wymagane jest uwierzytelnienie, aby oznaczyć klucz używany do podpisywania "
+"pakietów jako zaufany"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:5
 msgid "Authentication is required to install a signed package"
-msgstr ""
+msgstr "Wymagane jest uwierzytelnienie, aby zainstalować podpisany pakiet"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
 msgid "Authentication is required to install an untrusted package"
-msgstr ""
+msgstr "Wymagane jest uwierzytelnienie, aby zainstalować niezaufany pakiet"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Authentication is required to refresh the system sources"
-msgstr ""
+msgstr "Wymagane jest uwierzytelnienie, aby odświeżyć źródła systemu"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
 msgid "Authentication is required to remove packages"
-msgstr ""
+msgstr "Wymagane jest uwierzytelnienie, aby usunąć pakiety"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
 msgid "Authentication is required to rollback a transaction"
-msgstr ""
+msgstr "Wymagane jest uwierzytelnienie, aby przywrócić transakcję"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
 msgstr ""
+"Wymagane jest uwierzytelnienie, aby ustawić pośrednika sieciowego używanego "
+"do pobierania pakietów"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid "Authentication is required to update packages"
-msgstr ""
+msgstr "Wymagane jest uwierzytelnienie, aby zaktualizować pakiety"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid "Change software source parameters"
-msgstr ""
+msgstr "Zmiana parametrów źródła oprogramowania"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Install local file"
-msgstr ""
+msgstr "Instalacja lokalnego pliku"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Install untrusted local file"
-msgstr ""
+msgstr "Instalacja niezaufanego lokalnego pliku"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Refresh system sources"
-msgstr ""
+msgstr "Odświeżenie źródeł systemu"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Remove package"
-msgstr ""
+msgstr "Usunięcie pakietu"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Rollback to a previous transaction"
-msgstr ""
+msgstr "Przywrócenie poprzedniej transakcji"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Set network proxy"
-msgstr ""
+msgstr "Ustawienie pośrednika sieciowego"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid "Trust a key used for signing packages"
-msgstr ""
+msgstr "Oznaczenie klucza używanego do podpisywania pakietów jako zaufanego"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Update packages"
-msgstr ""
+msgstr "Aktualizacja pakietów"
 
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
@@ -577,22 +578,3 @@ msgstr "Nie można połączyć się z magistralą systemową"
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Błąd podczas próbowania uruchomienia: %s\n"
-
-#~ msgid "failed to download: invalid package_id and/or directory"
-#~ msgstr "pobranie nie powiodło się: nieprawidłowe package_id i/lub katalog"
-
-#~ msgid "Could not find a valid metadata file"
-#~ msgstr "Nie można znaleźć prawidłowego pliku metadanych"
-
-#~ msgid "Okay to download the additional packages"
-#~ msgstr "Pobrać dodatkowe pakiety?"
-
-#~ msgid "You need to specify the pack name and packages to be packed\n"
-#~ msgstr "Należy podać nazwę pakietu serwisowego i pakiety do zapakowania\n"
-
-#~ msgid ""
-#~ "Invalid name for the service pack, Specify a name with .servicepack "
-#~ "extension\n"
-#~ msgstr ""
-#~ "Nieprawidłowa nazwa pakietu serwisowego. Proszę podać nazwę z "
-#~ "rozszerzeniem .pack\n"
