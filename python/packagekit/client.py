@@ -39,11 +39,12 @@ class PackageKitError(Exception):
     http://www.packagekit.org/pk-reference.html#introduction-errors for details
     and possible values.
     '''
-    def __init__(self, error):
+    def __init__(self, error, desc=None):
         self.error = error
+        self.desc = desc
 
     def __str__(self):
-        return self.error
+        return "%s: %s" % (self.error, self.desc)
 
 class PackageKitClient:
     '''PackageKit client wrapper class.
@@ -78,7 +79,7 @@ class PackageKitClient:
         polkit_auth_wrapper(method)
         self._wait()
         if self._error_enum:
-            raise PackageKitError(self._error_enum)
+            raise PackageKitError(self._error_enum, self._error_desc)
 
     def _wrapBasicCall(self, pk_xn, method):
         return self._wrapCall(pk_xn, method, {})
@@ -458,6 +459,7 @@ class PackageKitClient:
         ErrorCode signal handler
         '''
         self._error_enum = enum
+        self._error_desc = desc
 
     def _h_finished(self, status, code):
         '''
@@ -515,6 +517,7 @@ class PackageKitClient:
         '''Create a new PackageKit Transaction object.'''
 
         self._error_enum = None
+        self._error_desc = None
         self._finished_status = None
         try:
             tid = self.pk_control.GetTid()
