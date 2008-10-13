@@ -2,19 +2,438 @@
 # Copyright (C) 2008 THE PackageKit'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PackageKit package.
 # Mats Taraldsvik <mats.taraldsvik@gmail.com>, 2008.
-# 
-# 
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-18 16:49+0100\n"
+"POT-Creation-Date: 2008-10-13 17:25+0100\n"
 "PO-Revision-Date: 2008-04-27 14:28+0200\n"
 "Last-Translator: Mats Taraldsvik <mats.taraldsvik@gmail.com>\n"
 "Language-Team: Norwegian/Bokmaal <i18n-nb@lister.ping.uio.no>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../client/pk-console.c:294
+msgid "Update detail"
+msgstr "Oppdateringsdetaljer"
+
+#: ../client/pk-console.c:511
+msgid "A system restart is required"
+msgstr "Datamaskinen må startes på nytt"
+
+#: ../client/pk-console.c:513
+msgid "A logout and login is required"
+msgstr "For å fullføre må du logge ut og inn."
+
+#: ../client/pk-console.c:515
+msgid "An application restart is required"
+msgstr "Du må starte et program på nytt"
+
+#: ../client/pk-console.c:608 ../client/pk-generate-pack.c:140
+msgid "There are multiple package matches"
+msgstr "Fant flere samsvarende programpakker"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:615 ../client/pk-generate-pack.c:147
+msgid "Please enter the package number: "
+msgstr "Skriv inn nummeret til programpakken: "
+
+#: ../client/pk-console.c:649
+#, fuzzy
+msgid "Could not find package to install"
+msgstr "Fant ingen programpakke som samsvarte"
+
+#: ../client/pk-console.c:755
+#, fuzzy
+msgid "Could not find package to remove"
+msgstr "Fant ingen pakke med det navnet som kunne fjernes"
+
+#: ../client/pk-console.c:816
+msgid "The following packages have to be removed"
+msgstr "Følgende pakker må fjernes"
+
+#. get user input
+#: ../client/pk-console.c:823
+msgid "Okay to remove additional packages?"
+msgstr "Fjerne flere pakker?"
+
+#: ../client/pk-console.c:827 ../client/pk-generate-pack.c:271
+msgid "Cancelled!"
+msgstr "Avbrutt!"
+
+#: ../client/pk-console.c:861
+#, fuzzy
+msgid "Could not find package to download"
+msgstr "Fant ingen programpakke som samsvarte"
+
+#: ../client/pk-console.c:913
+#, fuzzy
+msgid "Could not find package to update"
+msgstr "Fant ingen programpakke som samsvarte"
+
+#: ../client/pk-console.c:935
+#, fuzzy
+msgid "Could not find what packages require"
+msgstr "Ingen programpakker som avhenger av denne programpakken ble funnet"
+
+#: ../client/pk-console.c:956
+#, fuzzy
+msgid "Could not get dependencies for"
+msgstr "Klarte ikke å hente avhengigheter for denne programpakken"
+
+#: ../client/pk-console.c:977
+#, fuzzy
+msgid "Could not find details for"
+msgstr "Fant ikke filene som hører til denne programpakken"
+
+#: ../client/pk-console.c:1000
+msgid "Could not find the files for this package"
+msgstr "Fant ikke filene som hører til denne programpakken"
+
+#: ../client/pk-console.c:1007
+#, fuzzy
+msgid "Could not get the file list"
+msgstr "Fant ikke filene som hører til denne programpakken"
+
+#: ../client/pk-console.c:1026
+#, fuzzy
+msgid "Could not find the update details for"
+msgstr "Fant ikke filene som hører til denne programpakken"
+
+#: ../client/pk-console.c:1087
+msgid "Package description"
+msgstr "Programpakkebeskrivelse"
+
+#: ../client/pk-console.c:1120
+msgid "Package files"
+msgstr "Programpakkens filer"
+
+#: ../client/pk-console.c:1128
+msgid "No files"
+msgstr "Ingen filer"
+
+#. get user input
+#: ../client/pk-console.c:1160
+msgid "Okay to import key?"
+msgstr "Forsøke å hente nøkkel?"
+
+#: ../client/pk-console.c:1163
+msgid "Did not import key"
+msgstr "Kunne ikke hente nøkkel"
+
+#. get user input
+#: ../client/pk-console.c:1203
+msgid "Do you agree?"
+msgstr "Godkjent?"
+
+#: ../client/pk-console.c:1206
+msgid "Did not agree to licence, task will fail"
+msgstr "Klarte ikke fullføre oppgaven, fordi lisensen ikke ble godkjent"
+
+#: ../client/pk-console.c:1235
+msgid "The daemon crashed mid-transaction!"
+msgstr "Nissen (daemon) krasjet under operasjonen!"
+
+#. header
+#: ../client/pk-console.c:1288
+msgid "PackageKit Console Interface"
+msgstr "PackageKit Konsollgrensesnitt"
+
+#: ../client/pk-console.c:1288
+msgid "Subcommands:"
+msgstr "Underkommandoer:"
+
+#: ../client/pk-console.c:1401 ../client/pk-generate-pack.c:203
+#: ../client/pk-monitor.c:118 ../src/pk-main.c:195
+msgid "Show extra debugging information"
+msgstr "Vis ekstra feilsøkingsinformasjon"
+
+#: ../client/pk-console.c:1403 ../client/pk-monitor.c:120
+msgid "Show the program version and exit"
+msgstr "Vis versjonsnummer og avslutt"
+
+#: ../client/pk-console.c:1405
+msgid "Set the filter, e.g. installed"
+msgstr "Bruk filteret, f.eks installerte (programpakker)"
+
+#: ../client/pk-console.c:1407
+msgid "Exit without waiting for actions to complete"
+msgstr "Avslutt uten å vente til alle operasjoner har gjort seg ferdige"
+
+#: ../client/pk-console.c:1430
+msgid "Could not connect to system DBUS."
+msgstr "Klarte ikke å koble til DBUS"
+
+#: ../client/pk-console.c:1525
+#, fuzzy
+msgid "You need to specify a search type, e.g. name"
+msgstr "Trenger en søketype for å fortsette"
+
+#: ../client/pk-console.c:1530 ../client/pk-console.c:1537
+#: ../client/pk-console.c:1544 ../client/pk-console.c:1551
+#: ../client/pk-console.c:1662 ../client/pk-console.c:1672
+#: ../client/pk-console.c:1679 ../client/pk-console.c:1686
+msgid "You need to specify a search term"
+msgstr "Trenger et søkeord for å fortsette"
+
+#: ../client/pk-console.c:1556
+msgid "Invalid search type"
+msgstr "Søketypen ble ikke gjenkjent"
+
+#: ../client/pk-console.c:1561
+msgid "You need to specify a package or file to install"
+msgstr "Kan ikke fortsette uten en programpakke eller fil som skal installeres"
+
+#: ../client/pk-console.c:1568
+msgid "You need to specify a type, key_id and package_id"
+msgstr "Trenger en type, en nøkkelid og programpakkeid for å fortsette"
+
+#: ../client/pk-console.c:1575
+msgid "You need to specify a package to remove"
+msgstr "Kan ikke fortsette uten en programpakke som skal fjernes"
+
+#: ../client/pk-console.c:1581
+#, fuzzy
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
+msgstr "Trenger en type, en nøkkelid og programpakkeid for å fortsette"
+
+#: ../client/pk-console.c:1586
+msgid "Directory not found"
+msgstr ""
+
+#: ../client/pk-console.c:1592
+msgid "You need to specify a eula-id"
+msgstr "Trenger en EULA-id for å fortsette"
+
+#: ../client/pk-console.c:1608
+msgid "You need to specify a package name to resolve"
+msgstr "Du må oppgi et programpakkenavn for å løse konflikten"
+
+#: ../client/pk-console.c:1617 ../client/pk-console.c:1624
+msgid "You need to specify a repo name"
+msgstr "Trenger et navn på pakkebrønnen for å fortsette"
+
+#: ../client/pk-console.c:1631
+msgid "You need to specify a repo name/parameter and value"
+msgstr "Trenger et parameter/navn og verdi for pakkebrønnen"
+
+#: ../client/pk-console.c:1644
+msgid "You need to specify a time term"
+msgstr "Trenger en tidsverdi for å fortsette"
+
+#: ../client/pk-console.c:1649
+msgid "You need to specify a correct role"
+msgstr "Du må oppgi gyldig handling for å fortsette"
+
+#: ../client/pk-console.c:1654
+msgid "Failed to get last time"
+msgstr "Kunne ikke hentes forrige gang"
+
+#: ../client/pk-console.c:1693
+#, fuzzy
+msgid "You need to specify a package to find the details for"
+msgstr "Du kan ikke vise tilhørende filer uten først å oppgi programpakken"
+
+#: ../client/pk-console.c:1700
+msgid "You need to specify a package to find the files for"
+msgstr "Du kan ikke vise tilhørende filer uten først å oppgi programpakken"
+
+#: ../client/pk-console.c:1752
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "Følgende valg er ikke støttet: '%s' "
+
+#: ../client/pk-console.c:1765
+msgid "You don't have the necessary privileges for this operation"
+msgstr "Denne handlingen krever superbrukerrettigheter (root)"
+
+#: ../client/pk-console.c:1767
+msgid "Command failed"
+msgstr "Klarte ikke å kjøre kommandoen"
+
+#: ../client/pk-generate-pack.c:131
+msgid "Could not find a package match"
+msgstr "Fant ingen programpakke som samsvarte"
+
+#: ../client/pk-generate-pack.c:161
+msgid "Downloading"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:205
+msgid "Set the filename of dependencies to be excluded"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:207
+msgid ""
+"The directory to put the pack file, or the current directory if ommitted"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:209
+msgid "The package to be put into the ServicePack"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:211
+msgid "Put all updates available in the ServicePack"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:230
+msgid "Neither option selected"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:237
+msgid "Both optiosn selected"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:269
+msgid "A pack with the same name already exists, do you want to overwrite it?"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:282
+#, fuzzy
+msgid "Failed to create directory"
+msgstr "Kunne ikke hentes forrige gang"
+
+#: ../client/pk-generate-pack.c:290
+#, fuzzy
+msgid "Failed to open package list"
+msgstr "Kunne ikke hentes forrige gang"
+
+#: ../client/pk-generate-pack.c:299
+#, fuzzy
+msgid "Resolving package name to remote object"
+msgstr "Følgende pakker må fjernes"
+
+#: ../client/pk-generate-pack.c:302
+#, c-format
+msgid "Failed to find package '%s': %s"
+msgstr ""
+
+#. generate the pack
+#: ../client/pk-generate-pack.c:317
+#, c-format
+msgid "Service pack to create: %s\n"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:323
+msgid "Done!"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:325
+msgid "Failed"
+msgstr ""
+
+#: ../client/pk-import-specspo.c:185
+#, fuzzy
+msgid "Could not set database readonly"
+msgstr "Kunne ikke åpne databasen: %s"
+
+#: ../client/pk-import-specspo.c:192
+#, c-format
+msgid "Could not open database: %s"
+msgstr "Kunne ikke åpne databasen: %s"
+
+#: ../client/pk-import-specspo.c:193
+msgid "You probably need to run this program as the root user"
+msgstr "Dette programmet må kjøres av superbruker (root)"
+
+#: ../client/pk-monitor.c:131
+msgid "PackageKit Monitor"
+msgstr "PackageKit Monitor"
+
+#: ../client/pk-tools-common.c:51
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Skriv inn ett tall fra 1 til %i: "
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:300
+msgid "Getting package information..."
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:308
+#: ../contrib/packagekit-plugin/src/contents.cpp:313
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#: ../contrib/packagekit-plugin/src/contents.cpp:340
+#, c-format
+msgid "<big>%s</big>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:310
+#, c-format
+msgid ""
+"\n"
+"<small>Installed version: %s</small>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:316
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run version %s now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:321
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:325
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
+#, c-format
+msgid ""
+"<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:333
+#, c-format
+msgid ""
+"\n"
+"<small>Version: %s</small>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:337
+msgid ""
+"\n"
+"<small>No packages found for your system</small>"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:341
+msgid ""
+"\n"
+"<small>Installing...</small>"
+msgstr ""
+
+#: ../data/packagekit-catalog.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Catalog"
+msgstr "PackageKit Monitor"
+
+#: ../data/packagekit-servicepack.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Service Pack"
+msgstr "PackageKit-tjeneste"
+
+#: ../data/packagekit-package-list.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Package List"
+msgstr "PackageKit Monitor"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:1
 msgid "Accept EULA"
@@ -29,19 +448,25 @@ msgid "Authentication is required to change software source parameters"
 msgstr "Kan ikke endre parametre for pakkebrønn uten identitetsbekreftelse"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
-msgid "Authentication is required to install a local file"
-msgstr "Kan ikke installere en lokal fil uten identitetsbekreftelse"
+#, fuzzy
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr "Kan ikke oppdatere pakkebrønnene uten identitetsbekreftelse"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:5
-msgid "Authentication is required to install a package"
+#, fuzzy
+msgid "Authentication is required to install a signed package"
 msgstr "Kan ikke installere en programpakke uten identitetsbekreftelse"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
-msgid "Authentication is required to install a security signature"
-msgstr "Kan ikke legge til en sikkerhetsklarering uten identitetsbekreftelse"
+#, fuzzy
+msgid "Authentication is required to install an untrusted package"
+msgstr "Kan ikke installere en programpakke uten identitetsbekreftelse"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Authentication is required to refresh the package lists"
+#, fuzzy
+msgid "Authentication is required to refresh the system sources"
 msgstr "Kan ikke oppdatere pakkebrønnene uten identitetsbekreftelse"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
@@ -50,11 +475,15 @@ msgstr "Kan ikke fjerne programpakker uten identitetsbekreftelse"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
 msgid "Authentication is required to rollback a transaction"
-msgstr "Kan ikke gå tilbake til en tidligere tilstand uten identitetsbekreftelse"
+msgstr ""
+"Kan ikke gå tilbake til en tidligere tilstand uten identitetsbekreftelse"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid "Authentication is required to update all packages"
-msgstr "Kan ikke oppdatere programpakker uten identitetsbekreftelse"
+#, fuzzy
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr "Kan ikke fjerne programpakker uten identitetsbekreftelse"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid "Authentication is required to update packages"
@@ -69,332 +498,127 @@ msgid "Install local file"
 msgstr "Installér lokal fil"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install package"
-msgstr "Installér programpakke"
+#, fuzzy
+msgid "Install untrusted local file"
+msgstr "Installér lokal fil"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Install security signature"
-msgstr "Legg til sikkerhetsklarering"
+msgid "Refresh system sources"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Refresh package lists"
-msgstr "Oppdater pakkebrønnen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Remove package"
 msgstr "Fjern programpakke"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Rollback to a previous transaction"
 msgstr "Gå tilbake til en tidligere tilstand"
 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Update all packages"
-msgstr "Oppdater alle programpakker"
+msgid "Trust a key used for signing packages"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Update package"
+#, fuzzy
+msgid "Update packages"
 msgstr "Oppdater programpakke"
 
-#: ../client/pk-console.c:208
-msgid "Update detail"
-msgstr "Oppdateringsdetaljer"
-
-#: ../client/pk-console.c:400
-msgid "A system restart is required"
-msgstr "Datamaskinen må startes på nytt"
-
-#: ../client/pk-console.c:402
-msgid "A logout and login is required"
-msgstr "For å fullføre må du logge ut og inn."
-
-#: ../client/pk-console.c:404
-msgid "An application restart is required"
-msgstr "Du må starte et program på nytt"
-
-#: ../client/pk-console.c:443
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Skriv inn ett tall fra 1 til %i: "
-
-#: ../client/pk-console.c:493
-msgid "Could not find a package match"
-msgstr "Fant ingen programpakke som samsvarte"
-
-#: ../client/pk-console.c:507
-msgid "There are multiple package matches"
-msgstr "Fant flere samsvarende programpakker"
-
-#. find out what package the user wants to use
-#: ../client/pk-console.c:514
-msgid "Please enter the package number: "
-msgstr "Skriv inn nummeret til programpakken: "
-
-#: ../client/pk-console.c:530
-msgid ""
-"Could not find a package with that name to install, or package already "
-"installed"
-msgstr "Fant ingen programpakke som samsvarte. Den kan allerede være installert"
-
-#: ../client/pk-console.c:612
-msgid "Could not find a package with that name to remove"
-msgstr "Fant ingen pakke med det navnet som kunne fjernes"
-
-#: ../client/pk-console.c:652
-msgid "The following packages have to be removed"
-msgstr "Følgende pakker må fjernes"
-
-#. get user input
-#: ../client/pk-console.c:661
-msgid "Okay to remove additional packages?"
-msgstr "Fjerne flere pakker?"
-
-#: ../client/pk-console.c:665
-msgid "Cancelled!"
-msgstr "Avbrutt!"
-
-#: ../client/pk-console.c:687
-msgid "Could not find a package with that name to update"
-msgstr "Fant ingen programpakke med det navnet som kunne oppdateres"
-
-#: ../client/pk-console.c:705
-msgid "Could not find what packages require this package"
-msgstr "Ingen programpakker som avhenger av denne programpakken ble funnet"
-
-#: ../client/pk-console.c:723
-msgid "Could not get dependencies for this package"
-msgstr "Klarte ikke å hente avhengigheter for denne programpakken"
-
-#: ../client/pk-console.c:741
-msgid "Could not find a description for this package"
-msgstr "Fant ingen beskrivelse til denne programpakken"
-
-#: ../client/pk-console.c:759
-#, c-format
-msgid "Could not find the files for this package"
-msgstr "Fant ikke filene som hører til denne programpakken"
-
-#: ../client/pk-console.c:819
-msgid "Package description"
-msgstr "Programpakkebeskrivelse"
-
-#: ../client/pk-console.c:842
-msgid "Package files"
-msgstr "Programpakkens filer"
-
-#: ../client/pk-console.c:850
-msgid "No files"
-msgstr "Ingen filer"
-
-#. get user input
-#: ../client/pk-console.c:882
-msgid "Okay to import key?"
-msgstr "Forsøke å hente nøkkel?"
-
-#: ../client/pk-console.c:885
-msgid "Did not import key"
-msgstr "Kunne ikke hente nøkkel"
-
-#. get user input
-#: ../client/pk-console.c:925
-msgid "Do you agree?"
-msgstr "Godkjent?"
-
-#: ../client/pk-console.c:928
-msgid "Did not agree to licence, task will fail"
-msgstr "Klarte ikke fullføre oppgaven, fordi lisensen ikke ble godkjent"
-
-#: ../client/pk-console.c:957
-msgid "The daemon crashed mid-transaction!"
-msgstr "Nissen (daemon) krasjet under operasjonen!"
-
-#. header
-#: ../client/pk-console.c:1010
-msgid "PackageKit Console Interface"
-msgstr "PackageKit Konsollgrensesnitt"
-
-#: ../client/pk-console.c:1010
-msgid "Subcommands:"
-msgstr "Underkommandoer:"
-
-#: ../client/pk-console.c:1114 ../client/pk-monitor.c:100 ../src/pk-main.c:189
-msgid "Show extra debugging information"
-msgstr "Vis ekstra feilsøkingsinformasjon"
-
-#: ../client/pk-console.c:1116 ../client/pk-monitor.c:102
-msgid "Show the program version and exit"
-msgstr "Vis versjonsnummer og avslutt"
-
-#: ../client/pk-console.c:1118
-msgid "Set the filter, e.g. installed"
-msgstr "Bruk filteret, f.eks installerte (programpakker)"
-
-#: ../client/pk-console.c:1120
-msgid "Exit without waiting for actions to complete"
-msgstr "Avslutt uten å vente til alle operasjoner har gjort seg ferdige"
-
-#: ../client/pk-console.c:1143
-msgid "Could not connect to system DBUS."
-msgstr "Klarte ikke å koble til DBUS"
-
-#: ../client/pk-console.c:1231
-#, c-format
-msgid "You need to specify a search type"
-msgstr "Trenger en søketype for å fortsette"
-
-#: ../client/pk-console.c:1236 ../client/pk-console.c:1243
-#: ../client/pk-console.c:1250 ../client/pk-console.c:1257
-#: ../client/pk-console.c:1361 ../client/pk-console.c:1368
-#: ../client/pk-console.c:1375 ../client/pk-console.c:1382
-#, c-format
-msgid "You need to specify a search term"
-msgstr "Trenger et søkeord for å fortsette"
-
-#: ../client/pk-console.c:1262
-#, c-format
-msgid "Invalid search type"
-msgstr "Søketypen ble ikke gjenkjent"
-
-#: ../client/pk-console.c:1267
-#, c-format
-msgid "You need to specify a package or file to install"
-msgstr "Kan ikke fortsette uten en programpakke eller fil som skal installeres"
-
-#: ../client/pk-console.c:1280
-#, c-format
-msgid "You need to specify a type, key_id and package_id"
-msgstr "Trenger en type, en nøkkelid og programpakkeid for å fortsette"
-
-#: ../client/pk-console.c:1287
-#, c-format
-msgid "You need to specify a package to remove"
-msgstr "Kan ikke fortsette uten en programpakke som skal fjernes"
-
-#: ../client/pk-console.c:1294
-#, c-format
-msgid "You need to specify a eula-id"
-msgstr "Trenger en EULA-id for å fortsette"
-
-#: ../client/pk-console.c:1309
-#, c-format
-msgid "You need to specify a package name to resolve"
-msgstr "Du må oppgi et programpakkenavn for å løse konflikten"
-
-#: ../client/pk-console.c:1316 ../client/pk-console.c:1323
-#, c-format
-msgid "You need to specify a repo name"
-msgstr "Trenger et navn på pakkebrønnen for å fortsette"
-
-#: ../client/pk-console.c:1330
-#, c-format
-msgid "You need to specify a repo name/parameter and value"
-msgstr "Trenger et parameter/navn og verdi for pakkebrønnen"
-
-#: ../client/pk-console.c:1343
-#, c-format
-msgid "You need to specify a time term"
-msgstr "Trenger en tidsverdi for å fortsette"
-
-#: ../client/pk-console.c:1348
-#, c-format
-msgid "You need to specify a correct role"
-msgstr "Du må oppgi gyldig handling for å fortsette"
-
-#: ../client/pk-console.c:1353
-#, c-format
-msgid "Failed to get last time"
-msgstr "Kunne ikke hentes forrige gang"
-
-#: ../client/pk-console.c:1389
-#, c-format
-msgid "You need to specify a package to find the description for"
-msgstr "Du·kan·ikke·vise·beskrivelse uten·først·å·oppgi·programpakken"
-
-#: ../client/pk-console.c:1396
-#, c-format
-msgid "You need to specify a package to find the files for"
-msgstr "Du kan ikke vise tilhørende filer uten først å oppgi programpakken"
-
-#: ../client/pk-console.c:1441
-#, c-format
-msgid "Option '%s' not supported"
-msgstr "Følgende valg er ikke støttet: '%s' "
-
-#: ../client/pk-console.c:1452
-msgid "Command failed"
-msgstr "Klarte ikke å kjøre kommandoen"
-
-#: ../client/pk-console.c:1456
-msgid "You don't have the necessary privileges for this operation"
-msgstr "Denne handlingen krever superbrukerrettigheter (root)"
-
-#: ../client/pk-monitor.c:113
-msgid "PackageKit Monitor"
-msgstr "PackageKit Monitor"
-
-#: ../client/pk-import-desktop.c:283 ../client/pk-import-specspo.c:169
-#, c-format
-msgid "Could not open database: %s"
-msgstr "Kunne ikke åpne databasen: %s"
-
-#: ../client/pk-import-desktop.c:284 ../client/pk-import-specspo.c:170
-msgid "You probably need to run this program as the root user"
-msgstr "Dette programmet må kjøres av superbruker (root)"
-
-#: ../src/pk-main.c:83
+#: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "Sikkerhetspolitikk på denne maskinen hindret oppstart"
 
-#: ../src/pk-main.c:84
+#: ../src/pk-main.c:86
 msgid "This can happen for two reasons:"
 msgstr "Dette kan skje av to grunner: "
 
-#: ../src/pk-main.c:85
+#: ../src/pk-main.c:87
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Programfilen ble ikke kjørt av forventet bruker (vanligvis superbruker (root) )"
+msgstr ""
+"Programfilen ble ikke kjørt av forventet bruker (vanligvis superbruker "
+"(root) )"
 
-#: ../src/pk-main.c:86
+#: ../src/pk-main.c:88
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
 "dbus-1/system.d directory"
-msgstr "Finner ikke konfigurasjonsfilen org.freedesktop.PackageKit.conf i /etc/"
-"dbus-1/system.d/"
+msgstr ""
+"Finner ikke konfigurasjonsfilen org.freedesktop.PackageKit.conf i /etc/dbus-"
+"1/system.d/"
 
-#: ../src/pk-main.c:185
+#: ../src/pk-main.c:191
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Velg backend for programpakkene, f.eks foobar"
 
-#: ../src/pk-main.c:187
+#: ../src/pk-main.c:193
 msgid "Daemonize and detach from the terminal"
 msgstr "Gjør nissen (daemon) selvstendig, og uavhengig av terminalen"
 
-#: ../src/pk-main.c:191
+#: ../src/pk-main.c:197
 msgid "Disable the idle timer"
 msgstr "Deaktiver inaktivitetskontrollen"
 
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:199
 msgid "Show version and exit"
 msgstr "Vis versjonsnummer og avslutt"
 
-#: ../src/pk-main.c:195
+#: ../src/pk-main.c:201
 msgid "Exit after a small delay"
 msgstr "Avslutt etter en liten forsinkelse"
 
-#: ../src/pk-main.c:197
+#: ../src/pk-main.c:203
 msgid "Exit after the engine has loaded"
 msgstr "Avslutt etter maskinen har lastet"
 
-#: ../src/pk-main.c:207
+#: ../src/pk-main.c:213
 msgid "PackageKit service"
 msgstr "PackageKit-tjeneste"
 
-#: ../src/pk-main.c:233
+#: ../src/pk-main.c:249
 msgid "Cannot connect to the system bus"
 msgstr "Fikk ikke kontakt med systembussen"
 
-#: ../src/pk-main.c:273
+#: ../src/pk-main.c:295
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Det skjedde en feil under oppstart av: %s\n"
 
+#~ msgid "Authentication is required to install a local file"
+#~ msgstr "Kan ikke installere en lokal fil uten identitetsbekreftelse"
 
+#~ msgid "Authentication is required to install a security signature"
+#~ msgstr ""
+#~ "Kan ikke legge til en sikkerhetsklarering uten identitetsbekreftelse"
+
+#~ msgid "Authentication is required to update all packages"
+#~ msgstr "Kan ikke oppdatere programpakker uten identitetsbekreftelse"
+
+#~ msgid "Install package"
+#~ msgstr "Installér programpakke"
+
+#~ msgid "Install security signature"
+#~ msgstr "Legg til sikkerhetsklarering"
+
+#~ msgid "Refresh package lists"
+#~ msgstr "Oppdater pakkebrønnen"
+
+#~ msgid "Update all packages"
+#~ msgstr "Oppdater alle programpakker"
+
+#~ msgid ""
+#~ "Could not find a package with that name to install, or package already "
+#~ "installed"
+#~ msgstr ""
+#~ "Fant ingen programpakke som samsvarte. Den kan allerede være installert"
+
+#~ msgid "Could not find a package with that name to update"
+#~ msgstr "Fant ingen programpakke med det navnet som kunne oppdateres"
+
+#~ msgid "Could not find a description for this package"
+#~ msgstr "Fant ingen beskrivelse til denne programpakken"
+
+#~ msgid "You need to specify a package to find the description for"
+#~ msgstr "Du·kan·ikke·vise·beskrivelse uten·først·å·oppgi·programpakken"
