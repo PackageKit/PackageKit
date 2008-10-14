@@ -938,7 +938,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 		return FALSE;
 	}
 
-	egg_debug ("emit require-restart %i, %s", restart, details);
+	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), details);
 	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
 
 	return TRUE;
