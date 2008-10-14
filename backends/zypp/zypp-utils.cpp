@@ -943,7 +943,7 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 				zypp::RepoManager::RefreshForced :
 				zypp::RepoManager::RefreshIfNeeded);
 		} catch (const zypp::Exception &ex) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "%s: %s", repo.alias ().c_str (), ex.asUserString ().c_str ());
+			pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "%s: %s", repo.alias ().c_str (), ex.asUserString ().c_str ());
 			pk_backend_finished (backend);
 			return FALSE;
 		}
