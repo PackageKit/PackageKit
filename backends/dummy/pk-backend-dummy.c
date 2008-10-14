@@ -191,9 +191,9 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	len = g_strv_length (_package_ids);
+	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
-		package_id = _package_ids[i];
+		package_id = package_ids[i];
 		if (egg_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora"))
 			pk_backend_files (backend, package_id, "/usr/share/man/man1/boo;/usr/bin/xchat-gnome");
 		else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed"))
