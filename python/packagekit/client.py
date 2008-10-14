@@ -73,6 +73,9 @@ class PackageKitClient:
         '''
         pk_xn.connect_to_signal('Finished', self._h_finished)
         pk_xn.connect_to_signal('ErrorCode', self._h_error)
+        pk_xn.connect_to_signal('StatusChanged', self._h_status)
+        pk_xn.connect_to_signal('AllowCancel', self._h_allowcancel)
+        pk_xn.connect_to_signal('ProgressChanged', self._h_progress)
         for cb in callbacks.keys():
             pk_xn.connect_to_signal(cb, callbacks[cb])
 
@@ -502,9 +505,6 @@ class PackageKitClient:
         self._allow_cancel = False
 
         if progress_cb:
-            pk_xn.connect_to_signal('StatusChanged', self._h_status)
-            pk_xn.connect_to_signal('AllowCancel', self._h_allowcancel)
-            pk_xn.connect_to_signal('ProgressChanged', self._h_progress)
             self._progress_cb = progress_cb
         self._wrapBasicCall(pk_xn, method)
         if self._finished_status != 'success':
