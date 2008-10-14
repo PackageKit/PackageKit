@@ -63,8 +63,8 @@ shared_SOURCES =					\
 	pk-network.h					\
 	pk-shared.c					\
 	pk-shared.h					\
-	pk-refresh.c					\
-	pk-refresh.h					\
+	pk-post-trans.c					\
+	pk-post-trans.h					\
 	pk-network-nm.h					\
 	pk-network-unix.c				\
 	pk-network-unix.h				\
