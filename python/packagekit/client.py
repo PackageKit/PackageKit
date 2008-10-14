@@ -420,7 +420,7 @@ class PackageKitClient:
 
     def SetLocale(self, code):
         xn = self._get_xn()
-        self._wrapBasicCall(xn, lambda : xn.SetLocale(code))
+        xn.SetLocale(code)
 
     def AcceptEula(self, eula_id):
         xn = self._get_xn()
