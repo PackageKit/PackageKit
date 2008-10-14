@@ -238,36 +238,48 @@ if test x$enable_local = xyes; then
 fi
 
 dnl ---------------------------------------------------------------------------
-dnl - Checks for contrib/packagekit-plugin
+dnl - Able to build browser plugin
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
-                  build_browser_plugin=yes, build_browser_plugin=no)
-AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
-AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
-AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
-if test $build_browser_plugin = "yes"; then
-	# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
+AC_ARG_ENABLE(browser_plugin, AS_HELP_STRING([--enable-browser-plugin],[Build browser plugin functionality]),
+	      enable_browser_plugin=$enableval,enable_browser_plugin=yes)
+if test x$enable_browser_plugin = xyes; then
+	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
+	                  build_browser_plugin=yes, build_browser_plugin=no)
+	AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
+	AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
+	AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
+	if test $build_browser_plugin = "yes"; then
+		# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
 
-	packagekit_save_CPPFLAGS="$CPPFLAGS"
-	packagekit_save_LDFLAGS="$LDFLAGS"
+		packagekit_save_CPPFLAGS="$CPPFLAGS"
+		packagekit_save_LDFLAGS="$LDFLAGS"
 
-	CPPFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_CFLAGS"
-	LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
+		CPPFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_CFLAGS"
+		LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
 
-	AC_CHECK_FUNCS(gdk_app_launch_context_new)
+		AC_CHECK_FUNCS(gdk_app_launch_context_new)
 
-	CPPFLAGS="$packagekit_save_CPPFLAGS"
-	LDFLAGS="$packagekit_save_LDFLAGS"
+		CPPFLAGS="$packagekit_save_CPPFLAGS"
+		LDFLAGS="$packagekit_save_LDFLAGS"
+	fi
+else
+	build_browser_plugin=no
 fi
 
 dnl ---------------------------------------------------------------------------
-dnl - Checks for contrib/gstreamer-plugin
+dnl - Able to build gstreamer plugin
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0 dbus-glib-1,
-                  build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
-AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
-AC_SUBST(PK_GSTREAMER_PLUGIN_CFLAGS)
-AC_SUBST(PK_GSTREAMER_PLUGIN_LIBS)
+AC_ARG_ENABLE(gstreamer_plugin, AS_HELP_STRING([--enable-gstreamer-plugin],[Build gstreamer plugin functionality]),
+	      enable_gstreamer_plugin=$enableval,enable_gstreamer_plugin=yes)
+if test x$enable_gstreamer_plugin = xyes; then
+	PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0 dbus-glib-1,
+	                  build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
+	AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
+	AC_SUBST(PK_GSTREAMER_PLUGIN_CFLAGS)
+	AC_SUBST(PK_GSTREAMER_PLUGIN_LIBS)
+else
+	build_gstreamer_plugin=no
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl - Other tests
