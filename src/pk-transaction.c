@@ -102,6 +102,7 @@ struct PkTransactionPrivate
 	PkUpdateDetailList	*update_detail_list;
 	PkNotify		*notify;
 	PkSecurity		*security;
+	PkPostTrans		*post_trans;
 
 	/* needed for gui coldplugging */
 	gchar			*last_package_id;
@@ -585,27 +586,19 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	/* do some optional extra actions when we've finished refreshing the cache */
 	if (exit == PK_EXIT_ENUM_SUCCESS &&
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		PkPostTrans *post_trans;
-		post_trans = pk_post_trans_new ();
-
-		g_signal_connect (post_trans, "status-changed",
-				  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
-		g_signal_connect (post_trans, "progress-changed",
-				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
 
 		/* generate the package list */
 		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageList");
 		if (ret)
-			pk_post_trans_update_package_list (post_trans);
+			pk_post_trans_update_package_list (transaction->priv->post_trans);
 
 		/* refresh the desktop icon cache */
 		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
 		if (ret)
-			pk_post_trans_import_desktop_files (post_trans);
+			pk_post_trans_import_desktop_files (transaction->priv->post_trans);
 
 		/* clear the firmware requests directory */
-		pk_post_trans_clear_firmware_requests (post_trans);
-		g_object_unref (post_trans);
+		pk_post_trans_clear_firmware_requests (transaction->priv->post_trans);
 	}
 
 	/* if we did not send this, ensure the GUI has the right state */
@@ -3666,6 +3659,13 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->inhibit = pk_inhibit_new ();
 	transaction->priv->package_list = pk_package_list_new ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
+
+	transaction->priv->post_trans = pk_post_trans_new ();
+	g_signal_connect (transaction->priv->post_trans, "status-changed",
+			  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
+	g_signal_connect (transaction->priv->post_trans, "progress-changed",
+			  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
+
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
 			  G_CALLBACK (pk_transaction_transaction_cb), transaction);
@@ -3720,6 +3720,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->security);
 	g_object_unref (transaction->priv->notify);
+	g_object_unref (transaction->priv->post_trans);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
 }
