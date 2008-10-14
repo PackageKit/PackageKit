@@ -54,13 +54,6 @@ struct PkPostTransPrivate
 	guint			 package_id;
 };
 
-enum {
-	PK_POST_TRANS_STATUS_CHANGED,
-	PK_POST_TRANS_PROGRESS_CHANGED,
-	PK_POST_TRANS_LAST_SIGNAL
-};
-
-static guint signals [PK_POST_TRANS_LAST_SIGNAL] = { 0 };
 G_DEFINE_TYPE (PkPostTrans, pk_post_trans, G_TYPE_OBJECT)
 
 /**
@@ -80,26 +73,6 @@ static void
 pk_post_trans_package_cb (PkBackend *backend, const PkPackageObj *obj, PkPostTrans *post)
 {
 	pk_package_list_add_obj (post->priv->list, obj);
-}
-
-/**
- * pk_post_trans_emit_status_changed:
- **/
-static void
-pk_post_trans_emit_status_changed (PkPostTrans *post, PkStatusEnum status)
-{
-	egg_debug ("emiting status-changed %s", pk_status_enum_to_text (status));
-	g_signal_emit (post, signals [PK_POST_TRANS_STATUS_CHANGED], 0, status);
-}
-
-/**
- * pk_post_trans_emit_progress_changed:
- **/
-static void
-pk_post_trans_emit_progress_changed (PkPostTrans *post, guint percentage)
-{
-	egg_debug ("emiting progress-changed %i", percentage);
-	g_signal_emit (post, signals [PK_POST_TRANS_PROGRESS_CHANGED], 0, percentage, 0, 0, 0);
 }
 
 /**
@@ -378,7 +351,7 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 
 	/* use a local backend instance */
 	pk_backend_reset (post->priv->backend);
-	pk_post_trans_emit_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
+	pk_backend_set_status (post->priv->backend, PK_STATUS_ENUM_SCAN_APPLICATIONS);
 
 	egg_debug ("getting old desktop mtimes");
 	mtimes_old = egg_string_list_new ();
@@ -402,7 +375,7 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 	}
 
 	/* update UI */
-	pk_post_trans_emit_progress_changed (post, 0);
+	pk_backend_set_percentage (post->priv->backend, 0);
 	step = 100.0f / EGG_OBJ_LIST(mtimes)->len;
 
 	/* for each new package, process the desktop file */
@@ -424,7 +397,7 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 		g_free (filename);
 
 		/* update UI */
-		pk_post_trans_emit_progress_changed (post, i * step);
+		pk_backend_set_percentage (post->priv->backend, i * step);
 	}
 
 	/* save new mtimes data */
@@ -434,8 +407,8 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 
 no_changes:
 	/* update UI */
-	pk_post_trans_emit_progress_changed (post, 100);
-	pk_post_trans_emit_status_changed (post, PK_STATUS_ENUM_FINISHED);
+	pk_backend_set_percentage (post->priv->backend, 100);
+	pk_backend_set_status (post->priv->backend, PK_STATUS_ENUM_FINISHED);
 
 	g_object_unref (files);
 	g_object_unref (mtimes);
@@ -464,8 +437,8 @@ pk_post_trans_update_package_list (PkPostTrans *post)
 	pk_package_list_clear (post->priv->list);
 
 	/* update UI */
-	pk_post_trans_emit_status_changed (post, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
-	pk_post_trans_emit_progress_changed (post, 101);
+	pk_backend_set_status (post->priv->backend, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
+	pk_backend_set_percentage (post->priv->backend, 101);
 
 	/* get the new package list */
 	pk_backend_reset (post->priv->backend);
@@ -476,7 +449,7 @@ pk_post_trans_update_package_list (PkPostTrans *post)
 	g_main_loop_run (post->priv->loop);
 
 	/* update UI */
-	pk_post_trans_emit_progress_changed (post, 90);
+	pk_backend_set_percentage (post->priv->backend, 90);
 
 	/* convert to a file */
 	ret = pk_package_list_to_file (post->priv->list, PK_SYSTEM_PACKAGE_LIST_FILENAME);
@@ -484,8 +457,8 @@ pk_post_trans_update_package_list (PkPostTrans *post)
 		egg_warning ("failed to save to file");
 
 	/* update UI */
-	pk_post_trans_emit_progress_changed (post, 100);
-	pk_post_trans_emit_status_changed (post, PK_STATUS_ENUM_FINISHED);
+	pk_backend_set_percentage (post->priv->backend, 100);
+	pk_backend_set_status (post->priv->backend, PK_STATUS_ENUM_FINISHED);
 
 	return ret;
 }
@@ -545,16 +518,6 @@ pk_post_trans_class_init (PkPostTransClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_post_trans_finalize;
-	signals [PK_POST_TRANS_STATUS_CHANGED] =
-		g_signal_new ("status-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_POST_TRANS_PROGRESS_CHANGED] =
-		g_signal_new ("progress-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
-			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
 	g_type_class_add_private (klass, sizeof (PkPostTransPrivate));
 }
 
