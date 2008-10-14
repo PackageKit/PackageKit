@@ -342,15 +342,12 @@ class PackageKitClient:
         xn = self._get_xn()
         return self._wrapPackageCall(xn, lambda : xn.GetPackages(filters))
 
-    def UpdateSystem(self):
+    def UpdateSystem(self, progress_cb=None):
         '''
-        This method should return a list of packages that are
-        installed and are upgradable.
-
-        It should only return the newest update for each installed package.
+        This method should update the system
         '''
         xn = self._get_xn()
-        self._wrapPackageCall(xn, lambda : xn.UpdateSystem())
+        self._doPackages(xn, lambda : xn.UpdateSystem(), progress_cb)
 
     def DownloadPackages(self, package_ids):
         package_ids = self._to_list(package_ids) # Make sure we have a list
