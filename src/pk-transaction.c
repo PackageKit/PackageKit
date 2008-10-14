@@ -66,7 +66,7 @@
 #include "pk-cache.h"
 #include "pk-notify.h"
 #include "pk-security.h"
-#include "pk-refresh.h"
+#include "pk-post-trans.h"
 #include "pk-service-pack.h"
 
 static void     pk_transaction_class_init	(PkTransactionClass *klass);
@@ -585,27 +585,27 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	/* do some optional extra actions when we've finished refreshing the cache */
 	if (exit == PK_EXIT_ENUM_SUCCESS &&
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		PkRefresh *refresh;
-		refresh = pk_refresh_new ();
+		PkPostTrans *post_trans;
+		post_trans = pk_post_trans_new ();
 
-		g_signal_connect (refresh, "status-changed",
+		g_signal_connect (post_trans, "status-changed",
 				  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
-		g_signal_connect (refresh, "progress-changed",
+		g_signal_connect (post_trans, "progress-changed",
 				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
 
 		/* generate the package list */
 		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageList");
 		if (ret)
-			pk_refresh_update_package_list (refresh);
+			pk_post_trans_update_package_list (post_trans);
 
 		/* refresh the desktop icon cache */
 		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
 		if (ret)
-			pk_refresh_import_desktop_files (refresh);
+			pk_post_trans_import_desktop_files (post_trans);
 
 		/* clear the firmware requests directory */
-		pk_refresh_clear_firmware_requests (refresh);
-		g_object_unref (refresh);
+		pk_post_trans_clear_firmware_requests (post_trans);
+		g_object_unref (post_trans);
 	}
 
 	/* if we did not send this, ensure the GUI has the right state */
