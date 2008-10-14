@@ -257,6 +257,7 @@ static const PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_ELECTRONICS,		"electronics"},
 	{PK_GROUP_ENUM_COLLECTIONS,		"collections"},
 	{PK_GROUP_ENUM_VENDOR,			"vendor"},
+	{PK_GROUP_ENUM_NEWEST,			"newest"},
 	{0, NULL}
 };
 
