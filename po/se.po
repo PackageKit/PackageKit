@@ -1,0 +1,462 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-10-02 01:26+0000\n"
+"PO-Revision-Date: 2008-10-13 21:18+0100\n"
+"Last-Translator: David Andersson <david@xn--kremla-iuad.se>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../client/pk-console.c:274
+msgid "Update detail"
+msgstr "Uppdatera detaljer"
+
+#: ../client/pk-console.c:491
+msgid "A system restart is required"
+msgstr "En omstart är nödvändig"
+
+#: ../client/pk-console.c:493
+msgid "A logout and login is required"
+msgstr "En ny inloggning är nödvändig"
+
+#: ../client/pk-console.c:495
+msgid "An application restart is required"
+msgstr "En omstart av programmet är nödvändig"
+
+#: ../client/pk-console.c:588
+#: ../client/pk-generate-pack.c:126
+msgid "There are multiple package matches"
+msgstr "Det finns flera paket som matchar"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:595
+#: ../client/pk-generate-pack.c:133
+msgid "Please enter the package number: "
+msgstr "Var snäll skriv in paketets nummer:"
+
+#: ../client/pk-console.c:629
+msgid "Could not find package to install"
+msgstr "Kunde inte hitta paketet att installera"
+
+#: ../client/pk-console.c:735
+msgid "Could not find package to remove"
+msgstr "Kunde inte hitta paketet att ta bort"
+
+#: ../client/pk-console.c:796
+msgid "The following packages have to be removed"
+msgstr "Följande paket måste tas bort"
+
+#. get user input
+#: ../client/pk-console.c:803
+msgid "Okay to remove additional packages?"
+msgstr "Är det ok att ta bort dessa extra paket?"
+
+#: ../client/pk-console.c:807
+#: ../client/pk-generate-pack.c:528
+#: ../client/pk-generate-pack-main.c:131
+msgid "Cancelled!"
+msgstr "Avbruten!"
+
+#: ../client/pk-console.c:841
+msgid "Could not find package to download"
+msgstr "Kunde inte hitta paketet att ladda ner"
+
+#: ../client/pk-console.c:893
+msgid "Could not find package to update"
+msgstr "Kunde inte hitta paketet att uppdatera"
+
+#: ../client/pk-console.c:915
+msgid "Could not find what packages require"
+msgstr "Kunde inte hitta vad paketet behöver"
+
+#: ../client/pk-console.c:936
+msgid "Could not get dependencies for"
+msgstr "Kunde inte hämta beroenden för"
+
+#: ../client/pk-console.c:957
+msgid "Could not find details for"
+msgstr "Kunde inte hitta detaljer om"
+
+#: ../client/pk-console.c:980
+msgid "Could not find the files for this package"
+msgstr "Kunde inte hitta filerna för detta paket"
+
+#: ../client/pk-console.c:987
+msgid "Could not get the file list"
+msgstr "Kunde inte hämta fillistan"
+
+#: ../client/pk-console.c:1006
+msgid "Could not find the update details for"
+msgstr "Kunde inte hitta detaljerna om uppdateringen för"
+
+#: ../client/pk-console.c:1067
+msgid "Package description"
+msgstr "Paketets beskrivning"
+
+#: ../client/pk-console.c:1100
+msgid "Package files"
+msgstr "Paketets filer"
+
+#: ../client/pk-console.c:1108
+msgid "No files"
+msgstr "Inga filer"
+
+#. get user input
+#: ../client/pk-console.c:1140
+msgid "Okay to import key?"
+msgstr "Är det Ok att importera nyckeln?"
+
+#: ../client/pk-console.c:1143
+msgid "Did not import key"
+msgstr "Importerade inte nyckeln"
+
+#. get user input
+#: ../client/pk-console.c:1183
+msgid "Do you agree?"
+msgstr "Godkänner du?"
+
+#: ../client/pk-console.c:1186
+msgid "Did not agree to licence, task will fail"
+msgstr "Godkände inte licensen, uppgiften kommer misslyckas"
+
+#: ../client/pk-console.c:1215
+msgid "The daemon crashed mid-transaction!"
+msgstr "Daemonen kraschade under transaktionen"
+
+#. header
+#: ../client/pk-console.c:1268
+msgid "PackageKit Console Interface"
+msgstr "PackageKits Konsolgränssnitt"
+
+#: ../client/pk-console.c:1268
+msgid "Subcommands:"
+msgstr "Underkommandon"
+
+#: ../client/pk-console.c:1378
+#: ../client/pk-generate-pack-main.c:64
+#: ../client/pk-monitor.c:118
+#: ../src/pk-main.c:192
+msgid "Show extra debugging information"
+msgstr "Visa ytterligare debuginformation"
+
+#: ../client/pk-console.c:1380
+#: ../client/pk-monitor.c:120
+msgid "Show the program version and exit"
+msgstr "Visa versionen av programmet och avsluta"
+
+#: ../client/pk-console.c:1382
+msgid "Set the filter, e.g. installed"
+msgstr "Sätt filtret, t ex installerat"
+
+#: ../client/pk-console.c:1384
+msgid "Exit without waiting for actions to complete"
+msgstr "Avsluta utan att vänta på att åtgärder ska slutföras"
+
+#: ../client/pk-console.c:1407
+msgid "Could not connect to system DBUS."
+msgstr "Kunde inte ansluta till systemets DBUS"
+
+#: ../client/pk-console.c:1500
+msgid "You need to specify a search type, e.g. name"
+msgstr "Du måste ange en söktyp, t ex namn"
+
+#: ../client/pk-console.c:1505
+#: ../client/pk-console.c:1512
+#: ../client/pk-console.c:1519
+#: ../client/pk-console.c:1526
+#: ../client/pk-console.c:1637
+#: ../client/pk-console.c:1647
+#: ../client/pk-console.c:1654
+#: ../client/pk-console.c:1661
+msgid "You need to specify a search term"
+msgstr "Du måste ange en sökterm"
+
+#: ../client/pk-console.c:1531
+msgid "Invalid search type"
+msgstr "Ogiltig söktyp"
+
+#: ../client/pk-console.c:1536
+msgid "You need to specify a package or file to install"
+msgstr "Du måste ange ett paket eller fil att installera"
+
+#: ../client/pk-console.c:1543
+msgid "You need to specify a type, key_id and package_id"
+msgstr "Du måste ange en typ, key_id och package_id"
+
+#: ../client/pk-console.c:1550
+msgid "You need to specify a package to remove"
+msgstr "Du måste ange ett paket att ta bort"
+
+#: ../client/pk-console.c:1556
+msgid "You need to specify the destination directory and then the packages to download"
+msgstr "Du måste ange målmappen och paketen att ladda ner"
+
+#: ../client/pk-console.c:1561
+msgid "Directory not found"
+msgstr "Mappen kunde inte hittas"
+
+#: ../client/pk-console.c:1567
+msgid "You need to specify a eula-id"
+msgstr "Du måste ange ett eula-id"
+
+#: ../client/pk-console.c:1583
+msgid "You need to specify a package name to resolve"
+msgstr "Du måste ange ett namn att söka efter"
+
+#: ../client/pk-console.c:1592
+#: ../client/pk-console.c:1599
+msgid "You need to specify a repo name"
+msgstr "Du måste ange ett \"reponamn\""
+
+#: ../client/pk-console.c:1606
+msgid "You need to specify a repo name/parameter and value"
+msgstr "Du måste ange ett \"reponamn\"/parameter och värde"
+
+#: ../client/pk-console.c:1619
+msgid "You need to specify a time term"
+msgstr "Du måste ange en tidsperiod"
+
+#: ../client/pk-console.c:1624
+msgid "You need to specify a correct role"
+msgstr "Du måste ange en korrekt roll"
+
+#: ../client/pk-console.c:1629
+msgid "Failed to get last time"
+msgstr "Misslyckades att hämta senaste gången"
+
+#: ../client/pk-console.c:1668
+msgid "You need to specify a package to find the details for"
+msgstr "Då måste ange ett paket att hitta detaljer om"
+
+#: ../client/pk-console.c:1675
+msgid "You need to specify a package to find the files for"
+msgstr "Då måste ange ett paket att hitta filer till"
+
+#: ../client/pk-console.c:1724
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "Alternativet '%s' stöds ej"
+
+#: ../client/pk-console.c:1737
+msgid "You don't have the necessary privileges for this operation"
+msgstr "Du har inte nädvändiga privilegier för denna operation"
+
+#: ../client/pk-console.c:1739
+msgid "Command failed"
+msgstr "Kommandot misslyckades"
+
+#: ../client/pk-generate-pack.c:117
+msgid "Could not find a package match"
+msgstr "Kunde inte hitta ett matchande paket"
+
+#: ../client/pk-generate-pack.c:151
+msgid "failed to download: invalid package_id and/or directory"
+msgstr "misslyckades att ladda ner: ogiltigt package_id och/eller mapp"
+
+#: ../client/pk-generate-pack.c:232
+msgid "Could not find a valid metadata file"
+msgstr "Kunde inte hitta en giltig fil för metadata"
+
+#. get user input
+#: ../client/pk-generate-pack.c:524
+msgid "Okay to download the additional packages"
+msgstr "Ok att ladda ner dessa extra paket"
+
+#: ../client/pk-generate-pack-main.c:66
+msgid "Set the path of the file with the list of packages/dependencies to be excluded"
+msgstr "Sätt sökvägen till filen med listan över paket/beroenden att exkludera"
+
+#: ../client/pk-generate-pack-main.c:111
+msgid "You need to specify the pack name and packages to be packed\n"
+msgstr "Du måste ange packnamnet och paketen att packa\n"
+
+#: ../client/pk-generate-pack-main.c:117
+msgid "Invalid name for the service pack, Specify a name with .servicepack extension\n"
+msgstr "Ogiltigt namn för servicepacket, Ange ett namn som har filändeslen .servicepack\n"
+
+#: ../client/pk-generate-pack-main.c:129
+msgid "A pack with the same name already exists, do you want to overwrite it?"
+msgstr "Ett pack med samma namn existerar redan, vill du skriva över det?"
+
+#: ../client/pk-generate-pack-main.c:142
+msgid "Failed to create directory"
+msgstr "Misslyckades med att skapa mapp"
+
+#: ../client/pk-generate-pack-main.c:149
+msgid "Failed to create pack"
+msgstr "Misslyckades med att skapa pack"
+
+#: ../client/pk-import-specspo.c:185
+msgid "Could not set database readonly"
+msgstr "Kunde inte ställa in databasen till endast läsbar"
+
+#: ../client/pk-import-specspo.c:192
+#, c-format
+msgid "Could not open database: %s"
+msgstr "Kunde inte öppna databasen: %s"
+
+#: ../client/pk-import-specspo.c:193
+msgid "You probably need to run this program as the root user"
+msgstr "Du måste troligtvis köra detta program som rootanvändare"
+
+#: ../client/pk-monitor.c:131
+msgid "PackageKit Monitor"
+msgstr "PackageKit Övervakare"
+
+#: ../client/pk-tools-common.c:51
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Var snäll skriv in ett nummer frpn 1 till %i: "
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:300
+msgid "Getting package information..."
+msgstr "Hämtar paketinformation"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
+msgstr "<span color='#%06x' underline='single' size='larger'>Starta %s</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:308
+#: ../contrib/packagekit-plugin/src/contents.cpp:313
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#: ../contrib/packagekit-plugin/src/contents.cpp:340
+#, c-format
+msgid "<big>%s</big>"
+msgstr "<big>%s</big>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:310
+#, c-format
+msgid ""
+"\n"
+"<small>Installed version: %s</small>"
+msgstr ""
+"\n"
+"<small>Installerade versioner: %s</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:316
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run version %s now</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Kör version %s now</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:321
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run now</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Starta nu</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:325
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>Uppgradera till version %s</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
+msgstr "<span color='#%06x' underline='single' size='larger'>Installera %s Nu</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:333
+#, c-format
+msgid ""
+"\n"
+"<small>Version: %s</small>"
+msgstr ""
+"\n"
+"<small>Version: %s</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:337
+msgid ""
+"\n"
+"<small>No packages found for your system</small>"
+msgstr ""
+"\n"
+"<small>Inga paket hittades till ditt system</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:341
+msgid ""
+"\n"
+"<small>Installing...</small>"
+msgstr ""
+"\n"
+"<small>Installerar...</small>"
+
+#: ../data/packagekit-catalog.xml.in.h:1
+msgid "PackageKit Catalog"
+msgstr "PackageKits Katalog"
+
+#: ../data/packagekit-pack.xml.in.h:1
+msgid "PackageKit Service Pack"
+msgstr "Packagekit Servicepack"
+
+#: ../src/pk-main.c:85
+msgid "Startup failed due to security policies on this machine."
+msgstr "Uppstart misslyckades på grund aav  säkerhetsinställningar på denna maskin."
+
+#: ../src/pk-main.c:86
+msgid "This can happen for two reasons:"
+msgstr "Detta kan hända på grund av två skäl:"
+
+#: ../src/pk-main.c:87
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "Rätt användare startar inte programmet (oftast root)"
+
+#: ../src/pk-main.c:88
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/dbus-1/system.d directory"
+msgstr "Filen org.freedesktop.PackageKit.conf är inte installerad i systemmappen /etc/dbus-1/system.d"
+
+#: ../src/pk-main.c:188
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Paketerar bekändet att använda, t ex dummy"
+
+#: ../src/pk-main.c:190
+msgid "Daemonize and detach from the terminal"
+msgstr "Bli en daemon och koppla fri från konsolen "
+
+#: ../src/pk-main.c:194
+msgid "Disable the idle timer"
+msgstr "Avaktivera sysslolöshetstimern"
+
+#: ../src/pk-main.c:196
+msgid "Show version and exit"
+msgstr "Visa version och avsluta"
+
+#: ../src/pk-main.c:198
+msgid "Exit after a small delay"
+msgstr "Avsluta efter ett litet uppehåll"
+
+#: ../src/pk-main.c:200
+msgid "Exit after the engine has loaded"
+msgstr "Avsluta efter att motorn har laddats"
+
+#: ../src/pk-main.c:210
+msgid "PackageKit service"
+msgstr "PackageKit service"
+
+#: ../src/pk-main.c:246
+msgid "Cannot connect to the system bus"
+msgstr "Kan inte ansluta till systembussen"
+
+#: ../src/pk-main.c:286
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "Misslyckades med att starta: %s\n"
+
