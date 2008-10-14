@@ -185,9 +185,22 @@ backend_get_distro_upgrades (PkBackend *backend)
 static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
+	guint i;
+	guint len;
+	const gchar *package_id;
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_files (backend, "gnome-power-manager;2.6.19;i386;fedora",
-			  "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
+
+	len = g_strv_length (_package_ids);
+	for (i=0; i<len; i++) {
+		package_id = _package_ids[i];
+		if (egg_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora"))
+			pk_backend_files (backend, package_id, "/usr/share/man/man1/boo;/usr/bin/xchat-gnome");
+		else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed"))
+			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
+		else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora"))
+			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/bin/ck-xinit-session");
+	}
 	pk_backend_finished (backend);
 }
 
@@ -493,14 +506,29 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static void
 backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
+	guint i;
+	guint len;
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	if (egg_strequal (packages[0], "vips-doc")) {
-		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-				    "vips-doc;7.12.4-2.fc8;noarch;linva",
-				    "The vips documentation package.");
-	} else if (egg_strequal (packages[0], "glib2")) {
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-				    "glib2;2.14.0;i386;fedora", "The GLib library");
+
+	/* each one has a different detail for testing */
+	len = g_strv_length (packages);
+	for (i=0; i<len; i++) {
+		if (egg_strequal (packages[i], "vips-doc"))
+			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+					    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
+		else if (egg_strequal (packages[i], "glib2"))
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+					    "glib2;2.14.0;i386;fedora", "The GLib library");
+		else if (egg_strequal (packages[i], "powertop"))
+			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+					    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+		else if (egg_strequal (packages[i], "kernel"))
+			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+					    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
+		else if (egg_strequal (packages[i], "gtkhtml2"))
+			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+					    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
 	}
 	pk_backend_finished (backend);
 }
