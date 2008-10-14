@@ -1470,11 +1470,8 @@ pk_backend_finished (PkBackend *backend)
 	}
 
 	/* check we have not already finished */
-	if (backend->priv->finished) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "%s cannot request Finished more than once!", role_text);
+	if (backend->priv->finished)
 		return FALSE;
-	}
 
 	/* check we got a Package() else the UI will suck */
 	if (!backend->priv->set_error &&
