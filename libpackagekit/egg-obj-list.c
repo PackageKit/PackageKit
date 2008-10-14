@@ -369,11 +369,11 @@ egg_obj_list_remove_duplicate (EggObjList *list)
 /**
  * egg_obj_list_find_obj:
  * @list: a valid #EggObjList instance
- * @obj: a valid #gpointer object
+ * @obj: a valid #gconstpointer object
  *
  * Return value: the object
  *
- * Removes an item from a list
+ * Finds an item in a list
  **/
 static gpointer
 egg_obj_list_find_obj (EggObjList *list, gconstpointer obj)
@@ -396,6 +396,23 @@ egg_obj_list_find_obj (EggObjList *list, gconstpointer obj)
 
 	/* nothing found */
 	return NULL;
+}
+
+/**
+ * egg_obj_list_exists:
+ * @list: a valid #EggObjList instance
+ * @obj: a valid #gconstpointer object
+ *
+ * Return value: the object
+ *
+ * Finds an item in a list
+ **/
+gboolean
+egg_obj_list_exists (EggObjList *list, gconstpointer obj)
+{
+	gconstpointer obj_tmp;
+	obj_tmp = egg_obj_list_find_obj (list, obj);
+	return (obj_tmp != NULL);
 }
 
 /**
