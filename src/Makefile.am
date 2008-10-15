@@ -33,7 +33,7 @@ INCLUDES =						\
 	-I$(top_srcdir)/lib				\
 	$(NULL)
 
-pkbackendincludedir=$(includedir)/packagekit-backend
+pkbackendincludedir=$(includedir)/PackageKit/backend
 
 pkbackendinclude_HEADERS =				\
 	pk-backend.h					\
