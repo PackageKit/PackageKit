@@ -1,1 +1,1 @@
-../libpackagekit/egg-string.c
+../lib/packagekit-glib/egg-string.c

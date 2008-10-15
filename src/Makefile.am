@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = 1.7
 NULL =
 
 PK_LIBS =						\
-	$(top_builddir)/libpackagekit/libpackagekit.la	\
+	$(top_builddir)/lib/packagekit-glib/libpackagekit.la	\
 	$(NULL)
 
 INCLUDES =						\
@@ -30,10 +30,10 @@ INCLUDES =						\
 	-DEGG_VERBOSE="\"PK_VERBOSE\""			\
 	-DEGG_LOGGING="\"PK_LOGGING\""			\
 	-DEGG_CONSOLE="\"PK_CONSOLE\""			\
-	-I$(top_srcdir)/libpackagekit			\
+	-I$(top_srcdir)/lib				\
 	$(NULL)
 
-pkbackendincludedir=$(includedir)/packagekit-backend
+pkbackendincludedir=$(includedir)/PackageKit/backend
 
 pkbackendinclude_HEADERS =				\
 	pk-backend.h					\
@@ -63,8 +63,8 @@ shared_SOURCES =					\
 	pk-network.h					\
 	pk-shared.c					\
 	pk-shared.h					\
-	pk-refresh.c					\
-	pk-refresh.h					\
+	pk-post-trans.c					\
+	pk-post-trans.h					\
 	pk-network-nm.h					\
 	pk-network-unix.c				\
 	pk-network-unix.h				\

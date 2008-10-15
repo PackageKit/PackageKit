@@ -232,7 +232,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_bindir}/pkcon
 %{_bindir}/pkgenpack
 %{_bindir}/packagekit-bugreport.sh
-%{_libexecdir}/pk-import-*
 %exclude %{_libdir}/libpackagekit*.so.*
 %{_libdir}/packagekit-backend/libpk_backend_dummy.so
 %{_libdir}/packagekit-backend/libpk_backend_test_*.so

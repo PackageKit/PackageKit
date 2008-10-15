@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-25 00:31+0000\n"
+"POT-Creation-Date: 2008-10-15 18:11+0100\n"
 "PO-Revision-Date: 2008-10-06 16:34+0200\n"
 "Last-Translator: nikosCharonitakis <nikosx@gmail.com>\n"
 "Language-Team: Greek Fedora team <fedora-trans-el@redhat.com>\n"
@@ -17,133 +17,180 @@ msgstr ""
 "X-Generator: KBabel 1.11.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../client/pk-console.c:274
-msgid "Update detail"
-msgstr "Λεπτομέρειες ενημέρωσης"
+#. TRANSLATORS: this is a header for the package that can be updated
+#: ../client/pk-console.c:273
+msgid "Details about the update:"
+msgstr ""
 
-#: ../client/pk-console.c:491
-msgid "A system restart is required"
-msgstr "Απαιτείται επανεκκίνηση του συστήματος"
+#: ../client/pk-console.c:466
+msgid "Please restart the computer to complete the update."
+msgstr ""
 
-#: ../client/pk-console.c:493
-msgid "A logout and login is required"
-msgstr "Απαιτείται επανασύνδεση του χρήστη"
+#: ../client/pk-console.c:468
+msgid "Please logout and login to complete the update."
+msgstr ""
 
-#: ../client/pk-console.c:495
-msgid "An application restart is required"
-msgstr "Απαιτείται επανεκκίνηση της εφαρμογής"
+#: ../client/pk-console.c:470
+msgid "Please restart the application as it is being used."
+msgstr ""
 
-#: ../client/pk-console.c:588
-#: ../client/pk-generate-pack.c:126
-msgid "There are multiple package matches"
-msgstr "Υπάρχουν πολλές αντιστοιχίες πακέτων"
+#. TRANSLATORS: The package name was not found in any software sources
+#: ../client/pk-console.c:555
+#, c-format
+msgid "The package '%s' could not be installed: %s"
+msgstr ""
 
-#. find out what package the user wants to use
-#: ../client/pk-console.c:595
-#: ../client/pk-generate-pack.c:133
-msgid "Please enter the package number: "
-msgstr "Παρακαλούμε εισάγετε τον αριθμό του πακέτου: "
+#. TRANSLATORS: There was an error installing the packages. The detailed error follows
+#: ../client/pk-console.c:609
+#, c-format
+msgid "This tool could not install the packages: %s"
+msgstr ""
 
-#: ../client/pk-console.c:629
-#, fuzzy
-msgid "Could not find package to install"
-msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
+#. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
+#: ../client/pk-console.c:665
+#, c-format
+msgid "This tool could not remove '%s': %s"
+msgstr ""
 
-#: ../client/pk-console.c:735
-#, fuzzy
-msgid "Could not find package to remove"
-msgstr "Δε μπόρεσε να βρεθεί ένα πακέτο με αυτό το όνομα προς αφαίρεση"
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:688 ../client/pk-console.c:757
+#, c-format
+msgid "This tool could not remove the packages: %s"
+msgstr ""
 
-#: ../client/pk-console.c:796
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:724
+#, c-format
+msgid "This tool could not remove the packages: '%s'"
+msgstr ""
+
+#. TRANSLATORS: When removing, we might have to remove other deps
+#: ../client/pk-console.c:736
 msgid "The following packages have to be removed"
 msgstr "Τα παρακάτω πακέτα πρέπει να αφαιρεθούν"
 
-#. get user input
-#: ../client/pk-console.c:803
-msgid "Okay to remove additional packages?"
+#. TRANSLATORS: We are checking if it's okay to remove a list of packages
+#: ../client/pk-console.c:743
+#, fuzzy
+msgid "Proceed removing additional packages?"
 msgstr "Εντάξει για την αφαίρεση επιπλέον πακέτων;"
 
-#: ../client/pk-console.c:807
-#: ../client/pk-generate-pack.c:528
-#: ../client/pk-generate-pack-main.c:131
-msgid "Cancelled!"
-msgstr "Ακυρώθηκε!"
+#. TRANSLATORS: We did not remove any packages
+#: ../client/pk-console.c:748
+msgid "The package removal was cancelled!"
+msgstr ""
 
-#: ../client/pk-console.c:841
-#, fuzzy
-msgid "Could not find package to download"
+#. TRANSLATORS: The package name was not found in any software sources
+#: ../client/pk-console.c:789
+#, fuzzy, c-format
+msgid "This tool could not find the package '%s' to download"
 msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
 
-#: ../client/pk-console.c:893
-#, fuzzy
-msgid "Could not find package to update"
-msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:843 ../client/pk-console.c:852
+#, c-format
+msgid "This tool could not update '%s': %s"
+msgstr ""
 
-#: ../client/pk-console.c:915
-#, fuzzy
-msgid "Could not find what packages require"
-msgstr "Δε μπόρεσε να βρεθεί ποια πακέτα απαιτούν αυτό το πακέτο"
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:874 ../client/pk-console.c:882
+#, c-format
+msgid "This tool could not get the requires for '%s': %s"
+msgstr ""
 
-#: ../client/pk-console.c:936
-#, fuzzy
-msgid "Could not get dependencies for"
+#. TRANSLATORS: There was an error getting the depends for the package. The detailed error follows
+#: ../client/pk-console.c:904 ../client/pk-console.c:912
+#, fuzzy, c-format
+msgid "This tool could not get the dependancies for '%s': %s"
 msgstr "όχι get εξαρτήσεις για πακέτο"
 
-#: ../client/pk-console.c:957
-#, fuzzy
-msgid "Could not find details for"
+#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
+#: ../client/pk-console.c:934 ../client/pk-console.c:942
+#, c-format
+msgid "This tool could not get package details for '%s': %s"
+msgstr ""
+
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:964
+#, fuzzy, c-format
+msgid "This tool could not find the files for '%s': %s"
 msgstr "όχι αρχεία για πακέτο"
 
-#: ../client/pk-console.c:980
-#, fuzzy
-msgid "Could not find the files for this package"
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:972
+#, fuzzy, c-format
+msgid "This tool could not get the file list for '%s': %s"
 msgstr "όχι αρχεία για πακέτο"
 
-#: ../client/pk-console.c:987
-#, fuzzy
-msgid "Could not get the file list"
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:994
+#, fuzzy, c-format
+msgid "This tool could not find the update details for '%s': %s"
 msgstr "όχι αρχεία για πακέτο"
 
-#: ../client/pk-console.c:1006
-#, fuzzy
-msgid "Could not find the update details for"
+#. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
+#: ../client/pk-console.c:1002
+#, fuzzy, c-format
+msgid "This tool could not get the update details for '%s': %s"
 msgstr "όχι αρχεία για πακέτο"
 
-#: ../client/pk-console.c:1067
+#. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
+#: ../client/pk-console.c:1048
+msgid "Error:"
+msgstr ""
+
+#. TRANSLATORS: This a list of details about the package
+#: ../client/pk-console.c:1062
 msgid "Package description"
 msgstr "Περιγραφή πακέτου"
 
-#: ../client/pk-console.c:1100
+#. TRANSLATORS: This a list files contained in the package
+#: ../client/pk-console.c:1095
 msgid "Package files"
 msgstr "Αρχεία πακέτου"
 
-#: ../client/pk-console.c:1108
+#. TRANSLATORS: This where the package has no files
+#: ../client/pk-console.c:1104
 msgid "No files"
 msgstr "Χωρίς αρχεία"
 
-#. get user input
-#: ../client/pk-console.c:1140
+#. TRANSLATORS: This a request for a GPG key signature
+#: ../client/pk-console.c:1127
+msgid "Repository signature required"
+msgstr ""
+
+#. TRANSLATORS: This a prompt asking the user to import the security key
+#: ../client/pk-console.c:1137
 msgid "Okay to import key?"
 msgstr "Εντάξει για την εισαγωγή κλειδιού;"
 
-#: ../client/pk-console.c:1143
+#. TRANSLATORS: This is where the user declined the security key
+#: ../client/pk-console.c:1141
 msgid "Did not import key"
 msgstr "Δεν έγινε εισαγωγή κλειδιού"
 
-#. get user input
-#: ../client/pk-console.c:1183
+#. TRANSLATORS: This a request for a EULA
+#: ../client/pk-console.c:1175
+msgid "Eula required"
+msgstr ""
+
+#. TRANSLATORS: This a prompt asking the user to agree to the licence
+#: ../client/pk-console.c:1182
 msgid "Do you agree?"
 msgstr "Συμφωνείτε;"
 
+#. TRANSLATORS: This is where the user declined the licence
 #: ../client/pk-console.c:1186
-msgid "Did not agree to licence, task will fail"
+#, fuzzy
+msgid "Did not agree to licence"
 msgstr "Δεν έγινε συμφωνία με την άδεια χρήσης, η ενέργεια θα αποτύχει"
 
+#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
 #: ../client/pk-console.c:1215
 msgid "The daemon crashed mid-transaction!"
 msgstr ""
 
-#. header
+#. TRANSLATORS: This is the header to the --help menu
 #: ../client/pk-console.c:1268
 #, fuzzy
 msgid "PackageKit Console Interface"
@@ -153,281 +200,310 @@ msgstr "Κονσόλα"
 msgid "Subcommands:"
 msgstr "Υποεντολές:"
 
-#: ../client/pk-console.c:1378
-#: ../client/pk-generate-pack-main.c:64
-#: ../client/pk-monitor.c:118
-#: ../src/pk-main.c:192
+#: ../client/pk-console.c:1359 ../client/pk-generate-pack.c:138
+#: ../client/pk-monitor.c:115 ../src/pk-main.c:195
 msgid "Show extra debugging information"
 msgstr "Εμφάνιση επιπρόσθετων πληροφοριών αποσφαλμάτωσης"
 
-#: ../client/pk-console.c:1380
-#: ../client/pk-monitor.c:120
+#: ../client/pk-console.c:1361 ../client/pk-monitor.c:117
 msgid "Show the program version and exit"
 msgstr "Εμφάνιση έκδοσης προγράμματος και έξοδος"
 
-#: ../client/pk-console.c:1382
+#: ../client/pk-console.c:1363
 #, fuzzy
 msgid "Set the filter, e.g. installed"
 msgstr "Ορισμός φίλτρο e g εγκατεστημένο"
 
-#: ../client/pk-console.c:1384
+#: ../client/pk-console.c:1365
 #, fuzzy
 msgid "Exit without waiting for actions to complete"
 msgstr "Έξοδος για ολοκληρωμένο"
 
-#: ../client/pk-console.c:1407
-msgid "Could not connect to system DBUS."
+#. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
+#: ../client/pk-console.c:1387
+#, fuzzy
+msgid "This tool could not connect to system DBUS."
 msgstr "Αδυναμία σύνδεσης στο DBUS του συστήματος."
 
-#: ../client/pk-console.c:1500
+#: ../client/pk-console.c:1482
 #, fuzzy
 msgid "You need to specify a search type, e.g. name"
 msgstr "a τύπος"
 
-#: ../client/pk-console.c:1505
-#: ../client/pk-console.c:1512
-#: ../client/pk-console.c:1519
-#: ../client/pk-console.c:1526
-#: ../client/pk-console.c:1637
-#: ../client/pk-console.c:1647
-#: ../client/pk-console.c:1654
-#: ../client/pk-console.c:1661
+#: ../client/pk-console.c:1487 ../client/pk-console.c:1494
+#: ../client/pk-console.c:1501 ../client/pk-console.c:1508
+#: ../client/pk-console.c:1619 ../client/pk-console.c:1629
+#: ../client/pk-console.c:1636 ../client/pk-console.c:1643
 #, fuzzy
 msgid "You need to specify a search term"
 msgstr "a όρος"
 
-#: ../client/pk-console.c:1531
+#: ../client/pk-console.c:1513
 msgid "Invalid search type"
 msgstr "Μη έγκυρος τύπος αναζήτησης"
 
-#: ../client/pk-console.c:1536
+#: ../client/pk-console.c:1518
 #, fuzzy
 msgid "You need to specify a package or file to install"
 msgstr "a πακέτο ή αρχείο"
 
-#: ../client/pk-console.c:1543
+#: ../client/pk-console.c:1525
 #, fuzzy
 msgid "You need to specify a type, key_id and package_id"
 msgstr "a τύπος και"
 
-#: ../client/pk-console.c:1550
+#: ../client/pk-console.c:1532
 #, fuzzy
 msgid "You need to specify a package to remove"
 msgstr "a πακέτο αφαίρεση"
 
-#: ../client/pk-console.c:1556
+#: ../client/pk-console.c:1538
 #, fuzzy
-msgid "You need to specify the destination directory and then the packages to download"
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
 msgstr "a τύπος και"
 
-#: ../client/pk-console.c:1561
+#: ../client/pk-console.c:1543
 msgid "Directory not found"
 msgstr "Δε βρέθηκε ο κατάλογος"
 
-#: ../client/pk-console.c:1567
+#: ../client/pk-console.c:1549
 #, fuzzy
 msgid "You need to specify a eula-id"
 msgstr "a id"
 
-#: ../client/pk-console.c:1583
+#: ../client/pk-console.c:1565
 #, fuzzy
 msgid "You need to specify a package name to resolve"
 msgstr "a πακέτο όνομα"
 
-#: ../client/pk-console.c:1592
-#: ../client/pk-console.c:1599
+#: ../client/pk-console.c:1574 ../client/pk-console.c:1581
 #, fuzzy
 msgid "You need to specify a repo name"
 msgstr "a όνομα"
 
-#: ../client/pk-console.c:1606
+#: ../client/pk-console.c:1588
 #, fuzzy
 msgid "You need to specify a repo name/parameter and value"
 msgstr "a όνομα και τιμή"
 
-#: ../client/pk-console.c:1619
+#: ../client/pk-console.c:1601
 #, fuzzy
 msgid "You need to specify a time term"
 msgstr "a ώρα όρος"
 
-#: ../client/pk-console.c:1624
+#: ../client/pk-console.c:1606
 #, fuzzy
 msgid "You need to specify a correct role"
 msgstr "a σωστό"
 
-#: ../client/pk-console.c:1629
+#: ../client/pk-console.c:1611
 #, fuzzy
 msgid "Failed to get last time"
 msgstr "Απέτυχε get ώρα"
 
-#: ../client/pk-console.c:1668
+#: ../client/pk-console.c:1650
 #, fuzzy
 msgid "You need to specify a package to find the details for"
 msgstr "a πακέτο αρχεία για"
 
-#: ../client/pk-console.c:1675
+#: ../client/pk-console.c:1657
 #, fuzzy
 msgid "You need to specify a package to find the files for"
 msgstr "a πακέτο αρχεία για"
 
-#: ../client/pk-console.c:1724
+#. TRANSLATORS: The user tried to use an unsupported option on the command line
+#: ../client/pk-console.c:1710
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "Δεν υποστηρίζεται η επιλογή '%s'"
 
-#: ../client/pk-console.c:1737
+#. TRANSLATORS: User does not have permission to do this
+#: ../client/pk-console.c:1723
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Δεν έχετε τα απαραίτητα δικαιώματα για αυτή τη λειτουργία"
 
-#: ../client/pk-console.c:1739
+#. TRANSLATORS: Generic failure of what they asked to do
+#: ../client/pk-console.c:1726
 msgid "Command failed"
 msgstr "Η εντολή απέτυχε"
 
-#: ../client/pk-generate-pack.c:117
-msgid "Could not find a package match"
-msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
-
-#: ../client/pk-generate-pack.c:151
-msgid "failed to download: invalid package_id and/or directory"
+#. TRANSLATORS: This is the state of the transaction
+#: ../client/pk-generate-pack.c:96
+msgid "Downloading"
 msgstr ""
 
-#: ../client/pk-generate-pack.c:232
-#, fuzzy
-msgid "Could not find a valid metadata file"
-msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
-
-#. get user input
-#: ../client/pk-generate-pack.c:524
-#, fuzzy
-msgid "Okay to download the additional packages"
-msgstr "Εντάξει για την αφαίρεση επιπλέον πακέτων;"
-
-#: ../client/pk-generate-pack-main.c:66
-msgid "Set the path of the file with the list of packages/dependencies to be excluded"
+#: ../client/pk-generate-pack.c:140
+msgid "Set the filename of dependencies to be excluded"
 msgstr ""
 
-#: ../client/pk-generate-pack-main.c:111
-#, fuzzy
-msgid "You need to specify the pack name and packages to be packed\n"
-msgstr "a πακέτο αφαίρεση"
-
-#: ../client/pk-generate-pack-main.c:117
-msgid "Invalid name for the service pack, Specify a name with .servicepack extension\n"
+#: ../client/pk-generate-pack.c:142
+msgid ""
+"The directory to put the pack file, or the current directory if ommitted"
 msgstr ""
 
-#: ../client/pk-generate-pack-main.c:129
+#: ../client/pk-generate-pack.c:144
+#, fuzzy
+msgid "The package to be put into the ServicePack"
+msgstr "Υπηρεσία PackageKit"
+
+#: ../client/pk-generate-pack.c:146
+msgid "Put all updates available in the ServicePack"
+msgstr ""
+
+#. TRANSLATORS: This is when the user fails to supply the correct arguments
+#: ../client/pk-generate-pack.c:166
+msgid "Neither --package or --updates option selected."
+msgstr ""
+
+#. TRANSLATORS: This is when the user fails to supply just one argument
+#: ../client/pk-generate-pack.c:174
+msgid "Both options selected."
+msgstr ""
+
+#. TRANSLATORS: This is when file already exists
+#: ../client/pk-generate-pack.c:207
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr ""
 
-#: ../client/pk-generate-pack-main.c:142
-msgid "Failed to create directory"
+#. TRANSLATORS: This is when the pack was not overwritten
+#: ../client/pk-generate-pack.c:210
+msgid "The pack was not overwritten."
+msgstr ""
+
+#. TRANSLATORS: This is when the temporary directory cannot be created
+#: ../client/pk-generate-pack.c:222
+#, fuzzy
+msgid "Failed to create directory."
 msgstr "Αποτυχία δημιουργίας καταλόγου"
 
-#: ../client/pk-generate-pack-main.c:149
+#. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
+#: ../client/pk-generate-pack.c:231
 #, fuzzy
-msgid "Failed to create pack"
+msgid "Failed to open package list."
 msgstr "Απέτυχε get ώρα"
 
-#: ../client/pk-import-specspo.c:185
-#, fuzzy
-msgid "Could not set database readonly"
-msgstr "όχι open"
+#. TRANSLATORS: This is when the user fails to supply the correct arguments
+#: ../client/pk-generate-pack.c:241
+msgid "Finding package name."
+msgstr ""
 
-#: ../client/pk-import-specspo.c:192
+#. TRANSLATORS: This is when the package cannot be foudn in any software source
+#: ../client/pk-generate-pack.c:245
 #, fuzzy, c-format
-msgid "Could not open database: %s"
-msgstr "όχι open"
+msgid "Failed to find package '%s': %s"
+msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
 
-#: ../client/pk-import-specspo.c:193
-#, fuzzy
-msgid "You probably need to run this program as the root user"
-msgstr "πρόγραμμα χρήστης"
+#. TRANSLATORS: This is telling the user we are in the process of making the pack
+#: ../client/pk-generate-pack.c:260
+msgid "Creating service pack..."
+msgstr ""
 
-#: ../client/pk-monitor.c:131
+#. TRANSLATORS: we succeeded in making the file
+#: ../client/pk-generate-pack.c:267
+#, c-format
+msgid "Service pack created '%s'"
+msgstr ""
+
+#. TRANSLATORS: we failed to make te file
+#: ../client/pk-generate-pack.c:271
+#, fuzzy, c-format
+msgid "Failed to create '%s': %s"
+msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
+
+#: ../client/pk-monitor.c:128
 #, fuzzy
 msgid "PackageKit Monitor"
 msgstr "Οθόνη"
 
-#: ../client/pk-tools-common.c:51
+#: ../client/pk-tools-common.c:48 ../client/pk-tools-common.c:58
+#: ../client/pk-tools-common.c:76 ../client/pk-tools-common.c:83
+#, c-format
+msgid "Internal error: %s"
+msgstr ""
+
+#. TRANSLATORS: The package was not found in any software sources
+#: ../client/pk-tools-common.c:109
+#, c-format
+msgid "The package could not be found"
+msgstr ""
+
+#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#: ../client/pk-tools-common.c:120
+#, fuzzy
+msgid "More than one package matches:"
+msgstr "Υπάρχουν πολλές αντιστοιχίες πακέτων"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../client/pk-tools-common.c:127
+#, fuzzy
+msgid "Please choose the correct package: "
+msgstr "Παρακαλούμε εισάγετε τον αριθμό του πακέτου: "
+
+#: ../client/pk-tools-common.c:154
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Παρακαλούμε εισάγετε έναν αριθμό από το 1 μέχρι το %i: "
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:300
+#. TRANSLATORS: when we are getting data from the daemon
+#: ../contrib/packagekit-plugin/src/contents.cpp:299
 msgid "Getting package information..."
 msgstr "Λήψη πληροφοριών πακέτου..."
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#. TRANSLATORS: run an applicaiton
+#: ../contrib/packagekit-plugin/src/contents.cpp:305
 #, c-format
-msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
-msgstr "<span color='#%06x' underline='single' size='larger'>Εκτέλεση %s</span>"
+msgid "Run %s"
+msgstr ""
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:308
-#: ../contrib/packagekit-plugin/src/contents.cpp:313
-#: ../contrib/packagekit-plugin/src/contents.cpp:336
-#: ../contrib/packagekit-plugin/src/contents.cpp:340
-#, c-format
-msgid "<big>%s</big>"
-msgstr "<big>%s</big>"
-
-#: ../contrib/packagekit-plugin/src/contents.cpp:310
-#, c-format
-msgid ""
-"\n"
-"<small>Installed version: %s</small>"
+#. TRANSLATORS: show the installed version of a package
+#: ../contrib/packagekit-plugin/src/contents.cpp:311
+#, fuzzy
+msgid "Installed version"
 msgstr ""
 "\n"
 "<small>Εγκατεστημένη έκδοση: %s</small>"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:316
+#. TRANSLATORS: run the application now
+#: ../contrib/packagekit-plugin/src/contents.cpp:319
 #, c-format
-msgid ""
-"\n"
-"<span color='#%06x' underline='single'>Run version %s now</span>"
+msgid "Run version %s now"
 msgstr ""
-
-#: ../contrib/packagekit-plugin/src/contents.cpp:321
-#, c-format
-msgid ""
-"\n"
-"<span color='#%06x' underline='single'>Run now</span>"
-msgstr ""
-"\n"
-"<span color='#%06x' underline='single'>Εκτέλεση τώρα</span>"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:325
-#, c-format
-msgid ""
-"\n"
-"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
+msgid "Run now"
 msgstr ""
 
+#. TRANSLATORS: update to a new version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
-msgid "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
-msgstr "<span color='#%06x' underline='single' size='larger'>Εγκατάσταση %s τώρα</span>"
-
-#: ../contrib/packagekit-plugin/src/contents.cpp:333
-#, c-format
-msgid ""
-"\n"
-"<small>Version: %s</small>"
+msgid "Upgrade to version %s"
 msgstr ""
-"\n"
-"<small>Έκδοση: %s</small>"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:337
-msgid ""
-"\n"
-"<small>No packages found for your system</small>"
+#. TRANSLATORS: To install a package
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#, c-format
+msgid "Install %s Now"
+msgstr ""
+
+#. TRANSLATORS: the version of the package
+#: ../contrib/packagekit-plugin/src/contents.cpp:339
+msgid "Version"
+msgstr ""
+
+#. TRANSLATORS: noting found, so can't install
+#: ../contrib/packagekit-plugin/src/contents.cpp:344
+#, fuzzy
+msgid "No packages found for your system"
 msgstr ""
 "\n"
 "<small>Δεν βρέθηκαν πακέτα για το σύστημα σας</small>"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:341
-msgid ""
-"\n"
-"<small>Installing...</small>"
+#. TRANSLATORS: package is being installed
+#: ../contrib/packagekit-plugin/src/contents.cpp:349
+#, fuzzy
+msgid "Installing..."
 msgstr ""
 "\n"
 "<small>Γίνεται εγκατάσταση...</small>"
@@ -437,10 +513,99 @@ msgstr ""
 msgid "PackageKit Catalog"
 msgstr "Οθόνη"
 
-#: ../data/packagekit-pack.xml.in.h:1
+#: ../data/packagekit-servicepack.xml.in.h:1
 #, fuzzy
 msgid "PackageKit Service Pack"
 msgstr "Υπηρεσία PackageKit"
+
+#: ../data/packagekit-package-list.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Package List"
+msgstr "Οθόνη"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a signed package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install an untrusted package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install untrusted local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Refresh system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Remove package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Rollback to a previous transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Trust a key used for signing packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Update packages"
+msgstr ""
 
 #: ../src/pk-main.c:85
 #, fuzzy
@@ -458,50 +623,145 @@ msgstr "σωστό χρήστης είναι όχι"
 
 #: ../src/pk-main.c:88
 #, fuzzy
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/dbus-1/system.d directory"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
 msgstr "οργανισμός αρχείο είναι όχι εγκατεστημένο μέσα σύστημα σύστημα ημ"
 
-#: ../src/pk-main.c:188
+#: ../src/pk-main.c:191
 #, fuzzy
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Πακετάρισμα e g dummy"
 
-#: ../src/pk-main.c:190
+#: ../src/pk-main.c:193
 #, fuzzy
 msgid "Daemonize and detach from the terminal"
 msgstr "και από"
 
-#: ../src/pk-main.c:194
+#: ../src/pk-main.c:197
 #, fuzzy
 msgid "Disable the idle timer"
 msgstr "Απενεργοποίηση χρονόμετρο"
 
-#: ../src/pk-main.c:196
+#: ../src/pk-main.c:199
 msgid "Show version and exit"
 msgstr "Προβολή έκδοσης και έξοδος"
 
-#: ../src/pk-main.c:198
+#: ../src/pk-main.c:201
 msgid "Exit after a small delay"
 msgstr "Έξοδος μετά από μια μικρή καθυστέρηση"
 
-#: ../src/pk-main.c:200
+#: ../src/pk-main.c:203
 #, fuzzy
 msgid "Exit after the engine has loaded"
 msgstr "Έξοδος φορτωμένο"
 
-#: ../src/pk-main.c:210
+#: ../src/pk-main.c:213
 msgid "PackageKit service"
 msgstr "Υπηρεσία PackageKit"
 
-#: ../src/pk-main.c:246
+#: ../src/pk-main.c:249
 #, fuzzy
 msgid "Cannot connect to the system bus"
 msgstr "σύνδεση σύστημα"
 
-#: ../src/pk-main.c:286
+#: ../src/pk-main.c:295
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Σφάλμα στην προσπάθεια εκκίνησης του %s\n"
+
+#~ msgid "Update detail"
+#~ msgstr "Λεπτομέρειες ενημέρωσης"
+
+#~ msgid "A system restart is required"
+#~ msgstr "Απαιτείται επανεκκίνηση του συστήματος"
+
+#~ msgid "A logout and login is required"
+#~ msgstr "Απαιτείται επανασύνδεση του χρήστη"
+
+#~ msgid "An application restart is required"
+#~ msgstr "Απαιτείται επανεκκίνηση της εφαρμογής"
+
+#, fuzzy
+#~ msgid "Could not find package to install"
+#~ msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
+
+#, fuzzy
+#~ msgid "Could not find package to remove"
+#~ msgstr "Δε μπόρεσε να βρεθεί ένα πακέτο με αυτό το όνομα προς αφαίρεση"
+
+#~ msgid "Cancelled!"
+#~ msgstr "Ακυρώθηκε!"
+
+#, fuzzy
+#~ msgid "Could not find package to update"
+#~ msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
+
+#, fuzzy
+#~ msgid "Could not find what packages require"
+#~ msgstr "Δε μπόρεσε να βρεθεί ποια πακέτα απαιτούν αυτό το πακέτο"
+
+#, fuzzy
+#~ msgid "Could not find details for"
+#~ msgstr "όχι αρχεία για πακέτο"
+
+#~ msgid "Could not find a package match"
+#~ msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
+
+#, fuzzy
+#~ msgid "Resolving package name to remote object"
+#~ msgstr "Τα παρακάτω πακέτα πρέπει να αφαιρεθούν"
+
+#, fuzzy
+#~ msgid "Could not set database readonly"
+#~ msgstr "όχι open"
+
+#, fuzzy
+#~ msgid "Could not open database: %s"
+#~ msgstr "όχι open"
+
+#, fuzzy
+#~ msgid "You probably need to run this program as the root user"
+#~ msgstr "πρόγραμμα χρήστης"
+
+#~ msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
+#~ msgstr ""
+#~ "<span color='#%06x' underline='single' size='larger'>Εκτέλεση %s</span>"
+
+#~ msgid "<big>%s</big>"
+#~ msgstr "<big>%s</big>"
+
+#~ msgid ""
+#~ "\n"
+#~ "<span color='#%06x' underline='single'>Run now</span>"
+#~ msgstr ""
+#~ "\n"
+#~ "<span color='#%06x' underline='single'>Εκτέλεση τώρα</span>"
+
+#~ msgid ""
+#~ "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
+#~ msgstr ""
+#~ "<span color='#%06x' underline='single' size='larger'>Εγκατάσταση %s τώρα</"
+#~ "span>"
+
+#~ msgid ""
+#~ "\n"
+#~ "<small>Version: %s</small>"
+#~ msgstr ""
+#~ "\n"
+#~ "<small>Έκδοση: %s</small>"
+
+#, fuzzy
+#~ msgid "Could not find a valid metadata file"
+#~ msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
+
+#, fuzzy
+#~ msgid "Okay to download the additional packages"
+#~ msgstr "Εντάξει για την αφαίρεση επιπλέον πακέτων;"
+
+#, fuzzy
+#~ msgid "You need to specify the pack name and packages to be packed\n"
+#~ msgstr "a πακέτο αφαίρεση"
 
 #~ msgid ""
 #~ "Could not find a package with that name to install, or package already "
@@ -509,6 +769,7 @@ msgstr "Σφάλμα στην προσπάθεια εκκίνησης του %s\
 #~ msgstr ""
 #~ "Δε μπόρεσε να βρεθεί ένα πακέτο με αυτό το όνομα για να εγκατασταθεί, ή "
 #~ "το πακέτο είναι ήδη εγκατεστημένο"
+
 #~ msgid "Could not find a package with that name to update"
 #~ msgstr "Δε μπόρεσε να βρεθεί πακέτο με αυτό το όνομα για προς ενημέρωση"
 
@@ -519,4 +780,3 @@ msgstr "Σφάλμα στην προσπάθεια εκκίνησης του %s\
 #, fuzzy
 #~ msgid "You need to specify a package to find the description for"
 #~ msgstr "a πακέτο περιγραφή για"
-

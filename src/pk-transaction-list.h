@@ -23,8 +23,9 @@
 #define __PK_TRANSACTION_LIST_H
 
 #include <glib-object.h>
+#include <packagekit-glib/packagekit.h>
+
 #include "pk-transaction.h"
-#include "pk-package-list.h"
 
 G_BEGIN_DECLS
 

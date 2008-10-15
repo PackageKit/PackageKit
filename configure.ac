@@ -1,6 +1,6 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.3.7)
+AC_INIT(PackageKit, 0.3.8)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -18,8 +18,8 @@ DEVELOPMENT_RELEASE=no
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-LT_CURRENT=8
-LT_REVISION=1
+LT_CURRENT=9
+LT_REVISION=0
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -238,36 +238,48 @@ if test x$enable_local = xyes; then
 fi
 
 dnl ---------------------------------------------------------------------------
-dnl - Checks for contrib/packagekit-plugin
+dnl - Able to build browser plugin
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
-                  build_browser_plugin=yes, build_browser_plugin=no)
-AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
-AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
-AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
-if test $build_browser_plugin = "yes"; then
-	# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
+AC_ARG_ENABLE(browser_plugin, AS_HELP_STRING([--enable-browser-plugin],[Build browser plugin functionality]),
+	      enable_browser_plugin=$enableval,enable_browser_plugin=yes)
+if test x$enable_browser_plugin = xyes; then
+	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
+	                  build_browser_plugin=yes, build_browser_plugin=no)
+	AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
+	AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
+	AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
+	if test $build_browser_plugin = "yes"; then
+		# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
 
-	packagekit_save_CPPFLAGS="$CPPFLAGS"
-	packagekit_save_LDFLAGS="$LDFLAGS"
+		packagekit_save_CPPFLAGS="$CPPFLAGS"
+		packagekit_save_LDFLAGS="$LDFLAGS"
 
-	CPPFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_CFLAGS"
-	LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
+		CPPFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_CFLAGS"
+		LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
 
-	AC_CHECK_FUNCS(gdk_app_launch_context_new)
+		AC_CHECK_FUNCS(gdk_app_launch_context_new)
 
-	CPPFLAGS="$packagekit_save_CPPFLAGS"
-	LDFLAGS="$packagekit_save_LDFLAGS"
+		CPPFLAGS="$packagekit_save_CPPFLAGS"
+		LDFLAGS="$packagekit_save_LDFLAGS"
+	fi
+else
+	build_browser_plugin=no
 fi
 
 dnl ---------------------------------------------------------------------------
-dnl - Checks for contrib/gstreamer-plugin
+dnl - Able to build gstreamer plugin
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0 dbus-glib-1,
-                  build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
-AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
-AC_SUBST(PK_GSTREAMER_PLUGIN_CFLAGS)
-AC_SUBST(PK_GSTREAMER_PLUGIN_LIBS)
+AC_ARG_ENABLE(gstreamer_plugin, AS_HELP_STRING([--enable-gstreamer-plugin],[Build gstreamer plugin functionality]),
+	      enable_gstreamer_plugin=$enableval,enable_gstreamer_plugin=yes)
+if test x$enable_gstreamer_plugin = xyes; then
+	PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0 dbus-glib-1,
+	                  build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
+	AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
+	AC_SUBST(PK_GSTREAMER_PLUGIN_CFLAGS)
+	AC_SUBST(PK_GSTREAMER_PLUGIN_LIBS)
+else
+	build_gstreamer_plugin=no
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl - Other tests
@@ -514,7 +526,7 @@ AC_SUBST(PK_YUM_PLUGIN_DIR, "\$(prefix)/lib/yum-plugins")
 AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
 AC_SUBST(PK_LOG_DIR, "\$(localstatedir)/log")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
-AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
+AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/lib $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
 
 dnl ---------------------------------------------------------------------------
@@ -560,12 +572,13 @@ data/org.freedesktop.PackageKit.conf
 data/org.freedesktop.PackageKitTestBackend.conf
 data/org.freedesktop.PackageKitAptBackend.conf
 data/tests/Makefile
-libpackagekit/Makefile
+lib/Makefile
+lib/packagekit-glib/Makefile
+lib/python/Makefile
+lib/python/packagekit/Makefile
 policy/Makefile
 src/Makefile
 client/Makefile
-python/Makefile
-python/packagekit/Makefile
 po/Makefile.in
 ])
 

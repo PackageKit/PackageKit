@@ -40,14 +40,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
-
-#include <pk-common.h>
-#include <pk-package-id.h>
-#include <pk-package-ids.h>
-#include <pk-enum.h>
-#include <pk-package-list.h>
-#include <pk-update-detail-obj.h>
-#include <pk-details-obj.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
@@ -66,8 +59,7 @@
 #include "pk-cache.h"
 #include "pk-notify.h"
 #include "pk-security.h"
-#include "pk-refresh.h"
-#include "pk-service-pack.h"
+#include "pk-post-trans.h"
 
 static void     pk_transaction_class_init	(PkTransactionClass *klass);
 static void     pk_transaction_init		(PkTransaction      *transaction);
@@ -102,6 +94,7 @@ struct PkTransactionPrivate
 	PkUpdateDetailList	*update_detail_list;
 	PkNotify		*notify;
 	PkSecurity		*security;
+	PkPostTrans		*post_trans;
 
 	/* needed for gui coldplugging */
 	gchar			*last_package_id;
@@ -554,6 +547,10 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	gboolean ret;
 	guint time;
 	gchar *packages;
+	gchar **package_ids;
+	guint i, length;
+	PkPackageList *list;
+	const PkPackageObj *obj;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -565,48 +562,67 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	}
 
 	/* disconnect these straight away, as the PkTransaction object takes time to timeout */
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_details);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_error_code);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_files);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_distro_upgrade);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_finished);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_package);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_detail);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_signature_required);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_eula_required);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_category);
+
+	/* check for session restarts */
+	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+
+		/* check updated packages file lists and running processes */
+		ret = pk_conf_get_bool (transaction->priv->conf, "UpdateCheckProcesses");
+		if (ret) {
+
+			/* filter on UPDATING */
+			list = pk_package_list_new ();
+			length = pk_package_list_get_size (transaction->priv->package_list);
+			for (i=0; i<length; i++) {
+				obj = pk_package_list_get_obj (transaction->priv->package_list, i);
+				if (obj->info == PK_INFO_ENUM_UPDATING)
+					pk_package_list_add_obj (list, obj);
+			}
+
+			/* process file lists on these packages */
+			package_ids = pk_package_list_to_strv (list);
+			pk_post_trans_check_process_filelists (transaction->priv->post_trans, package_ids);
+			g_strfreev (package_ids);
+			g_object_unref (list);
+		}
+	}
 
 	/* do some optional extra actions when we've finished refreshing the cache */
 	if (exit == PK_EXIT_ENUM_SUCCESS &&
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		PkRefresh *refresh;
-		refresh = pk_refresh_new ();
-
-		g_signal_connect (refresh, "status-changed",
-				  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
-		g_signal_connect (refresh, "progress-changed",
-				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
 
 		/* generate the package list */
 		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageList");
 		if (ret)
-			pk_refresh_update_package_list (refresh);
+			pk_post_trans_update_package_list (transaction->priv->post_trans);
 
 		/* refresh the desktop icon cache */
 		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
 		if (ret)
-			pk_refresh_import_desktop_files (refresh);
+			pk_post_trans_import_desktop_files (transaction->priv->post_trans);
 
 		/* clear the firmware requests directory */
-		pk_refresh_clear_firmware_requests (refresh);
-		g_object_unref (refresh);
+		pk_post_trans_clear_firmware_requests (transaction->priv->post_trans);
 	}
+
+	/* signals we are allowed to send from a post transaction */
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
 
 	/* if we did not send this, ensure the GUI has the right state */
 	if (transaction->priv->allow_cancel)
@@ -3666,6 +3682,8 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->inhibit = pk_inhibit_new ();
 	transaction->priv->package_list = pk_package_list_new ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
+	transaction->priv->post_trans = pk_post_trans_new ();
+
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
 			  G_CALLBACK (pk_transaction_transaction_cb), transaction);
@@ -3720,6 +3738,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->security);
 	g_object_unref (transaction->priv->notify);
+	g_object_unref (transaction->priv->post_trans);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
 }

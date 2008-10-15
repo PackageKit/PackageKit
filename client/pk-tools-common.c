@@ -23,10 +23,113 @@
 #include <glib.h>
 #include <stdio.h>
 #include <glib/gi18n.h>
+#include <packagekit-glib/packagekit.h>
 
 #include <egg-debug.h>
-#include <pk-common.h>
+
 #include "pk-tools-common.h"
+
+/**
+ * pk_console_resolve:
+ **/
+PkPackageList *
+pk_console_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
+{
+	gboolean ret;
+	guint length;
+	PkPackageList *list = NULL;
+	gchar **packages;
+	GError *error_local = NULL;
+
+	/* reset */
+	ret = pk_client_reset (client, &error_local);
+	if (!ret) {
+		egg_warning ("failed to reset client task");
+		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* we need to resolve it */
+	packages = pk_package_ids_from_id (package);
+	ret = pk_client_resolve (client, filter, packages, &error_local);
+	g_strfreev (packages);
+	if (!ret) {
+		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* get length of items found */
+	list = pk_client_get_package_list (client);
+	length = pk_package_list_get_size (list);
+
+	/* didn't resolve to anything, try to get a provide */
+	if (length == 0) {
+
+		/* nothing contains */
+		g_object_unref (list);
+
+		/* reset */
+		ret = pk_client_reset (client, &error_local);
+		if (!ret) {
+			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+			g_error_free (error_local);
+			goto out;
+		}
+		/* anything provide it? */
+		ret = pk_client_what_provides (client, filter, PK_PROVIDES_ENUM_ANY, package, &error_local);
+		if (!ret) {
+			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+			g_error_free (error_local);
+			goto out;
+		}
+
+		/* get length of items found again (we might have had success) */
+		list = pk_client_get_package_list (client);
+	}
+out:
+	return list;
+}
+
+/**
+ * pk_console_resolve_package_id:
+ **/
+gchar *
+pk_console_resolve_package_id (PkPackageList *list, GError **error)
+{
+	guint i;
+	guint length;
+	const PkPackageObj *obj;
+
+	length = pk_package_list_get_size (list);
+
+	if (length == 0) {
+		/* TRANSLATORS: The package was not found in any software sources */
+		*error = g_error_new (1, 0, _("The package could not be found"));
+		return NULL;
+	}
+
+	/* only found one, great! */
+	if (length == 1) {
+		obj = pk_package_list_get_obj (list, 0);
+		return pk_package_id_to_string (obj->id);
+	}
+
+	/* TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages  */
+	g_print ("%s\n", _("More than one package matches:"));
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (list, i);
+		g_print ("%i. %s-%s.%s\n", i+1, obj->id->name, obj->id->version, obj->id->arch);
+	}
+
+	/* TRANSLATORS: This finds out which package in the list to use */
+	i = pk_console_get_number (_("Please choose the correct package: "), length);
+	obj = pk_package_list_get_obj (list, i-1);
+	g_object_unref (list);
+
+	return pk_package_id_to_string (obj->id);
+}
 
 /**
  * pk_console_get_number:

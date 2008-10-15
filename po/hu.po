@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-18 17:43+0000\n"
+"POT-Creation-Date: 2008-10-15 18:11+0100\n"
 "PO-Revision-Date: 2008-05-19 00:08+0100\n"
 "Last-Translator: Sulyok Péter <peti@fedoraproject.org>\n"
 "Language-Team: Hungarian <fedora-trans-hu@redhat.com>\n"
@@ -19,293 +19,684 @@ msgstr ""
 "X-Poedit-Country: HUNGARY\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../client/pk-console.c:224
-msgid "Update detail"
-msgstr "Frissítés részletező"
+#. TRANSLATORS: this is a header for the package that can be updated
+#: ../client/pk-console.c:273
+msgid "Details about the update:"
+msgstr ""
 
-#: ../client/pk-console.c:425
-msgid "A system restart is required"
-msgstr "Rendszer-újraindítás szükséges"
+#: ../client/pk-console.c:466
+msgid "Please restart the computer to complete the update."
+msgstr ""
 
-#: ../client/pk-console.c:427
-msgid "A logout and login is required"
-msgstr "Kijelentkezés és bejelentkezés szükséges"
+#: ../client/pk-console.c:468
+msgid "Please logout and login to complete the update."
+msgstr ""
 
-#: ../client/pk-console.c:429
-msgid "An application restart is required"
-msgstr "Alkalmazás-újraindítás szükséges"
+#: ../client/pk-console.c:470
+msgid "Please restart the application as it is being used."
+msgstr ""
 
-#: ../client/pk-console.c:474
+#. TRANSLATORS: The package name was not found in any software sources
+#: ../client/pk-console.c:555
 #, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Kérem adjon meg egy számot 1-től %i-ig:"
+msgid "The package '%s' could not be installed: %s"
+msgstr ""
 
-#: ../client/pk-console.c:524
-msgid "Could not find a package match"
-msgstr "Nincs megfelelő csomag"
+#. TRANSLATORS: There was an error installing the packages. The detailed error follows
+#: ../client/pk-console.c:609
+#, c-format
+msgid "This tool could not install the packages: %s"
+msgstr ""
 
-#: ../client/pk-console.c:538
-msgid "There are multiple package matches"
-msgstr "Több csomag illik"
+#. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
+#: ../client/pk-console.c:665
+#, c-format
+msgid "This tool could not remove '%s': %s"
+msgstr ""
 
-#. find out what package the user wants to use
-#: ../client/pk-console.c:545
-msgid "Please enter the package number: "
-msgstr "Kérem adja meg a csomagszámot:"
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:688 ../client/pk-console.c:757
+#, c-format
+msgid "This tool could not remove the packages: %s"
+msgstr ""
 
-#: ../client/pk-console.c:561
-msgid "Could not find a package with that name to install, or package already installed"
-msgstr "Nem lehetett csomagot találni azzal a névvel telepítésre, vagy márt telepített csomagot"
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:724
+#, c-format
+msgid "This tool could not remove the packages: '%s'"
+msgstr ""
 
-#: ../client/pk-console.c:643
-msgid "Could not find a package with that name to remove"
-msgstr "Nem lehetett csomagot találni azzal a névvel törlésre"
-
-#: ../client/pk-console.c:683
+#. TRANSLATORS: When removing, we might have to remove other deps
+#: ../client/pk-console.c:736
 msgid "The following packages have to be removed"
 msgstr "A következő csomagokat kell eltávolítani"
 
-#. get user input
-#: ../client/pk-console.c:692
-msgid "Okay to remove additional packages?"
+#. TRANSLATORS: We are checking if it's okay to remove a list of packages
+#: ../client/pk-console.c:743
+#, fuzzy
+msgid "Proceed removing additional packages?"
 msgstr "Eltávolíthatók további csomagok?"
 
-#: ../client/pk-console.c:696
-msgid "Cancelled!"
-msgstr "Megszakítva!"
+#. TRANSLATORS: We did not remove any packages
+#: ../client/pk-console.c:748
+msgid "The package removal was cancelled!"
+msgstr ""
 
-#: ../client/pk-console.c:718
-msgid "Could not find a package with that name to update"
-msgstr "Nem lehetett csomagot találni azzal a névvel frissítésre"
+#. TRANSLATORS: The package name was not found in any software sources
+#: ../client/pk-console.c:789
+#, fuzzy, c-format
+msgid "This tool could not find the package '%s' to download"
+msgstr "Nincs megfelelő csomag"
 
-#: ../client/pk-console.c:736
-msgid "Could not find what packages require this package"
-msgstr "Nem lehetett megtudni mely csomagok szükségesek"
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:843 ../client/pk-console.c:852
+#, c-format
+msgid "This tool could not update '%s': %s"
+msgstr ""
 
-#: ../client/pk-console.c:754
-msgid "Could not get dependencies for this package"
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:874 ../client/pk-console.c:882
+#, c-format
+msgid "This tool could not get the requires for '%s': %s"
+msgstr ""
+
+#. TRANSLATORS: There was an error getting the depends for the package. The detailed error follows
+#: ../client/pk-console.c:904 ../client/pk-console.c:912
+#, fuzzy, c-format
+msgid "This tool could not get the dependancies for '%s': %s"
 msgstr "Nem lehetett csomagfüggőséget megkapni e csomaghoz"
 
-#: ../client/pk-console.c:772
-msgid "Could not find details for this package"
-msgstr "Nem lehetett részletezőt találni e csomaghoz"
+#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
+#: ../client/pk-console.c:934 ../client/pk-console.c:942
+#, c-format
+msgid "This tool could not get package details for '%s': %s"
+msgstr ""
 
-#: ../client/pk-console.c:790
-msgid "Could not find the files for this package"
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:964
+#, fuzzy, c-format
+msgid "This tool could not find the files for '%s': %s"
 msgstr "Nem lehetett fájlokat találni e csomaghoz"
 
-#: ../client/pk-console.c:870
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:972
+#, fuzzy, c-format
+msgid "This tool could not get the file list for '%s': %s"
+msgstr "Nem lehetett fájlokat találni e csomaghoz"
+
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:994
+#, fuzzy, c-format
+msgid "This tool could not find the update details for '%s': %s"
+msgstr "Nem lehetett részletezőt találni e csomaghoz"
+
+#. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
+#: ../client/pk-console.c:1002
+#, fuzzy, c-format
+msgid "This tool could not get the update details for '%s': %s"
+msgstr "Nem lehetett részletezőt találni e csomaghoz"
+
+#. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
+#: ../client/pk-console.c:1048
+msgid "Error:"
+msgstr ""
+
+#. TRANSLATORS: This a list of details about the package
+#: ../client/pk-console.c:1062
 msgid "Package description"
 msgstr "Csomagleírás"
 
-#: ../client/pk-console.c:893
+#. TRANSLATORS: This a list files contained in the package
+#: ../client/pk-console.c:1095
 msgid "Package files"
 msgstr "Csomagfájlok"
 
-#: ../client/pk-console.c:901
+#. TRANSLATORS: This where the package has no files
+#: ../client/pk-console.c:1104
 msgid "No files"
 msgstr "Nincs fájl"
 
-#. get user input
-#: ../client/pk-console.c:933
+#. TRANSLATORS: This a request for a GPG key signature
+#: ../client/pk-console.c:1127
+msgid "Repository signature required"
+msgstr ""
+
+#. TRANSLATORS: This a prompt asking the user to import the security key
+#: ../client/pk-console.c:1137
 msgid "Okay to import key?"
 msgstr "Behozhatunk kulcsot?"
 
-#: ../client/pk-console.c:936
+#. TRANSLATORS: This is where the user declined the security key
+#: ../client/pk-console.c:1141
 msgid "Did not import key"
 msgstr "Nem hoztunk be kulcsot"
 
-#. get user input
-#: ../client/pk-console.c:976
+#. TRANSLATORS: This a request for a EULA
+#: ../client/pk-console.c:1175
+msgid "Eula required"
+msgstr ""
+
+#. TRANSLATORS: This a prompt asking the user to agree to the licence
+#: ../client/pk-console.c:1182
 msgid "Do you agree?"
 msgstr "Egyetért?"
 
-#: ../client/pk-console.c:979
-msgid "Did not agree to licence, task will fail"
+#. TRANSLATORS: This is where the user declined the licence
+#: ../client/pk-console.c:1186
+#, fuzzy
+msgid "Did not agree to licence"
 msgstr "Nem egyezett meg az engedélyben, a munka elbukik"
 
-#: ../client/pk-console.c:1008
+#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
+#: ../client/pk-console.c:1215
 msgid "The daemon crashed mid-transaction!"
 msgstr "A szolgáltatás összeomlott tranzakció közben!"
 
-#. header
-#: ../client/pk-console.c:1061
+#. TRANSLATORS: This is the header to the --help menu
+#: ../client/pk-console.c:1268
 msgid "PackageKit Console Interface"
 msgstr "PackageKit parancssori felület"
 
-#: ../client/pk-console.c:1061
+#: ../client/pk-console.c:1268
 msgid "Subcommands:"
 msgstr "Részparancsok:"
 
-#: ../client/pk-console.c:1165
-#: ../client/pk-monitor.c:104
-#: ../src/pk-main.c:189
+#: ../client/pk-console.c:1359 ../client/pk-generate-pack.c:138
+#: ../client/pk-monitor.c:115 ../src/pk-main.c:195
 msgid "Show extra debugging information"
 msgstr "Extra hibakereső adatok megjelenítése"
 
-#: ../client/pk-console.c:1167
-#: ../client/pk-monitor.c:106
+#: ../client/pk-console.c:1361 ../client/pk-monitor.c:117
 msgid "Show the program version and exit"
 msgstr "Programváltozat megmutatása és kilépés"
 
-#: ../client/pk-console.c:1169
+#: ../client/pk-console.c:1363
 msgid "Set the filter, e.g. installed"
 msgstr "Szűrő beállítása, pl. telepítve"
 
-#: ../client/pk-console.c:1171
+#: ../client/pk-console.c:1365
 msgid "Exit without waiting for actions to complete"
 msgstr "Kilépés cselekmény befejezésére várakozás nélkül"
 
-#: ../client/pk-console.c:1194
-msgid "Could not connect to system DBUS."
+#. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
+#: ../client/pk-console.c:1387
+#, fuzzy
+msgid "This tool could not connect to system DBUS."
 msgstr "Nem lehetett kapcsolódni DBUS-hoz."
 
-#: ../client/pk-console.c:1288
-msgid "You need to specify a search type"
+#: ../client/pk-console.c:1482
+#, fuzzy
+msgid "You need to specify a search type, e.g. name"
 msgstr "Meg kell adni a keresendő típust"
 
-#: ../client/pk-console.c:1293
-#: ../client/pk-console.c:1300
-#: ../client/pk-console.c:1307
-#: ../client/pk-console.c:1314
-#: ../client/pk-console.c:1421
-#: ../client/pk-console.c:1428
-#: ../client/pk-console.c:1435
-#: ../client/pk-console.c:1442
+#: ../client/pk-console.c:1487 ../client/pk-console.c:1494
+#: ../client/pk-console.c:1501 ../client/pk-console.c:1508
+#: ../client/pk-console.c:1619 ../client/pk-console.c:1629
+#: ../client/pk-console.c:1636 ../client/pk-console.c:1643
 msgid "You need to specify a search term"
 msgstr "Meg kell adni a keresendő kifejezést"
 
-#: ../client/pk-console.c:1319
+#: ../client/pk-console.c:1513
 msgid "Invalid search type"
 msgstr "Érvénytelen típus"
 
-#: ../client/pk-console.c:1324
+#: ../client/pk-console.c:1518
 msgid "You need to specify a package or file to install"
 msgstr "Meg kell adnia a telepítendő csomag  vagy fájl nevét"
 
-#: ../client/pk-console.c:1339
+#: ../client/pk-console.c:1525
 msgid "You need to specify a type, key_id and package_id"
 msgstr "Meg kell adnia egy típust, kulcs azonosítót és csomag azonosítót"
 
-#: ../client/pk-console.c:1346
+#: ../client/pk-console.c:1532
 msgid "You need to specify a package to remove"
 msgstr "Meg kell adnia egy eltávolítandó csomagot"
 
-#: ../client/pk-console.c:1353
+#: ../client/pk-console.c:1538
+#, fuzzy
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
+msgstr "Meg kell adnia egy típust, kulcs azonosítót és csomag azonosítót"
+
+#: ../client/pk-console.c:1543
+msgid "Directory not found"
+msgstr ""
+
+#: ../client/pk-console.c:1549
 msgid "You need to specify a eula-id"
 msgstr "Meg kell adnia egy végfelhasználó azonosítót"
 
-#: ../client/pk-console.c:1369
+#: ../client/pk-console.c:1565
 msgid "You need to specify a package name to resolve"
 msgstr "Meg kell adnia egy feloldandó csomagnevet"
 
-#: ../client/pk-console.c:1376
-#: ../client/pk-console.c:1383
+#: ../client/pk-console.c:1574 ../client/pk-console.c:1581
 msgid "You need to specify a repo name"
 msgstr "Meg kell adnia egy tár nevét"
 
-#: ../client/pk-console.c:1390
+#: ../client/pk-console.c:1588
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Meg kell adnia egy tárnevet/paramétert és értéket"
 
-#: ../client/pk-console.c:1403
+#: ../client/pk-console.c:1601
 msgid "You need to specify a time term"
 msgstr "Meg kell adnia egy időszakot"
 
-#: ../client/pk-console.c:1408
+#: ../client/pk-console.c:1606
 msgid "You need to specify a correct role"
 msgstr "Meg kell adnia egy helyes szerepet"
 
-#: ../client/pk-console.c:1413
+#: ../client/pk-console.c:1611
 msgid "Failed to get last time"
 msgstr "Nem sikerült megkapni az utolsó időt"
 
-#: ../client/pk-console.c:1449
+#: ../client/pk-console.c:1650
 msgid "You need to specify a package to find the details for"
 msgstr "Meg kell adnia egy egy csomagot, amihez részletező keresendő"
 
-#: ../client/pk-console.c:1456
+#: ../client/pk-console.c:1657
 msgid "You need to specify a package to find the files for"
 msgstr "Meg kell adnia egy csomagot, amihez fájlokat kell találni"
 
-#: ../client/pk-console.c:1503
+#. TRANSLATORS: The user tried to use an unsupported option on the command line
+#: ../client/pk-console.c:1710
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "„%s” opció nem támogatott"
 
-#: ../client/pk-console.c:1514
-msgid "Command failed"
-msgstr "Parancs elbukott"
-
-#: ../client/pk-console.c:1518
+#. TRANSLATORS: User does not have permission to do this
+#: ../client/pk-console.c:1723
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Önnek nincs meg  szükséges jogosultsága e műveletre"
 
-#: ../client/pk-monitor.c:117
+#. TRANSLATORS: Generic failure of what they asked to do
+#: ../client/pk-console.c:1726
+msgid "Command failed"
+msgstr "Parancs elbukott"
+
+#. TRANSLATORS: This is the state of the transaction
+#: ../client/pk-generate-pack.c:96
+msgid "Downloading"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:140
+msgid "Set the filename of dependencies to be excluded"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:142
+msgid ""
+"The directory to put the pack file, or the current directory if ommitted"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:144
+msgid "The package to be put into the ServicePack"
+msgstr ""
+
+#: ../client/pk-generate-pack.c:146
+msgid "Put all updates available in the ServicePack"
+msgstr ""
+
+#. TRANSLATORS: This is when the user fails to supply the correct arguments
+#: ../client/pk-generate-pack.c:166
+msgid "Neither --package or --updates option selected."
+msgstr ""
+
+#. TRANSLATORS: This is when the user fails to supply just one argument
+#: ../client/pk-generate-pack.c:174
+msgid "Both options selected."
+msgstr ""
+
+#. TRANSLATORS: This is when file already exists
+#: ../client/pk-generate-pack.c:207
+msgid "A pack with the same name already exists, do you want to overwrite it?"
+msgstr ""
+
+#. TRANSLATORS: This is when the pack was not overwritten
+#: ../client/pk-generate-pack.c:210
+msgid "The pack was not overwritten."
+msgstr ""
+
+#. TRANSLATORS: This is when the temporary directory cannot be created
+#: ../client/pk-generate-pack.c:222
+#, fuzzy
+msgid "Failed to create directory."
+msgstr "Nem sikerült megkapni az utolsó időt"
+
+#. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
+#: ../client/pk-generate-pack.c:231
+#, fuzzy
+msgid "Failed to open package list."
+msgstr "Nem sikerült megkapni az utolsó időt"
+
+#. TRANSLATORS: This is when the user fails to supply the correct arguments
+#: ../client/pk-generate-pack.c:241
+msgid "Finding package name."
+msgstr ""
+
+#. TRANSLATORS: This is when the package cannot be foudn in any software source
+#: ../client/pk-generate-pack.c:245
+#, c-format
+msgid "Failed to find package '%s': %s"
+msgstr ""
+
+#. TRANSLATORS: This is telling the user we are in the process of making the pack
+#: ../client/pk-generate-pack.c:260
+msgid "Creating service pack..."
+msgstr ""
+
+#. TRANSLATORS: we succeeded in making the file
+#: ../client/pk-generate-pack.c:267
+#, c-format
+msgid "Service pack created '%s'"
+msgstr ""
+
+#. TRANSLATORS: we failed to make te file
+#: ../client/pk-generate-pack.c:271
+#, fuzzy, c-format
+msgid "Failed to create '%s': %s"
+msgstr "Nem sikerült megkapni az utolsó időt"
+
+#: ../client/pk-monitor.c:128
 msgid "PackageKit Monitor"
 msgstr "PackageKit figyelő"
 
-#: ../client/pk-import-desktop.c:293
-#: ../client/pk-import-specspo.c:169
+#: ../client/pk-tools-common.c:48 ../client/pk-tools-common.c:58
+#: ../client/pk-tools-common.c:76 ../client/pk-tools-common.c:83
 #, c-format
-msgid "Could not open database: %s"
-msgstr "Nem lehetett megnyitni %s adatbázist"
+msgid "Internal error: %s"
+msgstr ""
 
-#: ../client/pk-import-desktop.c:294
-#: ../client/pk-import-specspo.c:170
-msgid "You probably need to run this program as the root user"
-msgstr "E program valószínűleg rendszergazdaként futtatható"
+#. TRANSLATORS: The package was not found in any software sources
+#: ../client/pk-tools-common.c:109
+#, c-format
+msgid "The package could not be found"
+msgstr ""
 
-#: ../src/pk-main.c:83
+#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#: ../client/pk-tools-common.c:120
+#, fuzzy
+msgid "More than one package matches:"
+msgstr "Több csomag illik"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../client/pk-tools-common.c:127
+#, fuzzy
+msgid "Please choose the correct package: "
+msgstr "Kérem adja meg a csomagszámot:"
+
+#: ../client/pk-tools-common.c:154
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Kérem adjon meg egy számot 1-től %i-ig:"
+
+#. TRANSLATORS: when we are getting data from the daemon
+#: ../contrib/packagekit-plugin/src/contents.cpp:299
+msgid "Getting package information..."
+msgstr ""
+
+#. TRANSLATORS: run an applicaiton
+#: ../contrib/packagekit-plugin/src/contents.cpp:305
+#, c-format
+msgid "Run %s"
+msgstr ""
+
+#. TRANSLATORS: show the installed version of a package
+#: ../contrib/packagekit-plugin/src/contents.cpp:311
+msgid "Installed version"
+msgstr ""
+
+#. TRANSLATORS: run the application now
+#: ../contrib/packagekit-plugin/src/contents.cpp:319
+#, c-format
+msgid "Run version %s now"
+msgstr ""
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:325
+msgid "Run now"
+msgstr ""
+
+#. TRANSLATORS: update to a new version of the package
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
+#, c-format
+msgid "Upgrade to version %s"
+msgstr ""
+
+#. TRANSLATORS: To install a package
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#, c-format
+msgid "Install %s Now"
+msgstr ""
+
+#. TRANSLATORS: the version of the package
+#: ../contrib/packagekit-plugin/src/contents.cpp:339
+msgid "Version"
+msgstr ""
+
+#. TRANSLATORS: noting found, so can't install
+#: ../contrib/packagekit-plugin/src/contents.cpp:344
+msgid "No packages found for your system"
+msgstr ""
+
+#. TRANSLATORS: package is being installed
+#: ../contrib/packagekit-plugin/src/contents.cpp:349
+msgid "Installing..."
+msgstr ""
+
+#: ../data/packagekit-catalog.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Catalog"
+msgstr "PackageKit figyelő"
+
+#: ../data/packagekit-servicepack.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Service Pack"
+msgstr "PackageKit szolgáltatás"
+
+#: ../data/packagekit-package-list.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Package List"
+msgstr "PackageKit figyelő"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a signed package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install an untrusted package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install untrusted local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Refresh system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Remove package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Rollback to a previous transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Trust a key used for signing packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Update packages"
+msgstr ""
+
+#: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "Indulás sikertelen a gép biztonsági szabályzata miatt."
 
-#: ../src/pk-main.c:84
+#: ../src/pk-main.c:86
 msgid "This can happen for two reasons:"
 msgstr "Két okból történet mehet:"
 
-#: ../src/pk-main.c:85
+#: ../src/pk-main.c:87
 msgid "The correct user is not launching the executable (usually root)"
 msgstr "A helyes használó nem indítja a futtathatót (rendszerint rendszergada)"
 
-#: ../src/pk-main.c:86
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/dbus-1/system.d directory"
-msgstr "Az org.freedesktop.PackageKit.conf a rendszert nem telepítették  a system /etc/dbus-1/system.d mappába"
+#: ../src/pk-main.c:88
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
+msgstr ""
+"Az org.freedesktop.PackageKit.conf a rendszert nem telepítették  a system /"
+"etc/dbus-1/system.d mappába"
 
-#: ../src/pk-main.c:185
+#: ../src/pk-main.c:191
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Használandó csomagoló háttér, pl. dummy"
 
-#: ../src/pk-main.c:187
+#: ../src/pk-main.c:193
 msgid "Daemonize and detach from the terminal"
 msgstr "Szolgálatatás és leválasztás terminálról"
 
-#: ../src/pk-main.c:191
+#: ../src/pk-main.c:197
 msgid "Disable the idle timer"
 msgstr "Tétlen időzítő kikapcsolása"
 
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:199
 msgid "Show version and exit"
 msgstr "Változat mutatása és kilépés"
 
-#: ../src/pk-main.c:195
+#: ../src/pk-main.c:201
 msgid "Exit after a small delay"
 msgstr "Kilépés rövid késleltetés után"
 
-#: ../src/pk-main.c:197
+#: ../src/pk-main.c:203
 msgid "Exit after the engine has loaded"
 msgstr "Kilépés a motor betöltése után"
 
-#: ../src/pk-main.c:207
+#: ../src/pk-main.c:213
 msgid "PackageKit service"
 msgstr "PackageKit szolgáltatás"
 
-#: ../src/pk-main.c:233
+#: ../src/pk-main.c:249
 msgid "Cannot connect to the system bus"
 msgstr "Nem lehetett csatlakozni a rendszerbuszhoz"
 
-#: ../src/pk-main.c:273
+#: ../src/pk-main.c:295
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Hiba %s indításakor\n"
 
+#~ msgid "Update detail"
+#~ msgstr "Frissítés részletező"
+
+#~ msgid "A system restart is required"
+#~ msgstr "Rendszer-újraindítás szükséges"
+
+#~ msgid "A logout and login is required"
+#~ msgstr "Kijelentkezés és bejelentkezés szükséges"
+
+#~ msgid "An application restart is required"
+#~ msgstr "Alkalmazás-újraindítás szükséges"
+
+#, fuzzy
+#~ msgid "Could not find package to install"
+#~ msgstr "Nincs megfelelő csomag"
+
+#, fuzzy
+#~ msgid "Could not find package to remove"
+#~ msgstr "Nem lehetett csomagot találni azzal a névvel törlésre"
+
+#~ msgid "Cancelled!"
+#~ msgstr "Megszakítva!"
+
+#, fuzzy
+#~ msgid "Could not find package to update"
+#~ msgstr "Nincs megfelelő csomag"
+
+#, fuzzy
+#~ msgid "Could not find what packages require"
+#~ msgstr "Nem lehetett megtudni mely csomagok szükségesek"
+
+#, fuzzy
+#~ msgid "Could not find details for"
+#~ msgstr "Nem lehetett részletezőt találni e csomaghoz"
+
+#~ msgid "Could not find a package match"
+#~ msgstr "Nincs megfelelő csomag"
+
+#, fuzzy
+#~ msgid "Resolving package name to remote object"
+#~ msgstr "A következő csomagokat kell eltávolítani"
+
+#, fuzzy
+#~ msgid "Could not set database readonly"
+#~ msgstr "Nem lehetett megnyitni %s adatbázist"
+
+#~ msgid "Could not open database: %s"
+#~ msgstr "Nem lehetett megnyitni %s adatbázist"
+
+#~ msgid "You probably need to run this program as the root user"
+#~ msgstr "E program valószínűleg rendszergazdaként futtatható"
+
+#~ msgid ""
+#~ "Could not find a package with that name to install, or package already "
+#~ "installed"
+#~ msgstr ""
+#~ "Nem lehetett csomagot találni azzal a névvel telepítésre, vagy márt "
+#~ "telepített csomagot"
+
+#~ msgid "Could not find a package with that name to update"
+#~ msgstr "Nem lehetett csomagot találni azzal a névvel frissítésre"

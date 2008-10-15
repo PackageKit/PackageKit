@@ -25,17 +25,9 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
-
-#include <pk-client.h>
-#include <pk-control.h>
-#include <pk-common.h>
-#include <pk-package-list.h>
-#include <pk-package-id.h>
-#include <pk-package-ids.h>
-#include <pk-client.h>
-#include <pk-service-pack.h>
 
 #include "pk-tools-common.h"
 
@@ -71,84 +63,26 @@ pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
 static gchar *
 pk_generate_pack_package_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
 {
-	gboolean ret;
-	gboolean valid;
-	guint i;
-	guint length;
-	const PkPackageObj *obj;
 	PkPackageList *list;
-	gchar **packages;
-
-	/* check for NULL values */
-	if (package == NULL) {
-		egg_warning ("Cannot resolve the package: invalid package");
-		return NULL;
-	}
+	gchar *package_id = NULL;
+	gboolean valid;
 
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package);
 	if (valid)
 		return g_strdup (package);
 
-	ret = pk_client_reset (client, error);
-	if (ret == FALSE) {
-		egg_warning ("failed to reset client task");
-		return NULL;
-	}
+	/* get the list of possibles */
+	list = pk_console_resolve (client, filter, package, error);
+	if (list == NULL)
+		goto out;
 
-	/* we need to resolve it */
-	packages = pk_package_ids_from_id (package);
-	ret = pk_client_resolve (client, filter, packages, error);
-	g_strfreev (packages);
-	if (ret == FALSE) {
-		egg_warning ("Resolve failed");
-		return NULL;
-	}
-
-	/* get length of items found */
-	list = pk_client_get_package_list (client);
-	length = pk_package_list_get_size (list);
-	g_object_unref (list);
-
-	/* didn't resolve to anything, try to get a provide */
-	if (length == 0) {
-		ret = pk_client_reset (client, error);
-		if (ret == FALSE) {
-			egg_warning ("failed to reset client task");
-			return NULL;
-		}
-		ret = pk_client_what_provides (client, filter, PK_PROVIDES_ENUM_ANY, package, error);
-		if (ret == FALSE) {
-			egg_warning ("WhatProvides is not supported in this backend");
-			return NULL;
-		}
-	}
-
-	/* get length of items found again (we might have had success) */
-	list = pk_client_get_package_list (client);
-	length = pk_package_list_get_size (list);
-	if (length == 0) {
-		egg_warning (_("Could not find a package match"));
-		return NULL;
-	}
-
-	/* only found one, great! */
-	if (length == 1) {
-		obj = pk_package_list_get_obj (list, 0);
-		return pk_package_id_to_string (obj->id);
-	}
-	g_print ("%s\n", _("There are multiple package matches"));
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (list, i);
-		g_print ("%i. %s-%s.%s\n", i+1, obj->id->name, obj->id->version, obj->id->arch);
-	}
-
-	/* find out what package the user wants to use */
-	i = pk_console_get_number (_("Please enter the package number: "), length);
-	obj = pk_package_list_get_obj (list, i-1);
-	g_object_unref (list);
-
-	return pk_package_id_to_string (obj->id);
+	/* ask the user to select the right one */
+	package_id = pk_console_resolve_package_id (list, error);
+out:
+	if (list != NULL)
+		g_object_unref (list);
+	return package_id;
 }
 
 /**
@@ -158,6 +92,7 @@ static void
 pk_generate_pack_package_cb (PkServicePack *pack, const PkPackageObj *obj, gpointer data)
 {
 	g_return_if_fail (obj != NULL);
+	/* TRANSLATORS: This is the state of the transaction */
 	g_print ("%i%%\t%s %s-%s.%s\n", last_percentage, _("Downloading"), obj->id->name, obj->id->version, obj->id->arch);
 }
 
@@ -227,14 +162,16 @@ main (int argc, char *argv[])
 
 	/* neither options selected */
 	if (package == NULL && !updates) {
-		g_print ("%s\n", _("Neither option selected"));
+		/* TRANSLATORS: This is when the user fails to supply the correct arguments */
+		g_print ("%s\n", _("Neither --package or --updates option selected."));
 		g_print ("%s", options_help);
 		return 1;
 	}
 
 	/* both options selected */
 	if (package != NULL && updates) {
-		g_print ("%s\n", _("Both optiosn selected"));
+		/* TRANSLATORS: This is when the user fails to supply just one argument */
+		g_print ("%s\n", _("Both options selected."));
 		g_print ("%s", options_help);
 		return 1;
 	}
@@ -266,9 +203,11 @@ main (int argc, char *argv[])
 
 	/*ask user input*/
 	if (exists) {
+		/* TRANSLATORS: This is when file already exists */
 		overwrite = pk_console_get_prompt (_("A pack with the same name already exists, do you want to overwrite it?"), FALSE);
 		if (!overwrite) {
-			g_print ("%s\n", _("Cancelled!"));
+			/* TRANSLATORS: This is when the pack was not overwritten */
+			g_print ("%s\n", _("The pack was not overwritten."));
 			goto out;
 		}
 	}
@@ -279,7 +218,8 @@ main (int argc, char *argv[])
 	/* make the temporary directory */
 	retval = g_mkdir_with_parents (tempdir, 0777);
 	if (retval != 0) {
-		g_print ("%s: %s\n", _("Failed to create directory"), tempdir);
+		/* TRANSLATORS: This is when the temporary directory cannot be created */
+		g_print ("%s: '%s'\n", _("Failed to create directory."), tempdir);
 		goto out;
 	}
 
@@ -287,7 +227,8 @@ main (int argc, char *argv[])
 	list = pk_package_list_new ();
 	ret = pk_package_list_add_file (list, package_list);
 	if (!ret) {
-		g_print ("%s: %s\n", _("Failed to open package list"), package_list);
+		/* TRANSLATORS: This is when the list of packages from the remote computer cannot be opened */
+		g_print ("%s: '%s'\n", _("Failed to open package list."), package_list);
 		goto out;
 	}
 
@@ -296,9 +237,11 @@ main (int argc, char *argv[])
 		client = pk_client_new ();
 		pk_client_set_use_buffer (client, TRUE, NULL);
 		pk_client_set_synchronous (client, TRUE, NULL);
-		g_print ("%s\n", _("Resolving package name to remote object"));
+		/* TRANSLATORS: This is when the user fails to supply the correct arguments */
+		g_print ("%s\n", _("Finding package name."));
 		package_id = pk_generate_pack_package_resolve (client, PK_FILTER_ENUM_NONE, package, &error);
 		if (package_id == NULL) {
+			/* TRANSLATORS: This is when the package cannot be foudn in any software source */
 			g_print (_("Failed to find package '%s': %s"), package, error->message);
 			g_error_free (error);
 			goto out;
@@ -313,16 +256,20 @@ main (int argc, char *argv[])
 	pk_service_pack_set_temp_directory (pack, tempdir);
 	pk_service_pack_set_exclude_list (pack, list);
 
-	/* generate the pack */
-	g_print (_("Service pack to create: %s\n"), filename);
+	/* TRANSLATORS: This is telling the user we are in the process of making the pack */
+	g_print ("%s\n", _("Creating service pack..."));
 	if (updates)
 		ret = pk_service_pack_create_for_updates (pack, &error);
 	else
 		ret = pk_service_pack_create_for_package_id (pack, package_id, &error);
-	if (ret)
-		g_print ("%s\n", _("Done!"));
-	else {
-		g_print ("%s: %s\n", _("Failed"), error->message);
+	if (ret) {
+		/* TRANSLATORS: we succeeded in making the file */
+		g_print (_("Service pack created '%s'"), filename);
+		g_print ("\n");
+	} else {
+		/* TRANSLATORS: we failed to make te file */
+		g_print (_("Failed to create '%s': %s"), filename, error->message);
+		g_print ("\n");
 		g_error_free (error);
 	}
 

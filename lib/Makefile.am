@@ -1,0 +1,2 @@
+SUBDIRS = packagekit-glib python
+

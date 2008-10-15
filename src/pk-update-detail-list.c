@@ -33,8 +33,7 @@
 #include <glib.h>
 
 #include "egg-debug.h"
-#include "pk-common.h"
-#include "pk-update-detail-obj.h"
+
 #include "pk-update-detail-list.h"
 
 #define PK_UPDATE_DETAIL_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_UPDATE_DETAIL_LIST, PkUpdateDetailListPrivate))

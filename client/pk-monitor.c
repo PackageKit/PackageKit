@@ -27,12 +27,9 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
+#include <packagekit-glib/packagekit.h>
 
-#include <egg-debug.h>
-#include <pk-common.h>
-#include <pk-control.h>
-#include <pk-task-list.h>
-#include <pk-connection.h>
+#include "egg-debug.h"
 
 /**
  * pk_monitor_task_list_changed_cb:

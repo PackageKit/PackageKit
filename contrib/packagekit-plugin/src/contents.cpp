@@ -49,9 +49,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include <gio/gdesktopappinfo.h>
-
-#include <pk-package-id.h>
-#include <pk-package-ids.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "plugin.h"
 
@@ -297,48 +295,58 @@ PkpContents::ensureLayout(cairo_t              *cr,
      */
     switch (mStatus) {
     case IN_PROGRESS:
+        /* TRANSLATORS: when we are getting data from the daemon */
         append_markup(markup, _("Getting package information..."));
         break;
     case INSTALLED:
-        if (mAppInfo != 0)
-            append_markup(markup, _("<span color='#%06x' underline='single' size='larger'>Run %s</span>"),
-                          link_color >> 8,
-                          mDisplayName.c_str());
-        else
-            append_markup(markup, _("<big>%s</big>"), mDisplayName.c_str());
+        if (mAppInfo != 0) {
+                append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
+                /* TRANSLATORS: run an applicaiton */
+                append_markup(markup, _("Run %s"), mDisplayName.c_str());
+                append_markup(markup, "</span>");
+        } else
+            append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
         if (!mInstalledVersion.empty())
-            append_markup(markup, _("\n<small>Installed version: %s</small>"), mInstalledVersion.c_str());
+            /* TRANSLATORS: show the installed version of a package */
+            append_markup(markup, "\n<small>%s: %s</small>", _("Installed version"), mInstalledVersion.c_str());
         break;
     case UPGRADABLE:
-        append_markup(markup, _("<big>%s</big>"), mDisplayName.c_str());
+        append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
         if (mAppInfo != 0) {
-            if (!mInstalledVersion.empty())
-                append_markup(markup, _("\n<span color='#%06x' underline='single'>Run version %s now</span>"),
-                              link_color >> 8,
-                              mInstalledVersion.c_str());
-            else
+            if (!mInstalledVersion.empty()) {
+                append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
+                /* TRANSLATORS: run the application now */
+                append_markup(markup, _("Run version %s now"), mInstalledVersion.c_str());
+                append_markup(markup, "</span>");
+            } else
+                /* TRANSLATORS: run the application now */
                 append_markup(markup,
-                              _("\n<span color='#%06x' underline='single'>Run now</span>"),
-                              link_color >> 8);
+                              "\n<span color='#%06x' underline='single'>%s</span>",
+                              _("Run now"), link_color >> 8);
         }
 
-        append_markup(markup, _("\n<span color='#%06x' underline='single'>Upgrade to version %s</span>"),
-                      link_color >> 8,
-                      mAvailableVersion.c_str());
+        append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
+        /* TRANSLATORS: update to a new version of the package */
+        append_markup(markup, _("Upgrade to version %s"), mAvailableVersion.c_str());
+        append_markup(markup, "</span>");
         break;
     case AVAILABLE:
-        append_markup(markup, _("<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"),
-                      link_color >> 8,
-                      mDisplayName.c_str());
-        append_markup(markup, _("\n<small>Version: %s</small>"), mAvailableVersion.c_str());
+        append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
+        /* TRANSLATORS: To install a package */
+        append_markup(markup, _("Install %s Now"), mDisplayName.c_str());
+        append_markup(markup, "</span>");
+        /* TRANSLATORS: the version of the package */
+        append_markup(markup, "\n<small>%s: %s</small>", _("Version"), mAvailableVersion.c_str());
         break;
     case UNAVAILABLE:
-        append_markup(markup, _("<big>%s</big>"), mDisplayName.c_str());
-        append_markup(markup, _("\n<small>No packages found for your system</small>"));
+        append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
+        /* TRANSLATORS: noting found, so can't install */
+        append_markup(markup, "\n<small>%s</small>", _("No packages found for your system"));
         break;
     case INSTALLING:
-        append_markup(markup, _("<big>%s</big>"), mDisplayName.c_str());
-        append_markup(markup, _("\n<small>Installing...</small>"));
+        append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
+        /* TRANSLATORS: package is being installed */
+        append_markup(markup, "\n<small>%s</small>", _("Installing..."));
         break;
     }
 

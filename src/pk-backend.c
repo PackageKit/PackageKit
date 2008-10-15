@@ -31,21 +31,18 @@
 #include <glib.h>
 #include <gmodule.h>
 #include <glib/gprintf.h>
-#include <pk-network.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
 
-#include "pk-package-obj.h"
-#include "pk-common.h"
+#include "pk-network.h"
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
 #include "pk-backend.h"
 #include "pk-store.h"
 #include "pk-time.h"
 #include "pk-file-monitor.h"
-#include "pk-update-detail-obj.h"
-#include "pk-details-obj.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
@@ -938,7 +935,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 		return FALSE;
 	}
 
-	egg_debug ("emit require-restart %i, %s", restart, details);
+	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), details);
 	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
 
 	return TRUE;
@@ -1470,11 +1467,8 @@ pk_backend_finished (PkBackend *backend)
 	}
 
 	/* check we have not already finished */
-	if (backend->priv->finished) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "%s cannot request Finished more than once!", role_text);
+	if (backend->priv->finished)
 		return FALSE;
-	}
 
 	/* check we got a Package() else the UI will suck */
 	if (!backend->priv->set_error &&

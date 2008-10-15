@@ -1,0 +1,27 @@
+BUILT_SOURCES = enums.py
+
+NULL =
+
+enums.py: ../enum-convertor.py ../../packagekit-glib/pk-enum.c
+	(cd ..; python enum-convertor.py > packagekit/enums.py)
+
+packagekitpythondir = ${PYTHON_PACKAGE_DIR}
+packagekitpython_PYTHON =				\
+	__init__.py					\
+	backend.py					\
+	frontend.py					\
+	enums.py					\
+	daemonBackend.py				\
+	pkexceptions.py					\
+	pkdbus.py					\
+	progress.py					\
+	package.py					\
+	client.py					\
+	filter.py					\
+	misc.py						\
+	$(NULL)
+
+clean-local :
+	rm -f *.pyc
+	rm -f *~
+
