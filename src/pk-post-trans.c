@@ -24,14 +24,19 @@
 #endif
 
 #include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 
 #ifdef PK_BUILD_GIO
   #include <gio/gio.h>
 #endif
+#include <polkit/polkit.h>
+#include <polkit-dbus/polkit-dbus.h>
 
 #include <pk-common.h>
+#include <pk-package-id.h>
 
 #include "egg-debug.h"
 #include "egg-string-list.h"
@@ -49,6 +54,7 @@ struct PkPostTransPrivate
 	PkBackend		*backend;
 	PkExtra			*extra;
 	GMainLoop		*loop;
+	EggStringList		*running_exec_list;
 	PkPackageList		*list;
 	guint			 finished_id;
 	guint			 package_id;
@@ -484,6 +490,135 @@ pk_post_trans_clear_firmware_requests (PkPostTrans *post)
 	return ret;
 }
 
+
+/**
+ * pk_post_trans_update_files_cb:
+ **/
+static void
+pk_post_trans_update_files_cb (PkBackend *backend, const gchar *package_id,
+			       const gchar *filelist, PkPostTrans *post)
+{
+	guint i;
+	guint len;
+	gboolean ret;
+	gchar **files;
+	gchar *details;
+	PkPackageId *id;
+
+	id = pk_package_id_new_from_string (package_id);
+	files = g_strsplit (filelist, ";", 0);
+
+	/* check each file */
+	len = g_strv_length (files);
+	for (i=0; i<len; i++) {
+		/* executable? */
+		ret = g_file_test (files[i], G_FILE_TEST_IS_REGULAR | G_FILE_TEST_IS_EXECUTABLE | G_FILE_TEST_EXISTS);
+		if (!ret)
+			continue;
+
+		/* running? */
+		ret = egg_obj_list_exists (EGG_OBJ_LIST(post->priv->running_exec_list), files[i]);
+		if (!ret)
+			continue;
+
+		/* TODO: findout if the executable has a desktop file, and if so,
+		 * suggest an application restart instead */
+
+		/* send signal about session restart */
+		details = g_strdup_printf ("package %s updated, and %s is running", id->name, files[i]);
+		pk_backend_require_restart (post->priv->backend, PK_RESTART_ENUM_SESSION, details);
+		g_free (details);
+	}
+	g_strfreev (files);
+	pk_package_id_free (id);
+}
+
+/**
+ * pk_post_trans_update_process_list:
+ **/
+static gboolean
+pk_post_trans_update_process_list (PkPostTrans *post)
+{
+	GDir *dir;
+	const gchar *name;
+	gchar *offset;
+	gchar *uid_file;
+	gchar *contents;
+	gboolean ret;
+	guint uid;
+	pid_t pid;
+	gint retval;
+	gchar exec[128];
+
+	uid = getuid ();
+	dir = g_dir_open ("/proc", 0, NULL);
+	name = g_dir_read_name (dir);
+	egg_obj_list_clear (EGG_OBJ_LIST(post->priv->running_exec_list));
+	while (name != NULL) {
+		uid_file = g_build_filename ("/proc", name, "loginuid", NULL);
+
+		/* is a process file */
+		if (!g_file_test (uid_file, G_FILE_TEST_EXISTS))
+			goto out;
+
+		/* able to get contents */
+		ret = g_file_get_contents (uid_file, &contents, 0, NULL);
+		if (!ret)
+			goto out;
+
+		/* is run by our UID */
+		uid = atoi (contents);
+
+		/* get the exec for the pid */
+		pid = atoi (name);
+		retval = polkit_sysdeps_get_exe_for_pid (pid, exec, 128);
+		if (retval <= 0)
+			goto out;
+
+		/* can be /usr/libexec/notification-daemon.#prelink#.9sOhao */
+		offset = g_strrstr (exec, ".#prelink#.");
+		if (offset != NULL)
+			*(offset) = '\0';
+		egg_debug ("uid=%i, pid=%i, exec=%s", uid, pid, exec);
+		egg_obj_list_add (EGG_OBJ_LIST(post->priv->running_exec_list), exec);
+out:
+		g_free (uid_file);
+		name = g_dir_read_name (dir);
+	}
+	g_dir_close (dir);
+	return TRUE;
+}
+
+/**
+ * pk_post_trans_check_process_filelists:
+ **/
+gboolean
+pk_post_trans_check_process_filelists (PkPostTrans *post, gchar **package_ids)
+{
+	PkStore *store;
+	guint signal_files;
+
+	g_return_val_if_fail (PK_IS_POST_TRANS (post), FALSE);
+
+	if (post->priv->backend->desc->get_files == NULL) {
+		egg_debug ("cannot get files");
+		return FALSE;
+	}
+
+	store = pk_backend_get_store (post->priv->backend);
+	pk_post_trans_update_process_list (post);
+
+	signal_files = g_signal_connect (post->priv->backend, "files",
+					 G_CALLBACK (pk_post_trans_update_files_cb), post);
+
+	/* get all the files touched in the packages we just updated */
+	pk_store_set_strv (store, "package_ids", package_ids);
+	post->priv->backend->desc->get_files (post->priv->backend, package_ids);
+
+	g_signal_handler_disconnect (post->priv->backend, signal_files);
+	return TRUE;
+}
+
 /**
  * pk_post_trans_finalize:
  **/
@@ -506,6 +641,7 @@ pk_post_trans_finalize (GObject *object)
 	g_object_unref (post->priv->backend);
 	g_object_unref (post->priv->extra);
 	g_object_unref (post->priv->list);
+	g_object_unref (post->priv->running_exec_list);
 
 	G_OBJECT_CLASS (pk_post_trans_parent_class)->finalize (object);
 }
@@ -534,6 +670,7 @@ pk_post_trans_init (PkPostTrans *post)
 	gboolean ret;
 
 	post->priv = PK_POST_TRANS_GET_PRIVATE (post);
+	post->priv->running_exec_list = egg_string_list_new ();
 	post->priv->loop = g_main_loop_new (NULL, FALSE);
 	post->priv->list = pk_package_list_new ();
 	post->priv->backend = pk_backend_new ();
