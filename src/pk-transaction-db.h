@@ -23,7 +23,7 @@
 #define __PK_TRANSACTION_DB_H
 
 #include <glib-object.h>
-#include <pk-enum.h>
+#include <packagekit-glib/packagekit.h>
 
 G_BEGIN_DECLS
 

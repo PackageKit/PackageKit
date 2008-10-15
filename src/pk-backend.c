@@ -31,21 +31,18 @@
 #include <glib.h>
 #include <gmodule.h>
 #include <glib/gprintf.h>
-#include <pk-network.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
 
-#include "pk-package-obj.h"
-#include "pk-common.h"
+#include "pk-network.h"
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
 #include "pk-backend.h"
 #include "pk-store.h"
 #include "pk-time.h"
 #include "pk-file-monitor.h"
-#include "pk-update-detail-obj.h"
-#include "pk-details-obj.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 

@@ -27,6 +27,7 @@
 #include <string>
 #include <set>
 #include <glib/gi18n.h>
+#include <packagekit-glib/packagekit.h>
 
 #include <zypp/ZYppFactory.h>
 #include <zypp/ResObject.h>
@@ -54,8 +55,6 @@
 
 #include <map>
 #include <list>
-
-#include <pk-package-ids.h>
 
 #include "zypp-utils.h"
 #include "zypp-events.h"

@@ -49,9 +49,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include <gio/gdesktopappinfo.h>
-
-#include <pk-package-id.h>
-#include <pk-package-ids.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "plugin.h"
 

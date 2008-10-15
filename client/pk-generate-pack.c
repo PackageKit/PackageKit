@@ -25,17 +25,9 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
-
-#include <pk-client.h>
-#include <pk-control.h>
-#include <pk-common.h>
-#include <pk-package-list.h>
-#include <pk-package-id.h>
-#include <pk-package-ids.h>
-#include <pk-client.h>
-#include <pk-service-pack.h>
 
 #include "pk-tools-common.h"
 

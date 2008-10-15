@@ -30,19 +30,10 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
-
-#include <pk-package-ids.h>
-#include <pk-client.h>
-#include <pk-control.h>
-#include <pk-package-id.h>
-#include <pk-common.h>
-#include <pk-connection.h>
-#include <pk-update-detail-obj.h>
-#include <pk-category-obj.h>
-#include <pk-distro-upgrade-obj.h>
 
 #include "pk-tools-common.h"
 

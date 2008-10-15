@@ -1,1 +1,1 @@
-../libpackagekit/egg-debug.h
+../lib/packagekit-glib/egg-debug.h

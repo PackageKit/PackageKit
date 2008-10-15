@@ -22,9 +22,9 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <string.h>
-#include <pk-common.h>
+#include <packagekit-glib/packagekit.h>
+
 #include <pk-backend.h>
-#include <pk-package-ids.h>
 
 /* static bodges */
 static guint _progress_percentage = 0;

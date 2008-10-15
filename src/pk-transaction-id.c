@@ -30,7 +30,6 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-#include "pk-common.h"
 #include "pk-transaction-id.h"
 #define PK_TRANSACTION_ID_COUNT_FILE		LOCALSTATEDIR "/run/PackageKit/job_count.dat"
 

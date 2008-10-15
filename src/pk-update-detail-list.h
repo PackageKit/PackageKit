@@ -23,7 +23,7 @@
 #define __PK_UPDATE_DETAIL_LIST_H
 
 #include <glib-object.h>
-#include <pk-update-detail-obj.h>
+#include <packagekit-glib/packagekit.h>
 
 G_BEGIN_DECLS
 

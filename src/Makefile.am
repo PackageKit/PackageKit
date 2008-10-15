@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = 1.7
 NULL =
 
 PK_LIBS =						\
-	$(top_builddir)/libpackagekit/libpackagekit.la	\
+	$(top_builddir)/lib/packagekit-glib/libpackagekit.la	\
 	$(NULL)
 
 INCLUDES =						\
@@ -30,7 +30,7 @@ INCLUDES =						\
 	-DEGG_VERBOSE="\"PK_VERBOSE\""			\
 	-DEGG_LOGGING="\"PK_LOGGING\""			\
 	-DEGG_CONSOLE="\"PK_CONSOLE\""			\
-	-I$(top_srcdir)/libpackagekit			\
+	-I$(top_srcdir)/lib				\
 	$(NULL)
 
 pkbackendincludedir=$(includedir)/packagekit-backend

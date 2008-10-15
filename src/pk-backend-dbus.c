@@ -41,11 +41,7 @@
 #include <gmodule.h>
 #include <egg-dbus-monitor.h>
 #include <dbus/dbus-glib.h>
-
-#include <pk-common.h>
-#include <pk-package-id.h>
-#include <pk-enum.h>
-#include <pk-network.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
 #include "pk-backend-internal.h"
