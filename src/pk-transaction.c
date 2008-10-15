@@ -555,6 +555,10 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	gboolean ret;
 	guint time;
 	gchar *packages;
+	gchar **package_ids;
+	guint i, length;
+	PkPackageList *list;
+	const PkPackageObj *obj;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -577,6 +581,31 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_eula_required);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_category);
+
+	/* check for session restarts */
+	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+
+		/* check updated packages file lists and running processes */
+		ret = pk_conf_get_bool (transaction->priv->conf, "UpdateCheckProcesses");
+		if (ret) {
+
+			/* filter on UPDATING */
+			list = pk_package_list_new ();
+			length = pk_package_list_get_size (transaction->priv->package_list);
+			for (i=0; i<length; i++) {
+				obj = pk_package_list_get_obj (transaction->priv->package_list, i);
+				if (obj->info == PK_INFO_ENUM_UPDATING)
+					pk_package_list_add_obj (list, obj);
+			}
+
+			/* process file lists on these packages */
+			package_ids = pk_package_list_to_strv (list);
+			pk_post_trans_check_process_filelists (transaction->priv->post_trans, package_ids);
+			g_strfreev (package_ids);
+			g_object_unref (list);
+		}
+	}
 
 	/* do some optional extra actions when we've finished refreshing the cache */
 	if (exit == PK_EXIT_ENUM_SUCCESS &&
