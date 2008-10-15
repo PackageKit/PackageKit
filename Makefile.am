@@ -13,7 +13,6 @@ SUBDIRS = 						\
 	client						\
 	backends					\
 	contrib						\
-	python						\
 	docs						\
 	$(NULL)
 

@@ -2,7 +2,7 @@ BUILT_SOURCES = enums.py
 
 NULL =
 
-enums.py: ../enum-convertor.py ../../lib/packagekit-glib/pk-enum.c
+enums.py: ../enum-convertor.py ../../packagekit-glib/pk-enum.c
 	(cd ..; python enum-convertor.py > packagekit/enums.py)
 
 packagekitpythondir = ${PYTHON_PACKAGE_DIR}
