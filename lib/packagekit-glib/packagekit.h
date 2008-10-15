@@ -35,7 +35,6 @@
 #include <packagekit-glib/pk-distro-upgrade-obj.h>
 #include <packagekit-glib/pk-enum.h>
 #include <packagekit-glib/pk-extra.h>
-#include <packagekit-glib/pk-marshal.h>
 #include <packagekit-glib/pk-package-id.h>
 #include <packagekit-glib/pk-package-ids.h>
 #include <packagekit-glib/pk-package-list.h>
