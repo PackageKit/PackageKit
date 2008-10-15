@@ -16,7 +16,7 @@ DOC_MAIN_SGML_FILE=$(DOC_MODULE)-docs.sgml
 # The directory containing the source code. Relative to $(srcdir).
 # gtk-doc will search all .c & .h files beneath here for inline comments
 # documenting the functions and macros.
-DOC_SOURCE_DIR=../../libpackagekit
+DOC_SOURCE_DIR=../../lib/packagekit-glib
 
 # Extra options to pass to gtkdoc-scangobj. Not normally needed.
 SCANGOBJ_OPTIONS=
@@ -34,8 +34,8 @@ MKTMPL_OPTIONS=
 FIXXREF_OPTIONS=
 
 # Used for dependencies. The docs will be rebuilt if any of these change.
-HFILE_GLOB=$(top_srcdir)/libpackagekit/pk-*.h
-CFILE_GLOB=$(top_srcdir)/libpackagekit/pk-*.c
+HFILE_GLOB=$(top_srcdir)/lib/packagekit-glib/pk-*.h
+CFILE_GLOB=$(top_srcdir)/lib/packagekit-glib/pk-*.c
 
 # Header files to ignore when scanning.
 IGNORE_HFILES =						\
@@ -78,12 +78,12 @@ INCLUDES =						\
 	$(POLKIT_CFLAGS)				\
 	$(DBUS_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
-	-I$(top_builddir)/libpackagekit			\
-	-I$(top_srcdir)/libpackagekit			\
+	-I$(top_builddir)/lib/packagekit-glib		\
+	-I$(top_srcdir)/lib/packagekit-glib		\
 	-I$(top_srcdir)/libselftest			\
 	$(NULL)
 
-PK_LIBS = $(top_builddir)/libpackagekit/libpackagekit.la
+PK_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit.la
 
 GTKDOC_LIBS =						\
 	$(GLIB_LIBS)					\

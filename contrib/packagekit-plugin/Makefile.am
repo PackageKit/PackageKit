@@ -5,12 +5,12 @@ packagekit_plugin_la_LDFLAGS = -rpath $(plugindir) -module -avoid-version -no-un
 packagekit_plugin_la_CPPFLAGS =			\
 	$(PK_BROWSER_PLUGIN_CFLAGS)		\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"	\
-	-I $(top_srcdir)/libpackagekit		\
-	-I $(srcdir)/sdk
+	-I$(top_srcdir)/lib			\
+	-I$(srcdir)/sdk
 
 packagekit_plugin_la_LIBADD =				\
 	$(PK_BROWSER_PLUGIN_LIBS)			\
-	$(top_builddir)/libpackagekit/libpackagekit.la
+	$(top_builddir)/lib/packagekit-glib/libpackagekit.la
 
 packagekit_plugin_la_SOURCES = 	\
 	sdk/np_entry.cpp	\

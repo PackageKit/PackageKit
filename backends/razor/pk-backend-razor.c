@@ -22,12 +22,10 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <string.h>
+#include <packagekit-glib/packagekit.h>
 #include <pk-backend.h>
 #include <pk-backend-internal.h>
 #include <egg-debug.h>
-#include <pk-package-ids.h>
-#include <pk-enum.h>
-#include <pk-common.h>
 
 #include <razor/razor.h>
 

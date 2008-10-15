@@ -35,9 +35,7 @@
 
 #include <polkit/polkit.h>
 #include <polkit-dbus/polkit-dbus.h>
-
-#include <pk-enum.h>
-#include <pk-common.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"

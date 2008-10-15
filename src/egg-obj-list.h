@@ -1,1 +1,1 @@
-../libpackagekit/egg-obj-list.h
+../lib/packagekit-glib/egg-obj-list.h

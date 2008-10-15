@@ -40,14 +40,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
-
-#include <pk-common.h>
-#include <pk-package-id.h>
-#include <pk-package-ids.h>
-#include <pk-enum.h>
-#include <pk-package-list.h>
-#include <pk-update-detail-obj.h>
-#include <pk-details-obj.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
@@ -67,7 +60,6 @@
 #include "pk-notify.h"
 #include "pk-security.h"
 #include "pk-post-trans.h"
-#include "pk-service-pack.h"
 
 static void     pk_transaction_class_init	(PkTransactionClass *klass);
 static void     pk_transaction_init		(PkTransaction      *transaction);

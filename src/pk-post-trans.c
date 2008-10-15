@@ -28,22 +28,21 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <glib/gi18n.h>
+#include <packagekit-glib/packagekit.h>
 
 #ifdef PK_BUILD_GIO
   #include <gio/gio.h>
 #endif
-#include <polkit/polkit.h>
-#include <polkit-dbus/polkit-dbus.h>
-
-#include <pk-common.h>
-#include <pk-package-id.h>
+#ifdef USE_SECURITY_POLKIT
+  #include <polkit/polkit.h>
+  #include <polkit-dbus/polkit-dbus.h>
+#endif
 
 #include "egg-debug.h"
 #include "egg-string-list.h"
 
 #include "pk-post-trans.h"
 #include "pk-shared.h"
-#include "pk-extra.h"
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
 
@@ -571,7 +570,11 @@ pk_post_trans_update_process_list (PkPostTrans *post)
 
 		/* get the exec for the pid */
 		pid = atoi (name);
+#ifdef USE_SECURITY_POLKIT
 		retval = polkit_sysdeps_get_exe_for_pid (pid, exec, 128);
+#else
+		retval = -1;
+#endif
 		if (retval <= 0)
 			goto out;
 

@@ -24,9 +24,7 @@
 
 #include <glib.h>
 #include <gmodule.h>
-#include <pk-enum.h>
-#include <pk-bitfield.h>
-#include <pk-package-id.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"

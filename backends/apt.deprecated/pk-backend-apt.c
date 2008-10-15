@@ -25,7 +25,7 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
-#include <pk-package-ids.h>
+#include <packagekit-glib/packagekit.h>
 #include "pk-apt-search.h"
 #include "config.h"
 

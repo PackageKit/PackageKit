@@ -27,8 +27,7 @@
 
 #include <glib/gi18n.h>
 #include <glib.h>
-
-#include <pk-enum.h>
+#include <packagekit-glib/packagekit.h>
 
 #include <config.h>
 

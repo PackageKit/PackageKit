@@ -36,8 +36,9 @@
 
 #include <glib/gi18n.h>
 #include <gio/gio.h>
-#include <pk-common.h>
-#include <egg-debug.h>
+#include <packagekit-glib/packagekit.h>
+
+#include "egg-debug.h"
 #include "pk-conf.h"
 #include "pk-file-monitor.h"
 

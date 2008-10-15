@@ -35,7 +35,8 @@
 #endif /* HAVE_UNISTD_H */
 
 #include <glib/gi18n.h>
-#include <pk-common.h>
+#include <packagekit-glib/packagekit.h>
+
 #include <egg-debug.h>
 #include "pk-file-monitor.h"
 

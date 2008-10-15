@@ -47,7 +47,6 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-#include "pk-common.h"
 #include "pk-network-unix.h"
 #include "pk-marshal.h"
 

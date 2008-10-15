@@ -23,9 +23,10 @@
 #define __PK_BACKEND_INTERNAL_H
 
 #include <glib-object.h>
+#include <packagekit-glib/packagekit.h>
+
 #include "pk-store.h"
 #include "pk-backend.h"
-#include "pk-bitfield.h"
 
 G_BEGIN_DECLS
 

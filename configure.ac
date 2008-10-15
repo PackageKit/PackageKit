@@ -526,7 +526,7 @@ AC_SUBST(PK_YUM_PLUGIN_DIR, "\$(prefix)/lib/yum-plugins")
 AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
 AC_SUBST(PK_LOG_DIR, "\$(localstatedir)/log")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
-AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
+AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/lib $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
 
 dnl ---------------------------------------------------------------------------
@@ -572,7 +572,8 @@ data/org.freedesktop.PackageKit.conf
 data/org.freedesktop.PackageKitTestBackend.conf
 data/org.freedesktop.PackageKitAptBackend.conf
 data/tests/Makefile
-libpackagekit/Makefile
+lib/Makefile
+lib/packagekit-glib/Makefile
 policy/Makefile
 src/Makefile
 client/Makefile

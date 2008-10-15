@@ -8,7 +8,7 @@ SUBDIRS = 						\
 	etc						\
 	man						\
 	data						\
-	libpackagekit					\
+	lib						\
 	src						\
 	client						\
 	backends					\
