@@ -31,10 +31,6 @@ bin_PROGRAMS =						\
 	pkgenpack					\
 	$(NULL)
 
-libexec_PROGRAMS =					\
-	pk-import-specspo				\
-	$(NULL)
-
 pkcon_SOURCES =						\
 	egg-debug.c					\
 	egg-debug.h					\
@@ -77,22 +73,6 @@ pkgenpack_LDADD = 					\
 	$(ARCHIVE_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(PK_LIBS)					\
-	$(NULL)
-
-pk_import_specspo_SOURCES =				\
-	egg-debug.c					\
-	egg-debug.h					\
-	egg-string.c					\
-	egg-string.h					\
-	pk-import-common.c				\
-	pk-import-common.h				\
-	pk-import-specspo.c				\
-	$(NULL)
-
-pk_import_specspo_LDADD =				\
-	$(GLIB_LIBS)					\
-	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
 	$(NULL)
 
