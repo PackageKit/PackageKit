@@ -81,12 +81,13 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
 	if (!ret) {
 		egg_warning ("RequestName failed!");
 		g_clear_error (error);
-		message = g_strdup_printf ("%s\n%s\n* %s\n* %s\n",
+		message = g_strdup_printf ("%s\n%s\n* %s\n* %s '%s'\n",
 					   _("Startup failed due to security policies on this machine."),
 					   _("This can happen for two reasons:"),
 					   _("The correct user is not launching the executable (usually root)"),
 					   _("The org.freedesktop.PackageKit.conf file is not "
-					     "installed in the system /etc/dbus-1/system.d directory"));
+					     "installed in the system directory:"),
+					     "/etc/dbus-1/system.d");
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED, "%s", message);
 		g_free (message);
 		return FALSE;

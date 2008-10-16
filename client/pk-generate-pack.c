@@ -137,13 +137,13 @@ main (int argc, char *argv[])
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 			_("Show extra debugging information"), NULL },
 		{ "with-package-list", 'l', 0, G_OPTION_ARG_STRING, &package_list,
-			_("Set the filename of dependencies to be excluded"), NULL},
+			_("Set the file name of dependencies to be excluded"), NULL},
 		{ "output", 'o', 0, G_OPTION_ARG_STRING, &directory,
-			_("The directory to put the pack file, or the current directory if ommitted"), NULL},
+			_("The output directory (the current directory is used if ommitted)"), NULL},
 		{ "package", 'p', 0, G_OPTION_ARG_STRING, &package,
-			_("The package to be put into the ServicePack"), NULL},
+			_("The package to be put into the service pack"), NULL},
 		{ "updates", 'u', 0, G_OPTION_ARG_NONE, &updates,
-			_("Put all updates available in the ServicePack"), NULL},
+			_("Put all updates available in the service pack"), NULL},
 		{ NULL}
 	};
 
@@ -218,8 +218,8 @@ main (int argc, char *argv[])
 	/* make the temporary directory */
 	retval = g_mkdir_with_parents (tempdir, 0777);
 	if (retval != 0) {
-		/* TRANSLATORS: This is when the temporary directory cannot be created */
-		g_print ("%s: '%s'\n", _("Failed to create directory."), tempdir);
+		/* TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows */
+		g_print ("%s '%s'\n", _("Failed to create directory:"), tempdir);
 		goto out;
 	}
 
@@ -237,11 +237,11 @@ main (int argc, char *argv[])
 		client = pk_client_new ();
 		pk_client_set_use_buffer (client, TRUE, NULL);
 		pk_client_set_synchronous (client, TRUE, NULL);
-		/* TRANSLATORS: This is when the user fails to supply the correct arguments */
+		/* TRANSLATORS: The package name is being matched up to available packages */
 		g_print ("%s\n", _("Finding package name."));
 		package_id = pk_generate_pack_package_resolve (client, PK_FILTER_ENUM_NONE, package, &error);
 		if (package_id == NULL) {
-			/* TRANSLATORS: This is when the package cannot be foudn in any software source */
+			/* TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows */
 			g_print (_("Failed to find package '%s': %s"), package, error->message);
 			g_error_free (error);
 			goto out;
