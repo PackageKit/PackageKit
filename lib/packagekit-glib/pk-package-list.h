@@ -29,6 +29,7 @@
 #include <glib-object.h>
 #include <packagekit-glib/pk-enum.h>
 #include <packagekit-glib/pk-package-obj.h>
+#include <packagekit-glib/pk-obj-list.h>
 
 G_BEGIN_DECLS
 
@@ -45,13 +46,13 @@ typedef struct _PkPackageListClass	PkPackageListClass;
 
 struct _PkPackageList
 {
-	 GObject		 parent;
+	 PkObjList		 parent;
 	 PkPackageListPrivate	*priv;
 };
 
 struct _PkPackageListClass
 {
-	GObjectClass	parent_class;
+	PkObjListClass		parent_class;
 };
 
 GType			 pk_package_list_get_type	(void) G_GNUC_CONST;

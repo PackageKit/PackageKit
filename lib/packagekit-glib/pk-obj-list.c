@@ -29,7 +29,7 @@
 
 #include "egg-debug.h"
 
-#define PK_OBJ_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), EGG_TYPE_OBJ_LIST, PkObjListPrivate))
+#define PK_OBJ_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_OBJ_LIST, PkObjListPrivate))
 
 struct PkObjListPrivate
 {
@@ -139,6 +139,19 @@ pk_obj_list_get_array (const PkObjList *list)
 {
 	g_return_val_if_fail (PK_IS_OBJ_LIST (list), NULL);
 	return list->priv->array;
+}
+
+/**
+ * pk_obj_list_sort:
+ * @list: a valid #PkObjList instance
+ *
+ * Clears the package list
+ **/
+void
+pk_obj_list_sort (PkObjList *list, GCompareFunc sort_func)
+{
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
+	g_ptr_array_sort (list->priv->array, sort_func);
 }
 
 /**
@@ -711,7 +724,7 @@ PkObjList *
 pk_obj_list_new (void)
 {
 	PkObjList *list;
-	list = g_object_new (EGG_TYPE_OBJ_LIST, NULL);
+	list = g_object_new (PK_TYPE_OBJ_LIST, NULL);
 	return PK_OBJ_LIST (list);
 }
 

@@ -45,6 +45,7 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
+#include <packagekit-glib/pk-obj-list.h>
 #include <packagekit-glib/pk-common.h>
 #include <packagekit-glib/pk-package-id.h>
 #include <packagekit-glib/pk-package-obj.h>
@@ -67,7 +68,7 @@ struct _PkPackageListPrivate
 	gboolean		 fuzzy_arch;
 };
 
-G_DEFINE_TYPE (PkPackageList, pk_package_list, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkPackageList, pk_package_list, PK_TYPE_OBJ_LIST)
 
 /**
  * pk_package_list_set_fuzzy_arch:
@@ -92,7 +93,8 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const PkPackageId *i
 	g_return_val_if_fail (ident != NULL, FALSE);
 
 	obj = pk_package_obj_new (info, ident, summary);
-	g_ptr_array_add (plist->priv->array, obj);
+	pk_obj_list_add (PK_OBJ_LIST(plist), obj);
+	pk_package_obj_free (obj);
 
 	return TRUE;
 }
@@ -105,14 +107,9 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const PkPackageId *i
 gboolean
 pk_package_list_add_obj (PkPackageList *plist, const PkPackageObj *obj)
 {
-	PkPackageObj *obj_new;
-
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (obj != NULL, FALSE);
-
-	obj_new = pk_package_obj_copy (obj);
-	g_ptr_array_add (plist->priv->array, obj_new);
-
+	pk_obj_list_add (PK_OBJ_LIST(plist), obj);
 	return TRUE;
 }
 
@@ -124,19 +121,9 @@ pk_package_list_add_obj (PkPackageList *plist, const PkPackageObj *obj)
 gboolean
 pk_package_list_add_list (PkPackageList *plist, PkPackageList *list)
 {
-	guint i;
-	guint len;
-	const PkPackageObj *obj;
-
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (list), FALSE);
-
-	/* add list to plist */
-	len = pk_package_list_get_size (list);
-	for (i=0; i<len; i++) {
-		obj = pk_package_list_get_obj (list, i);
-		pk_package_list_add_obj (plist, obj);
-	}
+	pk_obj_list_add_list (PK_OBJ_LIST(plist), PK_OBJ_LIST(list));
 	return TRUE;
 }
 
@@ -146,31 +133,8 @@ pk_package_list_add_list (PkPackageList *plist, PkPackageList *list)
 gchar *
 pk_package_list_to_string (const PkPackageList *plist)
 {
-	PkPackageObj *obj;
-	guint i;
-	guint length;
-	const gchar *info_text;
-	GString *package_cache;
-	gchar *package_id;
-
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
-
-	package_cache = g_string_new ("");
-	length = plist->priv->array->len;
-	for (i=0; i<length; i++) {
-		obj = g_ptr_array_index (plist->priv->array, i);
-		info_text = pk_info_enum_to_text (obj->info);
-		package_id = pk_package_id_to_string (obj->id);
-		g_string_append_printf (package_cache, "%s\t%s\t%s\n", info_text, package_id, obj->summary);
-		g_free (package_id);
-	}
-
-	/* remove trailing newline */
-	if (package_cache->len != 0) {
-		g_string_set_size (package_cache, package_cache->len-1);
-	}
-
-	return g_string_free (package_cache, FALSE);
+	return pk_obj_list_to_string (PK_OBJ_LIST(plist));
 }
 
 /**
@@ -179,7 +143,7 @@ pk_package_list_to_string (const PkPackageList *plist)
 gchar **
 pk_package_list_to_strv (const PkPackageList *plist)
 {
-	PkPackageObj *obj;
+	const PkPackageObj *obj;
 	GPtrArray *array;
 	gchar **package_ids;
 	gchar *package_id;
@@ -187,9 +151,9 @@ pk_package_list_to_strv (const PkPackageList *plist)
 	guint i;
 
 	array = g_ptr_array_new ();
-	length = plist->priv->array->len;
+	length = PK_OBJ_LIST(plist)->len;
 	for (i=0; i<length; i++) {
-		obj = g_ptr_array_index (plist->priv->array, i);
+		obj = pk_obj_list_index (PK_OBJ_LIST(plist), i);
 		package_id = pk_package_id_to_string (obj->id);
 		g_ptr_array_add (array, g_strdup (package_id));
 		g_free (package_id);
@@ -210,7 +174,7 @@ guint
 pk_package_list_get_size (const PkPackageList *plist)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), 0);
-	return plist->priv->array->len;
+	return PK_OBJ_LIST(plist)->len;
 }
 
 /**
@@ -234,13 +198,12 @@ pk_package_list_sort_compare_package_id_func (PkPackageObj **a, PkPackageObj **b
 static gint
 pk_package_list_sort_compare_summary_func (PkPackageObj **a, PkPackageObj **b)
 {
-	if ((*a)->summary == NULL && (*b)->summary == NULL) {
+	if ((*a)->summary == NULL && (*b)->summary == NULL)
 		return 0;
-	} else if ((*a)->summary == NULL) {
+	else if ((*a)->summary == NULL)
 		return -1;
-	} else if ((*b)->summary == NULL) {
+	else if ((*b)->summary == NULL)
 		return 1;
-	}
 	return strcmp ((*a)->summary, (*b)->summary);
 }
 
@@ -250,11 +213,10 @@ pk_package_list_sort_compare_summary_func (PkPackageObj **a, PkPackageObj **b)
 static gint
 pk_package_list_sort_compare_info_func (PkPackageObj **a, PkPackageObj **b)
 {
-	if ((*a)->info == (*b)->info) {
+	if ((*a)->info == (*b)->info)
 		return 0;
-	} else if ((*a)->info > (*b)->info) {
+	else if ((*a)->info > (*b)->info)
 		return -1;
-	}
 	return 1;
 }
 
@@ -267,7 +229,7 @@ gboolean
 pk_package_list_sort (PkPackageList *plist)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_ptr_array_sort (plist->priv->array, (GCompareFunc) pk_package_list_sort_compare_package_id_func);
+	pk_obj_list_sort (PK_OBJ_LIST(plist), (GCompareFunc) pk_package_list_sort_compare_package_id_func);
 	return TRUE;
 }
 
@@ -280,7 +242,7 @@ gboolean
 pk_package_list_sort_summary (PkPackageList *plist)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_ptr_array_sort (plist->priv->array, (GCompareFunc) pk_package_list_sort_compare_summary_func);
+	pk_obj_list_sort (PK_OBJ_LIST(plist), (GCompareFunc) pk_package_list_sort_compare_summary_func);
 	return TRUE;
 }
 
@@ -293,7 +255,7 @@ gboolean
 pk_package_list_sort_info (PkPackageList *plist)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_ptr_array_sort (plist->priv->array, (GCompareFunc) pk_package_list_sort_compare_info_func);
+	pk_obj_list_sort (PK_OBJ_LIST(plist), (GCompareFunc) pk_package_list_sort_compare_info_func);
 	return TRUE;
 }
 
@@ -304,11 +266,11 @@ const PkPackageObj *
 pk_package_list_get_obj (const PkPackageList *plist, guint item)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
-	if (item >= plist->priv->array->len) {
+	if (item >= PK_OBJ_LIST(plist)->len) {
 		egg_warning ("item too large!");
 		return NULL;
 	}
-	return g_ptr_array_index (plist->priv->array, item);
+	return pk_obj_list_index (PK_OBJ_LIST(plist), item);
 }
 
 /**
@@ -317,15 +279,8 @@ pk_package_list_get_obj (const PkPackageList *plist, guint item)
 gboolean
 pk_package_list_clear (PkPackageList *plist)
 {
-	PkPackageObj *obj;
-
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-
-	while (plist->priv->array->len > 0) {
-		obj = g_ptr_array_index (plist->priv->array, 0);
-		pk_package_obj_free (obj);
-		g_ptr_array_remove_index_fast (plist->priv->array, 0);
-	}
+	pk_obj_list_clear (PK_OBJ_LIST(plist));
 	return TRUE;
 }
 
@@ -335,7 +290,7 @@ pk_package_list_clear (PkPackageList *plist)
 gboolean
 pk_package_list_contains (const PkPackageList *plist, const gchar *package_id)
 {
-	PkPackageObj *obj;
+	const PkPackageObj *obj;
 	guint i;
 	guint length;
 	gboolean ret = FALSE;
@@ -344,9 +299,9 @@ pk_package_list_contains (const PkPackageList *plist, const gchar *package_id)
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	length = plist->priv->array->len;
+	length = PK_OBJ_LIST(plist)->len;
 	for (i=0; i<length; i++) {
-		obj = g_ptr_array_index (plist->priv->array, i);
+		obj = pk_obj_list_index (PK_OBJ_LIST(plist), i);
 		package_id_temp = pk_package_id_to_string (obj->id);
 		ret = pk_package_id_equal_strings (package_id_temp, package_id);
 		g_free (package_id_temp);
@@ -363,7 +318,7 @@ pk_package_list_contains (const PkPackageList *plist, const gchar *package_id)
 gboolean
 pk_package_list_remove (PkPackageList *plist, const gchar *package_id)
 {
-	PkPackageObj *obj;
+	const PkPackageObj *obj;
 	guint i;
 	guint length;
 	gboolean ret = FALSE;
@@ -372,15 +327,14 @@ pk_package_list_remove (PkPackageList *plist, const gchar *package_id)
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	length = plist->priv->array->len;
+	length = PK_OBJ_LIST(plist)->len;
 	for (i=0; i<length; i++) {
-		obj = g_ptr_array_index (plist->priv->array, i);
+		obj = pk_obj_list_index (PK_OBJ_LIST(plist), i);
 		package_id_temp = pk_package_id_to_string (obj->id);
 		ret = pk_package_id_equal_strings (package_id_temp, package_id);
 		g_free (package_id_temp);
 		if (ret) {
-			pk_package_obj_free (obj);
-			g_ptr_array_remove_index (plist->priv->array, i);
+			pk_obj_list_remove (PK_OBJ_LIST(plist), obj);
 			ret = TRUE;
 			break;
 		}
@@ -394,29 +348,8 @@ pk_package_list_remove (PkPackageList *plist, const gchar *package_id)
 gboolean
 pk_package_list_remove_obj (PkPackageList *plist, const PkPackageObj *obj)
 {
-	PkPackageObj *obj_temp;
-	guint i;
-	guint length;
-	gboolean ret = FALSE;
-
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_return_val_if_fail (obj != NULL, FALSE);
-
-	length = plist->priv->array->len;
-	for (i=0; i<length; i++) {
-		obj_temp = g_ptr_array_index (plist->priv->array, i);
-		if (plist->priv->fuzzy_arch)
-			ret = pk_package_obj_equal_fuzzy_arch (obj_temp, obj);
-		else
-			ret = pk_package_obj_equal (obj_temp, obj);
-		if (ret) {
-			pk_package_obj_free (obj_temp);
-			g_ptr_array_remove_index (plist->priv->array, i);
-			ret = TRUE;
-			break;
-		}
-	}
-	return ret;
+	return pk_obj_list_remove (PK_OBJ_LIST(plist), obj);
 }
 
 /**
@@ -425,25 +358,8 @@ pk_package_list_remove_obj (PkPackageList *plist, const PkPackageObj *obj)
 gboolean
 pk_package_list_contains_obj (const PkPackageList *plist, const PkPackageObj *obj)
 {
-	PkPackageObj *obj_temp;
-	guint i;
-	guint length;
-	gboolean ret = FALSE;
-
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_return_val_if_fail (obj != NULL, FALSE);
-
-	length = plist->priv->array->len;
-	for (i=0; i<length; i++) {
-		obj_temp = g_ptr_array_index (plist->priv->array, i);
-		if (plist->priv->fuzzy_arch)
-			ret = pk_package_obj_equal_fuzzy_arch (obj_temp, obj);
-		else
-			ret = pk_package_obj_equal (obj_temp, obj);
-		if (ret)
-			break;
-	}
-	return ret;
+	return pk_obj_list_exists (PK_OBJ_LIST(plist), obj);
 }
 
 /**
@@ -452,36 +368,8 @@ pk_package_list_contains_obj (const PkPackageList *plist, const PkPackageObj *ob
 gboolean
 pk_package_list_to_file (const PkPackageList *plist, const gchar *filename)
 {
-	PkPackageObj *obj;
-	guint i;
-	guint length;
-	gboolean ret;
-	gchar *text;
-	GString *buffer;
-	GError *error = NULL;
-
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_return_val_if_fail (filename != NULL, FALSE);
-
-	/* add each object */
-	buffer = g_string_new ("");
-	length = plist->priv->array->len;
-	for (i=0; i<length; i++) {
-		obj = g_ptr_array_index (plist->priv->array, i);
-		text = pk_package_obj_to_string (obj);
-		g_string_append_printf (buffer, "%s\n", text);
-		g_free (text);
-	}
-
-	/* write to disk */
-	text = g_string_free (buffer, FALSE);
-	ret = g_file_set_contents (filename, text, -1, &error);
-	if (!ret) {
-		egg_warning ("Failed to write to disk: %s", error->message);
-		g_error_free (error);
-	}
-	g_free (text);
-	return ret;
+	return pk_obj_list_to_file (PK_OBJ_LIST(plist), filename);
 }
 
 /**
@@ -490,41 +378,8 @@ pk_package_list_to_file (const PkPackageList *plist, const gchar *filename)
 gboolean
 pk_package_list_add_file (PkPackageList *plist, const gchar *filename)
 {
-	PkPackageObj *obj;
-	guint i;
-	guint length;
-	gboolean ret;
-	gchar *text = NULL;
-	gchar **split;
-	GError *error = NULL;
-
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_return_val_if_fail (filename != NULL, FALSE);
-
-	ret = g_file_get_contents (filename, &text, NULL, &error);
-	if (!ret) {
-		egg_warning ("Failed to read from disk: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* split into lines */
-	split = g_strsplit (text, "\n", 0);
-	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
-		/* we get trailing whitespace sometimes */
-		if (!egg_strzero (split[i])) {
-			obj = pk_package_obj_from_string (split[i]);
-			if (obj != NULL) {
-				pk_package_list_add_obj (plist, obj);
-			}
-			pk_package_obj_free (obj);
-		}
-	}
-	g_strfreev (split);
-	g_free (text);
-out:
-	return ret;
+	return pk_obj_list_from_file (PK_OBJ_LIST(plist), filename);
 }
 
 /**
@@ -549,8 +404,12 @@ pk_package_list_init (PkPackageList *plist)
 	g_return_if_fail (PK_IS_PACKAGE_LIST (plist));
 
 	plist->priv = PK_PACKAGE_LIST_GET_PRIVATE (plist);
-	plist->priv->array = g_ptr_array_new ();
 	plist->priv->fuzzy_arch = FALSE;
+
+	pk_obj_list_set_copy (PK_OBJ_LIST(plist), (PkObjListCopyFunc) pk_package_obj_copy);
+	pk_obj_list_set_free (PK_OBJ_LIST(plist), (PkObjListFreeFunc) pk_package_obj_free);
+	pk_obj_list_set_to_string (PK_OBJ_LIST(plist), (PkObjListToStringFunc)  pk_package_obj_to_string);
+	pk_obj_list_set_from_string (PK_OBJ_LIST(plist), (PkObjListFromStringFunc)  pk_package_obj_from_string);
 }
 
 /**
@@ -565,10 +424,6 @@ pk_package_list_finalize (GObject *object)
 	g_return_if_fail (PK_IS_PACKAGE_LIST (object));
 	plist = PK_PACKAGE_LIST (object);
 	g_return_if_fail (plist->priv != NULL);
-
-	/* removed any cached packages */
-	g_ptr_array_foreach (plist->priv->array, (GFunc) pk_package_obj_free, NULL);
-	g_ptr_array_free (plist->priv->array, TRUE);
 
 	G_OBJECT_CLASS (pk_package_list_parent_class)->finalize (object);
 }
