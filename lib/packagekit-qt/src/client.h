@@ -108,6 +108,7 @@ public:
 		ActionAcceptEula,
 		ActionDownloadPackages,
 		ActionGetDistroUpgrades,
+		ActionGetCategories,
 		UnkownAction = -1
 	} Action;
 	typedef QSet<Action> Actions;
@@ -158,6 +159,8 @@ public:
 		FilterNotArch,
 		FilterSource,
 		FilterNotSource,
+		FilterCollections,
+		FilterNotCollections,
 		UnknownFilter = -1
 	} Filter;
 	typedef QSet<Filter> Filters;
@@ -202,7 +205,9 @@ public:
 		Science,
 		Documentation,
 		Electronics,
-		MetaPackages,
+		Collections,
+		Vendor,
+		Newest,
 		UnknownGroup = -1
 	} Group;
 	typedef QSet<Group> Groups;
