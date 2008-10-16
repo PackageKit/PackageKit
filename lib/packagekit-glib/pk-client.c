@@ -489,15 +489,13 @@ pk_client_get_package_list (PkClient *client)
  *
  * Return value: The #GPtrArray of cached objects or %NULL if invalid
  **/
-const GPtrArray	*
+PkObjList *
 pk_client_get_cached_objects (PkClient *client)
 {
-	const GPtrArray *array;
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	if (!client->priv->use_buffer)
 		return NULL;
-	array = pk_obj_list_get_array (client->priv->cached_data);
-	return array;
+	return g_object_ref (client->priv->cached_data);
 }
 
 /**
