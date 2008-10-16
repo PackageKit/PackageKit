@@ -76,7 +76,7 @@ pk_post_trans_finished_cb (PkBackend *backend, PkExitEnum exit, PkPostTrans *pos
 static void
 pk_post_trans_package_cb (PkBackend *backend, const PkPackageObj *obj, PkPostTrans *post)
 {
-	pk_package_list_add_obj (post->priv->list, obj);
+	pk_obj_list_add (PK_OBJ_LIST(post->priv->list), obj);
 }
 
 /**
@@ -199,7 +199,7 @@ pk_post_trans_import_desktop_files_get_package (PkPostTrans *post, const gchar *
 	PkStore *store;
 
 	/* use PK to find the correct package */
-	pk_package_list_clear (post->priv->list);
+	pk_obj_list_clear (PK_OBJ_LIST(post->priv->list));
 	pk_backend_reset (post->priv->backend);
 	store = pk_backend_get_store (post->priv->backend);
 	pk_store_set_uint (store, "filters", pk_bitfield_value (PK_FILTER_ENUM_INSTALLED));
@@ -454,7 +454,7 @@ pk_post_trans_update_package_list (PkPostTrans *post)
 	egg_debug ("updating package lists");
 
 	/* clear old list */
-	pk_package_list_clear (post->priv->list);
+	pk_obj_list_clear (PK_OBJ_LIST(post->priv->list));
 
 	/* update UI */
 	pk_backend_set_status (post->priv->backend, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
@@ -472,7 +472,7 @@ pk_post_trans_update_package_list (PkPostTrans *post)
 	pk_backend_set_percentage (post->priv->backend, 90);
 
 	/* convert to a file */
-	ret = pk_package_list_to_file (post->priv->list, PK_SYSTEM_PACKAGE_LIST_FILENAME);
+	ret = pk_obj_list_to_file (PK_OBJ_LIST(post->priv->list), PK_SYSTEM_PACKAGE_LIST_FILENAME);
 	if (!ret)
 		egg_warning ("failed to save to file");
 

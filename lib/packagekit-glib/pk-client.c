@@ -612,7 +612,7 @@ pk_client_package_cb (DBusGProxy   *proxy,
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_package_list_add_obj (client->priv->package_list, obj);
+		pk_obj_list_add (PK_OBJ_LIST(client->priv->package_list), obj);
 	pk_package_id_free (id);
 	pk_package_obj_free (obj);
 }
@@ -3353,7 +3353,7 @@ pk_client_requeue (PkClient *client, GError **error)
 	client->priv->is_finished = FALSE;
 
 	/* clear package list */
-	pk_package_list_clear (client->priv->package_list);
+	pk_obj_list_clear (PK_OBJ_LIST(client->priv->package_list));
 	pk_obj_list_clear (client->priv->cached_data);
 
 	/* do the correct action with the cached parameters */
@@ -3974,7 +3974,7 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 
-	pk_package_list_clear (client->priv->package_list);
+	pk_obj_list_clear (PK_OBJ_LIST (client->priv->package_list));
 	pk_obj_list_clear (client->priv->cached_data);
 	return TRUE;
 }
