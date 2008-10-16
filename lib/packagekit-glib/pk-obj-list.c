@@ -25,137 +25,137 @@
 
 #include <glib/gi18n.h>
 #include <glib.h>
+#include <packagekit-glib/pk-obj-list.h>
 
 #include "egg-debug.h"
-#include "egg-obj-list.h"
 
-#define EGG_OBJ_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), EGG_TYPE_OBJ_LIST, EggObjListPrivate))
+#define PK_OBJ_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), EGG_TYPE_OBJ_LIST, PkObjListPrivate))
 
-struct EggObjListPrivate
+struct PkObjListPrivate
 {
-	EggObjListNewFunc	 func_new;
-	EggObjListCopyFunc	 func_copy;
-	EggObjListFreeFunc	 func_free;
-	EggObjListCompareFunc	 func_compare;
-	EggObjListToStringFunc	 func_to_string;
-	EggObjListFromStringFunc func_from_string;
+	PkObjListNewFunc	 func_new;
+	PkObjListCopyFunc	 func_copy;
+	PkObjListFreeFunc	 func_free;
+	PkObjListCompareFunc	 func_compare;
+	PkObjListToStringFunc	 func_to_string;
+	PkObjListFromStringFunc func_from_string;
 	GPtrArray		*array;
 };
 
-G_DEFINE_TYPE (EggObjList, egg_obj_list, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkObjList, pk_obj_list, G_TYPE_OBJECT)
 
 /**
- * egg_obj_list_set_new:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_set_new:
+ * @list: a valid #PkObjList instance
  * @func: typedef'd function
  *
  * Adds a creation func
  **/
 void
-egg_obj_list_set_new (EggObjList *list, EggObjListNewFunc func)
+pk_obj_list_set_new (PkObjList *list, PkObjListNewFunc func)
 {
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
 	list->priv->func_new = func;
 }
 
 /**
- * egg_obj_list_set_copy:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_set_copy:
+ * @list: a valid #PkObjList instance
  * @func: typedef'd function
  *
  * Adds a copy func
  **/
 void
-egg_obj_list_set_copy (EggObjList *list, EggObjListCopyFunc func)
+pk_obj_list_set_copy (PkObjList *list, PkObjListCopyFunc func)
 {
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
 	list->priv->func_copy = func;
 }
 
 /**
- * egg_obj_list_set_free:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_set_free:
+ * @list: a valid #PkObjList instance
  * @func: typedef'd function
  *
  * Adds a free func
  **/
 void
-egg_obj_list_set_free (EggObjList *list, EggObjListFreeFunc func)
+pk_obj_list_set_free (PkObjList *list, PkObjListFreeFunc func)
 {
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
 	list->priv->func_free = func;
 }
 
 /**
- * egg_obj_list_set_compare:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_set_compare:
+ * @list: a valid #PkObjList instance
  * @func: typedef'd function
  *
  * Adds a compare func
  **/
 void
-egg_obj_list_set_compare (EggObjList *list, EggObjListCompareFunc func)
+pk_obj_list_set_compare (PkObjList *list, PkObjListCompareFunc func)
 {
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
 	list->priv->func_compare = func;
 }
 
 /**
- * egg_obj_list_set_to_string:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_set_to_string:
+ * @list: a valid #PkObjList instance
  * @func: typedef'd function
  *
  * Adds a to string func
  **/
 void
-egg_obj_list_set_to_string (EggObjList *list, EggObjListToStringFunc func)
+pk_obj_list_set_to_string (PkObjList *list, PkObjListToStringFunc func)
 {
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
 	list->priv->func_to_string = func;
 }
 
 /**
- * egg_obj_list_set_from_string:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_set_from_string:
+ * @list: a valid #PkObjList instance
  * @func: typedef'd function
  *
  * Adds a from string func
  **/
 void
-egg_obj_list_set_from_string (EggObjList *list, EggObjListFromStringFunc func)
+pk_obj_list_set_from_string (PkObjList *list, PkObjListFromStringFunc func)
 {
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
 	list->priv->func_from_string = func;
 }
 
 /**
- * egg_obj_list_get_array:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_get_array:
+ * @list: a valid #PkObjList instance
  *
  * Gets a GPtrArray representation of the package list
  **/
 const GPtrArray	*
-egg_obj_list_get_array (const EggObjList *list)
+pk_obj_list_get_array (const PkObjList *list)
 {
-	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), NULL);
+	g_return_val_if_fail (PK_IS_OBJ_LIST (list), NULL);
 	return list->priv->array;
 }
 
 /**
- * egg_obj_list_clear:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_clear:
+ * @list: a valid #PkObjList instance
  *
  * Clears the package list
  **/
 void
-egg_obj_list_clear (EggObjList *list)
+pk_obj_list_clear (PkObjList *list)
 {
 	guint i;
 	gpointer obj;
 	GPtrArray *array;
-	EggObjListFreeFunc func_free;
+	PkObjListFreeFunc func_free;
 
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
 
 	array = list->priv->array;
 	func_free = list->priv->func_free;
@@ -169,22 +169,22 @@ egg_obj_list_clear (EggObjList *list)
 }
 
 /**
- * egg_obj_list_print:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_print:
+ * @list: a valid #PkObjList instance
  *
  * Prints the package list
  **/
 void
-egg_obj_list_print (EggObjList *list)
+pk_obj_list_print (PkObjList *list)
 {
 	guint i;
 	gpointer obj;
 	GPtrArray *array;
 	gchar *text;
-	EggObjListToStringFunc func_to_string;
+	PkObjListToStringFunc func_to_string;
 
 	g_return_if_fail (list->priv->func_to_string != NULL);
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
 
 	array = list->priv->array;
 	func_to_string = list->priv->func_to_string;
@@ -197,23 +197,23 @@ egg_obj_list_print (EggObjList *list)
 }
 
 /**
- * egg_obj_list_to_string:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_to_string:
+ * @list: a valid #PkObjList instance
  *
  * Converts the list to a newline delimited string
  **/
 gchar *
-egg_obj_list_to_string (EggObjList *list)
+pk_obj_list_to_string (PkObjList *list)
 {
 	guint i;
 	gpointer obj;
 	GPtrArray *array;
 	gchar *text;
-	EggObjListToStringFunc func_to_string;
+	PkObjListToStringFunc func_to_string;
 	GString *string;
 
 	g_return_val_if_fail (list->priv->func_to_string != NULL, NULL);
-	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), NULL);
+	g_return_val_if_fail (PK_IS_OBJ_LIST (list), NULL);
 
 	array = list->priv->array;
 	func_to_string = list->priv->func_to_string;
@@ -232,18 +232,18 @@ egg_obj_list_to_string (EggObjList *list)
 }
 
 /**
- * egg_obj_list_add:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_add:
+ * @list: a valid #PkObjList instance
  * @obj: a valid #gpointer object
  *
  * Adds a copy of the object to the list
  **/
 void
-egg_obj_list_add (EggObjList *list, gconstpointer obj)
+pk_obj_list_add (PkObjList *list, gconstpointer obj)
 {
 	gpointer obj_new;
 
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
 	g_return_if_fail (obj != NULL);
 	g_return_if_fail (list->priv->func_copy != NULL);
 
@@ -254,72 +254,89 @@ egg_obj_list_add (EggObjList *list, gconstpointer obj)
 }
 
 /**
- * egg_obj_list_add_list:
+ * pk_obj_list_add_list:
  *
  * Makes a deep copy of the list
  **/
 void
-egg_obj_list_add_list (EggObjList *list, const EggObjList *data)
+pk_obj_list_add_list (PkObjList *list, const PkObjList *data)
 {
 	guint i;
 	gconstpointer obj;
 
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
-	g_return_if_fail (EGG_IS_OBJ_LIST (data));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (data));
 
 	/* add data items to list */
 	for (i=0; i < data->len; i++) {
-		obj = egg_obj_list_index (data, i);
-		egg_obj_list_add (list, obj);
+		obj = pk_obj_list_index (data, i);
+		pk_obj_list_add (list, obj);
 	}
 }
 
 /**
- * egg_obj_list_add_array:
+ * pk_obj_list_add_array:
  *
  * Makes a deep copy of the data in the array.
  * The data going into the list MUST be the correct type,
  * else bad things will happen.
  **/
 void
-egg_obj_list_add_array (EggObjList *list, const GPtrArray *data)
+pk_obj_list_add_array (PkObjList *list, const GPtrArray *data)
 {
 	guint i;
 	gconstpointer obj;
 
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
 
 	/* add data items to list */
 	for (i=0; i < data->len; i++) {
 		obj = g_ptr_array_index (data, i);
-		egg_obj_list_add (list, obj);
+		pk_obj_list_add (list, obj);
 	}
 }
 
 /**
- * egg_obj_list_remove_list:
+ * pk_obj_list_add_strv:
+ *
+ * Makes a deep copy of the data in the array.
+ * The data going into the list MUST be the correct type,
+ * else bad things will happen.
+ **/
+void
+pk_obj_list_add_strv (PkObjList *list, gpointer **data)
+{
+	guint i;
+	guint len;
+	len = g_strv_length ((gchar**)data);
+	for (i=0; i<len; i++)
+		pk_obj_list_add (list, data[i]);
+}
+
+/**
+ * pk_obj_list_remove_list:
  *
  * Makes a deep copy of the list
  **/
 void
-egg_obj_list_remove_list (EggObjList *list, const EggObjList *data)
+pk_obj_list_remove_list (PkObjList *list, const PkObjList *data)
 {
 	guint i;
 	gconstpointer obj;
 
-	g_return_if_fail (EGG_IS_OBJ_LIST (list));
-	g_return_if_fail (EGG_IS_OBJ_LIST (data));
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
+	g_return_if_fail (PK_IS_OBJ_LIST (data));
 
 	/* remove data items from list */
 	for (i=0; i < data->len; i++) {
-		obj = egg_obj_list_index (data, i);
-		egg_obj_list_remove (list, obj);
+		obj = pk_obj_list_index (data, i);
+		pk_obj_list_remove (list, obj);
 	}
 }
 
 /**
- * egg_obj_list_find_obj:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_find_obj:
+ * @list: a valid #PkObjList instance
  * @obj: a valid #gpointer object
  *
  * Return value: the object
@@ -327,9 +344,9 @@ egg_obj_list_remove_list (EggObjList *list, const EggObjList *data)
  * Removes an item from a list
  **/
 static gboolean
-egg_obj_list_obj_equal (EggObjList *list, gconstpointer obj1, gconstpointer obj2)
+pk_obj_list_obj_equal (PkObjList *list, gconstpointer obj1, gconstpointer obj2)
 {
-	EggObjListCompareFunc func_compare;
+	PkObjListCompareFunc func_compare;
 
 	/* two less pointer deferences... */
 	func_compare = list->priv->func_compare;
@@ -343,32 +360,32 @@ egg_obj_list_obj_equal (EggObjList *list, gconstpointer obj1, gconstpointer obj2
 }
 
 /**
- * egg_obj_list_remove_duplicate:
+ * pk_obj_list_remove_duplicate:
  *
  * Removes duplicate entries
  **/
 void
-egg_obj_list_remove_duplicate (EggObjList *list)
+pk_obj_list_remove_duplicate (PkObjList *list)
 {
 	guint i, j;
 	gconstpointer obj1;
 	gconstpointer obj2;
 
 	for (i=0; i<list->len; i++) {
-		obj1 = egg_obj_list_index (list, i);
+		obj1 = pk_obj_list_index (list, i);
 		for (j=0; j<list->len; j++) {
 			if (i == j)
 				break;
-			obj2 = egg_obj_list_index (list, j);
-			if (egg_obj_list_obj_equal (list, obj1, obj2))
-				egg_obj_list_remove_index (list, i);
+			obj2 = pk_obj_list_index (list, j);
+			if (pk_obj_list_obj_equal (list, obj1, obj2))
+				pk_obj_list_remove_index (list, i);
 		}
 	}
 }
 
 /**
- * egg_obj_list_find_obj:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_find_obj:
+ * @list: a valid #PkObjList instance
  * @obj: a valid #gconstpointer object
  *
  * Return value: the object
@@ -376,11 +393,11 @@ egg_obj_list_remove_duplicate (EggObjList *list)
  * Finds an item in a list
  **/
 static gpointer
-egg_obj_list_find_obj (EggObjList *list, gconstpointer obj)
+pk_obj_list_find_obj (PkObjList *list, gconstpointer obj)
 {
 	guint i;
 	gconstpointer obj_tmp;
-	EggObjListCompareFunc func_compare;
+	PkObjListCompareFunc func_compare;
 
 	/* the pointers point to the same thing */
 	func_compare = list->priv->func_compare;
@@ -389,7 +406,7 @@ egg_obj_list_find_obj (EggObjList *list, gconstpointer obj)
 
 	/* remove data items from list */
 	for (i=0; i < list->len; i++) {
-		obj_tmp = egg_obj_list_index (list, i);
+		obj_tmp = pk_obj_list_index (list, i);
 		if (func_compare (obj_tmp, obj) == 0)
 			return (gpointer) obj_tmp;
 	}
@@ -399,8 +416,8 @@ egg_obj_list_find_obj (EggObjList *list, gconstpointer obj)
 }
 
 /**
- * egg_obj_list_exists:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_exists:
+ * @list: a valid #PkObjList instance
  * @obj: a valid #gconstpointer object
  *
  * Return value: the object
@@ -408,16 +425,16 @@ egg_obj_list_find_obj (EggObjList *list, gconstpointer obj)
  * Finds an item in a list
  **/
 gboolean
-egg_obj_list_exists (EggObjList *list, gconstpointer obj)
+pk_obj_list_exists (PkObjList *list, gconstpointer obj)
 {
 	gconstpointer obj_tmp;
-	obj_tmp = egg_obj_list_find_obj (list, obj);
+	obj_tmp = pk_obj_list_find_obj (list, obj);
 	return (obj_tmp != NULL);
 }
 
 /**
- * egg_obj_list_remove:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_remove:
+ * @list: a valid #PkObjList instance
  * @obj: a valid #gpointer object
  *
  * Return value: TRUE is we removed something
@@ -425,19 +442,19 @@ egg_obj_list_exists (EggObjList *list, gconstpointer obj)
  * Removes all the items from a list matching obj
  **/
 gboolean
-egg_obj_list_remove (EggObjList *list, gconstpointer obj)
+pk_obj_list_remove (PkObjList *list, gconstpointer obj)
 {
 	gboolean ret;
 	gpointer obj_new;
 	gboolean found = FALSE;
 
-	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), FALSE);
+	g_return_val_if_fail (PK_IS_OBJ_LIST (list), FALSE);
 	g_return_val_if_fail (obj != NULL, FALSE);
 	g_return_val_if_fail (list->priv->func_free != NULL, FALSE);
 
 	do {
 		/* get the object */
-		obj_new = egg_obj_list_find_obj (list, obj);
+		obj_new = pk_obj_list_find_obj (list, obj);
 		if (obj_new == NULL)
 			break;
 
@@ -457,8 +474,8 @@ egg_obj_list_remove (EggObjList *list, gconstpointer obj)
 }
 
 /**
- * egg_obj_list_remove_index:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_remove_index:
+ * @list: a valid #PkObjList instance
  * @index: the number to remove
  *
  * Return value: TRUE is we removed something
@@ -466,11 +483,11 @@ egg_obj_list_remove (EggObjList *list, gconstpointer obj)
  * Removes an item from a list
  **/
 gboolean
-egg_obj_list_remove_index (EggObjList *list, guint index)
+pk_obj_list_remove_index (PkObjList *list, guint index)
 {
 	gpointer obj;
 
-	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), FALSE);
+	g_return_val_if_fail (PK_IS_OBJ_LIST (list), FALSE);
 	g_return_val_if_fail (list->priv->func_free != NULL, FALSE);
 
 	/* get the object */
@@ -483,14 +500,14 @@ egg_obj_list_remove_index (EggObjList *list, guint index)
 }
 
 /**
- * egg_obj_list_to_file:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_to_file:
+ * @list: a valid #PkObjList instance
  * @filename: a filename
  *
  * Saves a copy of the list to a file
  **/
 gboolean
-egg_obj_list_to_file (EggObjList *list, const gchar *filename)
+pk_obj_list_to_file (PkObjList *list, const gchar *filename)
 {
 	guint i;
 	gconstpointer obj;
@@ -498,10 +515,10 @@ egg_obj_list_to_file (EggObjList *list, const gchar *filename)
 	GString *string;
 	gboolean ret = TRUE;
 	GError *error = NULL;
-	EggObjListFreeFunc func_free;
-	EggObjListToStringFunc func_to_string;
+	PkObjListFreeFunc func_free;
+	PkObjListToStringFunc func_to_string;
 
-	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), FALSE);
+	g_return_val_if_fail (PK_IS_OBJ_LIST (list), FALSE);
 	g_return_val_if_fail (list->priv->func_to_string != NULL, FALSE);
 	g_return_val_if_fail (list->priv->func_free != NULL, FALSE);
 
@@ -511,7 +528,7 @@ egg_obj_list_to_file (EggObjList *list, const gchar *filename)
 	/* generate data */
 	string = g_string_new ("");
 	for (i=0; i<list->len; i++) {
-		obj = egg_obj_list_index (list, i);
+		obj = pk_obj_list_index (list, i);
 		part = func_to_string (obj);
 		if (part == NULL) {
 			ret = FALSE;
@@ -543,14 +560,14 @@ out:
 }
 
 /**
- * egg_obj_list_from_file:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_from_file:
+ * @list: a valid #PkObjList instance
  * @filename: a filename
  *
  * Appends the list from a file
  **/
 gboolean
-egg_obj_list_from_file (EggObjList *list, const gchar *filename)
+pk_obj_list_from_file (PkObjList *list, const gchar *filename)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -559,10 +576,10 @@ egg_obj_list_from_file (EggObjList *list, const gchar *filename)
 	guint i;
 	guint length;
 	gpointer obj;
-	EggObjListFreeFunc func_free;
-	EggObjListFromStringFunc func_from_string;
+	PkObjListFreeFunc func_free;
+	PkObjListFromStringFunc func_from_string;
 
-	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), FALSE);
+	g_return_val_if_fail (PK_IS_OBJ_LIST (list), FALSE);
 	g_return_val_if_fail (list->priv->func_from_string != NULL, FALSE);
 	g_return_val_if_fail (list->priv->func_free != NULL, FALSE);
 
@@ -597,7 +614,7 @@ egg_obj_list_from_file (EggObjList *list, const gchar *filename)
 	for (i=0; i<length-1; i++) {
 		obj = func_from_string (parts[i]);
 		if (obj != NULL)
-			egg_obj_list_add (list, obj);
+			pk_obj_list_add (list, obj);
 		func_free (obj);
 	}
 
@@ -609,37 +626,37 @@ out:
 }
 
 /**
- * egg_obj_list_index:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_index:
+ * @list: a valid #PkObjList instance
  * @index: the element to return
  *
  * Gets an object from the list
  **/
 gconstpointer
-egg_obj_list_index (const EggObjList *list, guint index)
+pk_obj_list_index (const PkObjList *list, guint index)
 {
 	gconstpointer obj;
 
-	g_return_val_if_fail (EGG_IS_OBJ_LIST (list), NULL);
+	g_return_val_if_fail (PK_IS_OBJ_LIST (list), NULL);
 
 	obj = g_ptr_array_index (list->priv->array, index);
 	return obj;
 }
 
 /**
- * egg_obj_list_finalize:
- * @object: a valid #EggObjList instance
+ * pk_obj_list_finalize:
+ * @object: a valid #PkObjList instance
  **/
 static void
-egg_obj_list_finalize (GObject *object)
+pk_obj_list_finalize (GObject *object)
 {
-	EggObjListFreeFunc func_free;
+	PkObjListFreeFunc func_free;
 	gpointer obj;
 	guint i;
-	EggObjList *list;
+	PkObjList *list;
 	GPtrArray *array;
-	g_return_if_fail (EGG_IS_OBJ_LIST (object));
-	list = EGG_OBJ_LIST (object);
+	g_return_if_fail (PK_IS_OBJ_LIST (object));
+	list = PK_OBJ_LIST (object);
 
 	array = list->priv->array;
 	func_free = list->priv->func_free;
@@ -650,31 +667,31 @@ egg_obj_list_finalize (GObject *object)
 	}
 	g_ptr_array_free (array, TRUE);
 
-	G_OBJECT_CLASS (egg_obj_list_parent_class)->finalize (object);
+	G_OBJECT_CLASS (pk_obj_list_parent_class)->finalize (object);
 }
 
 /**
- * egg_obj_list_class_init:
- * @klass: a valid #EggObjListClass instance
+ * pk_obj_list_class_init:
+ * @klass: a valid #PkObjListClass instance
  **/
 static void
-egg_obj_list_class_init (EggObjListClass *klass)
+pk_obj_list_class_init (PkObjListClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = egg_obj_list_finalize;
-	g_type_class_add_private (klass, sizeof (EggObjListPrivate));
+	object_class->finalize = pk_obj_list_finalize;
+	g_type_class_add_private (klass, sizeof (PkObjListPrivate));
 }
 
 /**
- * egg_obj_list_init:
- * @list: a valid #EggObjList instance
+ * pk_obj_list_init:
+ * @list: a valid #PkObjList instance
  *
  * Initializes the obj_list class.
  **/
 static void
-egg_obj_list_init (EggObjList *list)
+pk_obj_list_init (PkObjList *list)
 {
-	list->priv = EGG_OBJ_LIST_GET_PRIVATE (list);
+	list->priv = PK_OBJ_LIST_GET_PRIVATE (list);
 	list->priv->func_new = NULL;
 	list->priv->func_copy = NULL;
 	list->priv->func_free = NULL;
@@ -686,16 +703,16 @@ egg_obj_list_init (EggObjList *list)
 }
 
 /**
- * egg_obj_list_new:
+ * pk_obj_list_new:
  *
  * Return value: A new list class instance.
  **/
-EggObjList *
-egg_obj_list_new (void)
+PkObjList *
+pk_obj_list_new (void)
 {
-	EggObjList *list;
+	PkObjList *list;
 	list = g_object_new (EGG_TYPE_OBJ_LIST, NULL);
-	return EGG_OBJ_LIST (list);
+	return PK_OBJ_LIST (list);
 }
 
 /***************************************************************************
@@ -705,16 +722,16 @@ egg_obj_list_new (void)
 #include "egg-test.h"
 
 void
-egg_obj_list_test (EggTest *test)
+pk_obj_list_test (EggTest *test)
 {
-	EggObjList *list;
+	PkObjList *list;
 
-	if (!egg_test_start (test, "EggObjList"))
+	if (!egg_test_start (test, "PkObjList"))
 		return;
 
 	/************************************************************/
 	egg_test_title (test, "get an instance");
-	list = egg_obj_list_new ();
+	list = pk_obj_list_new ();
 	egg_test_assert (test, list != NULL);
 
 	g_object_unref (list);
