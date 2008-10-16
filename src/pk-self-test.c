@@ -26,7 +26,6 @@
 
 /* prototypes */
 void egg_string_test (EggTest *test);
-void egg_string_list_test (EggTest *test);
 void pk_conf_test (EggTest *test);
 void pk_store_test (EggTest *test);
 void pk_inhibit_test (EggTest *test);
@@ -53,7 +52,6 @@ main (int argc, char **argv)
 	egg_debug_init (TRUE);
 
 	/* egg */
-	egg_string_list_test (test);
 	egg_string_test (test);
 
 	/* components */

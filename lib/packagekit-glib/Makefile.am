@@ -29,6 +29,7 @@ libpackagekit_include_HEADERS =					\
 	pk-package-id.h						\
 	pk-package-ids.h					\
 	pk-package-obj.h					\
+	pk-obj-list.h						\
 	pk-package-list.h					\
 	pk-category-obj.h					\
 	pk-update-detail-obj.h					\
@@ -50,8 +51,6 @@ libpackagekit_la_SOURCES =					\
 	egg-debug.h						\
 	egg-string.c						\
 	egg-string.h						\
-	egg-obj-list.c						\
-	egg-obj-list.h						\
 	pk-marshal.c						\
 	pk-marshal.h						\
 	pk-extra.c						\
@@ -66,6 +65,8 @@ libpackagekit_la_SOURCES =					\
 	pk-package-ids.h					\
 	pk-package-obj.c					\
 	pk-package-obj.h					\
+	pk-obj-list.c						\
+	pk-obj-list.h						\
 	pk-package-list.c					\
 	pk-package-list.h					\
 	pk-category-obj.c					\

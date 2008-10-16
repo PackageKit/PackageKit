@@ -39,7 +39,6 @@
 #endif
 
 #include "egg-debug.h"
-#include "egg-string-list.h"
 
 #include "pk-post-trans.h"
 #include "pk-shared.h"
@@ -53,7 +52,7 @@ struct PkPostTransPrivate
 	PkBackend		*backend;
 	PkExtra			*extra;
 	GMainLoop		*loop;
-	EggStringList		*running_exec_list;
+	PkObjList		*running_exec_list;
 	PkPackageList		*list;
 	guint			 finished_id;
 	guint			 package_id;
@@ -269,15 +268,31 @@ pk_post_trans_get_filename_mtime (const gchar *filename)
 #endif
 
 /**
+ * pk_post_trans_string_list_new:
+ **/
+static PkObjList *
+pk_post_trans_string_list_new ()
+{
+	PkObjList *list;
+	list = pk_obj_list_new ();
+	pk_obj_list_set_compare (list, (PkObjListCompareFunc) g_strcmp0);
+	pk_obj_list_set_copy (list, (PkObjListCopyFunc) g_strdup);
+	pk_obj_list_set_free (list, (PkObjListFreeFunc) g_free);
+	pk_obj_list_set_to_string (list, (PkObjListToStringFunc) g_strdup);
+	pk_obj_list_set_from_string (list, (PkObjListFromStringFunc) g_strdup);
+	return list;
+}
+
+/**
  * pk_post_trans_import_desktop_files_get_files:
  *
  * Returns a list of all the files in the applicaitons directory
  **/
-static EggStringList *
+static PkObjList *
 pk_post_trans_import_desktop_files_get_files (PkPostTrans *post)
 {
 	GDir *dir;
-	EggStringList *list;
+	PkObjList *list;
 	GPatternSpec *pattern;
 	gchar *filename;
 	gboolean match;
@@ -294,13 +309,13 @@ pk_post_trans_import_desktop_files_get_files (PkPostTrans *post)
 	/* find files */
 	pattern = g_pattern_spec_new ("*.desktop");
 	name = g_dir_read_name (dir);
-	list = egg_string_list_new ();
+	list = pk_post_trans_string_list_new ();
 	while (name != NULL) {
 		/* ITS4: ignore, not used for allocation and has to be NULL terminated */
 		match = g_pattern_match (pattern, strlen (name), name, NULL);
 		if (match) {
 			filename = g_build_filename (directory, name, NULL);
-			egg_obj_list_add (EGG_OBJ_LIST (list), filename);
+			pk_obj_list_add (PK_OBJ_LIST (list), filename);
 		}
 		name = g_dir_read_name (dir);
 	}
@@ -312,21 +327,21 @@ pk_post_trans_import_desktop_files_get_files (PkPostTrans *post)
 /**
  * pk_post_trans_import_desktop_files_get_mtimes:
  **/
-static EggStringList *
-pk_post_trans_import_desktop_files_get_mtimes (const EggStringList *files)
+static PkObjList *
+pk_post_trans_import_desktop_files_get_mtimes (const PkObjList *files)
 {
 	guint i;
 	guint mtime;
 	gchar *encode;
 	const gchar *filename;
-	EggStringList *list;
+	PkObjList *list;
 
-	list = egg_string_list_new ();
-	for (i=0; i<EGG_OBJ_LIST(files)->len; i++) {
-		filename = egg_string_list_index (files, i);
+	list = pk_post_trans_string_list_new ();
+	for (i=0; i<PK_OBJ_LIST(files)->len; i++) {
+		filename = pk_obj_list_index (files, i);
 		mtime = pk_post_trans_get_filename_mtime (filename);
 		encode = g_strdup_printf ("%s|%i|v1", filename, mtime);
-		egg_obj_list_add (EGG_OBJ_LIST (list), encode);
+		pk_obj_list_add (PK_OBJ_LIST (list), encode);
 		g_free (encode);
 	}
 	return list;
@@ -342,9 +357,9 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 	gboolean ret;
 	gchar *package_name;
 	gfloat step;
-	EggStringList *files;
-	EggStringList *mtimes;
-	EggStringList *mtimes_old;
+	PkObjList *files;
+	PkObjList *mtimes;
+	PkObjList *mtimes_old;
 	gchar *filename;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (post), FALSE);
@@ -359,8 +374,8 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 	pk_backend_set_status (post->priv->backend, PK_STATUS_ENUM_SCAN_APPLICATIONS);
 
 	egg_debug ("getting old desktop mtimes");
-	mtimes_old = egg_string_list_new ();
-	ret = egg_obj_list_from_file (EGG_OBJ_LIST (mtimes_old), "/var/lib/PackageKit/desktop-mtimes.txt");
+	mtimes_old = pk_post_trans_string_list_new ();
+	ret = pk_obj_list_from_file (PK_OBJ_LIST (mtimes_old), "/var/lib/PackageKit/desktop-mtimes.txt");
 	if (!ret)
 		egg_warning ("failed to get old mtimes of desktop files");
 
@@ -371,23 +386,23 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 	mtimes = pk_post_trans_import_desktop_files_get_mtimes (files);
 
 	/* remove old desktop files we've already processed */
-	egg_obj_list_remove_list (EGG_OBJ_LIST(mtimes), EGG_OBJ_LIST (mtimes_old));
+	pk_obj_list_remove_list (PK_OBJ_LIST(mtimes), PK_OBJ_LIST (mtimes_old));
 
 	/* shortcut, there are no files to scan */
-	if (EGG_OBJ_LIST(mtimes)->len == 0) {
+	if (PK_OBJ_LIST(mtimes)->len == 0) {
 		egg_debug ("no desktop files needed to scan");
 		goto no_changes;
 	}
 
 	/* update UI */
 	pk_backend_set_percentage (post->priv->backend, 0);
-	step = 100.0f / EGG_OBJ_LIST(mtimes)->len;
+	step = 100.0f / PK_OBJ_LIST(mtimes)->len;
 
 	/* for each new package, process the desktop file */
-	for (i=0; i<EGG_OBJ_LIST(mtimes)->len; i++) {
+	for (i=0; i<PK_OBJ_LIST(mtimes)->len; i++) {
 
 		/* get the filename from the mtime encoded string */
-		filename = g_strdup (egg_string_list_index (mtimes, i));
+		filename = g_strdup (pk_obj_list_index (mtimes, i));
 		g_strdelimit (filename, "|", '\0');
 
 		/* get the name */
@@ -406,7 +421,7 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 	}
 
 	/* save new mtimes data */
-	ret = egg_obj_list_to_file (EGG_OBJ_LIST (mtimes), "/var/lib/PackageKit/desktop-mtimes.txt");
+	ret = pk_obj_list_to_file (PK_OBJ_LIST (mtimes), "/var/lib/PackageKit/desktop-mtimes.txt");
 	if (!ret)
 		egg_warning ("failed to set old mtimes of desktop files");
 
@@ -516,7 +531,7 @@ pk_post_trans_update_files_cb (PkBackend *backend, const gchar *package_id,
 			continue;
 
 		/* running? */
-		ret = egg_obj_list_exists (EGG_OBJ_LIST(post->priv->running_exec_list), files[i]);
+		ret = pk_obj_list_exists (PK_OBJ_LIST(post->priv->running_exec_list), files[i]);
 		if (!ret)
 			continue;
 
@@ -552,7 +567,7 @@ pk_post_trans_update_process_list (PkPostTrans *post)
 	uid = getuid ();
 	dir = g_dir_open ("/proc", 0, NULL);
 	name = g_dir_read_name (dir);
-	egg_obj_list_clear (EGG_OBJ_LIST(post->priv->running_exec_list));
+	pk_obj_list_clear (PK_OBJ_LIST(post->priv->running_exec_list));
 	while (name != NULL) {
 		uid_file = g_build_filename ("/proc", name, "loginuid", NULL);
 
@@ -583,7 +598,7 @@ pk_post_trans_update_process_list (PkPostTrans *post)
 		if (offset != NULL)
 			*(offset) = '\0';
 		egg_debug ("uid=%i, pid=%i, exec=%s", uid, pid, exec);
-		egg_obj_list_add (EGG_OBJ_LIST(post->priv->running_exec_list), exec);
+		pk_obj_list_add (PK_OBJ_LIST(post->priv->running_exec_list), exec);
 out:
 		g_free (uid_file);
 		name = g_dir_read_name (dir);
@@ -673,7 +688,7 @@ pk_post_trans_init (PkPostTrans *post)
 	gboolean ret;
 
 	post->priv = PK_POST_TRANS_GET_PRIVATE (post);
-	post->priv->running_exec_list = egg_string_list_new ();
+	post->priv->running_exec_list = pk_post_trans_string_list_new ();
 	post->priv->loop = g_main_loop_new (NULL, FALSE);
 	post->priv->list = pk_package_list_new ();
 	post->priv->backend = pk_backend_new ();
