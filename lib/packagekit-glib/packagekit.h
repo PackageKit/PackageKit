@@ -42,6 +42,7 @@
 #include <packagekit-glib/pk-package-obj.h>
 #include <packagekit-glib/pk-service-pack.h>
 #include <packagekit-glib/pk-task-list.h>
+#include <packagekit-glib/pk-transaction-obj.h>
 #include <packagekit-glib/pk-update-detail-obj.h>
 
 #undef __PACKAGEKIT_H_INSIDE__

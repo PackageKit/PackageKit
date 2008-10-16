@@ -211,20 +211,18 @@ out:
  * pk_console_transaction_cb:
  **/
 static void
-pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *timespec,
-			   gboolean succeeded, PkRoleEnum role, guint duration,
-			   const gchar *data, gpointer user_data)
+pk_console_transaction_cb (PkClient *client, const PkTransactionObj *obj, gpointer user_data)
 {
 	const gchar *role_text;
-	role_text = pk_role_enum_to_text (role);
+	role_text = pk_role_enum_to_text (obj->role);
 	if (awaiting_space)
 		g_print ("\n");
-	g_print ("Transaction  : %s\n", tid);
-	g_print (" timespec    : %s\n", timespec);
-	g_print (" succeeded   : %i\n", succeeded);
+	g_print ("Transaction  : %s\n", obj->tid);
+	g_print (" timespec    : %s\n", obj->timespec);
+	g_print (" succeeded   : %i\n", obj->succeeded);
 	g_print (" role        : %s\n", role_text);
-	g_print (" duration    : %i (seconds)\n", duration);
-	g_print (" data        : %s\n", data);
+	g_print (" duration    : %i (seconds)\n", obj->duration);
+	g_print (" data        : %s\n", obj->data);
 }
 
 /**
