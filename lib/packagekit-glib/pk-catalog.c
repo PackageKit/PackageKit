@@ -198,7 +198,7 @@ pk_catalog_process_type (PkCatalog *catalog)
 
 		/* add to list any results */
 		list = pk_client_get_package_list (catalog->priv->client);
-		pk_package_list_add_list (catalog->priv->list, list);
+		pk_obj_list_add_list (PK_OBJ_LIST(catalog->priv->list), PK_OBJ_LIST(list));
 		g_object_unref (list);
 	}
 

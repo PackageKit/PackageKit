@@ -34,6 +34,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
+#include <packagekit-glib/pk-obj-list.h>
 #include <packagekit-glib/pk-common.h>
 #include <packagekit-glib/pk-client.h>
 #include <packagekit-glib/pk-package-ids.h>
@@ -468,7 +469,7 @@ pk_service_pack_exclude_packages (PkServicePack *pack, PkPackageList *list)
 	for (i=0; i<length; i++) {
 		obj = pk_package_list_get_obj (pack->priv->exclude_list, i);
 		/* will just ignore if the obj is not there */
-		found = pk_package_list_remove_obj (list, obj);
+		found = pk_obj_list_remove (PK_OBJ_LIST(list), obj);
 		if (found)
 			egg_debug ("removed %s", obj->id->name);
 	}

@@ -715,7 +715,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 
 	/* see how many packages there are */
 	list_single = pk_client_get_package_list (client_task);
-	pk_package_list_add_list (list, list_single);
+	pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
 	g_object_unref (list_single);
 
 	/* one of the get-requires failed */

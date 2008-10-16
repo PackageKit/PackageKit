@@ -225,7 +225,7 @@ main (int argc, char *argv[])
 
 	/* get the exclude list */
 	list = pk_package_list_new ();
-	ret = pk_package_list_add_file (list, package_list);
+	ret = pk_obj_list_from_file (PK_OBJ_LIST(list), package_list);
 	if (!ret) {
 		/* TRANSLATORS: This is when the list of packages from the remote computer cannot be opened */
 		g_print ("%s: '%s'\n", _("Failed to open package list."), package_list);

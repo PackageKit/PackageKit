@@ -100,44 +100,6 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const PkPackageId *i
 }
 
 /**
- * pk_package_list_add_obj:
- *
- * Makes a deep copy, and adds to the array
- **/
-gboolean
-pk_package_list_add_obj (PkPackageList *plist, const PkPackageObj *obj)
-{
-	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_return_val_if_fail (obj != NULL, FALSE);
-	pk_obj_list_add (PK_OBJ_LIST(plist), obj);
-	return TRUE;
-}
-
-/**
- * pk_package_list_add_list:
- *
- * Makes a deep copy of the list
- **/
-gboolean
-pk_package_list_add_list (PkPackageList *plist, PkPackageList *list)
-{
-	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	g_return_val_if_fail (PK_IS_PACKAGE_LIST (list), FALSE);
-	pk_obj_list_add_list (PK_OBJ_LIST(plist), PK_OBJ_LIST(list));
-	return TRUE;
-}
-
-/**
- * pk_package_list_to_string:
- **/
-gchar *
-pk_package_list_to_string (const PkPackageList *plist)
-{
-	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
-	return pk_obj_list_to_string (PK_OBJ_LIST(plist));
-}
-
-/**
  * pk_package_list_to_strv:
  **/
 gchar **
@@ -274,17 +236,6 @@ pk_package_list_get_obj (const PkPackageList *plist, guint item)
 }
 
 /**
- * pk_package_list_clear:
- **/
-gboolean
-pk_package_list_clear (PkPackageList *plist)
-{
-	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	pk_obj_list_clear (PK_OBJ_LIST(plist));
-	return TRUE;
-}
-
-/**
  * pk_package_list_contains:
  **/
 gboolean
@@ -340,46 +291,6 @@ pk_package_list_remove (PkPackageList *plist, const gchar *package_id)
 		}
 	}
 	return ret;
-}
-
-/**
- * pk_package_list_remove_obj:
- **/
-gboolean
-pk_package_list_remove_obj (PkPackageList *plist, const PkPackageObj *obj)
-{
-	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	return pk_obj_list_remove (PK_OBJ_LIST(plist), obj);
-}
-
-/**
- * pk_package_list_contains_obj:
- **/
-gboolean
-pk_package_list_contains_obj (const PkPackageList *plist, const PkPackageObj *obj)
-{
-	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	return pk_obj_list_exists (PK_OBJ_LIST(plist), obj);
-}
-
-/**
- * pk_package_list_to_file:
- **/
-gboolean
-pk_package_list_to_file (const PkPackageList *plist, const gchar *filename)
-{
-	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	return pk_obj_list_to_file (PK_OBJ_LIST(plist), filename);
-}
-
-/**
- * pk_package_list_add_file:
- **/
-gboolean
-pk_package_list_add_file (PkPackageList *plist, const gchar *filename)
-{
-	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
-	return pk_obj_list_from_file (PK_OBJ_LIST(plist), filename);
 }
 
 /**

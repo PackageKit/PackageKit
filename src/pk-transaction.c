@@ -588,7 +588,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 			for (i=0; i<length; i++) {
 				obj = pk_package_list_get_obj (transaction->priv->package_list, i);
 				if (obj->info == PK_INFO_ENUM_UPDATING)
-					pk_package_list_add_obj (list, obj);
+					pk_obj_list_add (PK_OBJ_LIST(list), obj);
 			}
 
 			/* process file lists on these packages */
@@ -653,7 +653,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-		packages = pk_package_list_to_string (transaction->priv->package_list);
+		packages = pk_obj_list_to_string (PK_OBJ_LIST(transaction->priv->package_list));
 		if (!egg_strzero (packages))
 			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
 		g_free (packages);
@@ -759,7 +759,7 @@ pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransa
 
 	/* add to package cache even if we already got a result */
 	info_text = pk_info_enum_to_text (obj->info);
-	pk_package_list_add_obj (transaction->priv->package_list, obj);
+	pk_obj_list_add (PK_OBJ_LIST(transaction->priv->package_list), obj);
 
 	/* emit */
 	g_free (transaction->priv->last_package_id);
