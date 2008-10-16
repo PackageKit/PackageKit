@@ -35,6 +35,7 @@ libpackagekit_include_HEADERS =					\
 	pk-update-detail-obj.h					\
 	pk-distro-upgrade-obj.h					\
 	pk-details-obj.h					\
+	pk-transaction-obj.h					\
 	pk-enum.h						\
 	pk-bitfield.h						\
 	pk-common.h						\
@@ -77,6 +78,8 @@ libpackagekit_la_SOURCES =					\
 	pk-distro-upgrade-obj.h					\
 	pk-details-obj.c					\
 	pk-details-obj.h					\
+	pk-transaction-obj.c					\
+	pk-transaction-obj.h					\
 	pk-enum.c						\
 	pk-enum.h						\
 	pk-bitfield.c						\

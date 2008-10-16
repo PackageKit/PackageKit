@@ -58,6 +58,7 @@
 #include <packagekit-glib/pk-control.h>
 #include <packagekit-glib/pk-update-detail-obj.h>
 #include <packagekit-glib/pk-details-obj.h>
+#include <packagekit-glib/pk-transaction-obj.h>
 #include <packagekit-glib/pk-category-obj.h>
 #include <packagekit-glib/pk-distro-upgrade-obj.h>
 #include <packagekit-glib/pk-obj-list.h>
@@ -623,14 +624,16 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 			  gboolean succeeded, const gchar *role_text, guint duration,
 			  const gchar *data, PkClient *client)
 {
+	PkTransactionObj *obj;
 	PkRoleEnum role;
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	role = pk_role_enum_from_text (role_text);
+	obj = pk_transaction_obj_new_from_data (old_tid, timespec, succeeded, role, duration, data);
 	egg_debug ("emitting transaction %s, %s, %i, %s, %ims, %s", old_tid, timespec,
 		  succeeded, role_text, duration, data);
-	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec,
-		       succeeded, role, duration, data);
+	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, obj);
+	pk_transaction_obj_free (obj);
 }
 
 /**
@@ -3605,9 +3608,8 @@ pk_client_class_init (PkClientClass *klass)
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, transaction),
-			      NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT_STRING,
-			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING);
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	/**
 	 * PkClient::distro_upgrade:
 	 * @client: the #PkClient instance that emitted the signal

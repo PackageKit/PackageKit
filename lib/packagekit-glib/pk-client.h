@@ -32,6 +32,8 @@
 #include <packagekit-glib/pk-package-list.h>
 #include <packagekit-glib/pk-update-detail-obj.h>
 #include <packagekit-glib/pk-details-obj.h>
+#include <packagekit-glib/pk-category-obj.h>
+#include <packagekit-glib/pk-transaction-obj.h>
 
 G_BEGIN_DECLS
 
@@ -96,12 +98,7 @@ struct _PkClientClass
 	void		(* package)			(PkClient	*client,
 							 PkPackageObj	*obj);
 	void		(* transaction)			(PkClient	*client,
-							 const gchar	*tid,
-							 const gchar	*timespec,
-							 gboolean	 succeeded,
-							 PkRoleEnum	 role,
-							 guint		 duration,
-							 const gchar	*data);
+							 PkTransactionObj *obj);
 	void		(* distro_upgrade)		(PkClient	*client,
 							 PkUpdateStateEnum type,
 							 const gchar	*name,
@@ -148,11 +145,7 @@ struct _PkClientClass
 							 PkExitEnum	 exit,
 							 guint		 runtime);
 	void		(* category)			(PkClient	*client,
-							 const gchar	*parent_id,
-							 const gchar	*cat_id,
-							 const gchar	*name,
-							 const gchar	*summary,
-							 const gchar	*icon);
+							 PkCategoryObj	*obj);
 	/* Padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
