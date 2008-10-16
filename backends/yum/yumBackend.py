@@ -906,14 +906,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         return pkgs
 
     def _get_depends_not_installed(self, fltlist, package_ids, recursive):
+        '''
+        Gets the deps that are not installed, optimisation of get_depends
+        using a yum transaction
+        Returns a list of pkgs.
+        '''
         percentage = 0
         bump = 100 / len(package_ids)
         deps_list = []
         resolve_list = []
 
-        for package in package_ids:
+        for package_id in package_ids:
             self.percentage(percentage)
-            grp = self._is_meta_package(package)
+            grp = self._is_meta_package(package_id)
             if grp:
                 if grp.installed:
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The Group %s is already installed" % grp.groupid)
@@ -922,7 +927,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     for txmbr in self.yumbase.tsInfo:
                         deps_list.append(txmbr.po)
             else:
-                pkg, inst = self._findPackage(package)
+                pkg, inst = self._findPackage(package_id)
                 # This simulates the addition of the package
                 if not inst and pkg:
                     resolve_list.append(pkg)
@@ -938,16 +943,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     if txmbr.po not in deps_list:
                         deps_list.append(txmbr.po)
 
-
         # make unique list
         deps_list = unique(deps_list)
 
-        # each unique name, emit
+        # remove any of the packages we passed in
+        for package_id in package_ids:
+            pkg, inst = self._findPackage(package_id)
+            deps_list.remove(pkg)
+
+        # remove any that are already installed
         for pkg in deps_list:
-            package_id = self._pkg_to_id(pkg)
-            if package_id not in package_ids:
-                self.package(package_id, INFO_AVAILABLE, pkg.summary)
-        self.percentage(100)
+            if self._is_inst(pkg):
+                deps_list.remove(pkg)
+
+        return deps_list
 
     def get_depends(self, filters, package_ids, recursive_text):
         '''
@@ -965,8 +974,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # before we do an install we do ~installed + recursive true,
         # which we can emulate quicker by doing a transaction, but not
         # executing it
-        if filters == FILTER_NOT_INSTALLED:
-            self._get_depends_not_installed (fltlist, package_ids, recursive)
+        if FILTER_NOT_INSTALLED in fltlist and recursive:
+            pkgs = self._get_depends_not_installed (fltlist, package_ids, recursive)
+            pkgfilter.add_available(pkgs)
+            package_list = pkgfilter.post_process()
+            self._show_package_list(package_list)
+            self.percentage(100)
             return
 
         percentage = 0
