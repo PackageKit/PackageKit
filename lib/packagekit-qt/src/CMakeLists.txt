@@ -58,5 +58,5 @@ install(FILES
 	package.h
 	QPackageKit
 	DESTINATION
-	include/packagekit-qt)
+	include/PackageKit/packagekit-qt)
 
