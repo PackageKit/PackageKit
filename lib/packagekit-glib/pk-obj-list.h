@@ -26,12 +26,12 @@
 
 G_BEGIN_DECLS
 
-#define EGG_TYPE_OBJ_LIST		(pk_obj_list_get_type ())
-#define PK_OBJ_LIST(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), EGG_TYPE_OBJ_LIST, PkObjList))
-#define PK_OBJ_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), EGG_TYPE_OBJ_LIST, PkObjListClass))
-#define PK_IS_OBJ_LIST(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), EGG_TYPE_OBJ_LIST))
-#define PK_IS_OBJ_LIST_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), EGG_TYPE_OBJ_LIST))
-#define PK_OBJ_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), EGG_TYPE_OBJ_LIST, PkObjListClass))
+#define PK_TYPE_OBJ_LIST		(pk_obj_list_get_type ())
+#define PK_OBJ_LIST(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_OBJ_LIST, PkObjList))
+#define PK_OBJ_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_OBJ_LIST, PkObjListClass))
+#define PK_IS_OBJ_LIST(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_OBJ_LIST))
+#define PK_IS_OBJ_LIST_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_OBJ_LIST))
+#define PK_OBJ_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_OBJ_LIST, PkObjListClass))
 
 typedef struct PkObjListPrivate PkObjListPrivate;
 
@@ -80,6 +80,8 @@ gboolean	 pk_obj_list_from_file		(PkObjList		*list,
 						 const gchar		*filename);
 void		 pk_obj_list_add		(PkObjList		*list,
 						 gconstpointer		 data);
+void		 pk_obj_list_sort		(PkObjList		*list,
+						 GCompareFunc		 sort_func);
 void		 pk_obj_list_add_list		(PkObjList		*list,
 						 const PkObjList	*data);
 void		 pk_obj_list_add_array		(PkObjList		*list,
