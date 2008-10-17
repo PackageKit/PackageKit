@@ -11,60 +11,60 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-15 18:11+0100\n"
-"PO-Revision-Date: 2008-10-09 08:28+0200\n"
+"POT-Creation-Date: 2008-10-16 13:13+0000\n"
+"PO-Revision-Date: 2008-10-17 12:59+0200\n"
 "Last-Translator: Pavol Šimo <palo.simo@gmail.com>\n"
 "Language-Team: Fedora Project <fedora-cs-list@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bit"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:273
 msgid "Details about the update:"
-msgstr ""
+msgstr "Podrobnosti o aktualizácii:"
 
 #: ../client/pk-console.c:466
 msgid "Please restart the computer to complete the update."
-msgstr ""
+msgstr "Pre dokončenie aktualizácie reštartujte počítač."
 
 #: ../client/pk-console.c:468
 msgid "Please logout and login to complete the update."
-msgstr ""
+msgstr "Pre dokončenie aktualizácie sa odhláste a znovu prihláste."
 
 #: ../client/pk-console.c:470
 msgid "Please restart the application as it is being used."
-msgstr ""
+msgstr "Reštartujte aplikáciu, pretože sa momentálne používa."
 
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:555
 #, c-format
 msgid "The package '%s' could not be installed: %s"
-msgstr ""
+msgstr "Balíček '%s' nemôže byť nainštalovaný: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
 #: ../client/pk-console.c:609
 #, c-format
 msgid "This tool could not install the packages: %s"
-msgstr ""
+msgstr "Nepodarilo sa nainštalovať balíčky: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
 #: ../client/pk-console.c:665
 #, c-format
 msgid "This tool could not remove '%s': %s"
-msgstr ""
+msgstr "Nepodarilo sa odstrániť '%s': %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:688 ../client/pk-console.c:757
 #, c-format
 msgid "This tool could not remove the packages: %s"
-msgstr ""
+msgstr "Nepodarilo sa odstrániť balíčky: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:724
 #, c-format
 msgid "This tool could not remove the packages: '%s'"
-msgstr ""
+msgstr "Nepodarilo sa odstrániť balíčky: '%s'"
 
 #. TRANSLATORS: When removing, we might have to remove other deps
 #: ../client/pk-console.c:736
@@ -73,73 +73,72 @@ msgstr "Nasledujúce balíčky budú musieť byť odstránené"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
 #: ../client/pk-console.c:743
-#, fuzzy
 msgid "Proceed removing additional packages?"
-msgstr "Môžu sa odstrániť doplnkové balíčky?"
+msgstr "Pokračovať a odstrániť doplnkové balíčky?"
 
 #. TRANSLATORS: We did not remove any packages
 #: ../client/pk-console.c:748
 msgid "The package removal was cancelled!"
-msgstr ""
+msgstr "Odstránenie balíčkov bolo zrušené!"
 
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:789
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not find the package '%s' to download"
-msgstr "Nebolo možné nájsť balíček na stiahnutie"
+msgstr "Nebolo možné nájsť balíček '%s' na stiahnutie"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:843 ../client/pk-console.c:852
 #, c-format
 msgid "This tool could not update '%s': %s"
-msgstr ""
+msgstr "Nepodarilo sa aktualizovať '%s': %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:874 ../client/pk-console.c:882
 #, c-format
 msgid "This tool could not get the requires for '%s': %s"
-msgstr ""
+msgstr "Nepodarilo sa získať požiadavky balíčka '%s': %s"
 
 #. TRANSLATORS: There was an error getting the depends for the package. The detailed error follows
 #: ../client/pk-console.c:904 ../client/pk-console.c:912
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not get the dependancies for '%s': %s"
-msgstr "Nebolo možné získať závislosti pre"
+msgstr "Nepodarilo sa získať závislosti pre '%s': %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #: ../client/pk-console.c:934 ../client/pk-console.c:942
 #, c-format
 msgid "This tool could not get package details for '%s': %s"
-msgstr ""
+msgstr "Nepodarilo sa získať detaily o balíčku '%s': %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:964
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not find the files for '%s': %s"
-msgstr "Nebolo možné získať zoznam súborov tohto balíčka"
+msgstr "Nepodarilo sa nájsť zoznam súborov balíčka '%s': %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:972
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not get the file list for '%s': %s"
-msgstr "Nebolo možné získať zoznam súborov"
+msgstr "Nepodarilo sa získať zoznam súborov balíčka '%s': %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:994
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not find the update details for '%s': %s"
-msgstr "Nebolo možné získať detaily aktualizácie pre"
+msgstr "Nepodarilo sa nájsť detaily aktualizácie pre '%s': %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
 #: ../client/pk-console.c:1002
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not get the update details for '%s': %s"
-msgstr "Nebolo možné získať detaily aktualizácie pre"
+msgstr "Nepodarilo sa získať detaily aktualizácie pre '%s': %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1048
 msgid "Error:"
-msgstr ""
+msgstr "Chyba:"
 
 #. TRANSLATORS: This a list of details about the package
 #: ../client/pk-console.c:1062
@@ -159,7 +158,7 @@ msgstr "Žiadne súbory"
 #. TRANSLATORS: This a request for a GPG key signature
 #: ../client/pk-console.c:1127
 msgid "Repository signature required"
-msgstr ""
+msgstr "Požadovaný podpis repozitára"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1137
@@ -174,7 +173,7 @@ msgstr "Kľúč nebol importovaný"
 #. TRANSLATORS: This a request for a EULA
 #: ../client/pk-console.c:1175
 msgid "Eula required"
-msgstr ""
+msgstr "Požadovaná je licencia EULA"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the licence
 #: ../client/pk-console.c:1182
@@ -183,9 +182,8 @@ msgstr "Súhlasíte?"
 
 #. TRANSLATORS: This is where the user declined the licence
 #: ../client/pk-console.c:1186
-#, fuzzy
 msgid "Did not agree to licence"
-msgstr "Zadaná úloha neuspeje, pretože ste nesúhlasili s licenciou"
+msgstr "Nebol daný súhlas s licenciou"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
 #: ../client/pk-console.c:1215
@@ -220,7 +218,6 @@ msgstr "Nečakať na dokončenie úloh a skončiť"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
 #: ../client/pk-console.c:1387
-#, fuzzy
 msgid "This tool could not connect to system DBUS."
 msgstr "Pokus o pripojenie k systémovej zbernici DBUS neuspel."
 
@@ -317,38 +314,35 @@ msgstr "Príkaz neuspel"
 #. TRANSLATORS: This is the state of the transaction
 #: ../client/pk-generate-pack.c:96
 msgid "Downloading"
-msgstr ""
+msgstr "Získavanie"
 
 #: ../client/pk-generate-pack.c:140
-#, fuzzy
 msgid "Set the filename of dependencies to be excluded"
 msgstr ""
-"Nastavte cestu k súboru so zoznamom balíčkov/závislostí, ktoré sa majú "
-"vynechať"
+"Nastavte názov súboru so zoznamom závislostí, ktoré sa majú vynechať"
 
 #: ../client/pk-generate-pack.c:142
 msgid ""
 "The directory to put the pack file, or the current directory if ommitted"
-msgstr ""
+msgstr "Priečinok na uloženie archívu (aktuálny priečinok, ak bude vynechané)"
 
 #: ../client/pk-generate-pack.c:144
-#, fuzzy
 msgid "The package to be put into the ServicePack"
-msgstr "Service pack PackageKit"
+msgstr "Balíček na uloženie do archívu"
 
 #: ../client/pk-generate-pack.c:146
 msgid "Put all updates available in the ServicePack"
-msgstr ""
+msgstr "Vložiť do archívu všetky dostupné aktualizácie"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:166
 msgid "Neither --package or --updates option selected."
-msgstr ""
+msgstr "Nezvolená ani voľba --package ani voľba --updates."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
 #: ../client/pk-generate-pack.c:174
 msgid "Both options selected."
-msgstr ""
+msgstr "Obidve voľby boli určené."
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:207
@@ -358,49 +352,47 @@ msgstr "Archív s rovnakým názvom už existuje, chcete ho nahradiť?"
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:210
 msgid "The pack was not overwritten."
-msgstr ""
+msgstr "Archív nebol prepísaný."
 
 # XXX
 #. TRANSLATORS: This is when the temporary directory cannot be created
 #: ../client/pk-generate-pack.c:222
-#, fuzzy
 msgid "Failed to create directory."
-msgstr "Nebolo možné vytvoriť priečinok"
+msgstr "Nepodarilo sa vytvoriť priečinok."
 
 # XXX
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
 #: ../client/pk-generate-pack.c:231
-#, fuzzy
 msgid "Failed to open package list."
-msgstr "Nebolo možné vytvoriť archív"
+msgstr "Nepodarilo sa otvoriť zoznam balíčkov."
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:241
 msgid "Finding package name."
-msgstr ""
+msgstr "Hľadanie názvu balíčka."
 
 #. TRANSLATORS: This is when the package cannot be foudn in any software source
 #: ../client/pk-generate-pack.c:245
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to find package '%s': %s"
-msgstr "Nebolo možné nájsť balíček na inštalovanie"
+msgstr "Nepodarilo sa nájsť balíček '%s': %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
 #: ../client/pk-generate-pack.c:260
 msgid "Creating service pack..."
-msgstr ""
+msgstr "Vytváranie servisného archívu..."
 
 #. TRANSLATORS: we succeeded in making the file
 #: ../client/pk-generate-pack.c:267
 #, c-format
 msgid "Service pack created '%s'"
-msgstr ""
+msgstr "Vytvorený servisný archív '%s'"
 
 #. TRANSLATORS: we failed to make te file
 #: ../client/pk-generate-pack.c:271
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to create '%s': %s"
-msgstr "Nebolo možné nájsť balíček na inštalovanie"
+msgstr "Nepodarilo sa vytvoriť '%s': %s"
 
 #: ../client/pk-monitor.c:128
 msgid "PackageKit Monitor"
@@ -410,25 +402,22 @@ msgstr "Monitor PackageKit"
 #: ../client/pk-tools-common.c:76 ../client/pk-tools-common.c:83
 #, c-format
 msgid "Internal error: %s"
-msgstr ""
+msgstr "Vnútorná chyba: %s"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:109
-#, c-format
 msgid "The package could not be found"
-msgstr ""
+msgstr "Balíček sa nepodarilo nájsť"
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
 #: ../client/pk-tools-common.c:120
-#, fuzzy
 msgid "More than one package matches:"
-msgstr "Zadaniu vyhovuje viac balíčkov"
+msgstr "Zadaniu vyhovuje viac balíčkov:"
 
 #. TRANSLATORS: This finds out which package in the list to use
 #: ../client/pk-tools-common.c:127
-#, fuzzy
 msgid "Please choose the correct package: "
-msgstr "Zadajte prosím číslo balíčka: "
+msgstr "Zadajte prosím správny balíček: "
 
 #: ../client/pk-tools-common.c:154
 #, c-format
@@ -444,58 +433,49 @@ msgstr "Získavanie informácií o balíčku..."
 #: ../contrib/packagekit-plugin/src/contents.cpp:305
 #, c-format
 msgid "Run %s"
-msgstr ""
+msgstr "Spustiť %s"
 
 #. TRANSLATORS: show the installed version of a package
 #: ../contrib/packagekit-plugin/src/contents.cpp:311
-#, fuzzy
 msgid "Installed version"
-msgstr ""
-"\n"
-"<small>Nainštalovaná verzia: %s</small>"
+msgstr "Nainštalovaná verzia"
 
 #. TRANSLATORS: run the application now
 #: ../contrib/packagekit-plugin/src/contents.cpp:319
 #, c-format
 msgid "Run version %s now"
-msgstr ""
+msgstr "Spustiť verziu %s teraz"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:325
 msgid "Run now"
-msgstr ""
+msgstr "Spustiť teraz"
 
 #. TRANSLATORS: update to a new version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
 msgid "Upgrade to version %s"
-msgstr ""
+msgstr "Aktualizovať na verziu %s"
 
 #. TRANSLATORS: To install a package
 #: ../contrib/packagekit-plugin/src/contents.cpp:336
 #, c-format
 msgid "Install %s Now"
-msgstr ""
+msgstr "Nainštalovať %s teraz"
 
 #. TRANSLATORS: the version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:339
 msgid "Version"
-msgstr ""
+msgstr "Verzia"
 
 #. TRANSLATORS: noting found, so can't install
 #: ../contrib/packagekit-plugin/src/contents.cpp:344
-#, fuzzy
 msgid "No packages found for your system"
-msgstr ""
-"\n"
-"<small>Pre váš systém neboli nájdené žiadne balíčky</small>"
+msgstr "Pre váš systém neboli nájdené žiadne balíčky"
 
 #. TRANSLATORS: package is being installed
 #: ../contrib/packagekit-plugin/src/contents.cpp:349
-#, fuzzy
 msgid "Installing..."
-msgstr ""
-"\n"
-"<small>Inštalovanie...</small>"
+msgstr "Inštalovanie..."
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
@@ -503,103 +483,11 @@ msgstr "Katalóg PackageKit"
 
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr "Service pack PackageKit"
+msgstr "Servisný archív PackageKit"
 
 #: ../data/packagekit-package-list.xml.in.h:1
-#, fuzzy
 msgid "PackageKit Package List"
-msgstr "Katalóg PackageKit"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr "Prijať licenčné podmienky"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr "Na prijatie licenčných podmienok je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr "Na úpravu zdrojov softvéru je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-#, fuzzy
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr "Na obnovenie zoznamu balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-#, fuzzy
-msgid "Authentication is required to install a signed package"
-msgstr "Na inštaláciu balíčka je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-#, fuzzy
-msgid "Authentication is required to install an untrusted package"
-msgstr "Na inštaláciu balíčka je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-#, fuzzy
-msgid "Authentication is required to refresh the system sources"
-msgstr "Na obnovenie zoznamu balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr "Na odstránenie balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr "Na navrátenie transakcie je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-#, fuzzy
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr "Na odstránenie balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr "Na aktualizáciu balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr "Zmeniť parametre zdrojov softvéru"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr "Inštalovať z lokálneho súboru"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-#, fuzzy
-msgid "Install untrusted local file"
-msgstr "Inštalovať z lokálneho súboru"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Refresh system sources"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Remove package"
-msgstr "Odstrániť balíček"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Rollback to a previous transaction"
-msgstr "Navrátiť sa k stavu pred transakciou"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Set network proxy"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Trust a key used for signing packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-#, fuzzy
-msgid "Update packages"
-msgstr "Aktualizovať balíček"
+msgstr "Zoznam balíčkov PackageKit"
 
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
@@ -631,7 +519,7 @@ msgstr "Uvoľniť terminál a presunúť sa na pozadie"
 
 #: ../src/pk-main.c:197
 msgid "Disable the idle timer"
-msgstr "Vypnúť počítadlo nečinnosti"
+msgstr "Vypnúť počítadlo času nečinnosti"
 
 #: ../src/pk-main.c:199
 msgid "Show version and exit"
@@ -658,6 +546,68 @@ msgstr "Pokus o pripojenie k systémovej zbernici neuspel"
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Chyba pri pokuse o spustenie: %s\n"
+
+#~ msgid "Accept EULA"
+#~ msgstr "Prijať licenčné podmienky"
+
+#~ msgid "Authentication is required to accept a EULA"
+#~ msgstr "Na prijatie licenčných podmienok je nutná autentifikácia"
+
+#~ msgid "Authentication is required to change software source parameters"
+#~ msgstr "Na úpravu zdrojov softvéru je nutná autentifikácia"
+
+#, fuzzy
+#~ msgid ""
+#~ "Authentication is required to consider a key used for signing packages as "
+#~ "trusted"
+#~ msgstr "Na obnovenie zoznamu balíčkov je nutná autentifikácia"
+
+#, fuzzy
+#~ msgid "Authentication is required to install a signed package"
+#~ msgstr "Na inštaláciu balíčka je nutná autentifikácia"
+
+#, fuzzy
+#~ msgid "Authentication is required to install an untrusted package"
+#~ msgstr "Na inštaláciu balíčka je nutná autentifikácia"
+
+#, fuzzy
+#~ msgid "Authentication is required to refresh the system sources"
+#~ msgstr "Na obnovenie zoznamu balíčkov je nutná autentifikácia"
+
+#~ msgid "Authentication is required to remove packages"
+#~ msgstr "Na odstránenie balíčkov je nutná autentifikácia"
+
+#~ msgid "Authentication is required to rollback a transaction"
+#~ msgstr "Na navrátenie transakcie je nutná autentifikácia"
+
+#, fuzzy
+#~ msgid ""
+#~ "Authentication is required to set the network proxy used for downloading "
+#~ "packages"
+#~ msgstr "Na odstránenie balíčkov je nutná autentifikácia"
+
+#~ msgid "Authentication is required to update packages"
+#~ msgstr "Na aktualizáciu balíčkov je nutná autentifikácia"
+
+#~ msgid "Change software source parameters"
+#~ msgstr "Zmeniť parametre zdrojov softvéru"
+
+#~ msgid "Install local file"
+#~ msgstr "Inštalovať z lokálneho súboru"
+
+#, fuzzy
+#~ msgid "Install untrusted local file"
+#~ msgstr "Inštalovať z lokálneho súboru"
+
+#~ msgid "Remove package"
+#~ msgstr "Odstrániť balíček"
+
+#~ msgid "Rollback to a previous transaction"
+#~ msgstr "Navrátiť sa k stavu pred transakciou"
+
+#, fuzzy
+#~ msgid "Update packages"
+#~ msgstr "Aktualizovať balíček"
 
 #~ msgid "Update detail"
 #~ msgstr "Podrobnosti o aktualizácii"
