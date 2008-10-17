@@ -3,7 +3,6 @@
   <mime-type type="application/x-servicepack">
     <_comment>PackageKit Service Pack</_comment>
     <glob pattern="*.servicepack"/>
-    <generic-icon name="package-x-generic"/>
   </mime-type>
 </mime-info>
 
