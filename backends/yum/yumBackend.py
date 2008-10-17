@@ -188,6 +188,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         PackageKitBaseBackend.__init__(self, args)
         self.yumbase = PackageKitYumBase(self)
         self._lang = os.environ['LANG']
+        self.package_summary_cache = {}
         self.comps = yumComps(self.yumbase)
         if not self.comps.connect():
             self.refresh_cache()
@@ -223,6 +224,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         convert the summary to UTF before sending
         '''
         summary = _to_unicode(summary)
+
+        # maintain a dictionary of the summary text so we can use it when rpm
+        # is giving up package names without summaries
+        (name, idver, a, repo) = self.get_package_from_id(package_id)
+        if len(summary) > 0:
+            self.package_summary_cache[name] = summary
+        else:
+            if self.package_summary_cache.has_key(name):
+                summary = self.package_summary_cache[name]
+
         PackageKitBaseBackend.package(self, package_id, status, summary)
 
     def category(self, parent_id, cat_id, name, summary, icon):
