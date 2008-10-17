@@ -35,12 +35,14 @@
 #include <packagekit-glib/pk-distro-upgrade-obj.h>
 #include <packagekit-glib/pk-enum.h>
 #include <packagekit-glib/pk-extra.h>
+#include <packagekit-glib/pk-obj-list.h>
 #include <packagekit-glib/pk-package-id.h>
 #include <packagekit-glib/pk-package-ids.h>
 #include <packagekit-glib/pk-package-list.h>
 #include <packagekit-glib/pk-package-obj.h>
 #include <packagekit-glib/pk-service-pack.h>
 #include <packagekit-glib/pk-task-list.h>
+#include <packagekit-glib/pk-transaction-obj.h>
 #include <packagekit-glib/pk-update-detail-obj.h>
 
 #undef __PACKAGEKIT_H_INSIDE__

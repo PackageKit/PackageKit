@@ -42,7 +42,7 @@ IGNORE_HFILES =						\
 	config.h					\
 	pk-marshal.h					\
 	egg-dbus-monitor.h				\
-	egg-obj-list.h					\
+	pk-obj-list.h					\
 	$(NULL)
 
 # Images to copy into HTML directory.

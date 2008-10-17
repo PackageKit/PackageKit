@@ -28,7 +28,7 @@
 
 /* prototypes */
 void egg_string_test (EggTest *test);
-void egg_obj_list_test (EggTest *test);
+void pk_obj_list_test (EggTest *test);
 void pk_package_id_test (EggTest *test);
 void pk_package_ids_test (EggTest *test);
 void pk_package_obj_test (EggTest *test);
@@ -57,7 +57,7 @@ main (int argc, char **argv)
 
 	/* tests go here */
 	egg_string_test (test);
-	egg_obj_list_test (test);
+	pk_obj_list_test (test);
 	pk_common_test (test);
 	pk_package_id_test (test);
 	pk_package_ids_test (test);

@@ -188,6 +188,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         PackageKitBaseBackend.__init__(self, args)
         self.yumbase = PackageKitYumBase(self)
         self._lang = os.environ['LANG']
+        self.package_summary_cache = {}
         self.comps = yumComps(self.yumbase)
         if not self.comps.connect():
             self.refresh_cache()
@@ -223,6 +224,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         convert the summary to UTF before sending
         '''
         summary = _to_unicode(summary)
+
+        # maintain a dictionary of the summary text so we can use it when rpm
+        # is giving up package names without summaries
+        (name, idver, a, repo) = self.get_package_from_id(package_id)
+        if len(summary) > 0:
+            self.package_summary_cache[name] = summary
+        else:
+            if self.package_summary_cache.has_key(name):
+                summary = self.package_summary_cache[name]
+
         PackageKitBaseBackend.package(self, package_id, status, summary)
 
     def category(self, parent_id, cat_id, name, summary, icon):
@@ -356,6 +367,25 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
     def _get_available_from_names(self, name_list):
         return self.yumbase.pkgSack.searchNames(names=name_list)
 
+    def _handle_newest(self, fltlist):
+        """
+        Handle the special newest group
+        """
+        self.percentage(None)
+        pkgs = []
+        try:
+            ygl = self.yumbase.doPackageLists(pkgnarrow='recent')
+            pkgs.extend(ygl.recent)
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+        for pkg in pkgs:
+            # check if not an update
+            if not self.yumbase.rpmdb.installed(name=pkg.name):
+                package_id = self._pkg_to_id(pkg)
+                self.package(package_id, INFO_AVAILABLE, pkg.summary)
+        self.percentage(100)
+
+
     def _handle_collections(self, fltlist):
         """
         Handle the special collection group
@@ -407,6 +437,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # handle collections
         if group_key == GROUP_COLLECTIONS:
             self._handle_collections(fltlist)
+            return
+
+        # handle newest packages
+        if group_key == GROUP_NEWEST:
+            self._handle_newest(fltlist)
             return
 
         # handle dynamic groups (yum comps group)
@@ -906,14 +941,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         return pkgs
 
     def _get_depends_not_installed(self, fltlist, package_ids, recursive):
+        '''
+        Gets the deps that are not installed, optimisation of get_depends
+        using a yum transaction
+        Returns a list of pkgs.
+        '''
         percentage = 0
         bump = 100 / len(package_ids)
         deps_list = []
         resolve_list = []
 
-        for package in package_ids:
+        for package_id in package_ids:
             self.percentage(percentage)
-            grp = self._is_meta_package(package)
+            grp = self._is_meta_package(package_id)
             if grp:
                 if grp.installed:
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The Group %s is already installed" % grp.groupid)
@@ -922,7 +962,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     for txmbr in self.yumbase.tsInfo:
                         deps_list.append(txmbr.po)
             else:
-                pkg, inst = self._findPackage(package)
+                pkg, inst = self._findPackage(package_id)
                 # This simulates the addition of the package
                 if not inst and pkg:
                     resolve_list.append(pkg)
@@ -938,16 +978,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     if txmbr.po not in deps_list:
                         deps_list.append(txmbr.po)
 
-
         # make unique list
         deps_list = unique(deps_list)
 
-        # each unique name, emit
+        # remove any of the packages we passed in
+        for package_id in package_ids:
+            pkg, inst = self._findPackage(package_id)
+            deps_list.remove(pkg)
+
+        # remove any that are already installed
         for pkg in deps_list:
-            package_id = self._pkg_to_id(pkg)
-            if package_id not in package_ids:
-                self.package(package_id, INFO_AVAILABLE, pkg.summary)
-        self.percentage(100)
+            if self._is_inst(pkg):
+                deps_list.remove(pkg)
+
+        return deps_list
 
     def get_depends(self, filters, package_ids, recursive_text):
         '''
@@ -965,8 +1009,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # before we do an install we do ~installed + recursive true,
         # which we can emulate quicker by doing a transaction, but not
         # executing it
-        if filters == FILTER_NOT_INSTALLED:
-            self._get_depends_not_installed (fltlist, package_ids, recursive)
+        if FILTER_NOT_INSTALLED in fltlist and recursive:
+            pkgs = self._get_depends_not_installed (fltlist, package_ids, recursive)
+            pkgfilter.add_available(pkgs)
+            package_list = pkgfilter.post_process()
+            self._show_package_list(package_list)
+            self.percentage(100)
             return
 
         percentage = 0

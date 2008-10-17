@@ -211,20 +211,18 @@ out:
  * pk_console_transaction_cb:
  **/
 static void
-pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *timespec,
-			   gboolean succeeded, PkRoleEnum role, guint duration,
-			   const gchar *data, gpointer user_data)
+pk_console_transaction_cb (PkClient *client, const PkTransactionObj *obj, gpointer user_data)
 {
 	const gchar *role_text;
-	role_text = pk_role_enum_to_text (role);
+	role_text = pk_role_enum_to_text (obj->role);
 	if (awaiting_space)
 		g_print ("\n");
-	g_print ("Transaction  : %s\n", tid);
-	g_print (" timespec    : %s\n", timespec);
-	g_print (" succeeded   : %i\n", succeeded);
+	g_print ("Transaction  : %s\n", obj->tid);
+	g_print (" timespec    : %s\n", obj->timespec);
+	g_print (" succeeded   : %i\n", obj->succeeded);
 	g_print (" role        : %s\n", role_text);
-	g_print (" duration    : %i (seconds)\n", duration);
-	g_print (" data        : %s\n", data);
+	g_print (" duration    : %i (seconds)\n", obj->duration);
+	g_print (" data        : %s\n", obj->data);
 }
 
 /**
@@ -551,7 +549,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		} else {
 			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages[i], &error_local);
 			if (package_id == NULL) {
-				/* TRANSLATORS: The package name was not found in any software sources */
+				/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 				*error = g_error_new (1, 0, _("The package '%s' could not be installed: %s"), packages[i], error_local->message);
 				g_error_free (error_local);
 				ret = FALSE;
@@ -574,15 +572,19 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		package_ids = pk_ptr_array_to_strv (array_packages);
 
 		/* reset */
-		ret = pk_client_reset (client, error);
+		ret = pk_client_reset (client, &error_local);
 		if (!ret) {
-			egg_warning ("failed to reset");
+			/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
+			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+			g_error_free (error_local);
 			goto out;
 		}
 
 		ret = pk_client_install_packages (client, package_ids, error);
 		if (!ret) {
-			egg_warning ("failed to install packages");
+			/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
+			*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
+			g_error_free (error_local);
 			goto out;
 		}
 	}
@@ -597,16 +599,18 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		files_cache = g_strdupv (files);
 
 		/* reset */
-		ret = pk_client_reset (client, error);
+		ret = pk_client_reset (client, &error_local);
 		if (!ret) {
-			egg_warning ("failed to reset");
+			/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
+			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+			g_error_free (error_local);
 			goto out;
 		}
 
 		ret = pk_client_install_files (client, trusted, files, &error_local);
 		if (!ret) {
-			/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
+			/* TRANSLATORS: There was an error installing the files. The detailed error follows */
+			*error = g_error_new (1, 0, _("This tool could not install the files: %s"), error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -691,9 +695,11 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 		goto out;
 	}
 
-	ret = pk_client_reset (client_task, error);
+	ret = pk_client_reset (client_task, &error_local);
 	if (!ret) {
-		egg_warning ("failed to reset");
+		/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
+		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
@@ -707,7 +713,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 
 	/* see how many packages there are */
 	list_single = pk_client_get_package_list (client_task);
-	pk_package_list_add_list (list, list_single);
+	pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
 	g_object_unref (list_single);
 
 	/* one of the get-requires failed */
@@ -732,8 +738,8 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	if (awaiting_space)
 		g_print ("\n");
 
-	/* TRANSLATORS: When removing, we might have to remove other deps */
-	g_print ("%s:\n", _("The following packages have to be removed"));
+	/* TRANSLATORS: When removing, we might have to remove other dependencies */
+	g_print ("%s\n", _("The following packages have to be removed:"));
 	for (i=0; i<length; i++) {
 		obj = pk_package_list_get_obj (list, i);
 		g_print ("%i\t%s-%s.%s\n", i, obj->id->name, obj->id->version, obj->id->arch);
@@ -745,7 +751,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	/* we chickened out */
 	if (!remove) {
 		/* TRANSLATORS: We did not remove any packages */
-		g_print ("%s\n", _("The package removal was cancelled!"));
+		g_print ("%s\n", _("The package removal was canceled!"));
 		ret = FALSE;
 		goto out;
 	}
@@ -786,7 +792,7 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), packages[i], &error_local);
 			if (package_id == NULL) {
 				/* TRANSLATORS: The package name was not found in any software sources */
-				*error = g_error_new (1, 0, _("This tool could not find the package '%s' to download"), packages[i]);
+				*error = g_error_new (1, 0, _("This tool could not download the package '%s' as it could not be found"), packages[i]);
 				g_error_free (error_local);
 				ret = FALSE;
 				break;
@@ -806,15 +812,19 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 		package_ids = pk_ptr_array_to_strv (array_packages);
 
 		/* reset */
-		ret = pk_client_reset (client, error);
+		ret = pk_client_reset (client, &error_local);
 		if (!ret) {
-			egg_warning ("failed to reset");
+			/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
+			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+			g_error_free (error_local);
 			goto out;
 		}
 
 		ret = pk_client_download_packages (client, package_ids, directory, error);
 		if (!ret) {
-			egg_warning ("failed to download the packages");
+			/* TRANSLATORS: Could not download the packages for some reason. The detailed error follows */
+			*error = g_error_new (1, 0, _("This tool could not download the packages: %s"), error_local->message);
+			g_error_free (error_local);
 			goto out;
 		}
 	}
@@ -871,7 +881,7 @@ pk_console_get_requires (PkClient *client, PkBitfield filters, const gchar *pack
 	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the requires for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not get the requirements for '%s': %s"), package, error_local->message);
 		g_error_free (error_local);
 		return FALSE;
 	}
@@ -879,7 +889,7 @@ pk_console_get_requires (PkClient *client, PkBitfield filters, const gchar *pack
 	ret = pk_client_get_requires (client, filters, package_ids, TRUE, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the requires for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not get the requirements for '%s': %s"), package, error_local->message);
 		g_error_free (error_local);
 	}
 	g_strfreev (package_ids);
@@ -900,16 +910,16 @@ pk_console_get_depends (PkClient *client, PkBitfield filters, const gchar *packa
 
 	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
-		/* TRANSLATORS: There was an error getting the depends for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the dependancies for '%s': %s"), package, error_local->message);
+		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
+		*error = g_error_new (1, 0, _("This tool could not get the dependencies for '%s': %s"), package, error_local->message);
 		g_error_free (error_local);
 		return FALSE;
 	}
 	package_ids = pk_package_ids_from_id (package_id);
 	ret = pk_client_get_depends (client, filters, package_ids, FALSE, &error_local);
 	if (!ret) {
-		/* TRANSLATORS: There was an error getting the depends for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the dependancies for '%s': %s"), package, error_local->message);
+		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
+		*error = g_error_new (1, 0, _("This tool could not get the dependencies for '%s': %s"), package, error_local->message);
 		g_error_free (error_local);
 	}
 	g_strfreev (package_ids);
@@ -1123,7 +1133,7 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	if (awaiting_space)
 		g_print ("\n");
 
-	/* TRANSLATORS: This a request for a GPG key signature */
+	/* TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later */
 	g_print ("%s\n", _("Repository signature required"));
 	g_print ("Package:     %s\n", package_id);
 	g_print ("Name:        %s\n", repository_name);
@@ -1134,11 +1144,11 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	g_print ("Timestamp:   %s\n", key_timestamp);
 
 	/* TRANSLATORS: This a prompt asking the user to import the security key */
-	import = pk_console_get_prompt (_("Okay to import key?"), FALSE);
+	import = pk_console_get_prompt (_("You you accept this signature?"), FALSE);
 	if (!import) {
 		need_requeue = FALSE;
 		/* TRANSLATORS: This is where the user declined the security key */
-		g_print ("%s\n", _("Did not import key"));
+		g_print ("%s\n", _("The signature was not accepted."));
 		return;
 	}
 
@@ -1172,18 +1182,18 @@ pk_console_eula_required_cb (PkClient *client, const gchar *eula_id, const gchar
 		g_print ("\n");
 
 	/* TRANSLATORS: This a request for a EULA */
-	g_print ("%s\n", _("Eula required"));
+	g_print ("%s\n", _("End user license agreement required"));
 	g_print ("Eula:        %s\n", eula_id);
 	g_print ("Package:     %s\n", package_id);
 	g_print ("Vendor:      %s\n", vendor_name);
 	g_print ("Agreement:   %s\n", license_agreement);
 
-	/* TRANSLATORS: This a prompt asking the user to agree to the licence */
-	import = pk_console_get_prompt (_("Do you agree?"), FALSE);
+	/* TRANSLATORS: This a prompt asking the user to agree to the license */
+	import = pk_console_get_prompt (_("Do you agree to this license?"), FALSE);
 	if (!import) {
 		need_requeue = FALSE;
-		/* TRANSLATORS: This is where the user declined the licence */
-		g_print ("%s\n", _("Did not agree to licence"));
+		/* TRANSLATORS: This is where the user declined the license */
+		g_print ("%s\n", _("The license was refused."));
 		return;
 	}
 
@@ -1546,7 +1556,7 @@ main (int argc, char *argv[])
 		ret = pk_console_download_packages (client, argv, value, &error);
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a eula-id"));
+			error = g_error_new (1, 0, "%s", _("You need to specify a licence identifier (eula-id)"));
 			goto out;
 		}
 		ret = pk_client_accept_eula (client, value, &error);
@@ -1571,14 +1581,14 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a repo name"));
+			error = g_error_new (1, 0, "%s", _("You need to specify a repository name"));
 			goto out;
 		}
 		ret = pk_client_repo_enable (client, value, TRUE, &error);
 
 	} else if (strcmp (mode, "repo-disable") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a repo name"));
+			error = g_error_new (1, 0, "%s", _("You need to specify a repository name"));
 			goto out;
 		}
 		ret = pk_client_repo_enable (client, value, FALSE, &error);
@@ -1598,7 +1608,7 @@ main (int argc, char *argv[])
 		guint time;
 		gboolean ret;
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a time term"));
+			error = g_error_new (1, 0, "%s", _("You need to specify an action, e.g. 'update-system'"));
 			goto out;
 		}
 		role = pk_role_enum_from_text (value);
@@ -1707,7 +1717,7 @@ main (int argc, char *argv[])
 
 	} else {
 		/* TRANSLATORS: The user tried to use an unsupported option on the command line */
-		error = g_error_new (1, 0, _("Option '%s' not supported"), mode);
+		error = g_error_new (1, 0, _("Option '%s' is not supported"), mode);
 	}
 
 	/* do we wait for the method? */

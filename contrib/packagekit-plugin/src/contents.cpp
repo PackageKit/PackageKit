@@ -327,13 +327,13 @@ PkpContents::ensureLayout(cairo_t              *cr,
 
         append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
         /* TRANSLATORS: update to a new version of the package */
-        append_markup(markup, _("Upgrade to version %s"), mAvailableVersion.c_str());
+        append_markup(markup, _("Update to version %s"), mAvailableVersion.c_str());
         append_markup(markup, "</span>");
         break;
     case AVAILABLE:
         append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
         /* TRANSLATORS: To install a package */
-        append_markup(markup, _("Install %s Now"), mDisplayName.c_str());
+        append_markup(markup, _("Install %s now"), mDisplayName.c_str());
         append_markup(markup, "</span>");
         /* TRANSLATORS: the version of the package */
         append_markup(markup, "\n<small>%s: %s</small>", _("Version"), mAvailableVersion.c_str());

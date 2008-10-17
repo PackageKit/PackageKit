@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-10-15 18:11+0100\n"
-"PO-Revision-Date: 2008-10-13 23:13+0200\n"
+"PO-Revision-Date: 2008-10-16 16:25+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -16,49 +16,49 @@ msgstr ""
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:273
 msgid "Details about the update:"
-msgstr ""
+msgstr "Szczegóły aktualizacji:"
 
 #: ../client/pk-console.c:466
 msgid "Please restart the computer to complete the update."
-msgstr ""
+msgstr "Proszę uruchomić ponownie komputer, aby zakończyć aktualizację."
 
 #: ../client/pk-console.c:468
 msgid "Please logout and login to complete the update."
-msgstr ""
+msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację."
 
 #: ../client/pk-console.c:470
 msgid "Please restart the application as it is being used."
-msgstr ""
+msgstr "Proszę uruchomić program ponownie, ponieważ jest używany."
 
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:555
 #, c-format
 msgid "The package '%s' could not be installed: %s"
-msgstr ""
+msgstr "Nie można zainstalować pakietu \"%s\": %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
 #: ../client/pk-console.c:609
 #, c-format
 msgid "This tool could not install the packages: %s"
-msgstr ""
+msgstr "To narzędzie nie może zainstalować pakietów: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
 #: ../client/pk-console.c:665
 #, c-format
 msgid "This tool could not remove '%s': %s"
-msgstr ""
+msgstr "To narzędzie nie może usunąć \"%s\": %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:688 ../client/pk-console.c:757
 #, c-format
 msgid "This tool could not remove the packages: %s"
-msgstr ""
+msgstr "To narzędzie nie może usunąć pakietów: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:724
 #, c-format
 msgid "This tool could not remove the packages: '%s'"
-msgstr ""
+msgstr "To narzędzie nie może usunąć pakietów: \"%s\""
 
 #. TRANSLATORS: When removing, we might have to remove other deps
 #: ../client/pk-console.c:736
@@ -67,73 +67,72 @@ msgstr "Następujące pakiety muszą zostać usunięte"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
 #: ../client/pk-console.c:743
-#, fuzzy
 msgid "Proceed removing additional packages?"
-msgstr "Usunąć dodatkowe pakiety?"
+msgstr "Kontynuować usuwanie dodatkowych pakietów?"
 
 #. TRANSLATORS: We did not remove any packages
 #: ../client/pk-console.c:748
 msgid "The package removal was cancelled!"
-msgstr ""
+msgstr "Anulowano usunięcie pakietu!"
 
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:789
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not find the package '%s' to download"
-msgstr "Nie można znaleźć pakietu do pobrania"
+msgstr "To narzędzie nie może znaleźć pakietu \"%s\" do pobrania"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:843 ../client/pk-console.c:852
 #, c-format
 msgid "This tool could not update '%s': %s"
-msgstr ""
+msgstr "To narzędzie nie może zaktualizować \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:874 ../client/pk-console.c:882
 #, c-format
 msgid "This tool could not get the requires for '%s': %s"
-msgstr ""
+msgstr "To narzędzie nie może uzyskać wymaganych pakietów dla \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the depends for the package. The detailed error follows
 #: ../client/pk-console.c:904 ../client/pk-console.c:912
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not get the dependancies for '%s': %s"
-msgstr "Nie można uzyskać zależności dla"
+msgstr "To narzędzie nie może uzyskać zależności dla \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #: ../client/pk-console.c:934 ../client/pk-console.c:942
 #, c-format
 msgid "This tool could not get package details for '%s': %s"
-msgstr ""
+msgstr "To narzędzie nie może uzyskać szczegółów pakietu \"%s\": %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:964
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not find the files for '%s': %s"
-msgstr "Nie można znaleźć plików tego pakietu"
+msgstr "To narzędzie nie może znaleźć plików dla \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:972
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not get the file list for '%s': %s"
-msgstr "Nie można uzyskać listy plików"
+msgstr "To narzędzie nie może uzyskać listy plików dla \"%s\": %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:994
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not find the update details for '%s': %s"
-msgstr "Nie można znaleźć szczegółów aktualizacji dla"
+msgstr "To narzędzie nie może znaleźć szczegółów aktualizacji dla \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
 #: ../client/pk-console.c:1002
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not get the update details for '%s': %s"
-msgstr "Nie można znaleźć szczegółów aktualizacji dla"
+msgstr "To narzędzie nie może uzyskać szczegółów aktualizacji dla \"%s\": %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1048
 msgid "Error:"
-msgstr ""
+msgstr "Błąd:"
 
 #. TRANSLATORS: This a list of details about the package
 #: ../client/pk-console.c:1062
@@ -153,7 +152,7 @@ msgstr "Brak plików"
 #. TRANSLATORS: This a request for a GPG key signature
 #: ../client/pk-console.c:1127
 msgid "Repository signature required"
-msgstr ""
+msgstr "Wymagany jest podpis repozytorium"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1137
@@ -168,7 +167,7 @@ msgstr "Nie zaimportowano klucza"
 #. TRANSLATORS: This a request for a EULA
 #: ../client/pk-console.c:1175
 msgid "Eula required"
-msgstr ""
+msgstr "Wymagana jest licencja"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the licence
 #: ../client/pk-console.c:1182
@@ -177,9 +176,8 @@ msgstr "Zgadzasz się?"
 
 #. TRANSLATORS: This is where the user declined the licence
 #: ../client/pk-console.c:1186
-#, fuzzy
 msgid "Did not agree to licence"
-msgstr "Nie zaakceptowano licencji, zadanie nie powiedzie się"
+msgstr "Nie zaakceptowano licencji"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
 #: ../client/pk-console.c:1215
@@ -214,9 +212,8 @@ msgstr "Wyłącza bez oczekiwania na zakończenie działań"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
 #: ../client/pk-console.c:1387
-#, fuzzy
 msgid "This tool could not connect to system DBUS."
-msgstr "Nie można połączyć się z systemowym D-Bus."
+msgstr "To narzędzie nie może połączyć się z systemowym D-Bus."
 
 #: ../client/pk-console.c:1482
 msgid "You need to specify a search type, e.g. name"
@@ -333,15 +330,13 @@ msgstr "Wszystkie dostępne aktualizacje w pakiecie serwisowym"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:166
-#, fuzzy
 msgid "Neither --package or --updates option selected."
-msgstr "Nie wybrano żadnej opcji"
+msgstr "Nie wybrano żadnej z opcji --package lub --updates."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
 #: ../client/pk-generate-pack.c:174
-#, fuzzy
 msgid "Both options selected."
-msgstr "Wybrano obie opcje"
+msgstr "Wybrano obie opcje."
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:207
@@ -351,24 +346,22 @@ msgstr "Pakiet serwisowy o tej samej nazwie już istnieje, zastąpić go?"
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:210
 msgid "The pack was not overwritten."
-msgstr ""
+msgstr "Pakiet nie został zastąpiony."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created
 #: ../client/pk-generate-pack.c:222
-#, fuzzy
 msgid "Failed to create directory."
-msgstr "Utworzenie katalogu nie powiodło się"
+msgstr "Utworzenie katalogu nie powiodło się."
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
 #: ../client/pk-generate-pack.c:231
-#, fuzzy
 msgid "Failed to open package list."
-msgstr "Otwarcie listy pakietów nie powiodło się"
+msgstr "Otwarcie listy pakietów nie powiodło się."
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:241
 msgid "Finding package name."
-msgstr ""
+msgstr "Wyszukiwanie nazwy pakietu."
 
 #. TRANSLATORS: This is when the package cannot be foudn in any software source
 #: ../client/pk-generate-pack.c:245
@@ -379,19 +372,19 @@ msgstr "Nie można znaleźć pakietu \"%s\": %s"
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
 #: ../client/pk-generate-pack.c:260
 msgid "Creating service pack..."
-msgstr ""
+msgstr "Tworzenie pakietu serwisowego..."
 
 #. TRANSLATORS: we succeeded in making the file
 #: ../client/pk-generate-pack.c:267
-#, fuzzy, c-format
+#, c-format
 msgid "Service pack created '%s'"
-msgstr "Pakiet serwisowy do utworzenia: %s\n"
+msgstr "Utworzono pakiet serwisowy \"%s\""
 
 #. TRANSLATORS: we failed to make te file
 #: ../client/pk-generate-pack.c:271
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to create '%s': %s"
-msgstr "Nie można znaleźć pakietu \"%s\": %s"
+msgstr "Utworzenie \"%s\" nie powiodło się: %s"
 
 #: ../client/pk-monitor.c:128
 msgid "PackageKit Monitor"
@@ -401,25 +394,23 @@ msgstr "Monitor PackageKit"
 #: ../client/pk-tools-common.c:76 ../client/pk-tools-common.c:83
 #, c-format
 msgid "Internal error: %s"
-msgstr ""
+msgstr "Wewnętrzny błąd: %s"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:109
 #, c-format
 msgid "The package could not be found"
-msgstr ""
+msgstr "Nie można znaleźć pakietu"
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
 #: ../client/pk-tools-common.c:120
-#, fuzzy
 msgid "More than one package matches:"
-msgstr "Pasuje kilka pakietów"
+msgstr "Pasuje więcej niż jeden pakiet:"
 
 #. TRANSLATORS: This finds out which package in the list to use
 #: ../client/pk-tools-common.c:127
-#, fuzzy
 msgid "Please choose the correct package: "
-msgstr "Proszę podać numer pakietu: "
+msgstr "Proszę wybrać poprawny pakiet: "
 
 #: ../client/pk-tools-common.c:154
 #, c-format
@@ -435,58 +426,49 @@ msgstr "Uzyskiwanie informacji o pakiecie..."
 #: ../contrib/packagekit-plugin/src/contents.cpp:305
 #, c-format
 msgid "Run %s"
-msgstr ""
+msgstr "Uruchom %s"
 
 #. TRANSLATORS: show the installed version of a package
 #: ../contrib/packagekit-plugin/src/contents.cpp:311
-#, fuzzy
 msgid "Installed version"
-msgstr ""
-"\n"
-"<small>Zainstalowana wersja: %s</small>"
+msgstr "Zainstalowana wersja"
 
 #. TRANSLATORS: run the application now
 #: ../contrib/packagekit-plugin/src/contents.cpp:319
 #, c-format
 msgid "Run version %s now"
-msgstr ""
+msgstr "Uruchom wersję %s"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:325
 msgid "Run now"
-msgstr ""
+msgstr "Uruchom teraz"
 
 #. TRANSLATORS: update to a new version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
 msgid "Upgrade to version %s"
-msgstr ""
+msgstr "Zaktualizuj do wersji %s"
 
 #. TRANSLATORS: To install a package
 #: ../contrib/packagekit-plugin/src/contents.cpp:336
 #, c-format
 msgid "Install %s Now"
-msgstr ""
+msgstr "Zainstaluj %s"
 
 #. TRANSLATORS: the version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:339
 msgid "Version"
-msgstr ""
+msgstr "Wersja"
 
 #. TRANSLATORS: noting found, so can't install
 #: ../contrib/packagekit-plugin/src/contents.cpp:344
-#, fuzzy
 msgid "No packages found for your system"
-msgstr ""
-"\n"
-"<small>Nie znaleziono pakietów dla systemu</small>"
+msgstr "Nie znaleziono pakietów dla systemu"
 
 #. TRANSLATORS: package is being installed
 #: ../contrib/packagekit-plugin/src/contents.cpp:349
-#, fuzzy
 msgid "Installing..."
-msgstr ""
-"\n"
-"<small>Instalowanie...</small>"
+msgstr "Instalowanie..."
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
@@ -647,95 +629,3 @@ msgstr "Nie można połączyć się z magistralą systemową"
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Błąd podczas próbowania uruchomienia: %s\n"
-
-#~ msgid "Update detail"
-#~ msgstr "Szczegóły aktualizacji"
-
-#~ msgid "A system restart is required"
-#~ msgstr "Wymagane jest ponowne uruchomienie systemu"
-
-#~ msgid "A logout and login is required"
-#~ msgstr "Wymagane jest wylogowanie się i ponowne zalogowanie"
-
-#~ msgid "An application restart is required"
-#~ msgstr "Wymagane jest ponowne uruchomienie aplikacji"
-
-#~ msgid "Could not find package to install"
-#~ msgstr "Nie można znaleźć pakietu do zainstalowania"
-
-#~ msgid "Could not find package to remove"
-#~ msgstr "Nie można znaleźć pakietu do usunięcia"
-
-#~ msgid "Cancelled!"
-#~ msgstr "Anulowano!"
-
-#~ msgid "Could not find package to update"
-#~ msgstr "Nie można znaleźć pakietu do zaktualizowania"
-
-#~ msgid "Could not find what packages require"
-#~ msgstr "Nie można znaleźć pakietów, które wymagają"
-
-#~ msgid "Could not find details for"
-#~ msgstr "Nie można znaleźć szczegółów dla"
-
-#~ msgid "Could not find a package match"
-#~ msgstr "Nie można znaleźć pasującego pakietu"
-
-#~ msgid "Resolving package name to remote object"
-#~ msgstr "Rozwiązywanie nazwy pakietu dla zdalnego obiektu"
-
-#~ msgid "Done!"
-#~ msgstr "Zakończono!"
-
-#~ msgid "Failed"
-#~ msgstr "Niepowodzenie"
-
-#~ msgid "Could not set database readonly"
-#~ msgstr "Nie można ustawić bazy danych w tryb tylko do odczytu"
-
-#~ msgid "Could not open database: %s"
-#~ msgstr "Nie można otworzyć bazy danych: %s"
-
-#~ msgid "You probably need to run this program as the root user"
-#~ msgstr "Prawdopodobnie należy uruchomić ten program jako użytkownik root"
-
-#~ msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
-#~ msgstr ""
-#~ "<span color='#%06x' underline='single' size='larger'>Uruchom %s</span>"
-
-#~ msgid "<big>%s</big>"
-#~ msgstr "<big>%s</big>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Run version %s now</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Uruchom teraz wersję %s</span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Run now</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Uruchom teraz</span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Upgrade to version %s</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Zaktualizuj do wersji %s</span>"
-
-#~ msgid ""
-#~ "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
-#~ msgstr ""
-#~ "<span color='#%06x' underline='single' size='larger'>Zainstaluj teraz %s</"
-#~ "span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<small>Version: %s</small>"
-#~ msgstr ""
-#~ "\n"
-#~ "<small>Wersja: %s</small>"

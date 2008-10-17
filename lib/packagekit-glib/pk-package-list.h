@@ -29,6 +29,7 @@
 #include <glib-object.h>
 #include <packagekit-glib/pk-enum.h>
 #include <packagekit-glib/pk-package-obj.h>
+#include <packagekit-glib/pk-obj-list.h>
 
 G_BEGIN_DECLS
 
@@ -45,13 +46,13 @@ typedef struct _PkPackageListClass	PkPackageListClass;
 
 struct _PkPackageList
 {
-	 GObject		 parent;
+	 PkObjList		 parent;
 	 PkPackageListPrivate	*priv;
 };
 
 struct _PkPackageListClass
 {
-	GObjectClass	parent_class;
+	PkObjListClass		parent_class;
 };
 
 GType			 pk_package_list_get_type	(void) G_GNUC_CONST;
@@ -60,20 +61,10 @@ gboolean		 pk_package_list_add		(PkPackageList		*plist,
 							 PkInfoEnum		 info,
 							 const PkPackageId	*ident,
 							 const gchar		*summary);
-gboolean		 pk_package_list_add_obj	(PkPackageList		*plist,
-							 const PkPackageObj	*obj);
-gboolean		 pk_package_list_add_list	(PkPackageList		*plist,
-							 PkPackageList		*list);
 gboolean		 pk_package_list_contains	(const PkPackageList	*plist,
 							 const gchar		*package_id);
 gboolean		 pk_package_list_remove		(PkPackageList		*plist,
 							 const gchar		*package_id);
-gboolean		 pk_package_list_remove_obj	(PkPackageList		*plist,
-							 const PkPackageObj	*obj);
-gboolean		 pk_package_list_contains_obj	(const PkPackageList	*plist,
-							 const PkPackageObj	*obj);
-gchar			*pk_package_list_to_string	(const PkPackageList	*plist)
-							 G_GNUC_WARN_UNUSED_RESULT;
 gchar			**pk_package_list_to_strv	(const PkPackageList	*plist)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint			 pk_package_list_get_size	(const PkPackageList	*plist);
@@ -82,11 +73,6 @@ gboolean		 pk_package_list_sort_info	(PkPackageList		*plist);
 gboolean		 pk_package_list_sort_summary	(PkPackageList		*plist);
 const PkPackageObj	*pk_package_list_get_obj	(const PkPackageList	*plist,
 							 guint			 item);
-gboolean		 pk_package_list_clear		(PkPackageList		*plist);
-gboolean		 pk_package_list_to_file	(const PkPackageList	*plist,
-							 const gchar		*filename);
-gboolean		 pk_package_list_add_file	(PkPackageList		*plist,
-							 const gchar		*filename);
 gboolean		 pk_package_list_set_fuzzy_arch	(PkPackageList		*plist,
 							 gboolean		 fuzzy_arch);
 
