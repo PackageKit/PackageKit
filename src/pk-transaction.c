@@ -592,9 +592,11 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 			}
 
 			/* process file lists on these packages */
-			package_ids = pk_package_list_to_strv (list);
-			pk_post_trans_check_process_filelists (transaction->priv->post_trans, package_ids);
-			g_strfreev (package_ids);
+			if (PK_OBJ_LIST(list)->len > 0) {
+				package_ids = pk_package_list_to_strv (list);
+				pk_post_trans_check_process_filelists (transaction->priv->post_trans, package_ids);
+				g_strfreev (package_ids);
+			}
 			g_object_unref (list);
 		}
 	}
