@@ -3,7 +3,6 @@
   <mime-type type="application/x-package-list">
     <_comment>PackageKit Package List</_comment>
     <glob pattern="*.package-list"/>
-    <generic-icon name="package-x-generic"/>
   </mime-type>
 </mime-info>
 

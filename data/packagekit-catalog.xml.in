@@ -3,7 +3,6 @@
   <mime-type type="application/x-catalog">
     <_comment>PackageKit Catalog</_comment>
     <glob pattern="*.catalog"/>
-    <generic-icon name="package-x-generic"/>
   </mime-type>
 </mime-info>
 
