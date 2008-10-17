@@ -633,6 +633,11 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 	egg_debug ("emitting transaction %s, %s, %i, %s, %ims, %s", old_tid, timespec,
 		  succeeded, role_text, duration, data);
 	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, obj);
+
+	/* cache */
+	if (client->priv->use_buffer || client->priv->synchronous)
+		pk_obj_list_add (client->priv->cached_data, obj);
+
 	pk_transaction_obj_free (obj);
 }
 
@@ -3298,6 +3303,10 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		return FALSE;
+
+	/* we use the cached objects support */
+	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_transaction_obj_copy);
+	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_transaction_obj_free);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
