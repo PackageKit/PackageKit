@@ -372,6 +372,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         Handle the special newest group
         """
         self.percentage(None)
+        pkgfilter = YumFilter(fltlist)
         pkgs = []
         try:
             ygl = self.yumbase.doPackageLists(pkgnarrow='recent')
@@ -380,11 +381,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
         for pkg in pkgs:
             # check if not an update
-            if not self.yumbase.rpmdb.installed(name=pkg.name):
-                package_id = self._pkg_to_id(pkg)
-                self.package(package_id, INFO_AVAILABLE, pkg.summary)
-        self.percentage(100)
+            if self.yumbase.rpmdb.installed(name=pkg.name):
+                pkgs.remove(pkg)
 
+        # add list to filter
+        pkgfilter.add_available(pkgs)
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
+        self.percentage(100)
 
     def _handle_collections(self, fltlist):
         """
