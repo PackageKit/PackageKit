@@ -414,6 +414,18 @@ pk_obj_list_find_obj (PkObjList *list, gconstpointer obj)
 
 	/* remove data items from list */
 	func_compare = list->priv->func_compare;
+
+	/* usual case, don't compare in the fast path */
+	if (func_compare == NULL) {
+		for (i=0; i < list->len; i++) {
+			obj_tmp = pk_obj_list_index (list, i);
+			if (obj_tmp == obj)
+				return (gpointer) obj_tmp;
+		}
+		return NULL;
+	}
+
+	/* use a comparison function */
 	for (i=0; i < list->len; i++) {
 		obj_tmp = pk_obj_list_index (list, i);
 		if (func_compare (obj_tmp, obj) == 0)
