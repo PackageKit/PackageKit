@@ -356,6 +356,25 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
     def _get_available_from_names(self, name_list):
         return self.yumbase.pkgSack.searchNames(names=name_list)
 
+    def _handle_newest(self, fltlist):
+        """
+        Handle the special newest group
+        """
+        self.percentage(None)
+        pkgs = []
+        try:
+            ygl = self.yumbase.doPackageLists(pkgnarrow='recent')
+            pkgs.extend(ygl.recent)
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+        for pkg in pkgs:
+            # check if not an update
+            if not self.yumbase.rpmdb.installed(name=pkg.name):
+                package_id = self._pkg_to_id(pkg)
+                self.package(package_id, INFO_AVAILABLE, pkg.summary)
+        self.percentage(100)
+
+
     def _handle_collections(self, fltlist):
         """
         Handle the special collection group
@@ -407,6 +426,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # handle collections
         if group_key == GROUP_COLLECTIONS:
             self._handle_collections(fltlist)
+            return
+
+        # handle newest packages
+        if group_key == GROUP_NEWEST:
+            self._handle_newest(fltlist)
             return
 
         # handle dynamic groups (yum comps group)
