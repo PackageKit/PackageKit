@@ -435,7 +435,7 @@ pk_package_list_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "add entry");
-	text = pk_package_list_to_string (plist);
+	text = pk_obj_list_to_string (PK_OBJ_LIST(plist));
 	if (egg_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!"))
 		egg_test_success (test, NULL);
 	else
