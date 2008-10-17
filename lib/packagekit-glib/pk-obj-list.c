@@ -348,7 +348,7 @@ pk_obj_list_remove_list (PkObjList *list, const PkObjList *data)
 }
 
 /**
- * pk_obj_list_find_obj:
+ * pk_obj_list_obj_equal:
  * @list: a valid #PkObjList instance
  * @obj: a valid #gpointer object
  *
@@ -412,12 +412,8 @@ pk_obj_list_find_obj (PkObjList *list, gconstpointer obj)
 	gconstpointer obj_tmp;
 	PkObjListCompareFunc func_compare;
 
-	/* the pointers point to the same thing */
-	func_compare = list->priv->func_compare;
-	if (func_compare == NULL)
-		return (gpointer) obj;
-
 	/* remove data items from list */
+	func_compare = list->priv->func_compare;
 	for (i=0; i < list->len; i++) {
 		obj_tmp = pk_obj_list_index (list, i);
 		if (func_compare (obj_tmp, obj) == 0)
