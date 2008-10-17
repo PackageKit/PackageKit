@@ -203,7 +203,7 @@ public:
 
 	/**
 	 * Returns the time the transaction took to finish
-	 * \return the number of seconds the transaction took to finish
+	 * \return the number of milliseconds the transaction took to finish
 	 * \note This function only returns a real value for old transactions returned by getOldTransactions
 	 */
 	uint duration();
@@ -239,6 +239,17 @@ Q_SIGNALS:
 	 * The transaction's caller activity changed
 	 */
 	void callerActiveChanged(bool isActive);
+
+	/**
+	 * \brief Sends a category
+	 *
+	 * \li \p parent_id is the id of the parent category. A blank parent means a root category
+	 * \li \p cat_id is the id of the category
+	 * \li \p name is the category's name. This name is localized.
+	 * \li \p summary is the category's summary. It is localized.
+	 * \li \p icon is the icon identifier eg. server-cfg. If unknown, it is set to icon-missing.
+	 */
+    void category(const QString &parent_id, const QString &cat_id, const QString &name, const QString &summary, const QString &icon);
 
 	/**
 	 * Sends additional details about the \p package

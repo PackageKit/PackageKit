@@ -451,6 +451,13 @@ public:
 	Transaction* downloadPackage(Package* package);
 
 	/**
+	 * Returns the collection categories
+	 *
+	 * \sa Transaction::category
+	 */
+	Transaction* getCategories();
+
+	/**
 	 * \brief Gets the list of dependencies for the given \p packages
 	 *
 	 * You can use the \p filters to limit the results to certain packages. The

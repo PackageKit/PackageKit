@@ -40,6 +40,7 @@ Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
 		qDebug("Error, cannot create transaction proxy");
 
 	connect(d->p, SIGNAL(AllowCancel(bool)), this, SIGNAL(allowCancelChanged(bool)));
+    connect(d->p, SIGNAL(Category(const QString&, const QString&, const QString&, const QString&, const QString&)), this, SIGNAL(category(const QString&, const QString&, const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(Details(const QString&, const QString&, const QString&, const QString&, const QString&, qulonglong)), d, SLOT(details(const QString&, const QString&, const QString&, const QString&, const QString&, qulonglong)));
 	connect(d->p, SIGNAL(DistroUpgrade(const QString&, const QString&, const QString&)), d, SLOT(distroUpgrade(const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(ErrorCode(const QString&, const QString&)), d, SLOT(errorCode(const QString&, const QString&)));
