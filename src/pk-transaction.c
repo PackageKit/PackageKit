@@ -602,6 +602,13 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 		}
 	}
 
+	/* signals we are not allowed to send from the second phase post transaction */
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
+
 	/* do some optional extra actions when we've finished refreshing the cache */
 	if (exit == PK_EXIT_ENUM_SUCCESS &&
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
@@ -619,13 +626,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 		/* clear the firmware requests directory */
 		pk_post_trans_clear_firmware_requests (transaction->priv->post_trans);
 	}
-
-	/* signals we are allowed to send from a post transaction */
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
 
 	/* if we did not send this, ensure the GUI has the right state */
 	if (transaction->priv->allow_cancel)
@@ -3685,7 +3685,12 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->inhibit = pk_inhibit_new ();
 	transaction->priv->package_list = pk_package_list_new ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
+
 	transaction->priv->post_trans = pk_post_trans_new ();
+	g_signal_connect (transaction->priv->post_trans, "status-changed",
+			  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
+	g_signal_connect (transaction->priv->post_trans, "progress-changed",
+			  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
 
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
