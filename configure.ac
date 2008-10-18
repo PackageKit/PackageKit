@@ -582,6 +582,7 @@ backends/poldek/Makefile
 backends/zypp/Makefile
 data/Makefile
 data/packagekit-glib.pc
+data/packagekit-qt.pc
 data/org.freedesktop.PackageKit.conf
 data/org.freedesktop.PackageKitTestBackend.conf
 data/org.freedesktop.PackageKitAptBackend.conf
