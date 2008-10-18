@@ -18,7 +18,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
-Requires: PackageKit-libs-glib = %{version}-%{release}
+Requires: PackageKit-glib = %{version}-%{release}
 Requires: PackageKit-udev-helper = %{version}-%{release}
 Requires: PackageKit-yum-plugin = %{version}-%{release}
 Requires: PackageKit-yum = %{version}-%{release}
@@ -104,7 +104,7 @@ PackageKit-yum-plugin tells PackageKit to check for updates when yum exits.
 This way, if you run 'yum update' and install all available updates, puplet
 will almost instantly update itself to reflect this.
 
-%package libs-glib
+%package glib
 Summary: GLib libraries for accessing PackageKit
 Group: Development/Libraries
 Requires: dbus >= %{dbus_version}
@@ -112,15 +112,15 @@ Requires: %{name} = %{version}-%{release}
 Obsoletes: PackageKit-libs
 Provides: PackageKit-libs
 
-%description libs-glib
+%description glib
 GLib libraries for accessing PackageKit.
 
-%package libs-qt
+%package qt
 Summary: QT libraries for accessing PackageKit
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 
-%description libs-qt
+%description qt
 QT libraries for accessing PackageKit.
 
 %package cron
@@ -166,7 +166,7 @@ Headers to compile out of tree PackageKit backends.
 Summary: Browser Plugin for PackageKit
 Group: Development/Libraries
 Requires: gtk2
-Requires: PackageKit-libs-glib = %{version}-%{release}
+Requires: PackageKit-glib = %{version}-%{release}
 
 %description browser-plugin
 The PackageKit browser plugin allows web sites to offer the ability to
@@ -177,9 +177,9 @@ using PackageKit.
 Summary: Install GStreamer codecs using PackageKit
 Group: Development/Libraries
 Requires: gstreamer
-Requires: PackageKit-libs-glib = %{version}-%{release}
-Obsoletes: codeina < 0.10.1
-Provides:  codeina = 0.10.1
+Requires: PackageKit-glib = %{version}-%{release}
+Obsoletes: codeina < 0.10.1-10
+Provides:  codeina = 0.10.1-10
 
 %description gstreamer-plugin
 The PackageKit GStreamer plugin allows any Gstreamer application to install
@@ -229,11 +229,11 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %postun
 update-mime-database %{_datadir}/mime &> /dev/null || :
 
-%post libs-glib -p /sbin/ldconfig
-%post libs-qt -p /sbin/ldconfig
+%post glib -p /sbin/ldconfig
+%post qt -p /sbin/ldconfig
 
-%postun libs-glib -p /sbin/ldconfig
-%postun libs-qt -p /sbin/ldconfig
+%postun glib -p /sbin/ldconfig
+%postun qt -p /sbin/ldconfig
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
@@ -305,12 +305,12 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_sysconfdir}/udev/rules.d/*.rules
 /lib/udev/*.sh
 
-%files libs-glib
+%files glib
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
 %{_libdir}/*packagekit-glib*.so.*
 
-%files libs-qt
+%files qt
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
 %{_libdir}/*packagekit-qt*.so.*
