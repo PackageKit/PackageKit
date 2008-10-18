@@ -83,7 +83,7 @@ INCLUDES =						\
 	-I$(top_srcdir)/libselftest			\
 	$(NULL)
 
-PK_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit.la
+PK_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
 
 GTKDOC_LIBS =						\
 	$(GLIB_LIBS)					\
