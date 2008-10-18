@@ -18,7 +18,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
-Requires: PackageKit-libs = %{version}-%{release}
+Requires: PackageKit-libs-glib = %{version}-%{release}
 Requires: PackageKit-udev-helper = %{version}-%{release}
 Requires: PackageKit-yum-plugin = %{version}-%{release}
 Requires: PackageKit-yum = %{version}-%{release}
@@ -103,14 +103,16 @@ PackageKit-yum-plugin tells PackageKit to check for updates when yum exits.
 This way, if you run 'yum update' and install all available updates, puplet
 will almost instantly update itself to reflect this.
 
-%package libs
-Summary: Libraries for accessing PackageKit
+%package libs-glib
+Summary: GLib libraries for accessing PackageKit
 Group: Development/Libraries
 Requires: dbus >= %{dbus_version}
 Requires: %{name} = %{version}-%{release}
+Obsoletes: PackageKit-libs
+Provides: PackageKit-libs
 
-%description libs
-Libraries for accessing PackageKit.
+%description libs-glib
+GLib libraries for accessing PackageKit.
 
 %package cron
 Summary: Cron job and related utilities for PackageKit
@@ -121,22 +123,32 @@ Requires: %{name} = %{version}-%{release}
 %description cron
 Crontab and utilities for running PackageKit as a cron job.
 
-%package devel
-Summary: Libraries and headers for PackageKit
+%package glib-devel
+Summary: GLib Libraries and headers for PackageKit
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
 Requires: pkgconfig
 Requires: sqlite-devel
+Obsoletes: PackageKit-devel
+Provides: PackageKit-devel
 
-%description devel
-Headers and libraries for PackageKit.
+%description glib-devel
+GLib headers and libraries for PackageKit.
+
+%package backend-devel
+Summary: Headers to compile out of tree PackageKit backends
+Group: Development/Libraries
+Requires: %{name} = %{version}-%{release}
+
+%description backend-devel
+Headers to compile out of tree PackageKit backends.
 
 %package browser-plugin
 Summary: Browser Plugin for PackageKit
 Group: Development/Libraries
 Requires: gtk2
-Requires: PackageKit-libs = %{version}-%{release}
+Requires: PackageKit-libs-glib = %{version}-%{release}
 
 %description browser-plugin
 The PackageKit browser plugin allows web sites to offer the ability to
@@ -147,7 +159,7 @@ using PackageKit.
 Summary: Install GStreamer codecs using PackageKit
 Group: Development/Libraries
 Requires: gstreamer
-Requires: PackageKit-libs = %{version}-%{release}
+Requires: PackageKit-libs-glib = %{version}-%{release}
 Obsoletes: codeina < 0.10.1
 Provides:  codeina = 0.10.1
 
@@ -199,9 +211,9 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %postun
 update-mime-database %{_datadir}/mime &> /dev/null || :
 
-%post libs -p /sbin/ldconfig
+%post libs-glib -p /sbin/ldconfig
 
-%postun libs -p /sbin/ldconfig
+%postun libs-glib -p /sbin/ldconfig
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
@@ -217,6 +229,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_localstatedir}/cache/PackageKit/downloads
 %{python_sitelib}/packagekit/*py*
 %dir %{_sysconfdir}/bash_completion.d
+%dir %{_libdir}/packagekit-backend
 %config %{_sysconfdir}/bash_completion.d/pk-completion.bash
 %config(noreplace) %{_sysconfdir}/PackageKit/*.conf
 %config %{_sysconfdir}/dbus-1/system.d/*
@@ -272,11 +285,10 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_sysconfdir}/udev/rules.d/*.rules
 /lib/udev/*.sh
 
-%files libs
+%files libs-glib
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
-%dir %{_libdir}/packagekit-backend
-%{_libdir}/*packagekit*.so.*
+%{_libdir}/*packagekit-glib*.so.*
 
 %files cron
 %defattr(-,root,root,-)
@@ -297,13 +309,23 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libexecdir}/pk-gstreamer-install
 %{_libexecdir}/gst-install-plugins-helper
 
-%files devel
+%files glib-devel
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
-%{_libdir}/lib*.so
-%{_libdir}/pkgconfig/*
-%{_includedir}/*
+%{_libdir}/libpackagekit-glib*.so
+%{_libdir}/pkgconfig/packagekit-glib.pc
+%dir %{_includedir}/PackageKit
+%dir %{_includedir}/PackageKit/packagekit-glib
+%{_includedir}/PackageKit/packagekit-glib/*.h
+
+%files backend-devel
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%dir %{_includedir}/PackageKit
+%dir %{_includedir}/PackageKit/backend
+%{_includedir}/PackageKit/backend/*.h
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#
 - Update from git
+

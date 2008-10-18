@@ -22,7 +22,7 @@ INCLUDES =						\
 	$(NULL)
 
 PK_LIBS =						\
-	$(top_builddir)/lib/packagekit-glib/libpackagekit.la	\
+	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la	\
 	$(NULL)
 
 bin_PROGRAMS =						\

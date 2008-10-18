@@ -10,7 +10,7 @@ packagekit_plugin_la_CPPFLAGS =			\
 
 packagekit_plugin_la_LIBADD =				\
 	$(PK_BROWSER_PLUGIN_LIBS)			\
-	$(top_builddir)/lib/packagekit-glib/libpackagekit.la
+	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
 
 packagekit_plugin_la_SOURCES = 	\
 	sdk/np_entry.cpp	\
