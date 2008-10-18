@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-10-16 13:13+0000\n"
-"PO-Revision-Date: 2008-10-16 22:34+0700\n"
+"PO-Revision-Date: 2008-10-18 19:39+0700\n"
 "Last-Translator: 甘露(Gan Lu) <rhythm.gan@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -545,5 +545,5 @@ msgstr "无法连接到系统总线"
 #: ../src/pk-main.c:295
 #, c-format
 msgid "Error trying to start: %s\n"
-msgstr "出现错误当尝试启动 %s\n"
+msgstr "出现错误当尝试启动： %s\n"
 
