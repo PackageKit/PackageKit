@@ -15,7 +15,7 @@ lib_LTLIBRARIES =						\
 	libpackagekit-qt.la					\
 	$(NULL)
 
-libpackagekit_qt_includedir = $(includedir)/PackageKit/packagekit-glib
+libpackagekit_qt_includedir = $(includedir)/PackageKit/packagekit-qt
 
 libpackagekit_qt_include_HEADERS =				\
 	QPackageKit						\
