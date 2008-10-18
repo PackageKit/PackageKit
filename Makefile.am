@@ -88,6 +88,7 @@ EXTRA_DIST =						\
         autogen.sh					\
 	config.h					\
 	ChangeLog					\
+	moc.mk						\
         intltool-extract.in				\
         intltool-merge.in				\
         intltool-update.in				\
