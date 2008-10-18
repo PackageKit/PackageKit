@@ -8,7 +8,7 @@ SUBDIRS = 						\
 	$(NULL)
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = packagekit.pc
+pkgconfig_DATA = packagekit-glib.pc
 
 cronfiledir = ${SYSCONFDIR}/cron.daily
 cronfile_SCRIPTS = packagekit-background.cron
@@ -78,7 +78,7 @@ EXTRA_DIST =						\
 	org.freedesktop.PackageKit.conf.in		\
 	org.freedesktop.PackageKitTestBackend.conf.in	\
 	org.freedesktop.PackageKitAptBackend.conf.in	\
-	packagekit.pc.in				\
+	packagekit-glib.pc.in				\
 	20packagekit					\
 	$(servicemain_in_files)				\
 	$(servicetest_in_files)				\
