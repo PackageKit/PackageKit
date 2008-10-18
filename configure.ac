@@ -581,7 +581,7 @@ backends/pisi/Makefile
 backends/poldek/Makefile
 backends/zypp/Makefile
 data/Makefile
-data/packagekit.pc
+data/packagekit-glib.pc
 data/org.freedesktop.PackageKit.conf
 data/org.freedesktop.PackageKitTestBackend.conf
 data/org.freedesktop.PackageKitAptBackend.conf
