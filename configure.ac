@@ -82,6 +82,8 @@ DBUS_GLIB_REQUIRED=0.74
 LIBNM_GLIB_REQUIRED=0.6.4
 POLKIT_DBUS_REQUIRED=0.8
 POLKIT_GRANT_REQUIRED=0.8
+QTCORE_REQUIRED=4.4.0
+QTDBUS_REQUIRED=4.4.0
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -112,6 +114,13 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
+PKG_CHECK_MODULES(QTCORE, QtCore >= $QTCORE_REQUIRED)
+AC_SUBST(QTCORE_CFLAGS)
+AC_SUBST(QTCORE_LIBS)
+
+PKG_CHECK_MODULES(QTDBUS, QtDBus >= $QTDBUS_REQUIRED)
+AC_SUBST(QTDBUS_CFLAGS)
+AC_SUBST(QTDBUS_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - libarchive
@@ -132,6 +141,11 @@ dnl ---------------------------------------------------------------------------
 dnl - xsltproc
 dnl ---------------------------------------------------------------------------
 AC_PATH_PROG([XSLTPROC], [xsltproc])
+
+dnl ---------------------------------------------------------------------------
+dnl - moc (for packagekit-qt)
+dnl ---------------------------------------------------------------------------
+AC_PATH_PROG([MOC], [moc-qt4])
 
 dnl ---------------------------------------------------------------------------
 dnl - Is GIO available?
@@ -568,6 +582,7 @@ backends/poldek/Makefile
 backends/zypp/Makefile
 data/Makefile
 data/packagekit-glib.pc
+data/packagekit-qt.pc
 data/org.freedesktop.PackageKit.conf
 data/org.freedesktop.PackageKitTestBackend.conf
 data/org.freedesktop.PackageKitAptBackend.conf
