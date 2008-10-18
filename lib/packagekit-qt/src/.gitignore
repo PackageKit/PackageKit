@@ -2,3 +2,7 @@ CMakeFiles
 *.cmake
 *.moc
 *.so*
+*.la
+*.o
+*.lo
+
