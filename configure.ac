@@ -574,6 +574,10 @@ data/org.freedesktop.PackageKitAptBackend.conf
 data/tests/Makefile
 lib/Makefile
 lib/packagekit-glib/Makefile
+lib/packagekit-qt/Makefile
+lib/packagekit-qt/modules/Makefile
+lib/packagekit-qt/src/Makefile
+lib/packagekit-qt/test/Makefile
 lib/python/Makefile
 lib/python/packagekit/Makefile
 policy/Makefile
