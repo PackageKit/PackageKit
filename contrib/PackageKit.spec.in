@@ -47,6 +47,7 @@ BuildRequires: xulrunner-devel
 BuildRequires: libarchive-devel
 BuildRequires: gstreamer-devel
 BuildRequires: gstreamer-plugins-base-devel
+BuildRequires: qt-devel
 
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
@@ -114,6 +115,14 @@ Provides: PackageKit-libs
 %description libs-glib
 GLib libraries for accessing PackageKit.
 
+%package libs-qt
+Summary: QT libraries for accessing PackageKit
+Group: Development/Libraries
+Requires: %{name} = %{version}-%{release}
+
+%description libs-qt
+QT libraries for accessing PackageKit.
+
 %package cron
 Summary: Cron job and related utilities for PackageKit
 Group: System Environment/Base
@@ -135,6 +144,15 @@ Provides: PackageKit-devel
 
 %description glib-devel
 GLib headers and libraries for PackageKit.
+
+%package qt-devel
+Summary: QT Libraries and headers for PackageKit
+Group: Development/Libraries
+Requires: %{name} = %{version}-%{release}
+Requires: pkgconfig
+
+%description qt-devel
+QT headers and libraries for PackageKit.
 
 %package backend-devel
 Summary: Headers to compile out of tree PackageKit backends
@@ -212,8 +230,10 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %post libs-glib -p /sbin/ldconfig
+%post libs-qt -p /sbin/ldconfig
 
 %postun libs-glib -p /sbin/ldconfig
+%postun libs-qt -p /sbin/ldconfig
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
@@ -290,6 +310,11 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %doc README AUTHORS NEWS COPYING
 %{_libdir}/*packagekit-glib*.so.*
 
+%files libs-qt
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_libdir}/*packagekit-qt*.so.*
+
 %files cron
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
@@ -317,6 +342,16 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_includedir}/PackageKit
 %dir %{_includedir}/PackageKit/packagekit-glib
 %{_includedir}/PackageKit/packagekit-glib/*.h
+
+%files qt-devel
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_libdir}/libpackagekit-qt*.so
+%{_libdir}/pkgconfig/packagekit-qt.pc
+%dir %{_includedir}/PackageKit
+%dir %{_includedir}/PackageKit/packagekit-qt
+%{_includedir}/PackageKit/packagekit-qt/QPackageKit
+%{_includedir}/PackageKit/packagekit-qt/*.h
 
 %files backend-devel
 %defattr(-,root,root,-)
