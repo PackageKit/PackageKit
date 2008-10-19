@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-16 13:13+0000\n"
-"PO-Revision-Date: 2008-10-17 12:59+0200\n"
+"POT-Creation-Date: 2008-10-19 02:08+0000\n"
+"PO-Revision-Date: 2008-10-19 14:47+0200\n"
 "Last-Translator: Pavol Šimo <palo.simo@gmail.com>\n"
 "Language-Team: Fedora Project <fedora-cs-list@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -20,294 +20,315 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:273
+#: ../client/pk-console.c:271
 msgid "Details about the update:"
 msgstr "Podrobnosti o aktualizácii:"
 
-#: ../client/pk-console.c:466
+#: ../client/pk-console.c:464
 msgid "Please restart the computer to complete the update."
 msgstr "Pre dokončenie aktualizácie reštartujte počítač."
 
-#: ../client/pk-console.c:468
+#: ../client/pk-console.c:466
 msgid "Please logout and login to complete the update."
 msgstr "Pre dokončenie aktualizácie sa odhláste a znovu prihláste."
 
-#: ../client/pk-console.c:470
+#: ../client/pk-console.c:468
 msgid "Please restart the application as it is being used."
 msgstr "Reštartujte aplikáciu, pretože sa momentálne používa."
 
-#. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:555
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:553
 #, c-format
 msgid "The package '%s' could not be installed: %s"
 msgstr "Balíček '%s' nemôže byť nainštalovaný: %s"
 
+#. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
+#: ../client/pk-console.c:578 ../client/pk-console.c:605
+#: ../client/pk-console.c:701 ../client/pk-console.c:818
+#: ../client/pk-tools-common.c:48 ../client/pk-tools-common.c:58
+#: ../client/pk-tools-common.c:76 ../client/pk-tools-common.c:83
+#, c-format
+msgid "Internal error: %s"
+msgstr "Vnútorná chyba: %s"
+
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:609
+#: ../client/pk-console.c:586
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "Nepodarilo sa nainštalovať balíčky: %s"
 
+#. TRANSLATORS: There was an error installing the files. The detailed error follows
+#: ../client/pk-console.c:613
+#, c-format
+msgid "This tool could not install the files: %s"
+msgstr "Nepodarilo sa nainštalovať súbory: %s"
+
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:665
+#: ../client/pk-console.c:669
 #, c-format
 msgid "This tool could not remove '%s': %s"
 msgstr "Nepodarilo sa odstrániť '%s': %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:688 ../client/pk-console.c:757
+#: ../client/pk-console.c:692 ../client/pk-console.c:763
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "Nepodarilo sa odstrániť balíčky: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:724
+#: ../client/pk-console.c:730
 #, c-format
 msgid "This tool could not remove the packages: '%s'"
 msgstr "Nepodarilo sa odstrániť balíčky: '%s'"
 
-#. TRANSLATORS: When removing, we might have to remove other deps
-#: ../client/pk-console.c:736
-msgid "The following packages have to be removed"
-msgstr "Nasledujúce balíčky budú musieť byť odstránené"
+#. TRANSLATORS: When removing, we might have to remove other dependencies
+#: ../client/pk-console.c:742
+msgid "The following packages have to be removed:"
+msgstr "Nasledujúce balíčky budú musieť byť odstránené:"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:743
+#: ../client/pk-console.c:749
 msgid "Proceed removing additional packages?"
 msgstr "Pokračovať a odstrániť doplnkové balíčky?"
 
 #. TRANSLATORS: We did not remove any packages
-#: ../client/pk-console.c:748
-msgid "The package removal was cancelled!"
+#: ../client/pk-console.c:754
+msgid "The package removal was canceled!"
 msgstr "Odstránenie balíčkov bolo zrušené!"
 
 #. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:789
+#: ../client/pk-console.c:795
 #, c-format
-msgid "This tool could not find the package '%s' to download"
-msgstr "Nebolo možné nájsť balíček '%s' na stiahnutie"
+msgid "This tool could not download the package '%s' as it could not be found"
+msgstr "Nepodarilo sa získať balíček '%s', balíček nebol nájdený"
+
+#. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
+#: ../client/pk-console.c:826
+#, c-format
+msgid "This tool could not download the packages: %s"
+msgstr "Nepodarilo sa získať balíčky: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:843 ../client/pk-console.c:852
+#: ../client/pk-console.c:853 ../client/pk-console.c:862
 #, c-format
 msgid "This tool could not update '%s': %s"
 msgstr "Nepodarilo sa aktualizovať '%s': %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:874 ../client/pk-console.c:882
+#: ../client/pk-console.c:884 ../client/pk-console.c:892
 #, c-format
-msgid "This tool could not get the requires for '%s': %s"
+msgid "This tool could not get the requirements for '%s': %s"
 msgstr "Nepodarilo sa získať požiadavky balíčka '%s': %s"
 
-#. TRANSLATORS: There was an error getting the depends for the package. The detailed error follows
-#: ../client/pk-console.c:904 ../client/pk-console.c:912
+#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
+#: ../client/pk-console.c:914 ../client/pk-console.c:922
 #, c-format
-msgid "This tool could not get the dependancies for '%s': %s"
+msgid "This tool could not get the dependencies for '%s': %s"
 msgstr "Nepodarilo sa získať závislosti pre '%s': %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:934 ../client/pk-console.c:942
+#: ../client/pk-console.c:944 ../client/pk-console.c:952
 #, c-format
 msgid "This tool could not get package details for '%s': %s"
 msgstr "Nepodarilo sa získať detaily o balíčku '%s': %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:964
+#: ../client/pk-console.c:974
 #, c-format
 msgid "This tool could not find the files for '%s': %s"
 msgstr "Nepodarilo sa nájsť zoznam súborov balíčka '%s': %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:972
+#: ../client/pk-console.c:982
 #, c-format
 msgid "This tool could not get the file list for '%s': %s"
 msgstr "Nepodarilo sa získať zoznam súborov balíčka '%s': %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:994
+#: ../client/pk-console.c:1004
 #, c-format
 msgid "This tool could not find the update details for '%s': %s"
 msgstr "Nepodarilo sa nájsť detaily aktualizácie pre '%s': %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1002
+#: ../client/pk-console.c:1012
 #, c-format
 msgid "This tool could not get the update details for '%s': %s"
 msgstr "Nepodarilo sa získať detaily aktualizácie pre '%s': %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1048
+#: ../client/pk-console.c:1058
 msgid "Error:"
 msgstr "Chyba:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1062
+#: ../client/pk-console.c:1072
 msgid "Package description"
 msgstr "Popis balíčka"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1095
+#: ../client/pk-console.c:1105
 msgid "Package files"
 msgstr "Zonam súborov v balíčku"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1104
+#: ../client/pk-console.c:1114
 msgid "No files"
 msgstr "Žiadne súbory"
 
-#. TRANSLATORS: This a request for a GPG key signature
-#: ../client/pk-console.c:1127
+#. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
+#: ../client/pk-console.c:1137
 msgid "Repository signature required"
 msgstr "Požadovaný podpis repozitára"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1137
-msgid "Okay to import key?"
-msgstr "Importovať kľúč?"
+#: ../client/pk-console.c:1147
+msgid "You you accept this signature?"
+msgstr "Akceptujete tento podpis?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1141
-msgid "Did not import key"
-msgstr "Kľúč nebol importovaný"
+#: ../client/pk-console.c:1151
+msgid "The signature was not accepted."
+msgstr "Podpis nebol prijatý."
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1175
-msgid "Eula required"
-msgstr "Požadovaná je licencia EULA"
+#: ../client/pk-console.c:1185
+msgid "End user license agreement required"
+msgstr "Požadovaný súhlas s licenciou"
 
-#. TRANSLATORS: This a prompt asking the user to agree to the licence
-#: ../client/pk-console.c:1182
-msgid "Do you agree?"
-msgstr "Súhlasíte?"
+#. TRANSLATORS: This a prompt asking the user to agree to the license
+#: ../client/pk-console.c:1192
+msgid "Do you agree to this license?"
+msgstr "Súhlasíte s licenciou?"
 
-#. TRANSLATORS: This is where the user declined the licence
-#: ../client/pk-console.c:1186
-msgid "Did not agree to licence"
-msgstr "Nebol daný súhlas s licenciou"
+#. TRANSLATORS: This is where the user declined the license
+#: ../client/pk-console.c:1196
+msgid "The license was refused."
+msgstr "Licencia bola odmietnutá."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1215
+#: ../client/pk-console.c:1225
 msgid "The daemon crashed mid-transaction!"
 msgstr "Služba na pozadí neočakávne skončila počas transakcie!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1268
+#: ../client/pk-console.c:1278
 msgid "PackageKit Console Interface"
 msgstr "Konzola PackageKit"
 
-#: ../client/pk-console.c:1268
+#: ../client/pk-console.c:1278
 msgid "Subcommands:"
 msgstr "Podpríkazy:"
 
-#: ../client/pk-console.c:1359 ../client/pk-generate-pack.c:138
-#: ../client/pk-monitor.c:115 ../src/pk-main.c:195
+#: ../client/pk-console.c:1369 ../client/pk-generate-pack.c:138
+#: ../client/pk-monitor.c:115 ../src/pk-main.c:196
 msgid "Show extra debugging information"
 msgstr "Zobrazovať dodatočné ladiace informácie"
 
-#: ../client/pk-console.c:1361 ../client/pk-monitor.c:117
+#: ../client/pk-console.c:1371 ../client/pk-monitor.c:117
 msgid "Show the program version and exit"
 msgstr "Zobraziť verziu programu a skončiť"
 
-#: ../client/pk-console.c:1363
+#: ../client/pk-console.c:1373
 msgid "Set the filter, e.g. installed"
 msgstr "Nastaviť filter, napríklad \"nainštalované\""
 
-#: ../client/pk-console.c:1365
+#: ../client/pk-console.c:1375
 msgid "Exit without waiting for actions to complete"
 msgstr "Nečakať na dokončenie úloh a skončiť"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1387
+#: ../client/pk-console.c:1397
 msgid "This tool could not connect to system DBUS."
 msgstr "Pokus o pripojenie k systémovej zbernici DBUS neuspel."
 
-#: ../client/pk-console.c:1482
+#: ../client/pk-console.c:1492
 msgid "You need to specify a search type, e.g. name"
 msgstr "Je potrebné určiť typ vyhľadávania, napríklad názov"
 
-#: ../client/pk-console.c:1487 ../client/pk-console.c:1494
-#: ../client/pk-console.c:1501 ../client/pk-console.c:1508
-#: ../client/pk-console.c:1619 ../client/pk-console.c:1629
-#: ../client/pk-console.c:1636 ../client/pk-console.c:1643
+#: ../client/pk-console.c:1497 ../client/pk-console.c:1504
+#: ../client/pk-console.c:1511 ../client/pk-console.c:1518
+#: ../client/pk-console.c:1629 ../client/pk-console.c:1639
+#: ../client/pk-console.c:1646 ../client/pk-console.c:1653
 msgid "You need to specify a search term"
 msgstr "Je potrebné určiť kľúčové slová na vyhľadávanie"
 
-#: ../client/pk-console.c:1513
+#: ../client/pk-console.c:1523
 msgid "Invalid search type"
 msgstr "Neplatný typ vyhľadávania"
 
-#: ../client/pk-console.c:1518
+#: ../client/pk-console.c:1528
 msgid "You need to specify a package or file to install"
 msgstr "Je potrebné určiť balíček alebo súbor na inštaláciu"
 
-#: ../client/pk-console.c:1525
+#: ../client/pk-console.c:1535
 msgid "You need to specify a type, key_id and package_id"
 msgstr "Je potrebné určiť typ, key_id a package_id"
 
-#: ../client/pk-console.c:1532
+#: ../client/pk-console.c:1542
 msgid "You need to specify a package to remove"
 msgstr "Je potrebné určit balíček na odstránenie"
 
-#: ../client/pk-console.c:1538
+#: ../client/pk-console.c:1548
 msgid ""
 "You need to specify the destination directory and then the packages to "
 "download"
 msgstr "Je potrebné určiť cieľový priečinok a následne balíčky na stiahnutie"
 
-#: ../client/pk-console.c:1543
+#: ../client/pk-console.c:1553
 msgid "Directory not found"
 msgstr "Priečinok nenájdený"
 
-#: ../client/pk-console.c:1549
-msgid "You need to specify a eula-id"
-msgstr "Je potrebné určiť eula-id"
+#: ../client/pk-console.c:1559
+msgid "You need to specify a licence identifier (eula-id)"
+msgstr "Je potrebné určiť identifikátor licencie (eula-id)"
 
-#: ../client/pk-console.c:1565
+#: ../client/pk-console.c:1575
 msgid "You need to specify a package name to resolve"
 msgstr "Je potrebné určiť názov balíčka na vyhľadanie"
 
-#: ../client/pk-console.c:1574 ../client/pk-console.c:1581
-msgid "You need to specify a repo name"
+#: ../client/pk-console.c:1584 ../client/pk-console.c:1591
+msgid "You need to specify a repository name"
 msgstr "Je potrebné určiť názov repozitára"
 
-#: ../client/pk-console.c:1588
+#: ../client/pk-console.c:1598
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Je potrebné určiť názov repozitára/parameter a hodnotu"
 
-#: ../client/pk-console.c:1601
-msgid "You need to specify a time term"
-msgstr "Je potrebné určiť čas"
+#: ../client/pk-console.c:1611
+msgid "You need to specify an action, e.g. 'update-system'"
+msgstr "Je potrebné určiť akciu, napríklad 'update-system'"
 
-#: ../client/pk-console.c:1606
+#: ../client/pk-console.c:1616
 msgid "You need to specify a correct role"
 msgstr "Je potrebné určiť správnu rolu"
 
 # XXX
-#: ../client/pk-console.c:1611
+#: ../client/pk-console.c:1621
 msgid "Failed to get last time"
 msgstr "Nebolo možné získať čas ostatného vykonania"
 
-#: ../client/pk-console.c:1650
+#: ../client/pk-console.c:1660
 msgid "You need to specify a package to find the details for"
 msgstr "Je potrebné určiť balíček, ktorého detaily sa majú získať"
 
-#: ../client/pk-console.c:1657
+#: ../client/pk-console.c:1667
 msgid "You need to specify a package to find the files for"
 msgstr "Je potrebné určiť balíček, zoznam súborov ktorého sa má získať"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1710
+#: ../client/pk-console.c:1720
 #, c-format
-msgid "Option '%s' not supported"
+msgid "Option '%s' is not supported"
 msgstr "Voľba '%s' nie je podporovaná"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:1723
+#: ../client/pk-console.c:1733
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Na vykonanie úlohy nemáte dostatočné privilégiá"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1726
+#: ../client/pk-console.c:1736
 msgid "Command failed"
 msgstr "Príkaz neuspel"
 
@@ -317,22 +338,20 @@ msgid "Downloading"
 msgstr "Získavanie"
 
 #: ../client/pk-generate-pack.c:140
-msgid "Set the filename of dependencies to be excluded"
-msgstr ""
-"Nastavte názov súboru so zoznamom závislostí, ktoré sa majú vynechať"
+msgid "Set the file name of dependencies to be excluded"
+msgstr "Nastavte názov súboru so závislosťami, ktoré sa majú vynechať"
 
 #: ../client/pk-generate-pack.c:142
-msgid ""
-"The directory to put the pack file, or the current directory if ommitted"
-msgstr "Priečinok na uloženie archívu (aktuálny priečinok, ak bude vynechané)"
+msgid "The output directory (the current directory is used if ommitted)"
+msgstr "Cieľový priečinok (ak bude vynechané, použije sa aktuálny priečinok)"
 
 #: ../client/pk-generate-pack.c:144
-msgid "The package to be put into the ServicePack"
-msgstr "Balíček na uloženie do archívu"
+msgid "The package to be put into the service pack"
+msgstr "Balíček ktorý sa má uložiť do servisného archívu"
 
 #: ../client/pk-generate-pack.c:146
-msgid "Put all updates available in the ServicePack"
-msgstr "Vložiť do archívu všetky dostupné aktualizácie"
+msgid "Put all updates available in the service pack"
+msgstr "Vložiť do servisného archívu všetky dostupné aktualizácie"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:166
@@ -355,10 +374,10 @@ msgid "The pack was not overwritten."
 msgstr "Archív nebol prepísaný."
 
 # XXX
-#. TRANSLATORS: This is when the temporary directory cannot be created
+#. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
 #: ../client/pk-generate-pack.c:222
-msgid "Failed to create directory."
-msgstr "Nepodarilo sa vytvoriť priečinok."
+msgid "Failed to create directory:"
+msgstr "Nepodarilo sa vytvoriť priečinok:"
 
 # XXX
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
@@ -366,12 +385,12 @@ msgstr "Nepodarilo sa vytvoriť priečinok."
 msgid "Failed to open package list."
 msgstr "Nepodarilo sa otvoriť zoznam balíčkov."
 
-#. TRANSLATORS: This is when the user fails to supply the correct arguments
+#. TRANSLATORS: The package name is being matched up to available packages
 #: ../client/pk-generate-pack.c:241
 msgid "Finding package name."
 msgstr "Hľadanie názvu balíčka."
 
-#. TRANSLATORS: This is when the package cannot be foudn in any software source
+#. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
 #: ../client/pk-generate-pack.c:245
 #, c-format
 msgid "Failed to find package '%s': %s"
@@ -397,12 +416,6 @@ msgstr "Nepodarilo sa vytvoriť '%s': %s"
 #: ../client/pk-monitor.c:128
 msgid "PackageKit Monitor"
 msgstr "Monitor PackageKit"
-
-#: ../client/pk-tools-common.c:48 ../client/pk-tools-common.c:58
-#: ../client/pk-tools-common.c:76 ../client/pk-tools-common.c:83
-#, c-format
-msgid "Internal error: %s"
-msgstr "Vnútorná chyba: %s"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:109
@@ -453,13 +466,13 @@ msgstr "Spustiť teraz"
 #. TRANSLATORS: update to a new version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
-msgid "Upgrade to version %s"
+msgid "Update to version %s"
 msgstr "Aktualizovať na verziu %s"
 
 #. TRANSLATORS: To install a package
 #: ../contrib/packagekit-plugin/src/contents.cpp:336
 #, c-format
-msgid "Install %s Now"
+msgid "Install %s now"
 msgstr "Nainštalovať %s teraz"
 
 #. TRANSLATORS: the version of the package
@@ -503,49 +516,64 @@ msgstr "Program nebol spustený správnym používateľom (obvykle root)"
 
 #: ../src/pk-main.c:88
 msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
-"dbus-1/system.d directory"
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
 msgstr ""
-"Súbor org.freedesktop.PackageKit.conf nieje nainštalovaný v priečinku /etc/"
-"dbus-1/system.d"
+"Súbor org.freedesktop.PackageKit.conf nie je nainštalovaný v systémovom "
+"priečinku:"
 
-#: ../src/pk-main.c:191
+#: ../src/pk-main.c:192
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Rozhranie balíčkoveho systému ktoré sa má použiť, napríklad \"dummy\""
 
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:194
 msgid "Daemonize and detach from the terminal"
 msgstr "Uvoľniť terminál a presunúť sa na pozadie"
 
-#: ../src/pk-main.c:197
+#: ../src/pk-main.c:198
 msgid "Disable the idle timer"
 msgstr "Vypnúť počítadlo času nečinnosti"
 
-#: ../src/pk-main.c:199
+#: ../src/pk-main.c:200
 msgid "Show version and exit"
 msgstr "Zobraziť verziu a skončiť"
 
-#: ../src/pk-main.c:201
+#: ../src/pk-main.c:202
 msgid "Exit after a small delay"
 msgstr "Skončiť po krátkej prestávke"
 
 # XXX
-#: ../src/pk-main.c:203
+#: ../src/pk-main.c:204
 msgid "Exit after the engine has loaded"
 msgstr "Skončiť po načítaní enginu"
 
-#: ../src/pk-main.c:213
+#: ../src/pk-main.c:214
 msgid "PackageKit service"
 msgstr "Služba PackageKit"
 
-#: ../src/pk-main.c:249
+#: ../src/pk-main.c:250
 msgid "Cannot connect to the system bus"
 msgstr "Pokus o pripojenie k systémovej zbernici neuspel"
 
-#: ../src/pk-main.c:295
+#: ../src/pk-main.c:296
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Chyba pri pokuse o spustenie: %s\n"
+
+#~ msgid "Okay to import key?"
+#~ msgstr "Importovať kľúč?"
+
+#~ msgid "Did not import key"
+#~ msgstr "Kľúč nebol importovaný"
+
+#~ msgid "Eula required"
+#~ msgstr "Požadovaná je licencia EULA"
+
+#~ msgid "Do you agree?"
+#~ msgstr "Súhlasíte?"
+
+#~ msgid "You need to specify a time term"
+#~ msgstr "Je potrebné určiť čas"
 
 #~ msgid "Accept EULA"
 #~ msgstr "Prijať licenčné podmienky"
