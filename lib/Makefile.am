@@ -1,2 +1,2 @@
-SUBDIRS = packagekit-glib python
+SUBDIRS = packagekit-glib packagekit-qt python
 

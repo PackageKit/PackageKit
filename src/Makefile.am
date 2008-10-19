@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = 1.7
 NULL =
 
 PK_LIBS =						\
-	$(top_builddir)/lib/packagekit-glib/libpackagekit.la	\
+	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la	\
 	$(NULL)
 
 INCLUDES =						\

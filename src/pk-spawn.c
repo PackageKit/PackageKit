@@ -181,7 +181,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	spawn->priv->child_pid = -1;
 
 	if (WEXITSTATUS (status) > 0) {
-		egg_warning ("Running fork failed with return value %d", WEXITSTATUS (status));
+		egg_debug ("Running fork failed with return value %d", WEXITSTATUS (status));
 		if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
 			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_FAILED;
 	} else {

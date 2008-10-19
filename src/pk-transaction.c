@@ -575,8 +575,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_category);
 
 	/* check for session restarts */
-	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+	if (exit == PK_EXIT_ENUM_SUCCESS &&
+	    (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	     transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 
 		/* check updated packages file lists and running processes */
 		ret = pk_conf_get_bool (transaction->priv->conf, "UpdateCheckProcesses");
@@ -592,12 +593,21 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 			}
 
 			/* process file lists on these packages */
-			package_ids = pk_package_list_to_strv (list);
-			pk_post_trans_check_process_filelists (transaction->priv->post_trans, package_ids);
-			g_strfreev (package_ids);
+			if (PK_OBJ_LIST(list)->len > 0) {
+				package_ids = pk_package_list_to_strv (list);
+				pk_post_trans_check_process_filelists (transaction->priv->post_trans, package_ids);
+				g_strfreev (package_ids);
+			}
 			g_object_unref (list);
 		}
 	}
+
+	/* signals we are not allowed to send from the second phase post transaction */
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
 
 	/* do some optional extra actions when we've finished refreshing the cache */
 	if (exit == PK_EXIT_ENUM_SUCCESS &&
@@ -616,13 +626,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 		/* clear the firmware requests directory */
 		pk_post_trans_clear_firmware_requests (transaction->priv->post_trans);
 	}
-
-	/* signals we are allowed to send from a post transaction */
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
 
 	/* if we did not send this, ensure the GUI has the right state */
 	if (transaction->priv->allow_cancel)
@@ -3682,7 +3685,12 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->inhibit = pk_inhibit_new ();
 	transaction->priv->package_list = pk_package_list_new ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
+
 	transaction->priv->post_trans = pk_post_trans_new ();
+	g_signal_connect (transaction->priv->post_trans, "status-changed",
+			  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
+	g_signal_connect (transaction->priv->post_trans, "progress-changed",
+			  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
 
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	g_signal_connect (transaction->priv->transaction_db, "transaction",

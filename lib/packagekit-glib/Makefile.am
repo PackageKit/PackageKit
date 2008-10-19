@@ -17,12 +17,12 @@ INCLUDES = \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
 lib_LTLIBRARIES =						\
-	libpackagekit.la					\
+	libpackagekit-glib.la					\
 	$(NULL)
 
-libpackagekit_includedir = $(includedir)/PackageKit/packagekit-glib
+libpackagekit_glib_includedir = $(includedir)/PackageKit/packagekit-glib
 
-libpackagekit_include_HEADERS =					\
+libpackagekit_glib_include_HEADERS =				\
 	packagekit.h						\
 	pk-extra.h						\
 	pk-connection.h						\
@@ -46,7 +46,7 @@ libpackagekit_include_HEADERS =					\
 	pk-service-pack.h					\
 	$(NULL)
 
-libpackagekit_la_SOURCES =					\
+libpackagekit_glib_la_SOURCES =					\
 	packagekit.h						\
 	egg-debug.c						\
 	egg-debug.h						\
@@ -96,7 +96,7 @@ libpackagekit_la_SOURCES =					\
 	pk-task-list.h						\
 	$(NULL)
 
-libpackagekit_la_LIBADD =					\
+libpackagekit_glib_la_LIBADD =					\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(POLKIT_LIBS)						\
@@ -104,7 +104,7 @@ libpackagekit_la_LIBADD =					\
 	$(ARCHIVE_LIBS)						\
 	$(NULL)
 
-libpackagekit_la_LDFLAGS =					\
+libpackagekit_glib_la_LDFLAGS =					\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
 	-export-dynamic						\
 	-no-undefined						\
@@ -116,7 +116,7 @@ check_PROGRAMS =						\
 	pk-self-test
 
 pk_self_test_SOURCES =						\
-	$(libpackagekit_la_SOURCES)				\
+	$(libpackagekit_glib_la_SOURCES)			\
 	egg-test.h						\
 	egg-test.c						\
 	pk-self-test.c						\

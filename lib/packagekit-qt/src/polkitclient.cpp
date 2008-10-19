@@ -18,7 +18,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include <polkit-dbus/polkit-dbus.h>
+#ifdef USE_SECURITY_POLKIT
+ #include <polkit-dbus/polkit-dbus.h>
+#endif
 
 #include "polkitclient.h"
 
@@ -35,6 +37,7 @@ PolkitClient* PolkitClient::instance()
 PolkitClient::PolkitClient(QObject *parent) : QObject(parent) {
 }
 
+#ifdef USE_SECURITY_POLKIT
 bool PolkitClient::getAuth(const QString &action) {
 	DBusError e;
 	dbus_error_init(&e);
@@ -49,6 +52,12 @@ bool PolkitClient::getAuth(const QString &action) {
 
 	return auth;
 }
+#else
+bool PolkitClient::getAuth(const QString &action) {
+	qDebug() << "Not configured with PolicyKit support";
+	return false;
+}
+#endif
 
 #include "polkitclient.moc"
 
