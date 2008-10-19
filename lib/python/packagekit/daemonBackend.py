@@ -53,9 +53,6 @@ pklog.addHandler(syslog)
 PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitBackend'
 PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
 
-INACTIVE_CHECK_INTERVAL = 1000 * 60 * 5 # Check every 5 minutes.
-INACTIVE_TIMEOUT = 60 * 10 # timeout after 10 minutes of inactivity.
-
 def forked(func):
     '''
     Decorator to fork a worker process.
@@ -171,16 +168,9 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         self.loop = gobject.MainLoop()
 
-        gobject.timeout_add(INACTIVE_CHECK_INTERVAL, self.check_for_inactivity)
         self.last_action_time = time.time()
 
         self.loop.run()
-
-    def check_for_inactivity(self):
-        if time.time() - self.last_action_time > INACTIVE_TIMEOUT:
-            pklog.critical("Exiting due to timeout.")
-            self.Exit()
-        return True
 
     def on_child_exit(self, pid, condition, data):
         pass
