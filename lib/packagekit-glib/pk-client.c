@@ -4416,7 +4416,7 @@ pk_client_test (EggTest *test)
 		size_new = pk_package_list_get_size (list);
 		g_object_unref (list);
 		if (size != size_new)
-			egg_test_failed (test, "old size %i, new size %", size, size_new);
+			egg_test_failed (test, "old size %i, new size %i", size, size_new);
 	}
 	egg_test_success (test, "%i search name loops completed in %ims", i, egg_test_elapsed (test));
 	g_object_unref (client);
