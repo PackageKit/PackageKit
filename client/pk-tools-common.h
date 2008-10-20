@@ -33,7 +33,7 @@ PkPackageList	*pk_console_resolve			(PkClient	*client,
 							 PkBitfield	 filter,
 							 const gchar	*package,
 							 GError		**error);
-gchar		*pk_console_resolve_package_id		(PkPackageList	*list,
+gchar		*pk_console_resolve_package_id		(const PkPackageList *list,
 							 GError		**error);
 
 #endif /* __PK_TOOLS_COMMON_H */
