@@ -1,0 +1,461 @@
+# translation of packagekit.master.po to Bengali INDIA
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Runa Bhattacharjee <runab@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: packagekit.master\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-10-05 01:54+0000\n"
+"PO-Revision-Date: 2008-10-20 14:26+0530\n"
+"Last-Translator: Runa Bhattacharjee <runab@redhat.com>\n"
+"Language-Team: Bengali INDIA <fedora-trans-bn_IN@redhat.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../client/pk-console.c:274
+msgid "Update detail"
+msgstr "আপডেট সংক্রান্ত বিবরণ"
+
+#: ../client/pk-console.c:491
+msgid "A system restart is required"
+msgstr "সিস্টেম পুনরারম্ভ করা আবশ্যক"
+
+#: ../client/pk-console.c:493
+msgid "A logout and login is required"
+msgstr "লগ-আউট ও লগ-ইন করা প্রয়োজন"
+
+#: ../client/pk-console.c:495
+msgid "An application restart is required"
+msgstr "অ্যাপ্লিকেশন পুনরায় আরম্ভ করা আবশ্যক"
+
+#: ../client/pk-console.c:588 ../client/pk-generate-pack.c:126
+msgid "There are multiple package matches"
+msgstr "একাধিক প্যাকেজের সাথে মিল পাওয়া গিয়েছে"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:595 ../client/pk-generate-pack.c:133
+msgid "Please enter the package number: "
+msgstr "অনুগ্রহ করে প্যাকেজ সংখ্যা লিখুন: "
+
+#: ../client/pk-console.c:629
+msgid "Could not find package to install"
+msgstr "ইনস্টল করার উদ্দেশ্যে প্যাকেজ পাওয়া যায়নি"
+
+#: ../client/pk-console.c:735
+msgid "Could not find package to remove"
+msgstr "অপসারণের উদ্দেশ্যে প্যাকেজ পাওয়া যায়নি"
+
+#: ../client/pk-console.c:796
+msgid "The following packages have to be removed"
+msgstr "নিম্নলিখিত প্যাকেজগুলি অপসারণ করা আবশ্যক"
+
+#. get user input
+#: ../client/pk-console.c:803
+msgid "Okay to remove additional packages?"
+msgstr "অতিরিক্ত প্যাকেজ অপসারণ করা যাবে কি?"
+
+#: ../client/pk-console.c:807 ../client/pk-generate-pack.c:528
+#: ../client/pk-generate-pack-main.c:131
+msgid "Cancelled!"
+msgstr "বাতিল করা হয়েছে!"
+
+#: ../client/pk-console.c:841
+msgid "Could not find package to download"
+msgstr "ডাউনলোড করার উদ্দেশ্যে প্যাকেজ পাওয়া যায়নি"
+
+#: ../client/pk-console.c:893
+msgid "Could not find package to update"
+msgstr "আপডেট করার জন্য প্যাকেজ পাওয়া যায়নি"
+
+#: ../client/pk-console.c:915
+msgid "Could not find what packages require"
+msgstr "চিহ্নিত প্যাকেজের উপর নির্ভরশীল প্যাকেজ পাওয়া যায়নি"
+
+#: ../client/pk-console.c:936
+msgid "Could not get dependencies for"
+msgstr "চিহ্নিত প্যাকেজের ক্ষেত্রে নির্ভরতা পাওয়া যায়নি"
+
+#: ../client/pk-console.c:957
+msgid "Could not find details for"
+msgstr "চিহ্নিত প্যাকেজের বিবরণ পাওয়া যায়নি"
+
+#: ../client/pk-console.c:980
+msgid "Could not find the files for this package"
+msgstr "চিহ্নিত প্যাকেজের ফাইল পাওয়া যায়নি"
+
+#: ../client/pk-console.c:987
+msgid "Could not get the file list"
+msgstr "ফাইলের তালিকা পাওয়া যায়নি"
+
+#: ../client/pk-console.c:1006
+msgid "Could not find the update details for"
+msgstr "চিহ্নিত প্যাকেজের আপডেট সংক্রান্ত বিবরণ পাওয়া যায়নি"
+
+#: ../client/pk-console.c:1067
+msgid "Package description"
+msgstr "প্যাকেজের বিবরণ"
+
+#: ../client/pk-console.c:1100
+msgid "Package files"
+msgstr "প্যাকেজের ফাইল"
+
+#: ../client/pk-console.c:1108
+msgid "No files"
+msgstr "কোনো ফাইল উপস্থিত নেই"
+
+#. get user input
+#: ../client/pk-console.c:1140
+msgid "Okay to import key?"
+msgstr "কি ইম্পোর্ট করা যাবে কি?"
+
+#: ../client/pk-console.c:1143
+msgid "Did not import key"
+msgstr "কি ইম্পোর্ট করা হয়নি"
+
+#. get user input
+#: ../client/pk-console.c:1183
+msgid "Do you agree?"
+msgstr "আপনি সম্মত কি?"
+
+#: ../client/pk-console.c:1186
+msgid "Did not agree to licence, task will fail"
+msgstr "লাইসেন্সের শর্তাবলী গ্রহণ না করার ফলে কর্ম বিফল হবে"
+
+#: ../client/pk-console.c:1215
+msgid "The daemon crashed mid-transaction!"
+msgstr "সম্প্রচার চলাকালে ডেমন বিপর্যস্ত হয়েছে!"
+
+#. header
+#: ../client/pk-console.c:1268
+msgid "PackageKit Console Interface"
+msgstr "PackageKit কনসোল ইন্টারফেস"
+
+#: ../client/pk-console.c:1268
+msgid "Subcommands:"
+msgstr "সাব-কমান্ড:"
+
+#: ../client/pk-console.c:1378 ../client/pk-generate-pack-main.c:64
+#: ../client/pk-monitor.c:118 ../src/pk-main.c:192
+msgid "Show extra debugging information"
+msgstr "ডিবাগ সংক্রান্ত অতিরিক্ত তথ্য প্রদর্শন করা হবে"
+
+#: ../client/pk-console.c:1380 ../client/pk-monitor.c:120
+msgid "Show the program version and exit"
+msgstr "প্রোগ্রামের সংস্করণ প্রদর্শন করে প্রস্থান করা হবে"
+
+#: ../client/pk-console.c:1382
+msgid "Set the filter, e.g. installed"
+msgstr "ফিল্টার নির্ধারণ করুন, উদাহরণ, installed"
+
+#: ../client/pk-console.c:1384
+msgid "Exit without waiting for actions to complete"
+msgstr "কর্ম সমাপ্তির অপেক্ষা না করে প্রস্থান করা হবে"
+
+#: ../client/pk-console.c:1407
+msgid "Could not connect to system DBUS."
+msgstr "সিস্টেম DBUS-র সাথে সংযোগ স্থাপন করতে ব্যর্থ।"
+
+#: ../client/pk-console.c:1500
+msgid "You need to specify a search type, e.g. name"
+msgstr "অনুসন্ধানের ধরন নির্ধারণ করা আবশ্যক, উদাহরণ, নাম"
+
+#: ../client/pk-console.c:1505 ../client/pk-console.c:1512
+#: ../client/pk-console.c:1519 ../client/pk-console.c:1526
+#: ../client/pk-console.c:1637 ../client/pk-console.c:1647
+#: ../client/pk-console.c:1654 ../client/pk-console.c:1661
+msgid "You need to specify a search term"
+msgstr "অনুসন্ধানের উদ্দেশ্যে নির্দেশক শব্দ উল্লেখ করা আবশ্যক"
+
+#: ../client/pk-console.c:1531
+msgid "Invalid search type"
+msgstr "অনুসন্ধানের ধরন বৈধ নয়"
+
+#: ../client/pk-console.c:1536
+msgid "You need to specify a package or file to install"
+msgstr "ইনস্টল করার উদ্দেশ্যে একটি প্যাকেজ অথবা ফাইল উল্লেখ করা আবশ্যক"
+
+#: ../client/pk-console.c:1543
+msgid "You need to specify a type, key_id and package_id"
+msgstr "ধরন, key_id ও package_id উল্লেখ করা আবশ্যক"
+
+#: ../client/pk-console.c:1550
+msgid "You need to specify a package to remove"
+msgstr "অপসারণের উদ্দেশ্যে প্যাকেজ নির্ধারণ করা আবশ্যক"
+
+#: ../client/pk-console.c:1556
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
+msgstr "উদ্দিষ্ট ডিরেক্টরি ও ডাউনলোড করার উদ্দেশ্যে প্যাকেজ উল্লেখ করা আবশ্যক"
+
+#: ../client/pk-console.c:1561
+msgid "Directory not found"
+msgstr "ডিরেক্টরি পাওয়া যায়নি"
+
+#: ../client/pk-console.c:1567
+msgid "You need to specify a eula-id"
+msgstr "eula-id উল্লেখ করা আবশ্যক"
+
+#: ../client/pk-console.c:1583
+msgid "You need to specify a package name to resolve"
+msgstr "মীমাংসা করার উদ্দেশ্যে একটি প্যাকেজের নাম নির্ধারণ করা আবশ্যক"
+
+#: ../client/pk-console.c:1592 ../client/pk-console.c:1599
+msgid "You need to specify a repo name"
+msgstr "একটি repo-র নাম উল্লেখ করা আবশ্যক"
+
+#: ../client/pk-console.c:1606
+msgid "You need to specify a repo name/parameter and value"
+msgstr "একটি repo-র নাম/পরামিতি ও মান নির্ধারণ করা আবশ্যক"
+
+#: ../client/pk-console.c:1619
+msgid "You need to specify a time term"
+msgstr "সময়কালের নির্দেশ নির্ধারণ করা আবশ্যক"
+
+#: ../client/pk-console.c:1624
+msgid "You need to specify a correct role"
+msgstr "সঠিক role নির্ধারণ করা আবশ্যক"
+
+#: ../client/pk-console.c:1629
+msgid "Failed to get last time"
+msgstr "সর্বশেষ বার প্রাপ্ত করতে ব্যর্থ"
+
+#: ../client/pk-console.c:1668
+msgid "You need to specify a package to find the details for"
+msgstr "বিবরণ প্রাপ্তির উদ্দেশ্যে একটি প্যাকেজ নির্ধারণ করা আবশ্যক"
+
+#: ../client/pk-console.c:1675
+msgid "You need to specify a package to find the files for"
+msgstr "ফাইল অনুসন্ধানের উদ্দেশ্যে একটি প্যাকেজ নির্ধারণ করা আবশ্যক"
+
+#: ../client/pk-console.c:1724
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "'%s' বিকল্পটি সমর্থিত নয়"
+
+#: ../client/pk-console.c:1737
+msgid "You don't have the necessary privileges for this operation"
+msgstr "এই কর্মের জন্য প্রয়োজনীয় অনুমতি আপনার জন্য উপলব্ধ নয়"
+
+#: ../client/pk-console.c:1739
+msgid "Command failed"
+msgstr "কমান্ড বিফল"
+
+#: ../client/pk-generate-pack.c:117
+msgid "Could not find a package match"
+msgstr "সুসংগত প্যাকেজ পাওয়া যায়নি"
+
+#: ../client/pk-generate-pack.c:151
+msgid "failed to download: invalid package_id and/or directory"
+msgstr "ডাউনলোড করতে ব্যর্থ: package_id এবং/অথবা ডিরেক্টরি বৈধ নয়"
+
+#: ../client/pk-generate-pack.c:232
+msgid "Could not find a valid metadata file"
+msgstr "বৈধ মিটাডাটা ফাইল পাওয়া যায়নি"
+
+#. get user input
+#: ../client/pk-generate-pack.c:524
+msgid "Okay to download the additional packages"
+msgstr "অতিরিক্ত প্যাকেজ ডাউনলোড করা যাবে"
+
+#: ../client/pk-generate-pack-main.c:66
+msgid ""
+"Set the path of the file with the list of packages/dependencies to be "
+"excluded"
+msgstr "উপেক্ষা করার উদ্দেশ্যে প্যাকেজ/নির্ভরতার তালিকা উল্লেখকারী ফাইলের পাথ নির্ধারণ করুন"
+
+#: ../client/pk-generate-pack-main.c:111
+msgid "You need to specify the pack name and packages to be packed\n"
+msgstr "একত্রিত প্যাক করার উদ্দেশ্যে প্যাকের নাম ও প্যাকেজগুলি নির্দেশ করা আবশ্যক\n"
+
+#: ../client/pk-generate-pack-main.c:117
+msgid ""
+"Invalid name for the service pack, Specify a name with .servicepack "
+"extension\n"
+msgstr "সার্ভিস প্যাকের নাম বৈধ নয়। .servicepack এক্সটেনশনসহ একটি নাম উল্লেখ করুন\n"
+
+#: ../client/pk-generate-pack-main.c:129
+msgid "A pack with the same name already exists, do you want to overwrite it?"
+msgstr "এই নামের একটি প্যাক বর্তমানে উপস্থিত রয়েছে, আপনি কি এটি নতুন করে লিখতে ইচ্ছুক?"
+
+#: ../client/pk-generate-pack-main.c:142
+msgid "Failed to create directory"
+msgstr "ডিরেক্টরি নির্মাণ করতে ব্যর্থ"
+
+#: ../client/pk-generate-pack-main.c:149
+msgid "Failed to create pack"
+msgstr "প্যাক নির্মাণ করতে ব্যর্থ"
+
+#: ../client/pk-import-specspo.c:185
+msgid "Could not set database readonly"
+msgstr "শুধুমাত্র পাঠযোগ্য বৈশিষ্ট্যে ডাটাবেস নির্ধারণ করা যায়নি"
+
+#: ../client/pk-import-specspo.c:192
+#, c-format
+msgid "Could not open database: %s"
+msgstr "ডাটাবেস খুলতে ব্যর্থ: %s"
+
+#: ../client/pk-import-specspo.c:193
+msgid "You probably need to run this program as the root user"
+msgstr "সম্ভবত root পরিচয়ে এই প্রোগ্রাম সঞ্চালন করা আবশ্যক"
+
+#: ../client/pk-monitor.c:131
+msgid "PackageKit Monitor"
+msgstr "PackageKit Monitor"
+
+#: ../client/pk-tools-common.c:51
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "অনুগ্রহ করে ১ থেকে %i-র মধ্যে একটি সংখ্যা লিখুন: "
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:300
+msgid "Getting package information..."
+msgstr "প্যাকেজ সংক্রান্ত তথ্য প্রাপ্ত করা হচ্ছে..."
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
+msgstr "<span color='#%06x' underline='single' size='larger'>%s সঞ্চালন করুন</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:308
+#: ../contrib/packagekit-plugin/src/contents.cpp:313
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#: ../contrib/packagekit-plugin/src/contents.cpp:340
+#, c-format
+msgid "<big>%s</big>"
+msgstr "<big>%s</big>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:310
+#, c-format
+msgid ""
+"\n"
+"<small>Installed version: %s</small>"
+msgstr ""
+"\n"
+"<small>ইনস্টল করা সংস্করণ: %s</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:316
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run version %s now</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>এই মুহূর্তে %s সংস্করণ সঞ্চালন করা হবে</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:321
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Run now</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>এই মুহূর্তে সঞ্চালন করা হবে</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:325
+#, c-format
+msgid ""
+"\n"
+"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
+msgstr ""
+"\n"
+"<span color='#%06x' underline='single'>%s সংস্করণে আপগ্রেড করা হবে</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
+#, c-format
+msgid "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
+msgstr "<span color='#%06x' underline='single' size='larger'>এই মুহূর্তে %s ইনস্টল করুন</span>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:333
+#, c-format
+msgid ""
+"\n"
+"<small>Version: %s</small>"
+msgstr ""
+"\n"
+"<small>সংস্করণ: %s</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:337
+msgid ""
+"\n"
+"<small>No packages found for your system</small>"
+msgstr ""
+"\n"
+"<small>আপনার সিস্টেমের জন্য কোনো প্যাকেজ পাওয়া যায়নি</small>"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:341
+msgid ""
+"\n"
+"<small>Installing...</small>"
+msgstr ""
+"\n"
+"<small>ইনস্টল করা হচ্ছে...</small>"
+
+#: ../data/packagekit-catalog.xml.in.h:1
+msgid "PackageKit Catalog"
+msgstr "PackageKit ক্যাটালগ"
+
+#: ../data/packagekit-pack.xml.in.h:1
+msgid "PackageKit Service Pack"
+msgstr "PackageKit সার্ভিস প্যাক"
+
+#: ../src/pk-main.c:85
+msgid "Startup failed due to security policies on this machine."
+msgstr "এই মেশিনের জন্য নির্ধারিত নিরাপত্তা সংক্রান্ত নিয়মনীতির কারণে প্রারম্ভ করতে ব্যর্থ।"
+
+#: ../src/pk-main.c:86
+msgid "This can happen for two reasons:"
+msgstr "দুটি কারণে এই পরিস্থিতি উৎপন্ন হতে পারে:"
+
+#: ../src/pk-main.c:87
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "সঠিক ব্যবহারকারী (সাধারণত root) দ্বারা এক্সেকিউটেবল আরম্ভ করা হয়নি"
+
+#: ../src/pk-main.c:88
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
+msgstr "/etc/dbus-1/system.d ডিরেক্টরির মধ্যে org.freedesktop.PackageKit.conf ফাইলটি ইনস্টল করা হয়নি"
+
+#: ../src/pk-main.c:188
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "প্যাকেজ করতে ব্যবহৃত ব্যাক-এন্ড, উদাহরণ dummy"
+
+#: ../src/pk-main.c:190
+msgid "Daemonize and detach from the terminal"
+msgstr "ডেমন তৈরি করে টার্মিন্যাল থেকে বিচ্ছিন্ন করুন"
+
+#: ../src/pk-main.c:194
+msgid "Disable the idle timer"
+msgstr "কর্মবিহীন অবস্থাসূচক টাইমার নিষ্ক্রিয় করুন"
+
+#: ../src/pk-main.c:196
+msgid "Show version and exit"
+msgstr "সংস্করণ প্রদর্শন করে প্রস্থান করা হবে"
+
+#: ../src/pk-main.c:198
+msgid "Exit after a small delay"
+msgstr "স্বল্প বিলম্বের পরে প্রস্থান করা হবে"
+
+#: ../src/pk-main.c:200
+msgid "Exit after the engine has loaded"
+msgstr "ইঞ্জিন লোড করার পরে প্রস্থান করা হবে"
+
+#: ../src/pk-main.c:210
+msgid "PackageKit service"
+msgstr "PackageKit পরিসেবা"
+
+#: ../src/pk-main.c:246
+msgid "Cannot connect to the system bus"
+msgstr "সিস্টেম বাসের সাথে সংযোগ স্থাপন করতে ব্যর্থ"
+
+#: ../src/pk-main.c:286
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "আরম্ভ করতে সমস্যা: %s\n"
+
