@@ -1,0 +1,554 @@
+# translation of packagekit.master.po to
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Terry Chuang <tchuang@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: packagekit.master\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-10-19 02:08+0000\n"
+"PO-Revision-Date: 2008-10-20 16:45+1000\n"
+"Last-Translator: Terry Chuang <tchuang@redhat.com>\n"
+"Language-Team:  <zh@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+#: ../client/pk-console.c:271
+msgid "Details about the update:"
+msgstr "有關於更新的詳情："
+
+#: ../client/pk-console.c:464
+msgid "Please restart the computer to complete the update."
+msgstr "請重新啟動電腦來完成更新。"
+
+#: ../client/pk-console.c:466
+msgid "Please logout and login to complete the update."
+msgstr "請登出並再次登入來完成更新。"
+
+#: ../client/pk-console.c:468
+msgid "Please restart the application as it is being used."
+msgstr "請重新啟動應用程式因為該應用程式正被使用中。"
+
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:553
+#, c-format
+msgid "The package '%s' could not be installed: %s"
+msgstr "「%s」套件無法安裝：%s"
+
+#. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
+#: ../client/pk-console.c:578 ../client/pk-console.c:605
+#: ../client/pk-console.c:701 ../client/pk-console.c:818
+#: ../client/pk-tools-common.c:48 ../client/pk-tools-common.c:58
+#: ../client/pk-tools-common.c:76 ../client/pk-tools-common.c:83
+#, c-format
+msgid "Internal error: %s"
+msgstr "內部錯誤：%s"
+
+#. TRANSLATORS: There was an error installing the packages. The detailed error follows
+#: ../client/pk-console.c:586
+#, c-format
+msgid "This tool could not install the packages: %s"
+msgstr "此工具無法安裝套件：%s"
+
+#. TRANSLATORS: There was an error installing the files. The detailed error follows
+#: ../client/pk-console.c:613
+#, c-format
+msgid "This tool could not install the files: %s"
+msgstr "此工具無法安裝檔案：%s"
+
+#. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
+#: ../client/pk-console.c:669
+#, c-format
+msgid "This tool could not remove '%s': %s"
+msgstr "此工具無法移除「%s」：%s"
+
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:692 ../client/pk-console.c:763
+#, c-format
+msgid "This tool could not remove the packages: %s"
+msgstr "此工具無法移除套件：%s"
+
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:730
+#, c-format
+msgid "This tool could not remove the packages: '%s'"
+msgstr "此工具無法移除套件：「%s」"
+
+#. TRANSLATORS: When removing, we might have to remove other dependencies
+#: ../client/pk-console.c:742
+msgid "The following packages have to be removed:"
+msgstr "下列套件必須被移除掉："
+
+#. TRANSLATORS: We are checking if it's okay to remove a list of packages
+#: ../client/pk-console.c:749
+msgid "Proceed removing additional packages?"
+msgstr "移除額外套件？"
+
+#. TRANSLATORS: We did not remove any packages
+#: ../client/pk-console.c:754
+msgid "The package removal was canceled!"
+msgstr "套件移除已取消！"
+
+#. TRANSLATORS: The package name was not found in any software sources
+#: ../client/pk-console.c:795
+#, c-format
+msgid "This tool could not download the package '%s' as it could not be found"
+msgstr "此工具無法下載套件「%s」因為找不到該套件"
+
+#. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
+#: ../client/pk-console.c:826
+#, c-format
+msgid "This tool could not download the packages: %s"
+msgstr "此工具無法下載套件：%s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:853 ../client/pk-console.c:862
+#, c-format
+msgid "This tool could not update '%s': %s"
+msgstr "此工具無法更新「%s」：%s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:884 ../client/pk-console.c:892
+#, c-format
+msgid "This tool could not get the requirements for '%s': %s"
+msgstr "此工具無法取得「%s」的需求：%s"
+
+#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
+#: ../client/pk-console.c:914 ../client/pk-console.c:922
+#, c-format
+msgid "This tool could not get the dependencies for '%s': %s"
+msgstr "此工具無法取得「%s」的相依性：%s"
+
+#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
+#: ../client/pk-console.c:944 ../client/pk-console.c:952
+#, c-format
+msgid "This tool could not get package details for '%s': %s"
+msgstr "此工具無法取得「%s」的套件詳情：%s"
+
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:974
+#, c-format
+msgid "This tool could not find the files for '%s': %s"
+msgstr "此工具找不到「%s」的檔案：%s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:982
+#, c-format
+msgid "This tool could not get the file list for '%s': %s"
+msgstr "此工具無法取得「%s」的檔案清單：%s"
+
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:1004
+#, c-format
+msgid "This tool could not find the update details for '%s': %s"
+msgstr "此工具找不到「%s」的更新詳情：%s"
+
+#. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
+#: ../client/pk-console.c:1012
+#, c-format
+msgid "This tool could not get the update details for '%s': %s"
+msgstr "此工具無法取得「%s」的更新詳情：%s"
+
+#. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
+#: ../client/pk-console.c:1058
+msgid "Error:"
+msgstr "錯誤："
+
+#. TRANSLATORS: This a list of details about the package
+#: ../client/pk-console.c:1072
+msgid "Package description"
+msgstr "套件描述"
+
+#. TRANSLATORS: This a list files contained in the package
+#: ../client/pk-console.c:1105
+msgid "Package files"
+msgstr "套件檔案"
+
+#. TRANSLATORS: This where the package has no files
+#: ../client/pk-console.c:1114
+msgid "No files"
+msgstr "無檔案"
+
+#. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
+#: ../client/pk-console.c:1137
+msgid "Repository signature required"
+msgstr "需要儲存處簽章"
+
+#. TRANSLATORS: This a prompt asking the user to import the security key
+#: ../client/pk-console.c:1147
+msgid "You you accept this signature?"
+msgstr "您是否接受此簽章？"
+
+#. TRANSLATORS: This is where the user declined the security key
+#: ../client/pk-console.c:1151
+msgid "The signature was not accepted."
+msgstr "簽章未被接受。"
+
+#. TRANSLATORS: This a request for a EULA
+#: ../client/pk-console.c:1185
+msgid "End user license agreement required"
+msgstr "需要使用者授權合約"
+
+#. TRANSLATORS: This a prompt asking the user to agree to the license
+#: ../client/pk-console.c:1192
+msgid "Do you agree to this license?"
+msgstr "您是否同意此授權合約？"
+
+#. TRANSLATORS: This is where the user declined the license
+#: ../client/pk-console.c:1196
+msgid "The license was refused."
+msgstr "已拒絕授權合約。"
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
+#: ../client/pk-console.c:1225
+msgid "The daemon crashed mid-transaction!"
+msgstr "daemon 損毀了 mid-transaction！"
+
+#. TRANSLATORS: This is the header to the --help menu
+#: ../client/pk-console.c:1278
+msgid "PackageKit Console Interface"
+msgstr "PackageKit 主控台介面"
+
+#: ../client/pk-console.c:1278
+msgid "Subcommands:"
+msgstr "次指令："
+
+#: ../client/pk-console.c:1369 ../client/pk-generate-pack.c:138
+#: ../client/pk-monitor.c:115 ../src/pk-main.c:196
+msgid "Show extra debugging information"
+msgstr "顯示額外的除錯資訊"
+
+#: ../client/pk-console.c:1371 ../client/pk-monitor.c:117
+msgid "Show the program version and exit"
+msgstr "顯示程式版本然後退出"
+
+#: ../client/pk-console.c:1373
+msgid "Set the filter, e.g. installed"
+msgstr "設定過濾選項，例如「installed」"
+
+#: ../client/pk-console.c:1375
+msgid "Exit without waiting for actions to complete"
+msgstr "不等待動作完成便退出"
+
+#. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
+#: ../client/pk-console.c:1397
+msgid "This tool could not connect to system DBUS."
+msgstr "此工具無法連至系統 DBUS。"
+
+#: ../client/pk-console.c:1492
+msgid "You need to specify a search type, e.g. name"
+msgstr "您需要指定一個搜尋類型，例如「名稱」"
+
+#: ../client/pk-console.c:1497 ../client/pk-console.c:1504
+#: ../client/pk-console.c:1511 ../client/pk-console.c:1518
+#: ../client/pk-console.c:1629 ../client/pk-console.c:1639
+#: ../client/pk-console.c:1646 ../client/pk-console.c:1653
+msgid "You need to specify a search term"
+msgstr "您需要指定一個搜尋關鍵字"
+
+#: ../client/pk-console.c:1523
+msgid "Invalid search type"
+msgstr "無效的搜尋類型"
+
+#: ../client/pk-console.c:1528
+msgid "You need to specify a package or file to install"
+msgstr "您需要指定欲安裝的套件或檔案"
+
+#: ../client/pk-console.c:1535
+msgid "You need to specify a type, key_id and package_id"
+msgstr "您需要指定一個類型、key_id 以及 package_id"
+
+#: ../client/pk-console.c:1542
+msgid "You need to specify a package to remove"
+msgstr "您需要指定欲移除的套件"
+
+#: ../client/pk-console.c:1548
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
+msgstr "您需要指定目的地目錄以及欲下載的套件"
+
+#: ../client/pk-console.c:1553
+msgid "Directory not found"
+msgstr "找不到目錄"
+
+#: ../client/pk-console.c:1559
+msgid "You need to specify a licence identifier (eula-id)"
+msgstr "您需要指定一個授權合約的標示符號（eula-id）"
+
+#: ../client/pk-console.c:1575
+msgid "You need to specify a package name to resolve"
+msgstr "您需要指定一個欲解析的套件名稱"
+
+#: ../client/pk-console.c:1584 ../client/pk-console.c:1591
+msgid "You need to specify a repository name"
+msgstr "您需要指定一組儲存處名稱"
+
+#: ../client/pk-console.c:1598
+msgid "You need to specify a repo name/parameter and value"
+msgstr "您需要指定一個 repo 名稱/參數和數值"
+
+#: ../client/pk-console.c:1611
+msgid "You need to specify an action, e.g. 'update-system'"
+msgstr "您需要指定一個動作，例如「update-system」"
+
+#: ../client/pk-console.c:1616
+msgid "You need to specify a correct role"
+msgstr "您需要指定一個正確的角色"
+
+#: ../client/pk-console.c:1621
+msgid "Failed to get last time"
+msgstr "上次無法取得"
+
+#: ../client/pk-console.c:1660
+msgid "You need to specify a package to find the details for"
+msgstr "您需要指定一個欲尋找其詳細資料的套件"
+
+#: ../client/pk-console.c:1667
+msgid "You need to specify a package to find the files for"
+msgstr "您需要指定一個欲尋找其檔案的套件"
+
+#. TRANSLATORS: The user tried to use an unsupported option on the command line
+#: ../client/pk-console.c:1720
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "「%s」選項不被支援"
+
+#. TRANSLATORS: User does not have permission to do this
+#: ../client/pk-console.c:1733
+msgid "You don't have the necessary privileges for this operation"
+msgstr "您沒有進行此動作的必要權限"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+#: ../client/pk-console.c:1736
+msgid "Command failed"
+msgstr "指令失敗"
+
+#. TRANSLATORS: This is the state of the transaction
+#: ../client/pk-generate-pack.c:96
+msgid "Downloading"
+msgstr "下載中"
+
+#: ../client/pk-generate-pack.c:140
+msgid "Set the file name of dependencies to be excluded"
+msgstr "設定將被排除的相依檔案名稱"
+
+#: ../client/pk-generate-pack.c:142
+msgid "The output directory (the current directory is used if ommitted)"
+msgstr "輸出目錄（若省略的話，目前的目錄便會被使用）"
+
+#: ../client/pk-generate-pack.c:144
+msgid "The package to be put into the service pack"
+msgstr "將放入服務套件中的套件"
+
+#: ../client/pk-generate-pack.c:146
+msgid "Put all updates available in the service pack"
+msgstr "將所有可用的套件放入服務套件中"
+
+#. TRANSLATORS: This is when the user fails to supply the correct arguments
+#: ../client/pk-generate-pack.c:166
+msgid "Neither --package or --updates option selected."
+msgstr "--package 與 --updates 選項皆未被選擇。"
+
+#. TRANSLATORS: This is when the user fails to supply just one argument
+#: ../client/pk-generate-pack.c:174
+msgid "Both options selected."
+msgstr "兩個選項皆被選擇了。"
+
+#. TRANSLATORS: This is when file already exists
+#: ../client/pk-generate-pack.c:207
+msgid "A pack with the same name already exists, do you want to overwrite it?"
+msgstr "已經有個相同名稱的套件存在了，您是否希望將此套件覆蓋？"
+
+#. TRANSLATORS: This is when the pack was not overwritten
+#: ../client/pk-generate-pack.c:210
+msgid "The pack was not overwritten."
+msgstr "套件並未被覆蓋。"
+
+#. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
+#: ../client/pk-generate-pack.c:222
+msgid "Failed to create directory:"
+msgstr "建立目錄失敗："
+
+#. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
+#: ../client/pk-generate-pack.c:231
+msgid "Failed to open package list."
+msgstr "開啟套件清單失敗。"
+
+#. TRANSLATORS: The package name is being matched up to available packages
+#: ../client/pk-generate-pack.c:241
+msgid "Finding package name."
+msgstr "正在尋找套件名稱。"
+
+#. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
+#: ../client/pk-generate-pack.c:245
+#, c-format
+msgid "Failed to find package '%s': %s"
+msgstr "找不到套件「%s」：%s"
+
+#. TRANSLATORS: This is telling the user we are in the process of making the pack
+#: ../client/pk-generate-pack.c:260
+msgid "Creating service pack..."
+msgstr "正在建立服務套件..."
+
+#. TRANSLATORS: we succeeded in making the file
+#: ../client/pk-generate-pack.c:267
+#, c-format
+msgid "Service pack created '%s'"
+msgstr "服務套件建立了「%s」"
+
+#. TRANSLATORS: we failed to make te file
+#: ../client/pk-generate-pack.c:271
+#, c-format
+msgid "Failed to create '%s': %s"
+msgstr "無法建立「%s」：%s"
+
+#: ../client/pk-monitor.c:128
+msgid "PackageKit Monitor"
+msgstr "PackageKit 監控程式"
+
+#. TRANSLATORS: The package was not found in any software sources
+#: ../client/pk-tools-common.c:109
+msgid "The package could not be found"
+msgstr "找不到套件"
+
+#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#: ../client/pk-tools-common.c:120
+msgid "More than one package matches:"
+msgstr "超過一個符合的套件："
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../client/pk-tools-common.c:127
+msgid "Please choose the correct package: "
+msgstr "請選擇正確的套件："
+
+#: ../client/pk-tools-common.c:154
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "請輸入一組由 1 到 %i 的數字："
+
+#. TRANSLATORS: when we are getting data from the daemon
+#: ../contrib/packagekit-plugin/src/contents.cpp:299
+msgid "Getting package information..."
+msgstr "正在取得套件資訊..."
+
+#. TRANSLATORS: run an applicaiton
+#: ../contrib/packagekit-plugin/src/contents.cpp:305
+#, c-format
+msgid "Run %s"
+msgstr "執行 %s"
+
+#. TRANSLATORS: show the installed version of a package
+#: ../contrib/packagekit-plugin/src/contents.cpp:311
+msgid "Installed version"
+msgstr "安裝版本"
+
+#. TRANSLATORS: run the application now
+#: ../contrib/packagekit-plugin/src/contents.cpp:319
+#, c-format
+msgid "Run version %s now"
+msgstr "現在執行版本 %s"
+
+#: ../contrib/packagekit-plugin/src/contents.cpp:325
+msgid "Run now"
+msgstr "現在執行"
+
+#. TRANSLATORS: update to a new version of the package
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
+#, c-format
+msgid "Update to version %s"
+msgstr "更新至版本 %s"
+
+#. TRANSLATORS: To install a package
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#, c-format
+msgid "Install %s now"
+msgstr "現在安裝 %s"
+
+#. TRANSLATORS: the version of the package
+#: ../contrib/packagekit-plugin/src/contents.cpp:339
+msgid "Version"
+msgstr "版本"
+
+#. TRANSLATORS: noting found, so can't install
+#: ../contrib/packagekit-plugin/src/contents.cpp:344
+msgid "No packages found for your system"
+msgstr "找不到適合您系統的套件"
+
+#. TRANSLATORS: package is being installed
+#: ../contrib/packagekit-plugin/src/contents.cpp:349
+msgid "Installing..."
+msgstr "安裝中..."
+
+#: ../data/packagekit-catalog.xml.in.h:1
+msgid "PackageKit Catalog"
+msgstr "PackageKit 目錄"
+
+#: ../data/packagekit-servicepack.xml.in.h:1
+msgid "PackageKit Service Pack"
+msgstr "PackageKit 服務套件"
+
+#: ../data/packagekit-package-list.xml.in.h:1
+msgid "PackageKit Package List"
+msgstr "PackageKit 套件清單"
+
+#: ../src/pk-main.c:85
+msgid "Startup failed due to security policies on this machine."
+msgstr "此機器上的安全性政策造成啟動失敗。"
+
+#: ../src/pk-main.c:86
+msgid "This can happen for two reasons:"
+msgstr "這可能有兩種原因："
+
+#: ../src/pk-main.c:87
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "正確的用戶（一般為 root）沒有執行可執行檔"
+
+#: ../src/pk-main.c:88
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr "org.freedesktop.PackageKit.conf 檔案尚未安裝在系統目錄中："
+
+#: ../src/pk-main.c:192
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "欲使用的套件後端，例如「dummy」"
+
+#: ../src/pk-main.c:194
+msgid "Daemonize and detach from the terminal"
+msgstr "Daemon 化並由終端機分離"
+
+#: ../src/pk-main.c:198
+msgid "Disable the idle timer"
+msgstr "停用閒置計時器"
+
+#: ../src/pk-main.c:200
+msgid "Show version and exit"
+msgstr "顯示版本並退出"
+
+#: ../src/pk-main.c:202
+msgid "Exit after a small delay"
+msgstr "經過了短暫的延遲後退出"
+
+#: ../src/pk-main.c:204
+msgid "Exit after the engine has loaded"
+msgstr "引擎載入後退出"
+
+#: ../src/pk-main.c:214
+msgid "PackageKit service"
+msgstr "PackageKit 服務"
+
+#: ../src/pk-main.c:250
+msgid "Cannot connect to the system bus"
+msgstr "無法連至系統 bus"
+
+#: ../src/pk-main.c:296
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "嘗試啟動時發生錯誤：%s\n"
+
