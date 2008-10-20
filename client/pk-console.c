@@ -522,6 +522,31 @@ out:
 }
 
 /**
+ * pk_console_is_installed:
+ **/
+static gboolean
+pk_console_is_installed (const gchar *package)
+{
+	PkPackageList *list;
+	GError *error;
+	gboolean ret = FALSE;
+
+	/* get the list of possibles */
+	list = pk_console_resolve (pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, &error);
+	if (list == NULL) {
+		egg_debug ("not installed: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	/* true if any installed */
+	ret = PK_OBJ_LIST(list)->len > 0;
+out:
+	if (list != NULL)
+		g_object_unref (list);
+	return ret;
+}
+
+/**
  * pk_console_install_stuff:
  **/
 static gboolean
@@ -547,6 +572,15 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		if (is_local) {
 			g_ptr_array_add (array_files, g_strdup (packages[i]));
 		} else {
+			/* if already installed, then abort */
+			ret = pk_console_is_installed (packages[i]);
+			if (ret) {
+				/* TRANSLATORS: The package is already installed on the system */
+				*error = g_error_new (1, 0, _("The package '%s' is already installed"), packages[i]);
+				ret = FALSE;
+				break;
+			}
+			/* try and find a package */
 			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages[i], &error_local);
 			if (package_id == NULL) {
 				/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
