@@ -505,7 +505,7 @@ pk_console_perhaps_resolve (PkClient *client, PkBitfield filter, const gchar *pa
 		return g_strdup (package);
 
 	/* get the list of possibles */
-	list = pk_console_resolve (client, filter, package, error);
+	list = pk_console_resolve (filter, package, error);
 	if (list == NULL)
 		goto out;
 
