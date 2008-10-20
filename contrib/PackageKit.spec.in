@@ -48,6 +48,7 @@ BuildRequires: libarchive-devel
 BuildRequires: gstreamer-devel
 BuildRequires: gstreamer-plugins-base-devel
 BuildRequires: qt-devel
+BuildRequires: cppunit-devel
 
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
