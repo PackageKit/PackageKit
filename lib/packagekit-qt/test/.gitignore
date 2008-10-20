@@ -1,0 +1,6 @@
+CMakeFiles
+*.cmake
+*.moc
+*.o
+pk-self-test
+
