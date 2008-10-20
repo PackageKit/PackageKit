@@ -3,7 +3,6 @@ include ${top_srcdir}/moc.mk
 NULL =
 
 INCLUDES = \
-	$(QT_CFLAGS)						\
 	$(QTCORE_CFLAGS)					\
 	$(QTDBUS_CFLAGS)					\
 	$(POLKIT_CFLAGS)					\
@@ -36,14 +35,25 @@ $(libpackagekit_qt_la_OBJECTS) :				\
 	$(NULL)
 
 libpackagekit_qt_la_SOURCES =					\
+	QPackageKit						\
+	common.h						\
+	client.h						\
 	client.cpp						\
+	clientprivate.h						\
 	clientprivate.cpp					\
+	daemonproxy.h						\
 	daemonproxy.cpp						\
+	transaction.h						\
 	transaction.cpp						\
+	transactionprivate.h					\
 	transactionprivate.cpp					\
+	transactionproxy.h					\
 	transactionproxy.cpp					\
+	package.h						\
 	package.cpp						\
+	polkitclient.h						\
 	polkitclient.cpp					\
+	util.h							\
 	util.cpp						\
 	$(NULL)
 
@@ -66,26 +76,6 @@ clean-local:
 	rm -f $(CLEANFILES)
 
 EXTRA_DIST =							\
-	util.h							\
-	util.cpp						\
-	polkitclient.cpp					\
-	client.h						\
 	CMakeLists.txt						\
-	transactionprivate.h					\
-	transactionprivate.cpp					\
-	common.h						\
-	package.h						\
-	clientprivate.h						\
-	package.cpp						\
-	daemonproxy.cpp						\
-	client.cpp						\
-	transaction.h						\
-	transactionproxy.h					\
-	transaction.cpp						\
-	transactionproxy.cpp					\
-	QPackageKit						\
-	daemonproxy.h						\
-	polkitclient.h						\
-	clientprivate.cpp					\
 	$(NULL)
 
