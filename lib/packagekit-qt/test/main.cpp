@@ -11,7 +11,8 @@ int main(int argc, char **argv)
 	// Check that we are using the dummy backend for testing (I'm sometimes absent minded)
 	PackageKit::Client::BackendDetail d = PackageKit::Client::instance()->getBackendDetail();
 	if(d.name != "Dummy") {
-		qFatal("Please use the dummy backend for testing");
+		qWarning("Please use the dummy backend for testing");
+		return 0;
 	}
 
 	CppUnit::TextUi::TestRunner runner;
