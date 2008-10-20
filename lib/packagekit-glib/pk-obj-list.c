@@ -163,8 +163,6 @@ pk_obj_list_sort (PkObjList *list, GCompareFunc sort_func)
 void
 pk_obj_list_clear (PkObjList *list)
 {
-	guint i;
-	gpointer obj;
 	GPtrArray *array;
 	PkObjListFreeFunc func_free;
 
@@ -172,12 +170,10 @@ pk_obj_list_clear (PkObjList *list)
 
 	array = list->priv->array;
 	func_free = list->priv->func_free;
-	for (i=0; i<array->len; i++) {
-		obj = g_ptr_array_index (array, i);
-		if (func_free != NULL)
-			func_free (obj);
-		g_ptr_array_remove (array, obj);
-	}
+	if (func_free != NULL)
+		g_ptr_array_foreach (array, (GFunc) func_free, NULL);
+	if (array->len > 0)
+		g_ptr_array_remove_range (array, 0, array->len);
 	list->len = 0;
 }
 
