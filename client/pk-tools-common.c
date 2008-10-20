@@ -69,6 +69,7 @@ pk_console_resolve (PkClient *client, PkBitfield filter, const gchar *package, G
 
 		/* nothing contains */
 		g_object_unref (list);
+		list = NULL;
 
 		/* reset */
 		ret = pk_client_reset (client, &error_local);
@@ -96,7 +97,7 @@ out:
  * pk_console_resolve_package_id:
  **/
 gchar *
-pk_console_resolve_package_id (PkPackageList *list, GError **error)
+pk_console_resolve_package_id (const PkPackageList *list, GError **error)
 {
 	guint i;
 	guint length;
@@ -126,7 +127,6 @@ pk_console_resolve_package_id (PkPackageList *list, GError **error)
 	/* TRANSLATORS: This finds out which package in the list to use */
 	i = pk_console_get_number (_("Please choose the correct package: "), length);
 	obj = pk_package_list_get_obj (list, i-1);
-	g_object_unref (list);
 
 	return pk_package_id_to_string (obj->id);
 }

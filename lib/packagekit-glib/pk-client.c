@@ -473,13 +473,10 @@ pk_client_get_require_restart (PkClient *client)
 PkPackageList *
 pk_client_get_package_list (PkClient *client)
 {
-	PkPackageList *list;
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	if (!client->priv->use_buffer)
 		return NULL;
-	list = client->priv->package_list;
-	g_object_ref (list);
-	return list;
+	return g_object_ref (client->priv->package_list);
 }
 
 /**
