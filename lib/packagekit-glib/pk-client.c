@@ -4281,6 +4281,12 @@ pk_client_test (EggTest *test)
 	g_free (file);
 
 	/************************************************************/
+	egg_test_title (test, "get client, then unref");
+	client = pk_client_new ();
+	g_object_unref (client);
+	egg_test_success (test, NULL);
+
+	/************************************************************/
 	egg_test_title (test, "get client");
 	client = pk_client_new ();
 	egg_test_assert (test, client != NULL);
