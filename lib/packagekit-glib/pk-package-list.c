@@ -378,6 +378,12 @@ pk_package_list_test (EggTest *test)
 		return;
 
 	/************************************************************/
+	egg_test_title (test, "create then unref");
+	plist = pk_package_list_new ();
+	g_object_unref (plist);
+	egg_test_success (test, NULL);
+
+	/************************************************************/
 	egg_test_title (test, "create");
 	plist = pk_package_list_new ();
 	egg_test_assert (test, plist != NULL);
