@@ -136,12 +136,12 @@ backend_get_requires_thread (PkBackend *backend)
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	
+
 	//TODO repair percentages
 	//pk_backend_set_percentage (backend, 0);
 
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
-		
+
 		pi = pk_package_id_new_from_string (package_ids[i]);
 
 		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
@@ -639,7 +639,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 /* If a critical self update (see qualifying steps below) is available then only show/install that update first.
  1. there is a patch available with the <restart_suggested> tag set
  2. The patch contains the package "PackageKit" or "gnome-packagekit
-*/   
+*/
 /*static gboolean
 check_for_self_update (PkBackend *backend, std::set<zypp::PoolItem> *candidates)
 {
@@ -677,7 +677,7 @@ backend_get_updates_thread (PkBackend *backend)
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
 
-	// check if the repositories may be dead (feature #301904)  
+	// check if the repositories may be dead (feature #301904)
 	 warn_outdated_repos(backend, pool);
 
 	// get all Packages and Patches for Update
@@ -690,14 +690,14 @@ backend_get_updates_thread (PkBackend *backend)
 		if (!candidates->empty ()) {
 			patchRepo = candidates->begin ()->resolvable ()->repoInfo ().alias ();
 		}
-		
+
 		//candidates2 = zypp_get_updates (patchRepo);
 
 		//candidates->insert (candidates2->begin (), candidates2->end ());
 	}
 
 	pk_backend_set_percentage (backend, 80);
-	
+
 	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
 	for (ci = cb; ci != ce; ++ci) {
 		zypp::ResObject::constPtr res = ci->resolvable();
@@ -780,7 +780,7 @@ backend_install_files_thread (PkBackend *backend)
 			return FALSE;
 		}
 	}
-	
+
 	// create a plaindir-repo and cache it
 	zypp::RepoInfo tmpRepo;
 
@@ -815,10 +815,10 @@ backend_install_files_thread (PkBackend *backend)
 	}
 
 	for (guint i = 0; i < g_strv_length (full_paths); i++) {
-		
+
 		zypp::Pathname rpmPath (full_paths[i]);
 		zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp::target::rpm::RpmHeader::readPackage (rpmPath, zypp::target::rpm::RpmHeader::NOSIGNATURE);
-		
+
 		// look for the packages and set them to toBeInstalled
 		std::vector<zypp::sat::Solvable> *solvables = new std::vector<zypp::sat::Solvable>;
 		solvables = zypp_get_packages_by_name (rpmHeader->tag_name ().c_str (), zypp::ResKind::package, FALSE);
@@ -991,7 +991,7 @@ backend_update_system_thread (PkBackend *backend)
 	//get all Patches for Update
 	std::set<zypp::PoolItem> *candidates = zypp_get_patches (restart);
 	//std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
-	
+
 	if (_updating_self) {
 		_updating_self = FALSE;
 	}
@@ -1001,7 +1001,7 @@ backend_update_system_thread (PkBackend *backend)
 		if (!candidates->empty ()) {
 			patchRepo = candidates->begin ()->resolvable ()->repoInfo ().alias ();
 		}
-	
+
 		//get all Updates
 		//candidates2 = zypp_get_updates (patchRepo);
 
@@ -1009,7 +1009,7 @@ backend_update_system_thread (PkBackend *backend)
 
 		//candidates->insert (candidates2->begin (), candidates2->end ());
 	}
-	
+
 	pk_backend_set_percentage (backend, 80);
 	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
 	for (ci = cb; ci != ce; ++ci) {
@@ -1023,7 +1023,7 @@ backend_update_system_thread (PkBackend *backend)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	
+
 	if (restart != PK_RESTART_ENUM_NONE)
 		pk_backend_require_restart (backend, restart, "A restart is needed");
 
@@ -1050,12 +1050,12 @@ backend_install_packages_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
-	
+
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp ();
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
-	
+
 	try
 	{
 		zypp::ResPool pool = zypp_build_pool (TRUE);
@@ -1169,7 +1169,7 @@ backend_remove_packages_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_set_percentage (backend, 0);
-	
+
 	zypp::Target_Ptr target;
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp ();
@@ -1503,7 +1503,7 @@ backend_get_files_thread (PkBackend *backend)
 	gchar **package_ids;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
-	
+
 	for(uint i = 0; i < g_strv_length(package_ids); i++) {
 		pi = pk_package_id_new_from_string (package_ids[i]);
 		if (pi == NULL) {
@@ -1636,7 +1636,7 @@ backend_update_packages_thread (PkBackend *backend)
 
 	retval = zypp_perform_execution (backend, UPDATE, FALSE);
 	pk_backend_finished (backend);
-	
+
 	if (restart != PK_RESTART_ENUM_NONE)
 		pk_backend_require_restart (backend, restart, "A restart is needed");
 
