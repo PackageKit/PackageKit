@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = 1.7
 
 NULL =
 
-PK_LIBS =						\
+PK_GLIB_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la	\
 	$(NULL)
 
@@ -136,7 +136,7 @@ packagekitd_LDADD =					\
 	$(LIBNM_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
-	$(PK_LIBS)					\
+	$(PK_GLIB_LIBS)					\
 	$(PYTHON_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
@@ -196,7 +196,7 @@ pk_self_test_LDADD =					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(LIBNM_LIBS)					\
-	$(PK_LIBS)					\
+	$(PK_GLIB_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\

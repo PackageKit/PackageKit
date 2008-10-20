@@ -21,7 +21,7 @@ INCLUDES =						\
 	-I$(top_srcdir)/lib				\
 	$(NULL)
 
-PK_LIBS =						\
+PK_GLIB_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la	\
 	$(NULL)
 
@@ -44,7 +44,7 @@ pkcon_SOURCES =						\
 pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(PK_LIBS)					\
+	$(PK_GLIB_LIBS)					\
 	$(NULL)
 
 pkmon_SOURCES =						\
@@ -56,7 +56,7 @@ pkmon_SOURCES =						\
 pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(PK_LIBS)					\
+	$(PK_GLIB_LIBS)					\
 	$(NULL)
 
 pkgenpack_SOURCES =					\
@@ -73,7 +73,7 @@ pkgenpack_LDADD = 					\
 	$(ARCHIVE_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(PK_LIBS)					\
+	$(PK_GLIB_LIBS)					\
 	$(NULL)
 
 if EGG_BUILD_TESTS
@@ -97,7 +97,7 @@ pk_self_test_LDADD =					\
 	$(DBUS_LIBS)					\
 	$(SELFTEST_LIBS)				\
 	$(ARCHIVE_LIBS)					\
-	$(PK_LIBS)					\
+	$(PK_GLIB_LIBS)					\
 	$(NULL)
 
 pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS)
