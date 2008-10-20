@@ -1,3 +1,61 @@
+Version 0.3.8
+~~~~~~~~~~~~~~
+Released: 2008-10-20
+
+Notes:
+ - This release brings many, many new and updated translations.
+ - This is the first release with an integrated PackageKit-Qt library developed
+   by Adrien BUSTANY. It was included in the project SCM and tarball to give
+   it the same level as testing as the Glib library and to provide the same
+   ABI and API with consistent versioning.
+ - The GLib binding has been renamed to packagekit-glib.
+
+Translations:
+ - Added Bengali India Translation (Runa Bhattacharjee)
+ - Added Chinese Traditional translation (Terry Chuang)
+ - Update Finnish translation (Ville-Pekka Vainio)
+ - Update Catalan translation (Xavier Conde)
+ - Update Chinese Simplified translation (甘露 Lu Gan, Chinese Simplified)
+ - Update German translation (Daniela Kugelmann)
+ - Update Swedish translation (David Andersson, Domingo Becker)
+ - Update Brazilian Portuguese translation (Igor Pires Soares)
+ - Update Slovak translation (Pavol Šimo)
+ - Update Polish translation (Piotr Drąg)
+ - Updated Hebrew translation (Oron Peled)
+
+New Features:
+ - Merge in the QPackageKit QT library from Adrien BUSTANY so we can synchronise
+   releases and keep the code in sync (Richard Hughes)
+ - Add functionality to check for files being used that have been updated,
+   and send a session restart required signal (Richard Hughes)
+ - Move the library into /usr/include/PackageKit/packagekit-glib as we now have
+   a few libraries that talk to PackageKit (Richard Hughes)
+
+Bugfixes:
+ - Print a message to the user when we try to install a package using pkcon that
+   is already installed (Richard Hughes)
+ - qt: Convert the CMake buildsystem into native automake (Richard Hughes)
+ - qt: Use a separate .pc file for packagekit-qt (Richard Hughes)
+ - qt: Hook up the packagekit-qt self checks to make check (Richard Hughes)
+ - qt: Fix the installation path on 64 bit Linux when using CMake (Laurent Montel)
+ - qt: Unify headers path (Adrien BUSTANY)
+ - qt: Add categories to PackageKit-Qt (Adrien BUSTANY)
+ - qt: add some of the missing enumerated values (Richard Hughes)
+ - glib: make ::transaction return a pointer to a struct for lists (Richard Hughes)
+ - Allow distros to disable the plugins in the configure script (Richard Hughes)
+ - If no packages were updated or the transaction failed then don't try to get
+   the file lists when refreshing (Richard Hughes)
+
+Backends:
+ - dummy: Make the backend a little cleverer for testing (Richard Hughes)
+ - yum: Add GROUP_NEWEST support to search-group (Tim Lauridsen)
+ - yum: Use the filters that make sense in the newest group code (Richard Hughes)
+ - yum: Use the yum dependency filter when there is not installed in the filter
+        string, not just if it's exactly installed (Richard Hughes)
+ - yum: Maintain a dictionary of the summary text so we can use it when rpm is
+        giving us package names without summaries on cleanup (Richard Hughes)
+ - zypp: Return repo error instead of a internal error (Scott Reeves)
+
 Version 0.3.7
 ~~~~~~~~~~~~~~
 Released: 2008-10-13
