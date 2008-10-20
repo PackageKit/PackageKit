@@ -428,7 +428,7 @@ public:
 	} UpdateInfo;
 
 	// Transaction functions
-	
+
 	/**
 	 * \brief Accepts an EULA
 	 *
@@ -471,7 +471,7 @@ public:
 	Transaction* getDepends(Package* package, Filters filters = Filters() << NoFilter, bool recursive = true);
 	Transaction* getDepends(const QList<Package*>& packages, Filter filter, bool recursive = true);
 	Transaction* getDepends(Package* package, Filter filter, bool recursive = true);
-	
+
 	/**
 	 * Gets more details about the given \p packages
 	 *
