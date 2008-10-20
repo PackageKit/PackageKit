@@ -115,21 +115,32 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
-PKG_CHECK_MODULES(QTCORE, QtCore >= $QTCORE_REQUIRED)
-AC_SUBST(QTCORE_CFLAGS)
-AC_SUBST(QTCORE_LIBS)
+dnl ---------------------------------------------------------------------------
+dnl - Build PackageKit-Qt
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(qt, AS_HELP_STRING([--enable-qt],[Build PackageKit-Qt]),
+	      enable_qt=$enableval,enable_qt=yes)
+if test x$enable_qt = xyes; then
+	PKG_CHECK_MODULES(QTCORE, QtCore >= $QTCORE_REQUIRED)
+	AC_SUBST(QTCORE_CFLAGS)
+	AC_SUBST(QTCORE_LIBS)
 
-PKG_CHECK_MODULES(QTDBUS, QtDBus >= $QTDBUS_REQUIRED)
-AC_SUBST(QTDBUS_CFLAGS)
-AC_SUBST(QTDBUS_LIBS)
+	PKG_CHECK_MODULES(QTDBUS, QtDBus >= $QTDBUS_REQUIRED)
+	AC_SUBST(QTDBUS_CFLAGS)
+	AC_SUBST(QTDBUS_LIBS)
 
-PKG_CHECK_MODULES(QTGUI, QtGui >= $QTGUI_REQUIRED)
-AC_SUBST(QTGUI_CFLAGS)
-AC_SUBST(QTGUI_LIBS)
+	PKG_CHECK_MODULES(QTGUI, QtGui >= $QTGUI_REQUIRED)
+	AC_SUBST(QTGUI_CFLAGS)
+	AC_SUBST(QTGUI_LIBS)
 
-PKG_CHECK_MODULES(CPPUNIT, cppunit)
-AC_SUBST(CPPUNIT_CFLAGS)
-AC_SUBST(CPPUNIT_LIBS)
+	PKG_CHECK_MODULES(CPPUNIT, cppunit)
+	AC_SUBST(CPPUNIT_CFLAGS)
+	AC_SUBST(CPPUNIT_LIBS)
+	build_qt=yes
+else
+	build_qt=no
+fi
+AM_CONDITIONAL(PK_BUILD_QT, test $build_qt = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - libarchive
@@ -629,6 +640,7 @@ echo "
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
+        QT library:                ${build_qt}
 
         Backends:
         ALPM backend:              ${enable_alpm}
