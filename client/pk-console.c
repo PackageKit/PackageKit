@@ -51,7 +51,7 @@ static guint timer_id = 0;
 static guint percentage_last = 0;
 static gchar **files_cache = NULL;
 static PkControl *control = NULL;
-static PkClient *client = NULL;
+static PkClient *client_async = NULL;
 static PkClient *client_task = NULL;
 static PkClient *client_install_files = NULL;
 static PkClient *client_signature = NULL;
@@ -412,7 +412,7 @@ pk_console_signature_finished_cb (PkClient *client_signature, PkExitEnum exit, g
 	GError *error = NULL;
 
 	egg_debug ("trying to requeue");
-	ret = pk_client_requeue (client, &error);
+	ret = pk_client_requeue (client_async, &error);
 	if (!ret) {
 		egg_warning ("failed to requeue action: %s", error->message);
 		g_error_free (error);
@@ -1242,9 +1242,9 @@ pk_console_sigint_handler (int sig)
 	signal (SIGINT, SIG_DFL);
 
 	/* cancel any tasks */
-	pk_client_get_role (client, &role, NULL, NULL);
+	pk_client_get_role (client_async, &role, NULL, NULL);
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		ret = pk_client_cancel (client, &error);
+		ret = pk_client_cancel (client_async, &error);
 		if (!ret) {
 			egg_warning ("failed to cancel normal client: %s", error->message);
 			g_error_free (error);
@@ -1429,33 +1429,33 @@ main (int argc, char *argv[])
 	g_signal_connect (pconnection, "connection-changed",
 			  G_CALLBACK (pk_connection_changed_cb), loop);
 
-	client = pk_client_new ();
-	pk_client_set_use_buffer (client, TRUE, NULL);
-	g_signal_connect (client, "package",
+	client_async = pk_client_new ();
+	pk_client_set_use_buffer (client_async, TRUE, NULL);
+	g_signal_connect (client_async, "package",
 			  G_CALLBACK (pk_console_package_cb), NULL);
-	g_signal_connect (client, "transaction",
+	g_signal_connect (client_async, "transaction",
 			  G_CALLBACK (pk_console_transaction_cb), NULL);
-	g_signal_connect (client, "distro-upgrade",
+	g_signal_connect (client_async, "distro-upgrade",
 			  G_CALLBACK (pk_console_distro_upgrade_cb), NULL);
-	g_signal_connect (client, "category",
+	g_signal_connect (client_async, "category",
 			  G_CALLBACK (pk_console_category_cb), NULL);
-	g_signal_connect (client, "details",
+	g_signal_connect (client_async, "details",
 			  G_CALLBACK (pk_console_details_cb), NULL);
-	g_signal_connect (client, "files",
+	g_signal_connect (client_async, "files",
 			  G_CALLBACK (pk_console_files_cb), NULL);
-	g_signal_connect (client, "repo-signature-required",
+	g_signal_connect (client_async, "repo-signature-required",
 			  G_CALLBACK (pk_console_repo_signature_required_cb), NULL);
-	g_signal_connect (client, "eula-required",
+	g_signal_connect (client_async, "eula-required",
 			  G_CALLBACK (pk_console_eula_required_cb), NULL);
-	g_signal_connect (client, "update-detail",
+	g_signal_connect (client_async, "update-detail",
 			  G_CALLBACK (pk_console_update_detail_cb), NULL);
-	g_signal_connect (client, "repo-detail",
+	g_signal_connect (client_async, "repo-detail",
 			  G_CALLBACK (pk_console_repo_detail_cb), NULL);
-	g_signal_connect (client, "progress-changed",
+	g_signal_connect (client_async, "progress-changed",
 			  G_CALLBACK (pk_console_progress_changed_cb), NULL);
-	g_signal_connect (client, "finished",
+	g_signal_connect (client_async, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
-	g_signal_connect (client, "error-code",
+	g_signal_connect (client_async, "error-code",
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
 
 	client_task = pk_client_new ();
@@ -1497,28 +1497,28 @@ main (int argc, char *argv[])
 				error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
 				goto out;
 			}
-			ret = pk_client_search_name (client, filters, details, &error);
+			ret = pk_client_search_name (client_async, filters, details, &error);
 
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
 				error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
 				goto out;
 			}
-			ret = pk_client_search_details (client, filters, details, &error);
+			ret = pk_client_search_details (client_async, filters, details, &error);
 
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
 				error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
 				goto out;
 			}
-			ret = pk_client_search_group (client, filters, details, &error);
+			ret = pk_client_search_group (client_async, filters, details, &error);
 
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
 				error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
 				goto out;
 			}
-			ret = pk_client_search_file (client, filters, details, &error);
+			ret = pk_client_search_file (client_async, filters, details, &error);
 		} else {
 			error = g_error_new (1, 0, "%s", _("Invalid search type"));
 		}
@@ -1528,21 +1528,21 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("You need to specify a package or file to install"));
 			goto out;
 		}
-		ret = pk_console_install_stuff (client, argv, &error);
+		ret = pk_console_install_stuff (client_async, argv, &error);
 
 	} else if (strcmp (mode, "install-sig") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a type, key_id and package_id"));
 			goto out;
 		}
-		ret = pk_client_install_signature (client, PK_SIGTYPE_ENUM_GPG, details, parameter, &error);
+		ret = pk_client_install_signature (client_async, PK_SIGTYPE_ENUM_GPG, details, parameter, &error);
 
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a package to remove"));
 			goto out;
 		}
-		ret = pk_console_remove_packages (client, argv, &error);
+		ret = pk_console_remove_packages (client_async, argv, &error);
 	} else if (strcmp (mode, "download") == 0) {
 		if (value == NULL || details == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify the destination directory and then the packages to download"));
@@ -1553,21 +1553,21 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s: '%s'", _("Directory not found"), value);
 			goto out;
 		}
-		ret = pk_console_download_packages (client, argv, value, &error);
+		ret = pk_console_download_packages (client_async, argv, value, &error);
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a licence identifier (eula-id)"));
 			goto out;
 		}
-		ret = pk_client_accept_eula (client, value, &error);
+		ret = pk_client_accept_eula (client_async, value, &error);
 		maybe_sync = FALSE;
 
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
 			/* do the system update */
-			ret = pk_client_update_system (client, &error);
+			ret = pk_client_update_system (client_async, &error);
 		} else {
-			ret = pk_console_update_package (client, value, &error);
+			ret = pk_console_update_package (client_async, value, &error);
 		}
 
 	} else if (strcmp (mode, "resolve") == 0) {
@@ -1576,7 +1576,7 @@ main (int argc, char *argv[])
 			goto out;
 		}
 		package_ids = pk_package_ids_from_id (value);
-		ret = pk_client_resolve (client, filters, package_ids, &error);
+		ret = pk_client_resolve (client_async, filters, package_ids, &error);
 		g_strfreev (package_ids);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
@@ -1584,24 +1584,24 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("You need to specify a repository name"));
 			goto out;
 		}
-		ret = pk_client_repo_enable (client, value, TRUE, &error);
+		ret = pk_client_repo_enable (client_async, value, TRUE, &error);
 
 	} else if (strcmp (mode, "repo-disable") == 0) {
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a repository name"));
 			goto out;
 		}
-		ret = pk_client_repo_enable (client, value, FALSE, &error);
+		ret = pk_client_repo_enable (client_async, value, FALSE, &error);
 
 	} else if (strcmp (mode, "repo-set-data") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a repo name/parameter and value"));
 			goto out;
 		}
-		ret = pk_client_repo_set_data (client, value, details, parameter, &error);
+		ret = pk_client_repo_set_data (client_async, value, details, parameter, &error);
 
 	} else if (strcmp (mode, "repo-list") == 0) {
-		ret = pk_client_get_repo_list (client, filters, &error);
+		ret = pk_client_get_repo_list (client_async, filters, &error);
 
 	} else if (strcmp (mode, "get-time") == 0) {
 		PkRoleEnum role;
@@ -1629,54 +1629,54 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
 			goto out;
 		}
-		ret = pk_console_get_depends (client, filters, value, &error);
+		ret = pk_console_get_depends (client_async, filters, value, &error);
 
 	} else if (strcmp (mode, "get-distro-upgrades") == 0) {
-		ret = pk_client_get_distro_upgrades (client, &error);
+		ret = pk_client_get_distro_upgrades (client_async, &error);
 
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
 			goto out;
 		}
-		ret = pk_console_get_update_detail (client, value, &error);
+		ret = pk_console_get_update_detail (client_async, value, &error);
 
 	} else if (strcmp (mode, "get-requires") == 0) {
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
 			goto out;
 		}
-		ret = pk_console_get_requires (client, filters, value, &error);
+		ret = pk_console_get_requires (client_async, filters, value, &error);
 
 	} else if (strcmp (mode, "what-provides") == 0) {
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
 			goto out;
 		}
-		ret = pk_client_what_provides (client, filters, PK_PROVIDES_ENUM_CODEC, value, &error);
+		ret = pk_client_what_provides (client_async, filters, PK_PROVIDES_ENUM_CODEC, value, &error);
 
 	} else if (strcmp (mode, "get-details") == 0) {
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a package to find the details for"));
 			goto out;
 		}
-		ret = pk_console_get_details (client, value, &error);
+		ret = pk_console_get_details (client_async, value, &error);
 
 	} else if (strcmp (mode, "get-files") == 0) {
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify a package to find the files for"));
 			goto out;
 		}
-		ret = pk_console_get_files (client, value, &error);
+		ret = pk_console_get_files (client_async, value, &error);
 
 	} else if (strcmp (mode, "get-updates") == 0) {
-		ret = pk_client_get_updates (client, filters, &error);
+		ret = pk_client_get_updates (client_async, filters, &error);
 
 	} else if (strcmp (mode, "get-categories") == 0) {
-		ret = pk_client_get_categories (client, &error);
+		ret = pk_client_get_categories (client_async, &error);
 
 	} else if (strcmp (mode, "get-packages") == 0) {
-		ret = pk_client_get_packages (client, filters, &error);
+		ret = pk_client_get_packages (client_async, filters, &error);
 
 	} else if (strcmp (mode, "get-actions") == 0) {
 		text = pk_role_bitfield_to_text (roles);
@@ -1708,12 +1708,12 @@ main (int argc, char *argv[])
 		ret = TRUE;
 
 	} else if (strcmp (mode, "get-transactions") == 0) {
-		ret = pk_client_get_old_transactions (client, 10, &error);
+		ret = pk_client_get_old_transactions (client_async, 10, &error);
 
 	} else if (strcmp (mode, "refresh") == 0) {
 		/* special case - this takes a long time, and doesn't do packages */
 		pk_console_start_bar ("refresh-cache");
-		ret = pk_client_refresh_cache (client, FALSE, &error);
+		ret = pk_client_refresh_cache (client_async, FALSE, &error);
 
 	} else {
 		/* TRANSLATORS: The user tried to use an unsupported option on the command line */
@@ -1743,7 +1743,7 @@ out:
 	g_free (summary);
 	g_strfreev (files_cache);
 	g_object_unref (control);
-	g_object_unref (client);
+	g_object_unref (client_async);
 	g_object_unref (client_task);
 	g_object_unref (client_install_files);
 	g_object_unref (client_signature);
