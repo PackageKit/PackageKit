@@ -145,7 +145,7 @@ pk_obj_list_get_array (const PkObjList *list)
  * pk_obj_list_sort:
  * @list: a valid #PkObjList instance
  *
- * Clears the package list
+ * Sorts the package list
  **/
 void
 pk_obj_list_sort (PkObjList *list, GCompareFunc sort_func)
@@ -163,8 +163,6 @@ pk_obj_list_sort (PkObjList *list, GCompareFunc sort_func)
 void
 pk_obj_list_clear (PkObjList *list)
 {
-	guint i;
-	gpointer obj;
 	GPtrArray *array;
 	PkObjListFreeFunc func_free;
 
@@ -172,12 +170,10 @@ pk_obj_list_clear (PkObjList *list)
 
 	array = list->priv->array;
 	func_free = list->priv->func_free;
-	for (i=0; i<array->len; i++) {
-		obj = g_ptr_array_index (array, i);
-		if (func_free != NULL)
-			func_free (obj);
-		g_ptr_array_remove (array, obj);
-	}
+	if (func_free != NULL)
+		g_ptr_array_foreach (array, (GFunc) func_free, NULL);
+	if (array->len > 0)
+		g_ptr_array_remove_range (array, 0, array->len);
 	list->len = 0;
 }
 
@@ -671,22 +667,12 @@ pk_obj_list_index (const PkObjList *list, guint index)
 static void
 pk_obj_list_finalize (GObject *object)
 {
-	PkObjListFreeFunc func_free;
-	gpointer obj;
-	guint i;
 	PkObjList *list;
-	GPtrArray *array;
 	g_return_if_fail (PK_IS_OBJ_LIST (object));
 	list = PK_OBJ_LIST (object);
 
-	array = list->priv->array;
-	func_free = list->priv->func_free;
-	for (i=0; i<array->len; i++) {
-		obj = g_ptr_array_index (array, i);
-		if (func_free != NULL)
-			func_free (obj);
-	}
-	g_ptr_array_free (array, TRUE);
+	pk_obj_list_clear (list);
+	g_ptr_array_free (list->priv->array, TRUE);
 
 	G_OBJECT_CLASS (pk_obj_list_parent_class)->finalize (object);
 }
@@ -741,11 +727,13 @@ pk_obj_list_new (void)
  ***************************************************************************/
 #ifdef EGG_TEST
 #include "egg-test.h"
+#include <packagekit-glib/pk-category-obj.h>
 
 void
 pk_obj_list_test (EggTest *test)
 {
 	PkObjList *list;
+	PkCategoryObj *obj;
 
 	if (!egg_test_start (test, "PkObjList"))
 		return;
@@ -755,8 +743,39 @@ pk_obj_list_test (EggTest *test)
 	list = pk_obj_list_new ();
 	egg_test_assert (test, list != NULL);
 
+	/* test object */
+	obj = pk_category_obj_new_from_data ("dave", "dave-moo", "name", "This is a name", "help");
+
+	egg_test_title (test, "correct size");
+	egg_test_assert (test, list->len == 0);
+
+	/* setup list type */
+	pk_obj_list_set_free (list, (PkObjListFreeFunc) pk_category_obj_free);
+	pk_obj_list_set_copy (list, (PkObjListCopyFunc) pk_category_obj_copy);
+
+	/* add to list */
+	pk_obj_list_add (list, obj);
+
+	egg_test_title (test, "correct size");
+	egg_test_assert (test, list->len == 1);
+
+	/* add to list */
+	pk_obj_list_add (list, obj);
+
+	egg_test_title (test, "correct size");
+	egg_test_assert (test, list->len == 2);
+
+	pk_obj_list_clear (list);
+
+	egg_test_title (test, "correct size");
+	egg_test_assert (test, list->len == 0);
+
+	/* add to list */
+	pk_obj_list_add (list, obj);
+
 	g_object_unref (list);
 
+	pk_category_obj_free (obj);
 	egg_test_end (test);
 }
 #endif

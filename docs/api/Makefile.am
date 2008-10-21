@@ -83,13 +83,13 @@ INCLUDES =						\
 	-I$(top_srcdir)/libselftest			\
 	$(NULL)
 
-PK_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
+PK_GLIB_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
 
 GTKDOC_LIBS =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
-	$(PK_LIBS)					\
+	$(PK_GLIB_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(NULL)
 

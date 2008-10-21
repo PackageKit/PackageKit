@@ -73,7 +73,7 @@ pk_generate_pack_package_resolve (PkClient *client, PkBitfield filter, const gch
 		return g_strdup (package);
 
 	/* get the list of possibles */
-	list = pk_console_resolve (client, filter, package, error);
+	list = pk_console_resolve (filter, package, error);
 	if (list == NULL)
 		goto out;
 

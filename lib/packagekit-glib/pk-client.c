@@ -170,7 +170,9 @@ pk_client_error_get_type (void)
 			ENUM_ENTRY (PK_CLIENT_ERROR_ALREADY_TID, "AlreadyTid"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_ROLE_UNKNOWN, "RoleUnknown"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_CANNOT_START_DAEMON, "CannotStartDaemon"),
-			ENUM_ENTRY (PK_CLIENT_ERROR_INVALID_PACKAGEID, "InvalidPackageId"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_INVALID_INPUT, "InvalidInput"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_INVALID_FILE, "InvalidFile"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_NOT_SUPPORTED, "NotSupported"),
 			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkClientError", values);
@@ -253,13 +255,39 @@ pk_client_error_print (GError **error)
 static gboolean
 pk_client_error_fixup (GError **error)
 {
+	const gchar *name;
+	guint code;
 	if (error != NULL && *error != NULL) {
 		/* get some proper debugging */
 		if ((*error)->domain == DBUS_GERROR &&
 		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION) {
 			/* use one of our local codes */
-			egg_debug ("fixing up code from %i", (*error)->code);
-			(*error)->code = PK_CLIENT_ERROR_FAILED;
+			name = dbus_g_error_get_name (*error);
+			code = PK_CLIENT_ERROR_FAILED;
+
+			/* trim common prefix */
+			if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
+				name = &name[39];
+
+			/* try to get a better error */
+			if (g_str_has_prefix (name, "PermissionDenied") ||
+			    g_str_has_prefix (name, "RefusedByPolicy"))
+				code = PK_CLIENT_ERROR_FAILED_AUTH;
+			else if (g_str_has_prefix (name, "PackageIdInvalid") ||
+				 g_str_has_prefix (name, "SearchInvalid") ||
+				 g_str_has_prefix (name, "FilterInvalid") ||
+				 g_str_has_prefix (name, "InvalidProvide") ||
+				 g_str_has_prefix (name, "InputInvalid"))
+				code = PK_CLIENT_ERROR_INVALID_INPUT;
+			else if (g_str_has_prefix (name, "PackInvalid") ||
+				 g_str_has_prefix (name, "NoSuchFile") ||
+				 g_str_has_prefix (name, "NoSuchDirectory"))
+				code = PK_CLIENT_ERROR_INVALID_FILE;
+			else if (g_str_has_prefix (name, "NotSupported"))
+				code = PK_CLIENT_ERROR_NOT_SUPPORTED;
+
+			egg_debug ("fixing up code from %s to %i", name, code);
+			(*error)->code = code;
 		}
 		return TRUE;
 	}
@@ -473,13 +501,10 @@ pk_client_get_require_restart (PkClient *client)
 PkPackageList *
 pk_client_get_package_list (PkClient *client)
 {
-	PkPackageList *list;
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	if (!client->priv->use_buffer)
 		return NULL;
-	list = client->priv->package_list;
-	g_object_ref (list);
-	return list;
+	return g_object_ref (client->priv->package_list);
 }
 
 /**
@@ -1666,7 +1691,7 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
@@ -1730,7 +1755,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
         ret = pk_package_ids_check (package_ids);
         if (!ret) {
                 package_ids_temp = pk_package_ids_to_text (package_ids);
-                pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+                pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
                                      "package_ids '%s' are not valid", package_ids_temp);
                 g_free (package_ids_temp);
                 return FALSE;
@@ -1878,7 +1903,7 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
@@ -2008,7 +2033,7 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
@@ -2176,7 +2201,7 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
@@ -2288,7 +2313,7 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
@@ -2380,7 +2405,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
@@ -2561,7 +2586,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
@@ -2661,7 +2686,7 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	/* check the PackageID here to avoid a round trip if invalid */
 	ret = pk_package_id_check (package_id);
 	if (!ret) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
 				     "package_id '%s' is not valid", package_id);
 		return FALSE;
 	}
@@ -2755,7 +2780,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
 				     "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
@@ -3320,6 +3345,10 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous)
+			g_main_loop_run (client->priv->loop);
 	}
 	return ret;
 }
@@ -4281,6 +4310,12 @@ pk_client_test (EggTest *test)
 	g_free (file);
 
 	/************************************************************/
+	egg_test_title (test, "get client, then unref");
+	client = pk_client_new ();
+	g_object_unref (client);
+	egg_test_success (test, NULL);
+
+	/************************************************************/
 	egg_test_title (test, "get client");
 	client = pk_client_new ();
 	egg_test_assert (test, client != NULL);
@@ -4416,7 +4451,7 @@ pk_client_test (EggTest *test)
 		size_new = pk_package_list_get_size (list);
 		g_object_unref (list);
 		if (size != size_new)
-			egg_test_failed (test, "old size %i, new size %", size, size_new);
+			egg_test_failed (test, "old size %i, new size %i", size, size_new);
 	}
 	egg_test_success (test, "%i search name loops completed in %ims", i, egg_test_elapsed (test));
 	g_object_unref (client);

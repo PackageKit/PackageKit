@@ -59,7 +59,7 @@ G_BEGIN_DECLS
  * @PK_CLIENT_ERROR_NO_TID: the transaction id was not pre-allocated (internal error)
  * @PK_CLIENT_ERROR_ALREADY_TID: the transaction id has already been used (internal error)
  * @PK_CLIENT_ERROR_ROLE_UNKNOWN: the role was not set (internal error)
- * @PK_CLIENT_ERROR_INVALID_PACKAGEID: the package_id is invalid
+ * @PK_CLIENT_ERROR_INVALID_INPUT: the package_id is invalid
  *
  * Errors that can be thrown
  */
@@ -71,7 +71,9 @@ typedef enum
 	PK_CLIENT_ERROR_ALREADY_TID,
 	PK_CLIENT_ERROR_ROLE_UNKNOWN,
 	PK_CLIENT_ERROR_CANNOT_START_DAEMON,
-	PK_CLIENT_ERROR_INVALID_PACKAGEID
+	PK_CLIENT_ERROR_INVALID_INPUT,
+	PK_CLIENT_ERROR_INVALID_FILE,
+	PK_CLIENT_ERROR_NOT_SUPPORTED
 } PkClientError;
 
 typedef struct _PkClientPrivate		PkClientPrivate;

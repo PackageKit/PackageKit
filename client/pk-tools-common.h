@@ -29,11 +29,10 @@ guint		 pk_console_get_number			(const gchar	*question,
 							 guint		 maxnum);
 gboolean	 pk_console_get_prompt			(const gchar	*question,
 							 gboolean	 defaultyes);
-PkPackageList	*pk_console_resolve			(PkClient	*client,
-							 PkBitfield	 filter,
+PkPackageList	*pk_console_resolve			(PkBitfield	 filter,
 							 const gchar	*package,
 							 GError		**error);
-gchar		*pk_console_resolve_package_id		(PkPackageList	*list,
+gchar		*pk_console_resolve_package_id		(const PkPackageList *list,
 							 GError		**error);
 
 #endif /* __PK_TOOLS_COMMON_H */

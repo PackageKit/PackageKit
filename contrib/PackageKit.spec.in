@@ -48,6 +48,7 @@ BuildRequires: libarchive-devel
 BuildRequires: gstreamer-devel
 BuildRequires: gstreamer-plugins-base-devel
 BuildRequires: qt-devel
+BuildRequires: cppunit-devel
 
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
@@ -85,7 +86,7 @@ Summary: Tell PackageKit to install firmware that udev requires
 Group: System Environment/Base
 Requires: udev
 Requires: PackageKit
-Obsoletes: udev-packagekit
+Obsoletes: udev-packagekit < %{version}-%{release}
 
 %description udev-helper
 PackageKit-udev-helper tells PackageKit that firmware was not available and was
@@ -97,7 +98,7 @@ Summary: Tell PackageKit to check for updates when yum exits
 Group: System Environment/Base
 Requires: yum >= 3.0
 Requires: PackageKit
-Obsoletes: yum-packagekit
+Obsoletes: yum-packagekit < %{version}-%{release}
 
 %description yum-plugin
 PackageKit-yum-plugin tells PackageKit to check for updates when yum exits.
@@ -109,8 +110,8 @@ Summary: GLib libraries for accessing PackageKit
 Group: Development/Libraries
 Requires: dbus >= %{dbus_version}
 Requires: %{name} = %{version}-%{release}
-Obsoletes: PackageKit-libs
-Provides: PackageKit-libs
+Obsoletes: PackageKit-libs < %{version}-%{release}
+Provides: PackageKit-libs = %{version}-%{release}
 
 %description glib
 GLib libraries for accessing PackageKit.
@@ -139,8 +140,9 @@ Requires: %{name} = %{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
 Requires: pkgconfig
 Requires: sqlite-devel
-Obsoletes: PackageKit-devel
-Provides: PackageKit-devel
+Requires: PackageKit-glib = %{version}-%{release}
+Obsoletes: PackageKit-devel < %{version}-%{release}
+Provides: PackageKit-devel = %{version}-%{release}
 
 %description glib-devel
 GLib headers and libraries for PackageKit.
@@ -150,6 +152,7 @@ Summary: QT Libraries and headers for PackageKit
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires: pkgconfig
+Requires: PackageKit-qt = %{version}-%{release}
 
 %description qt-devel
 QT headers and libraries for PackageKit.
@@ -179,7 +182,7 @@ Group: Development/Libraries
 Requires: gstreamer
 Requires: PackageKit-glib = %{version}-%{release}
 Obsoletes: codeina < 0.10.1-10
-Provides:  codeina = 0.10.1-10
+Provides: codeina = 0.10.1-10
 
 %description gstreamer-plugin
 The PackageKit GStreamer plugin allows any Gstreamer application to install

@@ -33,22 +33,19 @@
  * pk_console_resolve:
  **/
 PkPackageList *
-pk_console_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
+pk_console_resolve (PkBitfield filter, const gchar *package, GError **error)
 {
 	gboolean ret;
 	guint length;
 	PkPackageList *list = NULL;
+	PkClient *client;
 	gchar **packages;
 	GError *error_local = NULL;
 
-	/* reset */
-	ret = pk_client_reset (client, &error_local);
-	if (!ret) {
-		egg_warning ("failed to reset client task");
-		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
+	/* get new client */
+	client = pk_client_new ();
+	pk_client_set_use_buffer (client, TRUE, NULL);
+	pk_client_set_synchronous (client, TRUE, NULL);
 
 	/* we need to resolve it */
 	packages = pk_package_ids_from_id (package);
@@ -69,6 +66,7 @@ pk_console_resolve (PkClient *client, PkBitfield filter, const gchar *package, G
 
 		/* nothing contains */
 		g_object_unref (list);
+		list = NULL;
 
 		/* reset */
 		ret = pk_client_reset (client, &error_local);
@@ -89,6 +87,7 @@ pk_console_resolve (PkClient *client, PkBitfield filter, const gchar *package, G
 		list = pk_client_get_package_list (client);
 	}
 out:
+	g_object_unref (client);
 	return list;
 }
 
@@ -96,7 +95,7 @@ out:
  * pk_console_resolve_package_id:
  **/
 gchar *
-pk_console_resolve_package_id (PkPackageList *list, GError **error)
+pk_console_resolve_package_id (const PkPackageList *list, GError **error)
 {
 	guint i;
 	guint length;
@@ -126,7 +125,6 @@ pk_console_resolve_package_id (PkPackageList *list, GError **error)
 	/* TRANSLATORS: This finds out which package in the list to use */
 	i = pk_console_get_number (_("Please choose the correct package: "), length);
 	obj = pk_package_list_get_obj (list, i-1);
-	g_object_unref (list);
 
 	return pk_package_id_to_string (obj->id);
 }
