@@ -3345,6 +3345,10 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous)
+			g_main_loop_run (client->priv->loop);
 	}
 	return ret;
 }
