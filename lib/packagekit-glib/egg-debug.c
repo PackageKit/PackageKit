@@ -279,9 +279,9 @@ void
 egg_debug_set_logging (gboolean enabled)
 {
 	if (enabled)
-		g_setenv (EGG_LOGGING, "1", FALSE);
+		g_setenv (EGG_LOGGING, "1", TRUE);
 	else
-		g_setenv (EGG_LOGGING, "0", FALSE);
+		g_setenv (EGG_LOGGING, "0", TRUE);
 
 	if (egg_debug_is_logging ())
 		egg_debug ("logging to %s", EGG_LOG_FILE);
