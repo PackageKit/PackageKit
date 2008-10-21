@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-19 02:08+0000\n"
-"PO-Revision-Date: 2008-10-20 16:45+1000\n"
+"POT-Creation-Date: 2008-10-21 02:00+0000\n"
+"PO-Revision-Date: 2008-10-21 13:55+1000\n"
 "Last-Translator: Terry Chuang <tchuang@redhat.com>\n"
 "Language-Team:  <zh@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -34,298 +34,304 @@ msgstr "請登出並再次登入來完成更新。"
 msgid "Please restart the application as it is being used."
 msgstr "請重新啟動應用程式因為該應用程式正被使用中。"
 
+#. TRANSLATORS: The package is already installed on the system
+#: ../client/pk-console.c:579
+#, c-format
+msgid "The package '%s' is already installed"
+msgstr "「%s」套件已安裝"
+
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:553
+#: ../client/pk-console.c:587
 #, c-format
 msgid "The package '%s' could not be installed: %s"
 msgstr "「%s」套件無法安裝：%s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:578 ../client/pk-console.c:605
-#: ../client/pk-console.c:701 ../client/pk-console.c:818
-#: ../client/pk-tools-common.c:48 ../client/pk-tools-common.c:58
-#: ../client/pk-tools-common.c:76 ../client/pk-tools-common.c:83
+#: ../client/pk-console.c:612 ../client/pk-console.c:639
+#: ../client/pk-console.c:735 ../client/pk-console.c:852
+#: ../client/pk-tools-common.c:55 ../client/pk-tools-common.c:74
+#: ../client/pk-tools-common.c:81
 #, c-format
 msgid "Internal error: %s"
 msgstr "內部錯誤：%s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:586
+#: ../client/pk-console.c:620
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "此工具無法安裝套件：%s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:613
+#: ../client/pk-console.c:647
 #, c-format
 msgid "This tool could not install the files: %s"
 msgstr "此工具無法安裝檔案：%s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:669
+#: ../client/pk-console.c:703
 #, c-format
 msgid "This tool could not remove '%s': %s"
 msgstr "此工具無法移除「%s」：%s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:692 ../client/pk-console.c:763
+#: ../client/pk-console.c:726 ../client/pk-console.c:797
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "此工具無法移除套件：%s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:730
+#: ../client/pk-console.c:764
 #, c-format
 msgid "This tool could not remove the packages: '%s'"
 msgstr "此工具無法移除套件：「%s」"
 
 #. TRANSLATORS: When removing, we might have to remove other dependencies
-#: ../client/pk-console.c:742
+#: ../client/pk-console.c:776
 msgid "The following packages have to be removed:"
 msgstr "下列套件必須被移除掉："
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:749
+#: ../client/pk-console.c:783
 msgid "Proceed removing additional packages?"
 msgstr "移除額外套件？"
 
 #. TRANSLATORS: We did not remove any packages
-#: ../client/pk-console.c:754
+#: ../client/pk-console.c:788
 msgid "The package removal was canceled!"
 msgstr "套件移除已取消！"
 
 #. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:795
+#: ../client/pk-console.c:829
 #, c-format
 msgid "This tool could not download the package '%s' as it could not be found"
 msgstr "此工具無法下載套件「%s」因為找不到該套件"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:826
+#: ../client/pk-console.c:860
 #, c-format
 msgid "This tool could not download the packages: %s"
 msgstr "此工具無法下載套件：%s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:853 ../client/pk-console.c:862
+#: ../client/pk-console.c:887 ../client/pk-console.c:896
 #, c-format
 msgid "This tool could not update '%s': %s"
 msgstr "此工具無法更新「%s」：%s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:884 ../client/pk-console.c:892
+#: ../client/pk-console.c:918 ../client/pk-console.c:926
 #, c-format
 msgid "This tool could not get the requirements for '%s': %s"
 msgstr "此工具無法取得「%s」的需求：%s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:914 ../client/pk-console.c:922
+#: ../client/pk-console.c:948 ../client/pk-console.c:956
 #, c-format
 msgid "This tool could not get the dependencies for '%s': %s"
 msgstr "此工具無法取得「%s」的相依性：%s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:944 ../client/pk-console.c:952
+#: ../client/pk-console.c:978 ../client/pk-console.c:986
 #, c-format
 msgid "This tool could not get package details for '%s': %s"
 msgstr "此工具無法取得「%s」的套件詳情：%s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:974
+#: ../client/pk-console.c:1008
 #, c-format
 msgid "This tool could not find the files for '%s': %s"
 msgstr "此工具找不到「%s」的檔案：%s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:982
+#: ../client/pk-console.c:1016
 #, c-format
 msgid "This tool could not get the file list for '%s': %s"
 msgstr "此工具無法取得「%s」的檔案清單：%s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1004
+#: ../client/pk-console.c:1038
 #, c-format
 msgid "This tool could not find the update details for '%s': %s"
 msgstr "此工具找不到「%s」的更新詳情：%s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1012
+#: ../client/pk-console.c:1046
 #, c-format
 msgid "This tool could not get the update details for '%s': %s"
 msgstr "此工具無法取得「%s」的更新詳情：%s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1058
+#: ../client/pk-console.c:1092
 msgid "Error:"
 msgstr "錯誤："
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1072
+#: ../client/pk-console.c:1106
 msgid "Package description"
 msgstr "套件描述"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1105
+#: ../client/pk-console.c:1139
 msgid "Package files"
 msgstr "套件檔案"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1114
+#: ../client/pk-console.c:1148
 msgid "No files"
 msgstr "無檔案"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1137
+#: ../client/pk-console.c:1171
 msgid "Repository signature required"
 msgstr "需要儲存處簽章"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1147
+#: ../client/pk-console.c:1181
 msgid "You you accept this signature?"
 msgstr "您是否接受此簽章？"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1151
+#: ../client/pk-console.c:1185
 msgid "The signature was not accepted."
 msgstr "簽章未被接受。"
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1185
+#: ../client/pk-console.c:1219
 msgid "End user license agreement required"
 msgstr "需要使用者授權合約"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1192
+#: ../client/pk-console.c:1226
 msgid "Do you agree to this license?"
 msgstr "您是否同意此授權合約？"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1196
+#: ../client/pk-console.c:1230
 msgid "The license was refused."
 msgstr "已拒絕授權合約。"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1225
+#: ../client/pk-console.c:1259
 msgid "The daemon crashed mid-transaction!"
 msgstr "daemon 損毀了 mid-transaction！"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1278
+#: ../client/pk-console.c:1312
 msgid "PackageKit Console Interface"
 msgstr "PackageKit 主控台介面"
 
-#: ../client/pk-console.c:1278
+#: ../client/pk-console.c:1312
 msgid "Subcommands:"
 msgstr "次指令："
 
-#: ../client/pk-console.c:1369 ../client/pk-generate-pack.c:138
+#: ../client/pk-console.c:1403 ../client/pk-generate-pack.c:138
 #: ../client/pk-monitor.c:115 ../src/pk-main.c:196
 msgid "Show extra debugging information"
 msgstr "顯示額外的除錯資訊"
 
-#: ../client/pk-console.c:1371 ../client/pk-monitor.c:117
+#: ../client/pk-console.c:1405 ../client/pk-monitor.c:117
 msgid "Show the program version and exit"
 msgstr "顯示程式版本然後退出"
 
-#: ../client/pk-console.c:1373
+#: ../client/pk-console.c:1407
 msgid "Set the filter, e.g. installed"
 msgstr "設定過濾選項，例如「installed」"
 
-#: ../client/pk-console.c:1375
+#: ../client/pk-console.c:1409
 msgid "Exit without waiting for actions to complete"
 msgstr "不等待動作完成便退出"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1397
+#: ../client/pk-console.c:1431
 msgid "This tool could not connect to system DBUS."
 msgstr "此工具無法連至系統 DBUS。"
 
-#: ../client/pk-console.c:1492
+#: ../client/pk-console.c:1526
 msgid "You need to specify a search type, e.g. name"
 msgstr "您需要指定一個搜尋類型，例如「名稱」"
 
-#: ../client/pk-console.c:1497 ../client/pk-console.c:1504
-#: ../client/pk-console.c:1511 ../client/pk-console.c:1518
-#: ../client/pk-console.c:1629 ../client/pk-console.c:1639
-#: ../client/pk-console.c:1646 ../client/pk-console.c:1653
+#: ../client/pk-console.c:1531 ../client/pk-console.c:1538
+#: ../client/pk-console.c:1545 ../client/pk-console.c:1552
+#: ../client/pk-console.c:1663 ../client/pk-console.c:1673
+#: ../client/pk-console.c:1680 ../client/pk-console.c:1687
 msgid "You need to specify a search term"
 msgstr "您需要指定一個搜尋關鍵字"
 
-#: ../client/pk-console.c:1523
+#: ../client/pk-console.c:1557
 msgid "Invalid search type"
 msgstr "無效的搜尋類型"
 
-#: ../client/pk-console.c:1528
+#: ../client/pk-console.c:1562
 msgid "You need to specify a package or file to install"
 msgstr "您需要指定欲安裝的套件或檔案"
 
-#: ../client/pk-console.c:1535
+#: ../client/pk-console.c:1569
 msgid "You need to specify a type, key_id and package_id"
 msgstr "您需要指定一個類型、key_id 以及 package_id"
 
-#: ../client/pk-console.c:1542
+#: ../client/pk-console.c:1576
 msgid "You need to specify a package to remove"
 msgstr "您需要指定欲移除的套件"
 
-#: ../client/pk-console.c:1548
+#: ../client/pk-console.c:1582
 msgid ""
 "You need to specify the destination directory and then the packages to "
 "download"
 msgstr "您需要指定目的地目錄以及欲下載的套件"
 
-#: ../client/pk-console.c:1553
+#: ../client/pk-console.c:1587
 msgid "Directory not found"
 msgstr "找不到目錄"
 
-#: ../client/pk-console.c:1559
+#: ../client/pk-console.c:1593
 msgid "You need to specify a licence identifier (eula-id)"
 msgstr "您需要指定一個授權合約的標示符號（eula-id）"
 
-#: ../client/pk-console.c:1575
+#: ../client/pk-console.c:1609
 msgid "You need to specify a package name to resolve"
 msgstr "您需要指定一個欲解析的套件名稱"
 
-#: ../client/pk-console.c:1584 ../client/pk-console.c:1591
+#: ../client/pk-console.c:1618 ../client/pk-console.c:1625
 msgid "You need to specify a repository name"
 msgstr "您需要指定一組儲存處名稱"
 
-#: ../client/pk-console.c:1598
+#: ../client/pk-console.c:1632
 msgid "You need to specify a repo name/parameter and value"
 msgstr "您需要指定一個 repo 名稱/參數和數值"
 
-#: ../client/pk-console.c:1611
+#: ../client/pk-console.c:1645
 msgid "You need to specify an action, e.g. 'update-system'"
 msgstr "您需要指定一個動作，例如「update-system」"
 
-#: ../client/pk-console.c:1616
+#: ../client/pk-console.c:1650
 msgid "You need to specify a correct role"
 msgstr "您需要指定一個正確的角色"
 
-#: ../client/pk-console.c:1621
+#: ../client/pk-console.c:1655
 msgid "Failed to get last time"
 msgstr "上次無法取得"
 
-#: ../client/pk-console.c:1660
+#: ../client/pk-console.c:1694
 msgid "You need to specify a package to find the details for"
 msgstr "您需要指定一個欲尋找其詳細資料的套件"
 
-#: ../client/pk-console.c:1667
+#: ../client/pk-console.c:1701
 msgid "You need to specify a package to find the files for"
 msgstr "您需要指定一個欲尋找其檔案的套件"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1720
+#: ../client/pk-console.c:1754
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "「%s」選項不被支援"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:1733
+#: ../client/pk-console.c:1767
 msgid "You don't have the necessary privileges for this operation"
 msgstr "您沒有進行此動作的必要權限"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1736
+#: ../client/pk-console.c:1770
 msgid "Command failed"
 msgstr "指令失敗"
 
@@ -413,21 +419,21 @@ msgid "PackageKit Monitor"
 msgstr "PackageKit 監控程式"
 
 #. TRANSLATORS: The package was not found in any software sources
-#: ../client/pk-tools-common.c:109
+#: ../client/pk-tools-common.c:108
 msgid "The package could not be found"
 msgstr "找不到套件"
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-tools-common.c:120
+#: ../client/pk-tools-common.c:119
 msgid "More than one package matches:"
 msgstr "超過一個符合的套件："
 
 #. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-tools-common.c:127
+#: ../client/pk-tools-common.c:126
 msgid "Please choose the correct package: "
 msgstr "請選擇正確的套件："
 
-#: ../client/pk-tools-common.c:154
+#: ../client/pk-tools-common.c:152
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "請輸入一組由 1 到 %i 的數字："
