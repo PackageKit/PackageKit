@@ -5,14 +5,13 @@
 #
 # Maintainer: Goran Rakić <grakic@devbase.net>
 #
-#  <>, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-25 00:31+0000\n"
-"PO-Revision-Date: 2008-10-21 23:46-0400\n"
-"Last-Translator:  <>\n"
+"POT-Creation-Date: 2008-10-21 02:00+0000\n"
+"PO-Revision-Date: 2008-10-22 01:01-0400\n"
+"Last-Translator: Goran Rakić <grakic@devbase.net>\n"
 "Language-Team: Serbian (sr) <gnom@prevod.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,401 +19,496 @@ msgstr ""
 "Plural-Forms: nplurals=4;    plural=n==1? 3 : n%10==1 && n%100!=11 ? 0 :    n"
 "%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
-#: ../client/pk-console.c:274
-msgid "Update detail"
+#. TRANSLATORS: this is a header for the package that can be updated
+#: ../client/pk-console.c:271
+msgid "Details about the update:"
 msgstr "Više o nadogradnji"
 
-#: ../client/pk-console.c:491
-msgid "A system restart is required"
+#: ../client/pk-console.c:464
+msgid "Please restart the computer to complete the update."
 msgstr "Neophodno je ponovno pokretanje sistema"
 
-#: ../client/pk-console.c:493
-msgid "A logout and login is required"
+#: ../client/pk-console.c:466
+msgid "Please logout and login to complete the update."
 msgstr "Neophodno je odjavljivanje i ponovna prijava"
 
-#: ../client/pk-console.c:495
-msgid "An application restart is required"
+#: ../client/pk-console.c:468
+msgid "Please restart the application as it is being used."
 msgstr "Neophodno je ponovno pokretanje programa"
 
-#: ../client/pk-console.c:588 ../client/pk-generate-pack.c:126
-msgid "There are multiple package matches"
-msgstr "Postoji više paketa koji odgovaraju upitu"
+#. TRANSLATORS: The package is already installed on the system
+#: ../client/pk-console.c:579
+#, c-format
+msgid "The package '%s' is already installed"
+msgstr "paket „%s“ je već instaliran"
 
-#. find out what package the user wants to use
-#: ../client/pk-console.c:595 ../client/pk-generate-pack.c:133
-msgid "Please enter the package number: "
-msgstr "Unesi broj paketa: "
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:587
+#, c-format
+msgid "The package '%s' could not be installed: %s"
+msgstr "Paket „%s“ se nije moga instalirati: %s"
 
-#: ../client/pk-console.c:629
-msgid "Could not find package to install"
-msgstr "Ne mogu da pronađem paket za instalaciju"
+#. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
+#: ../client/pk-console.c:612 ../client/pk-console.c:639
+#: ../client/pk-console.c:735 ../client/pk-console.c:852
+#: ../client/pk-tools-common.c:55 ../client/pk-tools-common.c:74
+#: ../client/pk-tools-common.c:81
+#, c-format
+msgid "Internal error: %s"
+msgstr "Unutrašnje greška: %s"
 
-#: ../client/pk-console.c:735
-msgid "Could not find package to remove"
-msgstr "Ne mogu da pronađem traženi paket za uklanjanje"
+#. TRANSLATORS: There was an error installing the packages. The detailed error follows
+#: ../client/pk-console.c:620
+#, c-format
+msgid "This tool could not install the packages: %s"
+msgstr "Ova alatka nije mogla instalirati pakete: %s"
 
-#: ../client/pk-console.c:796
-msgid "The following packages have to be removed"
-msgstr "Sledeći paketi će biti uklonjeni"
+#. TRANSLATORS: There was an error installing the files. The detailed error follows
+#: ../client/pk-console.c:647
+#, c-format
+msgid "This tool could not install the files: %s"
+msgstr "Ova alatka nije mogla instalirati datoteke: %s"
 
-#. get user input
-#: ../client/pk-console.c:803
-msgid "Okay to remove additional packages?"
+#. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
+#: ../client/pk-console.c:703
+#, c-format
+msgid "This tool could not remove '%s': %s"
+msgstr "Ova alaka nije mogla ukloniti „%s“: %s"
+
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:726 ../client/pk-console.c:797
+#, c-format
+msgid "This tool could not remove the packages: %s"
+msgstr "Ova alatka nije mogla izbaciti pakete: %s"
+
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:764
+#, c-format
+msgid "This tool could not remove the packages: '%s'"
+msgstr "Ova alatka nije mogla izbaciti pakete: „%s“"
+
+#. TRANSLATORS: When removing, we might have to remove other dependencies
+#: ../client/pk-console.c:776
+msgid "The following packages have to be removed:"
+msgstr "Sledeći paketi će biti uklonjeni:"
+
+#. TRANSLATORS: We are checking if it's okay to remove a list of packages
+#: ../client/pk-console.c:783
+msgid "Proceed removing additional packages?"
 msgstr "Da li je u redu da uklonim ove dodatne pakete?"
 
-#: ../client/pk-console.c:807 ../client/pk-generate-pack.c:528
-#: ../client/pk-generate-pack-main.c:131
-msgid "Cancelled!"
-msgstr "Prekinuto!"
+#. TRANSLATORS: We did not remove any packages
+#: ../client/pk-console.c:788
+msgid "The package removal was canceled!"
+msgstr "Izbacivanje paketa je prekinuto!"
 
-#: ../client/pk-console.c:841
-msgid "Could not find package to download"
-msgstr "Ne mogu da pronađem paket za preuzimanje"
+#. TRANSLATORS: The package name was not found in any software sources
+#: ../client/pk-console.c:829
+#, c-format
+msgid "This tool could not download the package '%s' as it could not be found"
+msgstr "Ova alatka nije mogla preuzeti paket „%s“ jer ga nije mogla pronaći"
 
-#: ../client/pk-console.c:893
-msgid "Could not find package to update"
-msgstr "Ne mogu da pronađem paket za ažuriranje"
+#. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
+#: ../client/pk-console.c:860
+#, c-format
+msgid "This tool could not download the packages: %s"
+msgstr "Ova alatka nije mogla preuzeti pakete: %s"
 
-#: ../client/pk-console.c:915
-msgid "Could not find what packages require"
-msgstr "Ne mogu da pronađem šta je potrebno paketima"
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:887 ../client/pk-console.c:896
+#, c-format
+msgid "This tool could not update '%s': %s"
+msgstr "Ova alatka nije mogla ažurirati „%s“: %s"
 
-#: ../client/pk-console.c:936
-msgid "Could not get dependencies for"
-msgstr "Ne mogu da pribavim međuzavisnosti za"
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:918 ../client/pk-console.c:926
+#, c-format
+msgid "This tool could not get the requirements for '%s': %s"
+msgstr "Ova alatka nije mogla dobaviti zahteve za „%s“: %s"
 
-#: ../client/pk-console.c:957
-msgid "Could not find details for"
-msgstr "Ne mogu da pribavim detanje za"
+#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
+#: ../client/pk-console.c:948 ../client/pk-console.c:956
+#, c-format
+msgid "This tool could not get the dependencies for '%s': %s"
+msgstr "Ova alatka nije mogla dobaviti međuzavisnosti za „%s“: %s"
 
-#: ../client/pk-console.c:980
-msgid "Could not find the files for this package"
-msgstr "Ne mogu naći datoteke za ovaj paket"
+#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
+#: ../client/pk-console.c:978 ../client/pk-console.c:986
+#, c-format
+msgid "This tool could not get package details for '%s': %s"
+msgstr "Ova alatka nije mogla dobaviti detanje paketa za „%s“: %s"
 
-#: ../client/pk-console.c:987
-msgid "Could not get the file list"
-msgstr "Ne mogu da pribavim spisak datoteka"
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:1008
+#, c-format
+msgid "This tool could not find the files for '%s': %s"
+msgstr "Ova alatka nije mogla naći datoteke za „%s“: %s"
 
-#: ../client/pk-console.c:1006
-msgid "Could not find the update details for"
-msgstr "Ne mogu da pribavim podatke ažuriranja za"
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:1016
+#, c-format
+msgid "This tool could not get the file list for '%s': %s"
+msgstr "Ova alatka nije mogla dobaviti spisak datoteka za „%s“: %s"
 
-#: ../client/pk-console.c:1067
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:1038
+#, c-format
+msgid "This tool could not find the update details for '%s': %s"
+msgstr "Ova alatka nije mogla naći detalje ažuriranja za „%s“: %s"
+
+#. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
+#: ../client/pk-console.c:1046
+#, c-format
+msgid "This tool could not get the update details for '%s': %s"
+msgstr "Ova alatka nije mogla dobaviti detalje ažuriranja za „%s“: %s"
+
+#. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
+#: ../client/pk-console.c:1092
+msgid "Error:"
+msgstr "Greška:"
+
+#. TRANSLATORS: This a list of details about the package
+#: ../client/pk-console.c:1106
 msgid "Package description"
 msgstr "Opis paketa"
 
-#: ../client/pk-console.c:1100
+#. TRANSLATORS: This a list files contained in the package
+#: ../client/pk-console.c:1139
 msgid "Package files"
 msgstr "Spisak datoteka"
 
-#: ../client/pk-console.c:1108
+#. TRANSLATORS: This where the package has no files
+#: ../client/pk-console.c:1148
 msgid "No files"
 msgstr "Nema datoteka"
 
-#. get user input
-#: ../client/pk-console.c:1140
-msgid "Okay to import key?"
-msgstr "Da li je u redu da uvezem ključ potpisa?"
+#. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
+#: ../client/pk-console.c:1171
+msgid "Repository signature required"
+msgstr "Potpis riznice je obavezan"
 
-#: ../client/pk-console.c:1143
-msgid "Did not import key"
-msgstr "Ključ potpisa nije uvezen"
+#. TRANSLATORS: This a prompt asking the user to import the security key
+#: ../client/pk-console.c:1181
+msgid "You you accept this signature?"
+msgstr "Prihvatate li ovaj potpis?"
 
-#. get user input
-#: ../client/pk-console.c:1183
-msgid "Do you agree?"
-msgstr "Da li se slažete?"
+#. TRANSLATORS: This is where the user declined the security key
+#: ../client/pk-console.c:1185
+msgid "The signature was not accepted."
+msgstr "Ovaj potpis nije prihvaćen"
 
-#: ../client/pk-console.c:1186
-msgid "Did not agree to licence, task will fail"
-msgstr "Nema saglasnosti sa uslovima licence, zadatak neće biti izvršen"
+#. TRANSLATORS: This a request for a EULA
+#: ../client/pk-console.c:1219
+msgid "End user license agreement required"
+msgstr "Licenci dogovor sa krajnjim korisnikog je obavezan"
 
-#: ../client/pk-console.c:1215
+#. TRANSLATORS: This a prompt asking the user to agree to the license
+#: ../client/pk-console.c:1226
+msgid "Do you agree to this license?"
+msgstr "Slažete li se sa ovom licencom?"
+
+#. TRANSLATORS: This is where the user declined the license
+#: ../client/pk-console.c:1230
+msgid "The license was refused."
+msgstr "Licenca je odbijena"
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
+#: ../client/pk-console.c:1259
 msgid "The daemon crashed mid-transaction!"
-msgstr "Uslužni program (demon) se iznenada prekinuo u pola posla!"
+msgstr "Uslužni program se iznenada prekinuo!"
 
-#. header
-#: ../client/pk-console.c:1268
+#. TRANSLATORS: This is the header to the --help menu
+#: ../client/pk-console.c:1312
 msgid "PackageKit Console Interface"
 msgstr "Tekstualno sučelje programa PaketKit"
 
-#: ../client/pk-console.c:1268
+#: ../client/pk-console.c:1312
 msgid "Subcommands:"
-msgstr "Podnaredbe:"
+msgstr "Komande:"
 
-#: ../client/pk-console.c:1378 ../client/pk-generate-pack-main.c:64
-#: ../client/pk-monitor.c:118 ../src/pk-main.c:192
+#: ../client/pk-console.c:1403 ../client/pk-generate-pack.c:138
+#: ../client/pk-monitor.c:115 ../src/pk-main.c:196
 msgid "Show extra debugging information"
 msgstr "Prikaži dodatne podatke za otkrivanje grešaka"
 
-#: ../client/pk-console.c:1380 ../client/pk-monitor.c:120
+#: ../client/pk-console.c:1405 ../client/pk-monitor.c:117
 msgid "Show the program version and exit"
 msgstr "Prikaži verziju programa i završi rad"
 
-#: ../client/pk-console.c:1382
+#: ../client/pk-console.c:1407
 msgid "Set the filter, e.g. installed"
 msgstr "Postavi filter, npr. instalirani"
 
-#: ../client/pk-console.c:1384
+#: ../client/pk-console.c:1409
 msgid "Exit without waiting for actions to complete"
 msgstr "Završi rad bez čekanja da se poslovi završe"
 
-#: ../client/pk-console.c:1407
-msgid "Could not connect to system DBUS."
+#. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
+#: ../client/pk-console.c:1431
+msgid "This tool could not connect to system DBUS."
 msgstr "Ne mogu da se povežem na sistemsku komunikacionu magistralu (DBUS)."
 
-#: ../client/pk-console.c:1500
+#: ../client/pk-console.c:1526
 msgid "You need to specify a search type, e.g. name"
-msgstr "Morate navesti vrstu pretrage, npr. naziv"
+msgstr "Moraš navesti vrstu pretrage, npr. ime"
 
-#: ../client/pk-console.c:1505 ../client/pk-console.c:1512
-#: ../client/pk-console.c:1519 ../client/pk-console.c:1526
-#: ../client/pk-console.c:1637 ../client/pk-console.c:1647
-#: ../client/pk-console.c:1654 ../client/pk-console.c:1661
+#: ../client/pk-console.c:1531 ../client/pk-console.c:1538
+#: ../client/pk-console.c:1545 ../client/pk-console.c:1552
+#: ../client/pk-console.c:1663 ../client/pk-console.c:1673
+#: ../client/pk-console.c:1680 ../client/pk-console.c:1687
 msgid "You need to specify a search term"
-msgstr "Moraš navesti termine pretrage"
+msgstr "Moraš navesti uslov pretrage"
 
-#: ../client/pk-console.c:1531
+#: ../client/pk-console.c:1557
 msgid "Invalid search type"
-msgstr "Neispravan vrsta pretrage"
+msgstr "Neispravan tip pretrage"
 
-#: ../client/pk-console.c:1536
+#: ../client/pk-console.c:1562
 msgid "You need to specify a package or file to install"
 msgstr "Moraš navesti paket ili datoteku za instaliranje"
 
-#: ../client/pk-console.c:1543
+#: ../client/pk-console.c:1569
 msgid "You need to specify a type, key_id and package_id"
-msgstr "Moraš navesti vrstu, IB ključa (key_id)  i IB paketa (package_id)"
+msgstr "Moraš navesti tip, key_id i package_id"
 
-#: ../client/pk-console.c:1550
+#: ../client/pk-console.c:1576
 msgid "You need to specify a package to remove"
 msgstr "Moraš navesti paket za uklanjanje"
 
-#: ../client/pk-console.c:1556
+#: ../client/pk-console.c:1582
 msgid ""
 "You need to specify the destination directory and then the packages to "
 "download"
-msgstr "Morate navesti odredišni direktorijum i pa onda pakete za preuzimanje"
+msgstr "Morate navesti odredišni direktorijum pa tek onda pakete za preuzimanje"
 
-#: ../client/pk-console.c:1561
+#: ../client/pk-console.c:1587
 msgid "Directory not found"
-msgstr "Direktorijum nije pronađen"
+msgstr "Direktorijum nije nađen"
 
-#: ../client/pk-console.c:1567
-msgid "You need to specify a eula-id"
-msgstr "Moraš navesti eula-id"
+#: ../client/pk-console.c:1593
+msgid "You need to specify a licence identifier (eula-id)"
+msgstr "Morete navesti broj licence (eula-id)"
 
-#: ../client/pk-console.c:1583
+#: ../client/pk-console.c:1609
 msgid "You need to specify a package name to resolve"
 msgstr "Moraš navesti ime paketa za upit"
 
-#: ../client/pk-console.c:1592 ../client/pk-console.c:1599
-msgid "You need to specify a repo name"
-msgstr "Moraš navesti ime skladišta"
+#: ../client/pk-console.c:1618 ../client/pk-console.c:1625
+msgid "You need to specify a repository name"
+msgstr "Morate navesti ime riznice"
 
-#: ../client/pk-console.c:1606
+#: ../client/pk-console.c:1632
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Moraš navesti ime ili parametar skladišta i vrednost"
 
-#: ../client/pk-console.c:1619
-msgid "You need to specify a time term"
-msgstr "Moraš navesti vremensku odrednicu"
+#: ../client/pk-console.c:1645
+msgid "You need to specify an action, e.g. 'update-system'"
+msgstr "Morate navesi radnju, npr. „ažuriranje sistema“"
 
-#: ../client/pk-console.c:1624
+#: ../client/pk-console.c:1650
 msgid "You need to specify a correct role"
 msgstr "Moraš navesti ispravnu ulogu"
 
-#: ../client/pk-console.c:1629
+#: ../client/pk-console.c:1655
 msgid "Failed to get last time"
-msgstr "Neuspelo dobavljanje poslednjeg vremena preuzimanja"
+msgstr "Neuspeo pokušaj dobavljanja poslednjeg vremena"
 
-#: ../client/pk-console.c:1668
+#: ../client/pk-console.c:1694
 msgid "You need to specify a package to find the details for"
-msgstr "Morate navesti paket da bi našli detalje za"
+msgstr "Morate navesti ime paketa za prikaz liste datoteka"
 
-#: ../client/pk-console.c:1675
+#: ../client/pk-console.c:1701
 msgid "You need to specify a package to find the files for"
-msgstr "Morate navesti ime paketa za prikaz spiska datoteka"
+msgstr "Moraš navesti ime paketa za prikaz liste datoteka"
 
-#: ../client/pk-console.c:1724
+#. TRANSLATORS: The user tried to use an unsupported option on the command line
+#: ../client/pk-console.c:1754
 #, c-format
-msgid "Option '%s' not supported"
+msgid "Option '%s' is not supported"
 msgstr "Opcija „%s“ nije podržana"
 
-#: ../client/pk-console.c:1737
+#. TRANSLATORS: User does not have permission to do this
+#: ../client/pk-console.c:1767
 msgid "You don't have the necessary privileges for this operation"
-msgstr "Nemate neophodna ovlašćenja za ovu operaciju"
+msgstr "Nemaš neophodne privilegije za ovu operaciju"
 
-#: ../client/pk-console.c:1739
+#. TRANSLATORS: Generic failure of what they asked to do
+#: ../client/pk-console.c:1770
 msgid "Command failed"
-msgstr "Naredba nije uspela"
+msgstr "Komanda nije uspela"
 
-#: ../client/pk-generate-pack.c:117
-msgid "Could not find a package match"
-msgstr "Ne mogu da pronađem paket"
+#. TRANSLATORS: This is the state of the transaction
+#: ../client/pk-generate-pack.c:96
+msgid "Downloading"
+msgstr "Preuzimanje"
 
-#: ../client/pk-generate-pack.c:151
-msgid "failed to download: invalid package_id and/or directory"
-msgstr "neuspelo preuzimanje: neispravan IB paketa i/ili direktorijum"
+#: ../client/pk-generate-pack.c:140
+msgid "Set the file name of dependencies to be excluded"
+msgstr "Postavite ime datoteke za međuzavisnosti koje će biti izostavljene"
 
-#: ../client/pk-generate-pack.c:232
-msgid "Could not find a valid metadata file"
-msgstr "Ne mogu da pronađem ispravnu datoteku meta podataka"
-
-#. get user input
-#: ../client/pk-generate-pack.c:524
-msgid "Okay to download the additional packages"
-msgstr "U redu da preuzmem dodatne pakete"
-
-#: ../client/pk-generate-pack-main.c:66
-msgid ""
-"Set the path of the file with the list of packages/dependencies to be "
-"excluded"
+#: ../client/pk-generate-pack.c:142
+msgid "The output directory (the current directory is used if ommitted)"
 msgstr ""
-"Postavite putanju datoteke sa spiskom paketa/zavisnosti koje treba izostaviti"
+"Izlazni direkotijum (tekući direkorijum će se koristiti ako nije naveden)"
 
-#: ../client/pk-generate-pack-main.c:111
-msgid "You need to specify the pack name and packages to be packed\n"
-msgstr "Morate navesti paket naziv grupe i pakete koje ćete staviti u nju\n"
+#: ../client/pk-generate-pack.c:144
+msgid "The package to be put into the service pack"
+msgstr "Paketi koji će biti stavljeni u srvisni skup"
 
-#: ../client/pk-generate-pack-main.c:117
-msgid ""
-"Invalid name for the service pack, Specify a name with .servicepack "
-"extension\n"
-msgstr ""
-"Neispravno ime za servisnu grupu, naznačite ime sa servicepack ekstenzijom\n"
+#: ../client/pk-generate-pack.c:146
+msgid "Put all updates available in the service pack"
+msgstr "Stavi sva ažuriranja u servisni skup"
 
-#: ../client/pk-generate-pack-main.c:129
+#. TRANSLATORS: This is when the user fails to supply the correct arguments
+#: ../client/pk-generate-pack.c:166
+msgid "Neither --package or --updates option selected."
+msgstr "Ni jedna od opcija --package ili --updates nije izabrana."
+
+#. TRANSLATORS: This is when the user fails to supply just one argument
+#: ../client/pk-generate-pack.c:174
+msgid "Both options selected."
+msgstr "Obe opcije izabrane."
+
+#. TRANSLATORS: This is when file already exists
+#: ../client/pk-generate-pack.c:207
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "Grupa sa istim nazivom već postoji, želite li da je presnimite?"
+msgstr "Skup sa istim nazivom već postoji, da li ga želite presnimiti?"
 
-#: ../client/pk-generate-pack-main.c:142
-msgid "Failed to create directory"
+#. TRANSLATORS: This is when the pack was not overwritten
+#: ../client/pk-generate-pack.c:210
+msgid "The pack was not overwritten."
+msgstr "Skup nije presnimljen."
+
+#. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
+#: ../client/pk-generate-pack.c:222
+msgid "Failed to create directory:"
 msgstr "Neuspelo pravljenje direktorijuma"
 
-#: ../client/pk-generate-pack-main.c:149
-msgid "Failed to create pack"
-msgstr "Neuspelo pravljenje grupe"
+#. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
+#: ../client/pk-generate-pack.c:231
+msgid "Failed to open package list."
+msgstr "Nuespešno otvaranje spiska paketa."
 
-#: ../client/pk-import-specspo.c:185
-msgid "Could not set database readonly"
-msgstr "Baza podataka se nije mogla postaviti u režim „samo za čitanje“"
+#. TRANSLATORS: The package name is being matched up to available packages
+#: ../client/pk-generate-pack.c:241
+msgid "Finding package name."
+msgstr "Traženje imena paketa."
 
-#: ../client/pk-import-specspo.c:192
+#. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
+#: ../client/pk-generate-pack.c:245
 #, c-format
-msgid "Could not open database: %s"
-msgstr "Ne mogu da otvorim bazu podataka: %s"
+msgid "Failed to find package '%s': %s"
+msgstr "Nisam mogao da pronađem paket „%s“: %s"
 
-#: ../client/pk-import-specspo.c:193
-msgid "You probably need to run this program as the root user"
-msgstr "Verovatno treba da pokrenete program kao root korisnik"
+#. TRANSLATORS: This is telling the user we are in the process of making the pack
+#: ../client/pk-generate-pack.c:260
+msgid "Creating service pack..."
+msgstr "Pravim servisnu grupu..."
 
-#: ../client/pk-monitor.c:131
+#. TRANSLATORS: we succeeded in making the file
+#: ../client/pk-generate-pack.c:267
+#, c-format
+msgid "Service pack created '%s'"
+msgstr "Servisna grupa napravljena.„%s“"
+
+#. TRANSLATORS: we failed to make te file
+#: ../client/pk-generate-pack.c:271
+#, c-format
+msgid "Failed to create '%s': %s"
+msgstr "Neuspelo pravljenje „%s“: %s"
+
+#: ../client/pk-monitor.c:128
 msgid "PackageKit Monitor"
 msgstr "PaketKit redar"
 
-#: ../client/pk-tools-common.c:51
+#. TRANSLATORS: The package was not found in any software sources
+#: ../client/pk-tools-common.c:108
+msgid "The package could not be found"
+msgstr "Paket nije nađen"
+
+#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#: ../client/pk-tools-common.c:119
+msgid "More than one package matches:"
+msgstr "Postoji više paketa koji odgovaraju upitu:"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../client/pk-tools-common.c:126
+msgid "Please choose the correct package: "
+msgstr "Izaberite željeni paket: "
+
+#: ../client/pk-tools-common.c:152
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Unesi broj između 1 i %i: "
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:300
+#. TRANSLATORS: when we are getting data from the daemon
+#: ../contrib/packagekit-plugin/src/contents.cpp:299
 msgid "Getting package information..."
 msgstr "Dobavljam informacije o paketu...."
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#. TRANSLATORS: run an applicaiton
+#: ../contrib/packagekit-plugin/src/contents.cpp:305
 #, c-format
-msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
-msgstr "<span color='#%06x' underline='single' size='larger'>Pokreni %s</span>"
+msgid "Run %s"
+msgstr "Pokreni %s"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:308
-#: ../contrib/packagekit-plugin/src/contents.cpp:313
-#: ../contrib/packagekit-plugin/src/contents.cpp:336
-#: ../contrib/packagekit-plugin/src/contents.cpp:340
-#, c-format
-msgid "<big>%s</big>"
-msgstr "<big>%s</big>"
+#. TRANSLATORS: show the installed version of a package
+#: ../contrib/packagekit-plugin/src/contents.cpp:311
+msgid "Installed version"
+msgstr "Instalirana verzija"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:310
+#. TRANSLATORS: run the application now
+#: ../contrib/packagekit-plugin/src/contents.cpp:319
 #, c-format
-msgid ""
-"\n"
-"<small>Installed version: %s</small>"
-msgstr ""
-"\n"
-"<small>Instalirana verzija: %s</small>"
-
-#: ../contrib/packagekit-plugin/src/contents.cpp:316
-#, c-format
-msgid ""
-"\n"
-"<span color='#%06x' underline='single'>Run version %s now</span>"
-msgstr ""
-"\n"
-"<span color='#%06x' underline='single'>Pokreni verziju %s sada</span>"
-
-#: ../contrib/packagekit-plugin/src/contents.cpp:321
-#, c-format
-msgid ""
-"\n"
-"<span color='#%06x' underline='single'>Run now</span>"
-msgstr ""
-"\n"
-"<span color='#%06x' underline='single'>Pokreni sada</span>"
+msgid "Run version %s now"
+msgstr "Pokreni verziju %s sada"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:325
-#, c-format
-msgid ""
-"\n"
-"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
-msgstr ""
-"\n"
-"<span color='#%06x' underline='single'>Ažuriraj na verziju %s</span>"
+msgid "Run now"
+msgstr "Pokreni sada"
 
+#. TRANSLATORS: update to a new version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
-msgid ""
-"<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
-msgstr ""
-"<span color='#%06x' underline='single' size='larger'>Instaliraj %s sada</"
-"span>"
+msgid "Update to version %s"
+msgstr "Ažuriraj na verziju %s"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:333
+#. TRANSLATORS: To install a package
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
 #, c-format
-msgid ""
-"\n"
-"<small>Version: %s</small>"
-msgstr ""
-"\n"
-"<small>Verzija: %s</small>"
+msgid "Install %s now"
+msgstr "Instaliraj %s sada"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:337
-msgid ""
-"\n"
-"<small>No packages found for your system</small>"
-msgstr ""
-"\n"
-"<small>Nije pronađen nijedan paket za vaš sistem</small>"
+#. TRANSLATORS: the version of the package
+#: ../contrib/packagekit-plugin/src/contents.cpp:339
+msgid "Version"
+msgstr "Verzija"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:341
-msgid ""
-"\n"
-"<small>Installing...</small>"
-msgstr ""
-"\n"
-"<small>Instaliram...</small>"
+#. TRANSLATORS: noting found, so can't install
+#: ../contrib/packagekit-plugin/src/contents.cpp:344
+msgid "No packages found for your system"
+msgstr "Nije pronađen nijedan paket za vaš sistem"
+
+#. TRANSLATORS: package is being installed
+#: ../contrib/packagekit-plugin/src/contents.cpp:349
+msgid "Installing..."
+msgstr "Instaliram..."
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
 msgstr "PaketKit katalog"
 
-#: ../data/packagekit-pack.xml.in.h:1
+#: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr "Servisna grupa za PaketKit"
+msgstr "Servis PaketKita"
+
+#: ../data/packagekit-package-list.xml.in.h:1
+msgid "PackageKit Package List"
+msgstr "PaketKit spiak paketa"
 
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
-msgstr "Pokretanje nije uspelo usled sistemske sigurnosne polise."
+msgstr "Pokretanje nije uspelo usled sistemske sigurnosne politike."
 
 #: ../src/pk-main.c:86
 msgid "This can happen for two reasons:"
@@ -426,48 +520,60 @@ msgstr "Program ne pokreće odgovarajući korisnik (najčešće treba „root“
 
 #: ../src/pk-main.c:88
 msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
-"dbus-1/system.d directory"
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
 msgstr ""
-"Datoteka „org.freedesktop.PackageKit.conf“ nije instalirana u sistemski “/"
-"etc/dbus-1/system.d“ direktorijum"
+"Datoteka „org.freedesktop.PackageKit.conf“ nije instalirana u sistemski "
+"direktorijum:"
 
-#: ../src/pk-main.c:188
+#: ../src/pk-main.c:192
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Pozadinski sistem u upotrebi, npr. „dummy“ (probni)"
 
-#: ../src/pk-main.c:190
+#: ../src/pk-main.c:194
 msgid "Daemonize and detach from the terminal"
 msgstr "Odvoji od terminala i nastavi rad kao uslužni"
 
-#: ../src/pk-main.c:194
+#: ../src/pk-main.c:198
 msgid "Disable the idle timer"
 msgstr "Onemogući merač čekanja"
 
-#: ../src/pk-main.c:196
+#: ../src/pk-main.c:200
 msgid "Show version and exit"
 msgstr "Prikaži verziju i završi rad"
 
-#: ../src/pk-main.c:198
+#: ../src/pk-main.c:202
 msgid "Exit after a small delay"
-msgstr "Izađi posle kratke zadrške"
+msgstr "Sačekaj malo i završi rad"
 
-#: ../src/pk-main.c:200
+#: ../src/pk-main.c:204
 msgid "Exit after the engine has loaded"
 msgstr "Završi rad nakon što se učita pozadinski sistem"
 
-#: ../src/pk-main.c:210
+#: ../src/pk-main.c:214
 msgid "PackageKit service"
 msgstr "Servis PaketKita"
 
-#: ../src/pk-main.c:246
+#: ../src/pk-main.c:250
 msgid "Cannot connect to the system bus"
 msgstr "Ne mogu da se povežem na sistemsku magistralu"
 
-#: ../src/pk-main.c:286
+#: ../src/pk-main.c:296
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Greška pri pokretanju: %s\n"
+
+#~ msgid "Okay to import key?"
+#~ msgstr "Da li je u redu da uvezem ključ potpisa?"
+
+#~ msgid "Did not import key"
+#~ msgstr "Ključ potpisa nije uvezen"
+
+#~ msgid "Do you agree?"
+#~ msgstr "Saglasni?"
+
+#~ msgid "You need to specify a time term"
+#~ msgstr "Moraš navesti vremensku odrednicu"
 
 #~ msgid "Accept EULA"
 #~ msgstr "Prihvati licencu"
@@ -478,17 +584,22 @@ msgstr "Greška pri pokretanju: %s\n"
 #~ msgid "Authentication is required to change software source parameters"
 #~ msgstr "Neophodna je autentifikacija za izmenu postavki skladišta softvera"
 
-#~ msgid "Authentication is required to install a local file"
-#~ msgstr "Neophodna je autentifikacija za instaliranje lokalne datoteke"
+#, fuzzy
+#~ msgid ""
+#~ "Authentication is required to consider a key used for signing packages as "
+#~ "trusted"
+#~ msgstr "Neophodna je autentifikacija za osvežavanje liste paketa"
 
-#~ msgid "Authentication is required to install a package"
+#, fuzzy
+#~ msgid "Authentication is required to install a signed package"
 #~ msgstr "Neophodna je autentifikacija za instaliranje paketa"
 
-#~ msgid "Authentication is required to install a security signature"
-#~ msgstr ""
-#~ "Neophodna je autentifikacija za instaliranje sigurnosnog digitalnog potpisa"
+#, fuzzy
+#~ msgid "Authentication is required to install an untrusted package"
+#~ msgstr "Neophodna je autentifikacija za instaliranje paketa"
 
-#~ msgid "Authentication is required to refresh the package lists"
+#, fuzzy
+#~ msgid "Authentication is required to refresh the system sources"
 #~ msgstr "Neophodna je autentifikacija za osvežavanje liste paketa"
 
 #~ msgid "Authentication is required to remove packages"
@@ -497,8 +608,11 @@ msgstr "Greška pri pokretanju: %s\n"
 #~ msgid "Authentication is required to rollback a transaction"
 #~ msgstr "Neophodna je autentifikacija za poništavanje sve-ili-ništa promena"
 
-#~ msgid "Authentication is required to update all packages"
-#~ msgstr "Neophodna je autentifikacija za nadogradnju svih paketa"
+#, fuzzy
+#~ msgid ""
+#~ "Authentication is required to set the network proxy used for downloading "
+#~ "packages"
+#~ msgstr "Neophodna je autentifikacija za uklanjanje paketa"
 
 #~ msgid "Authentication is required to update packages"
 #~ msgstr "Neophodna je autentifikacija za nadogradnju paketa"
@@ -509,14 +623,9 @@ msgstr "Greška pri pokretanju: %s\n"
 #~ msgid "Install local file"
 #~ msgstr "Instaliraj lokalnu datoteku"
 
-#~ msgid "Install package"
-#~ msgstr "Instaliraj paket"
-
-#~ msgid "Install security signature"
-#~ msgstr "Instaliraj sigurnosni potpis"
-
-#~ msgid "Refresh package lists"
-#~ msgstr "Osveži listu paketa"
+#, fuzzy
+#~ msgid "Install untrusted local file"
+#~ msgstr "Instaliraj lokalnu datoteku"
 
 #~ msgid "Remove package"
 #~ msgstr "Ukloni paket"
@@ -524,11 +633,77 @@ msgstr "Greška pri pokretanju: %s\n"
 #~ msgid "Rollback to a previous transaction"
 #~ msgstr "Vrati se na stanje prethodne promene"
 
+#, fuzzy
+#~ msgid "Update packages"
+#~ msgstr "Nadogradi paket"
+
+#~ msgid "Update detail"
+#~ msgstr "Više o nadogradnji"
+
+#~ msgid "A system restart is required"
+#~ msgstr "Neophodno je ponovno pokretanje sistema"
+
+#~ msgid "A logout and login is required"
+#~ msgstr "Neophodno je odjavljivanje i ponovna prijava"
+
+#~ msgid "An application restart is required"
+#~ msgstr "Neophodno je ponovno pokretanje programa"
+
+#, fuzzy
+#~ msgid "Could not find package to install"
+#~ msgstr "Ne mogu da pronađem paket"
+
+#, fuzzy
+#~ msgid "Could not find package to remove"
+#~ msgstr "Ne mogu da pronađem traženi paket za uklanjanje"
+
+#~ msgid "Cancelled!"
+#~ msgstr "Prekinuto!"
+
+#, fuzzy
+#~ msgid "Could not find package to update"
+#~ msgstr "Ne mogu da pronađem paket"
+
+#, fuzzy
+#~ msgid "Could not find what packages require"
+#~ msgstr "Ne mogu da pronađem koji paketi zahtevaju ovaj paket"
+
+#, fuzzy
+#~ msgid "Could not find details for"
+#~ msgstr "Ne mogu da pribavim spisak datoteka iz ovog paketa"
+
+#~ msgid "Could not find a package match"
+#~ msgstr "Ne mogu da pronađem paket"
+
+#, fuzzy
+#~ msgid "Resolving package name to remote object"
+#~ msgstr "Sledeći paketi će biti uklonjeni"
+
+#, fuzzy
+#~ msgid "Could not set database readonly"
+#~ msgstr "Ne mogu da otvorim bazu: %s"
+
+#~ msgid "Could not open database: %s"
+#~ msgstr "Ne mogu da otvorim bazu: %s"
+
+#~ msgid "You probably need to run this program as the root user"
+#~ msgstr "Verovatno trebaš pokrenuti program kao korisnik „root“"
+
+#~ msgid "Authentication is required to install a local file"
+#~ msgstr "Neophodna je autentifikacija za instaliranje lokalne datoteke"
+
+#~ msgid "Authentication is required to install a security signature"
+#~ msgstr ""
+#~ "Neophodna je autentifikacija za instaliranje sigurnosnog digitalnog potpisa"
+
+#~ msgid "Authentication is required to update all packages"
+#~ msgstr "Neophodna je autentifikacija za nadogradnju svih paketa"
+
+#~ msgid "Install package"
+#~ msgstr "Instaliraj paket"
+
 #~ msgid "Update all packages"
 #~ msgstr "Nadogradi sve pakete"
-
-#~ msgid "Update package"
-#~ msgstr "Nadogradi paket"
 
 #~ msgid ""
 #~ "Could not find a package with that name to install, or package already "
@@ -540,3 +715,8 @@ msgstr "Greška pri pokretanju: %s\n"
 
 #~ msgid "Could not find a description for this package"
 #~ msgstr "Ne mogu da pribavim opis za ovaj paket"
+
+# msgstr "Nisam uspeo da otkrijem prethodno vreme"
+# msgstr "Prošli put nisam uspeo da preuzmem"
+#~ msgid "You need to specify a package to find the description for"
+#~ msgstr "Moraš navesti ime paketa za prikaz opisa"
