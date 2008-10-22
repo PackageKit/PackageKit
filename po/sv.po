@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-22 11:10+0100\n"
-"PO-Revision-Date: 2008-10-21 09:47+0100\n"
+"POT-Creation-Date: 2008-10-22 13:38+0000\n"
+"PO-Revision-Date: 2008-10-22 17:58+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -18,152 +18,158 @@ msgstr ""
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:271
 msgid "Details about the update:"
-msgstr ""
+msgstr "Detaler om uppdateringen:"
 
 #: ../client/pk-console.c:464
 msgid "Please restart the computer to complete the update."
-msgstr ""
+msgstr "Starta om datorn för att färdigställa uppdateringen."
 
 #: ../client/pk-console.c:466
 msgid "Please logout and login to complete the update."
-msgstr ""
+msgstr "Logga ut och logga in igen för att färdigställa uppdateringen."
 
 #: ../client/pk-console.c:468
 msgid "Please restart the application as it is being used."
-msgstr ""
+msgstr "Starta om programmet eftersom det används för tillfället."
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:579
 #, c-format
 msgid "The package '%s' is already installed"
-msgstr ""
+msgstr "Paketet \"%s\" är redan installerat"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:587
 #, c-format
 msgid "The package '%s' could not be installed: %s"
-msgstr ""
+msgstr "Paketet \"%s\" kunde inte installeras: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:612 ../client/pk-console.c:639
-#: ../client/pk-console.c:735 ../client/pk-console.c:852
-#: ../client/pk-tools-common.c:55 ../client/pk-tools-common.c:74
+#: ../client/pk-console.c:612
+#: ../client/pk-console.c:639
+#: ../client/pk-console.c:735
+#: ../client/pk-console.c:852
+#: ../client/pk-tools-common.c:55
+#: ../client/pk-tools-common.c:74
 #: ../client/pk-tools-common.c:81
 #, c-format
 msgid "Internal error: %s"
-msgstr ""
+msgstr "Internt fel: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
 #: ../client/pk-console.c:620
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not install the packages: %s"
-msgstr "Kunde inte hitta detaljer om detta paket"
+msgstr "Detta verktyg kunde inte installera paketen: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
 #: ../client/pk-console.c:647
 #, c-format
 msgid "This tool could not install the files: %s"
-msgstr ""
+msgstr "Detta verktyg kunde inte installera filerna: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
 #: ../client/pk-console.c:703
 #, c-format
 msgid "This tool could not remove '%s': %s"
-msgstr ""
+msgstr "Detta verktyg kunde inte ta bort \"%s\": %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:726 ../client/pk-console.c:797
+#: ../client/pk-console.c:726
+#: ../client/pk-console.c:797
 #, c-format
 msgid "This tool could not remove the packages: %s"
-msgstr ""
+msgstr "Detta verktyg kunde inte ta bort paketen: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:764
 #, c-format
 msgid "This tool could not remove the packages: '%s'"
-msgstr ""
+msgstr "Detta verktyg kunde inte ta bort paketen: \"%s\""
 
 #. TRANSLATORS: When removing, we might have to remove other dependencies
 #: ../client/pk-console.c:776
-#, fuzzy
 msgid "The following packages have to be removed:"
-msgstr "Följande paket kommer att tas bort"
+msgstr "Följande paket måste tas bort:"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
 #: ../client/pk-console.c:783
-#, fuzzy
 msgid "Proceed removing additional packages?"
-msgstr "Ok att ta bort ytterligare paket?"
+msgstr "Fortsätt med att ta bort ytterligare paket?"
 
 #. TRANSLATORS: We did not remove any packages
 #: ../client/pk-console.c:788
 msgid "The package removal was canceled!"
-msgstr ""
+msgstr "Paketborttagningen avbröts!"
 
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:829
 #, c-format
 msgid "This tool could not download the package '%s' as it could not be found"
-msgstr ""
+msgstr "Detta verktyg kunde inte hämta ner paketet \"%s\" eftersom det inte hittades"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:860
 #, c-format
 msgid "This tool could not download the packages: %s"
-msgstr ""
+msgstr "Detta verktyg kunde inte hämta ner paketen: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:887 ../client/pk-console.c:896
+#: ../client/pk-console.c:887
+#: ../client/pk-console.c:896
 #, c-format
 msgid "This tool could not update '%s': %s"
-msgstr ""
+msgstr "Detta verktyg kunde inte uppdatera \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:918 ../client/pk-console.c:926
+#: ../client/pk-console.c:918
+#: ../client/pk-console.c:926
 #, c-format
 msgid "This tool could not get the requirements for '%s': %s"
-msgstr ""
+msgstr "Detta verktyg kunde inte få kraven för \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:948 ../client/pk-console.c:956
-#, fuzzy, c-format
+#: ../client/pk-console.c:948
+#: ../client/pk-console.c:956
+#, c-format
 msgid "This tool could not get the dependencies for '%s': %s"
-msgstr "Kunde inte få beroenden för detta paket"
+msgstr "Detta verktyg kunde inte få beroenden för detta \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:978 ../client/pk-console.c:986
+#: ../client/pk-console.c:978
+#: ../client/pk-console.c:986
 #, c-format
 msgid "This tool could not get package details for '%s': %s"
-msgstr ""
+msgstr "Detta verktyg kunde inte få paketdetaljerna för \"%s\": %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1008
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not find the files for '%s': %s"
-msgstr "Kunde inte hitta filerna för detta paket"
+msgstr "Detta verktyg kunde inte hitta filerna för \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1016
 #, c-format
 msgid "This tool could not get the file list for '%s': %s"
-msgstr ""
+msgstr "Detta verktyg kunde inte få fillistan för \"%s\": %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1038
 #, c-format
 msgid "This tool could not find the update details for '%s': %s"
-msgstr ""
+msgstr "Detta verktyg kunde inte hitta uppdateringsdetaljer för \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
 #: ../client/pk-console.c:1046
 #, c-format
 msgid "This tool could not get the update details for '%s': %s"
-msgstr ""
+msgstr "Detta verktyg kunde inte få uppdateringsdetaljer för %s\": %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1092
 msgid "Error:"
-msgstr ""
+msgstr "Fel:"
 
 #. TRANSLATORS: This a list of details about the package
 #: ../client/pk-console.c:1106
@@ -183,33 +189,32 @@ msgstr "Inga filer"
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
 #: ../client/pk-console.c:1171
 msgid "Repository signature required"
-msgstr ""
+msgstr "Förrådssignatur krävs"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1181
 msgid "Do you accept this signature?"
-msgstr ""
+msgstr "Godkänner du denna signatur?"
 
 #. TRANSLATORS: This is where the user declined the security key
 #: ../client/pk-console.c:1185
 msgid "The signature was not accepted."
-msgstr ""
+msgstr "Signaturen godkändes inte."
 
 #. TRANSLATORS: This a request for a EULA
 #: ../client/pk-console.c:1219
 msgid "End user license agreement required"
-msgstr ""
+msgstr "Godkännande av slutanvändaravtal krävs"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
 #: ../client/pk-console.c:1226
-#, fuzzy
 msgid "Do you agree to this license?"
-msgstr "Samtycker du?"
+msgstr "Godkänner du denna licens?"
 
 #. TRANSLATORS: This is where the user declined the license
 #: ../client/pk-console.c:1230
 msgid "The license was refused."
-msgstr ""
+msgstr "Licensen nekades."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
 #: ../client/pk-console.c:1259
@@ -225,12 +230,15 @@ msgstr "Konsollgränssnitt för PackageKit"
 msgid "Subcommands:"
 msgstr "Underkommandon:"
 
-#: ../client/pk-console.c:1403 ../client/pk-generate-pack.c:138
-#: ../client/pk-monitor.c:115 ../src/pk-main.c:196
+#: ../client/pk-console.c:1403
+#: ../client/pk-generate-pack.c:138
+#: ../client/pk-monitor.c:115
+#: ../src/pk-main.c:196
 msgid "Show extra debugging information"
 msgstr "Visa extra felsökningsinformation"
 
-#: ../client/pk-console.c:1405 ../client/pk-monitor.c:117
+#: ../client/pk-console.c:1405
+#: ../client/pk-monitor.c:117
 msgid "Show the program version and exit"
 msgstr "Visa programversion och avsluta"
 
@@ -244,19 +252,21 @@ msgstr "Avsluta utan att vänta på att åtgärder ska färdigställas"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
 #: ../client/pk-console.c:1431
-#, fuzzy
 msgid "This tool could not connect to system DBUS."
-msgstr "Kunde inte ansluta till systemets DBUS."
+msgstr "Detta verktyg kunde inte ansluta till systemets DBUS."
 
 #: ../client/pk-console.c:1526
-#, fuzzy
 msgid "You need to specify a search type, e.g. name"
-msgstr "Du behöver ange en söktyp."
+msgstr "Du behöver ange en söktyp, t.ex. name"
 
-#: ../client/pk-console.c:1531 ../client/pk-console.c:1538
-#: ../client/pk-console.c:1545 ../client/pk-console.c:1552
-#: ../client/pk-console.c:1663 ../client/pk-console.c:1673
-#: ../client/pk-console.c:1680 ../client/pk-console.c:1687
+#: ../client/pk-console.c:1531
+#: ../client/pk-console.c:1538
+#: ../client/pk-console.c:1545
+#: ../client/pk-console.c:1552
+#: ../client/pk-console.c:1663
+#: ../client/pk-console.c:1673
+#: ../client/pk-console.c:1680
+#: ../client/pk-console.c:1687
 msgid "You need to specify a search term"
 msgstr "Du måste ange en sökterm"
 
@@ -277,27 +287,23 @@ msgid "You need to specify a package to remove"
 msgstr "Du behöver ange ett paket att ta bort"
 
 #: ../client/pk-console.c:1582
-#, fuzzy
-msgid ""
-"You need to specify the destination directory and then the packages to "
-"download"
-msgstr "Du behöver ange en type, key_id och package_id"
+msgid "You need to specify the destination directory and then the packages to download"
+msgstr "Du behöver ange målkatalogen och sedan paketen som ska hämtas"
 
 #: ../client/pk-console.c:1587
 msgid "Directory not found"
-msgstr ""
+msgstr "Katalogen hittades inte"
 
 #: ../client/pk-console.c:1593
-#, fuzzy
 msgid "You need to specify a licence identifier (eula-id)"
-msgstr "Du behöver ange ett eula-id"
+msgstr "Du behöver ange en licensidentifierare (eula-id)"
 
 #: ../client/pk-console.c:1609
 msgid "You need to specify a package name to resolve"
 msgstr "Du behöver ange ett paketnamn att lösa"
 
-#: ../client/pk-console.c:1618 ../client/pk-console.c:1625
-#, fuzzy
+#: ../client/pk-console.c:1618
+#: ../client/pk-console.c:1625
 msgid "You need to specify a repository name"
 msgstr "Du behöver ange ett förrådsnamn"
 
@@ -306,9 +312,8 @@ msgid "You need to specify a repo name/parameter and value"
 msgstr "Du behöver ange ett förrådsnamn/parameter och värde"
 
 #: ../client/pk-console.c:1645
-#, fuzzy
 msgid "You need to specify an action, e.g. 'update-system'"
-msgstr "Du behöver ange en tidsterm"
+msgstr "Du behöver ange en åtgärd, t.ex. \"update-system\""
 
 #: ../client/pk-console.c:1650
 msgid "You need to specify a correct role"
@@ -328,7 +333,7 @@ msgstr "Du behöver ange ett paket att söka efter filerna för"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:1754
-#, fuzzy, c-format
+#, c-format
 msgid "Option '%s' is not supported"
 msgstr "Flaggan \"%s\" stöds inte"
 
@@ -345,83 +350,81 @@ msgstr "Kommandot misslyckades"
 #. TRANSLATORS: This is the state of the transaction
 #: ../client/pk-generate-pack.c:96
 msgid "Downloading"
-msgstr ""
+msgstr "Hämtar"
 
 #: ../client/pk-generate-pack.c:140
 msgid "Set the file name of dependencies to be excluded"
-msgstr ""
+msgstr "Ange filnamnet för beroenden att undanta"
 
 #: ../client/pk-generate-pack.c:142
 msgid "The output directory (the current directory is used if ommitted)"
-msgstr ""
+msgstr "Utdatakatalogen (den aktuella katalogen om den inte anges)"
 
 #: ../client/pk-generate-pack.c:144
 msgid "The package to be put into the service pack"
-msgstr ""
+msgstr "Paketet att läggas i servicepaketet"
 
 #: ../client/pk-generate-pack.c:146
 msgid "Put all updates available in the service pack"
-msgstr ""
+msgstr "Lägg alla tillgängliga uppdateringar i servicepaketet"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:166
 msgid "Neither --package or --updates option selected."
-msgstr ""
+msgstr "Varken flaggan --package eller --updates angavs."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
 #: ../client/pk-generate-pack.c:174
 msgid "Both options selected."
-msgstr ""
+msgstr "Båda flaggorna angavs."
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:207
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr ""
+msgstr "Ett paket med samma namn finns redan. Vill du skriva över det?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:210
 msgid "The pack was not overwritten."
-msgstr ""
+msgstr "Paketet skrevs inte över."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
 #: ../client/pk-generate-pack.c:222
-#, fuzzy
 msgid "Failed to create directory:"
-msgstr "Misslyckades med att få senaste tid"
+msgstr "Misslyckades med att skapa katalog:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
 #: ../client/pk-generate-pack.c:231
-#, fuzzy
 msgid "Failed to open package list."
-msgstr "Misslyckades med att få senaste tid"
+msgstr "Misslyckades med öppna paketlistan."
 
 #. TRANSLATORS: The package name is being matched up to available packages
 #: ../client/pk-generate-pack.c:241
 msgid "Finding package name."
-msgstr ""
+msgstr "Söker efter paketnamn."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
 #: ../client/pk-generate-pack.c:245
 #, c-format
 msgid "Failed to find package '%s': %s"
-msgstr ""
+msgstr "Misslyckades med att hitta paketet \"%s\": %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
 #: ../client/pk-generate-pack.c:260
 msgid "Creating service pack..."
-msgstr ""
+msgstr "Skapar servicepaket..."
 
 #. TRANSLATORS: we succeeded in making the file
 #: ../client/pk-generate-pack.c:267
 #, c-format
 msgid "Service pack created '%s'"
-msgstr ""
+msgstr "Servicepaket skapades \"%s\""
 
 #. TRANSLATORS: we failed to make te file
 #: ../client/pk-generate-pack.c:271
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to create '%s': %s"
-msgstr "Misslyckades med att få senaste tid"
+msgstr "Misslyckades med att skapa \"%s\": %s"
 
 #: ../client/pk-monitor.c:128
 msgid "PackageKit Monitor"
@@ -429,21 +432,18 @@ msgstr "Övervakare för PackageKit"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:108
-#, c-format
 msgid "The package could not be found"
-msgstr ""
+msgstr "Paketet kunde inte hittas"
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
 #: ../client/pk-tools-common.c:119
-#, fuzzy
 msgid "More than one package matches:"
-msgstr "Det finns flera matchande paket"
+msgstr "Det finns fler än ett paket som matchar:"
 
 #. TRANSLATORS: This finds out which package in the list to use
 #: ../client/pk-tools-common.c:126
-#, fuzzy
 msgid "Please choose the correct package: "
-msgstr "Anget paketets nummer:"
+msgstr "Välj det korrekta paketet: "
 
 #: ../client/pk-tools-common.c:152
 #, c-format
@@ -453,161 +453,67 @@ msgstr "Ange ett tal från 1 till %i: "
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/packagekit-plugin/src/contents.cpp:299
 msgid "Getting package information..."
-msgstr ""
+msgstr "Hämtar paketinformation..."
 
 #. TRANSLATORS: run an applicaiton
 #: ../contrib/packagekit-plugin/src/contents.cpp:305
 #, c-format
 msgid "Run %s"
-msgstr ""
+msgstr "Kör %s"
 
 #. TRANSLATORS: show the installed version of a package
 #: ../contrib/packagekit-plugin/src/contents.cpp:311
-#, fuzzy
 msgid "Installed version"
-msgstr "Installera säkerhetssignatur"
+msgstr "Installerad version"
 
 #. TRANSLATORS: run the application now
 #: ../contrib/packagekit-plugin/src/contents.cpp:319
 #, c-format
 msgid "Run version %s now"
-msgstr ""
+msgstr "Kör version %s nu"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:325
 msgid "Run now"
-msgstr ""
+msgstr "Kör nu"
 
 #. TRANSLATORS: update to a new version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
 msgid "Update to version %s"
-msgstr ""
+msgstr "Uppdatera till version %s"
 
 #. TRANSLATORS: To install a package
 #: ../contrib/packagekit-plugin/src/contents.cpp:336
 #, c-format
 msgid "Install %s now"
-msgstr ""
+msgstr "Installera %s nu"
 
 #. TRANSLATORS: the version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:339
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #. TRANSLATORS: noting found, so can't install
 #: ../contrib/packagekit-plugin/src/contents.cpp:344
 msgid "No packages found for your system"
-msgstr ""
+msgstr "Inga paket hittades för ditt system"
 
 #. TRANSLATORS: package is being installed
 #: ../contrib/packagekit-plugin/src/contents.cpp:349
 msgid "Installing..."
-msgstr ""
+msgstr "Installerar..."
 
 #: ../data/packagekit-catalog.xml.in.h:1
-#, fuzzy
 msgid "PackageKit Catalog"
-msgstr "Övervakare för PackageKit"
+msgstr "Katalog för PackageKit"
 
 #: ../data/packagekit-servicepack.xml.in.h:1
-#, fuzzy
 msgid "PackageKit Service Pack"
-msgstr "PackageKit-tjänst"
+msgstr "Servicepaket för PackageKit"
 
 #: ../data/packagekit-package-list.xml.in.h:1
-#, fuzzy
 msgid "PackageKit Package List"
-msgstr "Övervakare för PackageKit"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr "Acceptera slutanvändaravtal"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr "Autentisering krävs för att acceptera ett slutanvändaravtal"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr "Autentisering krävs för att ändra parametrar för programvarukällor"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-#, fuzzy
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr "Autentisering krävs för att uppdatera paketlistorna"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-#, fuzzy
-msgid "Authentication is required to install a signed package"
-msgstr "Autentisering krävs för att installera ett paket"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-#, fuzzy
-msgid "Authentication is required to install an untrusted package"
-msgstr "Autentisering krävs för att installera ett paket"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-#, fuzzy
-msgid "Authentication is required to refresh the system sources"
-msgstr "Autentisering krävs för att uppdatera paketlistorna"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr "Autentisering krävs för att ta bort paket"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr "Autentisering krävs för att rulla tillbaka en transaktion"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-#, fuzzy
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr "Autentisering krävs för att ta bort paket"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr "Autentisering krävs för att uppdatera paket"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr "Ändra parametrar för programvarukällor"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr "Installera lokal fil"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install untrusted local file"
-msgstr "Installera opålitlig lokal fil"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Refresh system sources"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Remove package"
-msgstr "Ta bort paket"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Rollback to a previous transaction"
-msgstr "Rulla tillbaka till en tidigare transaktion"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Set network proxy"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Trust a key used for signing packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-#, fuzzy
-msgid "Update packages"
-msgstr "Uppdatera paket"
+msgstr "Paketlista för PackageKit"
 
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
@@ -619,17 +525,11 @@ msgstr "Detta kan inträffa av två anledningar:"
 
 #: ../src/pk-main.c:87
 msgid "The correct user is not launching the executable (usually root)"
-msgstr ""
-"Den korrekta användaren startar inte den körbara filen (vanligtvis root)"
+msgstr "Den korrekta användaren startar inte den körbara filen (vanligtvis root)"
 
 #: ../src/pk-main.c:88
-#, fuzzy
-msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system "
-"directory:"
-msgstr ""
-"Filen org.freedesktop.PackageKit.conf är inte installerad i "
-"systemetkatalogen /etc/dbus-1/system.d"
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgstr "Filen org.freedesktop.PackageKit.conf är inte installerad i systemkatalogen:"
 
 #: ../src/pk-main.c:192
 msgid "Packaging backend to use, e.g. dummy"
@@ -668,74 +568,104 @@ msgstr "Kan inte ansluta till systembussen"
 msgid "Error trying to start: %s\n"
 msgstr "Fel vid försök att starta: %s\n"
 
+#~ msgid "Accept EULA"
+#~ msgstr "Acceptera slutanvändaravtal"
+#~ msgid "Authentication is required to accept a EULA"
+#~ msgstr "Autentisering krävs för att acceptera ett slutanvändaravtal"
+#~ msgid "Authentication is required to change software source parameters"
+#~ msgstr "Autentisering krävs för att ändra parametrar för programvarukällor"
+
+#, fuzzy
+#~ msgid ""
+#~ "Authentication is required to consider a key used for signing packages as "
+#~ "trusted"
+#~ msgstr "Autentisering krävs för att uppdatera paketlistorna"
+
+#, fuzzy
+#~ msgid "Authentication is required to install a signed package"
+#~ msgstr "Autentisering krävs för att installera ett paket"
+
+#, fuzzy
+#~ msgid "Authentication is required to install an untrusted package"
+#~ msgstr "Autentisering krävs för att installera ett paket"
+
+#, fuzzy
+#~ msgid "Authentication is required to refresh the system sources"
+#~ msgstr "Autentisering krävs för att uppdatera paketlistorna"
+#~ msgid "Authentication is required to remove packages"
+#~ msgstr "Autentisering krävs för att ta bort paket"
+#~ msgid "Authentication is required to rollback a transaction"
+#~ msgstr "Autentisering krävs för att rulla tillbaka en transaktion"
+
+#, fuzzy
+#~ msgid ""
+#~ "Authentication is required to set the network proxy used for downloading "
+#~ "packages"
+#~ msgstr "Autentisering krävs för att ta bort paket"
+#~ msgid "Authentication is required to update packages"
+#~ msgstr "Autentisering krävs för att uppdatera paket"
+#~ msgid "Change software source parameters"
+#~ msgstr "Ändra parametrar för programvarukällor"
+#~ msgid "Install local file"
+#~ msgstr "Installera lokal fil"
+#~ msgid "Install untrusted local file"
+#~ msgstr "Installera opålitlig lokal fil"
+#~ msgid "Remove package"
+#~ msgstr "Ta bort paket"
+#~ msgid "Rollback to a previous transaction"
+#~ msgstr "Rulla tillbaka till en tidigare transaktion"
+
+#, fuzzy
+#~ msgid "Update packages"
+#~ msgstr "Uppdatera paket"
 #~ msgid "Authentication is required to install a local file"
 #~ msgstr "Autentisering krävs för att installera en lokal fil"
-
 #~ msgid "Authentication is required to install a security signature"
 #~ msgstr "Autentisering krävs för att installera en säkerhetssignatur"
-
 #~ msgid "Authentication is required to update all packages"
 #~ msgstr "Autentisering krävs för att uppdatera alla paket"
-
 #~ msgid ""
 #~ "Further authentication is required to install an untrusted local file"
 #~ msgstr ""
 #~ "Ytterligare autentisering krävs för att installera en opålitlig lokal fil"
-
 #~ msgid "Install package"
 #~ msgstr "Installera paket"
-
 #~ msgid "Refresh package lists"
 #~ msgstr "Uppdatera paketlistor"
-
 #~ msgid "Update all packages"
 #~ msgstr "Uppdatera alla paket"
-
 #~ msgid "Update detail"
 #~ msgstr "Uppdateringsinformation"
-
 #~ msgid "A system restart is required"
 #~ msgstr "En omstart av systemet krävs"
-
 #~ msgid "A logout and login is required"
 #~ msgstr "En utloggning och inloggning krävs"
-
 #~ msgid "An application restart is required"
 #~ msgstr "En omstart av programmet krävs"
-
 #~ msgid "Could not find a package match"
 #~ msgstr "Kunde inte hitta ett matchande paket"
-
 #~ msgid ""
 #~ "Could not find a package with that name to install, or package already "
 #~ "installed"
 #~ msgstr ""
 #~ "Kunde inte hitta ett paket med det namnet att installera, eller så är "
 #~ "paketet redan installerat"
-
 #~ msgid "Could not find a package with that name to remove"
 #~ msgstr "Kunde inte hitta ett paket att ta bort med det namnet"
-
 #~ msgid "Cancelled!"
 #~ msgstr "Avbruten!"
-
 #~ msgid "Could not find a package with that name to update"
 #~ msgstr "Kunde inte hitta ett paket att uppdatera med det namnet"
-
 #~ msgid "Could not find what packages require this package"
 #~ msgstr "Kunde inte hitta vilka paket som kräver detta paket"
-
 #~ msgid "Okay to import key?"
 #~ msgstr "Ok att importera nyckeln?"
-
 #~ msgid "Did not import key"
 #~ msgstr "Importerade inte nyckeln"
-
 #~ msgid "Did not agree to licence, task will fail"
 #~ msgstr "Godkände inte licensen, åtgärden kommer att misslyckas"
-
 #~ msgid "Could not open database: %s"
 #~ msgstr "Kunde inte öppna databasen: %s"
-
 #~ msgid "You probably need to run this program as the root user"
 #~ msgstr "Du behöver antagligen köra detta program som root-användaren"
+
