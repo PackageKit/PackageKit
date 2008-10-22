@@ -47,7 +47,7 @@ BuildRequires: xulrunner-devel
 BuildRequires: libarchive-devel
 BuildRequires: gstreamer-devel
 BuildRequires: gstreamer-plugins-base-devel
-BuildRequires: qt-devel
+BuildRequires: qt4-devel
 BuildRequires: cppunit-devel
 
 %description
@@ -150,9 +150,8 @@ GLib headers and libraries for PackageKit.
 %package qt-devel
 Summary: QT Libraries and headers for PackageKit
 Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Requires: %{name}-qt = %{version}-%{release}
 Requires: pkgconfig
-Requires: PackageKit-qt = %{version}-%{release}
 
 %description qt-devel
 QT headers and libraries for PackageKit.
@@ -170,6 +169,7 @@ Summary: Browser Plugin for PackageKit
 Group: Development/Libraries
 Requires: gtk2
 Requires: PackageKit-glib = %{version}-%{release}
+Requires: mozilla-filesystem
 
 %description browser-plugin
 The PackageKit browser plugin allows web sites to offer the ability to
@@ -327,8 +327,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files browser-plugin
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
-%dir %{_libdir}/mozilla
-%dir %{_libdir}/mozilla/plugins
 %{_libdir}/mozilla/plugins/packagekit-plugin.so
 
 %files gstreamer-plugin
