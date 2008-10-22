@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.cs\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-21 02:00+0000\n"
+"POT-Creation-Date: 2008-10-22 11:10+0100\n"
 "PO-Revision-Date: 2008-10-21 14:08+0200\n"
 "Last-Translator: Adam Pribyl <pribyl@lowlevel.cz>\n"
 "Language-Team: Czech <fedora-cs-list@redhat.com>\n"
@@ -188,7 +188,8 @@ msgstr "Vyžaduje podpis repozitáře"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1181
-msgid "You you accept this signature?"
+#, fuzzy
+msgid "Do you accept this signature?"
 msgstr "Příjímáte tento podpis?"
 
 #. TRANSLATORS: This is where the user declined the security key
@@ -421,6 +422,7 @@ msgstr "PackageKit Monitor"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:108
+#, c-format
 msgid "The package could not be found"
 msgstr "Balík nebyl nalezen."
 
@@ -504,6 +506,97 @@ msgstr "Balící služba PackageKit"
 msgid "PackageKit Package List"
 msgstr "PackageKit seznam balíků"
 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "Přijmout licenční smlouvu"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "Pro přijetí licenční smlouvy je vyžadováno oprávnění"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr "Pro změnu parametrů zdrojů softwaru je vyžádováno oprávnění"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+#, fuzzy
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr "K obnovení seznamů balíků je vyžadováno oprávnění"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+#, fuzzy
+msgid "Authentication is required to install a signed package"
+msgstr "K instalaci balíku je vyžadováno oprávnění"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+#, fuzzy
+msgid "Authentication is required to install an untrusted package"
+msgstr "K instalaci balíku je vyžadováno oprávnění"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+#, fuzzy
+msgid "Authentication is required to refresh the system sources"
+msgstr "K obnovení seznamů balíků je vyžadováno oprávnění"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr "K odstranění balíků je vyžadováno oprávnění"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr "K vrácení akce je vyžadováno oprávnění"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+#, fuzzy
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr "K odstranění balíků je vyžadováno oprávnění"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr "K aktualizaci balíků je vyžadováno oprávnění"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr "Změnit parametry zdrojů softwaru"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr "Nainstalovat místní soubor"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+#, fuzzy
+msgid "Install untrusted local file"
+msgstr "Nainstalovat místní soubor"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Refresh system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Remove package"
+msgstr "Odstranit balík"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Rollback to a previous transaction"
+msgstr "Vrátit poslední akci"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Trust a key used for signing packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+#, fuzzy
+msgid "Update packages"
+msgstr "Aktualizovat balík"
+
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "Spuštění selhalo kvůli bezpečností politice na tomto stroji"
@@ -572,68 +665,6 @@ msgstr "Chyba při pokusu o spuštění: %s\n"
 
 #~ msgid "You need to specify a time term"
 #~ msgstr "Je nutné určit časový termín"
-
-#~ msgid "Accept EULA"
-#~ msgstr "Přijmout licenční smlouvu"
-
-#~ msgid "Authentication is required to accept a EULA"
-#~ msgstr "Pro přijetí licenční smlouvy je vyžadováno oprávnění"
-
-#~ msgid "Authentication is required to change software source parameters"
-#~ msgstr "Pro změnu parametrů zdrojů softwaru je vyžádováno oprávnění"
-
-#, fuzzy
-#~ msgid ""
-#~ "Authentication is required to consider a key used for signing packages as "
-#~ "trusted"
-#~ msgstr "K obnovení seznamů balíků je vyžadováno oprávnění"
-
-#, fuzzy
-#~ msgid "Authentication is required to install a signed package"
-#~ msgstr "K instalaci balíku je vyžadováno oprávnění"
-
-#, fuzzy
-#~ msgid "Authentication is required to install an untrusted package"
-#~ msgstr "K instalaci balíku je vyžadováno oprávnění"
-
-#, fuzzy
-#~ msgid "Authentication is required to refresh the system sources"
-#~ msgstr "K obnovení seznamů balíků je vyžadováno oprávnění"
-
-#~ msgid "Authentication is required to remove packages"
-#~ msgstr "K odstranění balíků je vyžadováno oprávnění"
-
-#~ msgid "Authentication is required to rollback a transaction"
-#~ msgstr "K vrácení akce je vyžadováno oprávnění"
-
-#, fuzzy
-#~ msgid ""
-#~ "Authentication is required to set the network proxy used for downloading "
-#~ "packages"
-#~ msgstr "K odstranění balíků je vyžadováno oprávnění"
-
-#~ msgid "Authentication is required to update packages"
-#~ msgstr "K aktualizaci balíků je vyžadováno oprávnění"
-
-#~ msgid "Change software source parameters"
-#~ msgstr "Změnit parametry zdrojů softwaru"
-
-#~ msgid "Install local file"
-#~ msgstr "Nainstalovat místní soubor"
-
-#, fuzzy
-#~ msgid "Install untrusted local file"
-#~ msgstr "Nainstalovat místní soubor"
-
-#~ msgid "Remove package"
-#~ msgstr "Odstranit balík"
-
-#~ msgid "Rollback to a previous transaction"
-#~ msgstr "Vrátit poslední akci"
-
-#, fuzzy
-#~ msgid "Update packages"
-#~ msgstr "Aktualizovat balík"
 
 #~ msgid "Update detail"
 #~ msgstr "Aktualizovat podrobnosti"
@@ -777,4 +808,3 @@ msgstr "Chyba při pokusu o spuštění: %s\n"
 
 #~ msgid "You need to specify a package to find the description for"
 #~ msgstr "Je nutné určit balík, pro který se má najít popis"
-

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-23 11:26+0000\n"
+"POT-Creation-Date: 2008-10-22 11:10+0100\n"
 "PO-Revision-Date: 2008-09-25 23:36+0800\n"
 "Last-Translator: Sharuzzaman Ahmat Raslan <sharuzzaman@myrealbox.com>\n"
 "Language-Team: Malay <translation-team-ms@lists.sourceforge.net>\n"
@@ -15,411 +15,506 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../client/pk-console.c:274
-#, fuzzy
-msgid "Update detail"
-msgstr " Auto Kemaskini"
-
-#: ../client/pk-console.c:491
-#, fuzzy
-msgid "A system restart is required"
-msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
-
-#: ../client/pk-console.c:493
-msgid "A logout and login is required"
+#. TRANSLATORS: this is a header for the package that can be updated
+#: ../client/pk-console.c:271
+msgid "Details about the update:"
 msgstr ""
 
-#: ../client/pk-console.c:495
-#, fuzzy
-msgid "An application restart is required"
-msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
-
-#: ../client/pk-console.c:588
-#: ../client/pk-generate-pack.c:126
-msgid "There are multiple package matches"
+#: ../client/pk-console.c:464
+msgid "Please restart the computer to complete the update."
 msgstr ""
 
-#. find out what package the user wants to use
-#: ../client/pk-console.c:595
-#: ../client/pk-generate-pack.c:133
-#, fuzzy
-msgid "Please enter the package number: "
-msgstr "Sila masukkan %(instkey) anda."
-
-#: ../client/pk-console.c:629
-#, fuzzy
-msgid "Could not find package to install"
-msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
-
-#: ../client/pk-console.c:735
-#, fuzzy
-msgid "Could not find package to remove"
-msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
-
-#: ../client/pk-console.c:796
-#, fuzzy
-msgid "The following packages have to be removed"
-msgstr "Memeriksa untuk membuang pakej berikut"
-
-#. get user input
-#: ../client/pk-console.c:803
-#, fuzzy
-msgid "Okay to remove additional packages?"
-msgstr "Memeriksa untuk membuang pakej berikut"
-
-#: ../client/pk-console.c:807
-#: ../client/pk-generate-pack.c:528
-#: ../client/pk-generate-pack-main.c:131
-#, fuzzy
-msgid "Cancelled!"
-msgstr "Dibatalkan"
-
-#: ../client/pk-console.c:841
-#, fuzzy
-msgid "Could not find package to download"
-msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
-
-#: ../client/pk-console.c:893
-#, fuzzy
-msgid "Could not find package to update"
-msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
-
-#: ../client/pk-console.c:915
-msgid "Could not find what packages require"
+#: ../client/pk-console.c:466
+msgid "Please logout and login to complete the update."
 msgstr ""
 
-#: ../client/pk-console.c:936
-#, fuzzy
-msgid "Could not get dependencies for"
-msgstr "Tidak dapat memperoleh kekunci OpenPGP."
-
-#: ../client/pk-console.c:957
-#, fuzzy
-msgid "Could not find details for"
-msgstr "Tidak dapat mencari subkekunci OpenPGP."
-
-#: ../client/pk-console.c:980
-msgid "Could not find the files for this package"
+#: ../client/pk-console.c:468
+msgid "Please restart the application as it is being used."
 msgstr ""
 
-#: ../client/pk-console.c:987
-#, fuzzy
-msgid "Could not get the file list"
+#. TRANSLATORS: The package is already installed on the system
+#: ../client/pk-console.c:579
+#, c-format
+msgid "The package '%s' is already installed"
+msgstr ""
+
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:587
+#, c-format
+msgid "The package '%s' could not be installed: %s"
+msgstr ""
+
+#. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
+#: ../client/pk-console.c:612 ../client/pk-console.c:639
+#: ../client/pk-console.c:735 ../client/pk-console.c:852
+#: ../client/pk-tools-common.c:55 ../client/pk-tools-common.c:74
+#: ../client/pk-tools-common.c:81
+#, c-format
+msgid "Internal error: %s"
+msgstr ""
+
+#. TRANSLATORS: There was an error installing the packages. The detailed error follows
+#: ../client/pk-console.c:620
+#, c-format
+msgid "This tool could not install the packages: %s"
+msgstr ""
+
+#. TRANSLATORS: There was an error installing the files. The detailed error follows
+#: ../client/pk-console.c:647
+#, fuzzy, c-format
+msgid "This tool could not install the files: %s"
 msgstr "Tidak dapat menulis kepada fail %s"
 
-#: ../client/pk-console.c:1006
-msgid "Could not find the update details for"
+#. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
+#: ../client/pk-console.c:703
+#, c-format
+msgid "This tool could not remove '%s': %s"
 msgstr ""
 
-#: ../client/pk-console.c:1067
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:726 ../client/pk-console.c:797
+#, c-format
+msgid "This tool could not remove the packages: %s"
+msgstr ""
+
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:764
+#, c-format
+msgid "This tool could not remove the packages: '%s'"
+msgstr ""
+
+#. TRANSLATORS: When removing, we might have to remove other dependencies
+#: ../client/pk-console.c:776
+#, fuzzy
+msgid "The following packages have to be removed:"
+msgstr "Memeriksa untuk membuang pakej berikut"
+
+#. TRANSLATORS: We are checking if it's okay to remove a list of packages
+#: ../client/pk-console.c:783
+#, fuzzy
+msgid "Proceed removing additional packages?"
+msgstr "Memeriksa untuk membuang pakej berikut"
+
+#. TRANSLATORS: We did not remove any packages
+#: ../client/pk-console.c:788
+msgid "The package removal was canceled!"
+msgstr ""
+
+#. TRANSLATORS: The package name was not found in any software sources
+#: ../client/pk-console.c:829
+#, c-format
+msgid "This tool could not download the package '%s' as it could not be found"
+msgstr ""
+
+#. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
+#: ../client/pk-console.c:860
+#, c-format
+msgid "This tool could not download the packages: %s"
+msgstr ""
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:887 ../client/pk-console.c:896
+#, c-format
+msgid "This tool could not update '%s': %s"
+msgstr ""
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:918 ../client/pk-console.c:926
+#, c-format
+msgid "This tool could not get the requirements for '%s': %s"
+msgstr ""
+
+#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
+#: ../client/pk-console.c:948 ../client/pk-console.c:956
+#, fuzzy, c-format
+msgid "This tool could not get the dependencies for '%s': %s"
+msgstr "Tidak dapat memperoleh kekunci OpenPGP."
+
+#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
+#: ../client/pk-console.c:978 ../client/pk-console.c:986
+#, c-format
+msgid "This tool could not get package details for '%s': %s"
+msgstr ""
+
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:1008
+#, fuzzy, c-format
+msgid "This tool could not find the files for '%s': %s"
+msgstr "Tidak dapat mencari subkekunci OpenPGP."
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:1016
+#, fuzzy, c-format
+msgid "This tool could not get the file list for '%s': %s"
+msgstr "Tidak dapat menulis kepada fail %s"
+
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:1038
+#, fuzzy, c-format
+msgid "This tool could not find the update details for '%s': %s"
+msgstr "Tidak dapat mencari subkekunci OpenPGP."
+
+#. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
+#: ../client/pk-console.c:1046
+#, c-format
+msgid "This tool could not get the update details for '%s': %s"
+msgstr ""
+
+#. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
+#: ../client/pk-console.c:1092
+msgid "Error:"
+msgstr ""
+
+#. TRANSLATORS: This a list of details about the package
+#: ../client/pk-console.c:1106
 #, fuzzy
 msgid "Package description"
 msgstr "Tiada keterangan"
 
-#: ../client/pk-console.c:1100
+#. TRANSLATORS: This a list files contained in the package
+#: ../client/pk-console.c:1139
 #, fuzzy
 msgid "Package files"
 msgstr "  -l             - senaraikan fail dalam pakej.\n"
 
-#: ../client/pk-console.c:1108
+#. TRANSLATORS: This where the package has no files
+#: ../client/pk-console.c:1148
 #, fuzzy
 msgid "No files"
 msgstr "Tiada fail boleh ditukar nama dijumpai."
 
-#. get user input
-#: ../client/pk-console.c:1140
-#, fuzzy
-msgid "Okay to import key?"
-msgstr "tidak dapat mengimport fail pubkey \"%s\""
-
-#: ../client/pk-console.c:1143
-#, fuzzy
-msgid "Did not import key"
-msgstr "Tidak dapat memperoleh kekunci OpenPGP."
-
-#. get user input
-#: ../client/pk-console.c:1183
-#, fuzzy
-msgid "Do you agree?"
-msgstr "Anda ada Cekera jurupacu?"
-
-#: ../client/pk-console.c:1186
-msgid "Did not agree to licence, task will fail"
+#. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
+#: ../client/pk-console.c:1171
+msgid "Repository signature required"
 msgstr ""
 
-#: ../client/pk-console.c:1215
+#. TRANSLATORS: This a prompt asking the user to import the security key
+#: ../client/pk-console.c:1181
+msgid "Do you accept this signature?"
+msgstr ""
+
+#. TRANSLATORS: This is where the user declined the security key
+#: ../client/pk-console.c:1185
+msgid "The signature was not accepted."
+msgstr ""
+
+#. TRANSLATORS: This a request for a EULA
+#: ../client/pk-console.c:1219
+msgid "End user license agreement required"
+msgstr ""
+
+#. TRANSLATORS: This a prompt asking the user to agree to the license
+#: ../client/pk-console.c:1226
+#, fuzzy
+msgid "Do you agree to this license?"
+msgstr "Anda ada Cekera jurupacu?"
+
+#. TRANSLATORS: This is where the user declined the license
+#: ../client/pk-console.c:1230
+msgid "The license was refused."
+msgstr ""
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
+#: ../client/pk-console.c:1259
 msgid "The daemon crashed mid-transaction!"
 msgstr ""
 
-#. header
-#: ../client/pk-console.c:1268
+#. TRANSLATORS: This is the header to the --help menu
+#: ../client/pk-console.c:1312
 #, fuzzy
 msgid "PackageKit Console Interface"
 msgstr "Bahasa Antaramuka Pengguna"
 
-#: ../client/pk-console.c:1268
+#: ../client/pk-console.c:1312
 msgid "Subcommands:"
 msgstr ""
 
-#: ../client/pk-console.c:1378
-#: ../client/pk-generate-pack-main.c:64
-#: ../client/pk-monitor.c:118
-#: ../src/pk-main.c:189
+#: ../client/pk-console.c:1403 ../client/pk-generate-pack.c:138
+#: ../client/pk-monitor.c:115 ../src/pk-main.c:196
 msgid "Show extra debugging information"
 msgstr ""
 
-#: ../client/pk-console.c:1380
-#: ../client/pk-monitor.c:120
+#: ../client/pk-console.c:1405 ../client/pk-monitor.c:117
 #, fuzzy
 msgid "Show the program version and exit"
 msgstr "Papar maklumat program, nombor versi, dan hakcipta"
 
-#: ../client/pk-console.c:1382
+#: ../client/pk-console.c:1407
 #, fuzzy
 msgid "Set the filter, e.g. installed"
 msgstr " tiada pemandu dipasang."
 
-#: ../client/pk-console.c:1384
+#: ../client/pk-console.c:1409
 msgid "Exit without waiting for actions to complete"
 msgstr ""
 
-#: ../client/pk-console.c:1407
-msgid "Could not connect to system DBUS."
+#. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
+#: ../client/pk-console.c:1431
+msgid "This tool could not connect to system DBUS."
 msgstr ""
 
-#: ../client/pk-console.c:1500
+#: ../client/pk-console.c:1526
 #, fuzzy
 msgid "You need to specify a search type, e.g. name"
 msgstr "(anda tidak perlu menaip domain selepas nama)"
 
-#: ../client/pk-console.c:1505
-#: ../client/pk-console.c:1512
-#: ../client/pk-console.c:1519
-#: ../client/pk-console.c:1526
-#: ../client/pk-console.c:1637
-#: ../client/pk-console.c:1647
-#: ../client/pk-console.c:1654
-#: ../client/pk-console.c:1661
+#: ../client/pk-console.c:1531 ../client/pk-console.c:1538
+#: ../client/pk-console.c:1545 ../client/pk-console.c:1552
+#: ../client/pk-console.c:1663 ../client/pk-console.c:1673
+#: ../client/pk-console.c:1680 ../client/pk-console.c:1687
 #, fuzzy
 msgid "You need to specify a search term"
 msgstr "Anda perlu menyatakan fail untuk dibuka!"
 
-#: ../client/pk-console.c:1531
+#: ../client/pk-console.c:1557
 #, fuzzy
 msgid "Invalid search type"
 msgstr "Jenis Senarai Semasa"
 
-#: ../client/pk-console.c:1536
+#: ../client/pk-console.c:1562
 msgid "You need to specify a package or file to install"
 msgstr ""
 
-#: ../client/pk-console.c:1543
+#: ../client/pk-console.c:1569
 msgid "You need to specify a type, key_id and package_id"
 msgstr ""
 
-#: ../client/pk-console.c:1550
+#: ../client/pk-console.c:1576
 #, fuzzy
 msgid "You need to specify a package to remove"
 msgstr "Anda perlu menyatakan fail untuk dibuka!"
 
-#: ../client/pk-console.c:1556
-msgid "You need to specify the destination directory and then the packages to download"
+#: ../client/pk-console.c:1582
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
 msgstr ""
 
-#: ../client/pk-console.c:1561
+#: ../client/pk-console.c:1587
 #, fuzzy
 msgid "Directory not found"
 msgstr "Fail %s tidak dijumpai"
 
-#: ../client/pk-console.c:1567
+#: ../client/pk-console.c:1593
 #, fuzzy
-msgid "You need to specify a eula-id"
+msgid "You need to specify a licence identifier (eula-id)"
 msgstr "Anda perlu menyatakan fail untuk dibuka!"
 
-#: ../client/pk-console.c:1583
+#: ../client/pk-console.c:1609
 msgid "You need to specify a package name to resolve"
 msgstr ""
 
-#: ../client/pk-console.c:1592
-#: ../client/pk-console.c:1599
+#: ../client/pk-console.c:1618 ../client/pk-console.c:1625
 #, fuzzy
-msgid "You need to specify a repo name"
+msgid "You need to specify a repository name"
 msgstr "Anda perlu menyatakan fail untuk dibuka!"
 
-#: ../client/pk-console.c:1606
+#: ../client/pk-console.c:1632
 msgid "You need to specify a repo name/parameter and value"
 msgstr ""
 
-#: ../client/pk-console.c:1619
+#: ../client/pk-console.c:1645
 #, fuzzy
-msgid "You need to specify a time term"
-msgstr "Anda perlu menyatakan fail untuk dibuka!"
+msgid "You need to specify an action, e.g. 'update-system'"
+msgstr "(anda tidak perlu menaip domain selepas nama)"
 
-#: ../client/pk-console.c:1624
+#: ../client/pk-console.c:1650
 #, fuzzy
 msgid "You need to specify a correct role"
 msgstr "Anda perlu menyatakan fail untuk dibuka!"
 
-#: ../client/pk-console.c:1629
+#: ../client/pk-console.c:1655
 msgid "Failed to get last time"
 msgstr ""
 
-#: ../client/pk-console.c:1668
+#: ../client/pk-console.c:1694
 msgid "You need to specify a package to find the details for"
 msgstr ""
 
-#: ../client/pk-console.c:1675
+#: ../client/pk-console.c:1701
 msgid "You need to specify a package to find the files for"
 msgstr ""
 
-#: ../client/pk-console.c:1724
+#. TRANSLATORS: The user tried to use an unsupported option on the command line
+#: ../client/pk-console.c:1754
 #, fuzzy, c-format
-msgid "Option '%s' not supported"
+msgid "Option '%s' is not supported"
 msgstr "Format Tidak Disokong"
 
-#: ../client/pk-console.c:1737
+#. TRANSLATORS: User does not have permission to do this
+#: ../client/pk-console.c:1767
 msgid "You don't have the necessary privileges for this operation"
 msgstr ""
 
-#: ../client/pk-console.c:1739
+#. TRANSLATORS: Generic failure of what they asked to do
+#: ../client/pk-console.c:1770
 #, fuzzy
 msgid "Command failed"
 msgstr "Sambungan Gagal"
 
-#: ../client/pk-generate-pack.c:117
-#, fuzzy
-msgid "Could not find a package match"
-msgstr "Tidak dapat mencari subkekunci OpenPGP."
-
-#: ../client/pk-generate-pack.c:151
-msgid "failed to download: invalid package_id and/or directory"
+#. TRANSLATORS: This is the state of the transaction
+#: ../client/pk-generate-pack.c:96
+msgid "Downloading"
 msgstr ""
 
-#: ../client/pk-generate-pack.c:232
-msgid "Could not find a valid metadata file"
+#: ../client/pk-generate-pack.c:140
+msgid "Set the file name of dependencies to be excluded"
 msgstr ""
 
-#. get user input
-#: ../client/pk-generate-pack.c:524
-msgid "Okay to download the additional packages"
+#: ../client/pk-generate-pack.c:142
+msgid "The output directory (the current directory is used if ommitted)"
 msgstr ""
 
-#: ../client/pk-generate-pack-main.c:66
-msgid "Set the path of the file with the list of packages/dependencies to be excluded"
+#: ../client/pk-generate-pack.c:144
+msgid "The package to be put into the service pack"
 msgstr ""
 
-#: ../client/pk-generate-pack-main.c:111
-msgid "You need to specify the pack name and packages to be packed\n"
+#: ../client/pk-generate-pack.c:146
+msgid "Put all updates available in the service pack"
 msgstr ""
 
-#: ../client/pk-generate-pack-main.c:117
-msgid "Invalid name for the service pack, Specify a name with .servicepack extension\n"
+#. TRANSLATORS: This is when the user fails to supply the correct arguments
+#: ../client/pk-generate-pack.c:166
+msgid "Neither --package or --updates option selected."
 msgstr ""
 
-#: ../client/pk-generate-pack-main.c:129
+#. TRANSLATORS: This is when the user fails to supply just one argument
+#: ../client/pk-generate-pack.c:174
+msgid "Both options selected."
+msgstr ""
+
+#. TRANSLATORS: This is when file already exists
+#: ../client/pk-generate-pack.c:207
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr ""
 
-#: ../client/pk-generate-pack-main.c:142
-#, fuzzy
-msgid "Failed to create directory"
-msgstr "gagal untuk mencipta direktori %s: %s\n"
-
-#: ../client/pk-generate-pack-main.c:149
-#, fuzzy
-msgid "Failed to create pack"
-msgstr "gagal untuk mencipta direktori %s: %s\n"
-
-#: ../client/pk-import-desktop.c:305
-#: ../client/pk-import-specspo.c:185
-#, fuzzy, c-format
-msgid "Could not open database: %s"
-msgstr "Tak dapat membuka fail %s."
-
-#: ../client/pk-import-desktop.c:306
-#: ../client/pk-import-specspo.c:186
-msgid "You probably need to run this program as the root user"
+#. TRANSLATORS: This is when the pack was not overwritten
+#: ../client/pk-generate-pack.c:210
+msgid "The pack was not overwritten."
 msgstr ""
 
-#: ../client/pk-monitor.c:131
+#. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
+#: ../client/pk-generate-pack.c:222
+#, fuzzy
+msgid "Failed to create directory:"
+msgstr "gagal untuk mencipta direktori %s: %s\n"
+
+#. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
+#: ../client/pk-generate-pack.c:231
+#, fuzzy
+msgid "Failed to open package list."
+msgstr "gagal untuk mencipta direktori %s: %s\n"
+
+#. TRANSLATORS: The package name is being matched up to available packages
+#: ../client/pk-generate-pack.c:241
+msgid "Finding package name."
+msgstr ""
+
+#. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
+#: ../client/pk-generate-pack.c:245
+#, fuzzy, c-format
+msgid "Failed to find package '%s': %s"
+msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+
+#. TRANSLATORS: This is telling the user we are in the process of making the pack
+#: ../client/pk-generate-pack.c:260
+msgid "Creating service pack..."
+msgstr ""
+
+#. TRANSLATORS: we succeeded in making the file
+#: ../client/pk-generate-pack.c:267
+#, c-format
+msgid "Service pack created '%s'"
+msgstr ""
+
+#. TRANSLATORS: we failed to make te file
+#: ../client/pk-generate-pack.c:271
+#, fuzzy, c-format
+msgid "Failed to create '%s': %s"
+msgstr "gagal untuk mencipta direktori %s: %s\n"
+
+#: ../client/pk-monitor.c:128
 #, fuzzy
 msgid "PackageKit Monitor"
 msgstr "Monitor Rangkaian"
 
-#: ../client/pk-tools-common.c:51
+#. TRANSLATORS: The package was not found in any software sources
+#: ../client/pk-tools-common.c:108
+#, c-format
+msgid "The package could not be found"
+msgstr ""
+
+#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#: ../client/pk-tools-common.c:119
+#, fuzzy
+msgid "More than one package matches:"
+msgstr "Tidak dapat mencari subkekunci OpenPGP."
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../client/pk-tools-common.c:126
+#, fuzzy
+msgid "Please choose the correct package: "
+msgstr "Sila masukkan %(instkey) anda."
+
+#: ../client/pk-tools-common.c:152
 #, fuzzy, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Pilih nombor latihan dari 1 hingga 10."
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:300
+#. TRANSLATORS: when we are getting data from the daemon
+#: ../contrib/packagekit-plugin/src/contents.cpp:299
 #, fuzzy
 msgid "Getting package information..."
 msgstr "Lebih maklumat pada pakej %s"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:304
+#. TRANSLATORS: run an applicaiton
+#: ../contrib/packagekit-plugin/src/contents.cpp:305
 #, c-format
-msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
+msgid "Run %s"
 msgstr ""
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:308
-#: ../contrib/packagekit-plugin/src/contents.cpp:313
-#: ../contrib/packagekit-plugin/src/contents.cpp:336
-#: ../contrib/packagekit-plugin/src/contents.cpp:340
-#, c-format
-msgid "<big>%s</big>"
-msgstr ""
-
-#: ../contrib/packagekit-plugin/src/contents.cpp:310
-#, fuzzy, c-format
-msgid ""
-"\n"
-"<small>Installed version: %s</small>"
+#. TRANSLATORS: show the installed version of a package
+#: ../contrib/packagekit-plugin/src/contents.cpp:311
+#, fuzzy
+msgid "Installed version"
 msgstr "Versi dipasang semasa:"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:316
+#. TRANSLATORS: run the application now
+#: ../contrib/packagekit-plugin/src/contents.cpp:319
 #, c-format
-msgid ""
-"\n"
-"<span color='#%06x' underline='single'>Run version %s now</span>"
-msgstr ""
-
-#: ../contrib/packagekit-plugin/src/contents.cpp:321
-#, c-format
-msgid ""
-"\n"
-"<span color='#%06x' underline='single'>Run now</span>"
+msgid "Run version %s now"
 msgstr ""
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:325
-#, c-format
-msgid ""
-"\n"
-"<span color='#%06x' underline='single'>Upgrade to version %s</span>"
+msgid "Run now"
 msgstr ""
 
+#. TRANSLATORS: update to a new version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
-msgid "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
+msgid "Update to version %s"
 msgstr ""
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:333
-#, fuzzy, c-format
-msgid ""
-"\n"
-"<small>Version: %s</small>"
-msgstr "Sejarah versi"
-
-#: ../contrib/packagekit-plugin/src/contents.cpp:337
-msgid ""
-"\n"
-"<small>No packages found for your system</small>"
+#. TRANSLATORS: To install a package
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
+#, c-format
+msgid "Install %s now"
 msgstr ""
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:341
+#. TRANSLATORS: the version of the package
+#: ../contrib/packagekit-plugin/src/contents.cpp:339
+msgid "Version"
+msgstr ""
+
+#. TRANSLATORS: noting found, so can't install
+#: ../contrib/packagekit-plugin/src/contents.cpp:344
+msgid "No packages found for your system"
+msgstr ""
+
+#. TRANSLATORS: package is being installed
+#: ../contrib/packagekit-plugin/src/contents.cpp:349
 #, fuzzy
-msgid ""
-"\n"
-"<small>Installing...</small>"
+msgid "Installing..."
 msgstr "Memasang pemuatboot..."
 
 #: ../data/packagekit-catalog.xml.in.h:1
@@ -427,62 +522,202 @@ msgstr "Memasang pemuatboot..."
 msgid "PackageKit Catalog"
 msgstr "Kembalikan Dari Katalog"
 
-#: ../data/packagekit-pack.xml.in.h:1
+#: ../data/packagekit-servicepack.xml.in.h:1
 #, fuzzy
 msgid "PackageKit Service Pack"
 msgstr "Konfigur penemuan servis"
 
-#: ../src/pk-main.c:83
-msgid "Startup failed due to security policies on this machine."
+#: ../data/packagekit-package-list.xml.in.h:1
+#, fuzzy
+msgid "PackageKit Package List"
+msgstr "Kembalikan Dari Katalog"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
 msgstr ""
 
-#: ../src/pk-main.c:84
-msgid "This can happen for two reasons:"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a signed package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install an untrusted package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install untrusted local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Refresh system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Remove package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Rollback to a previous transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Trust a key used for signing packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Update packages"
 msgstr ""
 
 #: ../src/pk-main.c:85
-msgid "The correct user is not launching the executable (usually root)"
+msgid "Startup failed due to security policies on this machine."
 msgstr ""
 
 #: ../src/pk-main.c:86
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/dbus-1/system.d directory"
+msgid "This can happen for two reasons:"
 msgstr ""
 
-#: ../src/pk-main.c:185
+#: ../src/pk-main.c:87
+msgid "The correct user is not launching the executable (usually root)"
+msgstr ""
+
+#: ../src/pk-main.c:88
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+
+#: ../src/pk-main.c:192
 msgid "Packaging backend to use, e.g. dummy"
 msgstr ""
 
-#: ../src/pk-main.c:187
+#: ../src/pk-main.c:194
 msgid "Daemonize and detach from the terminal"
 msgstr ""
 
-#: ../src/pk-main.c:191
+#: ../src/pk-main.c:198
 #, fuzzy
 msgid "Disable the idle timer"
 msgstr "Widget penetapan pemasa"
 
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:200
 msgid "Show version and exit"
 msgstr "Papar versi dan keluar"
 
-#: ../src/pk-main.c:195
+#: ../src/pk-main.c:202
 msgid "Exit after a small delay"
 msgstr ""
 
-#: ../src/pk-main.c:197
+#: ../src/pk-main.c:204
 msgid "Exit after the engine has loaded"
 msgstr ""
 
-#: ../src/pk-main.c:207
+#: ../src/pk-main.c:214
 msgid "PackageKit service"
 msgstr "Servis PackageKit"
 
-#: ../src/pk-main.c:233
+#: ../src/pk-main.c:250
 msgid "Cannot connect to the system bus"
 msgstr ""
 
-#: ../src/pk-main.c:273
+#: ../src/pk-main.c:296
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Ralat cuba untuk memulakan: %s\n"
 
+#, fuzzy
+#~ msgid "Update detail"
+#~ msgstr " Auto Kemaskini"
+
+#, fuzzy
+#~ msgid "A system restart is required"
+#~ msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
+
+#, fuzzy
+#~ msgid "An application restart is required"
+#~ msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
+
+#, fuzzy
+#~ msgid "Could not find package to remove"
+#~ msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+
+#, fuzzy
+#~ msgid "Cancelled!"
+#~ msgstr "Dibatalkan"
+
+#, fuzzy
+#~ msgid "Could not find package to download"
+#~ msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+
+#, fuzzy
+#~ msgid "Could not find package to update"
+#~ msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+
+#, fuzzy
+#~ msgid "Okay to import key?"
+#~ msgstr "tidak dapat mengimport fail pubkey \"%s\""
+
+#, fuzzy
+#~ msgid "Did not import key"
+#~ msgstr "Tidak dapat memperoleh kekunci OpenPGP."
+
+#, fuzzy
+#~ msgid "You need to specify a time term"
+#~ msgstr "Anda perlu menyatakan fail untuk dibuka!"
+
+#, fuzzy
+#~ msgid "Could not open database: %s"
+#~ msgstr "Tak dapat membuka fail %s."
+
+#, fuzzy
+#~ msgid ""
+#~ "\n"
+#~ "<small>Version: %s</small>"
+#~ msgstr "Sejarah versi"

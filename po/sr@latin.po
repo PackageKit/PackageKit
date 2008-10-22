@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-21 02:00+0000\n"
+"POT-Creation-Date: 2008-10-22 11:10+0100\n"
 "PO-Revision-Date: 2008-10-22 01:01-0400\n"
 "Last-Translator: Goran Rakić <grakic@devbase.net>\n"
 "Language-Team: Serbian (sr) <gnom@prevod.org>\n"
@@ -189,7 +189,8 @@ msgstr "Potpis riznice je obavezan"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1181
-msgid "You you accept this signature?"
+#, fuzzy
+msgid "Do you accept this signature?"
 msgstr "Prihvatate li ovaj potpis?"
 
 #. TRANSLATORS: This is where the user declined the security key
@@ -279,7 +280,8 @@ msgstr "Moraš navesti paket za uklanjanje"
 msgid ""
 "You need to specify the destination directory and then the packages to "
 "download"
-msgstr "Morate navesti odredišni direktorijum pa tek onda pakete za preuzimanje"
+msgstr ""
+"Morate navesti odredišni direktorijum pa tek onda pakete za preuzimanje"
 
 #: ../client/pk-console.c:1587
 msgid "Directory not found"
@@ -423,6 +425,7 @@ msgstr "PaketKit redar"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:108
+#, c-format
 msgid "The package could not be found"
 msgstr "Paket nije nađen"
 
@@ -506,6 +509,97 @@ msgstr "Servis PaketKita"
 msgid "PackageKit Package List"
 msgstr "PaketKit spiak paketa"
 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "Prihvati licencu"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "Neophodna je autentifikacija za prihvatnje licence"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr "Neophodna je autentifikacija za izmenu postavki skladišta softvera"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+#, fuzzy
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr "Neophodna je autentifikacija za osvežavanje liste paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+#, fuzzy
+msgid "Authentication is required to install a signed package"
+msgstr "Neophodna je autentifikacija za instaliranje paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+#, fuzzy
+msgid "Authentication is required to install an untrusted package"
+msgstr "Neophodna je autentifikacija za instaliranje paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+#, fuzzy
+msgid "Authentication is required to refresh the system sources"
+msgstr "Neophodna je autentifikacija za osvežavanje liste paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr "Neophodna je autentifikacija za uklanjanje paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr "Neophodna je autentifikacija za poništavanje sve-ili-ništa promena"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+#, fuzzy
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr "Neophodna je autentifikacija za uklanjanje paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr "Neophodna je autentifikacija za nadogradnju paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr "Promeni postavke skladišta softvera"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr "Instaliraj lokalnu datoteku"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+#, fuzzy
+msgid "Install untrusted local file"
+msgstr "Instaliraj lokalnu datoteku"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Refresh system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Remove package"
+msgstr "Ukloni paket"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Rollback to a previous transaction"
+msgstr "Vrati se na stanje prethodne promene"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Trust a key used for signing packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+#, fuzzy
+msgid "Update packages"
+msgstr "Nadogradi paket"
+
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "Pokretanje nije uspelo usled sistemske sigurnosne politike."
@@ -575,68 +669,6 @@ msgstr "Greška pri pokretanju: %s\n"
 #~ msgid "You need to specify a time term"
 #~ msgstr "Moraš navesti vremensku odrednicu"
 
-#~ msgid "Accept EULA"
-#~ msgstr "Prihvati licencu"
-
-#~ msgid "Authentication is required to accept a EULA"
-#~ msgstr "Neophodna je autentifikacija za prihvatnje licence"
-
-#~ msgid "Authentication is required to change software source parameters"
-#~ msgstr "Neophodna je autentifikacija za izmenu postavki skladišta softvera"
-
-#, fuzzy
-#~ msgid ""
-#~ "Authentication is required to consider a key used for signing packages as "
-#~ "trusted"
-#~ msgstr "Neophodna je autentifikacija za osvežavanje liste paketa"
-
-#, fuzzy
-#~ msgid "Authentication is required to install a signed package"
-#~ msgstr "Neophodna je autentifikacija za instaliranje paketa"
-
-#, fuzzy
-#~ msgid "Authentication is required to install an untrusted package"
-#~ msgstr "Neophodna je autentifikacija za instaliranje paketa"
-
-#, fuzzy
-#~ msgid "Authentication is required to refresh the system sources"
-#~ msgstr "Neophodna je autentifikacija za osvežavanje liste paketa"
-
-#~ msgid "Authentication is required to remove packages"
-#~ msgstr "Neophodna je autentifikacija za uklanjanje paketa"
-
-#~ msgid "Authentication is required to rollback a transaction"
-#~ msgstr "Neophodna je autentifikacija za poništavanje sve-ili-ništa promena"
-
-#, fuzzy
-#~ msgid ""
-#~ "Authentication is required to set the network proxy used for downloading "
-#~ "packages"
-#~ msgstr "Neophodna je autentifikacija za uklanjanje paketa"
-
-#~ msgid "Authentication is required to update packages"
-#~ msgstr "Neophodna je autentifikacija za nadogradnju paketa"
-
-#~ msgid "Change software source parameters"
-#~ msgstr "Promeni postavke skladišta softvera"
-
-#~ msgid "Install local file"
-#~ msgstr "Instaliraj lokalnu datoteku"
-
-#, fuzzy
-#~ msgid "Install untrusted local file"
-#~ msgstr "Instaliraj lokalnu datoteku"
-
-#~ msgid "Remove package"
-#~ msgstr "Ukloni paket"
-
-#~ msgid "Rollback to a previous transaction"
-#~ msgstr "Vrati se na stanje prethodne promene"
-
-#, fuzzy
-#~ msgid "Update packages"
-#~ msgstr "Nadogradi paket"
-
 #~ msgid "Update detail"
 #~ msgstr "Više o nadogradnji"
 
@@ -694,7 +726,8 @@ msgstr "Greška pri pokretanju: %s\n"
 
 #~ msgid "Authentication is required to install a security signature"
 #~ msgstr ""
-#~ "Neophodna je autentifikacija za instaliranje sigurnosnog digitalnog potpisa"
+#~ "Neophodna je autentifikacija za instaliranje sigurnosnog digitalnog "
+#~ "potpisa"
 
 #~ msgid "Authentication is required to update all packages"
 #~ msgstr "Neophodna je autentifikacija za nadogradnju svih paketa"

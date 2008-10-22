@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-19 02:08+0000\n"
+"POT-Creation-Date: 2008-10-22 11:10+0100\n"
 "PO-Revision-Date: 2008-10-20 22:15GMT\n"
 "Last-Translator: Oron Peled <oron@actcom.co.il>\n"
 "Language-Team: Hebrew\n"
@@ -34,296 +34,305 @@ msgstr "נא לצאת (logout) מהמחשב לצורך השלמת העדכון."
 msgid "Please restart the application as it is being used."
 msgstr "נא להפעיל את היישום מחדש, מכיוון שהוא בשימוש."
 
+#. TRANSLATORS: The package is already installed on the system
+#: ../client/pk-console.c:579
+#, fuzzy, c-format
+msgid "The package '%s' is already installed"
+msgstr "לא ניתן להתקין את החבילה '%s':‏ %s"
+
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:553
+#: ../client/pk-console.c:587
 #, c-format
 msgid "The package '%s' could not be installed: %s"
 msgstr "לא ניתן להתקין את החבילה '%s':‏ %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:578 ../client/pk-console.c:605
-#: ../client/pk-console.c:701 ../client/pk-console.c:818
-#: ../client/pk-tools-common.c:48 ../client/pk-tools-common.c:58
-#: ../client/pk-tools-common.c:76 ../client/pk-tools-common.c:83
+#: ../client/pk-console.c:612 ../client/pk-console.c:639
+#: ../client/pk-console.c:735 ../client/pk-console.c:852
+#: ../client/pk-tools-common.c:55 ../client/pk-tools-common.c:74
+#: ../client/pk-tools-common.c:81
 #, c-format
 msgid "Internal error: %s"
 msgstr "שגיאה פנימית: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:586
+#: ../client/pk-console.c:620
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "כישלון בהתקנת החבילות: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:613
+#: ../client/pk-console.c:647
 #, c-format
 msgid "This tool could not install the files: %s"
 msgstr "כישלון בהתקנת הקבצים: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:669
+#: ../client/pk-console.c:703
 #, c-format
 msgid "This tool could not remove '%s': %s"
 msgstr "כישלון בהסרת '%s':‏ %ss"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:692 ../client/pk-console.c:763
+#: ../client/pk-console.c:726 ../client/pk-console.c:797
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "כישלון בהסרת החבילות: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:730
+#: ../client/pk-console.c:764
 #, c-format
 msgid "This tool could not remove the packages: '%s'"
 msgstr "כישלון בהסרת החבילות: '%s'"
 
 #. TRANSLATORS: When removing, we might have to remove other dependencies
-#: ../client/pk-console.c:742
+#: ../client/pk-console.c:776
 msgid "The following packages have to be removed:"
 msgstr "יש להסיר את החבילות הבאות:"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:749
+#: ../client/pk-console.c:783
 msgid "Proceed removing additional packages?"
 msgstr "האם להמשיך בהסרת חבילות נוספות?"
 
 #. TRANSLATORS: We did not remove any packages
-#: ../client/pk-console.c:754
+#: ../client/pk-console.c:788
 msgid "The package removal was canceled!"
 msgstr "הסרת החבילה בוטלה!"
 
 #. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:795
+#: ../client/pk-console.c:829
 #, c-format
 msgid "This tool could not download the package '%s' as it could not be found"
 msgstr "כישלון בהורדה מהאינטרנט של החבילה '%s' מכיוון שהיא לא נמצאה"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:826
+#: ../client/pk-console.c:860
 #, c-format
 msgid "This tool could not download the packages: %s"
 msgstr "כישלון בהורדה מהאינטרנט של החבילות: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:853 ../client/pk-console.c:862
+#: ../client/pk-console.c:887 ../client/pk-console.c:896
 #, c-format
 msgid "This tool could not update '%s': %s"
 msgstr "כישלון בעדכון של '%s':‏‏ %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:884 ../client/pk-console.c:892
+#: ../client/pk-console.c:918 ../client/pk-console.c:926
 #, c-format
 msgid "This tool could not get the requirements for '%s': %s"
 msgstr "כישלון בהשגת הדרישות המקדימות עבור '%s':‏‏ %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:914 ../client/pk-console.c:922
+#: ../client/pk-console.c:948 ../client/pk-console.c:956
 #, c-format
 msgid "This tool could not get the dependencies for '%s': %s"
 msgstr "כישלון בהשגת התלויות עבור '%s':‏‏ %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:944 ../client/pk-console.c:952
+#: ../client/pk-console.c:978 ../client/pk-console.c:986
 #, c-format
 msgid "This tool could not get package details for '%s': %s"
 msgstr "כישלון בהשגת פרטי החבילה '%s':‏‏ %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:974
+#: ../client/pk-console.c:1008
 #, c-format
 msgid "This tool could not find the files for '%s': %s"
 msgstr "כישלון באיתור הקבצים עבור '%s':‏‏ %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:982
+#: ../client/pk-console.c:1016
 #, c-format
 msgid "This tool could not get the file list for '%s': %s"
 msgstr "כישלון בהשגת רשימת הקבצים עבור '%s':‏‏ %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1004
+#: ../client/pk-console.c:1038
 #, c-format
 msgid "This tool could not find the update details for '%s': %s"
 msgstr "כישלון בהשגת פרטי העדכון עבור '%s':‏‏ %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1012
+#: ../client/pk-console.c:1046
 #, c-format
 msgid "This tool could not get the update details for '%s': %s"
 msgstr "כישלון בהשגת פרטי העדכון עבור '%s':‏‏ %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1058
+#: ../client/pk-console.c:1092
 msgid "Error:"
 msgstr "שגיאה:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1072
+#: ../client/pk-console.c:1106
 msgid "Package description"
 msgstr "תיאור חבילה"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1105
+#: ../client/pk-console.c:1139
 msgid "Package files"
 msgstr "קבצי החבילה"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1114
+#: ../client/pk-console.c:1148
 msgid "No files"
 msgstr "אין קבצים"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1137
+#: ../client/pk-console.c:1171
 msgid "Repository signature required"
 msgstr "נדרשת חתימה של מאגר התכנה"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1147
-msgid "You you accept this signature?"
+#: ../client/pk-console.c:1181
+#, fuzzy
+msgid "Do you accept this signature?"
 msgstr "האם לתת אמון בחתימה זו?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1151
+#: ../client/pk-console.c:1185
 msgid "The signature was not accepted."
 msgstr "החתימה נדחתה."
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1185
+#: ../client/pk-console.c:1219
 msgid "End user license agreement required"
 msgstr "נדרש הסכם משתמש קצה (EULA)"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1192
+#: ../client/pk-console.c:1226
 msgid "Do you agree to this license?"
 msgstr "האם הרשיון מקובל עליך?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1196
+#: ../client/pk-console.c:1230
 msgid "The license was refused."
 msgstr "אין הסכמה לרשיון."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1225
+#: ../client/pk-console.c:1259
 msgid "The daemon crashed mid-transaction!"
 msgstr "תכנית השירות (daemon) התרסקה באמצע טראנזקציה!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1278
+#: ../client/pk-console.c:1312
 msgid "PackageKit Console Interface"
 msgstr "מנשק שורת פקודה של PackageKit"
 
-#: ../client/pk-console.c:1278
+#: ../client/pk-console.c:1312
 msgid "Subcommands:"
 msgstr "תת-פקודות:"
 
-#: ../client/pk-console.c:1369 ../client/pk-generate-pack.c:138
+#: ../client/pk-console.c:1403 ../client/pk-generate-pack.c:138
 #: ../client/pk-monitor.c:115 ../src/pk-main.c:196
 msgid "Show extra debugging information"
 msgstr "הצג מידע נוסף לצורך איתור שגיאות"
 
-#: ../client/pk-console.c:1371 ../client/pk-monitor.c:117
+#: ../client/pk-console.c:1405 ../client/pk-monitor.c:117
 msgid "Show the program version and exit"
 msgstr "הצג את גרסת התוכנה וסיים"
 
-#: ../client/pk-console.c:1373
+#: ../client/pk-console.c:1407
 msgid "Set the filter, e.g. installed"
 msgstr "קבע את המסנן, למשל, מותקנות"
 
-#: ../client/pk-console.c:1375
+#: ../client/pk-console.c:1409
 msgid "Exit without waiting for actions to complete"
 msgstr "צא ללא המתנה לסיום הפעולות"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1397
+#: ../client/pk-console.c:1431
 msgid "This tool could not connect to system DBUS."
 msgstr "התחברות ל-DBUS הכלל מערכתי נכשלה."
 
-#: ../client/pk-console.c:1492
+#: ../client/pk-console.c:1526
 msgid "You need to specify a search type, e.g. name"
 msgstr "יש לקבוע סוג חיפוש, למשל שמי"
 
-#: ../client/pk-console.c:1497 ../client/pk-console.c:1504
-#: ../client/pk-console.c:1511 ../client/pk-console.c:1518
-#: ../client/pk-console.c:1629 ../client/pk-console.c:1639
-#: ../client/pk-console.c:1646 ../client/pk-console.c:1653
+#: ../client/pk-console.c:1531 ../client/pk-console.c:1538
+#: ../client/pk-console.c:1545 ../client/pk-console.c:1552
+#: ../client/pk-console.c:1663 ../client/pk-console.c:1673
+#: ../client/pk-console.c:1680 ../client/pk-console.c:1687
 msgid "You need to specify a search term"
 msgstr "יש לציין פריט חיפוש"
 
-#: ../client/pk-console.c:1523
+#: ../client/pk-console.c:1557
 msgid "Invalid search type"
 msgstr "סוג חיפוש לא תקין"
 
-#: ../client/pk-console.c:1528
+#: ../client/pk-console.c:1562
 msgid "You need to specify a package or file to install"
 msgstr "יש לקבוע חבילה או קובץ להתקנה"
 
-#: ../client/pk-console.c:1535
+#: ../client/pk-console.c:1569
 msgid "You need to specify a type, key_id and package_id"
 msgstr "יש לקבוע סוג, זיהוי מפתח וזיהוי חבילה"
 
-#: ../client/pk-console.c:1542
+#: ../client/pk-console.c:1576
 msgid "You need to specify a package to remove"
 msgstr "יש לקבוע חבילה להסרה"
 
-#: ../client/pk-console.c:1548
-msgid "You need to specify the destination directory and then the packages to download"
+#: ../client/pk-console.c:1582
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
 msgstr "יש לקבוע תיקיית יעד ואז את החבילות להורדה"
 
-#: ../client/pk-console.c:1553
+#: ../client/pk-console.c:1587
 msgid "Directory not found"
 msgstr "תיקייה לא נמצאה"
 
-#: ../client/pk-console.c:1559
+#: ../client/pk-console.c:1593
 msgid "You need to specify a licence identifier (eula-id)"
 msgstr "יש לציין זיהוי של הסכם משתמש הקצה (eula-id)"
 
-#: ../client/pk-console.c:1575
+#: ../client/pk-console.c:1609
 msgid "You need to specify a package name to resolve"
 msgstr "יש לציין שם חבילה לבירור"
 
-#: ../client/pk-console.c:1584 ../client/pk-console.c:1591
+#: ../client/pk-console.c:1618 ../client/pk-console.c:1625
 msgid "You need to specify a repository name"
 msgstr "יש לציין שם מאגר תכנה"
 
-#: ../client/pk-console.c:1598
+#: ../client/pk-console.c:1632
 msgid "You need to specify a repo name/parameter and value"
 msgstr "יש לציין שם מאגר תכנה או פרמטר וערך"
 
-#: ../client/pk-console.c:1611
+#: ../client/pk-console.c:1645
 msgid "You need to specify an action, e.g. 'update-system'"
 msgstr "יש לציין את הפעולה, למשל 'עדכון מערכת'"
 
-#: ../client/pk-console.c:1616
+#: ../client/pk-console.c:1650
 msgid "You need to specify a correct role"
 msgstr "יש לציין תפקיד תקין"
 
-#: ../client/pk-console.c:1621
+#: ../client/pk-console.c:1655
 msgid "Failed to get last time"
 msgstr "כישלון בפעם שעברה"
 
-#: ../client/pk-console.c:1660
+#: ../client/pk-console.c:1694
 msgid "You need to specify a package to find the details for"
 msgstr "יש לציין חבילה עבורה נדרשים הפרטים"
 
-#: ../client/pk-console.c:1667
+#: ../client/pk-console.c:1701
 msgid "You need to specify a package to find the files for"
 msgstr "יש לציין חבילה עבורה נדרש איתור הקבצים"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1720
+#: ../client/pk-console.c:1754
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "אפשרות '%s' לא נתמכת"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:1733
+#: ../client/pk-console.c:1767
 msgid "You don't have the necessary privileges for this operation"
 msgstr "אין לך ההרשאות הנדרשות לפעולה זו"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1736
+#: ../client/pk-console.c:1770
 msgid "Command failed"
 msgstr "פעולה נכשלה"
 
@@ -411,21 +420,22 @@ msgid "PackageKit Monitor"
 msgstr "מוניטור PackageKit"
 
 #. TRANSLATORS: The package was not found in any software sources
-#: ../client/pk-tools-common.c:109
+#: ../client/pk-tools-common.c:108
+#, c-format
 msgid "The package could not be found"
 msgstr "החבילה לא נמצאה"
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-tools-common.c:120
+#: ../client/pk-tools-common.c:119
 msgid "More than one package matches:"
 msgstr "יש יותר מחבילה מתאימה אחת:"
 
 #. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-tools-common.c:127
+#: ../client/pk-tools-common.c:126
 msgid "Please choose the correct package: "
 msgstr "נא לבחור את החבילה הנכונה: "
 
-#: ../client/pk-tools-common.c:154
+#: ../client/pk-tools-common.c:152
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "נא להזין מספר בין 1 ל-%i: "
@@ -495,6 +505,97 @@ msgstr "חבילת שירות PackageKit"
 msgid "PackageKit Package List"
 msgstr "רשימת חבילות PackageKit"
 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "קבל רשיון משתמש הקצה (EULA)"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "אימות נדרש כדי לקבל רשיון משתמש הקצה (EULA)"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr "אימות נדרש כדי לשנות פרמטרים של מקורות תוכנה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+#, fuzzy
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr "אימות נדרש כדי לרענן את רשימות החבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+#, fuzzy
+msgid "Authentication is required to install a signed package"
+msgstr "אימות נדרש כדי להתקין חבילה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+#, fuzzy
+msgid "Authentication is required to install an untrusted package"
+msgstr "אימות נדרש כדי להתקין חבילה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+#, fuzzy
+msgid "Authentication is required to refresh the system sources"
+msgstr "אימות נדרש כדי לרענן את רשימות החבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr "אימות נדרש כדי להסיר חבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr "אימות נדרש כדי לגלגל אחורנית טרנסאקציה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+#, fuzzy
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr "אימות נדרש כדי להסיר חבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr "אימות נדרש כדי לעדכן חבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr "שנה פרמטרים של מקורות תוכנה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr "התקן קובץ מקומי"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+#, fuzzy
+msgid "Install untrusted local file"
+msgstr "התקן קובץ מקומי"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Refresh system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Remove package"
+msgstr "הסר חבילה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Rollback to a previous transaction"
+msgstr "גלגל אחרונית לטרהסאקציה קודמת"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Trust a key used for signing packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+#, fuzzy
+msgid "Update packages"
+msgstr "עדכן חבילה"
+
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "הפעלה נכשלה עקב מדיניות אבטחה במחשב זה."
@@ -508,7 +609,9 @@ msgid "The correct user is not launching the executable (usually root)"
 msgstr "התכנה מופעלת לא על ידי המשתמש הנכון (בדרך כלל root)"
 
 #: ../src/pk-main.c:88
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
 msgstr "הקובץ org.freedesktop.PackageKit.conf לא מותקן בתיקיית המערכת:"
 
 #: ../src/pk-main.c:192
@@ -559,64 +662,6 @@ msgstr "כישלון בהפעלת: %s\n"
 
 #~ msgid "You need to specify a time term"
 #~ msgstr "יש לציין פריט זמן"
-
-#~ msgid "Accept EULA"
-#~ msgstr "קבל רשיון משתמש הקצה (EULA)"
-
-#~ msgid "Authentication is required to accept a EULA"
-#~ msgstr "אימות נדרש כדי לקבל רשיון משתמש הקצה (EULA)"
-
-#~ msgid "Authentication is required to change software source parameters"
-#~ msgstr "אימות נדרש כדי לשנות פרמטרים של מקורות תוכנה"
-
-#, fuzzy
-#~ msgid "Authentication is required to consider a key used for signing packages as trusted"
-#~ msgstr "אימות נדרש כדי לרענן את רשימות החבילות"
-
-#, fuzzy
-#~ msgid "Authentication is required to install a signed package"
-#~ msgstr "אימות נדרש כדי להתקין חבילה"
-
-#, fuzzy
-#~ msgid "Authentication is required to install an untrusted package"
-#~ msgstr "אימות נדרש כדי להתקין חבילה"
-
-#, fuzzy
-#~ msgid "Authentication is required to refresh the system sources"
-#~ msgstr "אימות נדרש כדי לרענן את רשימות החבילות"
-
-#~ msgid "Authentication is required to remove packages"
-#~ msgstr "אימות נדרש כדי להסיר חבילות"
-
-#~ msgid "Authentication is required to rollback a transaction"
-#~ msgstr "אימות נדרש כדי לגלגל אחורנית טרנסאקציה"
-
-#, fuzzy
-#~ msgid "Authentication is required to set the network proxy used for downloading packages"
-#~ msgstr "אימות נדרש כדי להסיר חבילות"
-
-#~ msgid "Authentication is required to update packages"
-#~ msgstr "אימות נדרש כדי לעדכן חבילות"
-
-#~ msgid "Change software source parameters"
-#~ msgstr "שנה פרמטרים של מקורות תוכנה"
-
-#~ msgid "Install local file"
-#~ msgstr "התקן קובץ מקומי"
-
-#, fuzzy
-#~ msgid "Install untrusted local file"
-#~ msgstr "התקן קובץ מקומי"
-
-#~ msgid "Remove package"
-#~ msgstr "הסר חבילה"
-
-#~ msgid "Rollback to a previous transaction"
-#~ msgstr "גלגל אחרונית לטרהסאקציה קודמת"
-
-#, fuzzy
-#~ msgid "Update packages"
-#~ msgstr "עדכן חבילה"
 
 #~ msgid "Update detail"
 #~ msgstr "פרטי עדכון"
@@ -688,7 +733,9 @@ msgstr "כישלון בהפעלת: %s\n"
 #~ msgid "Update all packages"
 #~ msgstr "עדכן את כל החבילות"
 
-#~ msgid "Could not find a package with that name to install, or package already installed"
+#~ msgid ""
+#~ "Could not find a package with that name to install, or package already "
+#~ "installed"
 #~ msgstr "לא נמצאה חבילה בשם זה להתקנה, או חבילה כבר מותקנת"
 
 #~ msgid "Could not find a package with that name to update"
