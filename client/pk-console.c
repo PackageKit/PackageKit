@@ -1178,7 +1178,7 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	g_print ("Timestamp:   %s\n", key_timestamp);
 
 	/* TRANSLATORS: This a prompt asking the user to import the security key */
-	import = pk_console_get_prompt (_("You you accept this signature?"), FALSE);
+	import = pk_console_get_prompt (_("Do you accept this signature?"), FALSE);
 	if (!import) {
 		need_requeue = FALSE;
 		/* TRANSLATORS: This is where the user declined the security key */
