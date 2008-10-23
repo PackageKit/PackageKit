@@ -52,6 +52,8 @@ typedef gpointer (*PkObjListCopyFunc)		(gconstpointer		 data);
 typedef void	 (*PkObjListFreeFunc)		(gpointer		 data);
 typedef gint	 (*PkObjListCompareFunc)	(gconstpointer		 data1,
 						 gconstpointer		 data2);
+typedef gboolean (*PkObjListEqualFunc)		(gconstpointer		 data1,
+						 gconstpointer		 data2);
 typedef gpointer (*PkObjListFromStringFunc)	(const gchar		*data);
 typedef gchar	*(*PkObjListToStringFunc)	(gconstpointer		 data);
 
@@ -66,6 +68,8 @@ void		 pk_obj_list_set_free		(PkObjList		*list,
 						 PkObjListFreeFunc	 func);
 void		 pk_obj_list_set_compare	(PkObjList		*list,
 						 PkObjListCompareFunc	 func);
+void		 pk_obj_list_set_equal		(PkObjList		*list,
+						 PkObjListEqualFunc	 func);
 void		 pk_obj_list_set_to_string	(PkObjList		*list,
 						 PkObjListToStringFunc	 func);
 void		 pk_obj_list_set_from_string	(PkObjList		*list,
