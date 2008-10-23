@@ -1,6 +1,4 @@
-#include <pk-enum.h>
-#include <pk-client.h>
-#include <pk-control.h>
+#include <packagekit-glib/packagekit.h>
 
 /**
  * main:
@@ -16,15 +14,15 @@ main (int argc, char *argv[])
 	PkPackageList *list = NULL;
 	PkControl *control = NULL;
 	PkClient *client = NULL;
-	PkRoleEnum roles;
+	PkBitfield roles;
 
 	/* init the types system */
 	g_type_init ();
 
 	/* find out if we can do GetUpdates */
 	control = pk_control_new ();
-	roles = pk_control_get_actions (control);
-	if (!pk_enums_contain (roles, PK_ROLE_ENUM_GET_UPDATES)) {
+	roles = pk_control_get_actions (control, NULL);
+	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_UPDATES)) {
 		g_warning ("Backend does not support GetUpdates()");
 		goto out;
 	}

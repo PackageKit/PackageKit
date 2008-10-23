@@ -10,6 +10,8 @@ main (int argc, char *argv[])
 	DBusGProxy *proxy;
 	GError *error = NULL;
 	gboolean ret;
+	guint32 xid = 0;
+	guint32 timestamp = 0;
 
 	/* init the types system */
 	g_type_init ();
@@ -25,6 +27,8 @@ main (int argc, char *argv[])
 
 	/* execute sync method */
 	ret = dbus_g_proxy_call (proxy, "InstallPackageName", &error,
+				 G_TYPE_UINT, xid, /* window xid, 0 for none */
+				 G_TYPE_UINT, timestamp, /* action timestamp,, 0 for unknown */
 				 G_TYPE_STRING, "openoffice-clipart",
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (!ret) {
