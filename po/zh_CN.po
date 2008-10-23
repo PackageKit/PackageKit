@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-21 02:00+0000\n"
+"POT-Creation-Date: 2008-10-22 11:10+0100\n"
 "PO-Revision-Date: 2008-10-21 17:37+0700\n"
 "Last-Translator: 甘露(Gan Lu) <rhythm.gan@gmail.com>\n"
 "Language-Team: \n"
@@ -46,12 +46,9 @@ msgid "The package '%s' could not be installed: %s"
 msgstr "该软件包 '%s' 无法安装：%s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:612
-#: ../client/pk-console.c:639
-#: ../client/pk-console.c:735
-#: ../client/pk-console.c:852
-#: ../client/pk-tools-common.c:55
-#: ../client/pk-tools-common.c:74
+#: ../client/pk-console.c:612 ../client/pk-console.c:639
+#: ../client/pk-console.c:735 ../client/pk-console.c:852
+#: ../client/pk-tools-common.c:55 ../client/pk-tools-common.c:74
 #: ../client/pk-tools-common.c:81
 #, c-format
 msgid "Internal error: %s"
@@ -76,8 +73,7 @@ msgid "This tool could not remove '%s': %s"
 msgstr "该工具无法删除： '%s': %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:726
-#: ../client/pk-console.c:797
+#: ../client/pk-console.c:726 ../client/pk-console.c:797
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "该工具无法删除本软件包：%s"
@@ -116,29 +112,25 @@ msgid "This tool could not download the packages: %s"
 msgstr "本工具无法下载该软件包：%s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:887
-#: ../client/pk-console.c:896
+#: ../client/pk-console.c:887 ../client/pk-console.c:896
 #, c-format
 msgid "This tool could not update '%s': %s"
 msgstr "该工具无法更新 '%s': %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:918
-#: ../client/pk-console.c:926
+#: ../client/pk-console.c:918 ../client/pk-console.c:926
 #, c-format
 msgid "This tool could not get the requirements for '%s': %s"
 msgstr "本工具无法得到 '%s': %s 的需求"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:948
-#: ../client/pk-console.c:956
+#: ../client/pk-console.c:948 ../client/pk-console.c:956
 #, c-format
 msgid "This tool could not get the dependencies for '%s': %s"
 msgstr "本工具无法得到 '%s' 的依赖关系: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:978
-#: ../client/pk-console.c:986
+#: ../client/pk-console.c:978 ../client/pk-console.c:986
 #, c-format
 msgid "This tool could not get package details for '%s': %s"
 msgstr "该工具无法得到 '%s' 的软件包详情：%s"
@@ -194,7 +186,8 @@ msgstr "要求软件库签名"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1181
-msgid "You you accept this signature?"
+#, fuzzy
+msgid "Do you accept this signature?"
 msgstr "你接受该签名吗？"
 
 #. TRANSLATORS: This is where the user declined the security key
@@ -231,15 +224,12 @@ msgstr "PackageKit 终端界面"
 msgid "Subcommands:"
 msgstr "子命令："
 
-#: ../client/pk-console.c:1403
-#: ../client/pk-generate-pack.c:138
-#: ../client/pk-monitor.c:115
-#: ../src/pk-main.c:196
+#: ../client/pk-console.c:1403 ../client/pk-generate-pack.c:138
+#: ../client/pk-monitor.c:115 ../src/pk-main.c:196
 msgid "Show extra debugging information"
 msgstr "显示额外的调试信息"
 
-#: ../client/pk-console.c:1405
-#: ../client/pk-monitor.c:117
+#: ../client/pk-console.c:1405 ../client/pk-monitor.c:117
 msgid "Show the program version and exit"
 msgstr "显示本程序版本并退出"
 
@@ -260,14 +250,10 @@ msgstr "该工具无法连接到系统 DBUS。"
 msgid "You need to specify a search type, e.g. name"
 msgstr "你需要指定某个搜索类型，例如名字"
 
-#: ../client/pk-console.c:1531
-#: ../client/pk-console.c:1538
-#: ../client/pk-console.c:1545
-#: ../client/pk-console.c:1552
-#: ../client/pk-console.c:1663
-#: ../client/pk-console.c:1673
-#: ../client/pk-console.c:1680
-#: ../client/pk-console.c:1687
+#: ../client/pk-console.c:1531 ../client/pk-console.c:1538
+#: ../client/pk-console.c:1545 ../client/pk-console.c:1552
+#: ../client/pk-console.c:1663 ../client/pk-console.c:1673
+#: ../client/pk-console.c:1680 ../client/pk-console.c:1687
 msgid "You need to specify a search term"
 msgstr "你需要指定某个搜索术语"
 
@@ -288,7 +274,9 @@ msgid "You need to specify a package to remove"
 msgstr "你需要指定某个软件包来删除"
 
 #: ../client/pk-console.c:1582
-msgid "You need to specify the destination directory and then the packages to download"
+msgid ""
+"You need to specify the destination directory and then the packages to "
+"download"
 msgstr "你需要指定目的地目录以及软件包来下载"
 
 #: ../client/pk-console.c:1587
@@ -303,8 +291,7 @@ msgstr "你需要指定某个许可鉴别 (eula-id)"
 msgid "You need to specify a package name to resolve"
 msgstr "你需要指定某个软件包名字来解决依赖关系"
 
-#: ../client/pk-console.c:1618
-#: ../client/pk-console.c:1625
+#: ../client/pk-console.c:1618 ../client/pk-console.c:1625
 msgid "You need to specify a repository name"
 msgstr "你需要指定某个软件库名字"
 
@@ -433,6 +420,7 @@ msgstr "PackageKit 监视器"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:108
+#, c-format
 msgid "The package could not be found"
 msgstr "无法找到该软件包"
 
@@ -516,6 +504,90 @@ msgstr "PackageKit 服务包"
 msgid "PackageKit Package List"
 msgstr "PackageKit 软件包清单"
 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a signed package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install an untrusted package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install untrusted local file"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Refresh system sources"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Remove package"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Rollback to a previous transaction"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Set network proxy"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Trust a key used for signing packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Update packages"
+msgstr ""
+
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "由于本机的安全策略导致启动失败"
@@ -529,7 +601,9 @@ msgid "The correct user is not launching the executable (usually root)"
 msgstr "用户正确但无法启动可执行程序(通常作为根用户)"
 
 #: ../src/pk-main.c:88
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
 msgstr "org.freedesktop.PackageKit.conf 没有安装到系统目录中："
 
 #: ../src/pk-main.c:192
@@ -571,12 +645,15 @@ msgstr "出现错误当尝试启动 %s\n"
 
 #~ msgid "Okay to import key?"
 #~ msgstr "可以导入证书吗？"
+
 #~ msgid "Did not import key"
 #~ msgstr "不导入证书"
+
 #~ msgid "Eula required"
 #~ msgstr "要求最终用户协议"
+
 #~ msgid "Do you agree?"
 #~ msgstr "你同意吗？"
+
 #~ msgid "You need to specify a time term"
 #~ msgstr "你需要指定某个时间期限"
-

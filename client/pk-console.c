@@ -553,6 +553,7 @@ static gboolean
 pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
+	gboolean installed;
 	gboolean is_local;
 	gchar *package_id = NULL;
 	gchar **package_ids = NULL;
@@ -573,8 +574,8 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			g_ptr_array_add (array_files, g_strdup (packages[i]));
 		} else {
 			/* if already installed, then abort */
-			ret = pk_console_is_installed (packages[i]);
-			if (ret) {
+			installed = pk_console_is_installed (packages[i]);
+			if (installed) {
 				/* TRANSLATORS: The package is already installed on the system */
 				*error = g_error_new (1, 0, _("The package '%s' is already installed"), packages[i]);
 				ret = FALSE;
@@ -1178,7 +1179,7 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	g_print ("Timestamp:   %s\n", key_timestamp);
 
 	/* TRANSLATORS: This a prompt asking the user to import the security key */
-	import = pk_console_get_prompt (_("You you accept this signature?"), FALSE);
+	import = pk_console_get_prompt (_("Do you accept this signature?"), FALSE);
 	if (!import) {
 		need_requeue = FALSE;
 		/* TRANSLATORS: This is where the user declined the security key */
