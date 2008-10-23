@@ -53,7 +53,7 @@
 #include <zypp/base/Logger.h>
 
 #include <pk-backend.h>
-#include <pk-package-ids.h>
+#include <packagekit-glib/packagekit.h>
 
 #include "zypp-utils.h"
 
