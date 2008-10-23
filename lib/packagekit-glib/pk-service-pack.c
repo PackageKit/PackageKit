@@ -45,12 +45,19 @@
 
 #define PK_SERVICE_PACK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SERVICE_PACK, PkServicePackPrivate))
 
+typedef enum {
+	PK_SERVICE_PACK_TYPE_UPDATE,
+	PK_SERVICE_PACK_TYPE_INSTALL,
+	PK_SERVICE_PACK_TYPE_UNKNOWN
+} PkServicePackType;
+
 struct PkServicePackPrivate
 {
 	PkPackageList		*exclude_list;
 	gchar			*filename;
 	gchar			*directory;
 	PkClient		*client;
+	PkServicePackType	 type;
 };
 
 typedef enum {
@@ -105,28 +112,46 @@ pk_service_pack_error_get_type (void)
  * pk_service_pack_check_metadata_file:
  **/
 static gboolean
-pk_service_pack_check_metadata_file (const gchar *full_path)
+pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 {
 	GKeyFile *file;
 	gboolean ret;
-	GError *error = NULL;
+	GError *error_local = NULL;
+	gchar *type = NULL;
 	gchar *distro_id = NULL;
 	gchar *distro_id_us = NULL;
 
 	/* load the file */
 	file = g_key_file_new ();
-	ret = g_key_file_load_from_file (file, full_path, G_KEY_FILE_NONE, &error);
+	ret = g_key_file_load_from_file (file, full_path, G_KEY_FILE_NONE, &error_local);
 	if (!ret) {
-		egg_warning ("failed to load file: %s", error->message);
-		g_error_free (error);
+		*error = g_error_new (1, 0, "failed to load file: %s", error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
 	/* read the value */
-	distro_id = g_key_file_get_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", &error);
-	if (!ret) {
-		egg_warning ("failed to get value: %s", error->message);
-		g_error_free (error);
+	distro_id = g_key_file_get_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", &error_local);
+	if (distro_id == NULL) {
+		*error = g_error_new (1, 0, "failed to get value: %s", error_local->message);
+		g_error_free (error_local);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* read the value */
+	type = g_key_file_get_string (file, PK_SERVICE_PACK_GROUP_NAME, "type", &error_local);
+	if (type == NULL) {
+		*error = g_error_new (1, 0, "failed to get type: %s", error_local->message);
+		g_error_free (error_local);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* check the types we support */
+	if (!egg_strequal (type, "update") && !egg_strequal (type, "install")) {
+		*error = g_error_new (1, 0, "does not have correct type key: %s", type);
+		ret = FALSE;
 		goto out;
 	}
 
@@ -135,9 +160,12 @@ pk_service_pack_check_metadata_file (const gchar *full_path)
 
 	/* do we match? */
 	ret = egg_strequal (distro_id_us, distro_id);
+	if (!ret)
+		*error = g_error_new (1, 0, "distro id did not match %s == %s", distro_id_us, distro_id);
 
 out:
 	g_key_file_free (file);
+	g_free (type);
 	g_free (distro_id);
 	g_free (distro_id_us);
 	return ret;
@@ -338,10 +366,11 @@ pk_service_pack_check_valid (PkServicePack *pack, GError **error)
 	while ((filename_entry = g_dir_read_name (dir))) {
 		metafile = g_build_filename (directory, filename_entry, NULL);
 		if (egg_strequal (filename_entry, "metadata.conf")) {
-			ret = pk_service_pack_check_metadata_file (metafile);
+			ret = pk_service_pack_check_metadata_file (metafile, &error_local);
 			if (!ret) {
 				*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_NOT_COMPATIBLE,
-						      "Service Pack %s not compatible with your distro", pack->priv->filename);
+						      "Service Pack %s not compatible with your distro: %s", pack->priv->filename, error_local->message);
+				g_error_free (error_local);
 				ret = FALSE;
 				goto out;
 			}
@@ -481,7 +510,7 @@ pk_service_pack_exclude_packages (PkServicePack *pack, PkPackageList *list)
  * pk_service_pack_create_metadata_file:
  **/
 static gboolean
-pk_service_pack_create_metadata_file (const gchar *filename)
+pk_service_pack_create_metadata_file (PkServicePack *pack, const gchar *filename)
 {
 	gboolean ret = FALSE;
 	gchar *distro_id = NULL;
@@ -490,7 +519,9 @@ pk_service_pack_create_metadata_file (const gchar *filename)
 	GKeyFile *file = NULL;
 	gchar *data = NULL;
 
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	g_return_val_if_fail (filename != NULL, FALSE);
+	g_return_val_if_fail (pack->priv->type != PK_SERVICE_PACK_TYPE_UNKNOWN, FALSE);
 
 	file = g_key_file_new ();
 
@@ -504,6 +535,11 @@ pk_service_pack_create_metadata_file (const gchar *filename)
 
 	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", distro_id);
 	g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "created", iso_time);
+
+	if (pack->priv->type == PK_SERVICE_PACK_TYPE_INSTALL)
+		g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "type", "install");
+	else if (pack->priv->type == PK_SERVICE_PACK_TYPE_UPDATE)
+		g_key_file_set_string (file, PK_SERVICE_PACK_GROUP_NAME, "type", "update");
 
 	/* convert to text */
 	data = g_key_file_to_data (file, NULL, &error);
@@ -618,7 +654,7 @@ pk_service_pack_create_from_files (PkServicePack *pack, GPtrArray *file_array, G
 
 	/* create a file with metadata in it */
 	filename = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
-	ret = pk_service_pack_create_metadata_file (filename);
+	ret = pk_service_pack_create_metadata_file (pack, filename);
 	if (!ret) {
 	        *error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
 				      "failed to generate metadata file %s", filename);
@@ -751,17 +787,10 @@ pk_service_pack_setup_client (PkServicePack *pack)
 }
 
 /**
- * pk_service_pack_create_for_package_ids:
- * @pack: a valid #PkServicePack instance
- * @package_ids: A list of package_ids to download
- * @error: a %GError to put the error code and message in, or %NULL
- *
- * Adds the packages specified to a service pack.
- *
- * Return value: %TRUE if the service pack was created successfully
+ * pk_service_pack_create_for_package_ids_internal:
  **/
-gboolean
-pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids, GError **error)
+static gboolean
+pk_service_pack_create_for_package_ids_internal (PkServicePack *pack, gchar **package_ids, GError **error)
 {
 	gchar **package_ids_deps = NULL;
 	PkPackageList *list = NULL;
@@ -818,6 +847,7 @@ pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids
 
 	/* list deps */
 	length = pk_package_list_get_size (list);
+	g_print ("Downloading %i packages for dependencies.\n", length);
 	for (i=0; i<length; i++) {
 		obj = pk_package_list_get_obj (list, i);
 		text = pk_package_obj_to_string (obj);
@@ -869,6 +899,25 @@ out:
 }
 
 /**
+ * pk_service_pack_create_for_package_ids:
+ * @pack: a valid #PkServicePack instance
+ * @package_ids: A list of package_ids to download
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Adds the packages specified to a service pack.
+ *
+ * Return value: %TRUE if the service pack was created successfully
+ **/
+gboolean
+pk_service_pack_create_for_package_ids (PkServicePack *pack, gchar **package_ids, GError **error)
+{
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+
+	pack->priv->type = PK_SERVICE_PACK_TYPE_INSTALL;
+	return pk_service_pack_create_for_package_ids_internal (pack, package_ids, error);
+}
+
+/**
  * pk_service_pack_create_for_package_id:
  * @pack: a valid #PkServicePack instance
  * @package_id: A single package_id to download
@@ -891,7 +940,8 @@ pk_service_pack_create_for_package_id (PkServicePack *pack, const gchar *package
 	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
 
 	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_service_pack_create_for_package_ids (pack, package_ids, error);
+	pack->priv->type = PK_SERVICE_PACK_TYPE_INSTALL;
+	ret = pk_service_pack_create_for_package_ids_internal (pack, package_ids, error);
 	g_strfreev (package_ids);
 	return ret;
 }
@@ -954,7 +1004,9 @@ pk_service_pack_create_for_updates (PkServicePack *pack, GError **error)
 
 	package_ids = pk_package_list_to_strv (list);
 	g_object_unref (list);
-	ret = pk_service_pack_create_for_package_ids (pack, package_ids, error);
+
+	pack->priv->type = PK_SERVICE_PACK_TYPE_UPDATE;
+	ret = pk_service_pack_create_for_package_ids_internal (pack, package_ids, error);
 out:
 	g_strfreev (package_ids);
 	return ret;
@@ -1032,10 +1084,12 @@ pk_service_pack_init (PkServicePack *pack)
 	pack->priv->exclude_list = NULL;
 	pack->priv->filename = NULL;
 	pack->priv->directory = NULL;
+	pack->priv->type = PK_SERVICE_PACK_TYPE_UNKNOWN;
 }
 
 /**
  * pk_service_pack_new:
+ *
  * Return value: A new service_pack class instance.
  **/
 PkServicePack *
