@@ -13,13 +13,14 @@
 # PGP-KeyID: 0x037FD3CF <ttrinks@redhat.com>, 2008.
 # Thomas Spura <tomspur@fedoraproject.org>, 2008.
 # Daniela Kugelmann <dkugelma@redhat.com >, 2008.
+# Stefan Posdzich <cheekyboinc@foresightlinux.org>, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.de\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-22 11:10+0100\n"
+"POT-Creation-Date: 2008-10-22 13:38+0000\n"
 "PO-Revision-Date: 2008-10-16 15:50+1000\n"
-"Last-Translator: Daniela Kugelmann <dkugelma@redhat.com >\n"
+"Last-Translator: Stefan Posdzich <cheekyboinc@foresightlinux.org>\n"
 "Language-Team: German <i18@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -30,15 +31,15 @@ msgstr ""
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:271
 msgid "Details about the update:"
-msgstr ""
+msgstr "Details über die Aktualisierung"
 
 #: ../client/pk-console.c:464
 msgid "Please restart the computer to complete the update."
-msgstr ""
+msgstr "Bitte starten Sie den Computer neu, um das Update abzuschließen."
 
 #: ../client/pk-console.c:466
 msgid "Please logout and login to complete the update."
-msgstr ""
+msgstr "Bitte erneut einloggen um das Update abzuschließen."
 
 #: ../client/pk-console.c:468
 msgid "Please restart the application as it is being used."
@@ -48,13 +49,13 @@ msgstr ""
 #: ../client/pk-console.c:579
 #, c-format
 msgid "The package '%s' is already installed"
-msgstr ""
+msgstr "Das Paket '%s' ist bereits installiert"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:587
 #, c-format
 msgid "The package '%s' could not be installed: %s"
-msgstr ""
+msgstr "Das Paket '%s' konnte nicht installiert werden: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
 #: ../client/pk-console.c:612 ../client/pk-console.c:639
@@ -63,129 +64,129 @@ msgstr ""
 #: ../client/pk-tools-common.c:81
 #, c-format
 msgid "Internal error: %s"
-msgstr ""
+msgstr "Interner Fehler: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
 #: ../client/pk-console.c:620
 #, c-format
 msgid "This tool could not install the packages: %s"
-msgstr ""
+msgstr "Konnte folgende Pakete nicht installieren: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
 #: ../client/pk-console.c:647
 #, fuzzy, c-format
 msgid "This tool could not install the files: %s"
-msgstr "Die Datei-Liste konnte nicht erstellt werden"
+msgstr "Die Datei-Liste konnte nicht erstellt werden: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
 #: ../client/pk-console.c:703
 #, c-format
 msgid "This tool could not remove '%s': %s"
-msgstr ""
+msgstr "Konnte nicht entfernen '%s': %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:726 ../client/pk-console.c:797
 #, c-format
 msgid "This tool could not remove the packages: %s"
-msgstr ""
+msgstr "Konnte folgende Pakete nicht entfernen: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:764
 #, c-format
 msgid "This tool could not remove the packages: '%s'"
-msgstr ""
+msgstr "This tool could not remove the packages: '%s'"
 
 #. TRANSLATORS: When removing, we might have to remove other dependencies
 #: ../client/pk-console.c:776
 #, fuzzy
 msgid "The following packages have to be removed:"
-msgstr "Die folgenden Packeten müssen entfernt werden"
+msgstr "Die folgenden Pakete müssen entfernt werden"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
 #: ../client/pk-console.c:783
 #, fuzzy
 msgid "Proceed removing additional packages?"
-msgstr "Sollen die zusätzlichen Packete entfernt werden?"
+msgstr "Sollen die zusätzlichen Pakete entfernt werden?"
 
 #. TRANSLATORS: We did not remove any packages
 #: ../client/pk-console.c:788
 msgid "The package removal was canceled!"
-msgstr ""
+msgstr "Die entfernung der Pakete wurde abgebrochen!"
 
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:829
 #, c-format
 msgid "This tool could not download the package '%s' as it could not be found"
-msgstr ""
+msgstr "Das Paket '%s' konnte nicht gefunden und heruntergeladen werden"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:860
 #, c-format
 msgid "This tool could not download the packages: %s"
-msgstr ""
+msgstr "Konnte folgende Pakete nicht herunterladen: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:887 ../client/pk-console.c:896
 #, c-format
 msgid "This tool could not update '%s': %s"
-msgstr ""
+msgstr "Konnte nicht aktualisieren '%s': %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:918 ../client/pk-console.c:926
 #, c-format
 msgid "This tool could not get the requirements for '%s': %s"
-msgstr ""
+msgstr "Konnte die Vorraussetzungen nicht bekommen für '%s': %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #: ../client/pk-console.c:948 ../client/pk-console.c:956
 #, fuzzy, c-format
 msgid "This tool could not get the dependencies for '%s': %s"
-msgstr "Konnte keine Abhängigkeiten bekommen für"
+msgstr "Konnte keine Abhängigkeiten bekommen für '%s': %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #: ../client/pk-console.c:978 ../client/pk-console.c:986
 #, c-format
 msgid "This tool could not get package details for '%s': %s"
-msgstr ""
+msgstr "Konnte die Paketdetails nicht abrufen für '%s': %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1008
 #, fuzzy, c-format
 msgid "This tool could not find the files for '%s': %s"
-msgstr "Die Dateien für dieses Packet konnten nicht gefunden werden"
+msgstr "Die Dateien für dieses Paket konnten nicht gefunden werden '%s': %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1016
 #, fuzzy, c-format
 msgid "This tool could not get the file list for '%s': %s"
-msgstr "Die Datei-Liste konnte nicht erstellt werden"
+msgstr "Die Datei-Liste konnte nicht erstellt werden für '%s': %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1038
 #, fuzzy, c-format
 msgid "This tool could not find the update details for '%s': %s"
-msgstr "Konnte keine Aktualisierungsdetails nicht finden für"
+msgstr "Konnte keine Aktualisierungsdetails finden für '%s': %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
 #: ../client/pk-console.c:1046
 #, fuzzy, c-format
 msgid "This tool could not get the update details for '%s': %s"
-msgstr "Konnte keine Aktualisierungsdetails nicht finden für"
+msgstr "Konnte keine Aktualisierungsdetails finden für '%s': %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1092
 msgid "Error:"
-msgstr ""
+msgstr "Fehler:"
 
 #. TRANSLATORS: This a list of details about the package
 #: ../client/pk-console.c:1106
 msgid "Package description"
-msgstr "Packet-Beschreibung"
+msgstr "Paketbeschreibung"
 
 #. TRANSLATORS: This a list files contained in the package
 #: ../client/pk-console.c:1139
 msgid "Package files"
-msgstr "Packet-Dateien"
+msgstr "Paket-Dateien"
 
 #. TRANSLATORS: This where the package has no files
 #: ../client/pk-console.c:1148
@@ -195,22 +196,22 @@ msgstr "Keine Dateien"
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
 #: ../client/pk-console.c:1171
 msgid "Repository signature required"
-msgstr ""
+msgstr "Signatur der Paketquellen benötigt"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1181
 msgid "Do you accept this signature?"
-msgstr ""
+msgstr "Akzeptieren Sie diese Signatur?"
 
 #. TRANSLATORS: This is where the user declined the security key
 #: ../client/pk-console.c:1185
 msgid "The signature was not accepted."
-msgstr ""
+msgstr "Diese Signatur wurde nicht akzeptiert."
 
 #. TRANSLATORS: This a request for a EULA
 #: ../client/pk-console.c:1219
 msgid "End user license agreement required"
-msgstr ""
+msgstr "Endbenutzer Lizenzvereinbarung benötigt"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
 #: ../client/pk-console.c:1226
@@ -221,7 +222,7 @@ msgstr "Sind Sie einverstanden?"
 #. TRANSLATORS: This is where the user declined the license
 #: ../client/pk-console.c:1230
 msgid "The license was refused."
-msgstr ""
+msgstr "Die Lizenz wurde zurückgewiesen."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
 #: ../client/pk-console.c:1259
@@ -240,7 +241,7 @@ msgstr "Unterbefehle:"
 #: ../client/pk-console.c:1403 ../client/pk-generate-pack.c:138
 #: ../client/pk-monitor.c:115 ../src/pk-main.c:196
 msgid "Show extra debugging information"
-msgstr "Zeige extra Debup-Informationen"
+msgstr "Zeige extra Debug-Informationen"
 
 #: ../client/pk-console.c:1405 ../client/pk-monitor.c:117
 msgid "Show the program version and exit"
@@ -258,7 +259,7 @@ msgstr "Beende, ohne auf Beendigung der Aktionen zu warten"
 #: ../client/pk-console.c:1431
 #, fuzzy
 msgid "This tool could not connect to system DBUS."
-msgstr "Konnte nicht zum System-DBUS verbinden"
+msgstr "Konnte nicht zum System-DBUS verbinden."
 
 #: ../client/pk-console.c:1526
 msgid "You need to specify a search type, e.g. name"
@@ -277,22 +278,19 @@ msgstr "Ungültiger Suchtyp"
 
 #: ../client/pk-console.c:1562
 msgid "You need to specify a package or file to install"
-msgstr "Sie müssen ein Packet oder eine Datei zum Installieren angeben"
+msgstr "Sie müssen ein Paket oder eine Datei zum installieren angeben"
 
 #: ../client/pk-console.c:1569
 msgid "You need to specify a type, key_id and package_id"
-msgstr "Sie müssen einen Typ, Schlüssel_id und Packet_id auswählen"
+msgstr "Sie müssen einen Typ, Schlüssel_id und Paket_id auswählen"
 
 #: ../client/pk-console.c:1576
 msgid "You need to specify a package to remove"
-msgstr "Sie müssen ein Packet zum Löschen angeben"
+msgstr "Sie müssen ein Paket zum Löschen angeben"
 
 #: ../client/pk-console.c:1582
-msgid ""
-"You need to specify the destination directory and then the packages to "
-"download"
-msgstr ""
-"Sie müssen ein Zielverzeichnis und dann die Packete zum Herunterladen angeben"
+msgid "You need to specify the destination directory and then the packages to download"
+msgstr "Sie müssen ein Zielverzeichnis und dann die Pakete zum herunterladen angeben"
 
 #: ../client/pk-console.c:1587
 msgid "Directory not found"
@@ -305,7 +303,7 @@ msgstr "Sie müssen eine eula-id auswählen"
 
 #: ../client/pk-console.c:1609
 msgid "You need to specify a package name to resolve"
-msgstr "Sie müssen einen Packetnamen zum Auflösen angeben"
+msgstr "Sie müssen einen Paketnamen zum Auflösen angeben"
 
 #: ../client/pk-console.c:1618 ../client/pk-console.c:1625
 #, fuzzy
@@ -331,17 +329,17 @@ msgstr "Die letzte Zeit konnte nicht herausgefunden werden"
 
 #: ../client/pk-console.c:1694
 msgid "You need to specify a package to find the details for"
-msgstr "Sie müssen ein Packet, für das nach Details gesucht wird, angeben"
+msgstr "Sie müssen ein Paket, für das nach Details gesucht wird, angeben"
 
 #: ../client/pk-console.c:1701
 msgid "You need to specify a package to find the files for"
-msgstr "Sie müssen ein Packet, für das nach Dateien gesucht wird, angeben"
+msgstr "Sie müssen ein Paket, für das nach Dateien gesucht wird, angeben"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:1754
 #, fuzzy, c-format
 msgid "Option '%s' is not supported"
-msgstr "Optino '%s' nicht unterstützt"
+msgstr "Option '%s' wird nicht unterstützt"
 
 #. TRANSLATORS: User does not have permission to do this
 #: ../client/pk-console.c:1767
@@ -356,14 +354,12 @@ msgstr "Befehl fehlgeschlagen"
 #. TRANSLATORS: This is the state of the transaction
 #: ../client/pk-generate-pack.c:96
 msgid "Downloading"
-msgstr ""
+msgstr "Lade herunter"
 
 #: ../client/pk-generate-pack.c:140
 #, fuzzy
 msgid "Set the file name of dependencies to be excluded"
-msgstr ""
-"Setze den Pfad der Datei mit der Paket- /Abhängigkeitsliste, die "
-"ausgeschlossen werden"
+msgstr "Setze den Pfad der Datei mit der Paket- /Abhängigkeitsliste, die ausgeschlossen werden"
 
 #: ../client/pk-generate-pack.c:142
 msgid "The output directory (the current directory is used if ommitted)"
@@ -380,19 +376,17 @@ msgstr ""
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:166
 msgid "Neither --package or --updates option selected."
-msgstr ""
+msgstr "Weder --package noch --updates wurden als Option gewählt."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
 #: ../client/pk-generate-pack.c:174
 msgid "Both options selected."
-msgstr ""
+msgstr "Beide Optionen ausgewählt."
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:207
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr ""
-"Ein Pack mit dem selben Namen existiert bereits, möchten Sie es "
-"überschreiben?"
+msgstr "Ein Pack mit dem selben Namen existiert bereits, möchten Sie es überschreiben?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:210
@@ -414,24 +408,24 @@ msgstr "Pack konnte nicht erstellt werden"
 #. TRANSLATORS: The package name is being matched up to available packages
 #: ../client/pk-generate-pack.c:241
 msgid "Finding package name."
-msgstr ""
+msgstr "Suche Paketname."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
 #: ../client/pk-generate-pack.c:245
 #, fuzzy, c-format
 msgid "Failed to find package '%s': %s"
-msgstr "Packet zum Installieren konnte nicht gefunden werden"
+msgstr "Paket konnte nicht gefunden werden '%s': %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
 #: ../client/pk-generate-pack.c:260
 msgid "Creating service pack..."
-msgstr ""
+msgstr "Erstelle Servicepack..."
 
 #. TRANSLATORS: we succeeded in making the file
 #: ../client/pk-generate-pack.c:267
 #, c-format
 msgid "Service pack created '%s'"
-msgstr ""
+msgstr "Servicepack erstellt '%s'"
 
 #. TRANSLATORS: we failed to make te file
 #: ../client/pk-generate-pack.c:271
@@ -445,21 +439,20 @@ msgstr "PackageKit Monitor"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:108
-#, c-format
 msgid "The package could not be found"
-msgstr ""
+msgstr "Das Paket konnte nicht gefunden werden"
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
 #: ../client/pk-tools-common.c:119
 #, fuzzy
 msgid "More than one package matches:"
-msgstr "Es passen mehrere Packete zu Ihrer Anfrage"
+msgstr "Es passen mehrere Pakete zu Ihrer Anfrage"
 
 #. TRANSLATORS: This finds out which package in the list to use
 #: ../client/pk-tools-common.c:126
 #, fuzzy
 msgid "Please choose the correct package: "
-msgstr "Bitte geben Sie die Packet-Nummer ein: "
+msgstr "Bitte wählen Sie das korrekte Paket: "
 
 #: ../client/pk-tools-common.c:152
 #, c-format
@@ -469,64 +462,58 @@ msgstr "Bitte geben Sie eine Zahl zwischen 1 und %i ein: "
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/packagekit-plugin/src/contents.cpp:299
 msgid "Getting package information..."
-msgstr "Bekomme Packet-Informationen..."
+msgstr "Bekomme Paket-Informationen..."
 
 #. TRANSLATORS: run an applicaiton
 #: ../contrib/packagekit-plugin/src/contents.cpp:305
 #, c-format
 msgid "Run %s"
-msgstr ""
+msgstr "Starte %s"
 
 #. TRANSLATORS: show the installed version of a package
 #: ../contrib/packagekit-plugin/src/contents.cpp:311
 #, fuzzy
 msgid "Installed version"
-msgstr ""
-"\n"
-"<small>Installierte Version: %s</small>"
+msgstr "Installierte Version"
 
 #. TRANSLATORS: run the application now
 #: ../contrib/packagekit-plugin/src/contents.cpp:319
 #, c-format
 msgid "Run version %s now"
-msgstr ""
+msgstr "Starte Version %s jetzt"
 
 #: ../contrib/packagekit-plugin/src/contents.cpp:325
 msgid "Run now"
-msgstr ""
+msgstr "Starte jetzt"
 
 #. TRANSLATORS: update to a new version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
 msgid "Update to version %s"
-msgstr ""
+msgstr "Aktualisiere auf Version %s"
 
 #. TRANSLATORS: To install a package
 #: ../contrib/packagekit-plugin/src/contents.cpp:336
 #, c-format
 msgid "Install %s now"
-msgstr ""
+msgstr "Installiere %s jetzt"
 
 #. TRANSLATORS: the version of the package
 #: ../contrib/packagekit-plugin/src/contents.cpp:339
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #. TRANSLATORS: noting found, so can't install
 #: ../contrib/packagekit-plugin/src/contents.cpp:344
 #, fuzzy
 msgid "No packages found for your system"
-msgstr ""
-"\n"
-"<small>Es wurden keine Packete für Ihren Rechner gefunden</small>"
+msgstr "Keine Pakete für Ihr System gefunden"
 
 #. TRANSLATORS: package is being installed
 #: ../contrib/packagekit-plugin/src/contents.cpp:349
 #, fuzzy
 msgid "Installing..."
-msgstr ""
-"\n"
-"<small>Installiere...</small>"
+msgstr "Installiere..."
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
@@ -534,96 +521,12 @@ msgstr "PackageKit Katalog"
 
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr "PackageKit Service Pack"
+msgstr "PackageKit Service-Pack"
 
 #: ../data/packagekit-package-list.xml.in.h:1
 #, fuzzy
 msgid "PackageKit Package List"
-msgstr "PackageKit Katalog"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-msgid "Authentication is required to install a signed package"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-msgid "Authentication is required to install an untrusted package"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Authentication is required to refresh the system sources"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install untrusted local file"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Refresh system sources"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Remove package"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Rollback to a previous transaction"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Set network proxy"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Trust a key used for signing packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Update packages"
-msgstr ""
+msgstr "PackageKit Paketliste"
 
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
@@ -635,8 +538,7 @@ msgstr "Dies kann aus zwei Gründen passieren:"
 
 #: ../src/pk-main.c:87
 msgid "The correct user is not launching the executable (usually root)"
-msgstr ""
-"Der korrekte Benutzer führt nicht das Programm aus (normalerweise root)"
+msgstr "Der korrekte Benutzer führt nicht das Programm aus (normalerweise root)"
 
 #: ../src/pk-main.c:88
 #, fuzzy
@@ -673,7 +575,7 @@ msgstr "Beende, nachdem die Maschine geladen wurde"
 
 #: ../src/pk-main.c:214
 msgid "PackageKit service"
-msgstr "PackageKIt-Dienst"
+msgstr "PackageKit-Dienst"
 
 #: ../src/pk-main.c:250
 msgid "Cannot connect to the system bus"
