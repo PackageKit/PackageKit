@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-22 11:10+0100\n"
+"POT-Creation-Date: 2008-10-21 13:41+0000\n"
 "PO-Revision-Date: 2008-10-21 20:12+0200\n"
 "Last-Translator: Pablo Martin-Gomez <pablo.martin-gomez@laposte.net>\n"
 "Language-Team: Français <fedora-trans-fr@redhat.com>\n"
@@ -40,7 +40,7 @@ msgstr "Veuillez redémarrer l'application car elle est en cours d'utilisation"
 #: ../client/pk-console.c:579
 #, fuzzy, c-format
 msgid "The package '%s' is already installed"
-msgstr "Le paquet « %s » n'a pas pu être installé : %s"
+msgstr "Le paquet « %s » est déjà installé"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:587
@@ -197,7 +197,6 @@ msgstr "Signature du dépôt nécessaire"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1181
-#, fuzzy
 msgid "Do you accept this signature?"
 msgstr "Acceptez-vous cette signature ?"
 
@@ -435,7 +434,6 @@ msgstr "Contrôleur PackageKit"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:108
-#, c-format
 msgid "The package could not be found"
 msgstr "Le paquet n'a pas pu être trouvé"
 
@@ -519,97 +517,6 @@ msgstr "Service Pack PackageKit"
 msgid "PackageKit Package List"
 msgstr "Liste des paquets de PackageKit"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr "Accepter la licence du logiciel"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr "Authentification requise pour accepter une licence"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr "Authentification requise pour changer les dépôts de logiciels"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-#, fuzzy
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr "Authentification requise pour mettre à jour la liste des paquets"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-#, fuzzy
-msgid "Authentication is required to install a signed package"
-msgstr "Authentification requise pour installer un paquet"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-#, fuzzy
-msgid "Authentication is required to install an untrusted package"
-msgstr "Authentification requise pour installer un paquet"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-#, fuzzy
-msgid "Authentication is required to refresh the system sources"
-msgstr "Authentification requise pour mettre à jour la liste des paquets"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr "Authentification requise pour désinstaller des paquets"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr "Authentification requise pour annuler une transaction"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-#, fuzzy
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr "Authentification requise pour désinstaller des paquets"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr "Authentification requise pour mettre à jour des paquets"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr "Modifier les dépôts de logiciels"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr "Installer un fichier local"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-#, fuzzy
-msgid "Install untrusted local file"
-msgstr "Installer un fichier local"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Refresh system sources"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Remove package"
-msgstr "Supprimer un paquet"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Rollback to a previous transaction"
-msgstr "Restauration"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Set network proxy"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Trust a key used for signing packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-#, fuzzy
-msgid "Update packages"
-msgstr "Mettre à jour le paquet"
-
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "Les règles de sécurité de ce système empêchent le démarrage."
@@ -680,6 +587,68 @@ msgstr "Impossible de démarrer : %s\n"
 
 #~ msgid "You need to specify a time term"
 #~ msgstr "Vous devez indiquer une date"
+
+#~ msgid "Accept EULA"
+#~ msgstr "Accepter la licence du logiciel"
+
+#~ msgid "Authentication is required to accept a EULA"
+#~ msgstr "Authentification requise pour accepter une licence"
+
+#~ msgid "Authentication is required to change software source parameters"
+#~ msgstr "Authentification requise pour changer les dépôts de logiciels"
+
+#, fuzzy
+#~ msgid ""
+#~ "Authentication is required to consider a key used for signing packages as "
+#~ "trusted"
+#~ msgstr "Authentification requise pour mettre à jour la liste des paquets"
+
+#, fuzzy
+#~ msgid "Authentication is required to install a signed package"
+#~ msgstr "Authentification requise pour installer un paquet"
+
+#, fuzzy
+#~ msgid "Authentication is required to install an untrusted package"
+#~ msgstr "Authentification requise pour installer un paquet"
+
+#, fuzzy
+#~ msgid "Authentication is required to refresh the system sources"
+#~ msgstr "Authentification requise pour mettre à jour la liste des paquets"
+
+#~ msgid "Authentication is required to remove packages"
+#~ msgstr "Authentification requise pour désinstaller des paquets"
+
+#~ msgid "Authentication is required to rollback a transaction"
+#~ msgstr "Authentification requise pour annuler une transaction"
+
+#, fuzzy
+#~ msgid ""
+#~ "Authentication is required to set the network proxy used for downloading "
+#~ "packages"
+#~ msgstr "Authentification requise pour désinstaller des paquets"
+
+#~ msgid "Authentication is required to update packages"
+#~ msgstr "Authentification requise pour mettre à jour des paquets"
+
+#~ msgid "Change software source parameters"
+#~ msgstr "Modifier les dépôts de logiciels"
+
+#~ msgid "Install local file"
+#~ msgstr "Installer un fichier local"
+
+#, fuzzy
+#~ msgid "Install untrusted local file"
+#~ msgstr "Installer un fichier local"
+
+#~ msgid "Remove package"
+#~ msgstr "Supprimer un paquet"
+
+#~ msgid "Rollback to a previous transaction"
+#~ msgstr "Restauration"
+
+#, fuzzy
+#~ msgid "Update packages"
+#~ msgstr "Mettre à jour le paquet"
 
 #~ msgid "Update detail"
 #~ msgstr "Détails de mise à jour"
@@ -766,3 +735,4 @@ msgstr "Impossible de démarrer : %s\n"
 
 #~ msgid "You need to specify a package to find the description for"
 #~ msgstr "Vous devez indiquer un paquet dont vous souhaitez la description"
+
