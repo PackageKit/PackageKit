@@ -167,7 +167,7 @@ egg_test_elapsed (EggTest *test)
 gboolean
 egg_test_start (EggTest *test, const gchar *name)
 {
-	if (test->started == TRUE) {
+	if (test->started) {
 		g_print ("Not ended test! Cannot start!\n");
 		exit (1);
 	}
