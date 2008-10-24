@@ -63,6 +63,7 @@ struct PkServicePackPrivate
 typedef enum {
 	PK_SERVICE_PACK_PACKAGE,
 	PK_SERVICE_PACK_PERCENTAGE,
+	PK_SERVICE_PACK_STATUS,
 	PK_SERVICE_PACK_LAST_SIGNAL
 } PkSignals;
 
@@ -383,6 +384,16 @@ out:
 	if (dir != NULL)
 		g_dir_close (dir);
 	return ret;
+}
+
+/**
+ * pk_service_pack_status_changed:
+ **/
+static void
+pk_service_pack_status_changed (PkServicePack *pack, PkServicePackStatus status)
+{
+	egg_debug ("emit status %i", status);
+	g_signal_emit (pack, signals [PK_SERVICE_PACK_STATUS], 0, status);
 }
 
 /**
@@ -795,12 +806,9 @@ pk_service_pack_create_for_package_ids_internal (PkServicePack *pack, gchar **pa
 	gchar **package_ids_deps = NULL;
 	PkPackageList *list = NULL;
 	guint length;
-	guint i;
-	const PkPackageObj *obj;
 	GPtrArray *file_array = NULL;
 	GError *error_local = NULL;
 	gboolean ret = FALSE;
-	gchar *text;
 
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -812,6 +820,7 @@ pk_service_pack_create_for_package_ids_internal (PkServicePack *pack, gchar **pa
 	pk_service_pack_setup_client (pack);
 
 	/* download this package */
+	pk_service_pack_status_changed (pack, PK_SERVICE_PACK_STATUS_DOWNLOAD_PACKAGES);
 	ret = pk_service_pack_download_package_ids (pack, package_ids, &error_local);
 	if (!ret) {
 		*error = g_error_new (PK_SERVICE_PACK_ERROR, error_local->code,
@@ -845,20 +854,12 @@ pk_service_pack_create_for_package_ids_internal (PkServicePack *pack, gchar **pa
 	pk_package_list_set_fuzzy_arch (list, TRUE);
 	pk_service_pack_exclude_packages (pack, list);
 
-	/* list deps */
+	/* get the deps */
 	length = pk_package_list_get_size (list);
-	g_print ("Downloading %i packages for dependencies.\n", length);
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (list, i);
-		text = pk_package_obj_to_string (obj);
-		g_print ("downloading %s\n", text);
-		g_free (text);
-	}
-
-	/* confirm we want the deps */
 	if (length != 0) {
 		/* download additional package_ids */
 		package_ids_deps = pk_package_list_to_strv (list);
+		pk_service_pack_status_changed (pack, PK_SERVICE_PACK_STATUS_DOWNLOAD_DEPENDENCIES);
 		ret = pk_service_pack_download_package_ids (pack, package_ids_deps, &error_local);
 		g_strfreev (package_ids_deps);
 
@@ -1013,6 +1014,38 @@ out:
 }
 
 /**
+ * pk_service_pack_cancel:
+ * @pack: a valid #PkServicePack instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Cancels the pack creation
+ *
+ * Return value: %TRUE if we cancelled okay
+ **/
+gboolean
+pk_service_pack_cancel (PkServicePack *pack, GError **error)
+{
+	gboolean ret;
+	GError *error_local = NULL;
+
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+
+	/* nothing to cancel */
+	if (pack->priv->client == NULL)
+		return TRUE;
+
+	/* cancel the client */
+	egg_debug ("cancelling the client");
+	ret = pk_client_cancel (pack->priv->client, &error_local);
+	if (!ret) {
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+				      "failed to cancel: %s", error_local->message);
+		g_error_free (error_local);
+	}
+	return ret;
+}
+
+/**
  * pk_service_pack_finalize:
  **/
 static void
@@ -1060,7 +1093,7 @@ pk_service_pack_class_init (PkServicePackClass *klass)
 	/**
 	 * PkServicePack::percentage:
 	 * @pack: the #PkServicePack instance that emitted the signal
-	 * @percentage: the #PkPackageObj that has just been downloaded
+	 * @percentage: the percentage complete
 	 *
 	 * The ::package signal is emitted when a file is being downloaded.
 	 **/
@@ -1068,6 +1101,20 @@ pk_service_pack_class_init (PkServicePackClass *klass)
 		g_signal_new ("percentage",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkServicePackClass, percentage),
+			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
+
+	/**
+	 * PkServicePack::status:
+	 * @pack: the #PkServicePack instance that emitted the signal
+	 * @status: the #PkPackageObj that has just been downloaded
+	 *
+	 * The %PkServicePackStatus enum describing what we are doing
+	 **/
+	signals [PK_SERVICE_PACK_STATUS] =
+		g_signal_new ("status",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkServicePackClass, status),
 			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
 
