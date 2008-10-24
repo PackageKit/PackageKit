@@ -52,6 +52,13 @@ typedef enum
 	PK_SERVICE_PACK_ERROR_NOT_COMPATIBLE
 } PkServicePackError;
 
+typedef enum
+{
+	PK_SERVICE_PACK_STATUS_DOWNLOAD_PACKAGES,
+	PK_SERVICE_PACK_STATUS_DOWNLOAD_DEPENDENCIES,
+	PK_SERVICE_PACK_STATUS_UNKNOWN
+} PkServicePackStatus;
+
 typedef struct
 {
 	GObject		      parent;
@@ -65,12 +72,13 @@ typedef struct
 							 const PkPackageObj	*obj);
 	void		(* percentage)			(PkServicePack		*pack,
 							 guint			 percentage);
+	void		(* status)			(PkServicePack		*pack,
+							 PkServicePackStatus	 status);
 	/* Padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
 	void (*_pk_reserved3) (void);
 	void (*_pk_reserved4) (void);
-	void (*_pk_reserved5) (void);
 } PkServicePackClass;
 
 GQuark		 pk_service_pack_error_quark			(void);
@@ -97,6 +105,8 @@ gboolean	 pk_service_pack_create_for_package_ids		(PkServicePack	*pack,
 								 gchar		**package_ids,
 								 GError		**error);
 gboolean	 pk_service_pack_create_for_updates		(PkServicePack	*pack,
+								 GError		**error);
+gboolean	 pk_service_pack_cancel				(PkServicePack	*pack,
 								 GError		**error);
 
 G_END_DECLS
