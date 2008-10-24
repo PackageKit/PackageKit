@@ -1271,32 +1271,50 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for mem in members:
                 pack.extract(mem, path = tempdir)
             files = os.listdir(tempdir)
+
+            # find the metadata file
+            packtype = 'unknown'
+            for fn in files:
+                if fn == "metadata.conf":
+                    config = ConfigParser.ConfigParser()
+                    config.read(os.path.join(tempdir, fn))
+                    if config.has_option('PackageKit Service Pack', 'type'):
+                        packtype = config.get('PackageKit Service Pack', 'type')
+                    break
+
+            # we only support update and install
+            if packtype != 'install' and packtype != 'update':
+                self.error(ERROR_INVALID_PACKAGE_FILE, 'no support for type %s' % packtype)
+
+            # add the file if it's an install, or update if installed
             for fn in files:
                 if fn.endswith('.rpm'):
-                    inst_files.append(os.path.join(tempdir, fn))
+                    inst_file = os.path.join(tempdir, fn)
+                    try:
+                        # read the file 
+                        pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+                        pkgs_local = self.yumbase.rpmdb.searchNevra(name=pkg.name)
+                    except yum.Errors.YumBaseError, e:
+                        self.error(ERROR_INVALID_PACKAGE_FILE, 'Package could not be decompressed')
+                    except:
+                        self.error(ERROR_UNKNOWN, "Failed to open local file -- please report")
+                    else:
+                        # trying to install package that already exists
+                        if len(pkgs_local) == 1 and pkgs_local[0].EVR == pkg.EVR:
+                            self.message(MESSAGE_PACKAGE_ALREADY_INSTALLED, '%s is already installed and the latest version' % pkg.name)
 
-        to_remove = []
+                        # trying to install package older than already exists
+                        elif len(pkgs_local) == 1 and pkgs_local[0].EVR > pkg.EVR:
+                            self.message(MESSAGE_PACKAGE_ALREADY_INSTALLED, 'a newer version of %s is already installed' % pkg.name)
 
-        # remove files of packages that already exist
-        for inst_file in inst_files:
-            try:
-                pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
-                if self._is_inst(pkg):
-                    to_remove.append(inst_file)
-            except yum.Errors.YumBaseError, e:
-                self.error(ERROR_INVALID_PACKAGE_FILE, 'Package could not be decompressed')
-            except:
-                self.error(ERROR_UNKNOWN, "Failed to open local file -- please report")
+                        # only update if installed
+                        elif packtype == 'update':
+                            if len(pkgs_local) > 0:
+                                inst_files.append(inst_file)
 
-        # Some fiddly code to get the messaging right
-        if len(inst_files) == 1 and len(to_remove) == 1:
-            # The single pkg to be installed was already installed
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, '%s is already installed' % inst_files[0])
-
-        for inst_file in to_remove:
-            # More than one pkg to be installed, 1 or more are already installed
-            inst_files.remove(inst_file)
-            self.message(MESSAGE_PACKAGE_ALREADY_INSTALLED, '%s is already installed' % inst_file)
+                        # only install if we passed the checks above
+                        elif packtype == 'install':
+                            inst_files.append(inst_file)
 
         if len(inst_files) == 0:
             # More than one pkg to be installed, all of them already installed
