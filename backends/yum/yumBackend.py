@@ -1905,7 +1905,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.yumbase.repos.setCache(old_cache_setting)
 
     def _setup_yum(self):
-        self.yumbase._getConfig(errorlevel=-1, debuglevel=-1)     # Setup Yum Config
+        self.yumbase.doCVonfigSetup(errorlevel=-1, debuglevel=-1)     # Setup Yum Config
         self.yumbase.conf.throttle = "90%"                        # Set bandwidth throttle to 40%
         self.dnlCallback = DownloadCallback(self, showNames=True)  # Download callback
         self.yumbase.repos.setProgressBar(self.dnlCallback)       # Setup the download callback class
