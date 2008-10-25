@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-10-22 13:38+0000\n"
-"PO-Revision-Date: 2008-10-22 17:58+0100\n"
+"PO-Revision-Date: 2008-10-25 10:52+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -18,7 +18,7 @@ msgstr ""
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:271
 msgid "Details about the update:"
-msgstr "Detaler om uppdateringen:"
+msgstr "Detaljer om uppdateringen:"
 
 #: ../client/pk-console.c:464
 msgid "Please restart the computer to complete the update."
@@ -126,21 +126,21 @@ msgstr "Detta verktyg kunde inte uppdatera \"%s\": %s"
 #: ../client/pk-console.c:926
 #, c-format
 msgid "This tool could not get the requirements for '%s': %s"
-msgstr "Detta verktyg kunde inte få kraven för \"%s\": %s"
+msgstr "Detta verktyg kunde inte få tag på kraven för \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #: ../client/pk-console.c:948
 #: ../client/pk-console.c:956
 #, c-format
 msgid "This tool could not get the dependencies for '%s': %s"
-msgstr "Detta verktyg kunde inte få beroenden för detta \"%s\": %s"
+msgstr "Detta verktyg kunde inte få tag på beroenden för detta \"%s\": %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #: ../client/pk-console.c:978
 #: ../client/pk-console.c:986
 #, c-format
 msgid "This tool could not get package details for '%s': %s"
-msgstr "Detta verktyg kunde inte få paketdetaljerna för \"%s\": %s"
+msgstr "Detta verktyg kunde inte få tag på paketdetaljerna för \"%s\": %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1008
@@ -152,7 +152,7 @@ msgstr "Detta verktyg kunde inte hitta filerna för \"%s\": %s"
 #: ../client/pk-console.c:1016
 #, c-format
 msgid "This tool could not get the file list for '%s': %s"
-msgstr "Detta verktyg kunde inte få fillistan för \"%s\": %s"
+msgstr "Detta verktyg kunde inte få tag på fillistan för \"%s\": %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1038
@@ -164,7 +164,7 @@ msgstr "Detta verktyg kunde inte hitta uppdateringsdetaljer för \"%s\": %s"
 #: ../client/pk-console.c:1046
 #, c-format
 msgid "This tool could not get the update details for '%s': %s"
-msgstr "Detta verktyg kunde inte få uppdateringsdetaljer för %s\": %s"
+msgstr "Detta verktyg kunde inte få tag på uppdateringsdetaljer för \"%s\": %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1092
@@ -321,7 +321,7 @@ msgstr "Du behöver ange en korrekt roll"
 
 #: ../client/pk-console.c:1655
 msgid "Failed to get last time"
-msgstr "Misslyckades med att få senaste tid"
+msgstr "Misslyckades med att få tag på senaste tid"
 
 #: ../client/pk-console.c:1694
 msgid "You need to specify a package to find the details for"
@@ -362,7 +362,7 @@ msgstr "Utdatakatalogen (den aktuella katalogen om den inte anges)"
 
 #: ../client/pk-generate-pack.c:144
 msgid "The package to be put into the service pack"
-msgstr "Paketet att läggas i servicepaketet"
+msgstr "Paket att läggas i servicepaketet"
 
 #: ../client/pk-generate-pack.c:146
 msgid "Put all updates available in the service pack"
