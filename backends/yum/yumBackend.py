@@ -90,12 +90,12 @@ def _get_package_ver(po):
         ver = "%s-%s" % (po.version, po.release)
     return ver
 
-def _format_str(str):
+def _format_str(text):
     """
     Convert a multi line string to a list separated by ';'
     """
-    if str:
-        lines = str.split('\n')
+    if text:
+        lines = text.split('\n')
         return ";".join(lines)
     else:
         return ""
@@ -245,15 +245,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         summery   : a summary of the category in current locale.
         icon      : an icon name to represent the category
         '''
-        name = self._to_unicode(name)
-        summary = self._to_unicode(summary)
+        name = _to_unicode(name)
+        summary = _to_unicode(summary)
         PackageKitBaseBackend.category(self, parent_id, cat_id, name, summary, icon)
-
-    def _to_unicode(self, txt, encoding='utf-8'):
-        if isinstance(txt, basestring):
-            if not isinstance(txt, unicode):
-                txt = unicode(txt, encoding, errors='replace')
-        return txt
 
     def doLock(self):
         ''' Lock Yum'''
