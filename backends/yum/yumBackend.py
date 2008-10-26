@@ -266,7 +266,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 time.sleep(2)
                 retries += 1
                 if retries > 100:
-                    self.error(ERROR_CANNOT_GET_LOCK, 'Yum is locked by another application. details: %s' % str(e))
+                    self.error(ERROR_CANNOT_GET_LOCK, 'Yum is locked by another application. details: %s' % _to_unicode(e))
 
     def unLock(self):
         ''' Unlock Yum'''
@@ -315,7 +315,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     else:
                         available.append(pkg)
             except yum.Errors.RepoError, e:
-                self.error(ERROR_NO_CACHE, str(e))
+                self.error(ERROR_NO_CACHE, _to_unicode(e))
             else:
                 pkgfilter.add_installed(installed)
                 pkgfilter.add_available(available)
@@ -368,7 +368,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             pkgs = self.yumbase.pkgSack.searchNames(names=name_list)
         except yum.Errors.RepoError, e:
-            self.error(ERROR_NO_CACHE, str(e))
+            self.error(ERROR_NO_CACHE, _to_unicode(e))
         return pkgs
 
     def _handle_newest(self, fltlist):
@@ -382,7 +382,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             ygl = self.yumbase.doPackageLists(pkgnarrow='recent')
             pkgs.extend(ygl.recent)
         except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         for pkg in pkgs:
             # check if not an update
             if self.yumbase.rpmdb.installed(name=pkg.name):
@@ -422,7 +422,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             grp = self.yumbase.comps.return_group(grpid)
         except yum.Errors.RepoError, e:
-            self.error(ERROR_NO_CACHE, str(e))
+            self.error(ERROR_NO_CACHE, _to_unicode(e))
         else:
             if grp:
                 name = grp.nameByLang(self._lang)
@@ -511,7 +511,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 pkgs = self.yumbase.pkgSack
             except yum.Errors.RepoError, e:
-                self.error(ERROR_NO_CACHE, str(e))
+                self.error(ERROR_NO_CACHE, _to_unicode(e))
             else:
                 pkgfilter.add_available(pkgs)
 
@@ -544,7 +544,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.yumbase.repos.populateSack(mdtype='filelists')
                 pkgs = self.yumbase.pkgSack.searchFiles(key)
             except yum.Errors.RepoError, e:
-                self.error(ERROR_NO_CACHE, str(e))
+                self.error(ERROR_NO_CACHE, _to_unicode(e))
             else:
                 pkgfilter.add_available(pkgs)
 
@@ -574,7 +574,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 pkgs = self.yumbase.pkgSack.searchProvides(search)
             except yum.Errors.RepoError, e:
-                self.error(ERROR_NO_CACHE, str(e))
+                self.error(ERROR_NO_CACHE, _to_unicode(e))
             else:
                 pkgfilter.add_available(pkgs)
 
@@ -592,7 +592,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             cats = self.yumbase.comps.categories
         except yum.Errors.RepoError, e:
-            self.error(ERROR_NO_CACHE, str(e))
+            self.error(ERROR_NO_CACHE, _to_unicode(e))
         if len(cats) == 0:
             self.error(ERROR_GROUP_LIST_INVALID, "no comps categories")
         for cat in cats:
@@ -663,7 +663,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 packs = self.yumbase.pkgSack.searchNevra(n, e, v, r, a)
             except yum.Errors.RepoError, e:
-                self.error(ERROR_NO_CACHE, str(e))
+                self.error(ERROR_NO_CACHE, _to_unicode(e))
 
             # if we couldn't map package_id -> pkg
             if len(packs) == 0:
@@ -742,7 +742,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             pkgs = self.yumbase.pkgSack.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
         except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         # nothing found
         if len(pkgs) == 0:
             return None, False
@@ -1098,7 +1098,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             txmbr = self.yumbase.update() # Add all updates to Transaction
         except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         if txmbr:
             self._runYumTransaction(allow_skip_broken=True)
         else:
@@ -1145,7 +1145,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 self.error(ERROR_REPO_CONFIGURATION_ERROR, message)
         except yum.Errors.YumBaseError, e:
-            self.error(ERROR_UNKNOWN, "cannot refresh cache: %s" % str(e))
+            self.error(ERROR_UNKNOWN, "cannot refresh cache: %s" % _to_unicode(e))
 
         # update the comps groups too
         self.comps.refresh()
@@ -1173,7 +1173,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 try:
                     pkgs = self.yumbase.pkgSack.returnNewestByNameArch()
                 except yum.Errors.RepoError, e:
-                    self.error(ERROR_NO_CACHE, str(e))
+                    self.error(ERROR_NO_CACHE, _to_unicode(e))
                 else:
                     for pkg in pkgs:
                         if pkg.name == package:
@@ -1345,7 +1345,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 try:
                     self.yumbase._checkSignatures([po], None)
                 except yum.Errors.YumGPGCheckError, e:
-                    self.error(ERROR_MISSING_GPG_SIGNATURE, str(e))
+                    self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e))
         else:
             self.yumbase.conf.gpgcheck = 0
 
@@ -1369,7 +1369,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self._runYumTransaction()
 
         except yum.Errors.InstallError, e:
-            self.error(ERROR_LOCAL_INSTALL_FAILED, str(e))
+            self.error(ERROR_LOCAL_INSTALL_FAILED, _to_unicode(e))
         except (yum.Errors.RepoError, yum.Errors.PackageSackError, IOError):
             # We might not be able to connect to the internet to get
             # repository metadata, or the package might not exist.
@@ -1389,7 +1389,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     else:
                         self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s" % inst_file)
             except yum.Errors.InstallError, e:
-                self.error(ERROR_LOCAL_INSTALL_FAILED, str(e))
+                self.error(ERROR_LOCAL_INSTALL_FAILED, _to_unicode(e))
         shutil.rmtree(tempdir)
 
     def _check_local_file(self, pkg):
@@ -1434,7 +1434,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     txmbr = self.yumbase.update(po=pkg)
                     txmbrs.extend(txmbr)
         except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         if txmbrs:
             self._runYumTransaction(allow_skip_broken=True)
         else:
@@ -1464,9 +1464,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             rc, msgs = self.yumbase.buildTransaction()
             message = _format_msgs(msgs)
         except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, str(e))
+            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
 
         # if return value is 1 (error), try again with skip-broken if allowed
         if allow_skip_broken and rc == 1:
@@ -1475,9 +1475,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 rc, msgs = self.yumbase.buildTransaction()
                 message += " : %s" % _format_msgs(msgs)
             except yum.Errors.RepoError, e:
-                self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+                self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, str(e))
+                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
 
         # we did not succeed
         if rc != 2:
@@ -1532,7 +1532,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 else:
                     self.error(ERROR_TRANSACTION_ERROR, message)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, str(e))
+                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
 
     def remove_packages(self, allowdep, package_ids):
         '''
@@ -1733,7 +1733,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             ygl = self.yumbase.doPackageLists(pkgnarrow='obsoletes')
             pkgs.extend(ygl.obsoletes)
         except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         md = self.updateMetadata
         for pkg in pkgs:
             if pkgfilter.pre_process(pkg):
@@ -1765,7 +1765,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     repo.enablePersistent()
 
         except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_FOUND, str(e))
+            self.error(ERROR_REPO_NOT_FOUND, _to_unicode(e))
 
     def get_repo_list(self, filters):
         '''
@@ -1890,7 +1890,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 repo.cfg.write(file(repo.repofile, 'w'))
             except IOError, e:
-                self.error(ERROR_CANNOT_WRITE_REPO_CONFIG, str(e))
+                self.error(ERROR_CANNOT_WRITE_REPO_CONFIG, _to_unicode(e))
         else:
             self.error(ERROR_REPO_NOT_FOUND, 'repo %s not found' % repoid)
 
@@ -1905,7 +1905,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 self.yumbase.getKeyForPackage(pkg, askcb = lambda x, y, z: True)
             except yum.Errors.YumBaseError, e:
-                self.error(ERROR_UNKNOWN, "cannot install signature: %s" % str(e))
+                self.error(ERROR_UNKNOWN, "cannot install signature: %s" % _to_unicode(e))
             except:
                 self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for %s" % pkg)
 
@@ -1931,7 +1931,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.yumbase.repos.populateSack(mdtype='filelists', cacheonly=1)
             self.yumbase.repos.populateSack(mdtype='otherdata', cacheonly=1)
         except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
 
         self.yumbase.conf.cache = old_cache_setting
         self.yumbase.repos.setCache(old_cache_setting)
@@ -2098,7 +2098,7 @@ class PackageKitCallback(RPMBaseCallback):
                 self.base.status(self.state_actions[action])
                 self._showName(self.info_actions[action])
             except exceptions.KeyError, e:
-                self.base.message(MESSAGE_BACKEND_ERROR, "The constant '%s' was unknown, please report. details: %s" % (action, str(e)))
+                self.base.message(MESSAGE_BACKEND_ERROR, "The constant '%s' was unknown, please report. details: %s" % (action, _to_unicode(e)))
             pct = self._calcTotalPct(ts_current, ts_total)
             self.base.percentage(pct)
         val = (ts_current*100L)/ts_total
