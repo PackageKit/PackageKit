@@ -1080,20 +1080,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         old_throttle = self.yumbase.conf.throttle
         self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
                                            # to avoid taking all the system's bandwidth.
-        old_skip_broken = self.yumbase.conf.skip_broken
-        self.yumbase.conf.skip_broken = 1
-
         try:
             txmbr = self.yumbase.update() # Add all updates to Transaction
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
         if txmbr:
-            self._runYumTransaction()
+            self._runYumTransaction(allow_skip_broken=True)
         else:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Nothing to do")
 
         self.yumbase.conf.throttle = old_throttle
-        self.yumbase.conf.skip_broken = old_skip_broken
 
     def refresh_cache(self):
         '''
@@ -1425,7 +1421,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
         if txmbrs:
-            self._runYumTransaction()
+            self._runYumTransaction(allow_skip_broken=True)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "No available updates")
 
@@ -1442,22 +1438,43 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.require_restart(RESTART_SYSTEM, "")
                 break
 
-    def _runYumTransaction(self, removedeps=None):
+    def _runYumTransaction(self, allow_remove_deps=None, allow_skip_broken=False):
         '''
         Run the yum Transaction
         This will only work with yum 3.2.4 or higher
         '''
+        message = ''
         try:
-            rc, msgs =  self.yumbase.buildTransaction()
+            self.yumbase.conf.skip_broken = 0
+            rc, msgs = self.yumbase.buildTransaction()
+            message = _format_msgs(msgs)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, str(e))
+
+        # if return value is 1 (error), try again with skip-broken if allowed
+        if allow_skip_broken and rc == 1:
+            try:
+                self.yumbase.conf.skip_broken = 1
+                rc, msgs = self.yumbase.buildTransaction()
+                message += " : %s" % _format_msgs(msgs)
+            except yum.Errors.RepoError, e:
+                self.error(ERROR_REPO_NOT_AVAILABLE, str(e))
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, str(e))
+
+        # we did not succeed
         if rc != 2:
-            self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
+            if message.find ("is needed by") != -1:
+                self.error(ERROR_DEP_RESOLUTION_FAILED, message)
+            if message.find ("empty transaction") != -1:
+                self.error(ERROR_NO_PACKAGES_TO_UPDATE, message)
+            else:
+                self.error(ERROR_TRANSACTION_ERROR, message)
         else:
             self._check_for_reboot()
-            if removedeps == False:
+            if allow_remove_deps == False:
                 if len(self.yumbase.tsInfo) > 1:
                     retmsg = 'package could not be removed, as other packages depend on it'
                     self.error(ERROR_DEP_RESOLUTION_FAILED, retmsg)
@@ -1530,9 +1547,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_PACKAGE_NOT_INSTALLED, "The package %s is not installed" % pkg.name)
         if txmbrs:
             if allowdep != 'yes':
-                self._runYumTransaction(removedeps=False)
+                self._runYumTransaction(allow_remove_deps=False)
             else:
-                self._runYumTransaction(removedeps=True)
+                self._runYumTransaction(allow_remove_deps=True)
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "The packages failed to be removed")
 
