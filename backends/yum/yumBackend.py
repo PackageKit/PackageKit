@@ -295,35 +295,34 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         @param filters: package types to search (all, installed, available)
         @param key: key to seach for
         '''
-        try:
-            res = self.yumbase.searchGenerator(searchlist, [key])
-        except yum.Errors.RepoError, e:
-            self.error(ERROR_NO_CACHE, str(e))
-        else:
-            fltlist = filters.split(';')
-            pkgfilter = YumFilter(fltlist)
-            package_list = [] #we can't do emitting as found if we are post-processing
+        fltlist = filters.split(';')
+        pkgfilter = YumFilter(fltlist)
+        package_list = []
+
+        # get collection objects
+        if FILTER_NOT_COLLECTIONS not in fltlist:
+            self._do_meta_package_search(fltlist, key)
+
+        # return, as we only want collection objects
+        if FILTER_COLLECTIONS not in fltlist:
             installed = []
             available = []
+            try:
+                res = self.yumbase.searchGenerator(searchlist, [key])
+                for (pkg, inst) in res:
+                    if pkg.repo.id == 'installed':
+                        installed.append(pkg)
+                    else:
+                        available.append(pkg)
+            except yum.Errors.RepoError, e:
+                self.error(ERROR_NO_CACHE, str(e))
+            else:
+                pkgfilter.add_installed(installed)
+                pkgfilter.add_available(available)
 
-            if FILTER_NOT_COLLECTIONS not in fltlist:
-                self._do_meta_package_search(fltlist, key)
-
-            if FILTER_COLLECTIONS in fltlist:
-                return
-
-            for (pkg, inst) in res:
-                if pkg.repo.id == 'installed':
-                    installed.append(pkg)
-                else:
-                    available.append(pkg)
-
-            pkgfilter.add_installed(installed)
-            pkgfilter.add_available(available)
-
-            # we couldn't do this when generating the list
-            package_list = pkgfilter.post_process()
-            self._show_package_list(package_list)
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
 
     def _show_package_list(self, lst):
         for (pkg, status) in lst:
@@ -365,7 +364,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         return found
 
     def _get_available_from_names(self, name_list):
-        return self.yumbase.pkgSack.searchNames(names=name_list)
+        pkgs = None
+        try:
+            pkgs = self.yumbase.pkgSack.searchNames(names=name_list)
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_NO_CACHE, str(e))
+        return pkgs
 
     def _handle_newest(self, fltlist):
         """
@@ -415,15 +419,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         show_avail = FILTER_INSTALLED not in fltlist
         show_inst = FILTER_NOT_INSTALLED not in fltlist
         package_id = "%s;;;meta" % grpid
-        grp = self.yumbase.comps.return_group(grpid)
-        if grp:
-            name = grp.nameByLang(self._lang)
-            if grp.installed:
-                if show_inst:
-                    self.package(package_id, INFO_COLLECTION_INSTALLED, name)
-            else:
-                if show_avail:
-                    self.package(package_id, INFO_COLLECTION_AVAILABLE, name)
+        try:
+            grp = self.yumbase.comps.return_group(grpid)
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_NO_CACHE, str(e))
+        else:
+            if grp:
+                name = grp.nameByLang(self._lang)
+                if grp.installed:
+                    if show_inst:
+                        self.package(package_id, INFO_COLLECTION_INSTALLED, name)
+                else:
+                    if show_avail:
+                        self.package(package_id, INFO_COLLECTION_AVAILABLE, name)
 
     def search_group(self, filters, group_key):
         '''
@@ -580,7 +588,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        for cat in self.yumbase.comps.categories:
+        cats = []
+        try:
+            cats = self.yumbase.comps.categories
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_NO_CACHE, str(e))
+        if len(cats) == 0:
+            self.error(ERROR_GROUP_LIST_INVALID, "no comps categories")
+        for cat in cats:
             cat_id = cat.categoryid
             # yum >= 3.2.10
             # name = cat.nameByLang(self._lang)
