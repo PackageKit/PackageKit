@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include <unistd.h>
+#include <signal.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
