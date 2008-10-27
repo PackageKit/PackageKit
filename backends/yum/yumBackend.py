@@ -377,13 +377,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs.extend(ygl.recent)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+
+        installed = []
+        available = []
         for pkg in pkgs:
-            # check if not an update
-            if self.yumbase.rpmdb.installed(name=pkg.name):
-                pkgs.remove(pkg)
+            instpo = self.yumbase.rpmdb.searchNevra(name=pkg.name, epoch=pkg.epoch, ver=pkg.ver, rel=pkg.rel, arch=pkg.arch)
+            if len(instpo) > 0:
+                installed.append(instpo[0])
+            else:
+                available.append(pkg)
 
         # add list to filter
-        pkgfilter.add_available(pkgs)
+        pkgfilter.add_installed(installed)
+        pkgfilter.add_available(available)
         package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
         self.percentage(100)
