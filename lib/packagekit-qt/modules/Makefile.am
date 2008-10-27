@@ -1,3 +1,9 @@
+cmakemoduledir = $(datadir)/cmake/Modules
+cmakemodule_DATA =					\
+	FindQPackageKit.cmake				\
+	$(NULL)
+
 EXTRA_DIST =						\
 	CMakeLists.txt					\
-	FindQPackageKit.cmake
+	$(cmakemodule_DATA)
+
