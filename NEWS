@@ -1,3 +1,53 @@
+Version 0.3.9
+~~~~~~~~~~~~~~
+Released: 2008-10-27
+
+Notes:
+- Nothing much new here, just lots of translation updates and bugfixes.
+
+Translations:
+ - Added Gujarati translation (Ankitkumar Patel)
+ - Update Czech translation (Adam Pribyl)
+ - Update Malayalam (ml) translation (Ani Peter)
+ - Update Swedish translation (Daniel Nylander)
+ - Update Spanish translation (Domingo Becker)
+ - Update Serbian translation (Igor Miletic)
+ - Update French translation (PabloMartin-Gomez)
+ - Update Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Polish translation (Piotr Drąg)
+ - Updated Bengali India translation (Runa Bhattacharjee)
+ - Updated German translation (Stefan Posdzich)
+ - Updated Traditional Chinese translation (Terry Chuang)
+ - Updated Finnish translation (Ville-Pekka Vainio)
+ - Update Simplified Chinese translation (Wei Liu, 甘露(Lu Gan))
+
+New Features:
+ - Provide more feedback to what is going on when we create a service pack,
+   and allow it to be cancelled (Richard Hughes)
+ - Print service pack creation status in pkgenpack and cancel it if we
+   ctrl-c to cancel (Richard Hughes)
+
+Bugfixes:
+ - Fix the check for installed, else we fail the resolve in pkcon (Richard Hughes)
+ - Add a type= key to metadata.conf so we can tell if the service pack is an
+   update or install pack (Richard Hughes)
+ - Fix excluding a list of packages in pkgenpack by adding and using a proper
+   equality function (Richard Hughes)
+ - Catch exceptions from sys.stdin.readline to fix rh#468486 (Richard Hughes)
+ - glib: Allow GetOldTransactions to be run sync (Richard Hughes)
+ - glib: Send a more precise error code when we fail a transaction (Richard Hughes)
+
+Backends:
+ - yum: Use the external yum API to change the config, not the internal one (James Antill)
+ - yum: Be cleverer when installing service packs of different types (Richard Hughes)
+ - yum: Emit a proper error message when we fail to depsolve and then have
+        nothing to do. Fixes rh#466006 (Richard Hughes)
+ - yum: Do some testing when yum has _no_ metadata and the user is offline, and
+        make sure we don't send internal error in these cases (Richard Hughes)
+ - yum: Handle utf8 error values to fix non English locales. Fixes rh#468602 (Richard Hughes)
+ - yum: Fix the newest filter to properly output installed status (Richard Hughes)
+ - zypp: Update includes to match the new header layout (Scott Reeves)
+
 Version 0.3.8
 ~~~~~~~~~~~~~~
 Released: 2008-10-20
