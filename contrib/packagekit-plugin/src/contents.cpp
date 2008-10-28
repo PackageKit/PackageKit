@@ -662,6 +662,8 @@ PkpContents::installPackage (Time time)
                                                                this,
                                                                (GDestroyNotify)0,
                                                                24 * 60 * 1000 * 1000, /* one day */
+                                                               G_TYPE_UINT, 0, /* xid */
+                                                               G_TYPE_UINT, 0, /* timespec */
                                                                G_TYPE_STRING, mAvailablePackageName.c_str(),
                                                                G_TYPE_INVALID,
                                                                G_TYPE_INVALID);
