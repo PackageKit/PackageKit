@@ -46,36 +46,36 @@
 class PkpPluginInstance : public nsPluginInstanceBase
 {
 public:
-    PkpPluginInstance(NPP aInstance, const char *displayName, const char *packageNames, const char *desktopNames);
-    virtual ~PkpPluginInstance();
+	PkpPluginInstance(NPP aInstance, const gchar *displayName, const gchar *packageNames, const gchar *desktopNames);
+	virtual ~PkpPluginInstance();
 
-    NPBool init(NPWindow* aWindow);
-    void shut();
-    NPBool isInitialized() {return mInitialized;}
-    NPError GetValue(NPPVariable variable, void *value);
-    NPError SetWindow(NPWindow* aWindow);
-    uint16 HandleEvent(void *event);
+	NPBool init(NPWindow* aWindow);
+	void shut();
+	NPBool isInitialized() {return mInitialized;}
+	NPError GetValue(NPPVariable variable, void *value);
+	NPError SetWindow(NPWindow* aWindow);
+	uint16 HandleEvent(void *event);
 
-    void refresh();
+	void refresh();
 
-    int getX() { return mX; }
-    int getY() { return mY; }
-    int getWidth() { return mWidth; }
-    int getHeight() { return mHeight; }
+	int getX() { return mX; }
+	int getY() { return mY; }
+	int getWidth() { return mWidth; }
+	int getHeight() { return mHeight; }
 
 private:
-    NPP mInstance;
-    NPBool mInitialized;
+	NPP mInstance;
+	NPBool mInitialized;
 
-    PkpContents mContents;
+	PkpContents mContents;
 
-    Window mWindow;
-    Display *mDisplay;
-    int mX, mY;
-    int mWidth, mHeight;
-    Visual* mVisual;
-    Colormap mColormap;
-    unsigned int mDepth;
+	Window mWindow;
+	Display *mDisplay;
+	int mX, mY;
+	int mWidth, mHeight;
+	Visual* mVisual;
+	Colormap mColormap;
+	unsigned int mDepth;
 };
 
 #endif // __PLUGIN_H__

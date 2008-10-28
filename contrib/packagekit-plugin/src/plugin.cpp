@@ -50,14 +50,14 @@
 
 #include "plugin.h"
 
-#define MIME_TYPES_HANDLED  "application/x-packagekit-plugin"
-#define PLUGIN_NAME         "Plugin for Installing Applications"
+#define MIME_TYPES_HANDLED      "application/x-packagekit-plugin"
+#define PLUGIN_NAME             "Plugin for Installing Applications"
 #define MIME_TYPES_DESCRIPTION  MIME_TYPES_HANDLED":bsc:"PLUGIN_NAME
-#define PLUGIN_DESCRIPTION  PLUGIN_NAME
+#define PLUGIN_DESCRIPTION      PLUGIN_NAME
 
 char* NPP_GetMIMEDescription(void)
 {
-    return (char *)(MIME_TYPES_DESCRIPTION);
+	return (char *)(MIME_TYPES_DESCRIPTION);
 }
 
 static void *module_handle = 0;
@@ -77,37 +77,37 @@ static void *module_handle = 0;
 static void
 make_module_resident()
 {
-    Dl_info info;
+	Dl_info info;
 
-    /* Get the (absolute) filename of this module */
-    if (!dladdr((void *)NPP_GetMIMEDescription, &info)) {
-        g_warning("Can't find filename for module");
-        return;
-    }
+	/* Get the (absolute) filename of this module */
+	if (!dladdr((void *)NPP_GetMIMEDescription, &info)) {
+		g_warning("Can't find filename for module");
+		return;
+	}
 
-    /* Now reopen it to get our own handle */
-    module_handle = dlopen(info.dli_fname, RTLD_NOW);
-    if (!module_handle) {
-        g_warning("Can't permanently open module %s", dlerror());
-        return;
-    }
+	/* Now reopen it to get our own handle */
+	module_handle = dlopen(info.dli_fname, RTLD_NOW);
+	if (!module_handle) {
+		g_warning("Can't permanently open module %s", dlerror());
+		return;
+	}
 
-    /* the module will never be closed */
+	/* the module will never be closed */
 }
 
 NPError NS_PluginInitialize()
 {
-    if (module_handle != 0) /* Already initialized */
-        return NPERR_NO_ERROR;
+	if (module_handle != 0) /* Already initialized */
+		return NPERR_NO_ERROR;
 
-    make_module_resident();
+	make_module_resident();
 
 #ifdef ENABLE_NLS
-    bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
-    bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
+	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif
 
-    return NPERR_NO_ERROR;
+	return NPERR_NO_ERROR;
 }
 
 void NS_PluginShutdown()
@@ -117,19 +117,19 @@ void NS_PluginShutdown()
 // get values per plugin
 NPError NS_PluginGetValue(NPPVariable aVariable, void *aValue)
 {
-    NPError err = NPERR_NO_ERROR;
-    switch (aVariable) {
-    case NPPVpluginNameString:
-        *((char **)aValue) = (char *)PLUGIN_NAME;
-        break;
-    case NPPVpluginDescriptionString:
-        *((char **)aValue) = (char *)PLUGIN_DESCRIPTION;
-        break;
-    default:
-        err = NPERR_INVALID_PARAM;
-        break;
-    }
-    return err;
+	NPError err = NPERR_NO_ERROR;
+	switch (aVariable) {
+	case NPPVpluginNameString:
+		*((char **)aValue) = (char *)PLUGIN_NAME;
+		break;
+	case NPPVpluginDescriptionString:
+		*((char **)aValue) = (char *)PLUGIN_DESCRIPTION;
+		break;
+	default:
+		err = NPERR_INVALID_PARAM;
+		break;
+	}
+	return err;
 }
 
 /////////////////////////////////////////////////////////////
@@ -138,34 +138,33 @@ NPError NS_PluginGetValue(NPPVariable aVariable, void *aValue)
 //
 nsPluginInstanceBase * NS_NewPluginInstance(nsPluginCreateData * aCreateDataStruct)
 {
-    const char *displayName = "";
-    const char *packageNames = NULL;
-    const char *desktopNames = NULL;
+	const gchar *displayName = "";
+	const gchar *packageNames = NULL;
+	const gchar *desktopNames = NULL;
 
-    if(!aCreateDataStruct)
-        return NULL;
+	if(!aCreateDataStruct)
+		return NULL;
 
-    for (int i = 0; i < aCreateDataStruct->argc; i++) {
-        if (strcmp(aCreateDataStruct->argn[i], "displayname") == 0)
-            displayName = aCreateDataStruct->argv[i];
-        else if (strcmp(aCreateDataStruct->argn[i], "packagenames") == 0)
-            packageNames = aCreateDataStruct->argv[i];
-        else if (strcmp(aCreateDataStruct->argn[i], "desktopnames") == 0)
-            desktopNames = aCreateDataStruct->argv[i];
-    }
+	for (int i = 0; i < aCreateDataStruct->argc; i++) {
+		if (strcmp(aCreateDataStruct->argn[i], "displayname") == 0)
+			displayName = aCreateDataStruct->argv[i];
+		else if (strcmp(aCreateDataStruct->argn[i], "packagenames") == 0)
+			packageNames = aCreateDataStruct->argv[i];
+		else if (strcmp(aCreateDataStruct->argn[i], "desktopnames") == 0)
+			desktopNames = aCreateDataStruct->argv[i];
+	}
 
-    PkpPluginInstance * plugin = new PkpPluginInstance(aCreateDataStruct->instance, displayName, packageNames, desktopNames);
+	PkpPluginInstance * plugin = new PkpPluginInstance(aCreateDataStruct->instance, displayName, packageNames, desktopNames);
 
-    NPN_SetValue(aCreateDataStruct->instance,
-                 NPPVpluginWindowBool, (void *)FALSE);
+	NPN_SetValue(aCreateDataStruct->instance, NPPVpluginWindowBool, (void *)FALSE);
 
-    return plugin;
+	return plugin;
 }
 
 void NS_DestroyPluginInstance(nsPluginInstanceBase * aPlugin)
 {
-    if(aPlugin)
-        delete (PkpPluginInstance *)aPlugin;
+	if(aPlugin)
+		delete (PkpPluginInstance *)aPlugin;
 }
 
 ////////////////////////////////////////
@@ -173,17 +172,14 @@ void NS_DestroyPluginInstance(nsPluginInstanceBase * aPlugin)
 // nsPluginInstance class implementation
 //
 
-PkpPluginInstance::PkpPluginInstance(NPP         aInstance,
-                                     const char *displayName,
-                                     const char *packageNames,
-                                     const char *desktopNames) :
-    nsPluginInstanceBase(),
-    mInstance(aInstance),
-    mInitialized(FALSE),
-    mContents(displayName, packageNames, desktopNames),
-    mWindow(0)
+PkpPluginInstance::PkpPluginInstance(NPP aInstance, const gchar *displayName, const gchar *packageNames, const gchar *desktopNames) :
+	nsPluginInstanceBase(),
+	mInstance(aInstance),
+	mInitialized(FALSE),
+	mContents(displayName, packageNames, desktopNames),
+	mWindow(0)
 {
-    mContents.setPlugin(this);
+	mContents.setPlugin(this);
 }
 
 PkpPluginInstance::~PkpPluginInstance()
@@ -192,125 +188,113 @@ PkpPluginInstance::~PkpPluginInstance()
 
 NPBool PkpPluginInstance::init(NPWindow* aWindow)
 {
-    if(aWindow == NULL)
-        return FALSE;
+	if(aWindow == NULL)
+		return FALSE;
 
-    if (SetWindow(aWindow))
-        mInitialized = TRUE;
+	if (SetWindow(aWindow))
+		mInitialized = TRUE;
 	
-    return mInitialized;
+	return mInitialized;
 }
 
 void PkpPluginInstance::shut()
 {
-    mInitialized = FALSE;
+	mInitialized = FALSE;
 }
 
 NPError PkpPluginInstance::GetValue(NPPVariable aVariable, void *aValue)
 {
-    NPError err = NPERR_NO_ERROR;
-    switch (aVariable) {
-    case NPPVpluginNameString:
-    case NPPVpluginDescriptionString:
-        return NS_PluginGetValue(aVariable, aValue) ;
-        break;
-    default:
-        err = NPERR_INVALID_PARAM;
-        break;
-    }
-    return err;
+	NPError err = NPERR_NO_ERROR;
+	switch (aVariable) {
+	case NPPVpluginNameString:
+	case NPPVpluginDescriptionString:
+		return NS_PluginGetValue(aVariable, aValue) ;
+		break;
+	default:
+		err = NPERR_INVALID_PARAM;
+		break;
+	}
+	return err;
 
 }
 
 NPError PkpPluginInstance::SetWindow(NPWindow* aWindow)
 {
-    if (aWindow == NULL)
-        return FALSE;
+	if (aWindow == NULL)
+		return FALSE;
 
-    mX = aWindow->x;
-    mY = aWindow->y;
-    mWidth = aWindow->width;
-    mHeight = aWindow->height;
+	mX = aWindow->x;
+	mY = aWindow->y;
+	mWidth = aWindow->width;
+	mHeight = aWindow->height;
 
-    mWindow = (Window) aWindow->window;
-    NPSetWindowCallbackStruct *ws_info = (NPSetWindowCallbackStruct *)aWindow->ws_info;
-    mDisplay = ws_info->display;
-    mVisual = ws_info->visual;
-    mDepth = ws_info->depth;
-    mColormap = ws_info->colormap;
+	mWindow = (Window) aWindow->window;
+	NPSetWindowCallbackStruct *ws_info = (NPSetWindowCallbackStruct *)aWindow->ws_info;
+	mDisplay = ws_info->display;
+	mVisual = ws_info->visual;
+	mDepth = ws_info->depth;
+	mColormap = ws_info->colormap;
 
-    return NPERR_NO_ERROR;
+	return NPERR_NO_ERROR;
 }
 
 void
 PkpPluginInstance::refresh()
 {
-    NPRect rect;
+	NPRect rect;
 
-    /* Coordinates here are relative to the plugin's origin (mX,mY) */
+	/* Coordinates here are relative to the plugin's origin (mX,mY) */
 
-    rect.left = 0;
-    rect.right =  mWidth;
-    rect.top = 0;
-    rect.bottom = mHeight;
+	rect.left = 0;
+	rect.right =  mWidth;
+	rect.top = 0;
+	rect.bottom = mHeight;
 
-    NPN_InvalidateRect(mInstance, &rect);
+	NPN_InvalidateRect(mInstance, &rect);
 }
 
 uint16
 PkpPluginInstance::HandleEvent(void *event)
 {
-    XEvent *xev = (XEvent *)event;
+	XEvent *xev = (XEvent *)event;
+	cairo_surface_t *surface;
+	cairo_t *cr;
+	XButtonEvent *xbe;
+	XGraphicsExposeEvent *xge;
+	XMotionEvent *xme;
+	XCrossingEvent *xce;
 
-    switch (xev->xany.type) {
-    case GraphicsExpose:
-        {
-            XGraphicsExposeEvent *xge = (XGraphicsExposeEvent *)event;
-
-            cairo_surface_t *surface = cairo_xlib_surface_create (mDisplay, xge->drawable, mVisual, mX + mWidth, mY + mHeight);
-            cairo_t *cr = cairo_create(surface);
-
-            cairo_rectangle(cr, xge->x, xge->y, xge->width, xge->height);
-            cairo_clip(cr);
-
-            mContents.draw(cr);
-
-            cairo_destroy(cr);
-            cairo_surface_destroy(surface);
-
-            return 1;
-        }
-    case ButtonPress:
-        {
-            XButtonEvent *xbe = (XButtonEvent *)event;
-            mContents.buttonPress(xbe->x, xbe->y, xbe->time);
-            return 1;
-        }
-    case ButtonRelease:
-        {
-            XButtonEvent *xbe = (XButtonEvent *)event;
-            mContents.buttonRelease(xbe->x, xbe->y, xbe->time);
-            return 1;
-        }
-    case MotionNotify:
-        {
-            XMotionEvent *xme = (XMotionEvent *)event;
-            mContents.motion(xme->x, xme->y);
-            return 1;
-        }
-    case EnterNotify:
-        {
-            XCrossingEvent *xce = (XCrossingEvent *)event;
-            mContents.enter(xce->x, xce->y);
-            return 1;
-        }
-    case LeaveNotify:
-        {
-            XCrossingEvent *xce = (XCrossingEvent *)event;
-            mContents.leave(xce->x, xce->y);
-            return 1;
-        }
-    }
-
-    return 0;
+	switch (xev->xany.type) {
+	case GraphicsExpose:
+		xge = (XGraphicsExposeEvent *)event;
+		surface = cairo_xlib_surface_create (mDisplay, xge->drawable, mVisual, mX + mWidth, mY + mHeight);
+		cr = cairo_create(surface);
+		cairo_rectangle(cr, xge->x, xge->y, xge->width, xge->height);
+		cairo_clip(cr);
+		mContents.draw(cr);
+		cairo_destroy(cr);
+		cairo_surface_destroy(surface);
+		return 1;
+	case ButtonPress:
+		xbe = (XButtonEvent *)event;
+		mContents.buttonPress(xbe->x, xbe->y, xbe->time);
+		return 1;
+	case ButtonRelease:
+		xbe = (XButtonEvent *)event;
+		mContents.buttonRelease(xbe->x, xbe->y, xbe->time);
+		return 1;
+	case MotionNotify:
+		xme = (XMotionEvent *)event;
+		mContents.motion(xme->x, xme->y);
+		return 1;
+	case EnterNotify:
+		xce = (XCrossingEvent *)event;
+		mContents.enter(xce->x, xce->y);
+		return 1;
+	case LeaveNotify:
+		xce = (XCrossingEvent *)event;
+		mContents.leave(xce->x, xce->y);
+		return 1;
+	}
+	return 0;
 }
