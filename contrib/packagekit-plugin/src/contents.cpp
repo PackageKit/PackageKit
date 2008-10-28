@@ -639,6 +639,10 @@ PkpContents::runApplication (Time time)
 void
 PkpContents::installPackage (Time time)
 {
+    GdkEvent *event;
+    GdkWindow *window;
+    guint xid = 0;
+
     if (mAvailablePackageName.empty()) {
         g_warning("No available package to install");
         return;
@@ -656,13 +660,20 @@ PkpContents::installPackage (Time time)
                                                      "/org/freedesktop/PackageKit",
                                                      "org.freedesktop.PackageKit");
 
+    /* will be NULL when activated not using a keyboard or a mouse */
+    event = gtk_get_current_event ();
+    if (event != NULL) {
+        window = gdk_window_get_toplevel (event->any.window);
+        xid = GDK_DRAWABLE_XID(window);
+    }
+
     mInstallPackageCall = dbus_g_proxy_begin_call_with_timeout(mInstallPackageProxy,
                                                                "InstallPackageName",
                                                                onInstallPackageFinished,
                                                                this,
                                                                (GDestroyNotify)0,
                                                                24 * 60 * 1000 * 1000, /* one day */
-                                                               G_TYPE_UINT, 0, /* xid */
+                                                               G_TYPE_UINT, xid, /* xid */
                                                                G_TYPE_UINT, 0, /* timespec */
                                                                G_TYPE_STRING, mAvailablePackageName.c_str(),
                                                                G_TYPE_INVALID,
