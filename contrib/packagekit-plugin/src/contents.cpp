@@ -662,7 +662,7 @@ PkpContents::installPackage (Time time)
 
     /* will be NULL when activated not using a keyboard or a mouse */
     event = gtk_get_current_event ();
-    if (event != NULL) {
+    if (event != NULL && event->any.window != NULL) {
         window = gdk_window_get_toplevel (event->any.window);
         xid = GDK_DRAWABLE_XID(window);
     }
