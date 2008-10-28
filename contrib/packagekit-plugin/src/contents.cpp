@@ -61,182 +61,179 @@
 //
 
 static std::vector<std::string>
-splitString(const char *str)
+splitString(const gchar *str)
 {
-    std::vector<std::string> v;
+	std::vector<std::string> v;
 
-    if (str) {
-        char **split = g_strsplit(str, " ", -1);
-        for (char **s = split; *s; s++) {
-            char *stripped = strdup(*s);
-            g_strstrip(stripped);
-            v.push_back(stripped);
-            g_free(stripped);
-        }
+	if (str) {
+		char **split = g_strsplit(str, " ", -1);
+		for (char **s = split; *s; s++) {
+			char *stripped = strdup(*s);
+			g_strstrip(stripped);
+			v.push_back(stripped);
+			g_free(stripped);
+		}
 
-        g_strfreev(split);
-    }
+		g_strfreev(split);
+	}
 
-    return v;
+	return v;
 }
 
-PkpContents::PkpContents(const char *displayName,
-                         const char *packageNames,
-                         const char *desktopNames) :
-    mPlugin(0),
-    mStatus(IN_PROGRESS),
-    mAppInfo(0),
-    mDisplayName(displayName),
-    mPackageNames(splitString(packageNames)),
-    mDesktopNames(splitString(desktopNames)),
-    mLayout(0),
-    mInstallPackageProxy(0),
-    mInstallPackageCall(0)
+PkpContents::PkpContents(const gchar *displayName, const gchar *packageNames, const gchar *desktopNames) :
+	mPlugin(0),
+	mStatus(IN_PROGRESS),
+	mAppInfo(0),
+	mDisplayName(displayName),
+	mPackageNames(splitString(packageNames)),
+	mDesktopNames(splitString(desktopNames)),
+	mLayout(0),
+	mInstallPackageProxy(0),
+	mInstallPackageCall(0)
 {
-    recheck();
+	recheck();
 }
 
 PkpContents::~PkpContents()
 {
-    clearLayout();
+	clearLayout();
 
-    if (mAppInfo != 0) {
-        g_object_unref(mAppInfo);
-        mAppInfo = 0;
-    }
+	if (mAppInfo != 0) {
+		g_object_unref(mAppInfo);
+		mAppInfo = 0;
+	}
 
-    if (mInstallPackageCall != 0) {
-        dbus_g_proxy_cancel_call(mInstallPackageProxy, mInstallPackageCall);
-        g_object_unref(mInstallPackageProxy);
-        mInstallPackageProxy = 0;
-        mInstallPackageCall = 0;
-    }
+	if (mInstallPackageCall != 0) {
+		dbus_g_proxy_cancel_call(mInstallPackageProxy, mInstallPackageCall);
+		g_object_unref(mInstallPackageProxy);
+		mInstallPackageProxy = 0;
+		mInstallPackageCall = 0;
+	}
 
-    while (!mClients.empty())
-        removeClient(mClients.front());
+	while (!mClients.empty())
+		removeClient(mClients.front());
 }
 
 void PkpContents::recheck()
 {
-    mStatus = IN_PROGRESS;
-    mAvailableVersion = "";
-    mAvailablePackageName = "";
+	mStatus = IN_PROGRESS;
+	mAvailableVersion = "";
+	mAvailablePackageName = "";
 
-    for (std::vector<std::string>::iterator i = mPackageNames.begin(); i != mPackageNames.end(); i++) {
-        GError *error = NULL;
-        PkClient *client = pk_client_new();
-        gchar **package_ids;
-        package_ids = pk_package_ids_from_id (i->c_str());
-        if (!pk_client_resolve(client, PK_FILTER_ENUM_NONE, package_ids, &error)) {
-            g_warning("%s", error->message);
-            g_clear_error(&error);
-            g_object_unref(client);
-        } else {
-            g_signal_connect(client, "package", G_CALLBACK(onClientPackage), this);
-            g_signal_connect(client, "error-code", G_CALLBACK(onClientErrorCode), this);
-            g_signal_connect(client, "finished", G_CALLBACK(onClientFinished), this);
-            mClients.push_back(client);
-        }
-        g_strfreev (package_ids);
-    }
+	for (std::vector<std::string>::iterator i = mPackageNames.begin(); i != mPackageNames.end(); i++) {
+		GError *error = NULL;
+		PkClient *client = pk_client_new();
+		gchar **package_ids;
+		package_ids = pk_package_ids_from_id (i->c_str());
+		if (!pk_client_resolve(client, PK_FILTER_ENUM_NONE, package_ids, &error)) {
+			g_warning("%s", error->message);
+			g_clear_error(&error);
+			g_object_unref(client);
+		} else {
+			g_signal_connect(client, "package", G_CALLBACK(onClientPackage), this);
+			g_signal_connect(client, "error-code", G_CALLBACK(onClientErrorCode), this);
+			g_signal_connect(client, "finished", G_CALLBACK(onClientFinished), this);
+			mClients.push_back(client);
+		}
+		g_strfreev (package_ids);
+	}
 
-    findAppInfo();
+	findAppInfo();
 
-    if (mClients.empty() && getStatus() == IN_PROGRESS)
-        setStatus(UNAVAILABLE);
+	if (mClients.empty() && getStatus() == IN_PROGRESS)
+		setStatus(UNAVAILABLE);
 }
 
 void PkpContents::removeClient(PkClient *client)
 {
-    for (std::vector<PkClient *>::iterator i = mClients.begin(); i != mClients.end(); i++) {
-        if (*i == client) {
-            mClients.erase(i);
-            g_signal_handlers_disconnect_by_func(client, (void *)onClientPackage, this);
-            g_signal_handlers_disconnect_by_func(client, (void *)onClientErrorCode, this);
-            g_signal_handlers_disconnect_by_func(client, (void *)onClientFinished, this);
-            g_object_unref(client);
-            break;
-        }
-    }
+	for (std::vector<PkClient *>::iterator i = mClients.begin(); i != mClients.end(); i++) {
+		if (*i == client) {
+			mClients.erase(i);
+			g_signal_handlers_disconnect_by_func(client, (void *)onClientPackage, this);
+			g_signal_handlers_disconnect_by_func(client, (void *)onClientErrorCode, this);
+			g_signal_handlers_disconnect_by_func(client, (void *)onClientFinished, this);
+			g_object_unref(client);
+			break;
+		}
+	}
 
-    if (mClients.empty()) {
-        if (getStatus() == IN_PROGRESS)
-            setStatus(UNAVAILABLE);
-    }
+	if (mClients.empty()) {
+		if (getStatus() == IN_PROGRESS)
+			setStatus(UNAVAILABLE);
+	}
 }
 
 void
 PkpContents::setStatus(PackageStatus status)
 {
-    if (mStatus != status) {
-        mStatus = status;
-        clearLayout();
-        refresh();
-    }
+	if (mStatus != status) {
+		mStatus = status;
+		clearLayout();
+		refresh();
+	}
 }
 
 void
-PkpContents::setAvailableVersion(const char *version)
+PkpContents::setAvailableVersion(const gchar *version)
 {
-    mAvailableVersion = version;
-    clearLayout();
-    refresh();
+	mAvailableVersion = version;
+	clearLayout();
+	refresh();
 }
 
 void
-PkpContents::setAvailablePackageName(const char *name)
+PkpContents::setAvailablePackageName(const gchar *name)
 {
-    mAvailablePackageName = name;
+	mAvailablePackageName = name;
 }
 
 void
-PkpContents::setInstalledVersion(const char *version)
+PkpContents::setInstalledVersion(const gchar *version)
 {
-    mInstalledVersion = version;
-    clearLayout();
-    refresh();
+	mInstalledVersion = version;
+	clearLayout();
+	refresh();
 }
 
 void
 PkpContents::clearLayout()
 {
-    if (mLayout) {
-        g_object_unref(mLayout);
-        mLayout = 0;
-    }
+	if (mLayout) {
+		g_object_unref(mLayout);
+		mLayout = 0;
+	}
 }
 
 static void
-append_markup(GString *str, const char *format, ...)
+append_markup(GString *str, const gchar *format, ...)
 {
-    va_list vap;
+	va_list vap;
 
-    va_start(vap, format);
-    char *tmp = g_markup_vprintf_escaped(format, vap);
-    va_end(vap);
+	va_start(vap, format);
+	char *tmp = g_markup_vprintf_escaped(format, vap);
+	va_end(vap);
 
-    g_string_append(str, tmp);
-    g_free(tmp);
+	g_string_append(str, tmp);
+	g_free(tmp);
 }
 
 static guint32
 rgba_from_gdk_color(GdkColor *color)
 {
-    return (((color->red   >> 8) << 24) |
-            ((color->green >> 8) << 16) |
-            ((color->blue  >> 8) << 8) |
-            0xff);
+	return (((color->red >> 8) << 24) |
+		((color->green >> 8) << 16) |
+		((color->blue >> 8) << 8) |
+		0xff);
 }
 
 static void
-set_source_from_rgba(cairo_t *cr,
-                     guint32  rgba)
+set_source_from_rgba(cairo_t *cr, guint32 rgba)
 {
-    cairo_set_source_rgba(cr,
-                          ((rgba & 0xff000000) >> 24) / 255.,
-                          ((rgba & 0x00ff0000) >> 16) / 255.,
-                          ((rgba & 0x0000ff00) >> 8) / 255.,
-                          (rgba & 0x000000ff) / 255.);
+	cairo_set_source_rgba(cr,
+			 ((rgba & 0xff000000) >> 24) / 255.,
+			 ((rgba & 0x00ff0000) >> 16) / 255.,
+			 ((rgba & 0x0000ff00) >> 8) / 255.,
+			  (rgba & 0x000000ff) / 255.);
 
 }
 
@@ -248,149 +245,145 @@ set_source_from_rgba(cairo_t *cr,
  * the window.
  */
 static void
-get_style(PangoFontDescription **font_desc,
-          guint32               *foreground,
-          guint32               *background,
-          guint32               *link)
+get_style(PangoFontDescription **font_desc, guint32 *foreground, guint32 *background, guint32 *link)
 {
-    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
-    gtk_widget_ensure_style(window);
+	gtk_widget_ensure_style(window);
 
-    *foreground = rgba_from_gdk_color(&window->style->text[GTK_STATE_NORMAL]);
-    *background = rgba_from_gdk_color(&window->style->base[GTK_STATE_NORMAL]);
+	*foreground = rgba_from_gdk_color(&window->style->text[GTK_STATE_NORMAL]);
+	*background = rgba_from_gdk_color(&window->style->base[GTK_STATE_NORMAL]);
 
-    GdkColor link_color = { 0, 0, 0, 0xeeee };
-    GdkColor *tmp = NULL;
+	GdkColor link_color = { 0, 0, 0, 0xeeee };
+	GdkColor *tmp = NULL;
 
-    gtk_widget_style_get (GTK_WIDGET (window),
-                          "link-color", &tmp, NULL);
-    if (tmp != NULL) {
-        link_color = *tmp;
-        gdk_color_free(tmp);
-    }
+	gtk_widget_style_get (GTK_WIDGET (window),
+						 "link-color", &tmp, NULL);
+	if (tmp != NULL) {
+		link_color = *tmp;
+		gdk_color_free(tmp);
+	}
 
-    *link = rgba_from_gdk_color(&link_color);
+	*link = rgba_from_gdk_color(&link_color);
 
-    *font_desc = pango_font_description_copy(window->style->font_desc);
+	*font_desc = pango_font_description_copy(window->style->font_desc);
 
-    gtk_widget_destroy(window);
+	gtk_widget_destroy(window);
 }
 
 void
-PkpContents::ensureLayout(cairo_t              *cr,
-                          PangoFontDescription *font_desc,
-                          guint32               link_color)
+PkpContents::ensureLayout(cairo_t *cr, PangoFontDescription *font_desc, guint32 link_color)
 {
-    GString *markup = g_string_new(NULL);
+	GString *markup = g_string_new(NULL);
 
-    if (mLayout)
-        return;
+	if (mLayout)
+		return;
 
-    mLayout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(mLayout, font_desc);
+	mLayout = pango_cairo_create_layout(cr);
+	pango_layout_set_font_description(mLayout, font_desc);
 
-    /* WARNING: Any changes to what links are created here will require corresponding
-     * changes to the buttonRelease() method
-     */
-    switch (mStatus) {
-    case IN_PROGRESS:
-        /* TRANSLATORS: when we are getting data from the daemon */
-        append_markup(markup, _("Getting package information..."));
-        break;
-    case INSTALLED:
-        if (mAppInfo != 0) {
-                append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
-                /* TRANSLATORS: run an applicaiton */
-                append_markup(markup, _("Run %s"), mDisplayName.c_str());
-                append_markup(markup, "</span>");
-        } else
-            append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
-        if (!mInstalledVersion.empty())
-            /* TRANSLATORS: show the installed version of a package */
-            append_markup(markup, "\n<small>%s: %s</small>", _("Installed version"), mInstalledVersion.c_str());
-        break;
-    case UPGRADABLE:
-        append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
-        if (mAppInfo != 0) {
-            if (!mInstalledVersion.empty()) {
-                append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
-                /* TRANSLATORS: run the application now */
-                append_markup(markup, _("Run version %s now"), mInstalledVersion.c_str());
-                append_markup(markup, "</span>");
-            } else
-                /* TRANSLATORS: run the application now */
-                append_markup(markup,
-                              "\n<span color='#%06x' underline='single'>%s</span>",
-                              _("Run now"), link_color >> 8);
-        }
+	/* WARNING: Any changes to what links are created here will require corresponding
+	 * changes to the buttonRelease() method
+	 */
+	switch (mStatus) {
+	case IN_PROGRESS:
+		/* TRANSLATORS: when we are getting data from the daemon */
+		append_markup(markup, _("Getting package information..."));
+		break;
+	case INSTALLED:
+		if (mAppInfo != 0) {
+			append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
+			/* TRANSLATORS: run an applicaiton */
+			append_markup(markup, _("Run %s"), mDisplayName.c_str());
+			append_markup(markup, "</span>");
+		} else
+			append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
+		if (!mInstalledVersion.empty())
+			/* TRANSLATORS: show the installed version of a package */
+			append_markup(markup, "\n<small>%s: %s</small>", _("Installed version"), mInstalledVersion.c_str());
+		break;
+	case UPGRADABLE:
+		append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
+		if (mAppInfo != 0) {
+			if (!mInstalledVersion.empty()) {
+				append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
+				/* TRANSLATORS: run the application now */
+				append_markup(markup, _("Run version %s now"), mInstalledVersion.c_str());
+				append_markup(markup, "</span>");
+			} else {
+				/* TRANSLATORS: run the application now */
+				append_markup(markup,
+				              "\n<span color='#%06x' underline='single'>%s</span>",
+					      _("Run now"), link_color >> 8);
+		        }
+		}
 
-        append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
-        /* TRANSLATORS: update to a new version of the package */
-        append_markup(markup, _("Update to version %s"), mAvailableVersion.c_str());
-        append_markup(markup, "</span>");
-        break;
-    case AVAILABLE:
-        append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
-        /* TRANSLATORS: To install a package */
-        append_markup(markup, _("Install %s now"), mDisplayName.c_str());
-        append_markup(markup, "</span>");
-        /* TRANSLATORS: the version of the package */
-        append_markup(markup, "\n<small>%s: %s</small>", _("Version"), mAvailableVersion.c_str());
-        break;
-    case UNAVAILABLE:
-        append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
-        /* TRANSLATORS: noting found, so can't install */
-        append_markup(markup, "\n<small>%s</small>", _("No packages found for your system"));
-        break;
-    case INSTALLING:
-        append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
-        /* TRANSLATORS: package is being installed */
-        append_markup(markup, "\n<small>%s</small>", _("Installing..."));
-        break;
-    }
+		append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
+		/* TRANSLATORS: update to a new version of the package */
+		append_markup(markup, _("Update to version %s"), mAvailableVersion.c_str());
+		append_markup(markup, "</span>");
+		break;
+	case AVAILABLE:
+		append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
+		/* TRANSLATORS: To install a package */
+		append_markup(markup, _("Install %s now"), mDisplayName.c_str());
+		append_markup(markup, "</span>");
+		/* TRANSLATORS: the version of the package */
+		append_markup(markup, "\n<small>%s: %s</small>", _("Version"), mAvailableVersion.c_str());
+		break;
+	case UNAVAILABLE:
+		append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
+		/* TRANSLATORS: noting found, so can't install */
+		append_markup(markup, "\n<small>%s</small>", _("No packages found for your system"));
+		break;
+	case INSTALLING:
+		append_markup(markup, "<big>%s</big>", mDisplayName.c_str());
+		/* TRANSLATORS: package is being installed */
+		append_markup(markup, "\n<small>%s</small>", _("Installing..."));
+		break;
+	}
 
-    pango_layout_set_markup(mLayout, markup->str, -1);
-    g_string_free(markup, TRUE);
+	pango_layout_set_markup(mLayout, markup->str, -1);
+	g_string_free(markup, TRUE);
 }
 
 void
 PkpContents::refresh()
 {
-    if (mPlugin != 0)
-        mPlugin->refresh();
+	if (mPlugin != 0)
+		mPlugin->refresh();
 }
 
 void
 PkpContents::setPlugin(PkpPluginInstance *plugin)
 {
-    mPlugin = plugin;
+	mPlugin = plugin;
 }
 
 void
 PkpContents::draw(cairo_t *cr)
 {
-    guint32 foreground, background, link;
-    PangoFontDescription *font_desc;
+	guint32 foreground, background, link;
+	PangoFontDescription *font_desc;
 
-    get_style(&font_desc, &foreground, &background, &link);
+	get_style(&font_desc, &foreground, &background, &link);
 
-    set_source_from_rgba(cr, background);
-    cairo_rectangle(cr, mPlugin->getX(), mPlugin->getY(), mPlugin->getWidth(), mPlugin->getHeight());
-    cairo_fill(cr);
+	set_source_from_rgba(cr, background);
+	cairo_rectangle(cr, mPlugin->getX(), mPlugin->getY(), mPlugin->getWidth(), mPlugin->getHeight());
+	cairo_fill(cr);
 
-    cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-    cairo_rectangle(cr, mPlugin->getX() + 0.5, mPlugin->getY() + 0.5, mPlugin->getWidth() - 1, mPlugin->getHeight() - 1);
-    cairo_set_line_width(cr, 1);
-    cairo_stroke(cr);
+	cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+	cairo_rectangle(cr, mPlugin->getX() + 0.5, mPlugin->getY() + 0.5, mPlugin->getWidth() - 1, mPlugin->getHeight() - 1);
+	cairo_set_line_width(cr, 1);
+	cairo_stroke(cr);
 
-    ensureLayout(cr, font_desc, link);
-    int width, height;
-    pango_layout_get_pixel_size(mLayout, &width, &height);
+	ensureLayout(cr, font_desc, link);
+	int width, height;
+	pango_layout_get_pixel_size(mLayout, &width, &height);
 
-    cairo_move_to(cr, mPlugin->getX() + MARGIN, mPlugin->getY() + MARGIN);
-    set_source_from_rgba(cr, foreground);
-    pango_cairo_show_layout(cr, mLayout);
+	cairo_move_to(cr, mPlugin->getX() + MARGIN, mPlugin->getY() + MARGIN);
+	set_source_from_rgba(cr, foreground);
+	pango_cairo_show_layout(cr, mLayout);
 }
 
 /* Cut and paste from pango-layout.c; determines if a layout iter is on
@@ -404,24 +397,24 @@ PkpContents::draw(cairo_t *cr)
 static gboolean
 line_is_terminated (PangoLayoutIter *iter)
 {
-    /* There is a real terminator at the end of each paragraph other
-     * than the last.
-     */
-    PangoLayoutLine *line = pango_layout_iter_get_line(iter);
-    GSList *lines = pango_layout_get_lines(pango_layout_iter_get_layout(iter));
-    GSList *link = g_slist_find(lines, line);
-    if (!link) {
-        g_warning("Can't find line in layout line list\n");
-        return FALSE;
-    }
+	/* There is a real terminator at the end of each paragraph other
+	 * than the last.
+	 */
+	PangoLayoutLine *line = pango_layout_iter_get_line(iter);
+	GSList *lines = pango_layout_get_lines(pango_layout_iter_get_layout(iter));
+	GSList *link = g_slist_find(lines, line);
+	if (!link) {
+		g_warning("Can't find line in layout line list\n");
+		return FALSE;
+	}
 
-    if (link->next) {
-        PangoLayoutLine *next_line = (PangoLayoutLine *)link->next->data;
-        if (next_line->is_paragraph_start)
-            return TRUE;
-    }
+	if (link->next) {
+		PangoLayoutLine *next_line = (PangoLayoutLine *)link->next->data;
+		if (next_line->is_paragraph_start)
+			return TRUE;
+	}
 
-    return FALSE;
+	return FALSE;
 }
 
 /* This function takes an X,Y position and determines whether it is over one
@@ -436,67 +429,65 @@ line_is_terminated (PangoLayoutIter *iter)
 int
 PkpContents::getLinkIndex(int x, int y)
 {
-    /* Coordinates are relative to origin of plugin (different from drawing) */
+	/* Coordinates are relative to origin of plugin (different from drawing) */
 
-    if (!mLayout)
-        return -1;
+	if (!mLayout)
+		return -1;
 
-    x -= MARGIN;
-    y -= MARGIN;
+	x -= MARGIN;
+	y -= MARGIN;
 
-    int index;
-    int trailing;
-    if (!pango_layout_xy_to_index(mLayout,
-                                  x * PANGO_SCALE, y * PANGO_SCALE,
-                                  &index, &trailing))
-        return - 1;
+	int index;
+	int trailing;
+	if (!pango_layout_xy_to_index(mLayout, x * PANGO_SCALE, y * PANGO_SCALE, &index, &trailing))
+		return - 1;
 
-    PangoLayoutIter *iter = pango_layout_get_iter(mLayout);
-    int seen_links = 0;
-    bool in_link = false;
-    int result = -1;
+	PangoLayoutIter *iter = pango_layout_get_iter(mLayout);
+	int seen_links = 0;
+	bool in_link = false;
+	int result = -1;
 
-    while (TRUE) {
-        PangoLayoutRun *run = pango_layout_iter_get_run(iter);
-        if (run) {
-            PangoItem *item = run->item;
-            PangoUnderline uline = PANGO_UNDERLINE_NONE;
+	while (TRUE) {
+		PangoLayoutRun *run = pango_layout_iter_get_run(iter);
+		if (run) {
+			PangoItem *item = run->item;
+			PangoUnderline uline = PANGO_UNDERLINE_NONE;
 
-            for (GSList *l = item->analysis.extra_attrs; l; l = l->next) {
-                PangoAttribute *attr = (PangoAttribute *)l->data;
-                if (attr->klass->type == PANGO_ATTR_UNDERLINE) {
-                    uline = (PangoUnderline)((PangoAttrInt *)attr)->value;
-                }
-            }
+			for (GSList *l = item->analysis.extra_attrs; l; l = l->next) {
+				PangoAttribute *attr = (PangoAttribute *)l->data;
+				if (attr->klass->type == PANGO_ATTR_UNDERLINE) {
+					uline = (PangoUnderline)((PangoAttrInt *)attr)->value;
+				}
+			}
 
-            if (uline == PANGO_UNDERLINE_NONE)
-                in_link = FALSE;
-            else if (!in_link) {
-                in_link = TRUE;
-                seen_links++;
-            }
+			if (uline == PANGO_UNDERLINE_NONE)
+				in_link = FALSE;
+			else if (!in_link) {
+				in_link = TRUE;
+				seen_links++;
+			}
 
-            if (item->offset <= index && index < item->offset + item->length) {
-                if (in_link)
-                    result = seen_links - 1;
+			if (item->offset <= index && index < item->offset + item->length) {
+				if (in_link)
+					result = seen_links - 1;
 
-                break;
-            }
-        } else {
-            /* We have an empty run at the end of each line. A line break doesn't
-             * terminate the link, but a real newline does.
-             */
-            if (line_is_terminated(iter))
-                in_link = FALSE;
-        }
+				break;
+			}
+		} else {
+			/* We have an empty run at the end of each line. A line break doesn't
+			 * terminate the link, but a real newline does.
+			 */
+			if (line_is_terminated(iter))
+				in_link = FALSE;
+		}
 
-        if (!pango_layout_iter_next_run (iter))
-            break;
-    }
+		if (!pango_layout_iter_next_run (iter))
+			break;
+	}
 
-    pango_layout_iter_free(iter);
+	pango_layout_iter_free(iter);
 
-    return result;
+	return result;
 }
 
 void
@@ -507,31 +498,30 @@ PkpContents::buttonPress(int x, int y, Time time)
 void
 PkpContents::buttonRelease(int x, int y, Time time)
 {
-    int index = getLinkIndex(x, y);
-    if (index < 0)
-        return;
+	int index = getLinkIndex(x, y);
+	if (index < 0)
+		return;
 
-    switch (mStatus) {
-    case IN_PROGRESS:
-    case INSTALLING:
-    case UNAVAILABLE:
-        break;
-    case INSTALLED:
-        if (mAppInfo != 0)
-            runApplication(time);
-        break;
-    case UPGRADABLE:
-        if (mAppInfo != 0 && index == 0)
-            runApplication(time);
-        else {
-            installPackage(time);
-        }
-        break;
-    case AVAILABLE:
-        if (!mAvailablePackageName.empty())
-            installPackage(time);
-        break;
-    }
+	switch (mStatus) {
+	case IN_PROGRESS:
+	case INSTALLING:
+	case UNAVAILABLE:
+		break;
+	case INSTALLED:
+		if (mAppInfo != 0)
+			runApplication(time);
+		break;
+	case UPGRADABLE:
+		if (mAppInfo != 0 && index == 0)
+			runApplication(time);
+		else
+			installPackage(time);
+		break;
+	case AVAILABLE:
+		if (!mAvailablePackageName.empty())
+			installPackage(time);
+		break;
+	}
 }
 
 void
@@ -552,199 +542,186 @@ PkpContents::leave(int x, int y)
 static guint32
 get_server_timestamp()
 {
-    GtkWidget *invisible = gtk_invisible_new();
-    gtk_widget_realize(invisible);
-    return gdk_x11_get_server_time(invisible->window);
-    gtk_widget_destroy(invisible);
+	GtkWidget *invisible = gtk_invisible_new();
+	gtk_widget_realize(invisible);
+	return gdk_x11_get_server_time(invisible->window);
+	gtk_widget_destroy(invisible);
 }
 
 static gboolean
-validate_name(const char *name)
+validate_name(const gchar *name)
 {
-    const char *p;
+	const gchar *p;
 
-    for (p = name; *p; p++) {
-        char c = *p;
+	for (p = name; *p; p++) {
+		char c = *p;
+		if (!((c >= 'A' && c <= 'Z') ||
+		      (c >= 'a' && c <= 'z') ||
+		      (c >= '0' && c <= '9') ||
+		      (c == '.') ||
+		      (c == '_') ||
+		      (c == '-')))
+			return FALSE;
+	}
 
-        if (!((c >= 'A' && c <= 'Z') ||
-              (c >= 'a' && c <= 'z') ||
-              (c >= '0' && c <= '9') ||
-              (c == '.') ||
-              (c == '_') ||
-              (c == '-')))
-            return FALSE;
-    }
-
-    return TRUE;
+	return TRUE;
 }
 
 void
 PkpContents::findAppInfo()
 {
-    for (std::vector<std::string>::iterator i = mDesktopNames.begin(); i != mDesktopNames.end(); i++) {
-        if (!validate_name(i->c_str())) {
-            g_warning("Bad desktop name: '%s'", i->c_str());
-            continue;
-        }
+	for (std::vector<std::string>::iterator i = mDesktopNames.begin(); i != mDesktopNames.end(); i++) {
+		if (!validate_name(i->c_str())) {
+			g_warning("Bad desktop name: '%s'", i->c_str());
+			continue;
+		}
 
-        /* The "id" taken be g_desktop_app_info_new() is weirdly 'foo.desktop' not 'foo' */
-        char *id = g_strconcat(i->c_str(), ".desktop", NULL);
-        GDesktopAppInfo *desktopAppInfo = g_desktop_app_info_new(id);
-        g_free(id);
+		/* The "id" taken be g_desktop_app_info_new() is weirdly 'foo.desktop' not 'foo' */
+		char *id = g_strconcat(i->c_str(), ".desktop", NULL);
+		GDesktopAppInfo *desktopAppInfo = g_desktop_app_info_new(id);
+		g_free(id);
 
-        if (desktopAppInfo) {
-            mAppInfo = G_APP_INFO(desktopAppInfo);
-            break;
-        }
-    }
+		if (desktopAppInfo) {
+			mAppInfo = G_APP_INFO(desktopAppInfo);
+			break;
+		}
+	}
 
-    if (mAppInfo != 0)
-        setStatus(INSTALLED);
+	if (mAppInfo != 0)
+		setStatus(INSTALLED);
 }
 
 void
 PkpContents::runApplication (Time time)
 {
-    GError *error = NULL;
+	GError *error = NULL;
 #ifdef HAVE_GDK_APP_LAUNCH_CONTEXT_NEW
-    GdkAppLaunchContext *context;
+	GdkAppLaunchContext *context;
 #endif
 
-    if (mAppInfo == 0) {
-        g_warning("Didn't find application to launch");
-        return;
-    }
+	if (mAppInfo == 0) {
+		g_warning("Didn't find application to launch");
+		return;
+	}
 
-    if (time == 0)
-        time = get_server_timestamp();
+	if (time == 0)
+		time = get_server_timestamp();
 
 #ifdef HAVE_GDK_APP_LAUNCH_CONTEXT_NEW
-    context = gdk_app_launch_context_new();
-    gdk_app_launch_context_set_timestamp(context, time);
-    if (!g_app_info_launch(mAppInfo, NULL, G_APP_LAUNCH_CONTEXT (context), &error)) {
+	context = gdk_app_launch_context_new();
+	gdk_app_launch_context_set_timestamp(context, time);
+	if (!g_app_info_launch(mAppInfo, NULL, G_APP_LAUNCH_CONTEXT (context), &error)) {
 #else
-    if (!g_app_info_launch(mAppInfo, NULL, NULL, &error)) {
+	if (!g_app_info_launch(mAppInfo, NULL, NULL, &error)) {
 #endif
-        g_warning("%s\n", error->message);
-        g_clear_error(&error);
-        return;
-    }
+		g_warning("%s\n", error->message);
+		g_clear_error(&error);
+		return;
+	}
 
 #ifdef HAVE_GDK_APP_LAUNCH_CONTEXT_NEW
-    if (context != NULL)
-        g_object_unref(context);
+	if (context != NULL)
+		g_object_unref(context);
 #endif
 }
 
 void
 PkpContents::installPackage (Time time)
 {
-    GdkEvent *event;
-    GdkWindow *window;
-    guint xid = 0;
+	GdkEvent *event;
+	GdkWindow *window;
+	guint xid = 0;
 
-    if (mAvailablePackageName.empty()) {
-        g_warning("No available package to install");
-        return;
-    }
+	if (mAvailablePackageName.empty()) {
+		g_warning("No available package to install");
+		return;
+	}
 
-    if (mInstallPackageCall != 0) {
-        g_warning("Already installing package");
-        return;
-    }
+	if (mInstallPackageCall != 0) {
+		g_warning("Already installing package");
+		return;
+	}
 
-    /* Get a proxy to the *session* PackageKit service */
-    DBusGConnection *connection = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
-    mInstallPackageProxy = dbus_g_proxy_new_for_name(connection,
-                                                     "org.freedesktop.PackageKit",
-                                                     "/org/freedesktop/PackageKit",
-                                                     "org.freedesktop.PackageKit");
+	/* Get a proxy to the *session* PackageKit service */
+	DBusGConnection *connection = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
+	mInstallPackageProxy = dbus_g_proxy_new_for_name(connection,
+							 "org.freedesktop.PackageKit",
+							 "/org/freedesktop/PackageKit",
+							 "org.freedesktop.PackageKit");
 
-    /* will be NULL when activated not using a keyboard or a mouse */
-    event = gtk_get_current_event ();
-    if (event != NULL && event->any.window != NULL) {
-        window = gdk_window_get_toplevel (event->any.window);
-        xid = GDK_DRAWABLE_XID(window);
-    }
+	/* will be NULL when activated not using a keyboard or a mouse */
+	event = gtk_get_current_event ();
+	if (event != NULL && event->any.window != NULL) {
+		window = gdk_window_get_toplevel (event->any.window);
+		xid = GDK_DRAWABLE_XID(window);
+	}
 
-    mInstallPackageCall = dbus_g_proxy_begin_call_with_timeout(mInstallPackageProxy,
-                                                               "InstallPackageName",
-                                                               onInstallPackageFinished,
-                                                               this,
-                                                               (GDestroyNotify)0,
-                                                               24 * 60 * 1000 * 1000, /* one day */
-                                                               G_TYPE_UINT, xid, /* xid */
-                                                               G_TYPE_UINT, 0, /* timespec */
-                                                               G_TYPE_STRING, mAvailablePackageName.c_str(),
-                                                               G_TYPE_INVALID,
-                                                               G_TYPE_INVALID);
+	mInstallPackageCall = dbus_g_proxy_begin_call_with_timeout(mInstallPackageProxy,
+								   "InstallPackageName",
+								   onInstallPackageFinished,
+								   this,
+								   (GDestroyNotify)0,
+								   24 * 60 * 1000 * 1000, /* one day */
+								   G_TYPE_UINT, xid, /* xid */
+								   G_TYPE_UINT, 0, /* timespec */
+								   G_TYPE_STRING, mAvailablePackageName.c_str(),
+								   G_TYPE_INVALID,
+								   G_TYPE_INVALID);
 
-     setStatus(INSTALLING);
+	 setStatus(INSTALLING);
 }
 
 void
-PkpContents::onClientPackage(PkClient	        *client,
-                             const PkPackageObj *obj,
-                             PkpContents        *contents)
+PkpContents::onClientPackage(PkClient *client, const PkPackageObj *obj, PkpContents *contents)
 {
-    /* if we didn't use displayname, use the summary */
-    if (contents->mDisplayName.size() == 0)
-        contents->mDisplayName = obj->summary;
+	/* if we didn't use displayname, use the summary */
+	if (contents->mDisplayName.size() == 0)
+		contents->mDisplayName = obj->summary;
 
-    /* parse the data */
-    if (obj->info == PK_INFO_ENUM_AVAILABLE) {
-        if (contents->getStatus() == IN_PROGRESS)
-            contents->setStatus(AVAILABLE);
-        else if (contents->getStatus() == INSTALLED)
-            contents->setStatus(UPGRADABLE);
-        contents->setAvailableVersion(obj->id->version);
-        contents->setAvailablePackageName(obj->id->name);
-    } else if (obj->info == PK_INFO_ENUM_INSTALLED) {
-        if (contents->getStatus() == IN_PROGRESS)
-            contents->setStatus(INSTALLED);
-        else if (contents->getStatus() == AVAILABLE)
-            contents->setStatus(UPGRADABLE);
-        contents->setInstalledVersion(obj->id->version);
-    }
+	/* parse the data */
+	if (obj->info == PK_INFO_ENUM_AVAILABLE) {
+		if (contents->getStatus() == IN_PROGRESS)
+			contents->setStatus(AVAILABLE);
+		else if (contents->getStatus() == INSTALLED)
+			contents->setStatus(UPGRADABLE);
+		contents->setAvailableVersion(obj->id->version);
+		contents->setAvailablePackageName(obj->id->name);
+	} else if (obj->info == PK_INFO_ENUM_INSTALLED) {
+		if (contents->getStatus() == IN_PROGRESS)
+			contents->setStatus(INSTALLED);
+		else if (contents->getStatus() == AVAILABLE)
+			contents->setStatus(UPGRADABLE);
+		contents->setInstalledVersion(obj->id->version);
+	}
 }
 
 void
-PkpContents::onClientErrorCode(PkClient	       *client,
-                               PkErrorCodeEnum  code,
-                               const gchar     *details,
-                               PkpContents     *contents)
+PkpContents::onClientErrorCode(PkClient *client, PkErrorCodeEnum code, const gchar *details, PkpContents *contents)
 {
-    g_warning("Error getting data from PackageKit: %s\n", details);
-    contents->removeClient(client);
+	g_warning("Error getting data from PackageKit: %s\n", details);
+	contents->removeClient(client);
 }
 
 void
-PkpContents::onClientFinished(PkClient	    *client,
-                              PkExitEnum     exit,
-                              guint	     runtime,
-                              PkpContents   *contents)
-
+PkpContents::onClientFinished(PkClient *client, PkExitEnum exit, guint runtime, PkpContents *contents)
 {
-    contents->removeClient(client);
+	contents->removeClient(client);
 }
 
 void
-PkpContents::onInstallPackageFinished (DBusGProxy       *proxy,
-                                       DBusGProxyCall   *call,
-                                       void             *user_data)
+PkpContents::onInstallPackageFinished (DBusGProxy *proxy, DBusGProxyCall *call, void *user_data)
 {
-    PkpContents *contents = (PkpContents *)user_data;
+	PkpContents *contents = (PkpContents *)user_data;
 
-    GError *error = NULL;
-    if (!dbus_g_proxy_end_call(proxy, call, &error,
-                               G_TYPE_INVALID)) {
-        g_warning("Error occurred during install: %s", error->message);
-        g_clear_error(&error);
-    }
+	GError *error = NULL;
+	if (!dbus_g_proxy_end_call(proxy, call, &error, G_TYPE_INVALID)) {
+		g_warning("Error occurred during install: %s", error->message);
+		g_clear_error(&error);
+	}
 
-    g_object_unref(contents->mInstallPackageProxy);
-    contents->mInstallPackageProxy = 0;
-    contents->mInstallPackageCall = 0;
+	g_object_unref(contents->mInstallPackageProxy);
+	contents->mInstallPackageProxy = 0;
+	contents->mInstallPackageCall = 0;
 
-    contents->recheck();
+	contents->recheck();
 }
