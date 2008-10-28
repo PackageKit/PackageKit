@@ -120,8 +120,15 @@ class YumFilter(PackagekitFilter):
         '''
         Return if the package is development.
         '''
-        regex = re.compile(r'(-devel)|(-debuginfo)|(-static)|(-libs)')
-        return regex.search(pkg.name)
+        if pkg.name.endswith('-devel'):
+            return True
+        if pkg.name.endswith('-debuginfo'):
+            return True
+        if pkg.name.endswith('-static'):
+            return True
+        if pkg.name.endswith('-libs'):
+            return True
+        return False
 
     def _pkg_is_gui(self, pkg):
         '''
