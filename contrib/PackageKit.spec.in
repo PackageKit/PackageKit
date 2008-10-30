@@ -353,6 +353,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_includedir}/PackageKit/packagekit-qt
 %{_includedir}/PackageKit/packagekit-qt/QPackageKit
 %{_includedir}/PackageKit/packagekit-qt/*.h
+%{_datadir}/cmake/Modules/FindQPackageKit.cmake
 
 %files backend-devel
 %defattr(-,root,root,-)
