@@ -1657,15 +1657,17 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         pkgs = self.yumbase.rpmdb.searchNevra(name='preupgrade')
         if len(pkgs) == 0:
             #install preupgrade
-            pkgs = self.yumbase.pkgSack.searchNevra(name='preupgrade')
+            pkgs = self.yumbase.pkgSack.returnNewestByName(name='preupgrade')
             if len(pkgs) == 0:
                 self.error(ERROR_PACKAGE_NOT_FOUND, "Could not find upgrade preupgrade package in any enabled repos")
-            elif len(pkgs) == 1:
-                txmbr = self.yumbase.install(po=pkgs[0])
-                if txmbr:
-                    self._runYumTransaction()
+            # we can have more than one result if the package is in multiple repos, for example
+            # a machine with i386 _and_ x86_64 configured.
+            # in this case, just pick the first entry as they are both noarch
+            txmbr = self.yumbase.install(po=pkgs[0])
+            if txmbr:
+                self._runYumTransaction()
             else:
-                self.error(ERROR_INTERNAL_ERROR, "not one update possibility")
+                self.error(ERROR_INTERNAL_ERROR, "could not install preupgrade as no transaction")
         elif len(pkgs) == 1:
             # check if there are any updates to the preupgrade package
             po = pkgs[0]
