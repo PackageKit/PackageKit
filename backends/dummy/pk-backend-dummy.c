@@ -289,6 +289,11 @@ backend_get_updates_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 
+	if (!_updated_powertop && !_updated_kernel && !_updated_gtkhtml) {
+		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
+				    "vino;2.24.2.fc9;i386;fedora",
+				    "Remote desktop server for the desktop");
+	}
 	if (!_updated_powertop) {
 		pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
 				    "powertop;1.8-1.fc8;i386;fedora",
