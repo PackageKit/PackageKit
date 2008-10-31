@@ -598,7 +598,12 @@ class PackageKitBaseBackend:
         if len(args) > 0:
             self.dispatch_command(args[0], args[1:])
         while True:
-            line = sys.stdin.readline().strip('\n')
+            try:
+                line = sys.stdin.readline().strip('\n')
+            except IOError, e:
+                self.error(ERROR_TRANSACTION_CANCELLED, 'could not read from stdin: %s' % str(e))
+            except KeyboardInterrupt, e:
+                self.error(ERROR_PROCESS_KILL, 'process was killed by ctrl-c: %s' % str(e))
             if not line or line == 'exit':
                 break
             args = line.split('\t')

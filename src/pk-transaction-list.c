@@ -755,6 +755,7 @@ pk_transaction_list_test_finished_cb (PkTransaction *transaction, const gchar *e
 static void
 pk_transaction_list_test_delay_cb (EggTest *test)
 {
+	egg_debug ("quitting loop");
 	egg_test_loop_quit (test);
 }
 
@@ -997,7 +998,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/* wait for Cleanup */
 	g_timeout_add_seconds (5, (GSourceFunc) pk_transaction_list_test_delay_cb, test);
-	egg_test_loop_wait (test, 6000);
+	egg_test_loop_wait (test, 10000);
 	egg_test_loop_check (test);
 
 	/************************************************************/
@@ -1051,7 +1052,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/* wait for Cleanup */
 	g_timeout_add_seconds (5, (GSourceFunc) pk_transaction_list_test_delay_cb, test);
-	egg_test_loop_wait (test, 6000);
+	egg_test_loop_wait (test, 10000);
 	egg_test_loop_check (test);
 
 	/************************************************************/
@@ -1124,7 +1125,7 @@ pk_transaction_list_test (EggTest *test)
 	g_strfreev (array);
 
 	/* wait for first action */
-	egg_test_loop_wait (test, 6000);
+	egg_test_loop_wait (test, 10000);
 	egg_test_loop_check (test);
 
 	/************************************************************/
@@ -1170,7 +1171,7 @@ pk_transaction_list_test (EggTest *test)
 				 item3->running, item3->committed, item3->finished);
 
 	/* wait for second action */
-	egg_test_loop_wait (test, 6000);
+	egg_test_loop_wait (test, 10000);
 	egg_test_loop_check (test);
 
 	/************************************************************/
@@ -1216,7 +1217,7 @@ pk_transaction_list_test (EggTest *test)
 				 item3->running, item3->committed, item3->finished);
 
 	/* wait for third action */
-	egg_test_loop_wait (test, 6000);
+	egg_test_loop_wait (test, 10000);
 	egg_test_loop_check (test);
 
 	/************************************************************/
@@ -1263,7 +1264,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/* wait for Cleanup */
 	g_timeout_add_seconds (5, (GSourceFunc) pk_transaction_list_test_delay_cb, test);
-	egg_test_loop_wait (test, 6000);
+	egg_test_loop_wait (test, 10000);
 	egg_test_loop_check (test);
 
 	/************************************************************/

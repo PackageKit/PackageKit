@@ -37,6 +37,7 @@ struct PkObjListPrivate
 	PkObjListCopyFunc	 func_copy;
 	PkObjListFreeFunc	 func_free;
 	PkObjListCompareFunc	 func_compare;
+	PkObjListEqualFunc	 func_equal;
 	PkObjListToStringFunc	 func_to_string;
 	PkObjListFromStringFunc func_from_string;
 	GPtrArray		*array;
@@ -98,6 +99,20 @@ pk_obj_list_set_compare (PkObjList *list, PkObjListCompareFunc func)
 {
 	g_return_if_fail (PK_IS_OBJ_LIST (list));
 	list->priv->func_compare = func;
+}
+
+/**
+ * pk_obj_list_set_equal:
+ * @list: a valid #PkObjList instance
+ * @func: typedef'd function
+ *
+ * Adds a equal func
+ **/
+void
+pk_obj_list_set_equal (PkObjList *list, PkObjListEqualFunc func)
+{
+	g_return_if_fail (PK_IS_OBJ_LIST (list));
+	list->priv->func_equal = func;
 }
 
 /**
@@ -355,17 +370,16 @@ pk_obj_list_remove_list (PkObjList *list, const PkObjList *data)
 static gboolean
 pk_obj_list_obj_equal (PkObjList *list, gconstpointer obj1, gconstpointer obj2)
 {
-	PkObjListCompareFunc func_compare;
+	/* use equal */
+	if (list->priv->func_equal != NULL)
+		return list->priv->func_equal (obj1, obj2);
 
-	/* two less pointer deferences... */
-	func_compare = list->priv->func_compare;
+	/* use compare */
+	if (list->priv->func_compare != NULL)
+		return list->priv->func_compare (obj1, obj2) == 0;
 
-	/* trivial case */
-	if (func_compare == NULL)
-		return obj1 == obj2;
-
-	/* use helper function */
-	return func_compare (obj1, obj2) == 0;
+	/* don't use helper function */
+	return obj1 == obj2;
 }
 
 /**
@@ -406,13 +420,9 @@ pk_obj_list_find_obj (PkObjList *list, gconstpointer obj)
 {
 	guint i;
 	gconstpointer obj_tmp;
-	PkObjListCompareFunc func_compare;
-
-	/* remove data items from list */
-	func_compare = list->priv->func_compare;
 
 	/* usual case, don't compare in the fast path */
-	if (func_compare == NULL) {
+	if (list->priv->func_compare == NULL && list->priv->func_equal == NULL) {
 		for (i=0; i < list->len; i++) {
 			obj_tmp = pk_obj_list_index (list, i);
 			if (obj_tmp == obj)
@@ -424,7 +434,7 @@ pk_obj_list_find_obj (PkObjList *list, gconstpointer obj)
 	/* use a comparison function */
 	for (i=0; i < list->len; i++) {
 		obj_tmp = pk_obj_list_index (list, i);
-		if (func_compare (obj_tmp, obj) == 0)
+		if (pk_obj_list_obj_equal (list, obj_tmp, obj))
 			return (gpointer) obj_tmp;
 	}
 

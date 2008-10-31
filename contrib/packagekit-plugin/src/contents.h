@@ -53,84 +53,71 @@
 class PkpPluginInstance;
 
 enum PackageStatus {
-    IN_PROGRESS, /* Looking up package information */
-    INSTALLED,   /* Package installed */
-    UPGRADABLE,  /* Package installed, newer version available */
-    AVAILABLE,   /* Package not installed, version available */
-    UNAVAILABLE, /* Package not installed or available */
-    INSTALLING   /* Currently installing a new version */
+	IN_PROGRESS, /* Looking up package information */
+	INSTALLED,   /* Package installed */
+	UPGRADABLE,  /* Package installed, newer version available */
+	AVAILABLE,   /* Package not installed, version available */
+	UNAVAILABLE, /* Package not installed or available */
+	INSTALLING   /* Currently installing a new version */
 };
 
 class PkpContents
 {
 public:
-    PkpContents(const char *displayName, const char *packageNames, const char *desktopNames);
-    virtual ~PkpContents();
+	PkpContents(const gchar *displayName, const gchar *packageNames, const gchar *desktopNames);
+	virtual ~PkpContents();
 
-    void setPlugin(PkpPluginInstance *plugin);
+	void setPlugin(PkpPluginInstance *plugin);
 
-    void draw(cairo_t *cr);
-    void buttonPress(int x, int y, Time time);
-    void buttonRelease(int x, int y, Time time);
-    void motion(int x, int y);
-    void enter(int x, int y);
-    void leave(int x, int y);
+	void draw(cairo_t *cr);
+	void buttonPress(int x, int y, Time time);
+	void buttonRelease(int x, int y, Time time);
+	void motion(int x, int y);
+	void enter(int x, int y);
+	void leave(int x, int y);
 
 private:
-    void recheck();
-    void findAppInfo();
-    void runApplication(Time time);
-    void installPackage(Time time);
+	void recheck();
+	void findAppInfo();
+	void runApplication(Time time);
+	void installPackage(Time time);
 
-    int getLinkIndex(int x, int y);
+	int getLinkIndex(int x, int y);
 
-    void setStatus(PackageStatus status);
-    PackageStatus getStatus() { return mStatus; }
-    void setAvailableVersion(const char *version);
-    void setAvailablePackageName(const char *name);
-    void setInstalledVersion(const char *version);
+	void setStatus(PackageStatus status);
+	PackageStatus getStatus() { return mStatus; }
+	void setAvailableVersion(const gchar *version);
+	void setAvailablePackageName(const gchar *name);
+	void setInstalledVersion(const gchar *version);
 
-    void ensureLayout(cairo_t *cr,
-                      PangoFontDescription *font_desc,
-                      guint32 link_color);
-    void clearLayout();
-    void refresh();
+	void ensureLayout(cairo_t *cr, PangoFontDescription *font_desc, guint32 link_color);
+	void clearLayout();
+	void refresh();
 
-    void removeClient(PkClient *client);
+	void removeClient(PkClient *client);
 
-    static void onClientPackage(PkClient           *client,
-                                const PkPackageObj *obj,
-                                PkpContents        *contents);
-    static void onClientErrorCode(PkClient	   *client,
-                                  PkErrorCodeEnum  code,
-                                  const gchar	   *details,
-                                  PkpContents *contents);
-    static void onClientFinished(PkClient	  *client,
-                                 PkExitEnum	   exit,
-                                 guint		   runtime,
-                                 PkpContents      *contents);
+	static void onClientPackage(PkClient *client, const PkPackageObj *obj, PkpContents *contents);
+	static void onClientErrorCode(PkClient *client, PkErrorCodeEnum code, const gchar *details, PkpContents *contents);
+	static void onClientFinished(PkClient *client, PkExitEnum exit, guint runtime, PkpContents *contents);
+	static void onInstallPackageFinished(DBusGProxy *proxy, DBusGProxyCall *call, void *user_data);
 
-    static void onInstallPackageFinished(DBusGProxy     *proxy,
-                                         DBusGProxyCall *call,
-                                         void           *user_data);
+	PkpPluginInstance *mPlugin;
+	PackageStatus mStatus;
+	std::string mAvailableVersion;
+	std::string mAvailablePackageName;
+	std::string mInstalledVersion;
+	GAppInfo *mAppInfo;
 
-    PkpPluginInstance *mPlugin;
-    PackageStatus mStatus;
-    std::string mAvailableVersion;
-    std::string mAvailablePackageName;
-    std::string mInstalledVersion;
-    GAppInfo *mAppInfo;
+	std::string mDisplayName;
+	std::vector<std::string> mPackageNames;
+	std::vector<std::string> mDesktopNames;
 
-    std::string mDisplayName;
-    std::vector<std::string> mPackageNames;
-    std::vector<std::string> mDesktopNames;
+	PangoLayout *mLayout;
 
-    PangoLayout *mLayout;
+	std::vector<PkClient *> mClients;
 
-    std::vector<PkClient *> mClients;
-
-    DBusGProxy *mInstallPackageProxy;
-    DBusGProxyCall *mInstallPackageCall;
+	DBusGProxy *mInstallPackageProxy;
+	DBusGProxyCall *mInstallPackageCall;
 };
 
 #endif // __CONTENTS_H__

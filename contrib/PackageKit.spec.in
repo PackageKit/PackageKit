@@ -207,6 +207,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
+touch $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/groups.sqlite
 
 # create a link that GStreamer will recognise
 pushd ${RPM_BUILD_ROOT}%{_libexecdir} > /dev/null
@@ -249,6 +250,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_localstatedir}/run/PackageKit
 %dir %{_localstatedir}/run/PackageKit/udev
 %dir %{_localstatedir}/cache/PackageKit
+%ghost %verify(not md5 size mtime) %{_localstatedir}/cache/PackageKit/groups.sqlite
 %dir %{_localstatedir}/cache/PackageKit/downloads
 %{python_sitelib}/packagekit/*py*
 %dir %{_sysconfdir}/bash_completion.d
@@ -353,6 +355,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_includedir}/PackageKit/packagekit-qt
 %{_includedir}/PackageKit/packagekit-qt/QPackageKit
 %{_includedir}/PackageKit/packagekit-qt/*.h
+%{_datadir}/cmake/Modules/FindQPackageKit.cmake
 
 %files backend-devel
 %defattr(-,root,root,-)

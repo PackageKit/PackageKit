@@ -22,6 +22,8 @@
 
 #include "config.h"
 
+#include <unistd.h>
+#include <signal.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
@@ -32,6 +34,7 @@
 #include "pk-tools-common.h"
 
 static guint last_percentage = 0;
+static PkServicePack *pack = NULL;
 
 /**
  * pk_generate_pack_get_filename:
@@ -106,6 +109,49 @@ pk_generate_pack_percentage_cb (PkServicePack *pack, guint percentage, gpointer 
 }
 
 /**
+ * pk_generate_pack_status_cb:
+ **/
+static void
+pk_generate_pack_status_cb (PkServicePack *pack, PkServicePackStatus status, gpointer data)
+{
+	if (status == PK_SERVICE_PACK_STATUS_DOWNLOAD_PACKAGES) {
+		/* TRANSLATORS: This is when the main packages are being downloaded */
+		g_print ("%s\n", _("Downloading packages"));
+		return;
+	}
+	if (status == PK_SERVICE_PACK_STATUS_DOWNLOAD_DEPENDENCIES) {
+		/* TRANSLATORS: This is when the dependency packages are being downloaded */
+		g_print ("%s\n", _("Downloading dependencies"));
+		return;
+	}
+}
+
+/**
+ * pk_generate_pack_sigint_cb:
+ **/
+static void
+pk_generate_pack_sigint_cb (int sig)
+{
+	gboolean ret;
+	GError *error = NULL;
+	egg_debug ("Handling SIGINT");
+
+	/* restore default */
+	signal (SIGINT, SIG_DFL);
+
+	/* cancel downloads */
+	ret = pk_service_pack_cancel (pack, &error);
+	if (!ret) {
+		egg_warning ("failed to cancel: %s", error->message);
+		g_error_free (error);
+	}
+
+	/* kill ourselves */
+	egg_debug ("Retrying SIGINT");
+	kill (getpid (), SIGINT);
+}
+
+/**
  * main:
  **/
 int
@@ -117,14 +163,13 @@ main (int argc, char *argv[])
 	gboolean ret;
 	guint retval;
 	gchar *filename = NULL;
+	PkClient *client = NULL;
 	PkControl *control = NULL;
 	PkBitfield roles;
 	gchar *tempdir = NULL;
 	gboolean exists;
 	gboolean overwrite;
-	PkServicePack *pack = NULL;
 	PkPackageList *list = NULL;
-	PkClient *client = NULL;
 	gchar *package_id = NULL;
 
 	gboolean verbose = FALSE;
@@ -151,6 +196,9 @@ main (int argc, char *argv[])
 		g_thread_init (NULL);
 
 	g_type_init ();
+
+	/* do stuff on ctrl-c */
+	signal (SIGINT, pk_generate_pack_sigint_cb);
 
 	context = g_option_context_new ("PackageKit Pack Generator");
 	g_option_context_add_main_entries (context, options, NULL);
@@ -252,6 +300,7 @@ main (int argc, char *argv[])
 	pack = pk_service_pack_new ();
 	g_signal_connect (pack, "package", G_CALLBACK (pk_generate_pack_package_cb), pack);
 	g_signal_connect (pack, "percentage", G_CALLBACK (pk_generate_pack_percentage_cb), pack);
+	g_signal_connect (pack, "status", G_CALLBACK (pk_generate_pack_status_cb), pack);
 	pk_service_pack_set_filename (pack, filename);
 	pk_service_pack_set_temp_directory (pack, tempdir);
 	pk_service_pack_set_exclude_list (pack, list);

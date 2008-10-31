@@ -682,6 +682,26 @@ backend_cancel (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
 }
 
+int
+backend_pkg_cmp (pmpkg_t *pkg1, pmpkg_t *pkg2) {
+	int comparison;
+	/* check for no package */
+	if (pkg1 == NULL)
+		return -1;
+	if (pkg2 == NULL)
+		return 1;
+	/* compare package names */
+	comparison = strcmp (alpm_pkg_get_name (pkg1), alpm_pkg_get_name (pkg2));
+	if (comparison != 0)
+		return comparison;
+	/* compare package versions */
+	comparison = alpm_pkg_vercmp (alpm_pkg_get_version (pkg1), alpm_pkg_get_version (pkg2));
+	if (comparison != 0)
+		return comparison;
+	/* packages are equal */
+	return 0;
+}
+
 /**
  * backend_get_depends:
  */
@@ -715,11 +735,9 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 					egg_debug ("alpm: searching for %s in %s", alpm_dep_get_name (dep), alpm_db_get_name (syncdb));
 
 					dep_pkg = alpm_db_get_pkg (syncdb, alpm_dep_get_name (dep));
-					if (dep_pkg && alpm_depcmp (dep_pkg, dep)) {
+					if (dep_pkg && alpm_depcmp (dep_pkg, dep) && backend_pkg_cmp (dep_pkg, alpm_db_get_pkg (alpm_option_get_localdb (), alpm_dep_get_name (dep))) != 0) {
 						found = TRUE;
-						gchar *dep_package_id_str = pkg_to_package_id_str (dep_pkg, alpm_db_get_name (syncdb));
-						pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, dep_package_id_str, alpm_pkg_get_desc (dep_pkg));
-						g_free (dep_package_id_str);
+						emit_package (backend, dep_pkg, alpm_db_get_name (syncdb), PK_INFO_ENUM_AVAILABLE);
 					}
 				}
 			}
@@ -731,9 +749,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 				dep_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), alpm_dep_get_name (dep));
 				if (dep_pkg && alpm_depcmp (dep_pkg, dep)) {
 					found = TRUE;
-					gchar *dep_package_id_str = pkg_to_package_id_str (dep_pkg, ALPM_LOCAL_DB_ALIAS);
-					pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, dep_package_id_str, alpm_pkg_get_desc (dep_pkg));
-					g_free (dep_package_id_str);
+					emit_package (backend, dep_pkg, ALPM_LOCAL_DB_ALIAS, PK_INFO_ENUM_INSTALLED);
 				}
 			}
 
@@ -830,26 +846,6 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 	}
 
 	pk_backend_finished (backend);
-}
-
-int
-backend_pkg_cmp (pmpkg_t *pkg1, pmpkg_t *pkg2) {
-	int comparison;
-	/* check for no package */
-	if (pkg1 == NULL)
-		return -1;
-	if (pkg2 == NULL)
-		return 1;
-	/* compare package names */
-	comparison = strcmp (alpm_pkg_get_name (pkg1), alpm_pkg_get_name (pkg2));
-	if (comparison != 0)
-		return comparison;
-	/* compare package versions */
-	comparison = alpm_pkg_vercmp (alpm_pkg_get_version (pkg1), alpm_pkg_get_version (pkg2));
-	if (comparison != 0)
-		return comparison;
-	/* packages are equal */
-	return 0;
 }
 
 void

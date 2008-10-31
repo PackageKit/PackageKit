@@ -78,6 +78,13 @@ pk_package_list_set_fuzzy_arch (PkPackageList *plist, gboolean fuzzy_arch)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	plist->priv->fuzzy_arch = fuzzy_arch;
+
+	/* use a different equality function */
+	if (fuzzy_arch)
+		pk_obj_list_set_equal (PK_OBJ_LIST(plist), (PkObjListCompareFunc) pk_package_obj_equal_fuzzy_arch);
+	else
+		pk_obj_list_set_equal (PK_OBJ_LIST(plist), (PkObjListCompareFunc) pk_package_obj_equal);
+
 	return TRUE;
 }
 
@@ -315,12 +322,11 @@ pk_package_list_init (PkPackageList *plist)
 	g_return_if_fail (PK_IS_PACKAGE_LIST (plist));
 
 	plist->priv = PK_PACKAGE_LIST_GET_PRIVATE (plist);
-	plist->priv->fuzzy_arch = FALSE;
-
 	pk_obj_list_set_copy (PK_OBJ_LIST(plist), (PkObjListCopyFunc) pk_package_obj_copy);
 	pk_obj_list_set_free (PK_OBJ_LIST(plist), (PkObjListFreeFunc) pk_package_obj_free);
 	pk_obj_list_set_to_string (PK_OBJ_LIST(plist), (PkObjListToStringFunc)  pk_package_obj_to_string);
 	pk_obj_list_set_from_string (PK_OBJ_LIST(plist), (PkObjListFromStringFunc)  pk_package_obj_from_string);
+	pk_package_list_set_fuzzy_arch (plist, FALSE);
 }
 
 /**
