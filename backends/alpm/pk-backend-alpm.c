@@ -62,7 +62,8 @@ typedef enum {
 	PK_ALPM_SEARCH_TYPE_RESOLVE,
 	PK_ALPM_SEARCH_TYPE_NAME,
 	PK_ALPM_SEARCH_TYPE_DETAILS,
-	PK_ALPM_SEARCH_TYPE_GROUP
+	PK_ALPM_SEARCH_TYPE_GROUP,
+	PK_ALPM_SEARCH_TYPE_PROVIDES
 } PkAlpmSearchType;
 
 gchar *
@@ -906,6 +907,13 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 					match = strcmp (group, needle) == 0;
 				}
 				break;
+			case PK_ALPM_SEARCH_TYPE_PROVIDES:
+				match = FALSE;
+				alpm_list_t *provides;
+				/* iterate provides */
+				for (provides = alpm_pkg_get_provides (pkg); provides && !match; provides = alpm_list_next (provides))
+					match = egg_strequal (needle, alpm_list_getdata (provides));
+				break;
 			default:
 				match = FALSE;
 		}
@@ -1428,9 +1436,22 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	backend_install_packages (backend, package_ids);
 }
 
+/**
+ * backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_set_uint (backend, "search-type", PK_ALPM_SEARCH_TYPE_PROVIDES);
+
+	pk_backend_thread_create (backend, backend_search_thread);
+}
+
 PK_BACKEND_OPTIONS (
 	"alpm",						/* description */
-	"Andreas Obergrusberger <tradiaz@yahoo.de>",	/* author */
+	"Valeriy Lyasotskiy <onestep@ukr.net>",		/* author */
 	backend_initialize,				/* initialize */
 	backend_destroy,				/* destroy */
 	backend_get_groups,				/* get_groups */
@@ -1463,6 +1484,6 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,				/* search_name */
 	backend_update_packages,			/* update_packages */
 	NULL,						/* update_system */
-	NULL						/* what_provides */
+	backend_what_provides				/* what_provides */
 );
 
