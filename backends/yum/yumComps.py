@@ -194,7 +194,7 @@ class yumComps:
         self.cursor = None
         self.connection = None
         if not db:
-            db = '/var/cache/yum/packagekit-groups.sqlite'
+            db = '/var/cache/PackageKit/groups.sqlite'
         self.db = db
 
     def connect(self):
