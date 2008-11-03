@@ -1307,6 +1307,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         pkgs_local = self.yumbase.rpmdb.searchNevra(name=pkg.name)
                     except yum.Errors.YumBaseError, e:
                         self.error(ERROR_INVALID_PACKAGE_FILE, 'Package could not be decompressed')
+                    except yum.Errors.MiscError:
+                        self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file)
                     except:
                         self.error(ERROR_UNKNOWN, "Failed to open local file -- please report")
                     else:
@@ -1341,7 +1343,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             # This means we don't run runYumTransaction, and don't get the GPG failure in
             # PackageKitYumBase(_checkSignatures) -- so we check here
             for inst_file in inst_files:
-                po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+                try:
+                    po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+                except yum.Errors.MiscError:
+                    self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file)
                 try:
                     self.yumbase._checkSignatures([po], None)
                 except yum.Errors.YumGPGCheckError, e:
