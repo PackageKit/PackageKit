@@ -49,6 +49,8 @@
 #include <zypp/target/rpm/RpmDb.h>
 #include <zypp/target/rpm/RpmHeader.h>
 #include <zypp/target/rpm/RpmException.h>
+#include <zypp/base/Functional.h>
+#include <zypp/parser/ProductFileReader.h>
 #include <zypp/TmpPath.h>
 
 #include <zypp/sat/Solvable.h>
@@ -574,38 +576,33 @@ static gboolean
 backend_get_distro_upgrades_thread(PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
 
-	// refresh the repos before checking for updates
-	if (!zypp_refresh_cache (backend, FALSE)) {
+	std::vector<zypp::parser::ProductFileData> result;
+	if (!zypp::parser::ProductFileReader::scanDir (zypp::functor::getAll (std::back_inserter (result)), "/etc/products.d")) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not parse /etc/products.d");
 		pk_backend_finished (backend);
 		return FALSE;
 	}
 
-	zypp::ResPool pool = zypp_build_pool (TRUE);
-	pk_backend_set_percentage (backend, 40);
-
-	// get all Packages and Patches for Update
-	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
-
-	pk_backend_set_percentage (backend, 80);
-
-	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
-	for (ci = cb; ci != ce; ++ci) {
-		zypp::ResObject::constPtr res = ci->resolvable();
-
-		if (zypp::isKind<zypp::Patch>(res)) {
-			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
-			if (patch->category () == "distupgrade")
-			{
-				// here emit a distupgrade available using the patch summary
-				pk_backend_distro_upgrade(backend,
-							PK_DISTRO_UPGRADE_ENUM_STABLE,
-							patch->name ().c_str (),
-							patch->summary ().c_str ());
+	for (std::vector<zypp::parser::ProductFileData>::iterator it = result.begin (); it != result.end (); it++) {
+		std::vector<zypp::parser::ProductFileData::Upgrade> upgrades = it->upgrades();
+		for (std::vector<zypp::parser::ProductFileData::Upgrade>::iterator it2 = upgrades.begin (); it2 != upgrades.end (); it2++) {
+			if (it2->notify ()){
+				PkDistroUpgradeEnum status = PK_DISTRO_UPGRADE_ENUM_UNKNOWN;
+				if (it2->status () == "stable") {
+					status = PK_DISTRO_UPGRADE_ENUM_STABLE;
+				} else if (it2->status () == "unstable") {
+					status = PK_DISTRO_UPGRADE_ENUM_UNSTABLE;
+				}
+				pk_backend_distro_upgrade (backend,
+							   status,
+							   it2->name ().c_str (),
+							   it2->summary ().c_str ());
 			}
 		}
 	}
+
+	pk_backend_finished (backend);
 	return TRUE;
 }
 
