@@ -63,9 +63,33 @@ struct PkBackendSpawnPrivate
 	guint			 backend_finished_id;
 	PkConf			*conf;
 	gboolean		 finished;
+	PkBackendSpawnFilterFunc stdout_func;
+	PkBackendSpawnFilterFunc stderr_func;
 };
 
 G_DEFINE_TYPE (PkBackendSpawn, pk_backend_spawn, G_TYPE_OBJECT)
+
+/**
+ * pk_backend_spawn_set_filter_stdout:
+ **/
+gboolean
+pk_backend_spawn_set_filter_stdout (PkBackendSpawn *backend_spawn, PkBackendSpawnFilterFunc func)
+{
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+	backend_spawn->priv->stdout_func = func;
+	return TRUE;
+}
+
+/**
+ * pk_backend_spawn_set_filter_stderr:
+ **/
+gboolean
+pk_backend_spawn_set_filter_stderr (PkBackendSpawn *backend_spawn, PkBackendSpawnFilterFunc func)
+{
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+	backend_spawn->priv->stderr_func = func;
+	return TRUE;
+}
 
 /**
  * pk_backend_spawn_parse_stdout:
@@ -456,9 +480,40 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 	gboolean ret;
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
+	/* do we ignore with a filter func ? */
+	if (backend_spawn->priv->stdout_func != NULL) {
+		ret = backend_spawn->priv->stdout_func (backend_spawn->priv->backend, line);
+		if (!ret)
+			return;
+	}
+
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, line);
 	if (!ret)
 		egg_debug ("failed to parse '%s'", line);
+}
+
+/**
+ * pk_backend_spawn_stderr_cb:
+ **/
+static void
+pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
+{
+	gboolean ret;
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
+
+	/* do we ignore with a filter func ? */
+	if (backend_spawn->priv->stderr_func != NULL) {
+		ret = backend_spawn->priv->stderr_func (backend_spawn->priv->backend, line);
+		if (!ret)
+			return;
+	}
+
+	/* send error up to session, this is never going to be pretty... */
+	egg_warning ("STDERR: %s", line);
+	pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			       "library error: %s", line);
+	pk_backend_finished (backend_spawn->priv->backend);
+	pk_spawn_kill (backend_spawn->priv->spawn);
 }
 
 /**
@@ -717,6 +772,8 @@ pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 	backend_spawn->priv = PK_BACKEND_SPAWN_GET_PRIVATE (backend_spawn);
 	backend_spawn->priv->kill_id = 0;
 	backend_spawn->priv->name = NULL;
+	backend_spawn->priv->stdout_func = NULL;
+	backend_spawn->priv->stderr_func = NULL;
 	backend_spawn->priv->finished = FALSE;
 	backend_spawn->priv->conf = pk_conf_new ();
 	backend_spawn->priv->backend = pk_backend_new ();
@@ -728,6 +785,8 @@ pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 			  G_CALLBACK (pk_backend_spawn_exit_cb), backend_spawn);
 	g_signal_connect (backend_spawn->priv->spawn, "stdout",
 			  G_CALLBACK (pk_backend_spawn_stdout_cb), backend_spawn);
+	g_signal_connect (backend_spawn->priv->spawn, "stderr",
+			  G_CALLBACK (pk_backend_spawn_stderr_cb), backend_spawn);
 }
 
 /**
