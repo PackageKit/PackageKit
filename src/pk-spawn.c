@@ -63,6 +63,7 @@ struct PkSpawnPrivate
 	gint			 child_pid;
 	gint			 stdin_fd;
 	gint			 stdout_fd;
+	gint			 stderr_fd;
 	guint			 poll_id;
 	guint			 kill_id;
 	gboolean		 finished;
@@ -70,6 +71,7 @@ struct PkSpawnPrivate
 	gboolean		 is_changing_dispatcher;
 	PkSpawnExitType		 exit;
 	GString			*stdout_buf;
+	GString			*stderr_buf;
 	gchar			*last_argv0;
 	gchar			**last_envp;
 	PkConf			*conf;
@@ -78,6 +80,7 @@ struct PkSpawnPrivate
 enum {
 	PK_SPAWN_EXIT,
 	PK_SPAWN_STDOUT,
+	PK_SPAWN_STDERR,
 	PK_SPAWN_LAST_SIGNAL
 };
 
@@ -157,6 +160,16 @@ pk_spawn_check_child (PkSpawn *spawn)
 	}
 
 	pk_spawn_read_fd_into_buffer (spawn->priv->stdout_fd, spawn->priv->stdout_buf);
+	pk_spawn_read_fd_into_buffer (spawn->priv->stderr_fd, spawn->priv->stderr_buf);
+
+	/* emit all lines on standard out in one callback, as it's all probably
+	* related to the error that just happened */
+	if (spawn->priv->stderr_buf->len != 0) {
+		g_signal_emit (spawn, signals [PK_SPAWN_STDERR], 0, spawn->priv->stderr_buf->str);
+		g_string_set_size (spawn->priv->stderr_buf, 0);
+	}
+
+	/* all usual output goes on standard out, only bad libraries bitch to stderr */
 	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf);
 
 	/* Only print one in twenty times to avoid filling the screen */
@@ -176,8 +189,10 @@ pk_spawn_check_child (PkSpawn *spawn)
 	/* child exited, close resources */
 	close (spawn->priv->stdin_fd);
 	close (spawn->priv->stdout_fd);
+	close (spawn->priv->stderr_fd);
 	spawn->priv->stdin_fd = -1;
 	spawn->priv->stdout_fd = -1;
+	spawn->priv->stderr_fd = -1;
 	spawn->priv->child_pid = -1;
 
 	if (WEXITSTATUS (status) > 0) {
@@ -437,7 +452,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 				 NULL, NULL, &spawn->priv->child_pid,
 				 &spawn->priv->stdin_fd,
 				 &spawn->priv->stdout_fd,
-				 NULL,
+				 &spawn->priv->stderr_fd,
 				 NULL);
 
 	/* get the nice value and ensure we are in the valid range */
@@ -466,6 +481,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 
 	/* install an idle handler to check if the child returnd successfully. */
 	fcntl (spawn->priv->stdout_fd, F_SETFL, O_NONBLOCK);
+	fcntl (spawn->priv->stderr_fd, F_SETFL, O_NONBLOCK);
 
 	/* sanity check */
 	if (spawn->priv->poll_id != 0)
@@ -498,6 +514,11 @@ pk_spawn_class_init (PkSpawnClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
+	signals [PK_SPAWN_STDERR] =
+		g_signal_new ("stderr",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
 
 	g_type_class_add_private (klass, sizeof (PkSpawnPrivate));
 }
@@ -513,6 +534,7 @@ pk_spawn_init (PkSpawn *spawn)
 
 	spawn->priv->child_pid = -1;
 	spawn->priv->stdout_fd = -1;
+	spawn->priv->stderr_fd = -1;
 	spawn->priv->stdin_fd = -1;
 	spawn->priv->poll_id = 0;
 	spawn->priv->kill_id = 0;
@@ -524,6 +546,7 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 
 	spawn->priv->stdout_buf = g_string_new ("");
+	spawn->priv->stderr_buf = g_string_new ("");
 	spawn->priv->conf = pk_conf_new ();
 }
 
@@ -557,6 +580,7 @@ pk_spawn_finalize (GObject *object)
 
 	/* free the buffers */
 	g_string_free (spawn->priv->stdout_buf, TRUE);
+	g_string_free (spawn->priv->stderr_buf, TRUE);
 	g_free (spawn->priv->last_argv0);
 	g_strfreev (spawn->priv->last_envp);
 	g_object_unref (spawn->priv->conf);
