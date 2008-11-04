@@ -462,6 +462,20 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 }
 
 /**
+ * pk_backend_spawn_stderr_cb:
+ **/
+static void
+pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
+{
+	/* send error up to session, this is never going to be pretty... */
+	egg_warning ("STDERR: %s", line);
+	pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			       "library error: %s", line);
+	pk_backend_finished (backend_spawn->priv->backend);
+	pk_spawn_kill (backend_spawn->priv->spawn);
+}
+
+/**
  * pk_backend_spawn_get_envp:
  *
  * Return all the environment variables the script will need
@@ -728,6 +742,8 @@ pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 			  G_CALLBACK (pk_backend_spawn_exit_cb), backend_spawn);
 	g_signal_connect (backend_spawn->priv->spawn, "stdout",
 			  G_CALLBACK (pk_backend_spawn_stdout_cb), backend_spawn);
+	g_signal_connect (backend_spawn->priv->spawn, "stderr",
+			  G_CALLBACK (pk_backend_spawn_stderr_cb), backend_spawn);
 }
 
 /**
