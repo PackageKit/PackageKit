@@ -22,8 +22,21 @@
 #include <packagekit-glib/packagekit.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
+#include <string.h>
 
 static PkBackendSpawn *spawn;
+
+/**
+ * backend_stderr_cb:
+ */
+static gboolean
+backend_stderr_cb (PkBackend *backend, const gchar *output)
+{
+	/* unsigned rpm, this will be picked up by yum and and exception will be thrown */
+	if (strstr (output, "NOKEY") != NULL)
+		return FALSE;
+	return TRUE;
+}
 
 /**
  * backend_initialize:
@@ -34,6 +47,7 @@ backend_initialize (PkBackend *backend)
 {
 	egg_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
+	pk_backend_spawn_set_filter_stderr (spawn, backend_stderr_cb);
 	pk_backend_spawn_set_name (spawn, "yum");
 }
 
