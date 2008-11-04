@@ -59,6 +59,14 @@ const gchar	*pk_backend_spawn_get_name		(PkBackendSpawn	*backend_spawn);
 gboolean	 pk_backend_spawn_set_name		(PkBackendSpawn	*backend_spawn,
 							 const gchar	*name);
 
+/* filtering */
+typedef gboolean (*PkBackendSpawnFilterFunc)		(PkBackend	*backend,
+							 const gchar	*data);
+gboolean	 pk_backend_spawn_set_filter_stderr	(PkBackendSpawn	*backend_spawn,
+							 PkBackendSpawnFilterFunc func);
+gboolean	 pk_backend_spawn_set_filter_stdout	(PkBackendSpawn	*backend_spawn,
+							 PkBackendSpawnFilterFunc func);
+
 
 G_END_DECLS
 
