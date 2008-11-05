@@ -508,12 +508,10 @@ pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 			return;
 	}
 
-	/* send error up to session, this is never going to be pretty... */
+	/* send warning up to session, this is never going to be pretty... */
 	egg_warning ("STDERR: %s", line);
-	pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-			       "library error: %s", line);
-	pk_backend_finished (backend_spawn->priv->backend);
-	pk_spawn_kill (backend_spawn->priv->spawn);
+	pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+			    "library warning: %s", line);
 }
 
 /**
