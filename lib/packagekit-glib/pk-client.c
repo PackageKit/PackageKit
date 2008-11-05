@@ -1285,6 +1285,12 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -1332,6 +1338,12 @@ pk_client_get_categories (PkClient *client, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1409,6 +1421,12 @@ pk_client_update_system (PkClient *client, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -1475,6 +1493,12 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -1530,6 +1554,12 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -1583,6 +1613,12 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -1635,6 +1671,12 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1691,6 +1733,12 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -1749,52 +1797,58 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 gboolean
 pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar *directory, GError **error)
 {
-        gboolean ret;
-        gchar *package_ids_temp;
+	gboolean ret;
+	gchar *package_ids_temp;
 
-        g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-        g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-        /* check the PackageIDs here to avoid a round trip if invalid */
-        ret = pk_package_ids_check (package_ids);
-        if (!ret) {
-                package_ids_temp = pk_package_ids_to_text (package_ids);
-                pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-                                     "package_ids '%s' are not valid", package_ids_temp);
-                g_free (package_ids_temp);
-                return FALSE;
-        }
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
-        /* get and set a new ID */
-        ret = pk_client_allocate_transaction_id (client, error);
-        if (!ret) {
-                return FALSE;
-        }
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
+	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids);
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
+				     "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
+		return FALSE;
+	}
 
-        /* save this so we can re-issue it */
-        client->priv->role = PK_ROLE_ENUM_DOWNLOAD_PACKAGES;
-        client->priv->cached_package_ids = g_strdupv (package_ids);
-        client->priv->cached_directory = g_strdup (directory);
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
 
-        /* check to see if we have a valid proxy */
-        if (client->priv->proxy == NULL) {
-                pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-                return FALSE;
-        }
-        ret = dbus_g_proxy_call (client->priv->proxy, "DownloadPackages", error,
-                                 G_TYPE_STRV, package_ids,
-                                 G_TYPE_INVALID, G_TYPE_INVALID);
-        if (ret && !client->priv->is_finished) {
-                /* allow clients to respond in the status changed callback */
-                pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_DOWNLOAD_PACKAGES;
+	client->priv->cached_package_ids = g_strdupv (package_ids);
+	client->priv->cached_directory = g_strdup (directory);
 
-                /* spin until finished */
-                if (client->priv->synchronous)
-                        g_main_loop_run (client->priv->loop);
-        }
-        pk_client_error_fixup (error);
-        return ret;
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "DownloadPackages", error,
+				 G_TYPE_STRV, package_ids,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret && !client->priv->is_finished) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous)
+			g_main_loop_run (client->priv->loop);
+	}
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 
@@ -1816,6 +1870,12 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1904,6 +1964,12 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
@@ -1976,6 +2042,12 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 	g_return_val_if_fail (search != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -2033,6 +2105,12 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2096,6 +2174,12 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -2147,6 +2231,12 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (packages != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2201,6 +2291,12 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2263,6 +2359,12 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -2313,6 +2415,12 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2367,6 +2475,12 @@ pk_client_remove_packages_action (PkClient *client, gchar **package_ids,
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
@@ -2405,6 +2519,12 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2509,6 +2629,12 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -2598,6 +2724,12 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2706,6 +2838,12 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* check the PackageID here to avoid a round trip if invalid */
 	ret = pk_package_id_check (package_id);
 	if (!ret) {
@@ -2804,6 +2942,12 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
 	ret = pk_package_ids_check (package_ids);
@@ -2943,6 +3087,12 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 	g_return_val_if_fail (files_rel != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -3024,6 +3174,12 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -3097,6 +3253,12 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (eula_id != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -3188,6 +3350,12 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	g_return_val_if_fail (repo_id != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
@@ -3248,6 +3416,12 @@ pk_client_repo_set_data_action (PkClient *client, const gchar *repo_id,
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
@@ -3286,6 +3460,12 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	g_return_val_if_fail (parameter != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -3382,6 +3562,12 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -3969,37 +4155,37 @@ pk_client_disconnect_proxy (PkClient *client)
 	if (client->priv->proxy == NULL)
 		return FALSE;
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Finished",
-				        G_CALLBACK (pk_client_finished_cb), client);
+					G_CALLBACK (pk_client_finished_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ProgressChanged",
-				        G_CALLBACK (pk_client_progress_changed_cb), client);
+					G_CALLBACK (pk_client_progress_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "StatusChanged",
-				        G_CALLBACK (pk_client_status_changed_cb), client);
+					G_CALLBACK (pk_client_status_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Package",
-				        G_CALLBACK (pk_client_package_cb), client);
+					G_CALLBACK (pk_client_package_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Transaction",
-				        G_CALLBACK (pk_client_transaction_cb), client);
+					G_CALLBACK (pk_client_transaction_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "DistroUpgrade",
-				        G_CALLBACK (pk_client_distro_upgrade_cb), client);
+					G_CALLBACK (pk_client_distro_upgrade_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Details",
-				        G_CALLBACK (pk_client_details_cb), client);
+					G_CALLBACK (pk_client_details_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Files",
-				        G_CALLBACK (pk_client_files_cb), client);
+					G_CALLBACK (pk_client_files_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoSignatureRequired",
-				        G_CALLBACK (pk_client_repo_signature_required_cb), client);
+					G_CALLBACK (pk_client_repo_signature_required_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "EulaRequired",
-				        G_CALLBACK (pk_client_eula_required_cb), client);
+					G_CALLBACK (pk_client_eula_required_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ErrorCode",
-				        G_CALLBACK (pk_client_error_code_cb), client);
+					G_CALLBACK (pk_client_error_code_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RequireRestart",
-				        G_CALLBACK (pk_client_require_restart_cb), client);
+					G_CALLBACK (pk_client_require_restart_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Message",
-				        G_CALLBACK (pk_client_message_cb), client);
+					G_CALLBACK (pk_client_message_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "CallerActiveChanged",
 					G_CALLBACK (pk_client_caller_active_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "AllowCancel",
-				        G_CALLBACK (pk_client_allow_cancel_cb), client);
+					G_CALLBACK (pk_client_allow_cancel_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Destroy",
-				        G_CALLBACK (pk_client_destroy_cb), client);
+					G_CALLBACK (pk_client_destroy_cb), client);
 	g_object_unref (G_OBJECT (client->priv->proxy));
 	client->priv->proxy = NULL;
 	return TRUE;
