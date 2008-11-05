@@ -1226,7 +1226,7 @@ pk_client_cancel (PkClient *client, GError **error)
  * @client: a valid #PkClient instance
  * @error: a %GError to put the error code and message in, or %NULL
  *
- * Get a new tid.
+ * Get a new tid, freeing the old tid if required.
  *
  * Return value: the tid, or %NULL if we had an error.
  **/
@@ -1250,6 +1250,10 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 		g_error_free (error_local);
 		return FALSE;
 	}
+
+	/* free any old tid */
+	g_free (client->priv->tid);
+	client->priv->tid = NULL;
 
 	/* set that new ID to this GObject */
 	ret = pk_client_set_tid (client, tid, &error_local);
@@ -1422,20 +1426,21 @@ pk_client_update_system (PkClient *client, GError **error)
 		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, error);
+			if (!ret)
+				return FALSE;
+
 			/* retry the action now we have got auth */
 			ret = pk_client_update_system_action (client, &error_pk);
 		}
-		if (!ret && pk_client_error_refused_by_policy (error_pk)) {
-			/* we failed to get an auth */
-			pk_client_error_set (error, PK_CLIENT_ERROR_FAILED_AUTH, error_pk->message);
-			/* clear old error */
-			g_clear_error (&error_pk);
-			return FALSE;
-		}
 	}
 	/* we failed one of these, return the error to the user */
-	if (!ret)
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
 		g_propagate_error (error, error_pk);
+	}
 
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
@@ -2431,6 +2436,12 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, error);
+			if (!ret)
+				return FALSE;
+
 			/* retry the action now we have got auth */
 			ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_pk);
 		}
@@ -2516,6 +2527,12 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, error);
+			if (!ret)
+				return FALSE;
+
 			/* retry the action now we have got auth */
 			ret = pk_client_refresh_cache_action (client, force, &error_pk);
 		}
@@ -2610,6 +2627,12 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, error);
+			if (!ret)
+				return FALSE;
+
 			/* retry the action now we have got auth */
 			ret = pk_client_install_package_action (client, package_ids, &error_pk);
 		}
@@ -2710,6 +2733,12 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, error);
+			if (!ret)
+				return FALSE;
+
 			/* retry the action now we have got auth */
 			ret = pk_client_install_signature_action (client, type, key_id, package_id, &error_pk);
 		}
@@ -2808,6 +2837,12 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, error);
+			if (!ret)
+				return FALSE;
+
 			/* retry the action now we have got auth */
 			ret = pk_client_update_packages_action (client, package_ids, &error_pk);
 		}
@@ -2942,6 +2977,12 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, error);
+			if (!ret)
+				return FALSE;
+
 			/* retry the action now we have got auth */
 			ret = pk_client_install_files_action (client, trusted, files, &error_pk);
 		}
@@ -3074,6 +3115,12 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, error);
+			if (!ret)
+				return FALSE;
+
 			/* retry the action now we have got auth */
 			ret = pk_client_accept_eula_action (client, eula_id, &error_pk);
 		}
@@ -3158,6 +3205,12 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, error);
+			if (!ret)
+				return FALSE;
+
 			/* retry the action now we have got auth */
 			ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_pk);
 		}
@@ -3251,6 +3304,12 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, error);
+			if (!ret)
+				return FALSE;
+
 			/* retry the action now we have got auth */
 			ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_pk);
 		}
