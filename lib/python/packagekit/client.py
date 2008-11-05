@@ -1,5 +1,9 @@
 #!/usr/bin/python
-#
+'''
+The module provides a client to the PackageKit DBus interface. It allows to
+perform basic package manipulation tasks in a cross distribution way, e.g.
+to search for packages, install packages or codecs.
+'''
 # Licensed under the GNU General Public License Version 2
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,16 +25,20 @@
 #    Aidan Skinner <aidan@skinner.me.uk>
 #    Martin Pitt <martin.pitt@ubuntu.com>
 #    Tim Lauridsen <timlau@fedoraproject.org>
-#
-# Synchronous PackageKit client wrapper API for Python.
+#    Sebastian Heinlein <devel@glatzor.de>
 
+import locale
 import os
-import gobject
+
 import dbus
+import dbus.mainloop.glib
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+import gobject
+
 from enums import *
 from misc import *
 
-__api_version__ = '0.1.0'
+__api_version__ = '0.1.1'
 
 class PackageKitError(Exception):
     '''PackageKit error.
@@ -46,6 +54,143 @@ class PackageKitError(Exception):
     def __str__(self):
         return "%s: %s" % (self.error, self.desc)
 
+class PackageKitTransaction:
+    '''
+    This class represents a PackageKit transaction. It allows asynchronous and
+    synchronous processing
+    '''
+    def __init__(self, tid, iface):
+        self.tid = tid
+        self._error_enum = None
+        self._error_desc = None
+        self._finished_status = None
+        self._allow_cancel = False
+        self._method = None
+        self.result = []
+        # Connect the signal handlers to the DBus iface
+        self._iface = iface
+        for sig, cb in [('Finished', self._on_finished),
+                        ('ErrorCode', self._on_error),
+                        ('StatusChanged', self._on_status),
+                        ('AllowCancel', self._on_allow_cancel),
+                        ('Package', self._on_package),
+                        ('Details', self._on_details),
+                        ('Category', self._on_category),
+                        ('UpdateDetail', self._on_update_detail),
+                        ('DistroUpgrade', self._on_distro_upgrade),
+                        ('RepoDetail', self._on_repo_detail)]:
+            self._iface.connect_to_signal(sig, cb)
+        self._main_loop = gobject.MainLoop()
+
+    def connect_to_signal(self, sig, cb):
+        '''Connect to a signal of the transaction's DBus interface'''
+        self._iface.connect_to_signal(sig, cb)
+
+    def _on_package(self, i, id, summary):
+        '''Callback for Package signal'''
+        self.result.append(PackageKitPackage(i, id, summary))
+
+    def _on_distro_upgrade(self, typ, name, summary):
+        '''Callback for DistroUpgrade signal'''
+        self.result.append(PackageKitDistroUpgrade(typ, name, summary))
+
+    def _on_details(self, id, license, group, detail, url, size):
+        '''Callback for Details signal'''
+        self.result.append(PackageKitDetails(id, license, group, detail,
+                                             url, size))
+
+    def _on_category(self, parent_id, cat_id, name, summary, icon):
+        '''Callback for Category signal'''
+        self.result.append(PackageKitCategory(parent_id, cat_id, name,
+                                              summary, icon))
+
+    def _on_update_detail(self, id, updates, obsoletes, vendor_url,
+                          bugzilla_url, cve_url, restart, update_text,
+                          changelog, state, issued, updated):
+        '''Callback for UpdateDetail signal'''
+        self.result.append(PackageKitUpdateDetails(id, updates, obsoletes,
+                                                   vendor_url, bugzilla_url,
+                                                   cve_url, restart,
+                                                   update_text, changelog,
+                                                   state, issued, updated))
+    def _on_repo_detail(self, id, description, enabled):
+        '''Callback for RepoDetail signal'''
+        self.result.append(PackageKitRepos(id, description, enabled))
+
+    def _on_files(self, id, files):
+        '''Callback for Files signal'''
+        self.result.append(PackageKitFiles(id, files))
+
+    def _on_status(self, status):
+        '''Callback for StatusChanged signal'''
+        self._status = status
+
+    def _on_allow_cancel(self, allow):
+        '''Callback for AllowCancel signal'''
+        self._allow_cancel = allow
+
+    def _on_error(self, enum, desc):
+        '''Callback for ErrorCode signal'''
+        self._error_enum = enum
+        self._error_desc = desc
+
+    def _on_finished(self, status, code):
+        '''Callback for Finished signal'''
+        self._finished_status = status
+        self._main_loop.quit()
+
+    def set_method(self, method, *args):
+        '''Setup the method of the DBus interface which should be handled'''
+        self._method = getattr(self._iface, method)
+        self._args = args
+
+    def run(self, wait=True):
+        '''
+        Start processing the transaction.
+
+        If wait is True the method will return the result after the
+        processing is done.
+        '''
+        # avoid blocking the user interface
+        context = gobject.main_context_default()
+        while context.pending():
+            context.iteration()
+        polkit_auth_wrapper(self._method, *self._args)
+        if wait == True:
+            self._main_loop.run()
+            if self._error_enum:
+                raise PackageKitError(self._error_enum, self._error_desc)
+            return self.result
+
+    def SetLocale(self, code):
+        '''Set the language to the given locale code'''
+        return self._iface.SetLocale(code)
+
+    def Cancel(self):
+        '''Cancel the transaction'''
+        return self._iface.Cancel()
+
+    def GetStatus(self):
+        '''Get the status of the transaction'''
+        return self._status
+
+    def GetProgress(self):
+        '''Get the progress of the transaction'''
+        return self._iface.GetProgress()
+
+    def GetFinishedState(self):
+        '''Return the finished status'''
+        return self._finished_status
+
+    def IsCallerActive(self):
+        '''
+        This method allows us to find if the original caller of the method is
+        still connected to the session bus. This is usually an indication that
+        the client can handle it's own error handling and EULA callbacks rather
+        than another program taking over.
+        '''
+        return self._iface.IsCallerActive()
+
 class PackageKitClient:
     '''PackageKit client wrapper class.
 
@@ -59,375 +204,169 @@ class PackageKitClient:
         otherwise it attaches to the specified one.
         '''
         self.pk_control = None
-        if main_loop is None:
-            import dbus.mainloop.glib
-            main_loop = gobject.MainLoop()
-            dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-        self.main_loop = main_loop
-
         self.bus = dbus.SystemBus()
-
-    def _wrapCall(self, pk_xn, method, callbacks):
-        '''
-        Wraps a call which emits Finished and ErrorCode on completion
-        '''
-        pk_xn.connect_to_signal('Finished', self._h_finished)
-        pk_xn.connect_to_signal('ErrorCode', self._h_error)
-        pk_xn.connect_to_signal('StatusChanged', self._h_status)
-        pk_xn.connect_to_signal('AllowCancel', self._h_allowcancel)
-        pk_xn.connect_to_signal('ProgressChanged', self._h_progress)
-        for cb in callbacks.keys():
-            pk_xn.connect_to_signal(cb, callbacks[cb])
-
-        polkit_auth_wrapper(method)
-        self._wait()
-        if self._error_enum:
-            raise PackageKitError(self._error_enum, self._error_desc)
-
-    def _wrapBasicCall(self, pk_xn, method):
-        return self._wrapCall(pk_xn, method, {})
-
-    def _wrapPackageCall(self, pk_xn, method):
-        '''
-        Wraps a call which emits Finished, ErrorCode on completion and
-        Package for information returns a list of dicts with
-        'installed', 'id' and 'summary' keys
-        '''
-
-        result = []
-        package_cb = lambda i, id, summary: result.append(
-            PackageKitPackage(i, id, summary))
-        self._wrapCall(pk_xn, method, {'Package' : package_cb})
-        return result
-
-    def _wrapDistroUpgradeCall(self, pk_xn, method):
-        '''
-        Wraps a call which emits Finished, ErrorCode on completion and
-        DistroUpgrade for information returns a list of dicts with
-        'type', 'name' and 'summary' keys
-        '''
-
-        result = []
-        distup_cb = lambda typ, name, summary: result.append(
-            PackageKitDistroUpgrade(typ, name, summary))
-        self._wrapCall(pk_xn, method, {'DistroUpgrade' : distup_cb})
-        return result
-
-    def _wrapDetailsCall(self, pk_xn, method):
-        '''
-        Wraps a call which emits Finished, ErrorCode on completion and
-        Details for information returns a list of dicts with 'id',
-        'license', 'group', 'description', 'upstream_url', 'size'.keys
-        '''
-        result = []
-        details_cb = lambda id, license, group, detail, url, size: result.append(
-            PackageKitDetails(id, license, group, detail, url, size))
-
-        self._wrapCall(pk_xn, method, {'Details' : details_cb})
-        return result
-
-    def _wrapCategoryCall(self, pk_xn, method):
-        '''
-        Wraps a call which emits Finished, ErrorCode on completion and
-        Details for information returns a list of dicts with 'id',
-        'license', 'group', 'description', 'upstream_url', 'size'.keys
-        '''
-        result = []
-        category_cb = lambda  parent_id, cat_id, name, summary, icon: result.append(
-            PackageKitCategory( parent_id, cat_id, name, summary, icon))
-
-        self._wrapCall(pk_xn, method, {'Category' : category_cb})
-        return result
-
-    def _wrapUpdateDetailsCall(self, pk_xn, method):
-        '''
-        Wraps a call which emits Finished, ErrorCode on completion and
-        Details for information returns a list of dicts with 'id',
-        'license', 'group', 'description', 'upstream_url', 'size'.keys
-        '''
-        result = []
-        details_cb =  lambda id, updates, obsoletes, vendor_url, bugzilla_url, \
-                             cve_url, restart, update_text, changelog, state, \
-                             issued, updated: result.append(
-            PackageKitUpdateDetails(id, updates, obsoletes, vendor_url, bugzilla_url, \
-                                    cve_url, restart, update_text, changelog, state, \
-                                    issued, updated))
-        self._wrapCall(pk_xn, method, {'UpdateDetail' : details_cb})
-        return result
-
-    def _wrapReposCall(self, pk_xn, method):
-        '''
-        Wraps a call which emits Finished, ErrorCode and RepoDetail
-        for information returns a list of dicts with 'id',
-        'description', 'enabled' keys
-        '''
-        result = []
-        repo_cb = lambda id, description, enabled: result.append(
-            PackageKitRepos(id, description, enabled))
-        self._wrapCall(pk_xn, method, {'RepoDetail' : repo_cb})
-        return result
-
-    def _wrapFilesCall(self, pk_xn, method):
-        '''
-        Wraps a call which emits Finished, ErrorCode and Files
-        for information returns a list of dicts with 'id',
-        'files'
-        '''
-        result = []
-        files_cb = lambda id, files: result.append(
-            PackageKitFiles(id, files))
-        self._wrapCall(pk_xn, method, {'Files' : files_cb})
-        return result
+        self._locale = locale.getdefaultlocale()[0]
 
     def SuggestDaemonQuit(self):
         '''Ask the PackageKit daemon to shutdown.'''
-
         try:
             self.pk_control.SuggestDaemonQuit()
         except (AttributeError, dbus.DBusException), e:
             # not initialized, or daemon timed out
             pass
 
-    def Resolve(self, filters, package):
-        '''
-        Resolve a package name to a PackageKit package_id filters and
-        package are directly passed to the PackageKit transaction
-        D-BUS method Resolve()
+    def Resolve(self, filters, packages, async=False):
+        '''Resolve package names'''
+        packages = self._to_list(packages)
+        return self._run_transaction("Resolve", [filters, packages], async)
 
-        Return Dict with keys of (installed, id, short_description)
-        for all matches, where installed is a boolean and id and
-        short_description are strings.
-        '''
-        package = self._to_list(package) # Make sure we have a list
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.Resolve(filters, package))
+    def GetDetails(self, package_ids, async=False):
+        '''Get details about the given packages'''
+        package_ids = self._to_list(package_ids)
+        return self._run_transaction("GetDetails", [package_ids], async)
 
-    def GetDetails(self, package_ids):
-        '''
-        Get details about a PackageKit package_ids.
+    def SearchName(self, filters, search, async=False):
+        '''Search for packages by name'''
+        return self._run_transaction("SearchName", [filters, search], async)
 
-        Return dict with keys (id, license, group, description,
-        upstream_url, size).
-        '''
-        package_ids = self._to_list(package_ids) # Make sure we have a list
-        xn = self._get_xn()
-        return self._wrapDetailsCall(xn, lambda : xn.GetDetails(package_ids))
+    def SearchGroup(self, filters, search, async=False):
+        '''Search for packages by their group'''
+        return self._run_transaction("SearchGroup", [filters, search], async)
 
-    def SearchName(self, filters, name):
-        '''
-        Search a package by name.
-        '''
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.SearchName(filters, name))
+    def SearchDetails(self, filters, search, async=False):
+        '''Search for packages by their details'''
+        return self._run_transaction("SearchDetails", [filters], async)
 
-    def SearchGroup(self, filters, group_id):
-        '''
-        Search for a group.
-        '''
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.SearchGroup(filters, group_id))
+    def SearchFile(self, filters, search, async=False):
+        '''Search for packages by their files'''
+        return self._run_transaction("SearchFile", [filters], async)
 
-    def SearchDetails(self, filters, name):
-        '''
-        Search a packages details.
-        '''
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn,
-                                     lambda : xn.SearchDetails(filters, name))
+    def InstallPackages(self, package_ids, async=False):
+        '''Install the packages of the given package ids'''
+        package_ids = self._to_list(package_ids)
+        return self._run_transaction("InstallPackages", [package_ids], async)
 
-    def SearchFile(self, filters, search):
-        '''
-        Search for a file.
-        '''
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn,
-                                     lambda : xn.SearchFile(filters, search))
+    def UpdatePackages(self, package_ids, async=False):
+        '''Update the packages of the given package ids'''
+        package_ids = self._to_list(package_ids)
+        return self._run_transaction("UpdatePackages", [package_ids], async)
 
-    def InstallPackages(self, package_ids, progress_cb=None):
-        '''Install a list of package IDs.
+    def RemovePackages(self, package_ids, allow_deps=False, auto_remove=True,
+                       async=False):
+        '''Remove the packages of the given package ids'''
+        package_ids = self._to_list(package_ids)
+        return self._run_transaction("RemovePackages",
+                                     [package_ids, allow_deps, auto_remove],
+                                     async)
 
-        progress_cb is a function taking arguments (status, percentage,
-        subpercentage, elapsed, remaining, allow_cancel). If it returns False,
-        the action is cancelled (if allow_cancel == True), otherwise it
-        continues.
-
-        On failure this throws a PackageKitError or a DBusException.
-        '''
-        package_ids = self._to_list(package_ids) # Make sure we have a list
-        xn = self._get_xn()
-        self._doPackages( xn, lambda : xn.InstallPackages(package_ids), progress_cb)
-
-    def UpdatePackages(self, package_ids, progress_cb=None):
-        '''UPdate a list of package IDs.
-
-        progress_cb is a function taking arguments (status, percentage,
-        subpercentage, elapsed, remaining, allow_cancel). If it returns False,
-        the action is cancelled (if allow_cancel == True), otherwise it
-        continues.
-
-        On failure this throws a PackageKitError or a DBusException.
-        '''
-        package_ids = self._to_list(package_ids) # Make sure we have a list
-        xn = self._get_xn()
-        self._doPackages(xn, lambda : xn.UpdatePackages(package_ids), progress_cb)
-
-    def RemovePackages(self, package_ids, progress_cb=None, allow_deps=False,
-        auto_remove=True):
-        '''Remove a list of package IDs.
-
-        progress_cb is a function taking arguments (status, percentage,
-        subpercentage, elapsed, remaining, allow_cancel). If it returns False,
-        the action is cancelled (if allow_cancel == True), otherwise it
-        continues.
-
-        allow_deps and auto_remove are passed to the PackageKit function.
-
-        On failure this throws a PackageKitError or a DBusException.
-        '''
-        package_ids = self._to_list(package_ids) # Make sure we have a list
-        xn = self._get_xn()
-        self._doPackages(xn, lambda : xn.RemovePackages(package_ids, allow_deps, auto_remove), progress_cb)
-
-    def RefreshCache(self, force=False):
+    def RefreshCache(self, force=False, async=False):
         '''
         Refresh the cache, i.e. download new metadata from a
         remote URL so that package lists are up to date. This action
         may take a few minutes and should be done when the session and
         system are idle.
         '''
-        xn = self._get_xn()
-        self._wrapBasicCall(xn, lambda : xn.RefreshCache(force))
+        return self._run_transaction("RefreshCache", (force,), async)
 
-    def GetRepoList(self, filters=FILTER_NONE):
-        '''
-        Returns the list of repositories used in the system
-
-        filter is a correct filter, e.g. None or 'installed;~devel'
-
-        '''
-        xn = self._get_xn()
-        return self._wrapReposCall(xn, lambda : xn.GetRepoList(filters))
+    def GetRepoList(self, filters=FILTER_NONE, async=False):
+        '''Get the repositories'''
+        return self._run_transaction("GetRepoList", (filters,), async)
 
     def RepoEnable(self, repo_id, enabled):
         '''
-        Enables the repository specified.
-
+        Enable the repository specified.
         repo_id is a repository identifier, e.g. fedora-development-debuginfo
-
         enabled true if enabled, false if disabled
-
         '''
-        xn = self._get_xn()
-        self._wrapBasicCall(xn, lambda : xn.RepoEnable(repo_id, enabled))
+        return self._run_transaction("RepoEnable", (repo_id, enabled), async)
 
-    def GetUpdates(self, filters=FILTER_NONE):
+    def GetUpdates(self, filters=FILTER_NONE, async=False):
         '''
         This method should return a list of packages that are installed and
         are upgradable.
 
         It should only return the newest update for each installed package.
         '''
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.GetUpdates(filters))
+        return self._run_transaction("GetUpdates", [filters], async)
 
-    def GetCategories(self):
-        '''
-        This method should return a list of Categories
-        '''
-        xn = self._get_xn()
-        return self._wrapCategoryCall(xn, lambda : xn.GetCategories())
+    def GetCategories(self, async=False):
+        '''Return available software categories'''
+        return self._run_transaction("GetCategories", [], async)
 
-    def GetPackages(self, filters=FILTER_NONE):
-        '''
-        This method should return a total list of packages, limited by the
-        filters used
-        '''
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.GetPackages(filters))
+    def GetPackages(self, filters=FILTER_NONE, async=False):
+        '''Return all packages'''
+        return self._run_transaction("GetUpdates", [filters], async)
 
-    def UpdateSystem(self, progress_cb=None):
-        '''
-        This method should update the system
-        '''
-        xn = self._get_xn()
-        self._doPackages(xn, lambda : xn.UpdateSystem(), progress_cb)
+    def UpdateSystem(self, async=False):
+        '''Update the system'''
+        return self._run_transaction("UpdateSystem", [], async)
 
-    def DownloadPackages(self, package_ids):
-        package_ids = self._to_list(package_ids) # Make sure we have a list
-        xn = self._get_xn()
-        return self._wrapFilesCall(xn, lambda : xn.DownloadPackages(package_ids))
+    def DownloadPackages(self, package_ids, async=False):
+        '''Download package files'''
+        package_ids = self._to_list(package_ids)
+        return self._run_transaction("DownloadPackages", [package_ids], async)
 
-    def GetDepends(self, filters, package_ids, recursive=False):
+    def GetDepends(self, filters, package_ids, recursive=False, async=False):
         '''
         Search for dependencies for packages
         '''
-        package_ids = self._to_list(package_ids) # Make sure we have a list
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn,
-                                     lambda : xn.GetDepends(filters, package_ids, recursive))
+        package_ids = self._to_list(package_ids)
+        return self._run_transaction("GetDepends",
+                                     [filters, package_ids, recursive],
+                                     async)
 
-    def GetFiles(self, package_ids):
-        package_ids = self._to_list(package_ids) # Make sure we have a list
-        xn = self._get_xn()
-        return self._wrapFilesCall(xn, lambda : xn.GetFiles(package_ids))
+    def GetFiles(self, package_ids, async=False):
+        '''Get files of the given packages'''
+        package_ids = self._to_list(package_ids)
+        return self._run_transaction("GetFiles", [package_ids], async)
 
-    def GetRequires(self, filters, package_ids, recursive=False):
-        '''
-        Search for requirements for packages
-        '''
-        package_ids = self._to_list(package_ids) # Make sure we have a list
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn,
-                                     lambda : xn.GetRequires(filters, package_ids, recursive))
+    def GetRequires(self, filters, package_ids, recursive=False, async=False):
+        '''Search for requirements for packages'''
+        package_ids = self._to_list(package_ids)
+        return self._run_transaction("GetRequires",
+                                     [filters, package_ids, recursive],
+                                     async)
 
-    def GetUpdateDetail(self, package_ids):
-        '''
-        Get details for updates
-        '''
-        package_ids = self._to_list(package_ids) # Make sure we have a list
-        xn = self._get_xn()
-        return self._wrapUpdateDetailsCall(xn, lambda : xn.GetUpdateDetail(package_ids))
+    def GetUpdateDetail(self, package_ids, async=False):
+        '''Get details for updates'''
+        package_ids = self._to_list(package_ids)
+        return self._run_transaction("GetUpdateDetail", [package_ids], async)
 
-    def GetDistroUpgrades(self):
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn, lambda : xn.GetDistroUpgrades())
+    def GetDistroUpgrades(self, async=False):
+        '''Query for later distribution releases'''
+        return self._run_transaction("GetDistroUpgrades", [], async)
 
-    def InstallFiles(self, trusted, files):
-        raise PackageKitError(ERROR_NOT_SUPPORTED)
+    def InstallFiles(self, trusted, files, async=False):
+        '''Install the given local packages'''
+        return self._run_transaction("InstallFiles", [trusted, files], async)
 
-    def InstallSignatures(self, sig_type, key_id, package_id):
-        '''
-        Install packages signing keys used to validate packages
-        '''
-        xn = self._get_xn()
-        self._wrapBasicCall(xn, lambda : xn.InstallSignatures(sig_type, key_id, package_id))
+    def InstallSignature(self, sig_type, key_id, package_id, async=False):
+        '''Install packages signing keys used to validate packages'''
+        return self._run_transaction("InstallSignature",
+                                     [sig_type, key_id, package_id],
+                                     async)
 
-    def RepoSetData(self, repo_id, parameter, value):
-        '''
-        Change custom parameter in Repository Configuration
-        '''
-        xn = self._get_xn()
-        self._wrapBasicCall(xn, lambda : xn.RepoSetData(repo_id, parameter, value))
+    def RepoSetData(self, repo_id, parameter, value, async=False):
+        '''Change custom parameter of a repository'''
+        return self._run_transaction("RepoSetData",
+                                     [repo_id, parameter, value],
+                                     async)
 
-    def Rollback(self, transaction_id):
-        xn = self._get_xn()
-        self._wrapBasicCall(xn, lambda : xn.Rollback(transaction_id))
+    def Rollback(self, transaction_id, async=False):
+        '''Roll back to a previous transaction'''
+        return self._run_transaction("Rollback", [transaction_id], async)
 
-    def WhatProvides(self, provide_type, search):
-        '''
-        Search for packages that provide the supplied attributes
-        '''
-        xn = self._get_xn()
-        return self._wrapPackageCall(xn,
-                                     lambda : xn.WhatProvides(provide_type, search))
+    def WhatProvides(self, provides, search, async=False):
+        '''Search for packages that provide the supplied attributes'''
+        return self._run_transaction("WhatProvides", [provides, search], async)
 
     def SetLocale(self, code):
-        xn = self._get_xn()
-        xn.SetLocale(code)
+        '''Set the language of the client'''
+        self._locale = code
 
-    def AcceptEula(self, eula_id):
-        xn = self._get_xn()
-        self._wrapBasicCall(xn, lambda : xn.AcceptEula(eula_id))
+    def AcceptEula(self, eula_id, async=False):
+        '''Accept the given end user licence aggreement'''
+        return self._run_transaction("AcceptEula", [eula_id], async)
 
     #
     # Internal helper functions
@@ -438,84 +377,8 @@ class PackageKitClient:
             obj = [obj]
         return obj
 
-    def _wait(self):
-        '''Wait until an async PK operation finishes.'''
-        self.main_loop.run()
-
-    def _h_status(self, status):
-        '''
-        StatusChanged signal handler
-        '''
-        self._status = status
-
-    def _h_allowcancel(self, allow):
-        '''
-        AllowCancel signal handler
-        '''
-        self._allow_cancel = allow
-
-    def _h_error(self, enum, desc):
-        '''
-        ErrorCode signal handler
-        '''
-        self._error_enum = enum
-        self._error_desc = desc
-
-    def _h_finished(self, status, code):
-        '''
-        Finished signal handler
-        '''
-        self._finished_status = status
-        self.main_loop.quit()
-
-    def _h_progress(self, per, subper, el, rem):
-        '''
-        ProgressChanged signal handler
-        '''
-        def _cancel(xn):
-            try:
-                xn.Cancel()
-            except dbus.DBusException, e:
-                if e._dbus_error_name == 'org.freedesktop.PackageKit.Transaction.CannotCancel':
-                    pass
-                else:
-                    raise
-
-        ret = self._progress_cb(self._status, int(per),
-            int(subper), int(el), int(rem), self._allow_cancel)
-        if not ret:
-            # we get backend timeout exceptions more likely when we call this
-            # directly, so delay it a bit
-            gobject.timeout_add(10, _cancel, pk_xn)
-
-    def _auth(self):
-        policykit = self.bus.get_object(
-            'org.freedesktop.PolicyKit.AuthenticationAgent', '/',
-            'org.freedesktop.PolicyKit.AuthenticationAgent')
-        if(policykit == None):
-            print("Error: Could not get PolicyKit D-Bus Interface\n")
-        granted = policykit.ObtainAuthorization("org.freedesktop.packagekit.update-system",
-                                                (dbus.UInt32)(xid),
-                                                (dbus.UInt32)(os.getpid()))
-
-    def _doPackages(self, pk_xn, method, progress_cb):
-        '''Shared implementation of InstallPackages, UpdatePackages and RemovePackages.'''
-
-        self._status = None
-        self._allow_cancel = False
-
-        if progress_cb:
-            self._progress_cb = progress_cb
-        self._wrapBasicCall(pk_xn, method)
-        if self._finished_status != 'success':
-            raise PackageKitError('internal-error')
-
-    def _get_xn(self):
-        '''Create a new PackageKit Transaction object.'''
-
-        self._error_enum = None
-        self._error_desc = None
-        self._finished_status = None
+    def _run_transaction(self, method_name, args, async):
+        '''Run the given method in a new transaction'''
         try:
             tid = self.pk_control.GetTid()
         except (AttributeError, dbus.DBusException), e:
@@ -529,9 +392,17 @@ class PackageKitClient:
                 tid = self.pk_control.GetTid()
             else:
                 raise
-
-        return dbus.Interface(self.bus.get_object('org.freedesktop.PackageKit',
-            tid, False), 'org.freedesktop.PackageKit.Transaction')
+        iface = dbus.Interface(self.bus.get_object('org.freedesktop.PackageKit',
+                                                   tid, False),
+                               'org.freedesktop.PackageKit.Transaction')
+        trans = PackageKitTransaction(tid, iface)
+        if self._locale:
+            trans.SetLocale(self._locale)
+        trans.set_method(method_name, *args)
+        if async:
+            return trans
+        else:
+            return trans.run()
 
 #### PolicyKit authentication borrowed wrapper ##
 class PermissionDeniedByPolicy(dbus.DBusException):
@@ -552,8 +423,8 @@ def polkit_auth_wrapper(fn, *args, **kwargs):
             (priv, auth_result) = e.message.split()[-2:]
             if auth_result.startswith('auth_'):
                 pk_auth = dbus.SessionBus().get_object(
-                    'org.freedesktop.PolicyKit.AuthenticationAgent', '/', 'org.gnome.PolicyKit.AuthorizationManager.SingleInstance')
-
+                    'org.freedesktop.PolicyKit.AuthenticationAgent', '/',
+                    'org.gnome.PolicyKit.AuthorizationManager.SingleInstance')
                 # TODO: provide xid
                 res = pk_auth.ObtainAuthorization(priv, dbus.UInt32(0),
                     dbus.UInt32(os.getpid()), timeout=300)
