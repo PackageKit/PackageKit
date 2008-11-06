@@ -63,9 +63,10 @@ class PackageKitTransaction:
         self.tid = tid
         self._error_enum = None
         self._error_desc = None
-        self._finished_status = None
+        self._exit_status = None
         self._allow_cancel = False
         self._method = None
+        self._exit_handler = None
         self.result = []
         # Connect the signal handlers to the DBus iface
         self._iface = iface
@@ -84,7 +85,7 @@ class PackageKitTransaction:
 
     def connect_to_signal(self, sig, cb):
         '''Connect to a signal of the transaction's DBus interface'''
-        self._iface.connect_to_signal(sig, cb)
+        return self._iface.connect_to_signal(sig, cb)
 
     def _on_package(self, i, id, summary):
         '''Callback for Package signal'''
@@ -134,29 +135,26 @@ class PackageKitTransaction:
         self._error_enum = enum
         self._error_desc = desc
 
-    def _on_finished(self, status, code):
+    def _on_finished(self, exit, runtime):
         '''Callback for Finished signal'''
-        self._finished_status = status
+        self._exit = exit
         self._main_loop.quit()
+        if self._exit_handler:
+            self._exit_handler(self, exit, runtime)
 
     def set_method(self, method, *args):
         '''Setup the method of the DBus interface which should be handled'''
         self._method = self._iface.get_dbus_method(method)
         self._args = args
 
-    def run(self, wait=True):
-        '''
-        Start processing the transaction.
-
-        If wait is True the method will return the result after the
-        processing is done.
-        '''
+    def run(self):
+        '''Start processing the transaction'''
         # avoid blocking the user interface
         context = gobject.main_context_default()
         while context.pending():
             context.iteration()
         polkit_auth_wrapper(self._method, *self._args)
-        if wait == True:
+        if not self._exit_handler:
             self._main_loop.run()
             if self._error_enum:
                 raise PackageKitError(self._error_enum, self._error_desc)
@@ -215,62 +213,70 @@ class PackageKitClient:
             # not initialized, or daemon timed out
             pass
 
-    def Resolve(self, filters, packages, async=False):
+    def Resolve(self, filters, packages, exit_handler=None):
         '''Resolve package names'''
         packages = self._to_list(packages)
-        return self._run_transaction("Resolve", [filters, packages], async)
+        return self._run_transaction("Resolve", [filters, packages],
+                                     exit_handler)
 
-    def GetDetails(self, package_ids, async=False):
+    def GetDetails(self, package_ids, exit_handler=None):
         '''Get details about the given packages'''
         package_ids = self._to_list(package_ids)
-        return self._run_transaction("GetDetails", [package_ids], async)
+        return self._run_transaction("GetDetails", [package_ids],
+                                     exit_handler)
 
-    def SearchName(self, filters, search, async=False):
+    def SearchName(self, filters, search, exit_handler=None):
         '''Search for packages by name'''
-        return self._run_transaction("SearchName", [filters, search], async)
+        return self._run_transaction("SearchName", [filters, search],
+                                     exit_handler)
 
-    def SearchGroup(self, filters, search, async=False):
+    def SearchGroup(self, filters, search, exit_handler=None):
         '''Search for packages by their group'''
-        return self._run_transaction("SearchGroup", [filters, search], async)
+        return self._run_transaction("SearchGroup", [filters, search], 
+                                     exit_handler)
 
-    def SearchDetails(self, filters, search, async=False):
+    def SearchDetails(self, filters, search, exit_handler=None):
         '''Search for packages by their details'''
-        return self._run_transaction("SearchDetails", [filters], async)
+        return self._run_transaction("SearchDetails", [filters], 
+                                     exit_handler)
 
-    def SearchFile(self, filters, search, async=False):
+    def SearchFile(self, filters, search, exit_handler=None):
         '''Search for packages by their files'''
-        return self._run_transaction("SearchFile", [filters], async)
+        return self._run_transaction("SearchFile", [filters], 
+                                     exit_handler)
 
-    def InstallPackages(self, package_ids, async=False):
+    def InstallPackages(self, package_ids, exit_handler=None):
         '''Install the packages of the given package ids'''
         package_ids = self._to_list(package_ids)
-        return self._run_transaction("InstallPackages", [package_ids], async)
+        return self._run_transaction("InstallPackages", [package_ids], 
+                                     exit_handler)
 
-    def UpdatePackages(self, package_ids, async=False):
+    def UpdatePackages(self, package_ids, exit_handler=None):
         '''Update the packages of the given package ids'''
         package_ids = self._to_list(package_ids)
-        return self._run_transaction("UpdatePackages", [package_ids], async)
+        return self._run_transaction("UpdatePackages", [package_ids], 
+                                     exit_handler)
 
     def RemovePackages(self, package_ids, allow_deps=False, auto_remove=True,
-                       async=False):
+                       exit_handler=None):
         '''Remove the packages of the given package ids'''
         package_ids = self._to_list(package_ids)
         return self._run_transaction("RemovePackages",
                                      [package_ids, allow_deps, auto_remove],
-                                     async)
+                                     exit_handler)
 
-    def RefreshCache(self, force=False, async=False):
+    def RefreshCache(self, force=False, exit_handler=None):
         '''
         Refresh the cache, i.e. download new metadata from a
         remote URL so that package lists are up to date. This action
         may take a few minutes and should be done when the session and
         system are idle.
         '''
-        return self._run_transaction("RefreshCache", (force,), async)
+        return self._run_transaction("RefreshCache", (force,), exit_handler)
 
-    def GetRepoList(self, filters=FILTER_NONE, async=False):
+    def GetRepoList(self, filters=FILTER_NONE, exit_handler=None):
         '''Get the repositories'''
-        return self._run_transaction("GetRepoList", (filters,), async)
+        return self._run_transaction("GetRepoList", (filters,), exit_handler)
 
     def RepoEnable(self, repo_id, enabled):
         '''
@@ -278,95 +284,102 @@ class PackageKitClient:
         repo_id is a repository identifier, e.g. fedora-development-debuginfo
         enabled true if enabled, false if disabled
         '''
-        return self._run_transaction("RepoEnable", (repo_id, enabled), async)
+        return self._run_transaction("RepoEnable", (repo_id, enabled),
+                                     exit_handler)
 
-    def GetUpdates(self, filters=FILTER_NONE, async=False):
+    def GetUpdates(self, filters=FILTER_NONE, exit_handler=None):
         '''
         This method should return a list of packages that are installed and
         are upgradable.
 
         It should only return the newest update for each installed package.
         '''
-        return self._run_transaction("GetUpdates", [filters], async)
+        return self._run_transaction("GetUpdates", [filters], exit_handler)
 
-    def GetCategories(self, async=False):
+    def GetCategories(self, exit_handler=None):
         '''Return available software categories'''
-        return self._run_transaction("GetCategories", [], async)
+        return self._run_transaction("GetCategories", [], exit_handler)
 
-    def GetPackages(self, filters=FILTER_NONE, async=False):
+    def GetPackages(self, filters=FILTER_NONE, exit_handler=None):
         '''Return all packages'''
-        return self._run_transaction("GetUpdates", [filters], async)
+        return self._run_transaction("GetUpdates", [filters], exit_handler)
 
-    def UpdateSystem(self, async=False):
+    def UpdateSystem(self, exit_handler=None):
         '''Update the system'''
-        return self._run_transaction("UpdateSystem", [], async)
+        return self._run_transaction("UpdateSystem", [], exit_handler)
 
-    def DownloadPackages(self, package_ids, async=False):
+    def DownloadPackages(self, package_ids, exit_handler=None):
         '''Download package files'''
         package_ids = self._to_list(package_ids)
-        return self._run_transaction("DownloadPackages", [package_ids], async)
+        return self._run_transaction("DownloadPackages", [package_ids], exit_handler)
 
-    def GetDepends(self, filters, package_ids, recursive=False, async=False):
-        '''
-        Search for dependencies for packages
-        '''
+    def GetDepends(self, filters, package_ids, recursive=False, 
+                   exit_handler=None):
+        '''Search for dependencies for packages'''
         package_ids = self._to_list(package_ids)
         return self._run_transaction("GetDepends",
                                      [filters, package_ids, recursive],
-                                     async)
+                                     exit_handler)
 
-    def GetFiles(self, package_ids, async=False):
+    def GetFiles(self, package_ids, exit_handler=None):
         '''Get files of the given packages'''
         package_ids = self._to_list(package_ids)
-        return self._run_transaction("GetFiles", [package_ids], async)
+        return self._run_transaction("GetFiles", [package_ids], exit_handler)
 
-    def GetRequires(self, filters, package_ids, recursive=False, async=False):
+    def GetRequires(self, filters, package_ids, recursive=False, 
+                    exit_handler=None):
         '''Search for requirements for packages'''
         package_ids = self._to_list(package_ids)
         return self._run_transaction("GetRequires",
                                      [filters, package_ids, recursive],
-                                     async)
+                                     exit_handler)
 
-    def GetUpdateDetail(self, package_ids, async=False):
+    def GetUpdateDetail(self, package_ids, exit_handler=None):
         '''Get details for updates'''
         package_ids = self._to_list(package_ids)
-        return self._run_transaction("GetUpdateDetail", [package_ids], async)
+        return self._run_transaction("GetUpdateDetail", [package_ids], 
+                                     exit_handler)
 
-    def GetDistroUpgrades(self, async=False):
+    def GetDistroUpgrades(self, exit_handler=None):
         '''Query for later distribution releases'''
-        return self._run_transaction("GetDistroUpgrades", [], async)
+        return self._run_transaction("GetDistroUpgrades", [],
+                                     exit_handler)
 
-    def InstallFiles(self, trusted, files, async=False):
+    def InstallFiles(self, trusted, files, exit_handler=None):
         '''Install the given local packages'''
-        return self._run_transaction("InstallFiles", [trusted, files], async)
+        return self._run_transaction("InstallFiles", [trusted, files], 
+                                     exit_handler)
 
-    def InstallSignature(self, sig_type, key_id, package_id, async=False):
+    def InstallSignature(self, sig_type, key_id, package_id, 
+                         exit_handler=None):
         '''Install packages signing keys used to validate packages'''
         return self._run_transaction("InstallSignature",
                                      [sig_type, key_id, package_id],
-                                     async)
+                                     exit_handler)
 
-    def RepoSetData(self, repo_id, parameter, value, async=False):
+    def RepoSetData(self, repo_id, parameter, value, exit_handler=None):
         '''Change custom parameter of a repository'''
         return self._run_transaction("RepoSetData",
                                      [repo_id, parameter, value],
-                                     async)
+                                     exit_handler)
 
-    def Rollback(self, transaction_id, async=False):
+    def Rollback(self, transaction_id, exit_handler=None):
         '''Roll back to a previous transaction'''
-        return self._run_transaction("Rollback", [transaction_id], async)
+        return self._run_transaction("Rollback", [transaction_id], 
+                                     exit_handler)
 
-    def WhatProvides(self, provides, search, async=False):
+    def WhatProvides(self, provides, search, exit_handler=None):
         '''Search for packages that provide the supplied attributes'''
-        return self._run_transaction("WhatProvides", [provides, search], async)
+        return self._run_transaction("WhatProvides", [provides, search], 
+                                     exit_handler)
 
     def SetLocale(self, code):
         '''Set the language of the client'''
         self._locale = code
 
-    def AcceptEula(self, eula_id, async=False):
+    def AcceptEula(self, eula_id, exit_handler=None):
         '''Accept the given end user licence aggreement'''
-        return self._run_transaction("AcceptEula", [eula_id], async)
+        return self._run_transaction("AcceptEula", [eula_id], exit_handler)
 
     #
     # Internal helper functions
@@ -377,7 +390,7 @@ class PackageKitClient:
             obj = [obj]
         return obj
 
-    def _run_transaction(self, method_name, args, async):
+    def _run_transaction(self, method_name, args, exit_handler):
         '''Run the given method in a new transaction'''
         try:
             tid = self.pk_control.GetTid()
@@ -399,7 +412,8 @@ class PackageKitClient:
         if self._locale:
             trans.SetLocale(self._locale)
         trans.set_method(method_name, *args)
-        if async:
+        if exit_handler:
+            trans._exit_handler = exit_handler
             return trans
         else:
             return trans.run()
