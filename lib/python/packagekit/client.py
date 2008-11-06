@@ -141,7 +141,7 @@ class PackageKitTransaction:
 
     def set_method(self, method, *args):
         '''Setup the method of the DBus interface which should be handled'''
-        self._method = getattr(self._iface, method)
+        self._method = self._iface.get_dbus_method(method)
         self._args = args
 
     def run(self, wait=True):
