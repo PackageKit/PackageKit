@@ -38,7 +38,7 @@
 #include "pk-engine.h"
 #include "pk-transaction.h"
 #include "pk-backend-internal.h"
-#include "pk-interface.h"
+#include "org.freedesktop.PackageKit.h"
 
 static guint exit_idle_time;
 static PkEngine *engine = NULL;

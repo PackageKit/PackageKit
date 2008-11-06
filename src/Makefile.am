@@ -153,8 +153,8 @@ endif
 BUILT_SOURCES = 					\
 	pk-marshal.c					\
 	pk-marshal.h					\
-	pk-interface.h					\
-	pk-interface-transaction.h			\
+	org.freedesktop.PackageKit.h					\
+	org.freedesktop.PackageKit.Transaction.h			\
 	$(NULL)
 
 pk-marshal.c: pk-marshal.list
@@ -164,19 +164,19 @@ pk-marshal.c: pk-marshal.list
 pk-marshal.h: pk-marshal.list
 	glib-genmarshal $< --prefix=pk_marshal --header > $@
 
-pk-interface.h: pk-interface.xml
+org.freedesktop.PackageKit.h: org.freedesktop.PackageKit.xml
 	$(LIBTOOL) --mode=execute dbus-binding-tool	\
 		--prefix=pk_engine			\
 		--mode=glib-server			\
-		--output=pk-interface.h			\
-		$(srcdir)/pk-interface.xml
+		--output=org.freedesktop.PackageKit.h			\
+		$(srcdir)/org.freedesktop.PackageKit.xml
 
-pk-interface-transaction.h: pk-interface-transaction.xml
+org.freedesktop.PackageKit.Transaction.h: org.freedesktop.PackageKit.Transaction.xml
 	$(LIBTOOL) --mode=execute dbus-binding-tool	\
 		--prefix=pk_transaction			\
 		--mode=glib-server			\
-		--output=pk-interface-transaction.h	\
-		$(srcdir)/pk-interface-transaction.xml
+		--output=org.freedesktop.PackageKit.Transaction.h	\
+		$(srcdir)/org.freedesktop.PackageKit.Transaction.xml
 
 if EGG_BUILD_TESTS
 
@@ -216,8 +216,8 @@ EXTRA_DIST =						\
 	pk-marshal.list					\
 	pk-security-polkit.c				\
 	pk-security-dummy.c				\
-	pk-interface.xml				\
-	pk-interface-transaction.xml			\
+	org.freedesktop.PackageKit.xml				\
+	org.freedesktop.PackageKit.Transaction.xml			\
 	$(NULL)
 
 clean-local:

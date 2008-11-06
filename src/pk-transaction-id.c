@@ -31,7 +31,7 @@
 #include "egg-string.h"
 
 #include "pk-transaction-id.h"
-#define PK_TRANSACTION_ID_COUNT_FILE		LOCALSTATEDIR "/run/PackageKit/job_count.dat"
+#define PK_TRANSACTION_ID_COUNT_FILE		LOCALSTATEDIR "/lib/PackageKit/job_count.dat"
 
 /**
  * pk_transaction_id_get_random_hex_string:

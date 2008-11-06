@@ -54,8 +54,8 @@
         This part documents the D-Bus interface used to access the PackageKit daemon.
       </para>
     </partintro>
-    <xi:include href="dbus/pk-interface.ref.xml"/>
-    <xi:include href="dbus/pk-interface-transaction.ref.xml"/>
+    <xi:include href="dbus/org.freedesktop.PackageKit.ref.xml"/>
+    <xi:include href="dbus/org.freedesktop.PackageKit.Transaction.ref.xml"/>
   </reference>
 
   <reference id="libpackagekit-gobject">

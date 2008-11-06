@@ -146,7 +146,7 @@ pk_print_line (const gchar *func, const gchar *file, const int line, const gchar
 	pk_set_console_mode (CONSOLE_GREEN);
 	printf ("%s\n", header);
 
-	/* different colours according to the severity */
+	/* different colors according to the severity */
 	pk_set_console_mode (color);
 	printf (" - %s\n", buffer);
 	pk_set_console_mode (CONSOLE_RESET);
