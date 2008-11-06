@@ -85,9 +85,10 @@ class PackageKitBaseBackend:
 
         # this should be fast now
         print "error\t%s\t%s" % (err, description)
-        print "finished"
         sys.stdout.flush()
         if exit:
+            print "finished"
+            sys.stdout.flush()
             sys.exit(1)
 
     def message(self, typ, msg):
