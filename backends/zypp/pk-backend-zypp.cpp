@@ -1141,6 +1141,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_install_signature_thread (PkBackend *backend)
 {
+	pk_backend_set_status (backend, PK_STATUS_ENUM_SIG_CHECK);
 	const gchar *key_id = pk_backend_get_string (backend, "key_id");
 	_signatures[backend]->push_back ((std::string)(key_id));
 
