@@ -625,8 +625,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for grp_id in self.comps.get_groups(cat):
                 grp = self.yumbase.comps.return_group(grp_id)
                 if grp:
-                    grps.append((grp_id, grp))
-            for grp_id, grp in sorted(grps):
+                    grps.append(grp)
+            for grp in sorted(grps):
+                    grp_id = grp.groupid
                     cat_id_name = "@%s" % (grp_id)
                     name = grp.nameByLang(self._lang)
                     summary = grp.descriptionByLang(self._lang)
