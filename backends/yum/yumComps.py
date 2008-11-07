@@ -261,7 +261,9 @@ class yumComps:
 
         # write to disk
         self.connection.commit()
+        print "Non Categorized groups"
         self._add_non_catagorized_groups()
+        self.connection.commit()
         return True
 
     def _add_groups_to_db(self, grps, cat_id):
@@ -293,11 +295,9 @@ class yumComps:
             # check if it is already added to the db
             if self.get_category(grp.groupid):
                 continue
-            else:
+            elif grp.user_visible:
                 to_add.append(grp)
-        for grp in to_add:
-            print grp.name
-
+        self._add_groups_to_db(to_add, "other")
 
 
     def get_package_list(self, group_key):
@@ -355,7 +355,6 @@ if __name__ == "__main__":
     _db = "./packagekit-groups.sqlite"
     comps = yumComps(_yb, _db)
     comps.connect()
-    comps.refresh()
     print "pk group system"
     print 40 * "="
     _pkgs = comps.get_package_list('system')
@@ -367,6 +366,10 @@ if __name__ == "__main__":
     print "comps group kde-desktop"
     print 40 * "="
     _pkgs = comps.get_meta_package_list('kde-desktop')
+    print _pkgs
+    print "comps group other"
+    print 40 * "="
+    _pkgs = comps.get_groups('other')
     print _pkgs
     os.unlink(_db) # kill the db
 
