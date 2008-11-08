@@ -257,13 +257,22 @@ class yumComps:
         for category in cats:
             grps = map(lambda x: self.yumbase.comps.return_group(x),
                filter(lambda x: self.yumbase.comps.has_group(x), category.groups))
-            for group in grps:
+            self._add_groups_to_db(grps, category.categoryid)
 
+        # write to disk
+        self.connection.commit()
+        print "Non Categorized groups"
+        self._add_non_catagorized_groups()
+        self.connection.commit()
+        return True
+
+    def _add_groups_to_db(self, grps, cat_id):
+            for group in grps:
                 # strip out rpmfusion from the group name
                 group_name = group.groupid
                 group_name = group_name.replace('rpmfusion_nonfree-', '')
                 group_name = group_name.replace('rpmfusion_free-', '')
-                group_id = "%s;%s" % (category.categoryid, group_name)
+                group_id = "%s;%s" % (cat_id, group_name)
 
                 group_enum = GROUP_OTHER
                 if groupMap.has_key(group_id):
@@ -272,15 +281,24 @@ class yumComps:
                     print 'unknown group enum', group_id
 
                 for package in group.mandatory_packages:
-                    self._add_db(package, category.categoryid, group_name, group_enum, 'mandatory')
+                    self._add_db(package, cat_id, group_name, group_enum, 'mandatory')
                 for package in group.default_packages:
-                    self._add_db(package, category.categoryid, group_name, group_enum, 'default')
+                    self._add_db(package, cat_id, group_name, group_enum, 'default')
                 for package in group.optional_packages:
-                    self._add_db(package, category.categoryid, group_name, group_enum, 'optional')
+                    self._add_db(package, cat_id, group_name, group_enum, 'optional')
 
-        # write to disk
-        self.connection.commit()
-        return True
+
+    def _add_non_catagorized_groups(self):
+        to_add = []
+        # Go through all the groups
+        for grp in self.yumbase.comps.groups:
+            # check if it is already added to the db
+            if self.get_category(grp.groupid):
+                continue
+            elif grp.user_visible:
+                to_add.append(grp)
+        self._add_groups_to_db(to_add, "other")
+
 
     def get_package_list(self, group_key):
         ''' for a PK group, get the packagelist for this group '''
@@ -337,7 +355,6 @@ if __name__ == "__main__":
     _db = "./packagekit-groups.sqlite"
     comps = yumComps(_yb, _db)
     comps.connect()
-    comps.refresh()
     print "pk group system"
     print 40 * "="
     _pkgs = comps.get_package_list('system')
@@ -349,6 +366,10 @@ if __name__ == "__main__":
     print "comps group kde-desktop"
     print 40 * "="
     _pkgs = comps.get_meta_package_list('kde-desktop')
+    print _pkgs
+    print "comps group other"
+    print 40 * "="
+    _pkgs = comps.get_groups('other')
     print _pkgs
     os.unlink(_db) # kill the db
 
