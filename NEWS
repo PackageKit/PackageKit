@@ -1,3 +1,59 @@
+Version 0.3.10
+~~~~~~~~~~~~~~
+Released: 2008-11-10
+
+Translations:
+ - Updated Spanish translation (Domingo Becker)
+ - Updated German translation (Fabian Affolter)
+ - Updated Italian translation updated (Francesco Valente)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Turkish translations (S.Çağlar Onur)
+ - Updated Finnish translation (Ville-Pekka Vainio)
+ - Updated Simplified Chinese (甘露(Gan Lu))
+ - Updated Catalan translation (Xavier Conde)
+
+New Features:
+ - Redesign python packagekit client to support async operations (Sebastian Heinlein)
+ - Monitor scripts in PkSpawn for standard error too, as messages often get put
+   there by libraries and may be useful to a backend (Richard Hughes)
+ - Add filter functions to allow the spawned backends to filter stderr (Richard Hughes)
+
+Bugfixes:
+ - Add missing includes to fix the build (S.Çağlar Onur)
+ - Install FindQPackageKit.cmake as KPackageKit needs it to build (Richard Hughes)
+ - Use the correct session interface in the browser plugin (Richard Hughes)
+ - Fix protocol violation in the server and client (Richard Hughes)
+ - Store job count in /var/lib as it's persistent (Richard Hughes)
+ - When we call Error from a python spawned backend with exit=False, don't do
+   Finished else we'll get warned by the daemon (Richard Hughes)
+ - plugin: Send the XID of the browser window so focus stealing and modality is
+   set correctly (Richard Hughes)
+ - DaemonBackend: Do not include use a separate inactivity timeout (Sebastian Heinlein)
+ - Add the description to the PackageKitError exception in client (Sebastian Heinlein)
+ - Fix the idle timer in  daemonBackend - do not exit on running threads (Sebastian Heinlein)
+ - python client: UpdateSystem should be handled as a long taking action (Sebastian Heinlein)
+ - python client: SetLocale does not report a status (Sebastian Heinlein)
+ - python client: Show status, progress and allow_cancel in the widget (Sebastian Heinlein)
+ - python client: Replace the async parameter by an exit_handler (Sebastian Heinlein)
+
+Backends:
+ - alpm: change GetDepends to handle filters properly (Valeriy Lyasotskiy)
+ - conary: Fixed data.split, I think that space was a typo (Ken VanDine)
+ - yum: Add support for non categorized groups (Tim Lauridsen)
+ - yum: Sort the groups in each category (James Antill)
+ - yum: Sort by group and not groupid (James Antill)
+ - yum: Replace a regular expression with four simple comparisons (Richard Hughes)
+ - yum: Fix a recently introduced regression where installing a zero byte
+        file would not return the correct error code (Richard Hughes)
+ - yum: Filter out stderr KEY requests before the data is processed (Richard Hughes)
+ - yum: Fix getting distibution upgrade information when we have multiple repos
+        providing preupgrade. Fixes rh#469172 (Richard Hughes)
+ - yum: Move the groups sqlite cache into a PackageKit directory, rather than a
+        yum owned directory. Fixes rh#469324 (Richard Hughes)
+ - zypp: Changed get_distro_upgrades function (Stefan Haas)
+ - zypp: Adapted signature callbacks (Stefan Haas)
+ - zypp: Set status when installing a signature (Stefan Haas)
+
 Version 0.3.9
 ~~~~~~~~~~~~~~
 Released: 2008-10-27
