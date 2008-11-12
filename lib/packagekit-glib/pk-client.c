@@ -2844,14 +2844,6 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 		return FALSE;
 	}
 
-	/* check the PackageID here to avoid a round trip if invalid */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-				     "package_id '%s' is not valid", package_id);
-		return FALSE;
-	}
-
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
