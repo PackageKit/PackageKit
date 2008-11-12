@@ -213,15 +213,15 @@ class PackageKitClient:
             # not initialized, or daemon timed out
             pass
 
-    def Resolve(self, filters, packages, exit_handler=None):
+    def Resolve(self, filters, names, exit_handler=None):
         '''Resolve package names'''
-        packages = self._to_list(packages)
-        return self._run_transaction("Resolve", [filters, packages],
+        names_list = self._to_list(names)
+        return self._run_transaction("Resolve", [filters, names_list],
                                      exit_handler)
 
-    def GetDetails(self, package_ids, exit_handler=None):
+    def GetDetails(self, packages, exit_handler=None):
         '''Get details about the given packages'''
-        package_ids = self._to_list(package_ids)
+        package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetDetails", [package_ids],
                                      exit_handler)
 
@@ -245,22 +245,22 @@ class PackageKitClient:
         return self._run_transaction("SearchFile", [filters], 
                                      exit_handler)
 
-    def InstallPackages(self, package_ids, exit_handler=None):
+    def InstallPackages(self, packages, exit_handler=None):
         '''Install the packages of the given package ids'''
-        package_ids = self._to_list(package_ids)
+        package_ids = self._to_package_id_list(packages)
         return self._run_transaction("InstallPackages", [package_ids], 
                                      exit_handler)
 
-    def UpdatePackages(self, package_ids, exit_handler=None):
+    def UpdatePackages(self, packages, exit_handler=None):
         '''Update the packages of the given package ids'''
-        package_ids = self._to_list(package_ids)
+        package_ids = self._to_package_id_list(packages)
         return self._run_transaction("UpdatePackages", [package_ids], 
                                      exit_handler)
 
-    def RemovePackages(self, package_ids, allow_deps=False, auto_remove=True,
+    def RemovePackages(self, packages, allow_deps=False, auto_remove=True,
                        exit_handler=None):
         '''Remove the packages of the given package ids'''
-        package_ids = self._to_list(package_ids)
+        package_ids = self._to_package_id_list(packages)
         return self._run_transaction("RemovePackages",
                                      [package_ids, allow_deps, auto_remove],
                                      exit_handler)
@@ -308,35 +308,35 @@ class PackageKitClient:
         '''Update the system'''
         return self._run_transaction("UpdateSystem", [], exit_handler)
 
-    def DownloadPackages(self, package_ids, exit_handler=None):
+    def DownloadPackages(self, packages, exit_handler=None):
         '''Download package files'''
-        package_ids = self._to_list(package_ids)
+        package_ids = self._to_package_id_list(packages)
         return self._run_transaction("DownloadPackages", [package_ids], exit_handler)
 
-    def GetDepends(self, filters, package_ids, recursive=False, 
+    def GetDepends(self, filters, packages, recursive=False, 
                    exit_handler=None):
         '''Search for dependencies for packages'''
-        package_ids = self._to_list(package_ids)
+        package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetDepends",
                                      [filters, package_ids, recursive],
                                      exit_handler)
 
-    def GetFiles(self, package_ids, exit_handler=None):
+    def GetFiles(self, packages, exit_handler=None):
         '''Get files of the given packages'''
-        package_ids = self._to_list(package_ids)
+        package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetFiles", [package_ids], exit_handler)
 
-    def GetRequires(self, filters, package_ids, recursive=False, 
+    def GetRequires(self, filters, packages, recursive=False, 
                     exit_handler=None):
         '''Search for requirements for packages'''
-        package_ids = self._to_list(package_ids)
+        package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetRequires",
                                      [filters, package_ids, recursive],
                                      exit_handler)
 
-    def GetUpdateDetail(self, package_ids, exit_handler=None):
+    def GetUpdateDetail(self, packages, exit_handler=None):
         '''Get details for updates'''
-        package_ids = self._to_list(package_ids)
+        package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetUpdateDetail", [package_ids], 
                                      exit_handler)
 
@@ -347,7 +347,7 @@ class PackageKitClient:
 
     def InstallFiles(self, trusted, files, exit_handler=None):
         '''Install the given local packages'''
-        return self._run_transaction("InstallFiles", [trusted, files], 
+        return self._run_transaction("InstallFiles", [trusted, files],
                                      exit_handler)
 
     def InstallSignature(self, sig_type, key_id, package_id, 
@@ -386,9 +386,24 @@ class PackageKitClient:
     #
     def _to_list(self, obj):
         '''convert obj to list'''
-        if isinstance(obj, str):
+        if not isinstance(obj, list):
             obj = [obj]
         return obj
+
+    def _to_package_id_list(self, obj):
+        '''convert to list of package ids'''
+        ids = []
+        if not isinstance(obj, list):
+            obj = [obj]
+        for o in obj:
+            if isinstance(o, PackageKitPackage):
+                ids.append(o.id)
+            elif isinstance(o, str) and len(o.split(";")) == 4:
+                ids.append(o)
+            else:
+                raise Exception("Wrong Type: %s has to be a PackageKit id "
+                                "string or a PackageKitPackage instance" % o)
+        return ids
 
     def _run_transaction(self, method_name, args, exit_handler):
         '''Run the given method in a new transaction'''
