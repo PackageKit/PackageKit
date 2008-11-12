@@ -30,6 +30,7 @@
 #include <pk-backend.h>
 #include <zypp/ZYppCallbacks.h>
 #include <zypp/Digest.h>
+#include <zypp/KeyRing.h> 
 
 #include "zypp-utils.h"
 
@@ -326,35 +327,28 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 
 struct KeyRingReportReceiver : public zypp::callback::ReceiveReport<zypp::KeyRingReport>, ZyppBackendReceiver
 {
-        virtual bool askUserToAcceptUnsignedFile (const std::string &file)
+	virtual zypp::KeyRingReport::KeyTrust askUserToAcceptKey (const zypp::PublicKey &key, const zypp::KeyContext &keycontext)
+	{
+		if (zypp_signature_required(_backend, key))
+			return KEY_TRUST_AND_IMPORT;
+		return KEY_DONT_TRUST;
+	}
+
+        virtual bool askUserToAcceptUnsignedFile (const std::string &file, const zypp::KeyContext &keycontext)
         {
                 gboolean ok = zypp_signature_required(_backend, file);
 
                 return ok;
         }
 
-        virtual bool askUserToAcceptUnknownKey (const std::string &file, const std::string &id)
+        virtual bool askUserToAcceptUnknownKey (const std::string &file, const std::string &id, const zypp::KeyContext &keycontext)
         {
                 gboolean ok = zypp_signature_required(_backend, file, id);
 
                 return ok;
         }
 
-        virtual bool askUserToTrustKey (const zypp::PublicKey &key)
-        {
-                gboolean ok = zypp_signature_required(_backend, key);
-
-                return ok;
-        }
-
-        virtual bool askUserToImportKey (const zypp::PublicKey &key)
-        {
-                gboolean ok = zypp_signature_required(_backend, key);
-
-                return ok;
-        }
-
-	virtual bool askUserToAcceptVerificationFailed (const std::string &file, const zypp::PublicKey &key)
+	virtual bool askUserToAcceptVerificationFailed (const std::string &file, const zypp::PublicKey &key,  const zypp::KeyContext &keycontext)
 	{
 		gboolean ok = zypp_signature_required(_backend, key);
 

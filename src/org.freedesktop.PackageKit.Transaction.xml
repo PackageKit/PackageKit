@@ -120,8 +120,7 @@
         </doc:description>
           <doc:para>
             This method typically emits
-            <literal>Categories</literal>,
-            <literal>Error</literal> and
+            <doc:tt>Categories</doc:tt> and <doc:tt>Error</doc:tt>.
           </doc:para>
       </doc:doc>
     </method>

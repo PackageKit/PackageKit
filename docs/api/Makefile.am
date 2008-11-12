@@ -63,8 +63,8 @@ HTML_IMAGES =						\
 # Extra SGML files that are included by $(DOC_MAIN_SGML_FILE).
 content_files =						\
 	version.xml					\
-	dbus/pk-interface.ref.xml			\
-	dbus/pk-interface-transaction.ref.xml		\
+	dbus/org.freedesktop.PackageKit.ref.xml			\
+	dbus/org.freedesktop.PackageKit.Transaction.ref.xml		\
 	$(NULL)
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded

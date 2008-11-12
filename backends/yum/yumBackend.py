@@ -621,10 +621,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         else:
             cats =  [cat.categoryid for cat in self.yumbase.comps.categories]
         for cat in cats:
-            grps = self.comps.get_groups(cat)
-            for grp_id in grps:
+            grps = []
+            for grp_id in self.comps.get_groups(cat):
                 grp = self.yumbase.comps.return_group(grp_id)
                 if grp:
+                    grps.append(grp)
+            for grp in sorted(grps):
+                    grp_id = grp.groupid
                     cat_id_name = "@%s" % (grp_id)
                     name = grp.nameByLang(self._lang)
                     summary = grp.descriptionByLang(self._lang)
@@ -1307,6 +1310,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         pkgs_local = self.yumbase.rpmdb.searchNevra(name=pkg.name)
                     except yum.Errors.YumBaseError, e:
                         self.error(ERROR_INVALID_PACKAGE_FILE, 'Package could not be decompressed')
+                    except yum.Errors.MiscError:
+                        self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file)
                     except:
                         self.error(ERROR_UNKNOWN, "Failed to open local file -- please report")
                     else:
@@ -1341,7 +1346,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             # This means we don't run runYumTransaction, and don't get the GPG failure in
             # PackageKitYumBase(_checkSignatures) -- so we check here
             for inst_file in inst_files:
-                po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+                try:
+                    po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+                except yum.Errors.MiscError:
+                    self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file)
                 try:
                     self.yumbase._checkSignatures([po], None)
                 except yum.Errors.YumGPGCheckError, e:
@@ -1657,15 +1665,17 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         pkgs = self.yumbase.rpmdb.searchNevra(name='preupgrade')
         if len(pkgs) == 0:
             #install preupgrade
-            pkgs = self.yumbase.pkgSack.searchNevra(name='preupgrade')
+            pkgs = self.yumbase.pkgSack.returnNewestByName(name='preupgrade')
             if len(pkgs) == 0:
                 self.error(ERROR_PACKAGE_NOT_FOUND, "Could not find upgrade preupgrade package in any enabled repos")
-            elif len(pkgs) == 1:
-                txmbr = self.yumbase.install(po=pkgs[0])
-                if txmbr:
-                    self._runYumTransaction()
+            # we can have more than one result if the package is in multiple repos, for example
+            # a machine with i386 _and_ x86_64 configured.
+            # in this case, just pick the first entry as they are both noarch
+            txmbr = self.yumbase.install(po=pkgs[0])
+            if txmbr:
+                self._runYumTransaction()
             else:
-                self.error(ERROR_INTERNAL_ERROR, "not one update possibility")
+                self.error(ERROR_INTERNAL_ERROR, "could not install preupgrade as no transaction")
         elif len(pkgs) == 1:
             # check if there are any updates to the preupgrade package
             po = pkgs[0]

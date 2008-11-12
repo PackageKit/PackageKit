@@ -64,7 +64,7 @@ serviceapt_DATA     = $(serviceapt_in_files:.service.in=.service)
 $(serviceapt_DATA): $(serviceapt_in_files) Makefile
 	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PK_BACKEND_USER\@|$(PK_BACKEND_USER)|" $< > $@
 
-localcachedir = $(localstatedir)/run/PackageKit
+localcachedir = $(localstatedir)/lib/PackageKit
 localcache_DATA =					\
 	job_count.dat					\
 	$(NULL)

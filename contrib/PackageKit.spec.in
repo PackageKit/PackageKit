@@ -207,6 +207,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
+touch $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/groups.sqlite
 
 # create a link that GStreamer will recognise
 pushd ${RPM_BUILD_ROOT}%{_libexecdir} > /dev/null
@@ -229,6 +230,12 @@ rm -rf $RPM_BUILD_ROOT
 %post
 update-mime-database %{_datadir}/mime &> /dev/null || :
 
+# the job count used to live in /var/run, but it's now in /var/lib with the
+# other persistent bits
+if [ -e %{_localstatedir}/run/PackageKit/job_count.dat ]; then
+	mv %{_localstatedir}/run/PackageKit/job_count.dat %{_localstatedir}/lib/PackageKit/job_count.dat
+fi
+
 %postun
 update-mime-database %{_datadir}/mime &> /dev/null || :
 
@@ -246,9 +253,8 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_sysconfdir}/PackageKit
 %dir %{_localstatedir}/lib/PackageKit
 %dir %{python_sitelib}/packagekit
-%dir %{_localstatedir}/run/PackageKit
-%dir %{_localstatedir}/run/PackageKit/udev
 %dir %{_localstatedir}/cache/PackageKit
+%ghost %verify(not md5 size mtime) %{_localstatedir}/cache/PackageKit/groups.sqlite
 %dir %{_localstatedir}/cache/PackageKit/downloads
 %{python_sitelib}/packagekit/*py*
 %dir %{_sysconfdir}/bash_completion.d
@@ -272,7 +278,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libdir}/packagekit-backend/libpk_backend_dummy.so
 %{_libdir}/packagekit-backend/libpk_backend_test_*.so
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
-%ghost %verify(not md5 size mtime) %{_localstatedir}/run/PackageKit/job_count.dat
+%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/job_count.dat
 %{_datadir}/dbus-1/system-services/*.service
 %{_libdir}/pm-utils/sleep.d/95packagekit
 %{_libexecdir}/*py*
@@ -304,6 +310,8 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files udev-helper
 %defattr(-, root, root)
+%dir %{_localstatedir}/run/PackageKit
+%dir %{_localstatedir}/run/PackageKit/udev
 %doc README AUTHORS NEWS COPYING
 %{_sysconfdir}/udev/rules.d/*.rules
 /lib/udev/*.sh
@@ -353,6 +361,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_includedir}/PackageKit/packagekit-qt
 %{_includedir}/PackageKit/packagekit-qt/QPackageKit
 %{_includedir}/PackageKit/packagekit-qt/*.h
+%{_datadir}/cmake/Modules/FindQPackageKit.cmake
 
 %files backend-devel
 %defattr(-,root,root,-)

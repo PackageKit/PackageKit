@@ -44,7 +44,7 @@
 
 #include "pk-transaction-id.h"
 #include "pk-transaction-list.h"
-#include "pk-interface-transaction.h"
+#include "org.freedesktop.PackageKit.Transaction.h"
 
 static void     pk_transaction_list_class_init	(PkTransactionListClass *klass);
 static void     pk_transaction_list_init	(PkTransactionList      *tlist);

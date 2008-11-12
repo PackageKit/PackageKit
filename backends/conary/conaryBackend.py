@@ -167,7 +167,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return ','.join([frzVersion, frzFlavor])
 
     def _thawData(self, data):
-        frzVersion, frzFlavor = data.split(', ')
+        frzVersion, frzFlavor = data.split(',')
         version = versions.ThawVersion(frzVersion)
         flavor = deps.ThawFlavor(frzFlavor)
         return version, flavor
@@ -980,7 +980,7 @@ class Cache(object):
                 #    self._addPackageLicense(trv, license)
 
 def main():
-    backend = PackageKitConaryBackend('', lock=True)
+    backend = PackageKitConaryBackend('')
     backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":
