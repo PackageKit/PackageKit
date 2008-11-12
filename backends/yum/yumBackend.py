@@ -627,19 +627,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if grp:
                     grps.append(grp)
             for grp in sorted(grps):
-                    grp_id = grp.groupid
-                    cat_id_name = "@%s" % (grp_id)
-                    name = grp.nameByLang(self._lang)
-                    summary = grp.descriptionByLang(self._lang)
-                    icon = "image-missing"
-                    fn = "/usr/share/pixmaps/comps/%s.png" % grp_id
+                grp_id = grp.groupid
+                cat_id_name = "@%s" % (grp_id)
+                name = grp.nameByLang(self._lang)
+                summary = grp.descriptionByLang(self._lang)
+                icon = "image-missing"
+                fn = "/usr/share/pixmaps/comps/%s.png" % grp_id
+                if os.access(fn, os.R_OK):
+                    icon = grp_id
+                else:
+                    fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
                     if os.access(fn, os.R_OK):
-                        icon = grp_id
-                    else:
-                        fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
-                        if os.access(fn, os.R_OK):
-                            icon = cat_id
-                    self.category(cat, cat_id_name, name, summary, icon)
+                        icon = cat_id
+                self.category(cat, cat_id_name, name, summary, icon)
 
     def download_packages(self, directory, package_ids):
         '''
@@ -1308,10 +1308,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         # read the file
                         pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
                         pkgs_local = self.yumbase.rpmdb.searchNevra(name=pkg.name)
-                    except yum.Errors.YumBaseError, e:
-                        self.error(ERROR_INVALID_PACKAGE_FILE, 'Package could not be decompressed')
                     except yum.Errors.MiscError:
                         self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file)
+                    except yum.Errors.YumBaseError, e:
+                        self.error(ERROR_INVALID_PACKAGE_FILE, 'Package could not be decompressed')
                     except:
                         self.error(ERROR_UNKNOWN, "Failed to open local file -- please report")
                     else:
@@ -1910,7 +1910,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-         if package.startswith(';;;'): #This is a repo signature
+        if package.startswith(';;;'): #This is a repo signature
             repoid = package.split(';')[-1]
             repo = self.yumbase.repos.getRepo(repoid)
             if repo:
@@ -2190,7 +2190,7 @@ class PackageKitYumBase(yum.YumBase):
         self.repos.confirm_func = self._repo_gpg_confirm
         self.repos.gpg_import_func = self._repo_gpg_import
 
-    def _repo_gpg_confirm(self,keyData):
+    def _repo_gpg_confirm(self, keyData):
         """ Confirm Repo GPG signature import """
         if not keyData:
             self.backend.error(ERROR_BAD_GPG_SIGNATURE,
@@ -2210,7 +2210,7 @@ class PackageKitYumBase(yum.YumBase):
                                      'gpg')
         self.backend.error(ERROR_GPG_FAILURE, "GPG key %s required" % keyData['hexkeyid'])
 
-    def _repo_gpg_import(self,repo,confirm):
+    def _repo_gpg_import(self, repo, confirm):
         """ Repo GPG signature importer"""
         self.getKeyForRepo(repo, callback=confirm)
 
