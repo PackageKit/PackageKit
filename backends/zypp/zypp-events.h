@@ -361,7 +361,7 @@ struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestR
 {
 	virtual bool askUserToAcceptNoDigest (const zypp::Pathname &file)
 	{
-		gboolean ok = zypp_signature_required(_backend, file);
+		gboolean ok = zypp_signature_required(_backend, file.asString ());
 
 		return ok;
 	}
@@ -369,7 +369,7 @@ struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestR
 	virtual bool askUserToAccepUnknownDigest (const zypp::Pathname &file, const std::string &name)
 	{
 		pk_backend_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo: %s Digest: %s", file.c_str (), name.c_str ());
-		gboolean ok = zypp_signature_required(_backend, file);
+		gboolean ok = zypp_signature_required(_backend, file.asString ());
 
 		return ok;
 	}
@@ -378,7 +378,7 @@ struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestR
 	{
 		pk_backend_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "For repo %s %s is requested but %s was found!",
 				file.c_str (), requested.c_str (), found.c_str ());
-		gboolean ok = zypp_signature_required(_backend, file);
+		gboolean ok = zypp_signature_required(_backend, file.asString ());
 
 		return ok;
 	}
