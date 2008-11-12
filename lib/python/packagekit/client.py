@@ -38,7 +38,7 @@ import gobject
 from enums import *
 from misc import *
 
-__api_version__ = '0.1.1'
+__api_version__ = '0.1.2'
 
 class PackageKitError(Exception):
     '''PackageKit error.
