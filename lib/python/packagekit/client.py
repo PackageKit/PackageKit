@@ -189,6 +189,13 @@ class PackageKitTransaction:
         '''
         return self._iface.IsCallerActive()
 
+    def get_error(self):
+        '''Returns the PackageKitError of a failed transaction'''
+        if self._error_enum:
+            return PackageKitError(self._error_enum, self._error_desc)
+        else:
+            return None
+
 class PackageKitClient:
     '''PackageKit client wrapper class.
 
