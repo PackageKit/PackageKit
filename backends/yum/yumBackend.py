@@ -627,19 +627,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if grp:
                     grps.append(grp)
             for grp in sorted(grps):
-                    grp_id = grp.groupid
-                    cat_id_name = "@%s" % (grp_id)
-                    name = grp.nameByLang(self._lang)
-                    summary = grp.descriptionByLang(self._lang)
-                    icon = "image-missing"
-                    fn = "/usr/share/pixmaps/comps/%s.png" % grp_id
+                grp_id = grp.groupid
+                cat_id_name = "@%s" % (grp_id)
+                name = grp.nameByLang(self._lang)
+                summary = grp.descriptionByLang(self._lang)
+                icon = "image-missing"
+                fn = "/usr/share/pixmaps/comps/%s.png" % grp_id
+                if os.access(fn, os.R_OK):
+                    icon = grp_id
+                else:
+                    fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
                     if os.access(fn, os.R_OK):
-                        icon = grp_id
-                    else:
-                        fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
-                        if os.access(fn, os.R_OK):
-                            icon = cat_id
-                    self.category(cat, cat_id_name, name, summary, icon)
+                        icon = cat_id
+                self.category(cat, cat_id_name, name, summary, icon)
 
     def download_packages(self, directory, package_ids):
         '''
@@ -1305,13 +1305,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if fn.endswith('.rpm'):
                     inst_file = os.path.join(tempdir, fn)
                     try:
-                        # read the file 
+                        # read the file
                         pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
                         pkgs_local = self.yumbase.rpmdb.searchNevra(name=pkg.name)
-                    except yum.Errors.YumBaseError, e:
-                        self.error(ERROR_INVALID_PACKAGE_FILE, 'Package could not be decompressed')
                     except yum.Errors.MiscError:
                         self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file)
+                    except yum.Errors.YumBaseError, e:
+                        self.error(ERROR_INVALID_PACKAGE_FILE, 'Package could not be decompressed')
                     except:
                         self.error(ERROR_UNKNOWN, "Failed to open local file -- please report")
                     else:
@@ -1910,14 +1910,27 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        pkg, inst = self._findPackage(package)
-        if pkg:
-            try:
-                self.yumbase.getKeyForPackage(pkg, askcb = lambda x, y, z: True)
-            except yum.Errors.YumBaseError, e:
-                self.error(ERROR_UNKNOWN, "cannot install signature: %s" % _to_unicode(e))
-            except:
-                self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for %s" % pkg)
+        if package.startswith(';;;'): #This is a repo signature
+            repoid = package.split(';')[-1]
+            repo = self.yumbase.repos.getRepo(repoid)
+            if repo:
+                try:
+                    self.yumbase.repos.doSetup(thisrepo=repoid)
+                    self.yumbase.getKeyForRepo(repo, callback= lambda x: True)
+                except yum.Errors.YumBaseError, e:
+                    self.error(ERROR_UNKNOWN, "cannot install signature: %s" % str(e))
+                except:
+                    self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for the %s repository" % repo)
+        else: # This is a package signature
+            pkg, inst = self._findPackage(package)
+            if pkg:
+                try:
+                    self.yumbase.getKeyForPackage(pkg, askcb = lambda x, y, z: True)
+                except yum.Errors.YumBaseError, e:
+                    self.error(ERROR_UNKNOWN, "cannot install signature: %s" % str(e))
+                except:
+                    self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for %s" % pkg)
+
 
     def _check_init(self, lazy_cache=False):
         '''Just does the caching tweaks'''
@@ -1929,6 +1942,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for repo in self.yumbase.repos.listEnabled():
                 repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
                 repo.mdpolicy = "group:primary"
+
+        # make sure repos are set up
+        try:
+            self.yumbase.repos.doSetup()
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_NO_CACHE, _to_unicode(e))
 
     def _refresh_yum_cache(self):
         self.status(STATUS_REFRESH_CACHE)
@@ -2172,6 +2191,34 @@ class PackageKitYumBase(yum.YumBase):
         yum.YumBase.__init__(self)
         self.missingGPGKey = None
         self.dsCallback = DepSolveCallback(backend)
+        self.backend = backend
+        # Setup Repo GPG support callbacks
+        self.repos.confirm_func = self._repo_gpg_confirm
+        self.repos.gpg_import_func = self._repo_gpg_import
+
+    def _repo_gpg_confirm(self, keyData):
+        """ Confirm Repo GPG signature import """
+        if not keyData:
+            self.backend.error(ERROR_BAD_GPG_SIGNATURE,
+                       "GPG key not imported, and no GPG information was found.")
+        repo = keyData['repo']
+        fingerprint = keyData['fingerprint']()
+        hex_fingerprint = "%02x" * len(fingerprint) % tuple(map(ord, fingerprint))
+        # Borrowed from http://mail.python.org/pipermail/python-list/2000-September/053490.html
+
+        self.backend.repo_signature_required(";;;%s" % repo.id,
+                                     repo.id,
+                                     keyData['keyurl'].replace("file://", ""),
+                                     keyData['userid'],
+                                     keyData['hexkeyid'],
+                                     hex_fingerprint,
+                                     time.ctime(keyData['timestamp']),
+                                     'gpg')
+        self.backend.error(ERROR_GPG_FAILURE, "GPG key %s required" % keyData['hexkeyid'])
+
+    def _repo_gpg_import(self, repo, confirm):
+        """ Repo GPG signature importer"""
+        self.getKeyForRepo(repo, callback=confirm)
 
     def _checkSignatures(self, pkgs, callback):
         ''' The the signatures of the downloaded packages '''

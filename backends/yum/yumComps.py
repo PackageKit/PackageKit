@@ -267,25 +267,25 @@ class yumComps:
         return True
 
     def _add_groups_to_db(self, grps, cat_id):
-            for group in grps:
-                # strip out rpmfusion from the group name
-                group_name = group.groupid
-                group_name = group_name.replace('rpmfusion_nonfree-', '')
-                group_name = group_name.replace('rpmfusion_free-', '')
-                group_id = "%s;%s" % (cat_id, group_name)
+        for group in grps:
+            # strip out rpmfusion from the group name
+            group_name = group.groupid
+            group_name = group_name.replace('rpmfusion_nonfree-', '')
+            group_name = group_name.replace('rpmfusion_free-', '')
+            group_id = "%s;%s" % (cat_id, group_name)
 
-                group_enum = GROUP_OTHER
-                if groupMap.has_key(group_id):
-                    group_enum = groupMap[group_id]
-                else:
-                    print 'unknown group enum', group_id
+            group_enum = GROUP_OTHER
+            if groupMap.has_key(group_id):
+                group_enum = groupMap[group_id]
+            else:
+                print 'unknown group enum', group_id
 
-                for package in group.mandatory_packages:
-                    self._add_db(package, cat_id, group_name, group_enum, 'mandatory')
-                for package in group.default_packages:
-                    self._add_db(package, cat_id, group_name, group_enum, 'default')
-                for package in group.optional_packages:
-                    self._add_db(package, cat_id, group_name, group_enum, 'optional')
+            for package in group.mandatory_packages:
+                self._add_db(package, cat_id, group_name, group_enum, 'mandatory')
+            for package in group.default_packages:
+                self._add_db(package, cat_id, group_name, group_enum, 'default')
+            for package in group.optional_packages:
+                self._add_db(package, cat_id, group_name, group_enum, 'optional')
 
 
     def _add_non_catagorized_groups(self):
@@ -342,9 +342,9 @@ class yumComps:
             break
         return category
 
-    def get_groups(self,cat_id):
+    def get_groups(self, cat_id):
         grps = set()
-        self.cursor.execute('SELECT groupid FROM groups WHERE category = ?',[cat_id])
+        self.cursor.execute('SELECT groupid FROM groups WHERE category = ?', [cat_id])
         for row in self.cursor:
             grps.add(row[0])
         return list(grps)

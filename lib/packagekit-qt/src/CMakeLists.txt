@@ -4,6 +4,13 @@ project(packagekit-qt)
 include(FindPkgConfig)
 pkg_check_modules(POLKIT polkit-dbus)
 
+if(POLKIT_FOUND)
+	set(USE_SECURITY_POLKIT 1)
+else(POLKIT_FOUND)
+	set(USE_SECURITY_POLKIT 0)
+endif(POLKIT_FOUND)
+configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
 include_directories(
 	${QT_INCLUDES}
 	${POLKIT_INCLUDE_DIRS}

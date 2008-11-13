@@ -1240,11 +1240,6 @@ pk_transaction_search_check (const gchar *search, GError **error)
 				     "Invalid search containing '?'");
 		return FALSE;
 	}
-	if (size < 2) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
-				     "The search string length is too small");
-		return FALSE;
-	}
 	if (size == 1024) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "The search string length is too large");
@@ -2598,9 +2593,9 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		return;
 	}
 
-	/* check package_id */
+	/* check package_id (';;;repo-id' is used for the repo key) */
 	ret = pk_package_id_check (package_id);
-	if (!ret) {
+	if (!ret && !g_str_has_prefix (package_id, ";;;")) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		pk_transaction_release_tid (transaction);
