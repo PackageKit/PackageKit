@@ -1943,6 +1943,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
                 repo.mdpolicy = "group:primary"
 
+        # make sure repos are set up
+        try:
+            self.yumbase.repos.doSetup()
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_NO_CACHE, _to_unicode(e))
+
     def _refresh_yum_cache(self):
         self.status(STATUS_REFRESH_CACHE)
         old_cache_setting = self.yumbase.conf.cache
