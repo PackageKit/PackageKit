@@ -1240,11 +1240,6 @@ pk_transaction_search_check (const gchar *search, GError **error)
 				     "Invalid search containing '?'");
 		return FALSE;
 	}
-	if (size < 2) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
-				     "The search string length is too small");
-		return FALSE;
-	}
 	if (size == 1024) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "The search string length is too large");
