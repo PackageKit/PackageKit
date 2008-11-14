@@ -85,9 +85,10 @@ class PackageKitBaseBackend:
 
         # this should be fast now
         print "error\t%s\t%s" % (err, description)
-        print "finished"
         sys.stdout.flush()
         if exit:
+            print "finished"
+            sys.stdout.flush()
             sys.exit(1)
 
     def message(self, typ, msg):
@@ -249,91 +250,91 @@ class PackageKitBaseBackend:
         Implement the {backend}-search-name functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def search_details(self, filters, key):
         '''
         Implement the {backend}-search-details functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def search_group(self, filters, key):
         '''
         Implement the {backend}-search-group functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def search_file(self, filters, key):
         '''
         Implement the {backend}-search-file functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def get_update_detail(self, package_ids_ids):
         '''
         Implement the {backend}-get-update-detail functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def get_depends(self, filters, package_ids, recursive):
         '''
         Implement the {backend}-get-depends functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def get_packages(self, filters):
         '''
         Implement the {backend}-get-packages functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def get_requires(self, filters, package_ids, recursive):
         '''
         Implement the {backend}-get-requires functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def what_provides(self, filters, provides_type, search):
         '''
         Implement the {backend}-what-provides functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def update_system(self):
         '''
         Implement the {backend}-update-system functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def refresh_cache(self):
         '''
         Implement the {backend}-refresh_cache functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def install_packages(self, package_ids):
         '''
         Implement the {backend}-install functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def install_signature(self, sigtype, key_id, package):
         '''
         Implement the {backend}-install-signature functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def install_files (self, trusted, inst_files):
         '''
@@ -341,105 +342,105 @@ class PackageKitBaseBackend:
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def resolve(self, filters, name):
         '''
         Implement the {backend}-resolve functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def remove_packages(self, allowdep, package_ids):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def update_packages(self, package):
         '''
         Implement the {backend}-update functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def get_details(self, package):
         '''
         Implement the {backend}-get-details functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def get_files(self, package):
         '''
         Implement the {backend}-get-files functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def get_updates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def get_distro_upgrades(self):
         '''
         Implement the {backend}-get-distro-upgrades functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def repo_enable(self, repoid, enable):
         '''
         Implement the {backend}-repo-enable functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def repo_set_data(self, repoid, parameter, value):
         '''
         Implement the {backend}-repo-set-data functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def get_repo_list(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def repo_signature_install(self, package):
         '''
         Implement the {backend}-repo-signature-install functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def download_packages(self, directory, packages):
         '''
         Implement the {backend}-download-packages functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def set_locale(self, code):
         '''
         Implement the {backend}-set-locale functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def get_categories(self):
         '''
         Implement the {backend}-get-categories functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend", exit=False)
 
     def customTracebackHandler(self, tb):
         '''

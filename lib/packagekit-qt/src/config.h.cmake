@@ -1,0 +1,1 @@
+#cmakedefine USE_SECURITY_POLKIT

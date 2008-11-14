@@ -35,6 +35,8 @@ backend_stderr_cb (PkBackend *backend, const gchar *output)
 	/* unsigned rpm, this will be picked up by yum and and exception will be thrown */
 	if (strstr (output, "NOKEY") != NULL)
 		return FALSE;
+	if (strstr (output, "GPG") != NULL)
+		return FALSE;
 	return TRUE;
 }
 
