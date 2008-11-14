@@ -2475,12 +2475,6 @@ pk_client_remove_packages_action (PkClient *client, gchar **package_ids,
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	/* ensure we are not trying to run without reset */
-	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
-	}
-
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
@@ -3408,12 +3402,6 @@ pk_client_repo_set_data_action (PkClient *client, const gchar *repo_id,
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	/* ensure we are not trying to run without reset */
-	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
-	}
-
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
@@ -3677,6 +3665,8 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_get_repo_list (client, priv->cached_filters, error);
 	else if (priv->role == PK_ROLE_ENUM_GET_CATEGORIES)
 		ret = pk_client_get_categories (client, error);
+	else if (priv->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
+		ret = pk_client_get_distro_upgrades (client, error);
 	else {
 		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
