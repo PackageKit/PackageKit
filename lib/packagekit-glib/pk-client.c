@@ -2475,12 +2475,6 @@ pk_client_remove_packages_action (PkClient *client, gchar **package_ids,
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	/* ensure we are not trying to run without reset */
-	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
-	}
-
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
