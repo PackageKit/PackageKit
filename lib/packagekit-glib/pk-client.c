@@ -3677,6 +3677,8 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_get_repo_list (client, priv->cached_filters, error);
 	else if (priv->role == PK_ROLE_ENUM_GET_CATEGORIES)
 		ret = pk_client_get_categories (client, error);
+	else if (priv->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
+		ret = pk_client_get_distro_upgrades (client, error);
 	else {
 		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
