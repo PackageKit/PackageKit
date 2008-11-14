@@ -160,27 +160,27 @@ class PackageKitTransaction:
                 raise PackageKitError(self._error_enum, self._error_desc)
             return self.result
 
-    def SetLocale(self, code):
+    def set_locale(self, code):
         '''Set the language to the given locale code'''
         return self._iface.SetLocale(code)
 
-    def Cancel(self):
+    def cancel(self):
         '''Cancel the transaction'''
         return self._iface.Cancel()
 
-    def GetStatus(self):
+    def get_status(self):
         '''Get the status of the transaction'''
         return self._status
 
-    def GetProgress(self):
+    def get_progress(self):
         '''Get the progress of the transaction'''
         return self._iface.GetProgress()
 
-    def GetFinishedState(self):
+    def get_finished_state(self):
         '''Return the finished status'''
         return self._finished_status
 
-    def IsCallerActive(self):
+    def is_caller_active(self):
         '''
         This method allows us to find if the original caller of the method is
         still connected to the session bus. This is usually an indication that
@@ -212,7 +212,7 @@ class PackageKitClient:
         self.bus = dbus.SystemBus()
         self._locale = locale.getdefaultlocale()[0]
 
-    def SuggestDaemonQuit(self):
+    def suggest_daemon_quit(self):
         '''Ask the PackageKit daemon to shutdown.'''
         try:
             self.pk_control.SuggestDaemonQuit()
@@ -220,59 +220,59 @@ class PackageKitClient:
             # not initialized, or daemon timed out
             pass
 
-    def Resolve(self, filters, names, exit_handler=None):
+    def resolve(self, filters, names, exit_handler=None):
         '''Resolve package names'''
         names_list = self._to_list(names)
         return self._run_transaction("Resolve", [filters, names_list],
                                      exit_handler)
 
-    def GetDetails(self, packages, exit_handler=None):
+    def get_details(self, packages, exit_handler=None):
         '''Get details about the given packages'''
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetDetails", [package_ids],
                                      exit_handler)
 
-    def SearchName(self, filters, search, exit_handler=None):
+    def search_name(self, filters, search, exit_handler=None):
         '''Search for packages by name'''
         return self._run_transaction("SearchName", [filters, search],
                                      exit_handler)
 
-    def SearchGroup(self, filters, search, exit_handler=None):
+    def search_group(self, filters, search, exit_handler=None):
         '''Search for packages by their group'''
         return self._run_transaction("SearchGroup", [filters, search], 
                                      exit_handler)
 
-    def SearchDetails(self, filters, search, exit_handler=None):
+    def search_details(self, filters, search, exit_handler=None):
         '''Search for packages by their details'''
         return self._run_transaction("SearchDetails", [filters], 
                                      exit_handler)
 
-    def SearchFile(self, filters, search, exit_handler=None):
+    def search_file(self, filters, search, exit_handler=None):
         '''Search for packages by their files'''
         return self._run_transaction("SearchFile", [filters], 
                                      exit_handler)
 
-    def InstallPackages(self, packages, exit_handler=None):
+    def install_packages(self, packages, exit_handler=None):
         '''Install the packages of the given package ids'''
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("InstallPackages", [package_ids], 
                                      exit_handler)
 
-    def UpdatePackages(self, packages, exit_handler=None):
+    def update_packages(self, packages, exit_handler=None):
         '''Update the packages of the given package ids'''
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("UpdatePackages", [package_ids], 
                                      exit_handler)
 
-    def RemovePackages(self, packages, allow_deps=False, auto_remove=True,
-                       exit_handler=None):
+    def remove_packages(self, packages, allow_deps=False, auto_remove=True,
+                        exit_handler=None):
         '''Remove the packages of the given package ids'''
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("RemovePackages",
                                      [package_ids, allow_deps, auto_remove],
                                      exit_handler)
 
-    def RefreshCache(self, force=False, exit_handler=None):
+    def refresh_cache(self, force=False, exit_handler=None):
         '''
         Refresh the cache, i.e. download new metadata from a
         remote URL so that package lists are up to date. This action
@@ -281,11 +281,11 @@ class PackageKitClient:
         '''
         return self._run_transaction("RefreshCache", (force,), exit_handler)
 
-    def GetRepoList(self, filters=FILTER_NONE, exit_handler=None):
+    def get_repo_list(self, filters=FILTER_NONE, exit_handler=None):
         '''Get the repositories'''
         return self._run_transaction("GetRepoList", (filters,), exit_handler)
 
-    def RepoEnable(self, repo_id, enabled):
+    def repo_enable(self, repo_id, enabled):
         '''
         Enable the repository specified.
         repo_id is a repository identifier, e.g. fedora-development-debuginfo
@@ -294,7 +294,7 @@ class PackageKitClient:
         return self._run_transaction("RepoEnable", (repo_id, enabled),
                                      exit_handler)
 
-    def GetUpdates(self, filters=FILTER_NONE, exit_handler=None):
+    def get_updates(self, filters=FILTER_NONE, exit_handler=None):
         '''
         This method should return a list of packages that are installed and
         are upgradable.
@@ -303,88 +303,88 @@ class PackageKitClient:
         '''
         return self._run_transaction("GetUpdates", [filters], exit_handler)
 
-    def GetCategories(self, exit_handler=None):
+    def get_categories(self, exit_handler=None):
         '''Return available software categories'''
         return self._run_transaction("GetCategories", [], exit_handler)
 
-    def GetPackages(self, filters=FILTER_NONE, exit_handler=None):
+    def get_packages(self, filters=FILTER_NONE, exit_handler=None):
         '''Return all packages'''
         return self._run_transaction("GetUpdates", [filters], exit_handler)
 
-    def UpdateSystem(self, exit_handler=None):
+    def update_system(self, exit_handler=None):
         '''Update the system'''
         return self._run_transaction("UpdateSystem", [], exit_handler)
 
-    def DownloadPackages(self, packages, exit_handler=None):
+    def download_packages(self, packages, exit_handler=None):
         '''Download package files'''
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("DownloadPackages", [package_ids], exit_handler)
 
-    def GetDepends(self, filters, packages, recursive=False, 
-                   exit_handler=None):
+    def get_depends(self, filters, packages, recursive=False, 
+                    exit_handler=None):
         '''Search for dependencies for packages'''
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetDepends",
                                      [filters, package_ids, recursive],
                                      exit_handler)
 
-    def GetFiles(self, packages, exit_handler=None):
+    def get_files(self, packages, exit_handler=None):
         '''Get files of the given packages'''
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetFiles", [package_ids], exit_handler)
 
-    def GetRequires(self, filters, packages, recursive=False, 
-                    exit_handler=None):
+    def get_requires(self, filters, packages, recursive=False, 
+                     exit_handler=None):
         '''Search for requirements for packages'''
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetRequires",
                                      [filters, package_ids, recursive],
                                      exit_handler)
 
-    def GetUpdateDetail(self, packages, exit_handler=None):
+    def get_update_detail(self, packages, exit_handler=None):
         '''Get details for updates'''
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetUpdateDetail", [package_ids], 
                                      exit_handler)
 
-    def GetDistroUpgrades(self, exit_handler=None):
+    def get_distro_upgrades(self, exit_handler=None):
         '''Query for later distribution releases'''
         return self._run_transaction("GetDistroUpgrades", [],
                                      exit_handler)
 
-    def InstallFiles(self, trusted, files, exit_handler=None):
+    def install_files(self, trusted, files, exit_handler=None):
         '''Install the given local packages'''
         return self._run_transaction("InstallFiles", [trusted, files],
                                      exit_handler)
 
-    def InstallSignature(self, sig_type, key_id, package_id, 
-                         exit_handler=None):
+    def install_signature(self, sig_type, key_id, package_id, 
+                          exit_handler=None):
         '''Install packages signing keys used to validate packages'''
         return self._run_transaction("InstallSignature",
                                      [sig_type, key_id, package_id],
                                      exit_handler)
 
-    def RepoSetData(self, repo_id, parameter, value, exit_handler=None):
+    def set_repo_data(self, repo_id, parameter, value, exit_handler=None):
         '''Change custom parameter of a repository'''
         return self._run_transaction("RepoSetData",
                                      [repo_id, parameter, value],
                                      exit_handler)
 
-    def Rollback(self, transaction_id, exit_handler=None):
+    def rollback(self, transaction_id, exit_handler=None):
         '''Roll back to a previous transaction'''
         return self._run_transaction("Rollback", [transaction_id], 
                                      exit_handler)
 
-    def WhatProvides(self, provides, search, exit_handler=None):
+    def what_provides(self, provides, search, exit_handler=None):
         '''Search for packages that provide the supplied attributes'''
         return self._run_transaction("WhatProvides", [provides, search], 
                                      exit_handler)
 
-    def SetLocale(self, code):
+    def set_locale(self, code):
         '''Set the language of the client'''
         self._locale = code
 
-    def AcceptEula(self, eula_id, exit_handler=None):
+    def accept_eula(self, eula_id, exit_handler=None):
         '''Accept the given end user licence aggreement'''
         return self._run_transaction("AcceptEula", [eula_id], exit_handler)
 
