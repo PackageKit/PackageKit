@@ -38,9 +38,15 @@ pk_console_resolve (PkBitfield filter, const gchar *package, GError **error)
 	gboolean ret;
 	guint length;
 	PkPackageList *list = NULL;
+	PkControl *control;
 	PkClient *client;
 	gchar **packages;
 	GError *error_local = NULL;
+	PkBitfield roles;
+
+	/* get roles supported */
+	control = pk_control_new ();
+	roles = pk_control_get_actions (control, NULL);
 
 	/* get new client */
 	client = pk_client_new ();
@@ -62,9 +68,8 @@ pk_console_resolve (PkBitfield filter, const gchar *package, GError **error)
 	length = pk_package_list_get_size (list);
 
 	/* didn't resolve to anything, try to get a provide */
-	if (length == 0) {
+	if (length == 0 && pk_bitfield_contain (roles, PK_ROLE_ENUM_WHAT_PROVIDES)) {
 
-		/* nothing contains */
 		g_object_unref (list);
 		list = NULL;
 
@@ -87,6 +92,7 @@ pk_console_resolve (PkBitfield filter, const gchar *package, GError **error)
 		list = pk_client_get_package_list (client);
 	}
 out:
+	g_object_unref (control);
 	g_object_unref (client);
 	return list;
 }
