@@ -544,7 +544,7 @@ if test x$enable_poldek = xyes; then
 fi
 
 if test x$enable_zypp = xyes; then
-	PKG_CHECK_MODULES(ZYPP, libzypp >= 5.4.0)
+	PKG_CHECK_MODULES(ZYPP, libzypp >= 5.20.0)
 	AC_SUBST(ZYPP_CFLAGS)
 	AC_SUBST(ZYPP_LIBS)
 fi
