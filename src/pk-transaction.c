@@ -1427,7 +1427,7 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 	if (transaction->priv->backend->desc->cancel == NULL) {
 		egg_debug ("Not implemented yet: Cancel");
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "Operation not yet supported by backend");
+			     "Cancel not yet supported by backend");
 		return FALSE;
 	}
 
@@ -1479,7 +1479,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->download_packages == NULL) {
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-	                             "Operation not yet supported by backend");
+	                             "DownloadPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 	        dbus_g_method_return_error (context, error);
 	        return;
@@ -1568,7 +1568,7 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_categories == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "GetCategories not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1629,7 +1629,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	if (transaction->priv->backend->desc->get_depends == NULL) {
 		egg_debug ("Not implemented yet: GetDepends");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "GetDepends not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1706,7 +1706,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	if (transaction->priv->backend->desc->get_details == NULL) {
 		egg_debug ("Not implemented yet: GetDetails");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "GetDetails not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1770,7 +1770,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 	if (transaction->priv->backend->desc->get_distro_upgrades == NULL) {
 		egg_debug ("Not implemented yet: GetDistroUpgrades");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "GetDistroUpgrades not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1825,7 +1825,7 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	if (transaction->priv->backend->desc->get_files == NULL) {
 		egg_debug ("Not implemented yet: GetFiles");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "GetFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1889,7 +1889,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	if (transaction->priv->backend->desc->get_packages == NULL) {
 		egg_debug ("Not implemented yet: GetPackages");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "GetPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2006,7 +2006,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	if (transaction->priv->backend->desc->get_repo_list == NULL) {
 		egg_debug ("Not implemented yet: GetRepoList");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "GetRepoList not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2070,7 +2070,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	if (transaction->priv->backend->desc->get_requires == NULL) {
 		egg_debug ("Not implemented yet: GetRequires");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "GetRequires not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2199,7 +2199,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	if (transaction->priv->backend->desc->get_update_detail == NULL) {
 		egg_debug ("Not implemented yet: GetUpdateDetail");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "GetUpdateDetail not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2313,7 +2313,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	if (transaction->priv->backend->desc->get_updates == NULL) {
 		egg_debug ("Not implemented yet: GetUpdates");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "GetUpdates not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2410,7 +2410,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->install_files == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "InstallFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2504,7 +2504,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->install_packages == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "InstallPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2572,12 +2572,12 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("method called: %s, %s", key_id, package_id);
+	egg_debug ("InstallSignature method called: %s, %s", key_id, package_id);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->install_signature == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "InstallSignature not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2672,7 +2672,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->refresh_cache == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "Operation not yet supported by backend");
+			     "RefreshCache not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2739,7 +2739,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->remove_packages == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "RemovePackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2812,7 +2812,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->repo_enable == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "RepoEnable not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2884,7 +2884,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->repo_set_data == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "RepoSetData not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2962,7 +2962,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	if (transaction->priv->backend->desc->resolve == NULL) {
 		egg_debug ("Not implemented yet: Resolve");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Resolve not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -3036,7 +3036,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->rollback == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Rollback not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -3107,7 +3107,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	if (transaction->priv->backend->desc->search_details == NULL) {
 		egg_debug ("Not implemented yet: SearchDetails");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "SearchDetails not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -3177,7 +3177,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	if (transaction->priv->backend->desc->search_file == NULL) {
 		egg_debug ("Not implemented yet: SearchFile");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "SearchFile not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -3247,7 +3247,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	if (transaction->priv->backend->desc->search_group == NULL) {
 		egg_debug ("Not implemented yet: SearchGroup");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "SearchGroup not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -3317,7 +3317,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	if (transaction->priv->backend->desc->search_name == NULL) {
 		egg_debug ("Not implemented yet: SearchName");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "SearchName not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -3410,7 +3410,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->update_packages == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "UpdatePackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -3481,7 +3481,7 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->update_system == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "UpdateSystem not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -3550,7 +3550,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	if (transaction->priv->backend->desc->what_provides == NULL) {
 		egg_debug ("Not implemented yet: WhatProvides");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "WhatProvides not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
