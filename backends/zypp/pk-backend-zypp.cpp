@@ -895,13 +895,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 
 		if (zypp::isKind<zypp::Patch>(solvable)) {
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
-			if (patch->rebootSuggested ()) {
-				restart = PK_RESTART_ENUM_SYSTEM;
-			} else if (patch->restartSuggested ()) {
-				restart = PK_RESTART_ENUM_SESSION;
-			} else if (patch->reloginSuggested()) {
-				restart = PK_RESTART_ENUM_SESSION;
-			}
+			zypp_get_restart (restart, patch);
 
 			// Building links like "http://www.distro-update.org/page?moo;Bugfix release for kernel;http://www.test.de/bgz;test domain"
 			for (zypp::Patch::ReferenceIterator it = patch->referencesBegin (); it != patch->referencesEnd (); it ++) {
@@ -975,7 +969,7 @@ backend_update_system_thread (PkBackend *backend)
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
 	//get all Patches for Update
-	std::set<zypp::PoolItem> *candidates = zypp_get_patches (restart);
+	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
 	//std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
 
 	if (_updating_self) {
@@ -1002,6 +996,7 @@ backend_update_system_thread (PkBackend *backend)
 		// set the status of the update to ToBeInstalled
 		zypp::ResStatus &status = ci->status ();
 		status.setToBeInstalled (zypp::ResStatus::USER);
+		zypp_get_restart (restart, zypp::asKind<zypp::Patch>(ci->resolvable ()));
 	}
 
 	if (!zypp_perform_execution (backend, UPDATE, FALSE)) {
@@ -1608,7 +1603,7 @@ backend_update_packages_thread (PkBackend *backend)
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	zypp_get_patches (restart); // make shure _updating_self is set
+	zypp_get_patches (); // make sure _updating_self is set
 
 	if (_updating_self) {
 		egg_debug ("updating self and setting restart");
@@ -1619,6 +1614,8 @@ backend_update_packages_thread (PkBackend *backend)
 		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 		zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
 		item.status ().setToBeInstalled (zypp::ResStatus::USER);
+		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item.resolvable ());
+		zypp_get_restart (restart, patch);
 	}
 
 	retval = zypp_perform_execution (backend, UPDATE, FALSE);
