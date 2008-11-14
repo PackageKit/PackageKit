@@ -1905,7 +1905,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_REPO_NOT_FOUND, 'repo %s not found' % repoid)
 
     def install_signature(self, sigtype, key_id, package):
-        self._check_init()
+        self._check_init(repo_setup=False)
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
@@ -1916,11 +1916,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if repo:
                 try:
                     self.yumbase.repos.doSetup(thisrepo=repoid)
-                    self.yumbase.getKeyForRepo(repo, callback= lambda x: True)
+                    self.yumbase.getKeyForRepo(repo, callback = lambda x: True)
                 except yum.Errors.YumBaseError, e:
                     self.error(ERROR_UNKNOWN, "cannot install signature: %s" % str(e))
-                except:
-                    self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for the %s repository" % repo)
+                except Exception, e:
+                    self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for the %s repository: %s" % (repo, str(e)))
         else: # This is a package signature
             pkg, inst = self._findPackage(package)
             if pkg:
@@ -1932,7 +1932,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for %s" % pkg)
 
 
-    def _check_init(self, lazy_cache=False):
+    def _check_init(self, lazy_cache=False, repo_setup=True):
         '''Just does the caching tweaks'''
         if lazy_cache:
             for repo in self.yumbase.repos.listEnabled():
@@ -1944,10 +1944,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 repo.mdpolicy = "group:primary"
 
         # make sure repos are set up
-        try:
-            self.yumbase.repos.doSetup()
-        except yum.Errors.RepoError, e:
-            self.error(ERROR_NO_CACHE, _to_unicode(e))
+        if repo_setup:
+            try:
+                self.yumbase.repos.doSetup()
+            except yum.Errors.RepoError, e:
+                self.error(ERROR_NO_CACHE, _to_unicode(e))
 
     def _refresh_yum_cache(self):
         self.status(STATUS_REFRESH_CACHE)
