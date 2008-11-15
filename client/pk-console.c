@@ -615,7 +615,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			goto out;
 		}
 
-		ret = pk_client_install_packages (client, package_ids, error);
+		ret = pk_client_install_packages (client, package_ids, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
