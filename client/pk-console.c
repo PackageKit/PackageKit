@@ -1509,8 +1509,15 @@ main (int argc, char *argv[])
 	g_signal_connect (client_signature, "finished",
 			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
 
-	if (filter != NULL)
+	/* check filter */
+	if (filter != NULL) {
 		filters = pk_filter_bitfield_from_text (filter);
+		if (filters == 0) {
+			/* TRANSLATORS: The user specified an incorrect filter */
+			error = g_error_new (1, 0, "%s: '%s'", _("The filter specified was invalid"), filter);
+			goto out;
+		}
+	}
 	egg_debug ("filter=%s, filters=%" PK_BITFIELD_FORMAT, filter, filters);
 
 	mode = argv[1];
