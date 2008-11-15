@@ -33,6 +33,9 @@ __pkcon_commandlist="
     get-update-detail
     get-updates
     get-categories
+    list-create
+    list-diff
+    list-install
     install
     refresh
     remove

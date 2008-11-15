@@ -1023,6 +1023,244 @@ pk_console_get_files (PkClient *client, const gchar *package, GError **error)
 }
 
 /**
+ * pk_console_list_create:
+ **/
+static gboolean
+pk_console_list_create (PkClient *client, const gchar *file, GError **error)
+{
+	gboolean ret;
+	GError *error_local = NULL;
+	PkPackageList *list;
+
+	/* file exists */
+	ret = g_file_test (file, G_FILE_TEST_EXISTS);
+	if (ret) {
+		/* TRANSLATORS: There was an error getting the list of packages. The filename follows */
+		*error = g_error_new (1, 0, _("File already exists: %s"), file);
+		return FALSE;
+	}
+
+	/* TRANSLATORS: follows a list of packages to install */
+	g_print ("%s...\n", _("Getting package list"));
+
+	/* get all installed packages and save it to disk */
+	ret = pk_client_get_packages (client_task, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
+	if (!ret) {
+		/* TRANSLATORS: There was an error getting the list of packages. The detailed error follows */
+		*error = g_error_new (1, 0, _("This tool could not get package list: %s"), error_local->message);
+		g_error_free (error_local);
+		return FALSE;
+	}
+
+	/* save list to disk */
+	list = pk_client_get_package_list (client_task);
+	ret = pk_obj_list_to_file (PK_OBJ_LIST(list), file);
+	g_object_unref (list);
+	if (!ret) {
+		/* TRANSLATORS: There was an error saving the list */
+		*error = g_error_new (1, 0, _("Failed to save to disk"));
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_console_package_obj_name_equal:
+ **/
+static gboolean
+pk_console_package_obj_name_equal (const PkPackageObj *obj1, const PkPackageObj *obj2)
+{
+	return (g_strcmp0 (obj1->id->name, obj2->id->name) == 0);
+}
+
+/**
+ * pk_console_list_diff:
+ **/
+static gboolean
+pk_console_list_diff (PkClient *client, const gchar *file, GError **error)
+{
+	gboolean ret;
+	GError *error_local = NULL;
+	PkPackageList *list;
+	PkPackageList *list_copy;
+	PkPackageList *new;
+	const PkPackageObj *obj;
+	guint i;
+	guint length;
+
+	/* file exists */
+	ret = g_file_test (file, G_FILE_TEST_EXISTS);
+	if (!ret) {
+		/* TRANSLATORS: There was an error getting the list. The filename follows */
+		*error = g_error_new (1, 0, _("File does not exist: %s"), file);
+		return FALSE;
+	}
+
+	/* TRANSLATORS: follows a list of packages to install */
+	g_print ("%s...\n", _("Getting package list"));
+
+	/* get all installed packages */
+	ret = pk_client_get_packages (client_task, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
+	if (!ret) {
+		/* TRANSLATORS: There was an error getting the list of packages. The detailed error follows */
+		*error = g_error_new (1, 0, _("This tool could not get package list: %s"), error_local->message);
+		g_error_free (error_local);
+		return FALSE;
+	}
+
+	/* get two copies of the list */
+	list = pk_client_get_package_list (client_task);
+	list_copy = pk_package_list_new ();
+	pk_obj_list_add_list (PK_OBJ_LIST(list_copy), PK_OBJ_LIST(list));
+
+	/* get installed copy */
+	new = pk_package_list_new ();
+	pk_obj_list_from_file (PK_OBJ_LIST(new), file);
+
+	/* only compare the name */
+	pk_obj_list_set_equal (PK_OBJ_LIST(list), (PkObjListCompareFunc) pk_console_package_obj_name_equal);
+	pk_obj_list_set_equal (PK_OBJ_LIST(new), (PkObjListCompareFunc) pk_console_package_obj_name_equal);
+	pk_obj_list_remove_list (PK_OBJ_LIST(list), PK_OBJ_LIST(new));
+	pk_obj_list_remove_list (PK_OBJ_LIST(new), PK_OBJ_LIST(list_copy));
+
+	/* TRANSLATORS: header to a list of packages newly added */
+	g_print ("%s:\n", _("Packages to add"));
+	length = PK_OBJ_LIST(list)->len;
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (list, i);
+		g_print ("%i\t%s\n", i+1, obj->id->name);
+	}
+
+	/* TRANSLATORS: header to a list of packages removed */
+	g_print ("%s:\n", _("Packages to remove"));
+	length = PK_OBJ_LIST(new)->len;
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (new, i);
+		g_print ("%i\t%s\n", i+1, obj->id->name);
+	}
+
+	g_object_unref (list);
+	g_object_unref (list_copy);
+	g_object_unref (new);
+	return TRUE;
+}
+
+/**
+ * pk_console_list_install:
+ **/
+static gboolean
+pk_console_list_install (PkClient *client, const gchar *file, GError **error)
+{
+	gboolean ret = FALSE;
+	GError *error_local = NULL;
+	PkPackageList *list;
+	PkPackageList *new;
+	PkBitfield filters;
+	const PkPackageObj *obj;
+	guint i;
+	guint length;
+	gchar *package_id;
+	gchar **package_ids = NULL;
+	GPtrArray *array;
+
+	/* file exists */
+	ret = g_file_test (file, G_FILE_TEST_EXISTS);
+	if (!ret) {
+		/* TRANSLATORS: There was an error getting the list. The filename follows */
+		*error = g_error_new (1, 0, _("File does not exist: %s"), file);
+		return FALSE;
+	}
+
+	/* TRANSLATORS: follows a list of packages to install */
+	g_print ("%s...\n", _("Getting package list"));
+
+	/* get all installed packages */
+	ret = pk_client_get_packages (client_task, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
+	if (!ret) {
+		/* TRANSLATORS: There was an error getting the list of packages. The detailed error follows */
+		*error = g_error_new (1, 0, _("This tool could not get package list: %s"), error_local->message);
+		g_error_free (error_local);
+		return FALSE;
+	}
+
+	/* get two copies of the list */
+	list = pk_client_get_package_list (client_task);
+
+	/* get installed copy */
+	new = pk_package_list_new ();
+	pk_obj_list_from_file (PK_OBJ_LIST(new), file);
+
+	/* only compare the name */
+	pk_obj_list_set_equal (PK_OBJ_LIST(new), (PkObjListCompareFunc) pk_console_package_obj_name_equal);
+	pk_obj_list_remove_list (PK_OBJ_LIST(new), PK_OBJ_LIST(list));
+	array = g_ptr_array_new ();
+
+
+	/* nothing to do */
+	length = PK_OBJ_LIST(new)->len;
+	if (length == 0) {
+		/* TRANSLATORS: We didn't find any differences */
+		*error = g_error_new (1, 0, _("No new packages need to be installed"));
+		ret = FALSE;
+		goto out;
+	}
+
+	/* TRANSLATORS: follows a list of packages to install */
+	g_print ("%s:\n", _("To install"));
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (new, i);
+		g_print ("%i\t%s\n", i+1, obj->id->name);
+	}
+
+	/* resolve */
+	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (new, i);
+		/* TRANSLATORS: searching takes some time.... */
+		g_print ("%.0f%%\t%s '%s'...", (100.0f/length)*i, _("Searching for package: "), obj->id->name);
+		package_id = pk_console_perhaps_resolve (client, filters, obj->id->name, &error_local);
+		if (package_id == NULL) {
+			/* TRANSLATORS: package was not found -- this is the end of a string ended in ... */
+			g_print (" %s\n", _("not found."));
+		} else {
+			g_print (" %s\n", package_id);
+			g_ptr_array_add (array, package_id);
+			/* no need to free */
+		}
+	}
+
+	/* nothing to do */
+	if (array->len == 0) {
+		/* TRANSLATORS: We didn't find any packages to install */
+		*error = g_error_new (1, 0, _("No packages can be found to install"));
+		ret = FALSE;
+		goto out;
+	}
+
+	/* TRANSLATORS: installing new packages from package list */
+	g_print ("%s...\n", _("Installing packages"));
+
+	/* install packages */
+	package_ids = pk_package_ids_from_array (array);
+	ret = pk_client_install_packages (client, package_ids, &error_local);
+	if (!ret) {
+		/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
+		*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+out:
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
+	g_ptr_array_free (array, TRUE);
+	g_strfreev (package_ids);
+
+	g_object_unref (list);
+	g_object_unref (new);
+	return ret;
+}
+
+/**
  * pk_console_get_update_detail
  **/
 static gboolean
@@ -1710,6 +1948,29 @@ main (int argc, char *argv[])
 			goto out;
 		}
 		ret = pk_console_get_files (client_async, value, &error);
+
+	} else if (strcmp (mode, "list-create") == 0) {
+		if (value == NULL) {
+			error = g_error_new (1, 0, "%s", _("You need to specify a list file to create"));
+			goto out;
+		}
+		ret = pk_console_list_create (client_async, value, &error);
+		maybe_sync = FALSE;
+
+	} else if (strcmp (mode, "list-diff") == 0) {
+		if (value == NULL) {
+			error = g_error_new (1, 0, "%s", _("You need to specify a list file to open"));
+			goto out;
+		}
+		ret = pk_console_list_diff (client_async, value, &error);
+		maybe_sync = FALSE;
+
+	} else if (strcmp (mode, "list-install") == 0) {
+		if (value == NULL) {
+			error = g_error_new (1, 0, "%s", _("You need to specify a list file to open"));
+			goto out;
+		}
+		ret = pk_console_list_install (client_async, value, &error);
 
 	} else if (strcmp (mode, "get-updates") == 0) {
 		ret = pk_client_get_updates (client_async, filters, &error);
