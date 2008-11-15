@@ -145,7 +145,7 @@ pk_role_bitfield_to_text (PkBitfield roles)
  *
  * Converts text representation to its enumerated type bitfield
  *
- * Return value: The enumerated type values
+ * Return value: The enumerated type values, or 0 for invalid
  **/
 PkBitfield
 pk_role_bitfield_from_text (const gchar *roles)
@@ -154,6 +154,7 @@ pk_role_bitfield_from_text (const gchar *roles)
 	gchar **split;
 	guint length;
 	guint i;
+	PkRoleEnum role;
 
 	split = g_strsplit (roles, ";", 0);
 	if (split == NULL) {
@@ -162,8 +163,14 @@ pk_role_bitfield_from_text (const gchar *roles)
 	}
 
 	length = g_strv_length (split);
-	for (i=0; i<length; i++)
-		roles_enum += pk_bitfield_value (pk_role_enum_from_text (split[i]));
+	for (i=0; i<length; i++) {
+		role = pk_role_enum_from_text (split[i]);
+		if (role == PK_ROLE_ENUM_UNKNOWN) {
+			roles_enum = 0;
+			break;
+		}
+		roles_enum += pk_bitfield_value (role);
+	}
 out:
 	g_strfreev (split);
 	return roles_enum;
@@ -206,7 +213,7 @@ pk_group_bitfield_to_text (PkBitfield groups)
  *
  * Converts text representation to its enumerated type bitfield
  *
- * Return value: The enumerated type values
+ * Return value: The enumerated type values, or 0 for invalid
  **/
 PkBitfield
 pk_group_bitfield_from_text (const gchar *groups)
@@ -215,6 +222,7 @@ pk_group_bitfield_from_text (const gchar *groups)
 	gchar **split;
 	guint length;
 	guint i;
+	PkGroupEnum group;
 
 	split = g_strsplit (groups, ";", 0);
 	if (split == NULL) {
@@ -223,8 +231,14 @@ pk_group_bitfield_from_text (const gchar *groups)
 	}
 
 	length = g_strv_length (split);
-	for (i=0; i<length; i++)
-		groups_enum += pk_bitfield_value (pk_group_enum_from_text (split[i]));
+	for (i=0; i<length; i++) {
+		group = pk_group_enum_from_text (split[i]);
+		if (group == PK_GROUP_ENUM_UNKNOWN) {
+			groups_enum = 0;
+			break;
+		}
+		groups_enum += pk_bitfield_value (group);
+	}
 out:
 	g_strfreev (split);
 	return groups_enum;
@@ -269,7 +283,7 @@ pk_filter_bitfield_to_text (PkBitfield filters)
  * pk_filter_bitfield_from_text:
  * @filters: the enumerated constant value, e.g. "available;~gui"
  *
- * Converts text representation to its enumerated type bitfield
+ * Converts text representation to its enumerated type bitfield, or 0 for invalid
  *
  * Return value: The enumerated type values
  **/
@@ -280,6 +294,7 @@ pk_filter_bitfield_from_text (const gchar *filters)
 	gchar **split;
 	guint length;
 	guint i;
+	PkFilterEnum filter;
 
 	split = g_strsplit (filters, ";", 0);
 	if (split == NULL) {
@@ -288,8 +303,14 @@ pk_filter_bitfield_from_text (const gchar *filters)
 	}
 
 	length = g_strv_length (split);
-	for (i=0; i<length; i++)
-		filters_enum += pk_bitfield_value (pk_filter_enum_from_text (split[i]));
+	for (i=0; i<length; i++) {
+		filter = pk_filter_enum_from_text (split[i]);
+		if (filter == PK_FILTER_ENUM_UNKNOWN) {
+			filters_enum = 0;
+			break;
+		}
+		filters_enum += pk_bitfield_value (filter);
+	}
 out:
 	g_strfreev (split);
 	return filters_enum;
