@@ -52,7 +52,7 @@ class PackageKitError(Exception):
         self.details = details
 
     def __str__(self):
-        return "%s: %s" % (self.error, self.desc)
+        return "%s: %s" % (self.code, self.details)
 
 class PackageKitTransaction:
     '''
@@ -132,7 +132,7 @@ class PackageKitTransaction:
 
     def _on_error(self, code, details):
         '''Callback for ErrorCode signal'''
-        self._error_code = enum
+        self._error_code = code
         self._error_details = details
 
     def _on_finished(self, exit, runtime):
