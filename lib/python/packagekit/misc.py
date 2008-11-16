@@ -120,3 +120,8 @@ class PackageKitCategory:
         self.summary = _to_unicode(summary)
         self.icon = str(icon)
 
+class PackageKitMessage:
+    '''container class from values from the Message signal'''
+    def __init__(self, code, details):
+        self.code = code
+        self.details = details

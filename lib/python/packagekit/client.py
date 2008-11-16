@@ -67,6 +67,7 @@ class PackageKitTransaction:
         self._allow_cancel = False
         self._method = None
         self._exit_handler = None
+        self.messages = []
         self.result = []
         # Connect the signal handlers to the DBus iface
         self._iface = iface
@@ -79,6 +80,7 @@ class PackageKitTransaction:
                         ('Category', self._on_category),
                         ('UpdateDetail', self._on_update_detail),
                         ('DistroUpgrade', self._on_distro_upgrade),
+                        ('Message', self._on_message),
                         ('RepoDetail', self._on_repo_detail)]:
             self._iface.connect_to_signal(sig, cb)
         self._main_loop = gobject.MainLoop()
@@ -134,6 +136,10 @@ class PackageKitTransaction:
         '''Callback for ErrorCode signal'''
         self._error_code = code
         self._error_details = details
+
+    def _on_message(self, code, details):
+        '''Callback for Message signal'''
+        self.messages.append(PackageKitMessage(code, details))
 
     def _on_finished(self, exit, runtime):
         '''Callback for Finished signal'''
