@@ -2,7 +2,10 @@ helperdir = $(datadir)/PackageKit/helpers/conary
 dist_helper_DATA = 			\
 	conaryBackend.py		\
 	conaryFilter.py		\
-	conaryCallback.py
+	conaryCallback.py	\
+	conaryInit.py		\
+	Cache.py		\
+	pkConaryLog.py
 
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_conary.la
