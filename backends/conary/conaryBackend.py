@@ -196,8 +196,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         """ id(string) = 
         "pastebinit;0.7-1-1;x86;/foresight.rpath.org@fl:2-qa/1222042924.172:0.7-1-1,1#x86" 
         """
+        log.info("=========== get package from id ======================")
         log.info(id)
         name, verString, archString, data =  pkpackage.get_package_from_id(id)
+        log.info(data)
         version, flavor = self._thawData(data)
         return name, version, flavor
 
@@ -428,6 +430,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
+        package_id = package_id[0]
         def _get_files(troveSource, n, v, f):
             files = []
             troves = [(n, v, f)]
@@ -632,8 +635,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.status(STATUS_INFO)
 
+        log.info("========== get_details =============")
+        log.info(id[0])
         id=id[0]
         name, version, flavor, installed = self._findPackage(id)
+
+        log.info("name--------------------")
+        log.info((id,name))
+
 
         if name:
             shortDesc = self._get_metadata(id, 'shortDesc') or name
@@ -667,7 +676,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-
+        log.info("============== get_updates ========================")
         updateItems = self.client.fullUpdateItemList()
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         updJob, suggMap = self._get_update(applyList)
@@ -702,6 +711,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info(id)
         name, version, flavor = self.get_package_from_id(id)
         troveTuple = (name, version, flavor)
+        log.info("======== trove ")
+        log.info(troveTuple)
         installed = self.check_installed(troveTuple)
         return name, version, flavor, installed
 
