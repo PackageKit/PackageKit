@@ -17,12 +17,14 @@
 
 # Copyright (C) 2008
 #    Richard Hughes <richard@hughsie.com>
+#    Andres Vargas <zodman@foresightlinux.org>
 
 # imports
 from packagekit.filter import *
 
 import re
-
+from pkConaryLog import log
+from conaryInit import conary_db
 class ConaryFilter(PackagekitFilter):
 
     def _pkg_get_unique(self, pkg):
@@ -37,4 +39,25 @@ class ConaryFilter(PackagekitFilter):
         '''
         regex = re.compile(r'(:devel)')
         return regex.search(pkg.name)
+
+    def _pkg_is_installed(self,pkg):
+        '''
+        Return if the packages are installed
+        '''
+        log.info("======= FILTER ===== " )
+        log.info(pkg)
+        troveTuple=pkg
+        db = conary_db()
+        try:
+            troveTuple = troveTuple[0], troveTuple[1], troveTuple[2]
+            localInstall = db.findTrove(None, troveTuple)
+            installed = True
+        except:
+            installed = False
+        log.info("Installed ???")
+        log.info(installed)
+        return installed
+
+        
+
 
