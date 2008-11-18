@@ -150,6 +150,19 @@ pk_get_distro_id (void)
 		goto out;
 	}
 
+	/* check for Arch */
+	ret = g_file_test ("/etc/arch-release", G_FILE_TEST_EXISTS);
+	if (ret) {
+		/* we can't get arch from /etc */
+		arch = pk_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("arch-current-%s", arch);
+		goto out;
+	}
+
 out:
 	g_strfreev (split);
 	g_free (arch);
