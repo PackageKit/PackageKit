@@ -59,7 +59,7 @@ Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
 	qDebug() << "New transaction with tid" << tid;
 }
 
-Transaction::Transaction(const QString& tid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, Client* parent) : QObject(parent)
+Transaction::Transaction(const QString& tid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline, Client* parent) : QObject(parent)
 {
 	d = new TransactionPrivate(this);
 
@@ -72,6 +72,8 @@ Transaction::Transaction(const QString& tid, const QString& timespec, bool succe
 	d->role = r;
 	d->duration = duration;
 	d->data = data;
+	d->uid = uid;
+	d->cmdline = cmdline;
 	d->client = parent;
 }
 

@@ -647,16 +647,16 @@ pk_client_package_cb (DBusGProxy   *proxy,
 static void
 pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *timespec,
 			  gboolean succeeded, const gchar *role_text, guint duration,
-			  const gchar *data, PkClient *client)
+			  const gchar *data, guint uid, const gchar *cmdline, PkClient *client)
 {
 	PkTransactionObj *obj;
 	PkRoleEnum role;
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	role = pk_role_enum_from_text (role_text);
-	obj = pk_transaction_obj_new_from_data (old_tid, timespec, succeeded, role, duration, data);
-	egg_debug ("emitting transaction %s, %s, %i, %s, %ims, %s", old_tid, timespec,
-		  succeeded, role_text, duration, data);
+	obj = pk_transaction_obj_new_from_data (old_tid, timespec, succeeded, role, duration, data, uid, cmdline);
+	egg_debug ("emitting transaction %s, %s, %i, %s, %ims, %s, %i, %s", old_tid, timespec,
+		  succeeded, role_text, duration, data, uid, cmdline);
 	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, obj);
 
 	/* cache */
@@ -3726,7 +3726,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Transaction",
 				 G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
@@ -4362,9 +4363,10 @@ pk_client_init (PkClient *client)
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	/* Transaction */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT_STRING,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT_STRING_UINT_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
-					   G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+					   G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
+					   G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
 	/* Category */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,

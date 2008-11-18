@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -145,25 +145,20 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 				item.succeeded = 1;
 			}
 		} else if (egg_strequal (col, "role")) {
-			if (value != NULL) {
+			if (value != NULL)
 				item.role = pk_role_enum_from_text (value);
-			}
 		} else if (egg_strequal (col, "transaction_id")) {
-			if (value != NULL) {
+			if (value != NULL)
 				item.tid = g_strdup (value);
-			}
 		} else if (egg_strequal (col, "timespec")) {
-			if (value != NULL) {
+			if (value != NULL)
 				item.timespec = g_strdup (value);
-			}
 		} else if (egg_strequal (col, "cmdline")) {
-			if (value != NULL) {
+			if (value != NULL)
 				item.cmdline = g_strdup (value);
-			}
 		} else if (egg_strequal (col, "data")) {
-			if (value != NULL) {
+			if (value != NULL)
 				item.data = g_strdup (value);
-			}
 		} else if (egg_strequal (col, "uid")) {
 			ret = egg_strtouint (value, &temp);
 			if (ret)
@@ -183,11 +178,15 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		}
 	}
 
-	egg_debug ("TODO: add to callback uid=%i, cmdline=%s", item.uid, item.cmdline);
+	egg_debug (" duration: %i (seconds)", item.duration);
+	egg_debug (" data: %s", item.data);
+	egg_debug (" uid: %i", item.uid);
+	egg_debug (" cmdline: %s", item.cmdline);
+
 	/* emit signal */
 	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
 		       item.tid, item.timespec, item.succeeded, item.role,
-		       item.duration, item.data);
+		       item.duration, item.data, item.uid, item.cmdline);
 
 	pk_transaction_db_item_free (&item);
 	return 0;
@@ -495,9 +494,10 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 	signals [PK_TRANSACTION_DB_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT_STRING,
-			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT_STRING_UINT_STRING,
+			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT,
+			      G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 	g_type_class_add_private (klass, sizeof (PkTransactionDbPrivate));
 }
 
