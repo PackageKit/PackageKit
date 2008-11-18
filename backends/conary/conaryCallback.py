@@ -35,7 +35,7 @@ class UpdateCallback(callbacks.UpdateCallback):
     def committingTransaction(self):
         #self.backend.status('Committing Transaction')
         log.info("Callback ........ STATUS_COMMIT ")
-        
+
         self.backend.status(STATUS_COMMIT)
 
     def downloadingFileContents(self, got, need):
@@ -85,23 +85,22 @@ class UpdateCallback(callbacks.UpdateCallback):
         name = job[0]
         oldVersion, oldFlavor = job[1]
         newVersion, newFlavor = job[2]
-        log.info((oldVersion,newVersion))
+        log.info((oldVersion, newVersion))
         if oldVersion and newVersion:
             log.info("Callback ........ STATUS_UPDATE ")
             self.backend.status(STATUS_UPDATE)
-            id = self.backend.get_package_id(name, newVersion, newFlavor)
-            self.backend.package(id, INFO_UPDATING, '')
+            package_id = self.backend.get_package_id(name, newVersion, newFlavor)
+            self.backend.package(package_id, INFO_UPDATING, '')
         elif oldVersion and not newVersion:
             log.info("Callback ........ STATUS_REMOVE ")
             self.backend.status(STATUS_REMOVE)
-            id = self.backend.get_package_id(name, oldVersion, oldFlavor)
-            self.backend.package(id, INFO_REMOVING, '')
+            package_id = self.backend.get_package_id(name, oldVersion, oldFlavor)
+            self.backend.package(package_id, INFO_REMOVING, '')
         elif not oldVersion and newVersion:
             log.info("Callback ........ STATUS_INSTALL ")
             self.backend.status(STATUS_INSTALL)
-            id = self.backend.get_package_id(name, newVersion, newFlavor)
-            self.backend.package(id, INFO_INSTALLING, '')
-
+            package_id = self.backend.get_package_id(name, newVersion, newFlavor)
+            self.backend.package(package_id, INFO_INSTALLING, '')
 
     def creatingDatabaseTransaction(self, troveNum, troveCount):
         self.preparingUpdate(troveNum, troveCount, add=troveCount)
