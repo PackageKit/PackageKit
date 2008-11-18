@@ -189,16 +189,42 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 {
 	gchar *error_msg = NULL;
 	gint rc;
+	const gchar *statement;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
+
+	/* can we handle the error? */
+	if (rc != SQLITE_OK) {
+		/* add column uid (since 0.3.11) */
+		if (g_strcmp0 (error_msg, "no such column: uid") == 0) {
+			egg_debug ("SQL: creating column uid");
+			sqlite3_free (error_msg);
+			statement = "ALTER TABLE transactions ADD COLUMN uid INTEGER DEFAULT 0;";
+			rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+		}
+		/* add column cmdline (since 0.3.11) */
+		if (g_strcmp0 (error_msg, "no such column: cmdline") == 0) {
+			egg_debug ("SQL: creating column cmdline");
+			sqlite3_free (error_msg);
+			statement = "ALTER TABLE transactions ADD COLUMN cmdline TEXT;";
+			rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+		}
+	}
+
+	/* retry command */
+	if (rc == SQLITE_OK)
+		rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
+
+	/* can't handle this, or error handle failed */
 	if (rc != SQLITE_OK) {
 		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
+
 	return TRUE;
 }
 
@@ -363,6 +389,38 @@ pk_transaction_db_set_role (PkTransactionDb *tdb, const gchar *tid, PkRoleEnum r
 }
 
 /**
+ * pk_transaction_db_set_uid:
+ **/
+gboolean
+pk_transaction_db_set_uid (PkTransactionDb *tdb, const gchar *tid, guint uid)
+{
+	gchar *statement;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	statement = g_strdup_printf ("UPDATE transactions SET uid = '%i' WHERE transaction_id = '%s'", uid, tid);
+	pk_transaction_db_sql_statement (tdb, statement);
+	g_free (statement);
+	return TRUE;
+}
+
+/**
+ * pk_transaction_db_set_cmdline:
+ **/
+gboolean
+pk_transaction_db_set_cmdline (PkTransactionDb *tdb, const gchar *tid, const gchar *cmdline)
+{
+	gchar *statement;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	statement = g_strdup_printf ("UPDATE transactions SET cmdline = '%s' WHERE transaction_id = '%s'", cmdline, tid);
+	pk_transaction_db_sql_statement (tdb, statement);
+	g_free (statement);
+	return TRUE;
+}
+
+/**
  * pk_transaction_db_set_data:
  **/
 gboolean
@@ -508,7 +566,9 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 				    "succeeded INTEGER DEFAULT 0,"
 				    "role TEXT,"
 				    "data TEXT,"
-				    "description TEXT);";
+				    "description TEXT,"
+				    "uid INTEGER DEFAULT 0,"
+				    "cmdline TEXT);";
 			sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 		}
 	}

@@ -56,6 +56,12 @@ gboolean	 pk_transaction_db_print		(PkTransactionDb	*tdb);
 gboolean	 pk_transaction_db_set_role		(PkTransactionDb	*tdb,
 							 const gchar		*tid,
 							 PkRoleEnum		 role);
+gboolean	 pk_transaction_db_set_uid		(PkTransactionDb	*tdb,
+							 const gchar		*tid,
+							 guint			 uid);
+gboolean	 pk_transaction_db_set_cmdline		(PkTransactionDb	*tdb,
+							 const gchar		*tid,
+							 const gchar		*cmdline);
 gboolean	 pk_transaction_db_set_finished		(PkTransactionDb	*tdb,
 							 const gchar		*tid,
 							 gboolean		 success,
