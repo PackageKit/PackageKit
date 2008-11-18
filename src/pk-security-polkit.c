@@ -399,7 +399,7 @@ pk_security_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get the default backend");
 	error = NULL;
-	ret = pk_security_action_is_allowed (security, ":0", FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
+	ret = pk_security_action_is_allowed (security, NULL, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	if (ret == FALSE)
 		egg_test_success (test, "did not authenticate update-package, error '%s'", error);
 	else
