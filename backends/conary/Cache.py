@@ -43,7 +43,7 @@ class Cache(object):
 
     def __init__(self):
         """ Class to retrieve and cache package information from label. """
-        
+
         self.is_populate_database = False
         if not os.path.isdir(self.dbPath):
             os.makedirs(self.dbPath)

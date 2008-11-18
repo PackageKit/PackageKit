@@ -40,13 +40,13 @@ class ConaryFilter(PackagekitFilter):
         regex = re.compile(r'(:devel)')
         return regex.search(pkg.name)
 
-    def _pkg_is_installed(self,pkg):
+    def _pkg_is_installed(self, pkg):
         '''
         Return if the packages are installed
         '''
         log.info("======= FILTER ===== " )
         log.info(pkg)
-        troveTuple=pkg
+        troveTuple = pkg
         db = conary_db()
         try:
             troveTuple = troveTuple[0], troveTuple[1], troveTuple[2]
@@ -57,7 +57,5 @@ class ConaryFilter(PackagekitFilter):
         log.info("Installed ???")
         log.info(installed)
         return installed
-
-        
 
 

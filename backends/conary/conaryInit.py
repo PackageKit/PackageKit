@@ -1,9 +1,6 @@
 #!/usr/bin/python
 from conary import conarycfg, conaryclient
 
-
-
-
 def init_conary_config():
     cfg = conarycfg.ConaryConfiguration(True)
     cfg.initializeFlavors()
@@ -14,8 +11,7 @@ def init_conary_config():
 def init_conary_client():
     cfg = init_conary_config()
     return conaryclient.ConaryClient(cfg)
-    
-    
+
 def conary_db():
     client = init_conary_client()
     return client.db

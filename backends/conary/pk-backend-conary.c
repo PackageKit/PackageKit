@@ -153,9 +153,9 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
  * backend_install_packages:
  */
 
-/* 
+/*
 python conaryBackend.py update-packages "gimp;2.4.6-0.2-1;x86;/foresight.rpath.org@fl:devel//2-qa/1222042924.132:2.4.6-0.2-1,1#x86"
- 
+
  */
 static void
 backend_install_packages (PkBackend *backend, gchar **package_ids)
@@ -214,7 +214,6 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  zodman notes:
  python conaryBackend.py  remove-packages none  "pastebinit;0.7-1-1;x86;/foresight.rpath.org@fl:2-qa/1222042924.172:0.7-1-1,1#x86"
 
- 
  */
 static void
 backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
@@ -247,7 +246,6 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
-
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
@@ -274,8 +272,8 @@ backend_update_system (PkBackend *backend)
  * pk_backend_resolve:
  */
 
-/* zodman note 
- 
+/* zodman note
+
 # python conaryBackend.py  resolve installed pastebinit
 allow-cancel	true
 no-percentage-updates
@@ -283,10 +281,9 @@ status	info
 allow-cancel	true
 no-percentage-updates
 status	query
-package	available	pastebinit;0.7-1-1;x86;/foresight.rpath.org@fl:2-qa/1222042924.172:0.7-1-1,1#x86 
+package	available	pastebinit;0.7-1-1;x86;/foresight.rpath.org@fl:2-qa/1222042924.172:0.7-1-1,1#x86
 finished
 
- 
  */
 static void
 backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
