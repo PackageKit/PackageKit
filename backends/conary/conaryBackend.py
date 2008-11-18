@@ -611,6 +611,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
+        id = id[0]
         name, version, flavor, installed = self._findPackage(id)
         #update = self._get_updated(pkg)
         update = ""
@@ -624,7 +625,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         vendor_url = ""
         reboot = "none"
         desc = self._get_metadata(id, 'longDesc') or " "
-        self.update_detail(id, update, obsolete, vendor_url, bz_url, cve_url, reboot, desc)
+        self.update_detail(id, update, obsolete, vendor_url, bz_url, cve_url,
+                reboot, desc, changelog="", state="", issued="", updated="")
 
     @ExceptionHandler
     def get_details(self, id):
@@ -732,6 +734,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-repo-enable functionality
         '''
+        pass
 
 
 def main():
