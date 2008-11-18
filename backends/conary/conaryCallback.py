@@ -20,6 +20,7 @@
 
 from conary import callbacks
 from packagekit.backend import *
+from pkConaryLog import log
 
 class UpdateCallback(callbacks.UpdateCallback):
     def resolvingDependencies(self):
@@ -28,29 +29,42 @@ class UpdateCallback(callbacks.UpdateCallback):
 
     def creatingRollback(self):
         #self.backend.status('Creating Rollback')
+        log.info("Callback ........ STATUS_ROLLBACK ")
         self.backend.status(STATUS_ROLLBACK)
 
     def committingTransaction(self):
         #self.backend.status('Committing Transaction')
+        log.info("Callback ........ STATUS_COMMIT ")
+
         self.backend.status(STATUS_COMMIT)
 
     def downloadingFileContents(self, got, need):
         #self.backend.status('Downloading files for changeset')
+        log.info("Callback ........ STATUS_DOWNLOAD ")
         self.backend.status(STATUS_DOWNLOAD)
 
     def downloadingChangeSet(self, got, need):
+        log.info("Callback ........ STATUS_DOWNLOAD  changeset")
         self.backend.status(STATUS_DOWNLOAD)
 
     def requestingFileContents(self):
         #self.backend.status('Requesting File Contents')
+        log.info("Callback ........ STATUS_REQUEST ")
         self.backend.status(STATUS_REQUEST)
 
     def requestingChangeSet(self):
         #self.backend.status('Requesting Changeset')
+        log.info("Callback ........ STATUS_REQUEST changeset ")
         self.backend.status(STATUS_REQUEST)
 
+    def removeFiles(self, filenum, total):
+        log.info("Callback ........ STATUS_REMOVE")
+        self.backend.status(STATUS_REMOVE)
+        self.preparingUpdate(filenum, total, add=total)
     def done(self):
         #self.backend.status('Done')
+
+        log.info("Callback ........ done! ")
         pass
 
     def preparingUpdate(self, troveNum, troveCount, add=0):
@@ -71,20 +85,22 @@ class UpdateCallback(callbacks.UpdateCallback):
         name = job[0]
         oldVersion, oldFlavor = job[1]
         newVersion, newFlavor = job[2]
-
+        log.info((oldVersion, newVersion))
         if oldVersion and newVersion:
+            log.info("Callback ........ STATUS_UPDATE ")
             self.backend.status(STATUS_UPDATE)
-            id = self.backend.get_package_id(name, newVersion, newFlavor)
-            self.backend.package(id, INFO_UPDATING, '')
+            package_id = self.backend.get_package_id(name, newVersion, newFlavor)
+            self.backend.package(package_id, INFO_UPDATING, '')
         elif oldVersion and not newVersion:
+            log.info("Callback ........ STATUS_REMOVE ")
             self.backend.status(STATUS_REMOVE)
-            id = self.backend.get_package_id(name, oldVersion, oldFlavor)
-            self.backend.package(id, INFO_REMOVING, '')
+            package_id = self.backend.get_package_id(name, oldVersion, oldFlavor)
+            self.backend.package(package_id, INFO_REMOVING, '')
         elif not oldVersion and newVersion:
+            log.info("Callback ........ STATUS_INSTALL ")
             self.backend.status(STATUS_INSTALL)
-            id = self.backend.get_package_id(name, newVersion, newFlavor)
-            self.backend.package(id, INFO_INSTALLING, '')
-
+            package_id = self.backend.get_package_id(name, newVersion, newFlavor)
+            self.backend.package(package_id, INFO_INSTALLING, '')
 
     def creatingDatabaseTransaction(self, troveNum, troveCount):
         self.preparingUpdate(troveNum, troveCount, add=troveCount)
@@ -116,6 +132,7 @@ class UpdateCallback(callbacks.UpdateCallback):
 
     def __init__(self, backend, cfg=None):
         callbacks.UpdateCallback.__init__(self)
+        log.info("==== callback ==== ")
         if cfg:
             self.setTrustThreshold(cfg.trustThreshold)
 

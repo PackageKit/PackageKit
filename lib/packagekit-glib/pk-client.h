@@ -240,7 +240,7 @@ gboolean	 pk_client_get_depends			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_packages			(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_update_detail		(PkClient	*client,
@@ -248,7 +248,7 @@ gboolean	 pk_client_get_update_detail		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_requires			(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 GError		**error)

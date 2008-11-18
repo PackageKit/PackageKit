@@ -47,12 +47,12 @@ class PackageKitError(Exception):
     http://www.packagekit.org/pk-reference.html#introduction-errors for details
     and possible values.
     '''
-    def __init__(self, error, desc=None):
-        self.error = error
-        self.desc = desc
+    def __init__(self, code, details=None):
+        self.code = code
+        self.details = details
 
     def __str__(self):
-        return "%s: %s" % (self.error, self.desc)
+        return "%s: %s" % (self.code, self.details)
 
 class PackageKitTransaction:
     '''
@@ -61,8 +61,8 @@ class PackageKitTransaction:
     '''
     def __init__(self, tid, iface):
         self.tid = tid
-        self._error_enum = None
-        self._error_desc = None
+        self._error_code = None
+        self._error_details = None
         self._exit_status = None
         self._allow_cancel = False
         self._method = None
@@ -130,10 +130,10 @@ class PackageKitTransaction:
         '''Callback for AllowCancel signal'''
         self._allow_cancel = allow
 
-    def _on_error(self, enum, desc):
+    def _on_error(self, code, details):
         '''Callback for ErrorCode signal'''
-        self._error_enum = enum
-        self._error_desc = desc
+        self._error_code = code
+        self._error_details = details
 
     def _on_finished(self, exit, runtime):
         '''Callback for Finished signal'''
@@ -156,8 +156,8 @@ class PackageKitTransaction:
         polkit_auth_wrapper(self._method, *self._args)
         if not self._exit_handler:
             self._main_loop.run()
-            if self._error_enum:
-                raise PackageKitError(self._error_enum, self._error_desc)
+            if self._error_code:
+                raise PackageKitError(self._error_code, self._error_details)
             return self.result
 
     def set_locale(self, code):
@@ -191,8 +191,8 @@ class PackageKitTransaction:
 
     def get_error(self):
         '''Returns the PackageKitError of a failed transaction'''
-        if self._error_enum:
-            return PackageKitError(self._error_enum, self._error_desc)
+        if self._error_code:
+            return PackageKitError(self._error_code, self._error_details)
         else:
             return None
 
@@ -432,7 +432,7 @@ class PackageKitClient:
                                'org.freedesktop.PackageKit.Transaction')
         trans = PackageKitTransaction(tid, iface)
         if self._locale:
-            trans.SetLocale(self._locale)
+            trans.set_locale(self._locale)
         trans.set_method(method_name, *args)
         if exit_handler:
             trans._exit_handler = exit_handler
