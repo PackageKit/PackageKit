@@ -94,6 +94,7 @@ struct PkTransactionPrivate
 	PkUpdateDetailList	*update_detail_list;
 	PkNotify		*notify;
 	PkSecurity		*security;
+	PkSecurityCaller	*caller;
 	PkPostTrans		*post_trans;
 
 	/* needed for gui coldplugging */
@@ -1171,6 +1172,8 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_commit (PkTransaction *transaction)
 {
 	gboolean ret;
+	guint uid;
+	gchar *cmdline;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
@@ -1189,11 +1192,21 @@ pk_transaction_commit (PkTransaction *transaction)
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+
 		/* add to database */
 		pk_transaction_db_add (transaction->priv->transaction_db, transaction->priv->tid);
 
 		/* save role in the database */
 		pk_transaction_db_set_role (transaction->priv->transaction_db, transaction->priv->tid, transaction->priv->role);
+
+		/* save uid */
+		uid = pk_security_get_uid (transaction->priv->security, transaction->priv->caller);
+		pk_transaction_db_set_uid (transaction->priv->transaction_db, transaction->priv->tid, uid);
+
+		/* save cmdline */
+		cmdline = pk_security_get_cmdline (transaction->priv->security, transaction->priv->caller);
+		pk_transaction_db_set_cmdline (transaction->priv->transaction_db, transaction->priv->tid, cmdline);
+		g_free (cmdline);
 	}
 	return TRUE;
 }
@@ -1318,8 +1331,16 @@ pk_transaction_action_is_allowed (PkTransaction *transaction, gboolean trusted, 
 
 	g_return_val_if_fail (transaction->priv->dbus_name != NULL, FALSE);
 
+	/* get caller */
+	transaction->priv->caller = pk_security_caller_new_from_sender (transaction->priv->security, transaction->priv->dbus_name);
+	if (transaction->priv->caller == NULL) {
+		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+				      "caller %s not found", transaction->priv->dbus_name);
+		return FALSE;
+	}
+
 	/* use security model to get auth */
-	ret = pk_security_action_is_allowed (transaction->priv->security, transaction->priv->dbus_name, trusted, role, &error_detail);
+	ret = pk_security_action_is_allowed (transaction->priv->security, transaction->priv->caller, trusted, role, &error_detail);
 	if (!ret) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
 		return FALSE;
@@ -3754,6 +3775,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->last_package_id = NULL;
 	transaction->priv->tid = NULL;
 	transaction->priv->locale = NULL;
+	transaction->priv->caller = NULL;
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
@@ -3831,6 +3853,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->security);
 	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->post_trans);
+	pk_security_caller_unref (transaction->priv->caller);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
 }

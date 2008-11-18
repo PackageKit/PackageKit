@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -50,82 +50,96 @@ struct PkSecurityPrivate
 	DBusConnection		*connection;
 };
 
+typedef PolKitCaller PkSecurityCaller_;
+
 G_DEFINE_TYPE (PkSecurity, pk_security, G_TYPE_OBJECT)
 static gpointer pk_security_object = NULL;
 
 /**
- * pk_security_uid_from_dbus_sender:
+ * pk_security_caller_new_from_sender:
  **/
-gboolean
-pk_security_uid_from_dbus_sender (PkSecurity *security, const gchar *dbus_name, guint *uid)
+PkSecurityCaller *
+pk_security_caller_new_from_sender (PkSecurity *security, const gchar *sender)
 {
 	PolKitCaller *caller;
 	DBusError dbus_error;
-	polkit_bool_t retval;
-	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
 
 	/* get the PolKitCaller information */
 	dbus_error_init (&dbus_error);
-	caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_name, &dbus_error);
+	caller = polkit_caller_new_from_dbus_name (security->priv->connection, sender, &dbus_error);
 	if (dbus_error_is_set (&dbus_error)) {
 		egg_warning ("failed to get caller %s: %s\n", dbus_error.name, dbus_error.message);
 		dbus_error_free (&dbus_error);
-		goto out;
 	}
 
-	/* get uid */
-	retval = polkit_caller_get_uid (caller, uid);
-	if (!retval) {
-		egg_warning ("failed to get UID");
-		goto out;
-	}
-	ret = TRUE;
-out:
-	polkit_caller_unref (caller);
-	return ret;
+	return (PkSecurityCaller*) caller;
 }
 
 /**
- * pk_security_can_do_action:
+ * pk_security_caller_unref:
  **/
-G_GNUC_WARN_UNUSED_RESULT static PolKitResult
-pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const gchar *action)
+void
+pk_security_caller_unref (PkSecurityCaller *caller)
 {
-	PolKitResult pk_result;
-	PolKitAction *pk_action;
-	PolKitCaller *pk_caller;
-	DBusError dbus_error;
+	if (caller != NULL)
+		polkit_caller_unref ((PolKitCaller *) caller);
+}
 
-	/* set action */
-	pk_action = polkit_action_new ();
-	if (pk_action == NULL) {
-		egg_warning ("error: polkit_action_new failed");
-		return POLKIT_RESULT_NO;
-	}
-	polkit_action_set_action_id (pk_action, action);
+/**
+ * pk_security_get_uid:
+ **/
+guint
+pk_security_get_uid (PkSecurity *security, PkSecurityCaller *caller)
+{
+	polkit_bool_t retval;
+	guint uid;
 
-	/* set caller */
-	egg_debug ("using caller %s for action %s", dbus_sender, action);
-	dbus_error_init (&dbus_error);
-	pk_caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_sender, &dbus_error);
-	if (pk_caller == NULL) {
-		if (dbus_error_is_set (&dbus_error)) {
-			egg_warning ("error: polkit_caller_new_from_dbus_name(): %s: %s\n",
-				    dbus_error.name, dbus_error.message);
-			dbus_error_free (&dbus_error);
-		}
-		return POLKIT_RESULT_NO;
+	g_return_val_if_fail (PK_IS_SECURITY (security), -1);
+
+	/* get uid */
+	retval = polkit_caller_get_uid ((PolKitCaller *) caller, &uid);
+	if (!retval) {
+		egg_warning ("failed to get UID");
+		uid = -1;
 	}
 
-	pk_result = polkit_context_is_caller_authorized (security->priv->pk_context, pk_action, pk_caller, TRUE, NULL);
-	egg_debug ("PolicyKit result = '%s'", polkit_result_to_string_representation (pk_result));
+	return uid;
+}
 
-	polkit_action_unref (pk_action);
-	polkit_caller_unref (pk_caller);
+/**
+ * pk_security_get_cmdline:
+ **/
+gchar *
+pk_security_get_cmdline (PkSecurity *security, PkSecurityCaller *caller)
+{
+	gboolean ret;
+	gchar *filename = NULL;
+	gchar *cmdline = NULL;
+	GError *error = NULL;
+	polkit_bool_t retval;
+	pid_t pid;
 
-	return pk_result;
+	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
+
+	/* get pid */
+	retval = polkit_caller_get_pid ((PolKitCaller *) caller, &pid);
+	if (!retval) {
+		egg_warning ("failed to get PID");
+		goto out;
+	}
+
+	/* get command line from proc */
+	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
+	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
+	if (!ret) {
+		egg_warning ("failed to get cmdline: %s", error->message);
+		g_error_free (error);
+	}
+out:
+	g_free (filename);
+	return cmdline;
 }
 
 /**
@@ -168,19 +182,17 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 
 /**
  * pk_security_action_is_allowed:
- *
- * Only valid from an async caller, which is fine, as we won't prompt the user
- * when not async.
  **/
 gboolean
-pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
-			       gboolean trusted, PkRoleEnum role, gchar **error_detail)
+pk_security_action_is_allowed (PkSecurity *security, PkSecurityCaller *caller, gboolean trusted, PkRoleEnum role, gchar **error_detail)
 {
-	PolKitResult pk_result;
+	gboolean ret = FALSE;
+	PolKitResult result;
 	const gchar *policy;
+	PolKitAction *action;
 
 	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
-	g_return_val_if_fail (dbus_sender != NULL, FALSE);
+	g_return_val_if_fail (caller != NULL, FALSE);
 
 	/* map the roles to policykit rules */
 	policy = pk_security_role_to_action (security, trusted, role);
@@ -189,14 +201,30 @@ pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
 		return FALSE;
 	}
 
-	/* get the dbus sender */
-	pk_result = pk_security_can_do_action (security, dbus_sender, policy);
-	if (pk_result != POLKIT_RESULT_YES) {
-		if (error_detail != NULL)
-			*error_detail = g_strdup_printf ("%s %s", policy, polkit_result_to_string_representation (pk_result));
-		return FALSE;
+	/* set action */
+	action = polkit_action_new ();
+	if (action == NULL) {
+		egg_warning ("error: polkit_action_new failed");
+		goto out;
 	}
-	return TRUE;
+	polkit_action_set_action_id (action, policy);
+
+	/* set caller */
+	result = polkit_context_is_caller_authorized (security->priv->pk_context, action, (PolKitCaller *) caller, TRUE, NULL);
+	egg_debug ("PolicyKit result = '%s'", polkit_result_to_string_representation (result));
+	if (result != POLKIT_RESULT_YES) {
+		if (error_detail != NULL)
+			*error_detail = g_strdup_printf ("%s %s", policy, polkit_result_to_string_representation (result));
+		goto out;
+	}
+
+	/* yippee */
+	ret = TRUE;
+
+out:
+	if (action != NULL)
+		polkit_action_unref (action);
+	return ret;
 }
 
 /**

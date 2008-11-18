@@ -569,6 +569,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	GError *error;
 	gchar *sender = NULL;
 	gchar *error_detail = NULL;
+	PkSecurityCaller *caller;
 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
@@ -577,8 +578,17 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
 
+	/* get caller */
+	caller = pk_security_caller_new_from_sender (engine->priv->security, sender);
+	if (caller == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY,
+				     "caller %s not found", sender);
+		dbus_g_method_return_error (context, error);
+		goto out;
+	}
+
 	/* use security model to get auth */
-	ret = pk_security_action_is_allowed (engine->priv->security, sender, FALSE, PK_ROLE_ENUM_SET_PROXY_PRIVATE, &error_detail);
+	ret = pk_security_action_is_allowed (engine->priv->security, caller, FALSE, PK_ROLE_ENUM_SET_PROXY_PRIVATE, &error_detail);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
 		dbus_g_method_return_error (context, error);
@@ -600,6 +610,8 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	pk_engine_reset_timer (engine);
 
 out:
+	if (caller != NULL)
+		pk_security_caller_unref (caller);
 	g_free (sender);
 	g_free (error_detail);
 }
