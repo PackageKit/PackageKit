@@ -117,6 +117,7 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,	"download-packages"},
 	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,	"get-distro-upgrades"},
 	{PK_ROLE_ENUM_GET_CATEGORIES,		"get-categories"},
+	{PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,	"get-old-transactions"},
 	{0, NULL}
 };
 

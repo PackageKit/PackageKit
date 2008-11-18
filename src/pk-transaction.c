@@ -1962,6 +1962,7 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 
 	egg_debug ("GetOldTransactions method called");
 
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
 	pk_transaction_db_get_list (transaction->priv->transaction_db, number);
 	g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 
