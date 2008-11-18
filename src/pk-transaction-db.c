@@ -76,6 +76,8 @@ typedef struct {
 	gchar *tid;
 	gchar *data;
 	gchar *timespec;
+	guint uid;
+	gchar *cmdline;
 } PkTransactionDbItem;
 
 /**
@@ -90,6 +92,8 @@ pk_transaction_db_item_clear (PkTransactionDbItem *item)
 	item->tid = NULL;
 	item->data = NULL;
 	item->timespec = NULL;
+	item->uid = 0;
+	item->cmdline = NULL;
 	return TRUE;
 }
 
@@ -102,6 +106,7 @@ pk_transaction_db_item_free (PkTransactionDbItem *item)
 	g_free (item->tid);
 	g_free (item->data);
 	g_free (item->timespec);
+	g_free (item->cmdline);
 	return TRUE;
 }
 
@@ -129,14 +134,12 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		value = argv[i];
 		if (egg_strequal (col, "succeeded")) {
 			ret = egg_strtouint (value, &temp);
-			if (!ret) {
+			if (!ret)
 				egg_warning ("failed to parse succeeded: %s", value);
-			}
-			if (temp == 1) {
+			if (temp == 1)
 				item.succeeded = TRUE;
-			} else {
+			else
 				item.succeeded = FALSE;
-			}
 			if (item.succeeded > 1) {
 				egg_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
 				item.succeeded = 1;
@@ -153,10 +156,18 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 			if (value != NULL) {
 				item.timespec = g_strdup (value);
 			}
+		} else if (egg_strequal (col, "cmdline")) {
+			if (value != NULL) {
+				item.cmdline = g_strdup (value);
+			}
 		} else if (egg_strequal (col, "data")) {
 			if (value != NULL) {
 				item.data = g_strdup (value);
 			}
+		} else if (egg_strequal (col, "uid")) {
+			ret = egg_strtouint (value, &temp);
+			if (ret)
+				item.uid = temp;
 		} else if (egg_strequal (col, "duration")) {
 			ret = egg_strtouint (value, &item.duration);
 			if (!ret) {
@@ -172,6 +183,7 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		}
 	}
 
+	egg_debug ("TODO: add to callback uid=%i, cmdline=%s", item.uid, item.cmdline);
 	/* emit signal */
 	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
 		       item.tid, item.timespec, item.succeeded, item.role,
@@ -335,10 +347,10 @@ pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
 	if (limit == 0)
-		statement = g_strdup ("SELECT transaction_id, timespec, succeeded, duration, role, data "
+		statement = g_strdup ("SELECT transaction_id, timespec, succeeded, duration, role, data, uid, cmdline "
 				      "FROM transactions ORDER BY timespec DESC");
 	else
-		statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role, data "
+		statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role, data, uid, cmdline "
 					     "FROM transactions ORDER BY timespec DESC LIMIT %i", limit);
 
 	pk_transaction_db_sql_statement (tdb, statement);
