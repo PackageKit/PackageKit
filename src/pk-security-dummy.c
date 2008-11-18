@@ -41,28 +41,57 @@ struct PkSecurityPrivate
 	gpointer		data;
 };
 
+typedef gpointer PkSecurityCaller_;
+
 G_DEFINE_TYPE (PkSecurity, pk_security, G_TYPE_OBJECT)
+
+/**
+ * pk_security_caller_new_from_sender:
+ **/
+PkSecurityCaller *
+pk_security_caller_new_from_sender (PkSecurity *security, const gchar *sender)
+{
+	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
+	return NULL;
+}
+
+/**
+ * pk_security_caller_unref:
+ **/
+void
+pk_security_caller_unref (PkSecurityCaller *caller)
+{
+	return;
+}
+
+/**
+ * pk_security_get_uid:
+ **/
+guint
+pk_security_get_uid (PkSecurity *security, PkSecurityCaller *caller)
+{
+	g_return_val_if_fail (PK_IS_SECURITY (security), -1);
+	return -1;
+}
+
+/**
+ * pk_security_get_cmdline:
+ **/
+gchar *
+pk_security_get_cmdline (PkSecurity *security, PkSecurityCaller *caller)
+{
+	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
+	return NULL;
+}
 
 /**
  * pk_security_action_is_allowed:
  **/
-G_GNUC_WARN_UNUSED_RESULT gboolean
-pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
-			       gboolean trusted, PkRoleEnum role, gchar **error_detail)
+gboolean
+pk_security_action_is_allowed (PkSecurity *security, PkSecurityCaller *caller, gboolean trusted, PkRoleEnum role, gchar **error_detail)
 {
 	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
 	return TRUE;
-}
-
-/**
- * pk_security_uid_from_dbus_sender:
- **/
-gboolean
-pk_security_uid_from_dbus_sender (PkSecurity *security, const gchar *dbus_name, guint *uid)
-{
-	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
-	/* not returning TRUE due to easy misuse */
-	return FALSE;
 }
 
 /**

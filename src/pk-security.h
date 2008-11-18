@@ -50,19 +50,24 @@ typedef struct
 	GObjectClass	parent_class;
 } PkSecurityClass;
 
+typedef struct PkSecurityCaller_ PkSecurityCaller;
+
 GType		 pk_security_get_type		(void) G_GNUC_CONST;
 PkSecurity	*pk_security_new		(void);
 
-gboolean	 pk_security_uid_from_dbus_sender (PkSecurity	*security,
-						 const gchar	*dbus_name,
-						 guint		*uid)
-						 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_security_action_is_allowed	(PkSecurity	*security,
-						 const gchar	*dbus_sender,
-						 gboolean	 trusted,
-						 PkRoleEnum	 role,
-						 gchar		**error_detail)
-						 G_GNUC_WARN_UNUSED_RESULT;
+PkSecurityCaller *pk_security_caller_new_from_sender	(PkSecurity		*security,
+							 const gchar		*sender);
+void		 pk_security_caller_unref		(PkSecurityCaller	*caller);
+guint		 pk_security_get_uid			(PkSecurity		*security,
+							 PkSecurityCaller	*caller);
+gchar 		*pk_security_get_cmdline		(PkSecurity		*security,
+							 PkSecurityCaller	*caller);
+gboolean	 pk_security_action_is_allowed		(PkSecurity		*security,
+							 PkSecurityCaller	*caller,
+							 gboolean		 trusted,
+							 PkRoleEnum		 role,
+							 gchar			**error_detail)
+							 G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
 
