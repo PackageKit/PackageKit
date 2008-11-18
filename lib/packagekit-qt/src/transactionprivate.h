@@ -48,6 +48,8 @@ public:
 	bool succeeded;
 	uint duration;
 	QString data;
+	uint uid;
+	QString cmdline;
 
 	// Used for getDetails
 	QHash<QString, Package*> packageMap;
@@ -65,7 +67,7 @@ public slots:
 	void repoSignatureRequired(const QString& pid, const QString& repoName, const QString& keyUrl, const QString& keyUserid, const QString& keyId, const QString& keyFingerprint, const QString& keyTimestamp, const QString& type);
 	void requireRestart(const QString& type, const QString& details);
 	void statusChanged(const QString& status);
-	void transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data);
+	void transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline);
 	void updateDetail(const QString& pid, const QString& updates, const QString& obsoletes, const QString& vendorUrl, const QString& bugzillaUrl, const QString& cveUrl, const QString& restart, const QString& updateText, const QString& changelog, const QString& state, const QString& issued, const QString& updated);
 
 private:

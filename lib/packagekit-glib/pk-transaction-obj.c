@@ -56,6 +56,8 @@ pk_transaction_obj_new (void)
 	obj->role = PK_ROLE_ENUM_UNKNOWN;
 	obj->duration = 0;
 	obj->data = NULL;
+	obj->uid = 0;
+	obj->cmdline = NULL;
 	return obj;
 }
 
@@ -69,7 +71,8 @@ pk_transaction_obj_new (void)
 PkTransactionObj *
 pk_transaction_obj_new_from_data (const gchar *tid, const gchar *timespec,
 				  gboolean succeeded, PkRoleEnum role,
-				  guint duration, const gchar *data)
+				  guint duration, const gchar *data,
+				  guint uid, const gchar *cmdline)
 {
 	PkTransactionObj *obj = NULL;
 
@@ -81,6 +84,8 @@ pk_transaction_obj_new_from_data (const gchar *tid, const gchar *timespec,
 	obj->role = role;
 	obj->duration = duration;
 	obj->data = g_strdup (data);
+	obj->uid = uid;
+	obj->cmdline = g_strdup (cmdline);
 	return obj;
 }
 
@@ -95,7 +100,8 @@ pk_transaction_obj_copy (const PkTransactionObj *obj)
 	g_return_val_if_fail (obj != NULL, NULL);
 	return pk_transaction_obj_new_from_data (obj->tid, obj->timespec,
 						 obj->succeeded, obj->role,
-						 obj->duration, obj->data);
+						 obj->duration, obj->data,
+						 obj->uid, obj->cmdline);
 }
 
 /**
@@ -113,6 +119,7 @@ pk_transaction_obj_free (PkTransactionObj *obj)
 	g_free (obj->tid);
 	g_free (obj->timespec);
 	g_free (obj->data);
+	g_free (obj->cmdline);
 	g_free (obj);
 	return TRUE;
 }
