@@ -68,11 +68,14 @@ struct _PkDesktopClass
 
 GType		 pk_desktop_get_type			(void) G_GNUC_CONST;
 PkDesktop	*pk_desktop_new				(void);
-gboolean	 pk_desktop_open_database		(PkDesktop	*desktop);
+gboolean	 pk_desktop_open_database		(PkDesktop	*desktop,
+							 GError		**error);
 GPtrArray	*pk_desktop_get_files_for_package	(PkDesktop	*desktop,
-							 const gchar	*package);
+							 const gchar	*package,
+							 GError		**error);
 gchar		*pk_desktop_get_package_for_file	(PkDesktop	*desktop,
-							 const gchar	*filename);
+							 const gchar	*filename,
+							 GError		**error);
 
 G_END_DECLS
 
