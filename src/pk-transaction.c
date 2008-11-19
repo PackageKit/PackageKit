@@ -596,7 +596,35 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 			/* process file lists on these packages */
 			if (PK_OBJ_LIST(list)->len > 0) {
 				package_ids = pk_package_list_to_strv (list);
-				pk_post_trans_check_process_filelists (transaction->priv->post_trans, package_ids);
+				pk_post_trans_check_running_process (transaction->priv->post_trans, package_ids);
+				g_strfreev (package_ids);
+			}
+			g_object_unref (list);
+		}
+	}
+
+	/* rescan desktop files after install */
+	if (exit == PK_EXIT_ENUM_SUCCESS &&
+	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+
+		/* refresh the desktop icon cache */
+		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
+		if (ret) {
+
+			/* filter on INSTALLING | UPDATING */
+			list = pk_package_list_new ();
+			length = pk_package_list_get_size (transaction->priv->package_list);
+			for (i=0; i<length; i++) {
+				obj = pk_package_list_get_obj (transaction->priv->package_list, i);
+				if (obj->info == PK_INFO_ENUM_INSTALLING || obj->info == PK_INFO_ENUM_UPDATING)
+					pk_obj_list_add (PK_OBJ_LIST(list), obj);
+			}
+
+			egg_debug ("processing %i packags for desktop files", PK_OBJ_LIST(list)->len);
+			/* process file lists on these packages */
+			if (PK_OBJ_LIST(list)->len > 0) {
+				package_ids = pk_package_list_to_strv (list);
+				pk_post_trans_check_desktop_files (transaction->priv->post_trans, package_ids);
 				g_strfreev (package_ids);
 			}
 			g_object_unref (list);
