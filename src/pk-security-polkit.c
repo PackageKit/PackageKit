@@ -41,6 +41,7 @@
 #include "egg-string.h"
 
 #include "pk-security.h"
+#include "pk-syslog.h"
 
 #define PK_SECURITY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SECURITY, PkSecurityPrivate))
 
@@ -48,6 +49,7 @@ struct PkSecurityPrivate
 {
 	PolKitContext		*pk_context;
 	DBusConnection		*connection;
+	PkSyslog		*syslog;
 };
 
 typedef PolKitCaller PkSecurityCaller_;
@@ -190,6 +192,8 @@ pk_security_action_is_allowed (PkSecurity *security, PkSecurityCaller *caller, g
 	PolKitResult result;
 	const gchar *policy;
 	PolKitAction *action;
+	guint uid;
+	gchar *cmdline;
 
 	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
 	g_return_val_if_fail (caller != NULL, FALSE);
@@ -222,6 +226,15 @@ pk_security_action_is_allowed (PkSecurity *security, PkSecurityCaller *caller, g
 	ret = TRUE;
 
 out:
+	/* log result */
+	uid = pk_security_get_uid (security, caller);
+	cmdline = pk_security_get_cmdline (security, caller);
+	if (ret)
+		pk_syslog_add (security->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i obtained %s auth (trusted:%i)", uid, policy, trusted);
+	else
+		pk_syslog_add (security->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i failed to obtain %s auth (trusted:%i)", uid, policy, trusted);
+	g_free (cmdline);
+
 	if (action != NULL)
 		polkit_action_unref (action);
 	return ret;
@@ -239,6 +252,7 @@ pk_security_finalize (GObject *object)
 
 	/* unref PolicyKit */
 	polkit_context_unref (security->priv->pk_context);
+	g_object_unref (security->priv->syslog);
 
 	G_OBJECT_CLASS (pk_security_parent_class)->finalize (object);
 }
@@ -313,6 +327,9 @@ pk_security_init (PkSecurity *security)
 	security->priv = PK_SECURITY_GET_PRIVATE (security);
 
 	egg_debug ("Using PolicyKit security framework");
+
+	/* use syslog */
+	security->priv->syslog = pk_syslog_new ();
 
 	/* get a connection to the bus */
 	dbus_error_init (&dbus_error);

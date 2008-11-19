@@ -66,6 +66,8 @@ shared_SOURCES =					\
 	pk-network-unix.h				\
 	pk-time.h					\
 	pk-time.c					\
+	pk-syslog.h					\
+	pk-syslog.c					\
 	pk-conf.c					\
 	pk-conf.h					\
 	pk-store.c					\
