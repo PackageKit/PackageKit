@@ -286,6 +286,11 @@ pk_desktop_test (EggTest *test)
 	egg_test_assert (test, desktop != NULL);
 
 	/************************************************************/
+	egg_test_title (test, "get package when not valid");
+	package = pk_desktop_get_package_for_file (desktop, "/usr/share/applications/gpk-update-viewer.desktop", NULL);
+	egg_test_assert (test, package == NULL);
+
+	/************************************************************/
 	egg_test_title (test, "open database");
 	ret = pk_desktop_open_database (desktop, NULL);
 	if (ret)
