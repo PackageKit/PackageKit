@@ -984,6 +984,7 @@ pk_control_finalize (GObject *object)
 	if (control->priv->idle_id != 0)
 		g_source_remove (control->priv->idle_id);
 	g_object_unref (G_OBJECT (control->priv->proxy));
+	g_object_unref (G_OBJECT (control->priv->pconnection));
 	g_strfreev (control->priv->array);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);
