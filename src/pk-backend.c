@@ -1467,8 +1467,10 @@ pk_backend_finished (PkBackend *backend)
 	}
 
 	/* check we have not already finished */
-	if (backend->priv->finished)
+	if (backend->priv->finished) {
+		egg_warning ("already finished");
 		return FALSE;
+	}
 
 	/* check we got a Package() else the UI will suck */
 	if (!backend->priv->set_error &&
