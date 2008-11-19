@@ -99,12 +99,13 @@ pk_security_get_uid (PkSecurity *security, PkSecurityCaller *caller)
 	guint uid;
 
 	g_return_val_if_fail (PK_IS_SECURITY (security), -1);
+	g_return_val_if_fail (caller != NULL, -1);
 
 	/* get uid */
 	retval = polkit_caller_get_uid ((PolKitCaller *) caller, &uid);
 	if (!retval) {
 		egg_warning ("failed to get UID");
-		uid = -1;
+		uid = PK_SECURITY_UID_INVALID;
 	}
 
 	return uid;
@@ -124,6 +125,7 @@ pk_security_get_cmdline (PkSecurity *security, PkSecurityCaller *caller)
 	pid_t pid;
 
 	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
+	g_return_val_if_fail (caller != NULL, NULL);
 
 	/* get pid */
 	retval = polkit_caller_get_pid ((PolKitCaller *) caller, &pid);
