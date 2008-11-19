@@ -52,7 +52,9 @@ PkPostTrans	*pk_post_trans_new			(void);
 gboolean	 pk_post_trans_clear_firmware_requests	(PkPostTrans	*post);
 gboolean	 pk_post_trans_update_package_list	(PkPostTrans	*post);
 gboolean	 pk_post_trans_import_desktop_files	(PkPostTrans	*post);
-gboolean	 pk_post_trans_check_process_filelists	(PkPostTrans	*post,
+gboolean	 pk_post_trans_check_running_process	(PkPostTrans	*post,
+							 gchar		**package_ids);
+gboolean	 pk_post_trans_check_desktop_files	(PkPostTrans	*post,
 							 gchar		**package_ids);
 
 G_END_DECLS
