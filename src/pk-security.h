@@ -37,6 +37,9 @@ G_BEGIN_DECLS
 /* not actually a role, but treated as one */
 #define PK_ROLE_ENUM_SET_PROXY_PRIVATE		1 << 31
 
+/* when the UID is invalid or not known */
+#define PK_SECURITY_UID_INVALID			G_MAXUINT
+
 typedef struct PkSecurityPrivate PkSecurityPrivate;
 
 typedef struct
