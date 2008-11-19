@@ -60,6 +60,7 @@
 #include "pk-notify.h"
 #include "pk-security.h"
 #include "pk-post-trans.h"
+#include "pk-syslog.h"
 
 static void     pk_transaction_class_init	(PkTransactionClass *klass);
 static void     pk_transaction_init		(PkTransaction      *transaction);
@@ -96,6 +97,7 @@ struct PkTransactionPrivate
 	PkSecurity		*security;
 	PkSecurityCaller	*caller;
 	PkPostTrans		*post_trans;
+	PkSyslog		*syslog;
 
 	/* needed for gui coldplugging */
 	gchar			*last_package_id;
@@ -552,6 +554,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	guint i, length;
 	PkPackageList *list;
 	const PkPackageObj *obj;
+	guint uid = PK_SECURITY_UID_INVALID;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -680,15 +683,35 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	time = pk_transaction_get_runtime (transaction);
 	egg_debug ("backend was running for %i ms", time);
 
+	/* get user for logging */
+	if (transaction->priv->caller != NULL)
+		uid = pk_security_get_uid (transaction->priv->security, transaction->priv->caller);
+
 	/* add to the database if we are going to log it */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		packages = pk_obj_list_to_string (PK_OBJ_LIST(transaction->priv->package_list));
+
+		/* save to database */
 		if (!egg_strzero (packages))
 			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
 		g_free (packages);
+
+		/* report to syslog */
+		length = PK_OBJ_LIST(transaction->priv->package_list)->len;
+		for (i=0; i<length; i++) {
+			obj = pk_package_list_get_obj (transaction->priv->package_list, i);
+			if (obj->info == PK_INFO_ENUM_REMOVING ||
+			    obj->info == PK_INFO_ENUM_INSTALLING ||
+			    obj->info == PK_INFO_ENUM_UPDATING) {
+				packages = pk_package_id_to_string (obj->id);
+				pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "in %s for %s package %s was %s for uid %i",
+					       transaction->priv->tid, pk_role_enum_to_text (transaction->priv->role), packages, pk_info_enum_to_text (obj->info), uid);
+				g_free (packages);
+			}
+		}
 	}
 
 	/* the repo list will have changed */
@@ -709,6 +732,14 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 
 	/* remove any inhibit */
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
+
+	/* report to syslog */
+	if (uid != G_MAXUINT)
+		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s from uid %i finished with %s after %ims",
+			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, uid, pk_exit_enum_to_text (exit), time);
+	else
+		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s finished with %s after %ims",
+			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, pk_exit_enum_to_text (exit), time);
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	pk_transaction_finished_emit (transaction, exit, time);
@@ -1234,6 +1265,11 @@ pk_transaction_commit (PkTransaction *transaction)
 		/* save cmdline */
 		cmdline = pk_security_get_cmdline (transaction->priv->security, transaction->priv->caller);
 		pk_transaction_db_set_cmdline (transaction->priv->transaction_db, transaction->priv->tid, cmdline);
+
+		/* report to syslog */
+		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "new %s transaction %s scheduled from uid %i",
+			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, uid);
+
 		g_free (cmdline);
 	}
 	return TRUE;
@@ -3819,6 +3855,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->inhibit = pk_inhibit_new ();
 	transaction->priv->package_list = pk_package_list_new ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
+	transaction->priv->syslog = pk_syslog_new ();
 
 	transaction->priv->post_trans = pk_post_trans_new ();
 	g_signal_connect (transaction->priv->post_trans, "status-changed",
@@ -3880,6 +3917,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->security);
 	g_object_unref (transaction->priv->notify);
+	g_object_unref (transaction->priv->syslog);
 	g_object_unref (transaction->priv->post_trans);
 	pk_security_caller_unref (transaction->priv->caller);
 
