@@ -31,6 +31,8 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 #include <packagekit-glib/packagekit.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
@@ -213,7 +215,9 @@ out:
 static void
 pk_console_transaction_cb (PkClient *client, const PkTransactionObj *obj, gpointer user_data)
 {
+	struct passwd *pw;
 	const gchar *role_text;
+
 	role_text = pk_role_enum_to_text (obj->role);
 	if (awaiting_space)
 		g_print ("\n");
@@ -223,6 +227,17 @@ pk_console_transaction_cb (PkClient *client, const PkTransactionObj *obj, gpoint
 	g_print (" role        : %s\n", role_text);
 	g_print (" duration    : %i (seconds)\n", obj->duration);
 	g_print (" data        : %s\n", obj->data);
+	g_print (" cmdline     : %s\n", obj->cmdline);
+	g_print (" uid         : %i\n", obj->uid);
+
+	/* query real name */
+	pw = getpwuid(obj->uid);
+	if (pw != NULL) {
+		if (pw->pw_name != NULL)
+			g_print (" user name   : %s\n", pw->pw_name);
+		if (pw->pw_gecos != NULL)
+			g_print (" real name   : %s\n", pw->pw_gecos);
+	}
 }
 
 /**

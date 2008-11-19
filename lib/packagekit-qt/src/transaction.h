@@ -216,6 +216,20 @@ public:
 	QString data();
 
 	/**
+	 * Returns the UID of the calling process
+	 * \return the uid of the calling process
+	 * \note This function only returns a real value for old transactions returned by getOldTransactions
+	 */
+	uint uid();
+
+	/**
+	 * Returns the command line for the calling process
+	 * \return a string of the command line for the calling process
+	 * \note This function only returns a real value for old transactions returned by getOldTransactions
+	 */
+	QString cmdline();
+
+	/**
 	 * Describes how the transaction finished
 	 * \sa finished()
 	 */
@@ -348,7 +362,7 @@ private:
 	friend class Client;
 	friend class ClientPrivate;
 	Transaction(const QString& tid, Client* parent);
-	Transaction(const QString& tid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, Client* parent);
+	Transaction(const QString& tid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline, Client* parent);
 
 	friend class TransactionPrivate;
 	TransactionPrivate* d;

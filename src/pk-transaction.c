@@ -915,7 +915,7 @@ pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTra
 static void
 pk_transaction_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const gchar *timespec,
 			       gboolean succeeded, PkRoleEnum role, guint duration,
-			       const gchar *data, PkTransaction *transaction)
+			       const gchar *data, guint uid, const gchar *cmdline, PkTransaction *transaction)
 {
 	const gchar *role_text;
 
@@ -923,8 +923,8 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	role_text = pk_role_enum_to_text (role);
-	egg_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_TRANSACTION], 0, old_tid, timespec, succeeded, role_text, duration, data);
+	egg_debug ("emitting transaction %s, %s, %i, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data, uid, cmdline);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_TRANSACTION], 0, old_tid, timespec, succeeded, role_text, duration, data, uid, cmdline);
 }
 
 /**
@@ -3756,9 +3756,10 @@ pk_transaction_class_init (PkTransactionClass *klass)
 	signals [PK_TRANSACTION_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT_STRING,
-			      G_TYPE_NONE, 6, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT_STRING_UINT_STRING,
+			      G_TYPE_NONE, 8, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT,
+			      G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 	signals [PK_TRANSACTION_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

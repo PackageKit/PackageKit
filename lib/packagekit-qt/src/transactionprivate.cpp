@@ -126,9 +126,9 @@ void TransactionPrivate::statusChanged(const QString& status)
 	t->statusChanged((Transaction::Status)Util::enumFromString<Transaction>(status, "Status"));
 }
 
-void TransactionPrivate::transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data)
+void TransactionPrivate::transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline)
 {
-	t->transaction(new Transaction(oldTid, timespec, succeeded, role, duration, data, client));
+	t->transaction(new Transaction(oldTid, timespec, succeeded, role, duration, data, uid, cmdline, client));
 }
 
 void TransactionPrivate::updateDetail(const QString& pid, const QString& updates, const QString& obsoletes, const QString& vendorUrl, const QString& bugzillaUrl, const QString& cveUrl, const QString& restart, const QString& updateText, const QString& changelog, const QString& state, const QString& issued, const QString& updated)
