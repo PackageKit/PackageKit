@@ -928,6 +928,7 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 	int i = 1;
 	int num_of_repos = repos.size ();
 	int percentage_increment = 100 / num_of_repos;
+	gchar *repo_messages = new gchar ();
 
 	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++, i++) {
 		zypp::RepoInfo repo (*it);
@@ -948,9 +949,10 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 				zypp::RepoManager::RefreshForced :
 				zypp::RepoManager::RefreshIfNeeded);
 		} catch (const zypp::Exception &ex) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "%s: %s", repo.alias ().c_str (), ex.asUserString ().c_str ());
-			pk_backend_finished (backend);
-			return FALSE;
+			repo_messages = g_strdup_printf ("%s%s: %s%s", repo_messages, repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");	
+			repo_messages = pk_strsafe (repo_messages);
+			if (repo_messages == NULL)
+				repo_messages = g_strdup ("A repository could not be refreshed");
 		}
 
 		try {
@@ -963,15 +965,18 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 		//} catch (const zypp::repo::RepoUnknownTypeException &ex) {
 		//} catch (const zypp::repo::RepoException &ex) {
 		} catch (const zypp::Exception &ex) {
-			// TODO: Handle the exceptions in manager.refreshMetadata
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "%s: %s",
-					       repo.alias ().c_str (), ex.asUserString().c_str() );
-			pk_backend_finished (backend);
-			return FALSE;
+			repo_messages = g_strdup_printf ("%s%s: %s%s", repo_messages, repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");	
+			repo_messages = pk_strsafe (repo_messages);
+			if (repo_messages == NULL)
+				repo_messages = g_strdup ("A repository could not be refreshed");
 		}
 
 		// Update the percentage completed
 		pk_backend_set_percentage (backend, i == num_of_repos ? 100 : i * percentage_increment);
 	}
+	if (repo_messages != NULL)
+		pk_backend_message (backend, PK_MESSAGE_ENUM_CONNECTION_REFUSED, repo_messages);
+
+	g_free (repo_messages);
 	return TRUE;
 }
