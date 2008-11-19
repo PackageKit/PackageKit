@@ -96,19 +96,22 @@ pk_desktop_sqlite_package_cb (void *data, gint argc, gchar **argv, gchar **col_n
  * Return value: array of results
  **/
 GPtrArray *
-pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package)
+pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package, GError **error)
 {
 	gchar *statement;
 	gchar *error_msg = NULL;
 	gint rc;
-	GPtrArray *array;
+	GPtrArray *array = NULL;
 
 	g_return_val_if_fail (PK_IS_DESKTOP (desktop), NULL);
 	g_return_val_if_fail (package != NULL, NULL);
 
 	/* no database */
-	if (desktop->priv->db == NULL)
-		return NULL;
+	if (desktop->priv->db == NULL) {
+		if (error != NULL)
+			*error = g_error_new (1, 0, "database is not open");
+		goto out;
+	}
 
 	/* get packages */
 	array = g_ptr_array_new ();
@@ -119,16 +122,17 @@ pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package)
 		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 	}
+out:
 	return array;
 }
 
 /**
- * pk_desktop_get_files_for_package:
+ * pk_desktop_get_package_for_file:
  *
  * Return value: package name, or %NULL
  **/
 gchar *
-pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename)
+pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename, GError **error)
 {
 	gchar *statement;
 	gchar *error_msg = NULL;
@@ -139,8 +143,11 @@ pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename)
 	g_return_val_if_fail (filename != NULL, NULL);
 
 	/* no database */
-	if (desktop->priv->db == NULL)
-		return NULL;
+	if (desktop->priv->db == NULL) {
+		if (error != NULL)
+			*error = g_error_new (1, 0, "database is not open");
+		goto out;
+	}
 
 	/* get packages */
 	statement = g_strdup_printf ("SELECT package FROM cache WHERE filename = '%s' LIMIT 1", filename);
@@ -150,6 +157,14 @@ pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename)
 		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 	}
+
+	/* no result */
+	if (package == NULL) {
+		if (error != NULL)
+			*error = g_error_new (1, 0, "could not find package for %s", filename);
+		goto out;
+	}
+out:
 	return package;
 }
 
@@ -160,7 +175,7 @@ pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename)
  * Return value: %TRUE if opened correctly
  **/
 gboolean
-pk_desktop_open_database (PkDesktop *desktop)
+pk_desktop_open_database (PkDesktop *desktop, GError **error)
 {
 	gboolean ret;
 	gint rc;
@@ -174,7 +189,8 @@ pk_desktop_open_database (PkDesktop *desktop)
 	/* if the database file was not installed (or was nuked) recreate it */
 	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
 	if (!ret) {
-		egg_warning ("Can't open database: not found");
+		if (error != NULL)
+			*error = g_error_new (1, 0, "database is not present");
 		return FALSE;
 	}
 
@@ -182,6 +198,8 @@ pk_desktop_open_database (PkDesktop *desktop)
 	rc = sqlite3_open (PK_DESKTOP_DEFAULT_DATABASE, &desktop->priv->db);
 	if (rc != 0) {
 		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (desktop->priv->db));
+		if (error != NULL)
+			*error = g_error_new (1, 0, "can't open database: %s", sqlite3_errmsg (desktop->priv->db));
 		sqlite3_close (desktop->priv->db);
 		desktop->priv->db = NULL;
 		return FALSE;
@@ -269,7 +287,7 @@ pk_desktop_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "open database");
-	ret = pk_desktop_open_database (desktop);
+	ret = pk_desktop_open_database (desktop, NULL);
 	if (ret)
 		egg_test_success (test, "%ims", egg_test_elapsed (test));
 	else
@@ -277,7 +295,7 @@ pk_desktop_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "get package");
-	package = pk_desktop_get_package_for_file (desktop, "/usr/share/applications/gpk-update-viewer.desktop");
+	package = pk_desktop_get_package_for_file (desktop, "/usr/share/applications/gpk-update-viewer.desktop", NULL);
 	if (egg_strequal (package, "gnome-packagekit"))
 		egg_test_success (test, NULL);
 	else
@@ -285,7 +303,7 @@ pk_desktop_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "get files");
-	array = pk_desktop_get_files_for_package (desktop, "gnome-packagekit");
+	array = pk_desktop_get_files_for_package (desktop, "gnome-packagekit", NULL);
 	if (array->len == 7)
 		egg_test_success (test, NULL);
 	else
