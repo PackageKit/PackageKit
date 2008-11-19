@@ -43,7 +43,6 @@ void
 pk_syslog_add (PkSyslog *self, PkSyslogType type, const gchar *format, ...)
 {
 	va_list args;
-	gint syslogtype = LOG_USER;
 	gchar va_args_buffer[1025];
 
 	g_return_if_fail (PK_IS_SYSLOG (self));
@@ -54,10 +53,10 @@ pk_syslog_add (PkSyslog *self, PkSyslogType type, const gchar *format, ...)
 
 	/* auth messages are special */
 	if (type == PK_SYSLOG_TYPE_AUTH)
-		syslogtype = LOG_AUTHPRIV;
+		syslog (LOG_AUTHPRIV, "%s", va_args_buffer);
 
 	egg_debug ("logging to syslog '%s'", va_args_buffer);
-	syslog (syslogtype, "%s", va_args_buffer);
+	syslog (LOG_DAEMON, "%s", va_args_buffer);
 }
 
 /**
