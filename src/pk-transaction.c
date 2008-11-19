@@ -608,7 +608,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 
 		/* refresh the desktop icon cache */
-		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
+		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFiles");
 		if (ret) {
 
 			/* filter on INSTALLING | UPDATING */
@@ -643,12 +643,12 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 
 		/* generate the package list */
-		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheUpdatePackageList");
+		ret = pk_conf_get_bool (transaction->priv->conf, "UpdatePackageList");
 		if (ret)
 			pk_post_trans_update_package_list (transaction->priv->post_trans);
 
 		/* refresh the desktop icon cache */
-		ret = pk_conf_get_bool (transaction->priv->conf, "RefreshCacheScanDesktopFiles");
+		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFiles");
 		if (ret)
 			pk_post_trans_import_desktop_files (transaction->priv->post_trans);
 

@@ -55,19 +55,19 @@ DefaultBackend=@defaultbackend@
 # ProxyHTTP=username:password@server.lan:8080
 # ProxyFTP=server.lan:21
 
-# Scan the desktop files when we do RefreshCache
+# Scan installed desktop files when we update or install packages
 #
 # NOTE: Don't enable this for backends that are slow doing SearchFile()
 #
 # default=true
-RefreshCacheScanDesktopFiles=true
+ScanDesktopFiles=true
 
-# Update the package list when we RefreshCache
+# Update the package list when we refresh the cache
 #
 # NOTE: Don't enable this for backends that are slow doing GetPackages()
 #
 # default=true
-RefreshCacheUpdatePackageList=true
+UpdatePackageList=true
 
 # Check for running processes when we update packages
 #
