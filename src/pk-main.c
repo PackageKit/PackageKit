@@ -42,8 +42,7 @@
 #include "org.freedesktop.PackageKit.h"
 
 static guint exit_idle_time;
-static PkEngine *engine = NULL;
-static PkBackend *backend = NULL;
+static GMainLoop *loop;
 
 /**
  * pk_object_register:
@@ -151,16 +150,8 @@ pk_main_sigint_handler (int sig)
 	/* restore default ASAP, as the finalisers might hang */
 	signal (SIGINT, SIG_DFL);
 
-	/* cleanup */
-	g_object_unref (backend);
-	g_object_unref (engine);
-
-	/* give the backend a sporting chance */
-	g_usleep (500*1000);
-
-	/* kill ourselves */
-	egg_debug ("Retrying SIGINT");
-	kill (getpid (), SIGINT);
+	/* exit loop */
+	g_main_loop_quit (loop);
 }
 
 /**
@@ -169,7 +160,6 @@ pk_main_sigint_handler (int sig)
 int
 main (int argc, char *argv[])
 {
-	GMainLoop *loop;
 	DBusGConnection *system_connection;
 	EggDbusMonitor *monitor;
 	gboolean ret;
@@ -181,6 +171,8 @@ main (int argc, char *argv[])
 	gboolean immediate_exit = FALSE;
 	gboolean do_logging = FALSE;
 	gchar *backend_name = NULL;
+	PkEngine *engine = NULL;
+	PkBackend *backend = NULL;
 	PkConf *conf = NULL;
 	PkSyslog *syslog = NULL;
 	GError *error = NULL;
