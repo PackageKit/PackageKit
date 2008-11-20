@@ -1243,6 +1243,8 @@ static gboolean
 backend_resolve_thread (PkBackend *backend)
 {
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	PkBitfield filters_field = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	gchar *filters = pk_filter_bitfield_to_text(filters_field);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1277,8 +1279,14 @@ backend_resolve_thread (PkBackend *backend)
 		const gchar *package_id = zypp_build_package_id_from_resolvable (package);
 
 		PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
-		if( package.isSystem ())
+		if( package.isSystem ()){
 			info = PK_INFO_ENUM_INSTALLED;
+			if (g_strrstr (filters, "~installed") != NULL)
+				continue;
+		}else{
+			if (g_strrstr (filters, "~installed") == NULL)
+				continue;
+		}
 
 		pk_backend_package (backend,
 				    info,
@@ -1767,6 +1775,8 @@ backend_what_provides_thread (PkBackend *backend)
 	const gchar *search;
 	search = pk_backend_get_string (backend, "search");
 	PkProvidesEnum provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
+	PkBitfield filters_field = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	gchar *filters = pk_filter_bitfield_to_text(filters_field);
 	zypp::Capability cap (search);
 	zypp::sat::WhatProvides prov (cap);
 
@@ -1800,6 +1810,9 @@ backend_what_provides_thread (PkBackend *backend)
 			}
 
 			if (hit) {
+				if (g_strrstr(filters, "~installed") != NULL)
+					continue;
+
 				gchar *package_id;
 				package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
 						it->resolvable ()->edition ().asString ().c_str(),
@@ -1818,13 +1831,19 @@ backend_what_provides_thread (PkBackend *backend)
 			gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 
 			PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
-			if( it->isSystem ())
+			if( it->isSystem ()){
 				info = PK_INFO_ENUM_INSTALLED;
-
+				if (g_strrstr (filters, "~installed") != NULL)
+					continue;
+			}else{
+				if (g_strrstr (filters, "~installed") == NULL)
+					continue;
+			}
 			pk_backend_package (backend, info, package_id, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 		}
 	}
 
+	g_free (filters);
 	pk_backend_finished (backend);
 	return TRUE;
 }
