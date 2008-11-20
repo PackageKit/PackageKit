@@ -11,13 +11,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-11-19 16:26+0000\n"
-"PO-Revision-Date: 2008-10-19 14:47+0200\n"
+"POT-Creation-Date: 2008-11-20 01:35+0000\n"
+"PO-Revision-Date: 2008-11-20 20:31+0100\n"
 "Last-Translator: Pavol Šimo <palo.simo@gmail.com>\n"
 "Language-Team: Fedora Project <fedora-cs-list@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bit"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:286
@@ -38,9 +38,9 @@ msgstr "Reštartujte aplikáciu, pretože sa momentálne používa."
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:595
-#, fuzzy, c-format
+#, c-format
 msgid "The package '%s' is already installed"
-msgstr "Balíček '%s' nemôže byť nainštalovaný: %s"
+msgstr "Balíček '%s' už je nainštalovaný"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:603
@@ -154,80 +154,72 @@ msgstr "Nepodarilo sa získať zoznam súborov balíčka '%s': %s"
 #: ../client/pk-console.c:1054
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "Súbor už existuje: %s"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1059 ../client/pk-console.c:1115
 #: ../client/pk-console.c:1190
-#, fuzzy
 msgid "Getting package list"
-msgstr "Získavanie informácií o balíčku..."
+msgstr "Získavanie zoznamu balíčkov"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
 #: ../client/pk-console.c:1065 ../client/pk-console.c:1121
 #: ../client/pk-console.c:1196
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not get package list: %s"
-msgstr "Nepodarilo sa odstrániť balíčky: %s"
+msgstr "Nepodarilo sa získať zoznam balíčkov: %s"
 
 # XXX
 #. TRANSLATORS: There was an error saving the list
 #: ../client/pk-console.c:1076
-#, fuzzy, c-format
 msgid "Failed to save to disk"
-msgstr "Nebolo možné získať čas ostatného vykonania"
+msgstr "Nebolo možné uložiť na disk"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
 #: ../client/pk-console.c:1110 ../client/pk-console.c:1185
 #, c-format
 msgid "File does not exist: %s"
-msgstr ""
+msgstr "Súbor neexistuje: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
 #: ../client/pk-console.c:1142
-#, fuzzy
 msgid "Packages to add"
-msgstr "Monitor PackageKit"
+msgstr "Balíčky na pridanie"
 
 #. TRANSLATORS: header to a list of packages removed
 #: ../client/pk-console.c:1150
-#, fuzzy
 msgid "Packages to remove"
-msgstr "Služba PackageKit"
+msgstr "Balíčky na odobratie"
 
 #. TRANSLATORS: We didn't find any differences
 #: ../client/pk-console.c:1218
-#, fuzzy, c-format
 msgid "No new packages need to be installed"
-msgstr "Balíček '%s' nemôže byť nainštalovaný: %s"
+msgstr "Žiadne nové balíčky nemusia byť nainštalované"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1224
 msgid "To install"
-msgstr ""
+msgstr "Nainštalovať"
 
 #. TRANSLATORS: searching takes some time....
 #: ../client/pk-console.c:1235
 msgid "Searching for package: "
-msgstr ""
+msgstr "Vyhľadávanie balíčka: "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
 #: ../client/pk-console.c:1239
-#, fuzzy
 msgid "not found."
-msgstr "Priečinok nenájdený"
+msgstr "nenájdený."
 
 #. TRANSLATORS: We didn't find any packages to install
 #: ../client/pk-console.c:1250
-#, fuzzy, c-format
 msgid "No packages can be found to install"
-msgstr "Pre váš systém neboli nájdené žiadne balíčky"
+msgstr "Neboli nájdené žiadne balíčky pre nainštalovanie"
 
 #. TRANSLATORS: installing new packages from package list
 #: ../client/pk-console.c:1256
-#, fuzzy
 msgid "Installing packages"
-msgstr "Inštalovať balíček"
+msgstr "Inštalovanie balíčkov"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1292
@@ -268,7 +260,6 @@ msgstr "Požadovaný podpis repozitára"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1435
-#, fuzzy
 msgid "Do you accept this signature?"
 msgstr "Akceptujete tento podpis?"
 
@@ -280,12 +271,12 @@ msgstr "Podpis nebol prijatý."
 #. TRANSLATORS: This a request for a EULA
 #: ../client/pk-console.c:1473
 msgid "End user license agreement required"
-msgstr "Požadovaný súhlas s licenciou"
+msgstr "Požadovaný je súhlas s licenciou"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
 #: ../client/pk-console.c:1480
 msgid "Do you agree to this license?"
-msgstr "Súhlasíte s licenciou?"
+msgstr "Súhlasíte s touto licenciou?"
 
 #. TRANSLATORS: This is where the user declined the license
 #: ../client/pk-console.c:1484
@@ -307,7 +298,7 @@ msgid "Subcommands:"
 msgstr "Podpríkazy:"
 
 #: ../client/pk-console.c:1657 ../client/pk-generate-pack.c:183
-#: ../client/pk-monitor.c:114 ../src/pk-main.c:196
+#: ../client/pk-monitor.c:114 ../src/pk-main.c:190
 msgid "Show extra debugging information"
 msgstr "Zobrazovať dodatočné ladiace informácie"
 
@@ -331,7 +322,7 @@ msgstr "Pokus o pripojenie k systémovej zbernici DBUS neuspel."
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1770
 msgid "The filter specified was invalid"
-msgstr ""
+msgstr "Zadaný filter nebol platný"
 
 #: ../client/pk-console.c:1787
 msgid "You need to specify a search type, e.g. name"
@@ -408,14 +399,12 @@ msgid "You need to specify a package to find the files for"
 msgstr "Je potrebné určiť balíček, zoznam súborov ktorého sa má získať"
 
 #: ../client/pk-console.c:1969
-#, fuzzy
 msgid "You need to specify a list file to create"
-msgstr "Je potrebné určiť čas"
+msgstr "Je potrebné určiť súbor zoznamu pre vytvorenie"
 
 #: ../client/pk-console.c:1977 ../client/pk-console.c:1985
-#, fuzzy
 msgid "You need to specify a list file to open"
-msgstr "Je potrebné určiť čas"
+msgstr "Je potrebné určiť súbor zoznamu pre otvorenie"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:2038
@@ -440,15 +429,13 @@ msgstr "Získavanie"
 
 #. TRANSLATORS: This is when the main packages are being downloaded
 #: ../client/pk-generate-pack.c:119
-#, fuzzy
 msgid "Downloading packages"
-msgstr "Získavanie"
+msgstr "Získavanie balíčkov"
 
 #. TRANSLATORS: This is when the dependency packages are being downloaded
 #: ../client/pk-generate-pack.c:124
-#, fuzzy
 msgid "Downloading dependencies"
-msgstr "Získavanie"
+msgstr "Získavanie závislostí"
 
 #: ../client/pk-generate-pack.c:185
 msgid "Set the file name of dependencies to be excluded"
@@ -532,7 +519,6 @@ msgstr "Monitor PackageKit"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:114
-#, c-format
 msgid "The package could not be found"
 msgstr "Balíček sa nepodarilo nájsť"
 
@@ -616,97 +602,6 @@ msgstr "Servisný archív PackageKit"
 msgid "PackageKit Package List"
 msgstr "Zoznam balíčkov PackageKit"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr "Prijať licenčné podmienky"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr "Na prijatie licenčných podmienok je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr "Na úpravu zdrojov softvéru je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-#, fuzzy
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr "Na obnovenie zoznamu balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-#, fuzzy
-msgid "Authentication is required to install a signed package"
-msgstr "Na inštaláciu balíčka je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-#, fuzzy
-msgid "Authentication is required to install an untrusted package"
-msgstr "Na inštaláciu balíčka je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-#, fuzzy
-msgid "Authentication is required to refresh the system sources"
-msgstr "Na obnovenie zoznamu balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr "Na odstránenie balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr "Na navrátenie transakcie je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-#, fuzzy
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr "Na odstránenie balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr "Na aktualizáciu balíčkov je nutná autentifikácia"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr "Zmeniť parametre zdrojov softvéru"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr "Inštalovať z lokálneho súboru"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-#, fuzzy
-msgid "Install untrusted local file"
-msgstr "Inštalovať z lokálneho súboru"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Refresh system sources"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Remove package"
-msgstr "Odstrániť balíček"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Rollback to a previous transaction"
-msgstr "Navrátiť sa k stavu pred transakciou"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Set network proxy"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Trust a key used for signing packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-#, fuzzy
-msgid "Update packages"
-msgstr "Aktualizovať balíček"
-
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "Bezpečnostné politky tohto počítača zabránili spusteniu."
@@ -727,43 +622,105 @@ msgstr ""
 "Súbor org.freedesktop.PackageKit.conf nie je nainštalovaný v systémovom "
 "priečinku:"
 
-#: ../src/pk-main.c:192
+#: ../src/pk-main.c:186
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Rozhranie balíčkoveho systému ktoré sa má použiť, napríklad \"dummy\""
 
-#: ../src/pk-main.c:194
+#: ../src/pk-main.c:188
 msgid "Daemonize and detach from the terminal"
 msgstr "Uvoľniť terminál a presunúť sa na pozadie"
 
-#: ../src/pk-main.c:198
+#: ../src/pk-main.c:192
 msgid "Disable the idle timer"
 msgstr "Vypnúť počítadlo času nečinnosti"
 
-#: ../src/pk-main.c:200
+#: ../src/pk-main.c:194
 msgid "Show version and exit"
 msgstr "Zobraziť verziu a skončiť"
 
-#: ../src/pk-main.c:202
+#: ../src/pk-main.c:196
 msgid "Exit after a small delay"
 msgstr "Skončiť po krátkej prestávke"
 
 # XXX
-#: ../src/pk-main.c:204
+#: ../src/pk-main.c:198
 msgid "Exit after the engine has loaded"
 msgstr "Skončiť po načítaní enginu"
 
-#: ../src/pk-main.c:214
+#: ../src/pk-main.c:207
 msgid "PackageKit service"
 msgstr "Služba PackageKit"
 
-#: ../src/pk-main.c:250
+#: ../src/pk-main.c:243
 msgid "Cannot connect to the system bus"
 msgstr "Pokus o pripojenie k systémovej zbernici neuspel"
 
-#: ../src/pk-main.c:296
+#: ../src/pk-main.c:292
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Chyba pri pokuse o spustenie: %s\n"
+
+#~ msgid "Accept EULA"
+#~ msgstr "Prijať licenčné podmienky"
+
+#~ msgid "Authentication is required to accept a EULA"
+#~ msgstr "Na prijatie licenčných podmienok je nutná autentifikácia"
+
+#~ msgid "Authentication is required to change software source parameters"
+#~ msgstr "Na úpravu zdrojov softvéru je nutná autentifikácia"
+
+#, fuzzy
+#~ msgid ""
+#~ "Authentication is required to consider a key used for signing packages as "
+#~ "trusted"
+#~ msgstr "Na obnovenie zoznamu balíčkov je nutná autentifikácia"
+
+#, fuzzy
+#~ msgid "Authentication is required to install a signed package"
+#~ msgstr "Na inštaláciu balíčka je nutná autentifikácia"
+
+#, fuzzy
+#~ msgid "Authentication is required to install an untrusted package"
+#~ msgstr "Na inštaláciu balíčka je nutná autentifikácia"
+
+#, fuzzy
+#~ msgid "Authentication is required to refresh the system sources"
+#~ msgstr "Na obnovenie zoznamu balíčkov je nutná autentifikácia"
+
+#~ msgid "Authentication is required to remove packages"
+#~ msgstr "Na odstránenie balíčkov je nutná autentifikácia"
+
+#~ msgid "Authentication is required to rollback a transaction"
+#~ msgstr "Na navrátenie transakcie je nutná autentifikácia"
+
+#, fuzzy
+#~ msgid ""
+#~ "Authentication is required to set the network proxy used for downloading "
+#~ "packages"
+#~ msgstr "Na odstránenie balíčkov je nutná autentifikácia"
+
+#~ msgid "Authentication is required to update packages"
+#~ msgstr "Na aktualizáciu balíčkov je nutná autentifikácia"
+
+#~ msgid "Change software source parameters"
+#~ msgstr "Zmeniť parametre zdrojov softvéru"
+
+#~ msgid "Install local file"
+#~ msgstr "Inštalovať z lokálneho súboru"
+
+#, fuzzy
+#~ msgid "Install untrusted local file"
+#~ msgstr "Inštalovať z lokálneho súboru"
+
+#~ msgid "Remove package"
+#~ msgstr "Odstrániť balíček"
+
+#~ msgid "Rollback to a previous transaction"
+#~ msgstr "Navrátiť sa k stavu pred transakciou"
+
+#, fuzzy
+#~ msgid "Update packages"
+#~ msgstr "Aktualizovať balíček"
 
 #~ msgid "Okay to import key?"
 #~ msgstr "Importovať kľúč?"
