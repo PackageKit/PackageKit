@@ -36,13 +36,13 @@
 
 #include "pk-conf.h"
 #include "pk-engine.h"
+#include "pk-syslog.h"
 #include "pk-transaction.h"
 #include "pk-backend-internal.h"
 #include "org.freedesktop.PackageKit.h"
 
 static guint exit_idle_time;
-static PkEngine *engine = NULL;
-static PkBackend *backend = NULL;
+static GMainLoop *loop;
 
 /**
  * pk_object_register:
@@ -150,16 +150,8 @@ pk_main_sigint_handler (int sig)
 	/* restore default ASAP, as the finalisers might hang */
 	signal (SIGINT, SIG_DFL);
 
-	/* cleanup */
-	g_object_unref (backend);
-	g_object_unref (engine);
-
-	/* give the backend a sporting chance */
-	g_usleep (500*1000);
-
-	/* kill ourselves */
-	egg_debug ("Retrying SIGINT");
-	kill (getpid (), SIGINT);
+	/* exit loop */
+	g_main_loop_quit (loop);
 }
 
 /**
@@ -168,7 +160,6 @@ pk_main_sigint_handler (int sig)
 int
 main (int argc, char *argv[])
 {
-	GMainLoop *loop;
 	DBusGConnection *system_connection;
 	EggDbusMonitor *monitor;
 	gboolean ret;
@@ -180,7 +171,10 @@ main (int argc, char *argv[])
 	gboolean immediate_exit = FALSE;
 	gboolean do_logging = FALSE;
 	gchar *backend_name = NULL;
+	PkEngine *engine = NULL;
+	PkBackend *backend = NULL;
 	PkConf *conf = NULL;
+	PkSyslog *syslog = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
 	const gchar *env_pk_verbose;
@@ -205,9 +199,8 @@ main (int argc, char *argv[])
 		{ NULL}
 	};
 
-	if (! g_thread_supported ()) {
+	if (! g_thread_supported ())
 		g_thread_init (NULL);
-	}
 	dbus_g_thread_init ();
 	g_type_init ();
 
@@ -265,6 +258,10 @@ main (int argc, char *argv[])
 	/* get values from the config file */
 	conf = pk_conf_new ();
 
+	/* log the startup */
+	syslog = pk_syslog_new ();
+	pk_syslog_add (syslog, PK_SYSLOG_TYPE_INFO, "daemon start");
+
 	/* do we log? */
 	do_logging = pk_conf_get_bool (conf, "TransactionLogging");
 	egg_debug ("Log all transactions: %i", do_logging);
@@ -285,9 +282,8 @@ main (int argc, char *argv[])
 	g_free (backend_name);
 
 	/* all okay? */
-	if (!ret) {
+	if (!ret)
 		egg_error ("cannot continue, backend invalid");
-	}
 
 	/* create a new engine object */
 	engine = pk_engine_new ();
@@ -317,6 +313,10 @@ main (int argc, char *argv[])
 	g_main_loop_unref (loop);
 
 out:
+	/* log the shutdown */
+	pk_syslog_add (syslog, PK_SYSLOG_TYPE_INFO, "daemon quit");
+
+	g_object_unref (syslog);
 	g_object_unref (conf);
 	g_object_unref (engine);
 	g_object_unref (backend);

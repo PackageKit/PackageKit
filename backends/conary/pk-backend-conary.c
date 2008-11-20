@@ -152,6 +152,11 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 /**
  * backend_install_packages:
  */
+
+/*
+python conaryBackend.py update-packages "gimp;2.4.6-0.2-1;x86;/foresight.rpath.org@fl:devel//2-qa/1222042924.132:2.4.6-0.2-1,1#x86"
+
+ */
 static void
 backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
@@ -204,6 +209,12 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 /**
  * pk_backend_remove_packages:
  */
+
+/*
+ zodman notes:
+ python conaryBackend.py  remove-packages none  "pastebinit;0.7-1-1;x86;/foresight.rpath.org@fl:2-qa/1222042924.172:0.7-1-1,1#x86"
+
+ */
 static void
 backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
@@ -235,16 +246,15 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
-
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
 		pk_backend_finished (backend);
 		return;
 	}
-
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids);
+	egg_debug("Updates Packages");
 	pk_backend_spawn_helper (spawn, "conaryBackend.py", "update-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -261,6 +271,20 @@ backend_update_system (PkBackend *backend)
 /**
  * pk_backend_resolve:
  */
+
+/* zodman note
+
+# python conaryBackend.py  resolve installed pastebinit
+allow-cancel	true
+no-percentage-updates
+status	info
+allow-cancel	true
+no-percentage-updates
+status	query
+package	available	pastebinit;0.7-1-1;x86;/foresight.rpath.org@fl:2-qa/1222042924.172:0.7-1-1,1#x86
+finished
+
+ */
 static void
 backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
@@ -272,7 +296,8 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 
 PK_BACKEND_OPTIONS (
 	"Conary",				/* description */
-	"Ken VanDine <ken@vandine.org>",	/* author */
+	"Ken VanDine <ken@vandine.org>",
+						/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */

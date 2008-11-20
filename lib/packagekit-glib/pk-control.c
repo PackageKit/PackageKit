@@ -680,7 +680,26 @@ pk_control_transaction_list_refresh_idle_cb (PkControl *control)
 const gchar **
 pk_control_transaction_list_get (PkControl *control)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+
+	/* we might not have refreshed this ever */
+	if (control->priv->array == NULL) {
+		ret = pk_control_transaction_list_refresh (control, &error);
+		if (!ret) {
+			egg_warning ("failed to get list: %s", error->message);
+			g_error_free (error);
+		}
+
+		/* no need to do this twice at startup */
+		if (control->priv->idle_id != 0) {
+			g_source_remove (control->priv->idle_id);
+			control->priv->idle_id = 0;
+		}
+	}
+
 	return (const gchar **) control->priv->array;
 }
 
@@ -965,6 +984,7 @@ pk_control_finalize (GObject *object)
 	if (control->priv->idle_id != 0)
 		g_source_remove (control->priv->idle_id);
 	g_object_unref (G_OBJECT (control->priv->proxy));
+	g_object_unref (G_OBJECT (control->priv->pconnection));
 	g_strfreev (control->priv->array);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);

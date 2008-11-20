@@ -316,7 +316,7 @@ New Features:
  - python: Implemented some extra methods and did some code cleanups (Tim Lauridsen)
  - python: Removed packagekitwrapper.py, it is replaced by packagekit/client.py (Tim Lauridsen)
  - python: Implemented the last methods and make the wrapper-test.py a lot better (Tim Lauridsen)
- - Change RefreshCacheScanDesktopFiles and RefreshCacheUpdatePackageList to default true (Richard Hughes)
+ - Change ScanDesktopFiles and UpdatePackageList to default true (Richard Hughes)
  - Use a new in-process desktop scanner and package list generator (Richard Hughes)
  - Add a --quiet flag for the import tools (Richard Hughes)
 

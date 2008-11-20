@@ -51,18 +51,20 @@
 int progress_percentage;
 int subprogress_percentage;
 PkBackend *backend_instance = NULL;
-gchar *dl_file_name;
 
 GHashTable *group_map;
 
-alpm_list_t *syncfirst;
+alpm_list_t *syncfirst = NULL;
+alpm_list_t *downloaded_files = NULL;
+gchar *current = NULL;
 
 typedef enum {
 	PK_ALPM_SEARCH_TYPE_NULL,
 	PK_ALPM_SEARCH_TYPE_RESOLVE,
 	PK_ALPM_SEARCH_TYPE_NAME,
 	PK_ALPM_SEARCH_TYPE_DETAILS,
-	PK_ALPM_SEARCH_TYPE_GROUP
+	PK_ALPM_SEARCH_TYPE_GROUP,
+	PK_ALPM_SEARCH_TYPE_PROVIDES
 } PkAlpmSearchType;
 
 gchar *
@@ -167,45 +169,44 @@ cb_trans_conv (pmtransconv_t conv, void *data1, void *data2, void *data3, int *r
 void
 cb_trans_progress (pmtransprog_t event, const char *pkgname, int percent, int howmany, int remain)
 {
-	// This is too verbose
-	// egg_debug ("alpm: percentage is %i", percent);
-	// pk_backend_set_percentage ((PkBackend *) install_backend, percent);
+	egg_debug ("alpm: transaction percentage for %s is %i", pkgname, percent);
+	// pk_backend_set_percentage ((PkBackend *) backend_instance, percent);
 }
 
 void
 cb_dl_progress (const char *filename, off_t xfered, off_t total)
 {
-	if (xfered == total) {
-		/* free filename copy when file is downloaded */
-		g_free (dl_file_name);
-		dl_file_name = NULL;
-	} else {
-		if (dl_file_name == NULL) {
-			/* we download new file, let's process it */
-			egg_debug ("alpm: downloading file %s", filename);
-			dl_file_name = g_strdup(filename);
+	if (g_str_has_suffix (filename, ALPM_PKG_EXT)) {
+		if (xfered == total)
+			downloaded_files = alpm_list_add (downloaded_files, g_strdup (filename));
 
-			/* check if downloaded file is a package */
-			if (strstr (filename, ALPM_PKG_EXT) != NULL) {
-				/* search for this package in package_ids */
-				gchar **package_ids = pk_backend_get_strv (backend_instance, "package_ids");
+		if (g_strcmp0 (filename, current) != 0) {
+			g_free (current);
+			current = g_strdup (filename);
 
-				int iterator;
-				for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-					pmpkg_t *pkg = pkg_from_package_id_str (package_ids[iterator]);
-					const char *pkg_filename = alpm_pkg_get_filename (pkg);
-					if (strcmp (pkg_filename, filename) == 0) {
-						pk_backend_package (backend_instance, PK_INFO_ENUM_DOWNLOADING, package_ids[iterator], alpm_pkg_get_desc (pkg));
-						break;
-					}
-				}
+			/* search for this package in package_ids */
+			int iterator;
+			gchar *package_id = NULL;
+			gchar **package_ids = pk_backend_get_strv (backend_instance, "package_ids");
+			for (iterator = 0; package_id == NULL && iterator < g_strv_length (package_ids); ++iterator) {
+				PkPackageId *pk_package_id = pk_package_id_new_from_string (package_ids[iterator]);
+				gchar *pkginfo = g_strjoin ("-", pk_package_id->name, pk_package_id->version, NULL);
+				if (strstr (filename, pkginfo) != NULL)
+					package_id = package_ids[iterator];
+				g_free (pkginfo);
+			}
+
+			/* emit package */
+			if (package_id != NULL) {
+				pmpkg_t *pkg = pkg_from_package_id_str (package_id);
+				pk_backend_package (backend_instance, PK_INFO_ENUM_DOWNLOADING, package_id, alpm_pkg_get_desc (pkg));
 			}
 		}
 	}
 
 	int percent = (int) ((float) xfered) / ((float) total) * 100;
-	egg_debug ("alpm: download percentage of %s is %i", filename, percent);
-	// pk_backend_set_percentage ((PkBackend *) install_backend, percent);
+	egg_debug ("alpm: download percentage for %s is %i", filename, percent);
+	// pk_backend_set_percentage ((PkBackend *) backend_instance, percent);
 }
 
 gboolean
@@ -583,7 +584,6 @@ backend_initialize (PkBackend *backend)
 		return;
 	}
 
-	dl_file_name = NULL;
 	alpm_option_set_dlcb (cb_dl_progress);
 
 	/* fill in group mapping */
@@ -680,6 +680,78 @@ static void
 backend_cancel (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+
+	egg_debug ("alpm: downloading package to %s", directory);
+
+	/* old cachedirs list automatically gets freed in alpm, so make a copy */
+	alpm_list_t *cachedirs = NULL;
+	alpm_list_t *list_iterator;
+	for (list_iterator = alpm_option_get_cachedirs (); list_iterator; list_iterator = alpm_list_next (list_iterator))
+		cachedirs = alpm_list_add (cachedirs, g_strdup (alpm_list_getdata (list_iterator)));
+	/* set new download destination */
+	alpm_option_set_cachedirs (NULL);
+	alpm_option_add_cachedir (directory);
+
+	/* create a new transaction */
+	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_NODEPS | PM_TRANS_FLAG_DOWNLOADONLY, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
+		egg_warning ("alpm: %s", alpm_strerrorlast ());
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
+		pk_backend_finished (backend);
+		return;
+	}
+	egg_debug ("alpm: transaction initialized");
+
+	/* add targets to the transaction */
+	int iterator;
+	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
+		PkPackageId *package_id = pk_package_id_new_from_string (package_ids[iterator]);
+		if (alpm_trans_addtarget (package_id->name) == -1) {
+			egg_warning ("alpm: %s", alpm_strerrorlast ());
+			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
+			alpm_trans_release ();
+			pk_backend_finished (backend);
+			return;
+		}
+		egg_debug ("alpm: %s added to transaction queue", package_id->name);
+		pk_package_id_free (package_id);
+	}
+
+	alpm_list_t *data = NULL;
+
+	/* prepare and commit transaction */
+	if (alpm_trans_prepare (&data) == -1 || alpm_trans_commit (&data) == -1) {
+		egg_warning ("alpm: %s", alpm_strerrorlast ());
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
+		alpm_trans_release ();
+		pk_backend_finished (backend);
+		return;
+	}
+
+	alpm_trans_release ();
+	egg_debug ("alpm: transaction released");
+
+	/* emit/cleanup downloaded files list */
+	for (list_iterator = downloaded_files; list_iterator; list_iterator = alpm_list_next (list_iterator)) {
+		gchar *fullname = g_strjoin ("/", directory, alpm_list_getdata (list_iterator), NULL);
+		pk_backend_files (backend, NULL, fullname);
+		g_free (fullname);
+		g_free (alpm_list_getdata (list_iterator));
+	}
+	alpm_list_free (downloaded_files);
+
+	/* return cachedirs back */
+	alpm_option_set_cachedirs (cachedirs);
+
+	pk_backend_finished (backend);
 }
 
 int
@@ -906,6 +978,13 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 					match = strcmp (group, needle) == 0;
 				}
 				break;
+			case PK_ALPM_SEARCH_TYPE_PROVIDES:
+				match = FALSE;
+				alpm_list_t *provides;
+				/* iterate provides */
+				for (provides = alpm_pkg_get_provides (pkg); provides && !match; provides = alpm_list_next (provides))
+					match = egg_strequal (needle, alpm_list_getdata (provides));
+				break;
 			default:
 				match = FALSE;
 		}
@@ -1054,7 +1133,7 @@ backend_install_files_thread (PkBackend *backend)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	egg_debug ("alpm: %s", "transaction initialized");
+	egg_debug ("alpm: transaction initialized");
 
 	/* add targets to the transaction */
 	int iterator;
@@ -1079,7 +1158,7 @@ backend_install_files_thread (PkBackend *backend)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	egg_debug ("alpm: %s", "transaction prepared");
+	egg_debug ("alpm: transaction prepared");
 
 	/* commit transaction */
 	if (alpm_trans_commit (&data) == -1) {
@@ -1091,7 +1170,7 @@ backend_install_files_thread (PkBackend *backend)
 	}
 
 	alpm_trans_release ();
-	egg_debug ("alpm: %s", "transaction released");
+	egg_debug ("alpm: transaction released");
 
 	pk_backend_finished (backend);
 	return TRUE;
@@ -1428,16 +1507,29 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	backend_install_packages (backend, package_ids);
 }
 
+/**
+ * backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_set_uint (backend, "search-type", PK_ALPM_SEARCH_TYPE_PROVIDES);
+
+	pk_backend_thread_create (backend, backend_search_thread);
+}
+
 PK_BACKEND_OPTIONS (
 	"alpm",						/* description */
-	"Andreas Obergrusberger <tradiaz@yahoo.de>",	/* author */
+	"Valeriy Lyasotskiy <onestep@ukr.net>",		/* author */
 	backend_initialize,				/* initialize */
 	backend_destroy,				/* destroy */
 	backend_get_groups,				/* get_groups */
 	backend_get_filters,				/* get_filters */
 	backend_get_mime_types,				/* get_mime_types */
 	backend_cancel,					/* cancel */
-	NULL,						/* download_packages */
+	backend_download_packages,			/* download_packages */
 	NULL,						/* get_categories */
 	backend_get_depends,				/* get_depends */
 	backend_get_details,				/* get_details */
@@ -1463,6 +1555,6 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,				/* search_name */
 	backend_update_packages,			/* update_packages */
 	NULL,						/* update_system */
-	NULL						/* what_provides */
+	backend_what_provides				/* what_provides */
 );
 

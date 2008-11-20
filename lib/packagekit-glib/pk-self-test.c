@@ -37,7 +37,7 @@ void pk_enum_test (EggTest *test);
 void pk_bitfield_test (EggTest *test);
 void pk_common_test (EggTest *test);
 void pk_enum_test_list (EggTest *test);
-void pk_extra_test (EggTest *test);
+void pk_desktop_test (EggTest *test);
 void pk_client_test (EggTest *test);
 void pk_control_test (EggTest *test);
 void pk_task_list_test (EggTest *test);
@@ -65,7 +65,7 @@ main (int argc, char **argv)
 	pk_package_list_test (test);
 	pk_enum_test (test);
 	pk_bitfield_test (test);
-	pk_extra_test (test);
+	pk_desktop_test (test);
 	pk_client_test (test);
 	pk_catalog_test (test);
 	pk_control_test (test);

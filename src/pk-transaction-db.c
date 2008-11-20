@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -76,6 +76,8 @@ typedef struct {
 	gchar *tid;
 	gchar *data;
 	gchar *timespec;
+	guint uid;
+	gchar *cmdline;
 } PkTransactionDbItem;
 
 /**
@@ -90,6 +92,8 @@ pk_transaction_db_item_clear (PkTransactionDbItem *item)
 	item->tid = NULL;
 	item->data = NULL;
 	item->timespec = NULL;
+	item->uid = 0;
+	item->cmdline = NULL;
 	return TRUE;
 }
 
@@ -102,6 +106,7 @@ pk_transaction_db_item_free (PkTransactionDbItem *item)
 	g_free (item->tid);
 	g_free (item->data);
 	g_free (item->timespec);
+	g_free (item->cmdline);
 	return TRUE;
 }
 
@@ -129,34 +134,35 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		value = argv[i];
 		if (egg_strequal (col, "succeeded")) {
 			ret = egg_strtouint (value, &temp);
-			if (!ret) {
+			if (!ret)
 				egg_warning ("failed to parse succeeded: %s", value);
-			}
-			if (temp == 1) {
+			if (temp == 1)
 				item.succeeded = TRUE;
-			} else {
+			else
 				item.succeeded = FALSE;
-			}
 			if (item.succeeded > 1) {
 				egg_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
 				item.succeeded = 1;
 			}
 		} else if (egg_strequal (col, "role")) {
-			if (value != NULL) {
+			if (value != NULL)
 				item.role = pk_role_enum_from_text (value);
-			}
 		} else if (egg_strequal (col, "transaction_id")) {
-			if (value != NULL) {
+			if (value != NULL)
 				item.tid = g_strdup (value);
-			}
 		} else if (egg_strequal (col, "timespec")) {
-			if (value != NULL) {
+			if (value != NULL)
 				item.timespec = g_strdup (value);
-			}
+		} else if (egg_strequal (col, "cmdline")) {
+			if (value != NULL)
+				item.cmdline = g_strdup (value);
 		} else if (egg_strequal (col, "data")) {
-			if (value != NULL) {
+			if (value != NULL)
 				item.data = g_strdup (value);
-			}
+		} else if (egg_strequal (col, "uid")) {
+			ret = egg_strtouint (value, &temp);
+			if (ret)
+				item.uid = temp;
 		} else if (egg_strequal (col, "duration")) {
 			ret = egg_strtouint (value, &item.duration);
 			if (!ret) {
@@ -172,10 +178,15 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		}
 	}
 
+	egg_debug (" duration: %i (seconds)", item.duration);
+	egg_debug (" data: %s", item.data);
+	egg_debug (" uid: %i", item.uid);
+	egg_debug (" cmdline: %s", item.cmdline);
+
 	/* emit signal */
 	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
 		       item.tid, item.timespec, item.succeeded, item.role,
-		       item.duration, item.data);
+		       item.duration, item.data, item.uid, item.cmdline);
 
 	pk_transaction_db_item_free (&item);
 	return 0;
@@ -189,16 +200,42 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 {
 	gchar *error_msg = NULL;
 	gint rc;
+	const gchar *statement;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
+
+	/* can we handle the error? */
+	if (rc != SQLITE_OK) {
+		/* add column uid (since 0.3.11) */
+		if (g_strcmp0 (error_msg, "no such column: uid") == 0) {
+			egg_debug ("SQL: creating column uid");
+			sqlite3_free (error_msg);
+			statement = "ALTER TABLE transactions ADD COLUMN uid INTEGER DEFAULT 0;";
+			rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+		}
+		/* add column cmdline (since 0.3.11) */
+		if (g_strcmp0 (error_msg, "no such column: cmdline") == 0) {
+			egg_debug ("SQL: creating column cmdline");
+			sqlite3_free (error_msg);
+			statement = "ALTER TABLE transactions ADD COLUMN cmdline TEXT;";
+			rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+		}
+	}
+
+	/* retry command */
+	if (rc == SQLITE_OK)
+		rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
+
+	/* can't handle this, or error handle failed */
 	if (rc != SQLITE_OK) {
 		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
+
 	return TRUE;
 }
 
@@ -309,10 +346,10 @@ pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
 	if (limit == 0)
-		statement = g_strdup ("SELECT transaction_id, timespec, succeeded, duration, role, data "
+		statement = g_strdup ("SELECT transaction_id, timespec, succeeded, duration, role, data, uid, cmdline "
 				      "FROM transactions ORDER BY timespec DESC");
 	else
-		statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role, data "
+		statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role, data, uid, cmdline "
 					     "FROM transactions ORDER BY timespec DESC LIMIT %i", limit);
 
 	pk_transaction_db_sql_statement (tdb, statement);
@@ -357,6 +394,38 @@ pk_transaction_db_set_role (PkTransactionDb *tdb, const gchar *tid, PkRoleEnum r
 
 	role_text = pk_role_enum_to_text (role);
 	statement = g_strdup_printf ("UPDATE transactions SET role = '%s' WHERE transaction_id = '%s'", role_text, tid);
+	pk_transaction_db_sql_statement (tdb, statement);
+	g_free (statement);
+	return TRUE;
+}
+
+/**
+ * pk_transaction_db_set_uid:
+ **/
+gboolean
+pk_transaction_db_set_uid (PkTransactionDb *tdb, const gchar *tid, guint uid)
+{
+	gchar *statement;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	statement = g_strdup_printf ("UPDATE transactions SET uid = '%i' WHERE transaction_id = '%s'", uid, tid);
+	pk_transaction_db_sql_statement (tdb, statement);
+	g_free (statement);
+	return TRUE;
+}
+
+/**
+ * pk_transaction_db_set_cmdline:
+ **/
+gboolean
+pk_transaction_db_set_cmdline (PkTransactionDb *tdb, const gchar *tid, const gchar *cmdline)
+{
+	gchar *statement;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	statement = g_strdup_printf ("UPDATE transactions SET cmdline = '%s' WHERE transaction_id = '%s'", cmdline, tid);
 	pk_transaction_db_sql_statement (tdb, statement);
 	g_free (statement);
 	return TRUE;
@@ -425,9 +494,10 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 	signals [PK_TRANSACTION_DB_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT_STRING,
-			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT_STRING_UINT_STRING,
+			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT,
+			      G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 	g_type_class_add_private (klass, sizeof (PkTransactionDbPrivate));
 }
 
@@ -508,7 +578,9 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 				    "succeeded INTEGER DEFAULT 0,"
 				    "role TEXT,"
 				    "data TEXT,"
-				    "description TEXT);";
+				    "description TEXT,"
+				    "uid INTEGER DEFAULT 0,"
+				    "cmdline TEXT);";
 			sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 		}
 	}

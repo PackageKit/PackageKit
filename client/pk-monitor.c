@@ -87,11 +87,10 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointe
 static void
 pk_monitor_locked_cb (PkControl *control, gboolean is_locked, gpointer data)
 {
-	if (is_locked) {
+	if (is_locked)
 		g_print ("locked\n");
-	} else {
+	else
 		g_print ("unlocked\n");
-	}
 }
 
 /**
@@ -118,9 +117,8 @@ main (int argc, char *argv[])
 		{ NULL}
 	};
 
-	if (! g_thread_supported ()) {
+	if (! g_thread_supported ())
 		g_thread_init (NULL);
-	}
 	dbus_g_thread_init ();
 	g_type_init ();
 
@@ -159,13 +157,14 @@ main (int argc, char *argv[])
 	g_signal_connect (tlist, "status-changed",
 			  G_CALLBACK (pk_monitor_task_list_changed_cb), NULL);
 
+
 	egg_debug ("refreshing task list");
 	ret = pk_task_list_refresh (tlist);
-	if (ret == FALSE) {
+	if (!ret)
 		g_error ("cannot refresh transaction list");
-	}
 	pk_task_list_print (tlist);
 
+	/* spin */
 	g_main_loop_run (loop);
 
 	g_object_unref (control);

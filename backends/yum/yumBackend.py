@@ -1664,10 +1664,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # is preupgrade installed?
         pkgs = self.yumbase.rpmdb.searchNevra(name='preupgrade')
         if len(pkgs) == 0:
-            #install preupgrade
-            pkgs = self.yumbase.pkgSack.returnNewestByName(name='preupgrade')
+
+            # find preupgrade, which may not exist
+            try:
+                pkgs = self.yumbase.pkgSack.returnNewestByName(name='preupgrade')
+            except yum.Errors.PackageSackError, e:
+                self.error(ERROR_NO_DISTRO_UPGRADE_DATA, "Could not find preupgrade package in any enabled repos")
+                return
+
+            # shouldn't happen
             if len(pkgs) == 0:
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Could not find upgrade preupgrade package in any enabled repos")
+                self.error(ERROR_NO_DISTRO_UPGRADE_DATA, "Could not find preupgrade package in any enabled repos")
+                return
+
             # we can have more than one result if the package is in multiple repos, for example
             # a machine with i386 _and_ x86_64 configured.
             # in this case, just pick the first entry as they are both noarch
@@ -1677,16 +1686,24 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 self.error(ERROR_INTERNAL_ERROR, "could not install preupgrade as no transaction")
         elif len(pkgs) == 1:
+
             # check if there are any updates to the preupgrade package
             po = pkgs[0]
-            pkgs = self.yumbase.pkgSack.returnNewestByName(name='preupgrade')
-            if pkgs:
-                newest = pkgs[0]
-                if newest.EVR > po.EVR:
-                    # need to update preupgrade package
-                    txmbr = self.yumbase.update(po=pkgs[0])
-                    if txmbr:
-                        self._runYumTransaction()
+
+            # find preupgrade, which may not exist
+            try:
+                pkgs = self.yumbase.pkgSack.returnNewestByName(name='preupgrade')
+            except yum.Errors.PackageSackError, e:
+                # could not find upgraded preupgrade package in any enabled repos
+                pass;
+            else:
+                if pkgs:
+                    newest = pkgs[0]
+                    if newest.EVR > po.EVR:
+                        # need to update preupgrade package
+                        txmbr = self.yumbase.update(po=pkgs[0])
+                        if txmbr:
+                            self._runYumTransaction()
         else:
             self.error(ERROR_INTERNAL_ERROR, "more than one preupgrade package installed")
 
