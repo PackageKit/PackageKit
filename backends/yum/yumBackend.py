@@ -1798,7 +1798,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Implement the {backend}-get-repo-list functionality
         '''
-        self._check_init()
+        self._check_init(repo_setup=False)
         self.yumbase.conf.cache = 0 # Allow new files
         self.status(STATUS_INFO)
 
