@@ -130,13 +130,13 @@ egg_test_syslog (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "get an instance");
-	syslog = pk_syslog_new ();
-	if (syslog != NULL)
+	self = pk_syslog_new ();
+	if (self != NULL)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
 
-	g_object_unref (syslog);
+	g_object_unref (self);
 
 	egg_test_end (test);
 }
