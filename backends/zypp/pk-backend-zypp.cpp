@@ -1260,6 +1260,7 @@ backend_resolve_thread (PkBackend *backend)
 		delete (v2);
 
 		if (package == NULL) {
+			g_free (filters);
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
 			pk_backend_finished (backend);
 			return FALSE;
@@ -1283,6 +1284,7 @@ backend_resolve_thread (PkBackend *backend)
 				    package.lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 	}
 
+	g_free (filters);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1781,6 +1783,7 @@ backend_what_provides_thread (PkBackend *backend)
 				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
 			solver.setIgnoreAlreadyRecommended (FALSE);
+			g_free (filters);
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
 			pk_backend_finished (backend);
 			return FALSE;
