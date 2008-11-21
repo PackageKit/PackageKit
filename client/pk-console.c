@@ -286,29 +286,29 @@ pk_console_update_detail_cb (PkClient *client, const PkUpdateDetailObj *detail, 
 	g_print ("%s\n", _("Details about the update:"));
 	g_print ("  package:    '%s-%s.%s'\n", detail->id->name, detail->id->version, detail->id->arch);
 	if (!egg_strzero (detail->updates))
-		g_print ("  updates:    '%s'\n", detail->updates);
+		g_print ("  updates:    %s\n", detail->updates);
 	if (!egg_strzero (detail->obsoletes))
-		g_print ("  obsoletes:  '%s'\n", detail->obsoletes);
+		g_print ("  obsoletes:  %s\n", detail->obsoletes);
 	if (!egg_strzero (detail->vendor_url))
-		g_print ("  vendor URL: '%s'\n", detail->vendor_url);
+		g_print ("  vendor URL: %s\n", detail->vendor_url);
 	if (!egg_strzero (detail->bugzilla_url))
-		g_print ("  bug URL:    '%s'\n", detail->bugzilla_url);
+		g_print ("  bug URL:    %s\n", detail->bugzilla_url);
 	if (!egg_strzero (detail->cve_url))
-		g_print ("  cve URL:    '%s'\n", detail->cve_url);
+		g_print ("  cve URL:    %s\n", detail->cve_url);
 	if (detail->restart != PK_RESTART_ENUM_NONE)
-		g_print ("  restart:    '%s'\n", pk_restart_enum_to_text (detail->restart));
+		g_print ("  restart:    %s\n", pk_restart_enum_to_text (detail->restart));
 	if (!egg_strzero (detail->update_text))
-		g_print ("  update_text:'%s'\n", detail->update_text);
+		g_print ("  update_text:%s\n", detail->update_text);
 	if (!egg_strzero (detail->changelog))
-		g_print ("  changelog:  '%s'\n", detail->changelog);
+		g_print ("  changelog:  %s\n", detail->changelog);
 	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN)
-		g_print ("  state:      '%s'\n", pk_update_state_enum_to_text (detail->state));
+		g_print ("  state:      %s\n", pk_update_state_enum_to_text (detail->state));
 	issued = pk_iso8601_from_date (detail->issued);
 	if (!egg_strzero (issued))
-		g_print ("  issued:     '%s'\n", issued);
+		g_print ("  issued:     %s\n", issued);
 	updated = pk_iso8601_from_date (detail->updated);
 	if (!egg_strzero (updated))
-		g_print ("  updated:    '%s'\n", updated);
+		g_print ("  updated:    %s\n", updated);
 	g_free (issued);
 	g_free (updated);
 }
@@ -592,7 +592,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			installed = pk_console_is_installed (packages[i]);
 			if (installed) {
 				/* TRANSLATORS: The package is already installed on the system */
-				*error = g_error_new (1, 0, _("The package '%s' is already installed"), packages[i]);
+				*error = g_error_new (1, 0, _("The package %s is already installed"), packages[i]);
 				ret = FALSE;
 				break;
 			}
@@ -600,7 +600,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages[i], &error_local);
 			if (package_id == NULL) {
 				/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
-				*error = g_error_new (1, 0, _("The package '%s' could not be installed: %s"), packages[i], error_local->message);
+				*error = g_error_new (1, 0, _("The package %s could not be installed: %s"), packages[i], error_local->message);
 				g_error_free (error_local);
 				ret = FALSE;
 				break;
@@ -716,7 +716,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 		package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), packages[i], &error_local);
 		if (package_id == NULL) {
 			/* TRANSLATORS: The package name was not found in the installed list. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not remove '%s': %s"), packages[i], error_local->message);
+			*error = g_error_new (1, 0, _("This tool could not remove %s: %s"), packages[i], error_local->message);
 			g_error_free (error_local);
 			ret = FALSE;
 			break;
@@ -777,7 +777,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 		ret = pk_console_remove_only (client, package_ids, FALSE, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not remove the packages: '%s'"), error_local->message);
+			*error = g_error_new (1, 0, _("This tool could not remove the packages: %s"), error_local->message);
 			g_error_free (error_local);
 		}
 		goto out;
@@ -842,7 +842,7 @@ pk_console_download_packages (PkClient *client, gchar **packages, const gchar *d
 			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), packages[i], &error_local);
 			if (package_id == NULL) {
 				/* TRANSLATORS: The package name was not found in any software sources */
-				*error = g_error_new (1, 0, _("This tool could not download the package '%s' as it could not be found"), packages[i]);
+				*error = g_error_new (1, 0, _("This tool could not download the package %s as it could not be found"), packages[i]);
 				g_error_free (error_local);
 				ret = FALSE;
 				break;
@@ -900,7 +900,7 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not update '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 		return FALSE;
 	}
@@ -909,7 +909,7 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 	ret = pk_client_update_packages (client, package_ids, error);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not update '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 	}
 	g_strfreev (package_ids);
@@ -931,7 +931,7 @@ pk_console_get_requires (PkClient *client, PkBitfield filters, const gchar *pack
 	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the requirements for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not get the requirements for %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 		return FALSE;
 	}
@@ -939,7 +939,7 @@ pk_console_get_requires (PkClient *client, PkBitfield filters, const gchar *pack
 	ret = pk_client_get_requires (client, filters, package_ids, TRUE, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the requirements for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not get the requirements for %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 	}
 	g_strfreev (package_ids);
@@ -961,7 +961,7 @@ pk_console_get_depends (PkClient *client, PkBitfield filters, const gchar *packa
 	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the dependencies for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not get the dependencies for %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 		return FALSE;
 	}
@@ -969,7 +969,7 @@ pk_console_get_depends (PkClient *client, PkBitfield filters, const gchar *packa
 	ret = pk_client_get_depends (client, filters, package_ids, FALSE, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the dependencies for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not get the dependencies for %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 	}
 	g_strfreev (package_ids);
@@ -991,7 +991,7 @@ pk_console_get_details (PkClient *client, const gchar *package, GError **error)
 	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the details about the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get package details for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not get package details for %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 		return FALSE;
 	}
@@ -999,7 +999,7 @@ pk_console_get_details (PkClient *client, const gchar *package, GError **error)
 	ret = pk_client_get_details (client, package_ids, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the details about the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get package details for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not get package details for %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 	}
 	g_strfreev (package_ids);
@@ -1021,7 +1021,7 @@ pk_console_get_files (PkClient *client, const gchar *package, GError **error)
 	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not find the files for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not find the files for %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 		return FALSE;
 	}
@@ -1029,7 +1029,7 @@ pk_console_get_files (PkClient *client, const gchar *package, GError **error)
 	ret = pk_client_get_files (client, package_ids, error);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the file list for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not get the file list for %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 	}
 	g_strfreev (package_ids);
@@ -1232,7 +1232,7 @@ pk_console_list_install (PkClient *client, const gchar *file, GError **error)
 	for (i=0; i<length; i++) {
 		obj = pk_package_list_get_obj (new, i);
 		/* TRANSLATORS: searching takes some time.... */
-		g_print ("%.0f%%\t%s '%s'...", (100.0f/length)*i, _("Searching for package: "), obj->id->name);
+		g_print ("%.0f%%\t%s %s...", (100.0f/length)*i, _("Searching for package: "), obj->id->name);
 		package_id = pk_console_perhaps_resolve (client, filters, obj->id->name, &error_local);
 		if (package_id == NULL) {
 			/* TRANSLATORS: package was not found -- this is the end of a string ended in ... */
@@ -1289,7 +1289,7 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not find the update details for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not find the update details for %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 		return FALSE;
 	}
@@ -1297,7 +1297,7 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 	ret = pk_client_get_update_detail (client, package_ids, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the update details for '%s': %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not get the update details for %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 	}
 	g_strfreev (package_ids);
@@ -1358,12 +1358,12 @@ pk_console_details_cb (PkClient *client, const PkDetailsObj *details, gpointer d
 
 	/* TRANSLATORS: This a list of details about the package */
 	g_print ("%s\n", _("Package description"));
-	g_print ("  package:     '%s-%s.%s'\n", details->id->name, details->id->version, details->id->arch);
-	g_print ("  license:     '%s'\n", details->license);
-	g_print ("  group:       '%s'\n", pk_group_enum_to_text (details->group));
-	g_print ("  description: '%s'\n", details->description);
-	g_print ("  size:        '%lu' bytes\n", (long unsigned int) details->size);
-	g_print ("  url:         '%s'\n", details->url);
+	g_print ("  package:     %s-%s.%s\n", details->id->name, details->id->version, details->id->arch);
+	g_print ("  license:     %s\n", details->license);
+	g_print ("  group:       %s\n", pk_group_enum_to_text (details->group));
+	g_print ("  description: %s\n", details->description);
+	g_print ("  size:        %lu bytes\n", (long unsigned int) details->size);
+	g_print ("  url:         %s\n", details->url);
 }
 
 /**
@@ -1767,7 +1767,7 @@ main (int argc, char *argv[])
 		filters = pk_filter_bitfield_from_text (filter);
 		if (filters == 0) {
 			/* TRANSLATORS: The user specified an incorrect filter */
-			error = g_error_new (1, 0, "%s: '%s'", _("The filter specified was invalid"), filter);
+			error = g_error_new (1, 0, "%s: %s", _("The filter specified was invalid"), filter);
 			goto out;
 		}
 	}
@@ -1845,7 +1845,7 @@ main (int argc, char *argv[])
 		}
 		ret = g_file_test (value, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR);
 		if (!ret) {
-			error = g_error_new (1, 0, "%s: '%s'", _("Directory not found"), value);
+			error = g_error_new (1, 0, "%s: %s", _("Directory not found"), value);
 			goto out;
 		}
 		ret = pk_console_download_packages (client_async, argv, value, &error);
