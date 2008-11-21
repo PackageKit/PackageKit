@@ -185,70 +185,6 @@ pk_client_error_get_type (void)
  ******************************************************************************/
 
 /**
- * pk_client_error_set:
- *
- * Sets the correct error code (if allowed) and print to the screen
- * as a warning.
- **/
-static gboolean
-pk_client_error_set (GError **error, gint code, const gchar *format, ...)
-{
-	va_list args;
-	gchar *buffer = NULL;
-	gboolean ret = TRUE;
-
-	va_start (args, format);
-	g_vasprintf (&buffer, format, args);
-	va_end (args);
-
-	/* dumb */
-	if (error == NULL) {
-		egg_warning ("No error set, so can't set: %s", buffer);
-		ret = FALSE;
-		goto out;
-	}
-
-	/* already set */
-	if (*error != NULL) {
-		egg_warning ("not NULL error!");
-		g_clear_error (error);
-	}
-
-	/* propogate */
-	g_set_error (error, PK_CLIENT_ERROR, code, "%s", buffer);
-
-out:
-	g_free(buffer);
-	return ret;
-}
-
-/**
- * pk_client_error_print:
- * @error: a %GError
- *
- * Prints the error to the screen.
- *
- * Return value: %TRUE if error was printed
- **/
-gboolean
-pk_client_error_print (GError **error)
-{
-	const gchar *name;
-
-	if (error != NULL && *error != NULL) {
-		/* get some proper debugging */
-		if ((*error)->domain == DBUS_GERROR &&
-		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION)
-			name = dbus_g_error_get_name (*error);
-		else
-			name = g_quark_to_string ((*error)->domain);
-		egg_debug ("ERROR: %s: %s", name, (*error)->message);
-		return TRUE;
-	}
-	return FALSE;
-}
-
-/**
  * pk_client_error_fixup:
  * @error: a %GError
  **/
@@ -288,6 +224,11 @@ pk_client_error_fixup (GError **error)
 
 			egg_debug ("fixing up code from %s to %i", name, code);
 			(*error)->code = code;
+		}
+		if (g_str_has_prefix ((*error)->message, "org.freedesktop.packagekit.")) {
+			egg_debug ("fixing up code for Policykit auth failure");
+			g_error_free (*error);
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED_AUTH, "PolicyKit authorization failure");
 		}
 		return TRUE;
 	}
@@ -415,8 +356,8 @@ pk_client_set_use_buffer (PkClient *client, gboolean use_buffer, GError **error)
 
 	/* are we doing this without any need? */
 	if (client->priv->use_buffer) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
-				     "already set use_buffer!");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "already set use_buffer!");
 		return FALSE;
 	}
 
@@ -442,8 +383,8 @@ pk_client_set_synchronous (PkClient *client, gboolean synchronous, GError **erro
 
 	/* are we doing this without any need? */
 	if (client->priv->synchronous) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
-				     "already set synchronous!");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "already set synchronous!");
 		return FALSE;
 	}
 
@@ -938,7 +879,8 @@ pk_client_get_allow_cancel (PkClient *client, gboolean *allow_cancel, GError **e
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetAllowCancel", error,
@@ -1022,7 +964,8 @@ pk_client_get_status (PkClient *client, PkStatusEnum *status, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetStatus", error,
@@ -1060,7 +1003,8 @@ pk_client_get_package (PkClient *client, gchar **package, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackageLast", error,
@@ -1099,7 +1043,8 @@ pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentag
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetProgress", error,
@@ -1138,7 +1083,8 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **text, GError **e
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 
@@ -1193,8 +1139,8 @@ pk_client_cancel (PkClient *client, GError **error)
 
 	/* we cannot cancel a client in ::Finished() */
 	if (client->priv->is_finishing) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
-				     "unable to cancel client in finished handler");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "unable to cancel client in finished handler");
 		return FALSE;
 	}
 
@@ -1243,10 +1189,12 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 	/* get a new ID */
 	ret = pk_control_allocate_transaction_id (client->priv->control, &tid, &error_local);
 	if (!ret) {
-		if (error_local->code == PK_CONTROL_ERROR_CANNOT_START_DAEMON)
-			pk_client_error_set (error, PK_CLIENT_ERROR_CANNOT_START_DAEMON, "cannot start daemon: %s", error_local->message);
-		else
-			pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "failed to get a TID: %s (%i)", error_local->message, error_local->code);
+		if (error != NULL) {
+			if (error_local->code == PK_CONTROL_ERROR_CANNOT_START_DAEMON)
+				*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_CANNOT_START_DAEMON, "cannot start daemon: %s", error_local->message);
+			else
+				*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to get a TID: %s (%i)", error_local->message, error_local->code);
+		}
 		g_error_free (error_local);
 		return FALSE;
 	}
@@ -1259,7 +1207,8 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 	ret = pk_client_set_tid (client, tid, &error_local);
 	g_free (tid);
 	if (!ret) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "failed to set TID: %s", error_local->message);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to set TID: %s", error_local->message);
 		g_error_free (error_local);
 		return FALSE;
 	}
@@ -1287,7 +1236,8 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -1302,7 +1252,8 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -1341,7 +1292,8 @@ pk_client_get_categories (PkClient *client, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -1359,7 +1311,8 @@ pk_client_get_categories (PkClient *client, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetCategories", error,
@@ -1390,7 +1343,8 @@ pk_client_update_system_action (PkClient *client, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "UpdateSystem", error,
@@ -1423,14 +1377,15 @@ pk_client_update_system (PkClient *client, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, error);
+	ret = pk_client_allocate_transaction_id (client, &error_pk);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
@@ -1446,14 +1401,16 @@ pk_client_update_system (PkClient *client, GError **error)
 			g_clear_error (&error_pk);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, error);
+			ret = pk_client_allocate_transaction_id (client, &error_pk);
 			if (!ret)
-				return FALSE;
+				goto out;
 
 			/* retry the action now we have got auth */
 			ret = pk_client_update_system_action (client, &error_pk);
 		}
 	}
+
+out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
 		pk_client_error_fixup (&error_pk);
@@ -1495,7 +1452,8 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -1511,7 +1469,8 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -1556,7 +1515,8 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -1572,7 +1532,8 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -1615,7 +1576,8 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -1631,7 +1593,8 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -1674,7 +1637,8 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -1690,7 +1654,8 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -1736,7 +1701,8 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -1744,8 +1710,8 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-				     "package_ids '%s' are not valid", package_ids_temp);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
 	}
@@ -1763,7 +1729,8 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -1806,7 +1773,8 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -1814,8 +1782,8 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-				     "package_ids '%s' are not valid", package_ids_temp);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
 	}
@@ -1833,7 +1801,8 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "DownloadPackages", error,
@@ -1850,7 +1819,6 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 	pk_client_error_fixup (error);
 	return ret;
 }
-
 
 /**
  * pk_client_get_packages:
@@ -1873,7 +1841,8 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -1888,7 +1857,8 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -1931,7 +1901,8 @@ pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "SetLocale", error,
@@ -1966,7 +1937,8 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -1974,8 +1946,8 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-				     "package_ids '%s' are not valid", package_ids_temp);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
 	}
@@ -1993,7 +1965,8 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -2044,7 +2017,8 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -2063,7 +2037,8 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -2108,7 +2083,8 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -2116,8 +2092,8 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-				     "package_ids '%s' are not valid", package_ids_temp);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
 	}
@@ -2137,7 +2113,8 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdateDetail", error,
@@ -2176,7 +2153,8 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -2191,7 +2169,8 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
@@ -2234,7 +2213,8 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -2250,7 +2230,8 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -2294,7 +2275,8 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -2302,8 +2284,8 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-				     "package_ids '%s' are not valid", package_ids_temp);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
 	}
@@ -2323,7 +2305,8 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDetails", error,
@@ -2361,7 +2344,8 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -2379,7 +2363,8 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDistroUpgrades", error,
@@ -2418,7 +2403,8 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -2426,8 +2412,8 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-				     "package_ids '%s' are not valid", package_ids_temp);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
 	}
@@ -2443,7 +2429,8 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetFiles", error,
@@ -2477,7 +2464,7 @@ pk_client_remove_packages_action (PkClient *client, gchar **package_ids,
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "RemovePackages", error,
@@ -2516,7 +2503,8 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -2524,16 +2512,16 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-				     "package_ids '%s' are not valid", package_ids_temp);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, error);
+	ret = pk_client_allocate_transaction_id (client, &error_pk);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
@@ -2552,14 +2540,16 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 			g_clear_error (&error_pk);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, error);
+			ret = pk_client_allocate_transaction_id (client, &error_pk);
 			if (!ret)
-				return FALSE;
+				goto out;
 
 			/* retry the action now we have got auth */
 			ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_pk);
 		}
 	}
+
+out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
 		pk_client_error_fixup (&error_pk);
@@ -2592,7 +2582,7 @@ pk_client_refresh_cache_action (PkClient *client, gboolean force, GError **error
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "RefreshCache", error,
@@ -2625,14 +2615,15 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, error);
+	ret = pk_client_allocate_transaction_id (client, &error_pk);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REFRESH_CACHE;
@@ -2649,14 +2640,16 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 			g_clear_error (&error_pk);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, error);
+			ret = pk_client_allocate_transaction_id (client, &error_pk);
 			if (!ret)
-				return FALSE;
+				goto out;
 
 			/* retry the action now we have got auth */
 			ret = pk_client_refresh_cache_action (client, force, &error_pk);
 		}
 	}
+
+out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
 		pk_client_error_fixup (&error_pk);
@@ -2689,7 +2682,7 @@ pk_client_install_package_action (PkClient *client, gchar **package_ids, GError 
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "InstallPackages", error,
@@ -2721,7 +2714,8 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -2729,16 +2723,16 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-				     "package_ids '%s' are not valid", package_ids_temp);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, error);
+	ret = pk_client_allocate_transaction_id (client, &error_pk);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
@@ -2755,14 +2749,16 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 			g_clear_error (&error_pk);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, error);
+			ret = pk_client_allocate_transaction_id (client, &error_pk);
 			if (!ret)
-				return FALSE;
+				goto out;
 
 			/* retry the action now we have got auth */
 			ret = pk_client_install_package_action (client, package_ids, &error_pk);
 		}
 	}
+
+out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
 		pk_client_error_fixup (&error_pk);
@@ -2797,7 +2793,7 @@ pk_client_install_signature_action (PkClient *client, PkSigTypeEnum type, const 
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	type_text = pk_sig_type_enum_to_text (type);
@@ -2834,14 +2830,15 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, error);
+	ret = pk_client_allocate_transaction_id (client, &error_pk);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_SIGNATURE;
@@ -2859,14 +2856,16 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 			g_clear_error (&error_pk);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, error);
+			ret = pk_client_allocate_transaction_id (client, &error_pk);
 			if (!ret)
-				return FALSE;
+				goto out;
 
 			/* retry the action now we have got auth */
 			ret = pk_client_install_signature_action (client, type, key_id, package_id, &error_pk);
 		}
 	}
+
+out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
 		pk_client_error_fixup (&error_pk);
@@ -2899,7 +2898,7 @@ pk_client_update_packages_action (PkClient *client, gchar **package_ids, GError 
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "UpdatePackages", error,
@@ -2931,7 +2930,8 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -2939,16 +2939,16 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
 		package_ids_temp = pk_package_ids_to_text (package_ids);
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_INPUT,
-				     "package_ids '%s' are not valid", package_ids_temp);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		return FALSE;
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, error);
+	ret = pk_client_allocate_transaction_id (client, &error_pk);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
@@ -2969,14 +2969,16 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 			g_clear_error (&error_pk);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, error);
+			ret = pk_client_allocate_transaction_id (client, &error_pk);
 			if (!ret)
-				return FALSE;
+				goto out;
 
 			/* retry the action now we have got auth */
 			ret = pk_client_update_packages_action (client, package_ids, &error_pk);
 		}
 	}
+
+out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
 		pk_client_error_fixup (&error_pk);
@@ -3009,7 +3011,7 @@ pk_client_install_files_action (PkClient *client, gboolean trusted, gchar **file
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "InstallFiles", error,
@@ -3065,7 +3067,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 	guint i;
 	guint length;
 	gboolean ret;
-	gchar **files;
+	gchar **files = NULL;
 	gchar *file;
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
@@ -3075,14 +3077,15 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, error);
+	ret = pk_client_allocate_transaction_id (client, &error_pk);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* convert all the relative paths to absolute ones */
 	files = g_strdupv (files_rel);
@@ -3115,14 +3118,16 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 			g_clear_error (&error_pk);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, error);
+			ret = pk_client_allocate_transaction_id (client, &error_pk);
 			if (!ret)
-				return FALSE;
+				goto out;
 
 			/* retry the action now we have got auth */
 			ret = pk_client_install_files_action (client, trusted, files, &error_pk);
 		}
 	}
+
+out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
 		pk_client_error_fixup (&error_pk);
@@ -3162,7 +3167,8 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -3177,7 +3183,8 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
@@ -3211,7 +3218,7 @@ pk_client_accept_eula_action (PkClient *client, const gchar *eula_id, GError **e
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "AcceptEula", error,
@@ -3242,14 +3249,15 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, error);
+	ret = pk_client_allocate_transaction_id (client, &error_pk);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_ACCEPT_EULA;
@@ -3265,14 +3273,16 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 			g_clear_error (&error_pk);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, error);
+			ret = pk_client_allocate_transaction_id (client, &error_pk);
 			if (!ret)
-				return FALSE;
+				goto out;
 
 			/* retry the action now we have got auth */
 			ret = pk_client_accept_eula_action (client, eula_id, &error_pk);
 		}
 	}
+
+out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
 		pk_client_error_fixup (&error_pk);
@@ -3305,7 +3315,7 @@ pk_client_repo_enable_action (PkClient *client, const gchar *repo_id, gboolean e
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "RepoEnable", error,
@@ -3338,14 +3348,15 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, error);
+	ret = pk_client_allocate_transaction_id (client, &error_pk);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_ENABLE;
@@ -3361,14 +3372,16 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 			g_clear_error (&error_pk);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, error);
+			ret = pk_client_allocate_transaction_id (client, &error_pk);
 			if (!ret)
-				return FALSE;
+				goto out;
 
 			/* retry the action now we have got auth */
 			ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_pk);
 		}
 	}
+
+out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
 		pk_client_error_fixup (&error_pk);
@@ -3387,8 +3400,6 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	return ret;
 }
 
-
-
 /**
  * pk_client_repo_set_data_action:
  **/
@@ -3404,7 +3415,7 @@ pk_client_repo_set_data_action (PkClient *client, const gchar *repo_id,
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "RepoSetData", error,
@@ -3443,14 +3454,15 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, error);
+	ret = pk_client_allocate_transaction_id (client, &error_pk);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_SET_DATA;
@@ -3466,14 +3478,16 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 			g_clear_error (&error_pk);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, error);
+			ret = pk_client_allocate_transaction_id (client, &error_pk);
 			if (!ret)
-				return FALSE;
+				goto out;
 
 			/* retry the action now we have got auth */
 			ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_pk);
 		}
 	}
+
+out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
 		pk_client_error_fixup (&error_pk);
@@ -3514,7 +3528,8 @@ pk_client_is_caller_active (PkClient *client, gboolean *is_active, GError **erro
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "IsCallerActive", error,
@@ -3545,7 +3560,8 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 
 	/* ensure we are not trying to run without reset */
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
 		return FALSE;
 	}
 
@@ -3560,7 +3576,8 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetOldTransactions", error,
@@ -3600,13 +3617,15 @@ pk_client_requeue (PkClient *client, GError **error)
 
 	/* we are no longer waiting, we are setting up */
 	if (priv->role == PK_ROLE_ENUM_UNKNOWN) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
 	}
 
 	/* are we still running? */
 	if (!client->priv->is_finished) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "not finished, so cannot requeue");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "not finished, so cannot requeue");
 		return FALSE;
 	}
 
@@ -3668,7 +3687,8 @@ pk_client_requeue (PkClient *client, GError **error)
 	else if (priv->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
 		ret = pk_client_get_distro_upgrades (client, error);
 	else {
-		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
 	}
 	pk_client_error_fixup (error);
@@ -3696,8 +3716,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	if (client->priv->tid != NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_ALREADY_TID,
-				     "cannot set the tid on an already set client");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_ALREADY_TID, "cannot set the tid on an already set client");
 		return FALSE;
 	}
 
@@ -3705,8 +3725,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 	proxy = dbus_g_proxy_new_for_name (client->priv->connection,
 					   PK_DBUS_SERVICE, tid, PK_DBUS_INTERFACE_TRANSACTION);
 	if (proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_ALREADY_TID,
-				     "Cannot connect to PackageKit tid %s", tid);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_ALREADY_TID, "Cannot connect to PackageKit tid %s", tid);
 		return FALSE;
 	}
 
@@ -4200,8 +4220,8 @@ pk_client_reset (PkClient *client, GError **error)
 	   the whole point of a sync client is we don't handle this signal
 	   and we'll clear the package cache if we allow this */
 	if (client->priv->is_finishing && client->priv->synchronous) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
-				     "unable to reset synchronous client in finished handler");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "unable to reset synchronous client in finished handler");
 		return FALSE;
 	}
 
