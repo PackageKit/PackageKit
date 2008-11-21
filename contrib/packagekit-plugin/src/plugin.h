@@ -46,7 +46,7 @@
 class PkpPluginInstance : public nsPluginInstanceBase
 {
 public:
-	PkpPluginInstance(NPP aInstance, const gchar *displayName, const gchar *packageNames, const gchar *desktopNames);
+	PkpPluginInstance(NPP aInstance, const gchar *displayName, const gchar *packageNames);
 	virtual ~PkpPluginInstance();
 
 	NPBool init(NPWindow* aWindow);

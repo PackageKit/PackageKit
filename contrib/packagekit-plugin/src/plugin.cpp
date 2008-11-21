@@ -140,7 +140,6 @@ nsPluginInstanceBase * NS_NewPluginInstance(nsPluginCreateData * aCreateDataStru
 {
 	const gchar *displayName = "";
 	const gchar *packageNames = NULL;
-	const gchar *desktopNames = NULL;
 
 	if(!aCreateDataStruct)
 		return NULL;
@@ -150,11 +149,9 @@ nsPluginInstanceBase * NS_NewPluginInstance(nsPluginCreateData * aCreateDataStru
 			displayName = aCreateDataStruct->argv[i];
 		else if (strcmp(aCreateDataStruct->argn[i], "packagenames") == 0)
 			packageNames = aCreateDataStruct->argv[i];
-		else if (strcmp(aCreateDataStruct->argn[i], "desktopnames") == 0)
-			desktopNames = aCreateDataStruct->argv[i];
 	}
 
-	PkpPluginInstance * plugin = new PkpPluginInstance(aCreateDataStruct->instance, displayName, packageNames, desktopNames);
+	PkpPluginInstance * plugin = new PkpPluginInstance(aCreateDataStruct->instance, displayName, packageNames);
 
 	NPN_SetValue(aCreateDataStruct->instance, NPPVpluginWindowBool, (void *)FALSE);
 
@@ -172,11 +169,11 @@ void NS_DestroyPluginInstance(nsPluginInstanceBase * aPlugin)
 // nsPluginInstance class implementation
 //
 
-PkpPluginInstance::PkpPluginInstance(NPP aInstance, const gchar *displayName, const gchar *packageNames, const gchar *desktopNames) :
+PkpPluginInstance::PkpPluginInstance(NPP aInstance, const gchar *displayName, const gchar *packageNames) :
 	nsPluginInstanceBase(),
 	mInstance(aInstance),
 	mInitialized(FALSE),
-	mContents(displayName, packageNames, desktopNames),
+	mContents(displayName, packageNames),
 	mWindow(0)
 {
 	mContents.setPlugin(this);
