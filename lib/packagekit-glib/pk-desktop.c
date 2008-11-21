@@ -362,6 +362,7 @@ pk_desktop_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "package was: %s", package);
+	g_free (package);
 
 	/************************************************************/
 	egg_test_title (test, "get files");
