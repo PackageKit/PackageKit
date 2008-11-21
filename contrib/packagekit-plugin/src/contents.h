@@ -64,7 +64,7 @@ enum PackageStatus {
 class PkpContents
 {
 public:
-	PkpContents(const gchar *displayName, const gchar *packageNames, const gchar *desktopNames);
+	PkpContents(const gchar *displayName, const gchar *packageNames);
 	virtual ~PkpContents();
 
 	void setPlugin(PkpPluginInstance *plugin);
@@ -89,10 +89,13 @@ private:
 	void setAvailableVersion(const gchar *version);
 	void setAvailablePackageName(const gchar *name);
 	void setInstalledVersion(const gchar *version);
+	void setInstalledPackageName(const gchar *name);
 
 	void ensureLayout(cairo_t *cr, PangoFontDescription *font_desc, guint32 link_color);
 	void clearLayout();
 	void refresh();
+	gchar *getPackageIcon();
+	gchar *getBestDesktopFile();
 
 	void removeClient(PkClient *client);
 
@@ -106,11 +109,11 @@ private:
 	std::string mAvailableVersion;
 	std::string mAvailablePackageName;
 	std::string mInstalledVersion;
+	std::string mInstalledPackageName;
 	GAppInfo *mAppInfo;
 
 	std::string mDisplayName;
 	std::vector<std::string> mPackageNames;
-	std::vector<std::string> mDesktopNames;
 
 	PangoLayout *mLayout;
 
