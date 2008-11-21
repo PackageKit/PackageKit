@@ -36,6 +36,10 @@
   #include <polkit-dbus/polkit-dbus.h>
 #endif
 
+#ifdef PK_BUILD_GIO
+  #include <gio/gdesktopappinfo.h>
+#endif
+
 #include "egg-debug.h"
 
 #include "pk-post-trans.h"
@@ -221,8 +225,17 @@ pk_post_trans_sqlite_add_filename_details (PkPostTrans *post, const gchar *filen
 	gchar *error_msg = NULL;
 	sqlite3_stmt *sql_statement = NULL;
 	gint rc;
+	gint show = TRUE;
+#ifdef PK_BUILD_GIO
+	GAppInfo *info;
 
-	egg_debug ("add filename %s from %s with md5: %s", filename, package, md5);
+	/* find out if we should show desktop file in menus */
+	info = G_APP_INFO(g_desktop_app_info_new_from_filename (filename));
+	show = g_app_info_should_show (info);
+	g_object_unref (info);
+#endif
+
+	egg_debug ("add filename %s from %s with md5: %s (show: %i)", filename, package, md5, show);
 
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM cache WHERE filename = '%s'", filename);
@@ -230,7 +243,7 @@ pk_post_trans_sqlite_add_filename_details (PkPostTrans *post, const gchar *filen
 	g_free (statement);
 
 	/* prepare the query, as we don't escape it */
-	rc = sqlite3_prepare_v2 (post->priv->db, "INSERT INTO cache (filename, package, md5) VALUES (?, ?, ?)", -1, &sql_statement, NULL);
+	rc = sqlite3_prepare_v2 (post->priv->db, "INSERT INTO cache (filename, package, show, md5) VALUES (?, ?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
 		egg_warning ("SQL failed to prepare: %s", sqlite3_errmsg (post->priv->db));
 		goto out;
@@ -239,7 +252,8 @@ pk_post_trans_sqlite_add_filename_details (PkPostTrans *post, const gchar *filen
 	/* add data */
 	sqlite3_bind_text (sql_statement, 1, filename, -1, SQLITE_STATIC);
 	sqlite3_bind_text (sql_statement, 2, package, -1, SQLITE_STATIC);
-	sqlite3_bind_text (sql_statement, 3, md5, -1, SQLITE_STATIC);
+	sqlite3_bind_int (sql_statement, 3, show);
+	sqlite3_bind_text (sql_statement, 4, md5, -1, SQLITE_STATIC);
 
 	/* save this */
 	sqlite3_step (sql_statement);
@@ -804,6 +818,7 @@ pk_post_trans_init (PkPostTrans *post)
 		statement = "CREATE TABLE cache ("
 			    "filename TEXT,"
 			    "package TEXT,"
+			    "show INTEGER,"
 			    "md5 TEXT);";
 		rc = sqlite3_exec (post->priv->db, statement, NULL, NULL, &error_msg);
 		if (rc != SQLITE_OK) {

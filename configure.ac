@@ -170,7 +170,7 @@ AC_PATH_PROG([MOC], [moc-qt4])
 dnl ---------------------------------------------------------------------------
 dnl - Is GIO available?
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(GIO, gio-2.0 >= $GIO_REQUIRED, PK_BUILD_GIO="yes", PK_BUILD_GIO="no")
+PKG_CHECK_MODULES(GIO, gio-2.0 >= $GIO_REQUIRED gio-unix-2.0 >= $GIO_REQUIRED, PK_BUILD_GIO="yes", PK_BUILD_GIO="no")
 if test "x$PK_BUILD_GIO" = "xyes"; then
 	with_gio="yes"
 	AC_DEFINE(PK_BUILD_GIO, 1, [define if GIO is installed])

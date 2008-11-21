@@ -42,7 +42,7 @@ G_BEGIN_DECLS
  *
  * The default location for the database
  */
-#define PK_DESKTOP_DEFAULT_DATABASE		"/var/lib/PackageKit/desktop-data.db"
+#define PK_DESKTOP_DEFAULT_DATABASE		"/var/lib/PackageKit/desktop-files.db"
 
 /**
  * PK_DESKTOP_DEFAULT_APPLICATION_DIR:
@@ -71,6 +71,9 @@ PkDesktop	*pk_desktop_new				(void);
 gboolean	 pk_desktop_open_database		(PkDesktop	*desktop,
 							 GError		**error);
 GPtrArray	*pk_desktop_get_files_for_package	(PkDesktop	*desktop,
+							 const gchar	*package,
+							 GError		**error);
+GPtrArray	*pk_desktop_get_shown_for_package	(PkDesktop	*desktop,
 							 const gchar	*package,
 							 GError		**error);
 gchar		*pk_desktop_get_package_for_file	(PkDesktop	*desktop,

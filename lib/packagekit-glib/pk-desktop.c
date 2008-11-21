@@ -41,6 +41,10 @@ static void     pk_desktop_finalize	(GObject        *object);
 
 #define PK_DESKTOP_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DESKTOP, PkDesktopPrivate))
 
+/* Database format is:
+ *   CREATE TABLE cache ( filename TEXT, package TEXT, show INTEGER, md5 TEXT );
+ */
+
 /**
  * PkDesktopPrivate:
  *
@@ -92,6 +96,12 @@ pk_desktop_sqlite_package_cb (void *data, gint argc, gchar **argv, gchar **col_n
 
 /**
  * pk_desktop_get_files_for_package:
+ * @desktop: a valid #PkDesktop instance
+ * @package: the package name, e.g. "gnome-power-manager"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Return all desktop files owned by a package, regardless if they are shown
+ * in the main menu or not.
  *
  * Return value: array of results
  **/
@@ -127,7 +137,54 @@ out:
 }
 
 /**
+ * pk_desktop_get_shown_for_package:
+ * @desktop: a valid #PkDesktop instance
+ * @package: the package name, e.g. "gnome-power-manager"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Return all desktop files owned by a package that would be shown in a menu,
+ * i.e are an application
+ *
+ * Return value: array of results
+ **/
+GPtrArray *
+pk_desktop_get_shown_for_package (PkDesktop *desktop, const gchar *package, GError **error)
+{
+	gchar *statement;
+	gchar *error_msg = NULL;
+	gint rc;
+	GPtrArray *array = NULL;
+
+	g_return_val_if_fail (PK_IS_DESKTOP (desktop), NULL);
+	g_return_val_if_fail (package != NULL, NULL);
+
+	/* no database */
+	if (desktop->priv->db == NULL) {
+		if (error != NULL)
+			*error = g_error_new (1, 0, "database is not open");
+		goto out;
+	}
+
+	/* get packages */
+	array = g_ptr_array_new ();
+	statement = g_strdup_printf ("SELECT filename FROM cache WHERE package = '%s' AND show = 1", package);
+	rc = sqlite3_exec (desktop->priv->db, statement, pk_desktop_sqlite_filename_cb, array, &error_msg);
+	g_free (statement);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+	}
+out:
+	return array;
+}
+
+/**
  * pk_desktop_get_package_for_file:
+ * @desktop: a valid #PkDesktop instance
+ * @filename: a fully qualified filename
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Returns the package name that owns the desktop file. Fast.
  *
  * Return value: package name, or %NULL
  **/
@@ -310,6 +367,16 @@ pk_desktop_test (EggTest *test)
 	egg_test_title (test, "get files");
 	array = pk_desktop_get_files_for_package (desktop, "gnome-packagekit", NULL);
 	if (array->len == 7)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "length=%i", array->len);
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
+	g_ptr_array_free (array, TRUE);
+
+	/************************************************************/
+	egg_test_title (test, "get shown files");
+	array = pk_desktop_get_shown_for_package (desktop, "f-spot", NULL);
+	if (array->len == 1)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "length=%i", array->len);
