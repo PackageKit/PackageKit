@@ -386,8 +386,6 @@ pk_security_test (EggTest *test)
 {
 	PkSecurity *security;
 	const gchar *action;
-	gboolean ret;
-	gchar *error;
 
 	if (!egg_test_start (test, "PkSecurity"))
 		return;
@@ -403,7 +401,7 @@ pk_security_test (EggTest *test)
 	egg_test_title (test, "map valid role to action");
 	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES);
 	if (egg_strequal (action, "org.freedesktop.packagekit.system-update"))
-		egg_test_success (test, NULL, error);
+		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not get correct action '%s'", action);
 
@@ -411,19 +409,9 @@ pk_security_test (EggTest *test)
 	egg_test_title (test, "map invalid role to action");
 	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_SEARCH_NAME);
 	if (action == NULL)
-		egg_test_success (test, NULL, error);
+		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not get correct action '%s'", action);
-
-	/************************************************************/
-	egg_test_title (test, "get the default backend");
-	error = NULL;
-	ret = pk_security_action_is_allowed (security, NULL, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
-	if (ret == FALSE)
-		egg_test_success (test, "did not authenticate update-package, error '%s'", error);
-	else
-		egg_test_failed (test, "authenticated update-package!");
-	g_free (error);
 
 	g_object_unref (security);
 
