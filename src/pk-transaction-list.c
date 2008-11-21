@@ -56,7 +56,7 @@ static void     pk_transaction_list_finalize	(GObject        *object);
 #define PK_TRANSACTION_LIST_KEEP_FINISHED_TIMEOUT	5
 
 /* how long the tid is valid before it's destroyed, in seconds */
-#define PK_TRANSACTION_LIST_CREATE_COMMIT_TIMEOUT	5
+#define PK_TRANSACTION_LIST_CREATE_COMMIT_TIMEOUT	30
 
 /* the interval between each CST, in seconds */
 #define PK_TRANSACTION_WEDGE_CHECK			10
