@@ -72,7 +72,7 @@ pk_security_caller_new_from_sender (PkSecurity *security, const gchar *sender)
 	dbus_error_init (&dbus_error);
 	caller = polkit_caller_new_from_dbus_name (security->priv->connection, sender, &dbus_error);
 	if (dbus_error_is_set (&dbus_error)) {
-		egg_warning ("failed to get caller %s: %s\n", dbus_error.name, dbus_error.message);
+		egg_debug ("failed to get caller %s: %s", dbus_error.name, dbus_error.message);
 		dbus_error_free (&dbus_error);
 	}
 
