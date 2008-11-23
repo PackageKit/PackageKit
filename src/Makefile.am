@@ -15,6 +15,7 @@ INCLUDES =						\
 	$(POLKIT_CFLAGS)				\
 	$(PYTHON_CFLAGS)				\
 	$(LIBNM_CFLAGS)					\
+	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DSBINDIR=\"$(sbindir)\"		 	\
 	-DDATADIR=\"$(datadir)\"			\
