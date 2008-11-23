@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-11-19 16:26+0000\n"
-"PO-Revision-Date: 2008-11-01 14:18+0200\n"
+"POT-Creation-Date: 2008-11-20 01:35+0000\n"
+"PO-Revision-Date: 2008-11-23 11:29+0200\n"
 "Last-Translator: Ville-Pekka Vainio <vpivaini@cs.helsinki.fi>\n"
 "Language-Team: Finnish <laatu@lokalisointi.org>\n"
 "MIME-Version: 1.0\n"
@@ -152,79 +152,71 @@ msgstr "Tämä työkalu ei voinut hakea paketin ”%s” tiedostoluetteloa: %s"
 #: ../client/pk-console.c:1054
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "Tiedosto on jo olemassa: %s"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1059 ../client/pk-console.c:1115
 #: ../client/pk-console.c:1190
-#, fuzzy
 msgid "Getting package list"
-msgstr "Haetaan pakettitietoja..."
+msgstr "Haetaan pakettiluetteloa"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
 #: ../client/pk-console.c:1065 ../client/pk-console.c:1121
 #: ../client/pk-console.c:1196
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not get package list: %s"
-msgstr "Tämä työkalu ei voinut poistaa paketteja: %s"
+msgstr "Tämä työkalu ei voinut hakea pakettiluetteloa: %s"
 
 #. TRANSLATORS: There was an error saving the list
 #: ../client/pk-console.c:1076
-#, fuzzy, c-format
 msgid "Failed to save to disk"
-msgstr "Edellistä aikaa ei saatu"
+msgstr "Tallennus epäonnistui"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
 #: ../client/pk-console.c:1110 ../client/pk-console.c:1185
 #, c-format
 msgid "File does not exist: %s"
-msgstr ""
+msgstr "Tiedostoa ei ole olemassa: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
 #: ../client/pk-console.c:1142
-#, fuzzy
 msgid "Packages to add"
-msgstr "PackageKit-tarkkailija"
+msgstr "Lisättävät paketit"
 
 #. TRANSLATORS: header to a list of packages removed
 #: ../client/pk-console.c:1150
-#, fuzzy
 msgid "Packages to remove"
-msgstr "PackageKit-palvelu"
+msgstr "Poistettavat paketit"
 
 #. TRANSLATORS: We didn't find any differences
 #: ../client/pk-console.c:1218
-#, fuzzy, c-format
 msgid "No new packages need to be installed"
-msgstr "Pakettia ”%s” ei voitu asentaa: %s"
+msgstr "Yhtään uutta pakettia ei tarvitse asentaa"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1224
 msgid "To install"
-msgstr ""
+msgstr "Asennetaan"
 
 #. TRANSLATORS: searching takes some time....
 #: ../client/pk-console.c:1235
 msgid "Searching for package: "
-msgstr ""
+msgstr "Etsitään pakettia: "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
 #: ../client/pk-console.c:1239
-#, fuzzy
 msgid "not found."
-msgstr "Hakemistoa ei löytynyt"
+msgstr "ei löytynyt."
 
 #. TRANSLATORS: We didn't find any packages to install
 #: ../client/pk-console.c:1250
-#, fuzzy, c-format
 msgid "No packages can be found to install"
-msgstr "Järjestelmääsi sopivia paketteja ei löytynyt"
+msgstr "Asennettavia paketteja ei löytynyt"
 
 #. TRANSLATORS: installing new packages from package list
 #: ../client/pk-console.c:1256
-#, fuzzy
 msgid "Installing packages"
-msgstr "Ladataan paketteja"
+msgstr "Asennetaan paketteja"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1292
@@ -303,7 +295,7 @@ msgid "Subcommands:"
 msgstr "Alikomennot:"
 
 #: ../client/pk-console.c:1657 ../client/pk-generate-pack.c:183
-#: ../client/pk-monitor.c:114 ../src/pk-main.c:196
+#: ../client/pk-monitor.c:114 ../src/pk-main.c:190
 msgid "Show extra debugging information"
 msgstr "Näytä ylimääräisiä virheenjäljitystietoja"
 
@@ -322,12 +314,12 @@ msgstr "Lopeta odottamatta toimintojen valmistumista"
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
 #: ../client/pk-console.c:1685
 msgid "This tool could not connect to system DBUS."
-msgstr "Tänä työkalu ei voinut yhdistää järjestelmän DBUSiin."
+msgstr "Tämä työkalu ei voinut yhdistää järjestelmän DBUSiin."
 
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1770
 msgid "The filter specified was invalid"
-msgstr ""
+msgstr "Annettu suodin oli virheellinen"
 
 #: ../client/pk-console.c:1787
 msgid "You need to specify a search type, e.g. name"
@@ -403,14 +395,12 @@ msgid "You need to specify a package to find the files for"
 msgstr "On annettava paketti, jonka tiedostoja etsitään"
 
 #: ../client/pk-console.c:1969
-#, fuzzy
 msgid "You need to specify a list file to create"
-msgstr "Aika on annettava"
+msgstr "Anna luotavan luettelotiedoston nimi"
 
 #: ../client/pk-console.c:1977 ../client/pk-console.c:1985
-#, fuzzy
 msgid "You need to specify a list file to open"
-msgstr "Aika on annettava"
+msgstr "Anna avattavan luettelotiedoston nimi"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:2038
@@ -526,7 +516,6 @@ msgstr "PackageKit-tarkkailija"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:114
-#, c-format
 msgid "The package could not be found"
 msgstr "Pakettia ei löytynyt"
 
@@ -610,90 +599,6 @@ msgstr "PackageKit-huoltopakkaus"
 msgid "PackageKit Package List"
 msgstr "PackageKit-pakettiluettelo"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-msgid "Authentication is required to install a signed package"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-msgid "Authentication is required to install an untrusted package"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Authentication is required to refresh the system sources"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install untrusted local file"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Refresh system sources"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Remove package"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Rollback to a previous transaction"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Set network proxy"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Trust a key used for signing packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Update packages"
-msgstr ""
-
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "Käynnistys epäonnistui tämän koneen turvakäytäntöjen vuoksi"
@@ -715,39 +620,39 @@ msgstr ""
 "Tiedostoa org.freedesktop.PackageKit.conf ei ole asennettu "
 "järjestelmähakemistoon:"
 
-#: ../src/pk-main.c:192
+#: ../src/pk-main.c:186
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Käytettävä paketinhallintajärjestelmä-taustaosa, esim. dummy"
 
-#: ../src/pk-main.c:194
+#: ../src/pk-main.c:188
 msgid "Daemonize and detach from the terminal"
 msgstr "Tee taustaprosessiksi ja irrota päätteestä"
 
-#: ../src/pk-main.c:198
+#: ../src/pk-main.c:192
 msgid "Disable the idle timer"
 msgstr "Poista toimettomuusajastin käytöstä"
 
-#: ../src/pk-main.c:200
+#: ../src/pk-main.c:194
 msgid "Show version and exit"
 msgstr "Näytä versio ja lopeta"
 
-#: ../src/pk-main.c:202
+#: ../src/pk-main.c:196
 msgid "Exit after a small delay"
 msgstr "Sulje pienen viiveen jälkeen"
 
-#: ../src/pk-main.c:204
+#: ../src/pk-main.c:198
 msgid "Exit after the engine has loaded"
 msgstr "Sulje sen jälkeen, kun moottori on ladattu"
 
-#: ../src/pk-main.c:214
+#: ../src/pk-main.c:207
 msgid "PackageKit service"
 msgstr "PackageKit-palvelu"
 
-#: ../src/pk-main.c:250
+#: ../src/pk-main.c:243
 msgid "Cannot connect to the system bus"
 msgstr "Ei voida yhdistää järjestelmäväylään"
 
-#: ../src/pk-main.c:296
+#: ../src/pk-main.c:292
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Virhe yritettäessä käynnistää: %s\n"
