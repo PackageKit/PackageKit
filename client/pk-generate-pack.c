@@ -24,6 +24,7 @@
 
 #include <unistd.h>
 #include <signal.h>
+#include <locale.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
@@ -191,6 +192,11 @@ main (int argc, char *argv[])
 			_("Put all updates available in the service pack"), NULL},
 		{ NULL}
 	};
+
+	setlocale (LC_ALL, "");
+	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
+	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+	textdomain (GETTEXT_PACKAGE);
 
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
