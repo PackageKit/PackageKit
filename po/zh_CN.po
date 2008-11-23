@@ -1,20 +1,22 @@
 # 简体中文翻译
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) 2008 THE 'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the  package.
 # Chen Yu <jcomee@gmail.com>, 2008
 # 甘露(Gan Lu) <rhythm.gan@gmail.com>, 2008
-#
+# 闫丰刚 (sainry)<sainry@gmail.com> 2008
+# 
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-11-19 16:26+0000\n"
-"PO-Revision-Date: 2008-10-30 23:41+0700\n"
+"POT-Creation-Date: 2008-11-20 01:35+0000\n"
+"PO-Revision-Date: 2008-11-23 19:47+0800\n"
 "Last-Translator: 甘露(Gan Lu) <rhythm.gan@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bit"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:286
@@ -151,79 +153,71 @@ msgstr "该工具无法得到 '%s' 的文件清单：%s"
 #: ../client/pk-console.c:1054
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "文件已存在: %s"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1059 ../client/pk-console.c:1115
 #: ../client/pk-console.c:1190
-#, fuzzy
 msgid "Getting package list"
-msgstr "正在获得软件包信息..."
+msgstr "正在获得软件包列表..."
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
 #: ../client/pk-console.c:1065 ../client/pk-console.c:1121
 #: ../client/pk-console.c:1196
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not get package list: %s"
-msgstr "该工具无法删除本软件包：%s"
+msgstr "该工具无法得到软件表列表：%s"
 
 #. TRANSLATORS: There was an error saving the list
 #: ../client/pk-console.c:1076
-#, fuzzy, c-format
 msgid "Failed to save to disk"
-msgstr "无法得到最后一次时间"
+msgstr "存盘失败"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
 #: ../client/pk-console.c:1110 ../client/pk-console.c:1185
 #, c-format
 msgid "File does not exist: %s"
-msgstr ""
+msgstr "文件不存在 : %s"
 
 #. TRANSLATORS: header to a list of packages newly added
 #: ../client/pk-console.c:1142
-#, fuzzy
 msgid "Packages to add"
-msgstr "PackageKit 监视器"
+msgstr "添加软件包"
 
 #. TRANSLATORS: header to a list of packages removed
 #: ../client/pk-console.c:1150
-#, fuzzy
 msgid "Packages to remove"
-msgstr "PackageKit 服务"
+msgstr "删除软件包"
 
 #. TRANSLATORS: We didn't find any differences
 #: ../client/pk-console.c:1218
-#, fuzzy, c-format
 msgid "No new packages need to be installed"
-msgstr "该软件包 '%s' 无法安装：%s"
+msgstr "没有新的软件包安装"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1224
 msgid "To install"
-msgstr ""
+msgstr "安装"
 
 #. TRANSLATORS: searching takes some time....
 #: ../client/pk-console.c:1235
 msgid "Searching for package: "
-msgstr ""
+msgstr "搜索软件包: "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
 #: ../client/pk-console.c:1239
-#, fuzzy
 msgid "not found."
-msgstr "目录没有找到"
+msgstr "没有找到"
 
 #. TRANSLATORS: We didn't find any packages to install
 #: ../client/pk-console.c:1250
-#, fuzzy, c-format
 msgid "No packages can be found to install"
-msgstr "没有为你系统发现软件包"
+msgstr "找不到软件包安装"
 
 #. TRANSLATORS: installing new packages from package list
 #: ../client/pk-console.c:1256
-#, fuzzy
 msgid "Installing packages"
-msgstr "正在下载软件包"
+msgstr "正在安装软件包..."
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1292
@@ -302,7 +296,7 @@ msgid "Subcommands:"
 msgstr "子命令："
 
 #: ../client/pk-console.c:1657 ../client/pk-generate-pack.c:183
-#: ../client/pk-monitor.c:114 ../src/pk-main.c:196
+#: ../client/pk-monitor.c:114 ../src/pk-main.c:190
 msgid "Show extra debugging information"
 msgstr "显示额外的调试信息"
 
@@ -326,7 +320,7 @@ msgstr "该工具无法连接到系统 DBUS。"
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1770
 msgid "The filter specified was invalid"
-msgstr ""
+msgstr "过滤器指定非法"
 
 #: ../client/pk-console.c:1787
 msgid "You need to specify a search type, e.g. name"
@@ -402,14 +396,12 @@ msgid "You need to specify a package to find the files for"
 msgstr "你需要指定某个软件包已找到相关文件"
 
 #: ../client/pk-console.c:1969
-#, fuzzy
 msgid "You need to specify a list file to create"
-msgstr "你需要指定某个时间期限"
+msgstr "你需要指定一个要创建的文件序列"
 
 #: ../client/pk-console.c:1977 ../client/pk-console.c:1985
-#, fuzzy
 msgid "You need to specify a list file to open"
-msgstr "你需要指定某个时间期限"
+msgstr "你需要指定一个文件序列来打开"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:2038
@@ -522,7 +514,6 @@ msgstr "PackageKit 监视器"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:114
-#, c-format
 msgid "The package could not be found"
 msgstr "无法找到该软件包"
 
@@ -606,90 +597,6 @@ msgstr "PackageKit 服务包"
 msgid "PackageKit Package List"
 msgstr "PackageKit 软件包清单"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-msgid "Authentication is required to install a signed package"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-msgid "Authentication is required to install an untrusted package"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Authentication is required to refresh the system sources"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install untrusted local file"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Refresh system sources"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Remove package"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Rollback to a previous transaction"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Set network proxy"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Trust a key used for signing packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Update packages"
-msgstr ""
-
 #: ../src/pk-main.c:85
 msgid "Startup failed due to security policies on this machine."
 msgstr "由于本机的安全策略导致启动失败"
@@ -708,39 +615,39 @@ msgid ""
 "directory:"
 msgstr "org.freedesktop.PackageKit.conf 没有安装到系统目录中："
 
-#: ../src/pk-main.c:192
+#: ../src/pk-main.c:186
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "使用的打包后端，例如“伪”后端"
 
-#: ../src/pk-main.c:194
+#: ../src/pk-main.c:188
 msgid "Daemonize and detach from the terminal"
 msgstr "后台化并从终端中分离"
 
-#: ../src/pk-main.c:198
+#: ../src/pk-main.c:192
 msgid "Disable the idle timer"
 msgstr "禁止空间计时器"
 
-#: ../src/pk-main.c:200
+#: ../src/pk-main.c:194
 msgid "Show version and exit"
 msgstr "显示版本并退出"
 
-#: ../src/pk-main.c:202
+#: ../src/pk-main.c:196
 msgid "Exit after a small delay"
 msgstr "稍稍延迟后退出"
 
-#: ../src/pk-main.c:204
+#: ../src/pk-main.c:198
 msgid "Exit after the engine has loaded"
 msgstr "引擎载入后退出"
 
-#: ../src/pk-main.c:214
+#: ../src/pk-main.c:207
 msgid "PackageKit service"
 msgstr "PackageKit 服务"
 
-#: ../src/pk-main.c:250
+#: ../src/pk-main.c:243
 msgid "Cannot connect to the system bus"
 msgstr "无法连接到系统总线"
 
-#: ../src/pk-main.c:296
+#: ../src/pk-main.c:292
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "出现错误当尝试启动 %s\n"

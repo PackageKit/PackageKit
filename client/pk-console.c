@@ -33,6 +33,7 @@
 #include <packagekit-glib/packagekit.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <locale.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
@@ -1663,6 +1664,11 @@ main (int argc, char *argv[])
 			_("Exit without waiting for actions to complete"), NULL},
 		{ NULL}
 	};
+
+	setlocale (LC_ALL, "");
+	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
+	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+	textdomain (GETTEXT_PACKAGE);
 
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
