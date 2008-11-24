@@ -67,6 +67,7 @@ pk_security_caller_new_from_sender (PkSecurity *security, const gchar *sender)
 	DBusError dbus_error;
 
 	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
+	g_return_val_if_fail (sender != NULL, FALSE);
 
 	/* get the PolKitCaller information */
 	dbus_error_init (&dbus_error);
@@ -180,6 +181,8 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 		policy = "org.freedesktop.packagekit.package-install-untrusted";
 	} else if (role == PK_ROLE_ENUM_ACCEPT_EULA) {
 		policy = "org.freedesktop.packagekit.package-eula-accept";
+	} else if (role == PK_ROLE_ENUM_CANCEL) {
+		policy = "org.freedesktop.packagekit.cancel-foreign";
 	}
 	return policy;
 }

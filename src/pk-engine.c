@@ -252,26 +252,29 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 /**
  * pk_engine_get_tid:
  **/
-gboolean
-pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
+void
+pk_engine_get_tid (PkEngine *engine, DBusGMethodInvocation *context)
 {
 	gchar *new_tid;
 	gboolean ret;
+	gchar *sender = NULL;
 
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	egg_debug ("GetTid method called");
+	sender = dbus_g_method_get_sender (context);
 	new_tid = pk_transaction_id_generate ();
 
-	ret = pk_transaction_list_create (engine->priv->transaction_list, new_tid);
+	ret = pk_transaction_list_create (engine->priv->transaction_list, new_tid, sender);
 	egg_debug ("sending tid: '%s'", new_tid);
-	*tid =  g_strdup (new_tid);
-	g_free (new_tid);
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
 
-	return TRUE;
+	/* return TID */
+	dbus_g_method_return (context, new_tid);
+	g_free (new_tid);
+	g_free (sender);
 }
 
 /**

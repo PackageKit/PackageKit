@@ -87,6 +87,7 @@ struct PkTransactionPrivate
 	gboolean		 emit_eula_required;
 	gboolean		 emit_signature_required;
 	gchar			*locale;
+	guint			 uid;
 	EggDbusMonitor		*monitor;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
@@ -101,8 +102,8 @@ struct PkTransactionPrivate
 
 	/* needed for gui coldplugging */
 	gchar			*last_package_id;
-	gchar			*dbus_name;
 	gchar			*tid;
+	gchar			*sender;
 	PkPackageList		*package_list;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
@@ -235,26 +236,6 @@ pk_transaction_get_runtime (PkTransaction *transaction)
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), 0);
 	g_return_val_if_fail (transaction->priv->tid != NULL, 0);
 	return pk_backend_get_runtime (transaction->priv->backend);
-}
-
-/**
- * pk_transaction_set_dbus_name:
- */
-gboolean
-pk_transaction_set_dbus_name (PkTransaction *transaction, const gchar *dbus_name)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-	g_return_val_if_fail (dbus_name != NULL, FALSE);
-
-	if (transaction->priv->dbus_name != NULL) {
-		egg_warning ("you can't assign more than once!");
-		return FALSE;
-	}
-	transaction->priv->dbus_name = g_strdup (dbus_name);
-	egg_debug ("assigning %s to %p", dbus_name, transaction);
-	egg_dbus_monitor_assign (transaction->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, dbus_name);
-	return TRUE;
 }
 
 /**
@@ -554,7 +535,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	guint i, length;
 	PkPackageList *list;
 	const PkPackageObj *obj;
-	guint uid = PK_SECURITY_UID_INVALID;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -683,10 +663,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	time = pk_transaction_get_runtime (transaction);
 	egg_debug ("backend was running for %i ms", time);
 
-	/* get user for logging */
-	if (transaction->priv->caller != NULL)
-		uid = pk_security_get_uid (transaction->priv->security, transaction->priv->caller);
-
 	/* add to the database if we are going to log it */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
@@ -708,7 +684,8 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 			    obj->info == PK_INFO_ENUM_UPDATING) {
 				packages = pk_package_id_to_string (obj->id);
 				pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "in %s for %s package %s was %s for uid %i",
-					       transaction->priv->tid, pk_role_enum_to_text (transaction->priv->role), packages, pk_info_enum_to_text (obj->info), uid);
+					       transaction->priv->tid, pk_role_enum_to_text (transaction->priv->role),
+					       packages, pk_info_enum_to_text (obj->info), transaction->priv->uid);
 				g_free (packages);
 			}
 		}
@@ -734,9 +711,10 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
 
 	/* report to syslog */
-	if (uid != G_MAXUINT)
+	if (transaction->priv->uid != PK_SECURITY_UID_INVALID)
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s from uid %i finished with %s after %ims",
-			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, uid, pk_exit_enum_to_text (exit), time);
+			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid,
+			       transaction->priv->uid, pk_exit_enum_to_text (exit), time);
 	else
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s finished with %s after %ims",
 			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, pk_exit_enum_to_text (exit), time);
@@ -1211,6 +1189,23 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 }
 
 /**
+ * pk_transaction_set_sender:
+ */
+gboolean
+pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+	g_return_val_if_fail (sender != NULL, FALSE);
+	g_return_val_if_fail (transaction->priv->sender == NULL, FALSE);
+
+	egg_debug ("setting sender to %s", sender);
+	transaction->priv->sender = g_strdup (sender);
+	egg_dbus_monitor_assign (transaction->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, sender);
+
+	return TRUE;
+}
+
+/**
  * pk_transaction_release_tid:
  **/
 static gboolean
@@ -1231,7 +1226,6 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_commit (PkTransaction *transaction)
 {
 	gboolean ret;
-	guint uid;
 	gchar *cmdline;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
@@ -1246,6 +1240,10 @@ pk_transaction_commit (PkTransaction *transaction)
 		return FALSE;
 	}
 
+	/* save uid */
+	if (transaction->priv->caller != NULL)
+		transaction->priv->uid = pk_security_get_uid (transaction->priv->security, transaction->priv->caller);
+
 	/* only save into the database for useful stuff */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
@@ -1259,8 +1257,7 @@ pk_transaction_commit (PkTransaction *transaction)
 		pk_transaction_db_set_role (transaction->priv->transaction_db, transaction->priv->tid, transaction->priv->role);
 
 		/* save uid */
-		uid = pk_security_get_uid (transaction->priv->security, transaction->priv->caller);
-		pk_transaction_db_set_uid (transaction->priv->transaction_db, transaction->priv->tid, uid);
+		pk_transaction_db_set_uid (transaction->priv->transaction_db, transaction->priv->tid, transaction->priv->uid);
 
 		/* save cmdline */
 		cmdline = pk_security_get_cmdline (transaction->priv->security, transaction->priv->caller);
@@ -1268,7 +1265,7 @@ pk_transaction_commit (PkTransaction *transaction)
 
 		/* report to syslog */
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "new %s transaction %s scheduled from uid %i",
-			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, uid);
+			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, transaction->priv->uid);
 
 		g_free (cmdline);
 	}
@@ -1393,13 +1390,13 @@ pk_transaction_action_is_allowed (PkTransaction *transaction, gboolean trusted, 
 	gboolean ret;
 	gchar *error_detail;
 
-	g_return_val_if_fail (transaction->priv->dbus_name != NULL, FALSE);
+	g_return_val_if_fail (transaction->priv->sender != NULL, FALSE);
 
 	/* get caller */
-	transaction->priv->caller = pk_security_caller_new_from_sender (transaction->priv->security, transaction->priv->dbus_name);
+	transaction->priv->caller = pk_security_caller_new_from_sender (transaction->priv->security, transaction->priv->sender);
 	if (transaction->priv->caller == NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
-				      "caller %s not found", transaction->priv->dbus_name);
+				      "caller %s not found", transaction->priv->sender);
 		return FALSE;
 	}
 
@@ -1421,6 +1418,39 @@ pk_transaction_priv_get_role (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_verify_sender:
+ *
+ * Verify caller of this method matches the one that got the Tid
+ **/
+static gboolean
+pk_transaction_verify_sender (PkTransaction *transaction, DBusGMethodInvocation *context, GError **error)
+{
+	gboolean ret = FALSE;
+	gchar *sender = NULL;
+
+	g_return_val_if_fail (transaction->priv->sender != NULL, FALSE);
+
+	/* not set inside the test suite */
+	if (context == NULL) {
+		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+				      "context not available for sender %s", transaction->priv->sender);
+		goto out;
+	}
+
+	/* check is the same as the sender that did GetTid */
+	sender = dbus_g_method_get_sender (context);
+	ret = egg_strequal (transaction->priv->sender, sender);
+	if (!ret) {
+		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+				      "sender does not match (%s vs %s)", sender, transaction->priv->sender);
+		goto out;
+	}
+out:
+	g_free (sender);
+	return ret;
+}
+
+/**
  * pk_transaction_accept_eula:
  *
  * This should be called when a eula_id needs to be added into an internal db.
@@ -1430,10 +1460,17 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 
 	/* check for sanity */
 	ret = pk_strvalidate (eula_id);
@@ -1443,14 +1480,6 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -1482,13 +1511,80 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 /**
  * pk_transaction_cancel:
  **/
-gboolean
-pk_transaction_cancel (PkTransaction *transaction, GError **error)
+void
+pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *context)
 {
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+	gboolean ret;
+	GError *error = NULL;
+	gchar *sender;
+	guint uid;
+	PkSecurityCaller *caller;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
 
 	egg_debug ("Cancel method called on %s", transaction->priv->tid);
+
+	/* not implemented yet */
+	if (transaction->priv->backend->desc->cancel == NULL) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+	                             "Cancel not yet supported by backend");
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* if it's finished, cancelling will have no action regardless of uid */
+	if (transaction->priv->finished) {
+		egg_debug ("No point trying to cancel a finished transaction, ignoring");
+		goto out;
+	}
+
+	/* check to see if we have an action */
+	if (transaction->priv->role == PK_ROLE_ENUM_UNKNOWN) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_ROLE, "No role");
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* check if it's safe to kill */
+	if (!transaction->priv->allow_cancel) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
+	                             "Tried to cancel a transaction that is not safe to kill");
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* check if we saved the uid */
+	if (transaction->priv->uid == PK_SECURITY_UID_INVALID) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
+	                             "No context from caller to get UID from");
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* get the UID of the caller */
+	sender = dbus_g_method_get_sender (context);
+	caller = pk_security_caller_new_from_sender (transaction->priv->security, sender);
+	uid = pk_security_get_uid (transaction->priv->security, caller);
+	g_free (sender);
+	pk_security_caller_unref (caller);
+
+	/* check we got a valid value */
+	if (uid == PK_SECURITY_UID_INVALID) {
+	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE, "unable to get uid of caller");
+	        dbus_g_method_return_error (context, error);
+	        return;
+	}
+
+	/* check the caller uid with the originator uid */
+	if (transaction->priv->uid != uid) {
+		egg_debug ("uid does not match (%i vs. %i)", transaction->priv->uid, uid);
+		ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_CANCEL, &error);
+		if (!ret) {
+			dbus_g_method_return_error (context, error);
+			return;
+		}
+	}
 
 	/* if it's never been run, just remove this transaction from the list */
 	if (!transaction->priv->has_been_run) {
@@ -1496,35 +1592,8 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 		pk_transaction_allow_cancel_emit (transaction, FALSE);
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction->priv->tid);
-		return TRUE;
-	}
-
-	/* if it's finished, cancelling will have no action */
-	if (transaction->priv->finished) {
-		egg_debug ("No point trying to cancel a finished transaction, ignoring");
-		return TRUE;
-	}
-
-	/* not implemented yet */
-	if (transaction->priv->backend->desc->cancel == NULL) {
-		egg_debug ("Not implemented yet: Cancel");
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "Cancel not yet supported by backend");
-		return FALSE;
-	}
-
-	/* check to see if we have an action */
-	if (transaction->priv->role == PK_ROLE_ENUM_UNKNOWN) {
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_ROLE, "No role");
-		return FALSE;
-	}
-
-	/* check if it's safe to kill */
-	if (transaction->priv->allow_cancel == FALSE) {
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
-			     "Tried to cancel a transaction that is not safe to kill");
-		return FALSE;
+		pk_transaction_release_tid (transaction);
+		goto out;
 	}
 
 	/* set the state, as cancelling might take a few seconds */
@@ -1538,7 +1607,11 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 
 	/* actually run the method */
 	transaction->priv->backend->desc->cancel (transaction->priv->backend);
-	return TRUE;
+
+out:
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -1552,7 +1625,6 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	gchar *package_ids_temp;
 	gchar *directory;
 	gint retval;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1566,6 +1638,14 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 		pk_transaction_release_tid (transaction);
 	        dbus_g_method_return_error (context, error);
 	        return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* check package_ids */
@@ -1589,14 +1669,6 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	                             "cannot create %s", directory);
 	        dbus_g_method_return_error (context, error);
 	        return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1628,6 +1700,7 @@ pk_transaction_get_allow_cancel (PkTransaction *transaction, gboolean *allow_can
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
+	/* we do not need to get the context and check the uid */
 	egg_debug ("GetAllowCancel method called");
 	*allow_cancel = transaction->priv->allow_cancel;
 	return TRUE;
@@ -1641,7 +1714,6 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1657,12 +1729,12 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 		return;
 	}
 
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* are we already performing an update? */
@@ -1699,7 +1771,6 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1710,10 +1781,17 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_depends == NULL) {
-		egg_debug ("Not implemented yet: GetDepends");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetDepends not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1736,14 +1814,6 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1776,7 +1846,6 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1787,10 +1856,17 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_details == NULL) {
-		egg_debug ("Not implemented yet: GetDetails");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetDetails not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1805,14 +1881,6 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1842,7 +1910,6 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1851,7 +1918,6 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_distro_upgrades == NULL) {
-		egg_debug ("Not implemented yet: GetDistroUpgrades");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetDistroUpgrades not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -1859,12 +1925,12 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 		return;
 	}
 
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* save so we can run later */
@@ -1895,7 +1961,6 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1906,10 +1971,17 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_files == NULL) {
-		egg_debug ("Not implemented yet: GetFiles");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1924,14 +1996,6 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -1961,7 +2025,6 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1970,10 +2033,17 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_packages == NULL) {
-		egg_debug ("Not implemented yet: GetPackages");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1984,14 +2054,6 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -2079,7 +2141,6 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2088,10 +2149,17 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_repo_list == NULL) {
-		egg_debug ("Not implemented yet: GetRepoList");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetRepoList not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2102,14 +2170,6 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -2141,7 +2201,6 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2152,10 +2211,17 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_requires == NULL) {
-		egg_debug ("Not implemented yet: GetRequires");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetRequires not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2178,14 +2244,6 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -2267,7 +2325,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	GPtrArray *array;
 	guint i;
 	guint len;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2281,10 +2338,17 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_update_detail == NULL) {
-		egg_debug ("Not implemented yet: GetUpdateDetail");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetUpdateDetail not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2299,14 +2363,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -2386,7 +2442,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	GError *error;
 	PkPackageList *updates_cache;
 	gchar *package_id;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2395,10 +2450,17 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_updates == NULL) {
-		egg_debug ("Not implemented yet: GetUpdates");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetUpdates not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2409,14 +2471,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -2480,7 +2534,6 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	GError *error;
 	GError *error_local = NULL;
 	PkServicePack *service_pack;
-	gchar *sender;
 	guint length;
 	guint i;
 
@@ -2496,6 +2549,14 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "InstallFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2527,14 +2588,6 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 				return;
 			}
 		}
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -2575,7 +2628,6 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -2594,6 +2646,14 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 		return;
 	}
 
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
@@ -2604,14 +2664,6 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -2651,7 +2703,6 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2663,6 +2714,14 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "InstallSignature not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2685,14 +2744,6 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -2746,7 +2797,6 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2762,12 +2812,12 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 		return;
 	}
 
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -2810,7 +2860,6 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -2829,6 +2878,14 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 		return;
 	}
 
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
@@ -2839,14 +2896,6 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -2886,7 +2935,6 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2902,6 +2950,14 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 		return;
 	}
 
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check for sanity */
 	ret = pk_strvalidate (repo_id);
 	if (!ret) {
@@ -2910,14 +2966,6 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -2958,7 +3006,6 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2974,6 +3021,14 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 		return;
 	}
 
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check for sanity */
 	ret = pk_strvalidate (repo_id);
 	if (!ret) {
@@ -2982,14 +3037,6 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -3033,7 +3080,6 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	gchar *packages_temp;
 	guint i;
 	guint length;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3044,10 +3090,17 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->resolve == NULL) {
-		egg_debug ("Not implemented yet: Resolve");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Resolve not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -3071,14 +3124,6 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 			dbus_g_method_return_error (context, error);
 			return;
 		}
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -3110,7 +3155,6 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3126,6 +3170,14 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 		return;
 	}
 
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check for sanity */
 	ret = pk_strvalidate (transaction_id);
 	if (!ret) {
@@ -3134,14 +3186,6 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -3180,7 +3224,6 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3189,10 +3232,17 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->search_details == NULL) {
-		egg_debug ("Not implemented yet: SearchDetails");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchDetails not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -3211,14 +3261,6 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -3250,7 +3292,6 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3259,10 +3300,17 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->search_file == NULL) {
-		egg_debug ("Not implemented yet: SearchFile");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchFile not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -3281,14 +3329,6 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -3320,7 +3360,6 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3329,10 +3368,17 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->search_group == NULL) {
-		egg_debug ("Not implemented yet: SearchGroup");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchGroup not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -3351,14 +3397,6 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -3390,7 +3428,6 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3399,10 +3436,17 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->search_name == NULL) {
-		egg_debug ("Not implemented yet: SearchName");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchName not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -3421,14 +3465,6 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -3454,23 +3490,38 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 /**
  * pk_transaction_set_locale:
  */
-gboolean
-pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, GError **error)
+void
+pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, DBusGMethodInvocation *context)
 {
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+	GError *error;
+	gboolean ret;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 
 	/* already set? */
 	if (transaction->priv->locale != NULL) {
 		egg_warning ("Already set locale");
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "Already set locale to %s", transaction->priv->locale);
-		return FALSE;
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "Already set locale to %s", transaction->priv->locale);
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* save so we can pass to the backend */
 	transaction->priv->locale = g_strdup (code);
-	return TRUE;
+
+	/* not set inside the test suite */
+	if (context != NULL)
+		dbus_g_method_return (context);
 }
 
 /**
@@ -3481,7 +3532,6 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3500,6 +3550,14 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 		return;
 	}
 
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
@@ -3510,14 +3568,6 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -3555,7 +3605,6 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 {
 	gboolean ret;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3571,12 +3620,12 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 		return;
 	}
 
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
@@ -3623,7 +3672,6 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	gboolean ret;
 	PkProvidesEnum provides;
 	GError *error;
-	gchar *sender;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3632,10 +3680,17 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->what_provides == NULL) {
-		egg_debug ("Not implemented yet: WhatProvides");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "WhatProvides not yet supported by backend");
 		pk_transaction_release_tid (transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -3656,6 +3711,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		return;
 	}
 
+	/* check provides */
 	provides = pk_provides_enum_from_text (type);
 	if (provides == PK_PROVIDES_ENUM_UNKNOWN) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_PROVIDE,
@@ -3663,14 +3719,6 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		pk_transaction_release_tid (transaction);
 		dbus_g_method_return_error (context, error);
 		return;
-	}
-
-	/* set the dbus name, so we can get the disconnect */
-	if (context != NULL) {
-		/* not set inside the test suite */
-		sender = dbus_g_method_get_sender (context);
-		pk_transaction_set_dbus_name (transaction, sender);
-		g_free (sender);
 	}
 
 	/* save so we can run later */
@@ -3823,7 +3871,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->allow_cancel = TRUE;
 	transaction->priv->emit_eula_required = FALSE;
 	transaction->priv->emit_signature_required = FALSE;
-	transaction->priv->dbus_name = NULL;
 	transaction->priv->cached_enabled = FALSE;
 	transaction->priv->cached_key_id = NULL;
 	transaction->priv->cached_package_id = NULL;
@@ -3838,8 +3885,10 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cached_value = NULL;
 	transaction->priv->last_package_id = NULL;
 	transaction->priv->tid = NULL;
+	transaction->priv->sender = NULL;
 	transaction->priv->locale = NULL;
 	transaction->priv->caller = NULL;
+	transaction->priv->uid = PK_SECURITY_UID_INVALID;
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
@@ -3891,7 +3940,6 @@ pk_transaction_finalize (GObject *object)
 	g_signal_emit (transaction, signals [PK_TRANSACTION_DESTROY], 0);
 
 	g_free (transaction->priv->last_package_id);
-	g_free (transaction->priv->dbus_name);
 	g_free (transaction->priv->locale);
 	g_free (transaction->priv->cached_package_id);
 	g_free (transaction->priv->cached_key_id);

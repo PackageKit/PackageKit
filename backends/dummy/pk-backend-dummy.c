@@ -483,6 +483,8 @@ backend_refresh_cache_timeout (gpointer data)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
+	if (_progress_percentage == 80)
+		pk_backend_set_allow_cancel (backend, FALSE);
 	_progress_percentage += 10;
 	pk_backend_set_percentage (backend, _progress_percentage);
 	return TRUE;
@@ -501,6 +503,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	_updated_kernel = FALSE;
 	_updated_powertop = FALSE;
 
+	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	_signal_timeout = g_timeout_add (500, backend_refresh_cache_timeout, backend);
 }

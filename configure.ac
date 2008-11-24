@@ -1,13 +1,13 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.3.11)
+AC_INIT(PackageKit, 0.4.0)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 
 # Should we enable extra stuff automatically?
 # set no for release builds, yes for development builds
-DEVELOPMENT_RELEASE=no
+DEVELOPMENT_RELEASE=yes
 
 # libtool versioning - this applies to libpackagekit
 #
@@ -18,8 +18,8 @@ DEVELOPMENT_RELEASE=no
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-LT_CURRENT=10
-LT_REVISION=2
+LT_CURRENT=11
+LT_REVISION=0
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -638,6 +638,7 @@ echo "
         datadir:                   ${datadir}
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
+        cppflags:                  ${CPPFLAGS}
         Building unit tests:       ${enable_tests}
         Able to run locally:       ${enable_local}
         Developer warnings:        ${enable_developer}
