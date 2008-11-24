@@ -7,6 +7,9 @@ INCLUDES = \
 	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/lib					\
+	-I$(top_builddir)/lib					\
+	-I$(top_builddir)/lib/packagekit-glib			\
+	-I.							\
 	-DPK_COMPILATION					\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"		\
