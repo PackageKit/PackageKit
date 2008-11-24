@@ -90,12 +90,16 @@ const gchar	*pk_transaction_get_tid			(PkTransaction	*transaction);
 gboolean	 pk_transaction_set_tid			(PkTransaction	*transaction,
 							 const gchar	*tid);
 
+/* set DBUS sender */
+gboolean	 pk_transaction_set_sender		(PkTransaction	*transaction,
+							 const gchar	*sender);
+
 /* dbus methods */
 void		 pk_transaction_accept_eula		(PkTransaction	*transaction,
 							 const gchar	*eula_id,
 							 DBusGMethodInvocation *context);
-gboolean	 pk_transaction_cancel			(PkTransaction	*transaction,
-							 GError		**error);
+void		 pk_transaction_cancel			(PkTransaction	*transaction,
+							 DBusGMethodInvocation *context);
 void		 pk_transaction_download_packages	(PkTransaction  *transaction,
 							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
@@ -208,9 +212,9 @@ void		 pk_transaction_search_name		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 const gchar	*search,
 							 DBusGMethodInvocation *context);
-gboolean	 pk_transaction_set_locale		(PkTransaction	*transaction,
+void		 pk_transaction_set_locale		(PkTransaction	*transaction,
 							 const gchar	*code,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 void		 pk_transaction_update_packages		(PkTransaction	*transaction,
 							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);

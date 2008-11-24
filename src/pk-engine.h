@@ -89,9 +89,8 @@ gboolean	 pk_engine_get_groups			(PkEngine	*engine,
 gboolean	 pk_engine_get_mime_types		(PkEngine	*engine,
 							 gchar		**types,
 							 GError		**error);
-gboolean	 pk_engine_get_tid			(PkEngine	*engine,
-							 gchar		**tid,
-							 GError		**error);
+void		 pk_engine_get_tid			(PkEngine	*engine,
+							 DBusGMethodInvocation *context);
 gboolean	 pk_engine_get_network_state		(PkEngine	*engine,
 							 gchar		**state,
 							 GError		**error);
