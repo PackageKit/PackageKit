@@ -13,8 +13,19 @@
   <vendor_url>http://www.packagekit.org/</vendor_url>
   <icon_name>package-x-generic</icon_name>
 
+  <action id="org.freedesktop.packagekit.cancel-foreign">
+    <_description>Cancel foreign task</_description>
+    <_message>Authentication is required to cancel a task that was not started by yourself</_message>
+    <icon_name>pk-package-delete</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-cancel</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
   <action id="org.freedesktop.packagekit.package-install">
-    <_description>Install local file</_description>
+    <_description>Install signed package</_description>
     <_message>Authentication is required to install a signed package</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-package</vendor_url>
@@ -34,7 +45,6 @@
       <allow_active>auth_admin</allow_active>
     </defaults>
   </action>
-
 
   <action id="org.freedesktop.packagekit.system-trust-signing-key">
     <_description>Trust a key used for signing packages</_description>
