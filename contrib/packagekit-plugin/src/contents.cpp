@@ -55,6 +55,10 @@
 
 #define MARGIN 5
 
+#if !GTK_CHECK_VERSION(2,14,0)
+#define GTK_ICON_LOOKUP_FORCE_SIZE (GtkIconLookupFlags) 0
+#endif
+
 ////////////////////////////////////////
 //
 // PkpContents class implementation
