@@ -34,8 +34,8 @@ G_BEGIN_DECLS
 #define PK_IS_SECURITY_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_SECURITY))
 #define PK_SECURITY_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_SECURITY, PkSecurityClass))
 
-/* not actually a role, but treated as one */
-#define PK_ROLE_ENUM_SET_PROXY_PRIVATE		1 << 31
+/* not actually roles */
+#define PK_ROLE_ENUM_SET_PROXY_PRIVATE		(PK_ROLE_ENUM_UNKNOWN + 1)
 
 /* when the UID is invalid or not known */
 #define PK_SECURITY_UID_INVALID			G_MAXUINT
