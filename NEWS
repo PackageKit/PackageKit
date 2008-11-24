@@ -1,3 +1,75 @@
+Version 0.3.11
+~~~~~~~~~~~~~~
+Released: 2008-11-24
+
+Translations:
+ - Updated German translation (Fabian Affolter)
+ - Updated Italian translation (Francesco Tombolini)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Slovak translation (Pavol Šimo)
+ - Updated Polish translation (Piotr Drąg)
+ - Updated Finnish translation (Ville-Pekka Vainio)
+ - Updated Simplified Chinese translation (sainrysec)
+ - Updated Malayalam Translation (Ani Peter)
+
+New Features:
+ - Add three commands to pkcon: list-create, list-diff and list-install (Richard Hughes)
+ - Pass around the PolkitCaller rather than the dbus sender (Richard Hughes)
+ - Add two elements to the Transaction signal so we can get the user and cmdline
+   in client tools (Richard Hughes)
+ - Glib: Remove PkExtra and use a new class PkDesktop to manage the desktop file cache
+   in a more abstract way (Richard Hughes)
+ - When a package is installed, automatically scan and add the desktop file if
+   RefreshCacheScanDesktopFiles is set (Richard Hughes)
+ - Add syslog logging so that we keep a record of obtained authorisations (Richard Hughes)
+ - Glib: Provide a method to only return desktop files that will be shown in menus (Richard Hughes)
+ - Plugin: Remove the 'desktopnames' parameter from the x-packagekit-plugin code and
+   add the desktop icon if installed (Richard Hughes)
+
+Bugfixes:
+ - Allow single charicter package names (Richard Hughes)
+ - Fix compile for older GTK versions (Anders F Bjorklund)
+ - When we do pkcon update, don't attempt to do what-provides if it's not implemented (Richard Hughes)
+ - Create the log file directory if we are running the daemon in a prefix (Richard Hughes)
+ - Fix a segfault in the error path when files could not be installed with pkcon (Richard Hughes)
+ - Set the transaction role in GetOldTransactions() else it shows as unknown (Richard Hughes)
+ - When logging to LOG_AUTHPRIV also log to LOG_DAEMON (Richard Hughes)
+ - Enable translations in the client tools. Fixes fd#18674 (Richard Hughes)
+ - Glib: Add GetDistroUpgrades to requeue as this may be required with a repo signature (Richard Hughes)
+ - Glib: Make bitfield functions return zero if any of the elements are unknown (Richard Hughes)
+ - Glib: Tidy up the error handling in PkClient so we always fix up remote errors (Richard Hughes)
+ - Glib: Fix crash when pk-control is referenced after it's finalized (Scott Reeves)
+ - Glib: Allow building the glib library outside the source tree (Trever Fischer)
+ - QT: Add a config.h to allow disabling polkit (Adrien BUSTANY)
+ - QT: Correct the location of the library in the cmake file (Trever Fischer)
+ - QT: Behave better if PolKit is not present (Adrien BUSTANY)
+ - QT: Fixed freezed ui while waiting for blocking PolicyKit call (Thomas Goettlicher)
+ - Python: Instead of only package ids allow to use PackageKitPackage
+   instances as parameter (Sebastian Heinlein)
+ - Python: Add PackageKitTransaction.get_error method which returns (Sebastian Heinlein)
+ - Python: Don't use CamelStyle for methods (Sebastian Heinlein)
+ - Python: Use error naming of the ErrorCode signal (Sebastian Heinlein)
+ - Python: Collect messages (Sebastian Heinlein)
+ - Python: Make filter optional (Sebastian Heinlein)
+
+Backends:
+ - alpm: Add initial version of what_provides to the backend (Valeriy Lyasotskiy)
+ - alpm: Added download_packages stuff (Valeriy Lyasotskiy)
+ - conary: Merged in more fixes from Andres (Ken VanDine)
+ - conary: Updated the update-detail call (Ken VanDine)
+ - yum: Further fixes to repository signing (Richard Hughes)
+ - yum: Don't explode if the preupgrade package cannot be found (Richard Hughes)
+ - yum: Don't setup the repo list in GetRepoList, this method doesn't change anything (Richard Hughes)
+ - yum: Add support for signed repository metadata (Tim Lauridsen)
+ - yum: Make sure the repos are setup before we run any command else (Richard Hughes)
+ - zypp: Don't leak the filters (Scott Reeves)
+ - zypp: Minor bugfix (Stefan Haas)
+ - zypp: zypp >= 5.20.0 is needed now (Stefan Haas)
+ - zypp: Fixed restart-flag handling (Stefan Haas)
+ - zypp: Do not abort when a repo is unavailable (Stefan Haas)
+ - zypp: Do not show empty messages or messages twice (Stefan Haas)
+ - zypp: Handle filters in WhatProvides and Resolve (Stefan Haas)
+
 Version 0.3.10
 ~~~~~~~~~~~~~~
 Released: 2008-11-10
@@ -769,7 +841,7 @@ Released: 2008-07-04
  - Updated Polish translation (Piotr Drąg)
 
 * New features:
- - Add PkCatalog for installing catalogs of applications. (Richard Hughes)
+ - Add PkCatalog for installing catalogs of applications (Richard Hughes)
  - Add a mime handler for .catalog files (Richard Hughes)
 
 * Bugfixes:
