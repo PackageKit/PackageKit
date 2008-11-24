@@ -15,6 +15,7 @@
 
     <!--*****************************************************************************************-->
     <method name="SetLocale">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -59,6 +60,7 @@
 
     <!--*****************************************************************************************-->
     <method name="Cancel">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
         <doc:description>
           <doc:para>
