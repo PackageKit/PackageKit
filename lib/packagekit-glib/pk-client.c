@@ -1112,6 +1112,27 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **text, GError **e
 }
 
 /**
+ * pk_client_cancel_action:
+ **/
+static gboolean
+pk_client_cancel_action (PkClient *client, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
+}
+
+/**
  * pk_client_cancel:
  * @client: a valid #PkClient instance
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1144,27 +1165,41 @@ pk_client_cancel (PkClient *client, GError **error)
 		return FALSE;
 	}
 
-	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", &error_local,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
-	/* no error to process */
-	if (ret) {
-		return TRUE;
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_CANCEL;
+
+	/* hopefully do the operation first time */
+	ret = pk_client_cancel_action (client, &error_local);
+
+	/* we were refused by policy */
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
+		/* try to get auth */
+		if (pk_client_error_auth_obtain (error_local)) {
+			/* clear old error */
+			g_clear_error (&error_local);
+
+			/* retry the action now we have got auth */
+			ret = pk_client_cancel_action (client, &error_local);
+		}
 	}
+
+	/* no error to process */
+	if (ret)
+		goto out;
 
 	/* special case - if the tid is already finished, then cancel should return TRUE */
 	if (g_str_has_suffix (error_local->message, " doesn't exist\n")) {
 		egg_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
 		g_error_free (error_local);
-		return TRUE;
+		ret = TRUE;
+		goto out;
 	}
 
-	/* if we got an error we don't recognise, just fix it up and copy it */
-	if (error != NULL) {
-		pk_client_error_fixup (&error_local);
-		*error = g_error_copy (error_local);
-		g_error_free (error_local);
-	}
-	return FALSE;
+	/* we failed one of these, return the error to the user */
+	pk_client_error_fixup (&error_local);
+	g_propagate_error (error, error_local);
+out:
+	return ret;
 }
 
 /**
@@ -1370,7 +1405,7 @@ gboolean
 pk_client_update_system (PkClient *client, GError **error)
 {
 	gboolean ret;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1383,7 +1418,7 @@ pk_client_update_system (PkClient *client, GError **error)
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_pk);
+	ret = pk_client_allocate_transaction_id (client, &error_local);
 	if (!ret)
 		goto out;
 
@@ -1391,30 +1426,30 @@ pk_client_update_system (PkClient *client, GError **error)
 	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 
 	/* hopefully do the operation first time */
-	ret = pk_client_update_system_action (client, &error_pk);
+	ret = pk_client_update_system_action (client, &error_local);
 
 	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
 		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_pk)) {
+		if (pk_client_error_auth_obtain (error_local)) {
 			/* clear old error */
-			g_clear_error (&error_pk);
+			g_clear_error (&error_local);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_pk);
+			ret = pk_client_allocate_transaction_id (client, &error_local);
 			if (!ret)
 				goto out;
 
 			/* retry the action now we have got auth */
-			ret = pk_client_update_system_action (client, &error_pk);
+			ret = pk_client_update_system_action (client, &error_local);
 		}
 	}
 
 out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
 	}
 
 	if (ret && !client->priv->is_finished) {
@@ -2495,7 +2530,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 {
 	gboolean ret;
 	gchar *package_ids_temp;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -2519,7 +2554,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_pk);
+	ret = pk_client_allocate_transaction_id (client, &error_local);
 	if (!ret)
 		goto out;
 
@@ -2530,30 +2565,30 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	client->priv->cached_package_ids = g_strdupv (package_ids);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_pk);
+	ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_local);
 
 	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
 		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_pk)) {
+		if (pk_client_error_auth_obtain (error_local)) {
 			/* clear old error */
-			g_clear_error (&error_pk);
+			g_clear_error (&error_local);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_pk);
+			ret = pk_client_allocate_transaction_id (client, &error_local);
 			if (!ret)
 				goto out;
 
 			/* retry the action now we have got auth */
-			ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_pk);
+			ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_local);
 		}
 	}
 
 out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
 	}
 
 	if (ret && !client->priv->is_finished) {
@@ -2608,7 +2643,7 @@ gboolean
 pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 {
 	gboolean ret;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -2621,7 +2656,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_pk);
+	ret = pk_client_allocate_transaction_id (client, &error_local);
 	if (!ret)
 		goto out;
 
@@ -2630,30 +2665,30 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 	client->priv->cached_force = force;
 
 	/* hopefully do the operation first time */
-	ret = pk_client_refresh_cache_action (client, force, &error_pk);
+	ret = pk_client_refresh_cache_action (client, force, &error_local);
 
 	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
 		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_pk)) {
+		if (pk_client_error_auth_obtain (error_local)) {
 			/* clear old error */
-			g_clear_error (&error_pk);
+			g_clear_error (&error_local);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_pk);
+			ret = pk_client_allocate_transaction_id (client, &error_local);
 			if (!ret)
 				goto out;
 
 			/* retry the action now we have got auth */
-			ret = pk_client_refresh_cache_action (client, force, &error_pk);
+			ret = pk_client_refresh_cache_action (client, force, &error_local);
 		}
 	}
 
 out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
 	}
 
 	if (ret && !client->priv->is_finished) {
@@ -2706,7 +2741,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 {
 	gboolean ret;
 	gchar *package_ids_temp;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -2730,7 +2765,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_pk);
+	ret = pk_client_allocate_transaction_id (client, &error_local);
 	if (!ret)
 		goto out;
 
@@ -2739,30 +2774,30 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 	client->priv->cached_package_ids = g_strdupv (package_ids);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_install_package_action (client, package_ids, &error_pk);
+	ret = pk_client_install_package_action (client, package_ids, &error_local);
 
 	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
 		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_pk)) {
+		if (pk_client_error_auth_obtain (error_local)) {
 			/* clear old error */
-			g_clear_error (&error_pk);
+			g_clear_error (&error_local);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_pk);
+			ret = pk_client_allocate_transaction_id (client, &error_local);
 			if (!ret)
 				goto out;
 
 			/* retry the action now we have got auth */
-			ret = pk_client_install_package_action (client, package_ids, &error_pk);
+			ret = pk_client_install_package_action (client, package_ids, &error_local);
 		}
 	}
 
 out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
 	}
 
 	if (ret && !client->priv->is_finished) {
@@ -2820,7 +2855,7 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 			     const gchar *package_id, GError **error)
 {
 	gboolean ret;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (type != PK_SIGTYPE_ENUM_UNKNOWN, FALSE);
@@ -2836,7 +2871,7 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_pk);
+	ret = pk_client_allocate_transaction_id (client, &error_local);
 	if (!ret)
 		goto out;
 
@@ -2846,30 +2881,30 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	client->priv->cached_key_id = g_strdup (key_id);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_install_signature_action (client, type, key_id, package_id, &error_pk);
+	ret = pk_client_install_signature_action (client, type, key_id, package_id, &error_local);
 
 	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
 		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_pk)) {
+		if (pk_client_error_auth_obtain (error_local)) {
 			/* clear old error */
-			g_clear_error (&error_pk);
+			g_clear_error (&error_local);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_pk);
+			ret = pk_client_allocate_transaction_id (client, &error_local);
 			if (!ret)
 				goto out;
 
 			/* retry the action now we have got auth */
-			ret = pk_client_install_signature_action (client, type, key_id, package_id, &error_pk);
+			ret = pk_client_install_signature_action (client, type, key_id, package_id, &error_local);
 		}
 	}
 
 out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
 	}
 
 	if (ret && !client->priv->is_finished) {
@@ -2922,7 +2957,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 {
 	gboolean ret;
 	gchar *package_ids_temp;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -2946,7 +2981,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_pk);
+	ret = pk_client_allocate_transaction_id (client, &error_local);
 	if (!ret)
 		goto out;
 
@@ -2959,30 +2994,30 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 	}
 
 	/* hopefully do the operation first time */
-	ret = pk_client_update_packages_action (client, package_ids, &error_pk);
+	ret = pk_client_update_packages_action (client, package_ids, &error_local);
 
 	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
 		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_pk)) {
+		if (pk_client_error_auth_obtain (error_local)) {
 			/* clear old error */
-			g_clear_error (&error_pk);
+			g_clear_error (&error_local);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_pk);
+			ret = pk_client_allocate_transaction_id (client, &error_local);
 			if (!ret)
 				goto out;
 
 			/* retry the action now we have got auth */
-			ret = pk_client_update_packages_action (client, package_ids, &error_pk);
+			ret = pk_client_update_packages_action (client, package_ids, &error_local);
 		}
 	}
 
 out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
 	}
 
 	if (ret && !client->priv->is_finished) {
@@ -3069,7 +3104,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 	gboolean ret;
 	gchar **files = NULL;
 	gchar *file;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (files_rel != NULL, FALSE);
@@ -3083,7 +3118,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_pk);
+	ret = pk_client_allocate_transaction_id (client, &error_local);
 	if (!ret)
 		goto out;
 
@@ -3108,30 +3143,30 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 	client->priv->cached_full_paths = g_strdupv (files);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_install_files_action (client, trusted, files, &error_pk);
+	ret = pk_client_install_files_action (client, trusted, files, &error_local);
 
 	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
 		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_pk)) {
+		if (pk_client_error_auth_obtain (error_local)) {
 			/* clear old error */
-			g_clear_error (&error_pk);
+			g_clear_error (&error_local);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_pk);
+			ret = pk_client_allocate_transaction_id (client, &error_local);
 			if (!ret)
 				goto out;
 
 			/* retry the action now we have got auth */
-			ret = pk_client_install_files_action (client, trusted, files, &error_pk);
+			ret = pk_client_install_files_action (client, trusted, files, &error_local);
 		}
 	}
 
 out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
 	}
 
 	if (ret && !client->priv->is_finished) {
@@ -3241,7 +3276,7 @@ gboolean
 pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 {
 	gboolean ret;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (eula_id != NULL, FALSE);
@@ -3255,7 +3290,7 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_pk);
+	ret = pk_client_allocate_transaction_id (client, &error_local);
 	if (!ret)
 		goto out;
 
@@ -3263,30 +3298,30 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 	client->priv->role = PK_ROLE_ENUM_ACCEPT_EULA;
 
 	/* hopefully do the operation first time */
-	ret = pk_client_accept_eula_action (client, eula_id, &error_pk);
+	ret = pk_client_accept_eula_action (client, eula_id, &error_local);
 
 	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
 		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_pk)) {
+		if (pk_client_error_auth_obtain (error_local)) {
 			/* clear old error */
-			g_clear_error (&error_pk);
+			g_clear_error (&error_local);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_pk);
+			ret = pk_client_allocate_transaction_id (client, &error_local);
 			if (!ret)
 				goto out;
 
 			/* retry the action now we have got auth */
-			ret = pk_client_accept_eula_action (client, eula_id, &error_pk);
+			ret = pk_client_accept_eula_action (client, eula_id, &error_local);
 		}
 	}
 
 out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
 	}
 
 	if (ret && !client->priv->is_finished) {
@@ -3340,7 +3375,7 @@ gboolean
 pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled, GError **error)
 {
 	gboolean ret;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (repo_id != NULL, FALSE);
@@ -3354,7 +3389,7 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_pk);
+	ret = pk_client_allocate_transaction_id (client, &error_local);
 	if (!ret)
 		goto out;
 
@@ -3362,30 +3397,30 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	client->priv->role = PK_ROLE_ENUM_REPO_ENABLE;
 
 	/* hopefully do the operation first time */
-	ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_pk);
+	ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_local);
 
 	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
 		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_pk)) {
+		if (pk_client_error_auth_obtain (error_local)) {
 			/* clear old error */
-			g_clear_error (&error_pk);
+			g_clear_error (&error_local);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_pk);
+			ret = pk_client_allocate_transaction_id (client, &error_local);
 			if (!ret)
 				goto out;
 
 			/* retry the action now we have got auth */
-			ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_pk);
+			ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_local);
 		}
 	}
 
 out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
 	}
 
 	if (ret && !client->priv->is_finished) {
@@ -3444,7 +3479,7 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 			 const gchar *value, GError **error)
 {
 	gboolean ret;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (repo_id != NULL, FALSE);
@@ -3460,7 +3495,7 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_pk);
+	ret = pk_client_allocate_transaction_id (client, &error_local);
 	if (!ret)
 		goto out;
 
@@ -3468,30 +3503,30 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	client->priv->role = PK_ROLE_ENUM_REPO_SET_DATA;
 
 	/* hopefully do the operation first time */
-	ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_pk);
+	ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_local);
 
 	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
 		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_pk)) {
+		if (pk_client_error_auth_obtain (error_local)) {
 			/* clear old error */
-			g_clear_error (&error_pk);
+			g_clear_error (&error_local);
 
 			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_pk);
+			ret = pk_client_allocate_transaction_id (client, &error_local);
 			if (!ret)
 				goto out;
 
 			/* retry the action now we have got auth */
-			ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_pk);
+			ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_local);
 		}
 	}
 
 out:
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
 	}
 
 	if (ret && !client->priv->is_finished) {
