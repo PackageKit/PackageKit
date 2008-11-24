@@ -24,6 +24,7 @@
 #endif
 
 #include "polkitclient.h"
+#include "polkitthread.h"
 
 using namespace PackageKit;
 
@@ -40,18 +41,14 @@ PolkitClient::PolkitClient(QObject *parent) : QObject(parent) {
 
 #ifdef USE_SECURITY_POLKIT
 bool PolkitClient::getAuth(const QString &action) {
-	DBusError e;
-	dbus_error_init(&e);
-
-	if(polkit_check_auth(QCoreApplication::applicationPid(), action.toAscii().data(), NULL))
-		return true;
-
-	bool auth = polkit_auth_obtain(action.toAscii().data(), 0, QCoreApplication::applicationPid(), &e);
-	if(!auth) {
-		qDebug() << "Authentification error :" << e.name << ":" << e.message;
-	}
-
-	return auth;
+    PolkitThread polThread(action);
+    polThread.start();
+    while (!polThread.finished())
+    {
+        polThread.wait(POLICYTHREADINTERVAL);
+        qApp->processEvents();
+    }
+    return polThread.allowed();
 }
 #else
 bool PolkitClient::getAuth(const QString &action) {
