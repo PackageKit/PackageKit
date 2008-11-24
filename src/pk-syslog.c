@@ -22,14 +22,16 @@
 #include <syslog.h>
 #include <glib.h>
 
-#include "egg-debug.h"
 #include "pk-syslog.h"
+#include "pk-conf.h"
+
+#include "egg-debug.h"
 
 #define PK_SYSLOG_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SYSLOG, PkSyslogPrivate))
 
 struct PkSyslogPrivate
 {
-	gpointer		data;
+	gboolean		 enabled;
 	/* any logging instance data here */
 };
 
@@ -46,6 +48,9 @@ pk_syslog_add (PkSyslog *self, PkSyslogType type, const gchar *format, ...)
 	gchar va_args_buffer[1025];
 
 	g_return_if_fail (PK_IS_SYSLOG (self));
+
+	if (!self->priv->enabled)
+		return;
 
 	va_start (args, format);
 	g_vsnprintf (va_args_buffer, 1024, format, args);
@@ -92,7 +97,17 @@ pk_syslog_class_init (PkSyslogClass *klass)
 static void
 pk_syslog_init (PkSyslog *self)
 {
+	PkConf *conf;
 	self->priv = PK_SYSLOG_GET_PRIVATE (self);
+
+	conf = pk_conf_new ();
+	self->priv->enabled = pk_conf_get_bool (conf, "UseSyslog");
+	g_object_unref (conf);
+
+	if (!self->priv->enabled) {
+		egg_debug ("syslog fucntionality disabled");
+		return;
+	}
 
 	/* open syslog */
 	openlog ("PackageKit", LOG_NDELAY, LOG_USER);

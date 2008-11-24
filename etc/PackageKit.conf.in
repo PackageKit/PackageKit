@@ -5,19 +5,19 @@
 
 # Should we log transactions to the database.
 #
-# default=yes
+# default=true
 TransactionLogging=true
 
 # Use NetworkManager where available. If disabled, then NM state will be ignored.
 #
-# default=yes
+# default=true
 UseNetworkManager=true
 
 # If NetworkManager is not available, then use the presence of a default
 # route to indicate a viable network connection.
 # If disabled, and no NM, then the network is assumed to be always online.
 #
-# default=yes
+# default=true
 UseNetworkHeuristic=true
 
 # Shut down the daemon after this many seconds idle. 0 means don't shutdown.
@@ -44,6 +44,11 @@ BackendSpawnNiceValue=10
 #
 # default=@defaultbackend@
 DefaultBackend=@defaultbackend@
+
+# Use syslog to audit and log actions where available.
+#
+# default=false
+UseSyslog=false
 
 # Proxy settings, uncomment as required
 #
