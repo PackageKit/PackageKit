@@ -1,4 +1,6 @@
+#ifdef USE_SECURITY_POLKIT
 #include <polkit-dbus/polkit-dbus.h>
+#endif
 
 #include "polkitthread.h"
 
@@ -23,7 +25,7 @@ bool PolkitThread::finished()
 }
 
 
-
+#ifdef USE_SECURITY_POLKIT
 void PolkitThread::run()
 {
 	DBusError e;
@@ -44,5 +46,13 @@ void PolkitThread::run()
 	_finished = true;
 	exit();
 }
+#else
+void PolkitThread::run()
+{
+	_allowed = true;
+	_finished = true;
+	exit();
+}
+#endif
 
 #include "polkitthread.moc"
