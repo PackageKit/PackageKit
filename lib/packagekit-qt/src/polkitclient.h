@@ -23,10 +23,6 @@
 
 #include <QtCore>
 
-// interval for processing events to prevent
-// freezed ui while waiting for blocking polkit_auth_obtain()
-#define POLICYTHREADINTERVAL 500 // in ms
-
 namespace PackageKit {
 
 class PolkitClient : QObject{
