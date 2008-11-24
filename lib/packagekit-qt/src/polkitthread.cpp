@@ -37,7 +37,7 @@ void PolkitThread::run()
 		return;
 	}
 
-	bool _allowed = polkit_auth_obtain(_action.toAscii().data(), 0, QCoreApplication::applicationPid(), &e);
+	_allowed = polkit_auth_obtain(_action.toAscii().data(), 0, QCoreApplication::applicationPid(), &e);
 	if(!_allowed) {
 		qDebug() << "Authentification error :" << e.name << ":" << e.message;
 	}
