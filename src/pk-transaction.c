@@ -3947,6 +3947,7 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->priv->cached_parameter);
 	g_free (transaction->priv->cached_value);
 	g_free (transaction->priv->tid);
+	g_free (transaction->priv->sender);
 
 	/* remove any inhibit, it's okay to call this function when it's not needed */
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
