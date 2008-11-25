@@ -865,7 +865,6 @@ pk_engine_test (EggTest *test)
 	PkEngine *engine;
 	PkBackend *backend;
 	guint idle;
-	gchar *tid;
 	gchar *actions;
 
 	if (!egg_test_start (test, "PkEngine"))
@@ -921,13 +920,6 @@ pk_engine_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "idle = %i", idle);
-
-	/************************************************************/
-	egg_test_title (test, "create a tid we never use");
-	ret = pk_engine_get_tid (engine, &tid, NULL);
-	egg_test_assert (test, ret);
-	egg_test_title_assert (test, "tid is non-null", tid != NULL);
-	g_free (tid);
 
 	g_object_unref (backend);
 	g_object_unref (engine);
