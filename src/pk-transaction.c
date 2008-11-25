@@ -1405,8 +1405,10 @@ pk_transaction_action_is_allowed (PkTransaction *transaction, gboolean trusted, 
 
 	/* use security model to get auth */
 	ret = pk_security_action_is_allowed (transaction->priv->security, transaction->priv->caller, trusted, role, &error_detail);
-	if (!ret)
+	if (!ret) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
+		g_free (error_detail);
+	}
 	return ret;
 }
 
