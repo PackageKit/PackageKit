@@ -1425,17 +1425,14 @@ pk_transaction_priv_get_role (PkTransaction *transaction)
 static gboolean
 pk_transaction_verify_sender (PkTransaction *transaction, DBusGMethodInvocation *context, GError **error)
 {
-	gboolean ret = FALSE;
+	gboolean ret = TRUE;
 	gchar *sender = NULL;
 
 	g_return_val_if_fail (transaction->priv->sender != NULL, FALSE);
 
 	/* not set inside the test suite */
-	if (context == NULL) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
-				      "context not available for sender %s", transaction->priv->sender);
+	if (context == NULL)
 		goto out;
-	}
 
 	/* check is the same as the sender that did GetTid */
 	sender = dbus_g_method_get_sender (context);
@@ -1448,6 +1445,33 @@ pk_transaction_verify_sender (PkTransaction *transaction, DBusGMethodInvocation 
 out:
 	g_free (sender);
 	return ret;
+}
+
+/**
+ * pk_transaction_dbus_return_error:
+ **/
+void
+pk_transaction_dbus_return_error (DBusGMethodInvocation *context, GError *error)
+{
+	/* not set inside the test suite */
+	if (context == NULL) {
+		egg_warning ("context null, and error: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+	dbus_g_method_return_error (context, error);
+}
+
+/**
+ * pk_transaction_dbus_return:
+ **/
+void
+pk_transaction_dbus_return (DBusGMethodInvocation *context)
+{
+	/* not set inside the test suite */
+	if (context == NULL)
+		return;
+	dbus_g_method_return (context);
 }
 
 /**
@@ -1468,7 +1492,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1478,7 +1502,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1486,7 +1510,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_ACCEPT_EULA, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1496,16 +1520,15 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "EULA failed to be added");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
 	/* we are done */
 	g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -1529,7 +1552,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	if (transaction->priv->backend->desc->cancel == NULL) {
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 	                             "Cancel not yet supported by backend");
-	        dbus_g_method_return_error (context, error);
+	        pk_transaction_dbus_return_error (context, error);
 	        return;
 	}
 
@@ -1542,7 +1565,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	/* check to see if we have an action */
 	if (transaction->priv->role == PK_ROLE_ENUM_UNKNOWN) {
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_ROLE, "No role");
-	        dbus_g_method_return_error (context, error);
+	        pk_transaction_dbus_return_error (context, error);
 	        return;
 	}
 
@@ -1550,7 +1573,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	if (!transaction->priv->allow_cancel) {
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
 	                             "Tried to cancel a transaction that is not safe to kill");
-	        dbus_g_method_return_error (context, error);
+	        pk_transaction_dbus_return_error (context, error);
 	        return;
 	}
 
@@ -1558,7 +1581,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	if (transaction->priv->uid == PK_SECURITY_UID_INVALID) {
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
 	                             "No context from caller to get UID from");
-	        dbus_g_method_return_error (context, error);
+	        pk_transaction_dbus_return_error (context, error);
 	        return;
 	}
 
@@ -1572,7 +1595,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	/* check we got a valid value */
 	if (uid == PK_SECURITY_UID_INVALID) {
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE, "unable to get uid of caller");
-	        dbus_g_method_return_error (context, error);
+	        pk_transaction_dbus_return_error (context, error);
 	        return;
 	}
 
@@ -1581,7 +1604,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 		egg_debug ("uid does not match (%i vs. %i)", transaction->priv->uid, uid);
 		ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_CANCEL, &error);
 		if (!ret) {
-			dbus_g_method_return_error (context, error);
+			pk_transaction_dbus_return_error (context, error);
 			return;
 		}
 	}
@@ -1609,9 +1632,8 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	transaction->priv->backend->desc->cancel (transaction->priv->backend);
 
 out:
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -1636,7 +1658,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 	                             "DownloadPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-	        dbus_g_method_return_error (context, error);
+	        pk_transaction_dbus_return_error (context, error);
 	        return;
 	}
 
@@ -1644,7 +1666,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1655,7 +1677,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 	                             "The package id's '%s' are not valid", package_ids_temp);
 	        g_free (package_ids_temp);
-	        dbus_g_method_return_error (context, error);
+	        pk_transaction_dbus_return_error (context, error);
 	        return;
 	}
 
@@ -1667,7 +1689,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	if (retval != 0) {
 	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
 	                             "cannot create %s", directory);
-	        dbus_g_method_return_error (context, error);
+	        pk_transaction_dbus_return_error (context, error);
 	        return;
 	}
 
@@ -1686,9 +1708,8 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	}
 
 	g_free (directory);
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -1725,7 +1746,7 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetCategories not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1733,7 +1754,7 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1742,7 +1763,7 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
 				     "Already performing get categories");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1754,7 +1775,7 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1784,7 +1805,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetDepends not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1792,7 +1813,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1800,7 +1821,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1812,7 +1833,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1828,13 +1849,12 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -1859,7 +1879,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetDetails not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1867,7 +1887,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1879,7 +1899,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1893,13 +1913,12 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -1921,7 +1940,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetDistroUpgrades not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1929,7 +1948,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1942,7 +1961,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1974,7 +1993,7 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1982,7 +2001,7 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -1994,7 +2013,7 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2008,13 +2027,12 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -2036,7 +2054,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2044,7 +2062,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2052,7 +2070,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2066,13 +2084,12 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -2152,7 +2169,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetRepoList not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2160,7 +2177,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2168,7 +2185,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2182,13 +2199,12 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -2214,7 +2230,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetRequires not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2222,7 +2238,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2230,7 +2246,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2242,7 +2258,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2258,13 +2274,12 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -2341,7 +2356,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetUpdateDetail not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2349,7 +2364,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2361,7 +2376,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2420,16 +2435,15 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
 out:
 	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -2453,7 +2467,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetUpdates not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2461,7 +2475,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2469,7 +2483,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2513,13 +2527,12 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -2549,7 +2562,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "InstallFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2557,7 +2570,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2571,7 +2584,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
 					     "No such file %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
-			dbus_g_method_return_error (context, error);
+			pk_transaction_dbus_return_error (context, error);
 			return;
 		}
 		/* valid */
@@ -2583,7 +2596,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 			if (!ret) {
 				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", error_local->message);
 				pk_transaction_release_tid (transaction);
-				dbus_g_method_return_error (context, error);
+				pk_transaction_dbus_return_error (context, error);
 				g_error_free (error_local);
 				return;
 			}
@@ -2594,7 +2607,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	ret = pk_transaction_action_is_allowed (transaction, trusted, PK_ROLE_ENUM_INSTALL_FILES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2609,13 +2622,12 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 	return;
 }
 
@@ -2642,7 +2654,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "InstallPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2650,7 +2662,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2662,7 +2674,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2670,7 +2682,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2684,13 +2696,12 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -2714,7 +2725,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "InstallSignature not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2722,7 +2733,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2732,7 +2743,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2742,7 +2753,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2750,7 +2761,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_INSTALL_SIGNATURE, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2765,13 +2776,12 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -2808,7 +2818,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RefreshCache not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2816,7 +2826,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2824,7 +2834,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REFRESH_CACHE, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2841,13 +2851,12 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -2874,7 +2883,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "RemovePackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2882,7 +2891,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2894,7 +2903,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2902,7 +2911,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REMOVE_PACKAGES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2917,13 +2926,12 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -2946,7 +2954,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "RepoEnable not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2954,7 +2962,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2964,7 +2972,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2972,7 +2980,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REPO_ENABLE, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -2987,13 +2995,12 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3017,7 +3024,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "RepoSetData not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3025,7 +3032,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3035,7 +3042,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3043,7 +3050,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REPO_SET_DATA, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3059,13 +3066,12 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3093,7 +3099,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Resolve not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3101,7 +3107,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3109,7 +3115,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3121,7 +3127,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 					     "Invalid input passed to daemon");
 			pk_transaction_release_tid (transaction);
-			dbus_g_method_return_error (context, error);
+			pk_transaction_dbus_return_error (context, error);
 			return;
 		}
 	}
@@ -3137,13 +3143,12 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3166,7 +3171,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Rollback not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3174,7 +3179,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3184,7 +3189,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3192,7 +3197,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_ROLLBACK, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3206,13 +3211,12 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3235,7 +3239,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchDetails not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3243,7 +3247,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3251,7 +3255,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_search_check (search, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3259,7 +3263,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3274,13 +3278,12 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3303,7 +3306,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchFile not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3311,7 +3314,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3319,7 +3322,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_search_check (search, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3327,7 +3330,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3342,13 +3345,12 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3371,7 +3373,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchGroup not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3379,7 +3381,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3387,7 +3389,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_search_check (search, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3395,7 +3397,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3410,13 +3412,12 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3439,7 +3440,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchName not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3447,7 +3448,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3455,7 +3456,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_search_check (search, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3463,7 +3464,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3478,13 +3479,12 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3503,7 +3503,7 @@ pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, DBusGM
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3512,16 +3512,15 @@ pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, DBusGM
 		egg_warning ("Already set locale");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Already set locale to %s", transaction->priv->locale);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
 	/* save so we can pass to the backend */
 	transaction->priv->locale = g_strdup (code);
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3546,7 +3545,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "UpdatePackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3554,7 +3553,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3566,7 +3565,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3574,7 +3573,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3588,13 +3587,12 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3616,7 +3614,7 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "UpdateSystem not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3624,7 +3622,7 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3632,7 +3630,7 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3641,7 +3639,7 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
 				     "Already performing system update");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3653,13 +3651,12 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
@@ -3683,7 +3680,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "WhatProvides not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3691,7 +3688,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3699,7 +3696,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	ret = pk_transaction_search_check (search, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3707,7 +3704,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3717,7 +3714,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_PROVIDE,
 				     "provide type '%s' not found", type);
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
@@ -3733,13 +3730,12 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		dbus_g_method_return_error (context, error);
+		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
 
-	/* not set inside the test suite */
-	if (context != NULL)
-		dbus_g_method_return (context);
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
 }
 
 /**
