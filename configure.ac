@@ -316,6 +316,21 @@ fi
 AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
 
 dnl ---------------------------------------------------------------------------
+dnl - Able to build pango module
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(pango_module, AS_HELP_STRING([--enable-pango-module],[Build pango module functionality]),
+	      enable_pango_module=$enableval,enable_pango_module=yes)
+if test x$enable_pango_module = xyes; then
+	PKG_CHECK_MODULES(PK_PANGO_MODULE, gtk+-2.0 pangoft2 fontconfig dbus-glib-1,
+	                  build_pango_module=yes, build_pango_module=no)
+	AC_SUBST(PK_PANGO_MODULE_CFLAGS)
+	AC_SUBST(PK_PANGO_MODULE_LIBS)
+else
+	build_pango_module=no
+fi
+AM_CONDITIONAL(PK_BUILD_PANGO_MODULE, test $build_pango_module = "yes")
+
+dnl ---------------------------------------------------------------------------
 dnl - Other tests
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(gcov, AS_HELP_STRING([--enable-gcov],[compile with coverage profiling instrumentation (gcc only)]),
@@ -579,6 +594,7 @@ docs/api/version.xml
 contrib/Makefile
 contrib/packagekit-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
+contrib/pango-module/Makefile
 contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
@@ -641,6 +657,7 @@ echo "
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
+        Pango module:              ${build_pango_module}
         QT library:                ${build_qt}
 
         Backends:

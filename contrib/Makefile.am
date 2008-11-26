@@ -12,6 +12,10 @@ if PK_BUILD_GSTREAMER_PLUGIN
 SUBDIRS += gstreamer-plugin
 endif
 
+if PK_BUILD_PANGO_MODULE
+SUBDIRS += pango-module
+endif
+
 bashcompletiondir = ${SYSCONFDIR}/bash_completion.d
 dist_bashcompletion_DATA = pk-completion.bash
 
