@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<gconfschemafile>
+  <schemalist>
+    <schema>
+      <key>/schemas/apps/gnome_settings_daemon/gtk-modules/PackageKit-pango-module</key>
+      <applyto>/apps/gnome_settings_daemon/gtk-modules/PackageKit-pango-module</applyto>
+      <owner>PackageKit</owner>
+      <type>bool</type>
+      <default>true</default>
+      <locale name="C">
+        <short>GTK+ module for font installation</short>
+        <long>This key determines if PackageKit should prompt for font installs.</long>
+      </locale>
+    </schema>
+  </schemalist>
+</gconfschemafile>
+
