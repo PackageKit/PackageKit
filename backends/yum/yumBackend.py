@@ -69,9 +69,7 @@ class GPGKeyNotImported(exceptions.Exception):
     pass
 
 def sigquit(signum, frame):
-    print >> sys.stderr, "Quit signal sent - exiting immediately"
     if yumbase:
-        print >> sys.stderr, "unlocking backend"
         yumbase.closeRpmDB()
         yumbase.doUnlock(YUM_PID_FILE)
     sys.exit(1)
