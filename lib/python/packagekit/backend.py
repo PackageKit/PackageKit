@@ -41,6 +41,21 @@ class PackageKitBaseBackend:
         installExceptionHandler(self)
         self.cmds = cmds
         self._locked = False
+        self.lang = "C"
+        self.has_network = False
+
+        # try to get LANG
+        try:
+            self.lang = os.environ['LANG']
+        except exceptions.KeyError, e:
+            print "Error: No LANG envp"
+
+        # try to get NETWORK state
+        try:
+            if os.environ['NETWORK'] == 'TRUE':
+                self.has_network = True
+        except exceptions.KeyError, e:
+            print "Error: No NETWORK envp"
 
     def doLock(self):
         ''' Generic locking, overide and extend in child class'''
