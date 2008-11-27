@@ -1,3 +1,4 @@
+NULL =
 APP = gedit --new-window GLASS.txt
 
 moduledir = $(LIBDIR)/gtk-2.0/modules
@@ -12,6 +13,11 @@ clean-local:
 
 local: all
 	GTK_MODULES="$$GTK_MODULES:$$PWD/.libs/pk-gtk-module.so" $(APP)
+
+EXTRA_DIST =						\
+	README						\
+	GLASS.txt					\
+	$(NULL)
 
 MAINTAINERCLEANFILES =					\
 	*~			      			\
