@@ -2,8 +2,8 @@
 <gconfschemafile>
   <schemalist>
     <schema>
-      <key>/schemas/apps/gnome_settings_daemon/gtk-modules/PackageKit-pango-module</key>
-      <applyto>/apps/gnome_settings_daemon/gtk-modules/PackageKit-pango-module</applyto>
+      <key>/schemas/apps/gnome_settings_daemon/gtk-modules/PackageKit-gtk-module</key>
+      <applyto>/apps/gnome_settings_daemon/gtk-modules/PackageKit-gtk-module</applyto>
       <owner>PackageKit</owner>
       <type>bool</type>
       <default>true</default>

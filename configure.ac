@@ -316,19 +316,19 @@ fi
 AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
 
 dnl ---------------------------------------------------------------------------
-dnl - Able to build pango module
+dnl - Able to build GTK module
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(pango_module, AS_HELP_STRING([--enable-pango-module],[Build pango module functionality]),
-	      enable_pango_module=$enableval,enable_pango_module=yes)
-if test x$enable_pango_module = xyes; then
-	PKG_CHECK_MODULES(PK_PANGO_MODULE, gtk+-2.0 pangoft2 fontconfig dbus-glib-1,
-	                  build_pango_module=yes, build_pango_module=no)
-	AC_SUBST(PK_PANGO_MODULE_CFLAGS)
-	AC_SUBST(PK_PANGO_MODULE_LIBS)
+AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK module functionality]),
+	      enable_gtk_module=$enableval,enable_gtk_module=yes)
+if test x$enable_gtk_module = xyes; then
+	PKG_CHECK_MODULES(PK_GTK_MODULE, gtk+-2.0 pangoft2 fontconfig dbus-glib-1,
+	                  build_gtk_module=yes, build_gtk_module=no)
+	AC_SUBST(PK_GTK_MODULE_CFLAGS)
+	AC_SUBST(PK_GTK_MODULE_LIBS)
 else
-	build_pango_module=no
+	build_gtk_module=no
 fi
-AM_CONDITIONAL(PK_BUILD_PANGO_MODULE, test $build_pango_module = "yes")
+AM_CONDITIONAL(PK_BUILD_GTK_MODULE, test $build_gtk_module = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Other tests
@@ -594,7 +594,7 @@ docs/api/version.xml
 contrib/Makefile
 contrib/packagekit-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
-contrib/pango-module/Makefile
+contrib/gtk-module/Makefile
 contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
@@ -657,7 +657,7 @@ echo "
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
-        Pango module:              ${build_pango_module}
+        Pango module:              ${build_gtk_module}
         QT library:                ${build_qt}
 
         Backends:

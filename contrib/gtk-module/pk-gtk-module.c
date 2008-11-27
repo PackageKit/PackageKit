@@ -20,7 +20,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#define G_LOG_DOMAIN "MissingFontModule"
+#define G_LOG_DOMAIN "PkGtkModule"
 
 #define PANGO_ENABLE_BACKEND
 #include <fontconfig/fontconfig.h>
