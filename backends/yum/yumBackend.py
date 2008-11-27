@@ -1957,6 +1957,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if not self.has_network:
             for repo in self.yumbase.repos.listEnabled():
                 repo.metadata_expire = -1  # never refresh
+            self.yumbase.conf.cache = 1
 
         # we don't care about freshest data
         elif lazy_cache:
