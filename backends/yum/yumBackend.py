@@ -187,7 +187,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
         self.yumbase = PackageKitYumBase(self)
-        self._lang = os.environ['LANG']
         self.package_summary_cache = {}
         self.comps = yumComps(self.yumbase)
         if not self.comps.connect():
@@ -280,7 +279,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         Implement the {backend}-set-locale functionality
         Needed to be implemented in a sub class
         '''
-        self._lang = code
+        self.lang = code
 
     def _do_search(self, searchlist, filters, key):
         '''
@@ -425,7 +424,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_NO_CACHE, _to_unicode(e))
         else:
             if grp:
-                name = grp.nameByLang(self._lang)
+                name = grp.nameByLang(self.lang)
                 if grp.installed:
                     if show_inst:
                         self.package(package_id, INFO_COLLECTION_INSTALLED, name)
@@ -598,8 +597,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         for cat in cats:
             cat_id = cat.categoryid
             # yum >= 3.2.10
-            # name = cat.nameByLang(self._lang)
-            # summary = cat.descriptionByLang(self._lang)
+            # name = cat.nameByLang(self.lang)
+            # summary = cat.descriptionByLang(self.lang)
             name = cat.name
             summary = cat.description
             fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
@@ -629,8 +628,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for grp in sorted(grps):
                 grp_id = grp.groupid
                 cat_id_name = "@%s" % (grp_id)
-                name = grp.nameByLang(self._lang)
-                summary = grp.descriptionByLang(self._lang)
+                name = grp.nameByLang(self.lang)
+                summary = grp.descriptionByLang(self.lang)
                 icon = "image-missing"
                 fn = "/usr/share/pixmaps/comps/%s.png" % grp_id
                 if os.access(fn, os.R_OK):
@@ -1117,6 +1116,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)
 
+        # we are working offline
+        if not self.has_network:
+            self.error(ERROR_NO_NETWORK, "cannot refresh cache when offline")
+
         pct = 0
         try:
             if len(self.yumbase.repos.listEnabled()) == 0:
@@ -1597,7 +1600,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             grp = self._is_meta_package(package)
             if grp:
                 package_id = "%s;;;meta" % grp.groupid
-                desc = grp.descriptionByLang(self._lang)
+                desc = grp.descriptionByLang(self.lang)
                 desc = desc.replace('\n\n', ';')
                 desc = desc.replace('\n', ' ')
                 group = GROUP_COLLECTIONS
@@ -1951,10 +1954,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def _check_init(self, lazy_cache=False, repo_setup=True):
         '''Just does the caching tweaks'''
-        if lazy_cache:
+
+        # we are working offline
+        if not self.has_network:
+            for repo in self.yumbase.repos.listEnabled():
+                repo.metadata_expire = -1  # never refresh
+
+        # we don't care about freshest data
+        elif lazy_cache:
             for repo in self.yumbase.repos.listEnabled():
                 repo.metadata_expire = 60 * 60 * 24  # 24 hours
                 repo.mdpolicy = "group:all"
+
+        # default
         else:
             for repo in self.yumbase.repos.listEnabled():
                 repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
