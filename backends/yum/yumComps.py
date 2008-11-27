@@ -245,8 +245,10 @@ class yumComps:
 
     def refresh(self, force=False):
         ''' get the data from yum (slow, REALLY SLOW) '''
-
-        cats = self.yumbase.comps.categories
+        try:
+            cats = self.yumbase.comps.categories
+        except yum.Errors.RepoError, e:
+            return False
         if self.yumbase.comps.compscount == 0:
             return False
 
