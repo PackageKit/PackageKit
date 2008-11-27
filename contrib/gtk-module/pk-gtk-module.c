@@ -31,52 +31,141 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 
-static GPtrArray *array = NULL;
-
-void gtk_module_init (gint *argc, gchar ***argv);
-static PangoFontset *(*pk_font_load_fontset_default) (PangoFontMap *font_map,
-						      PangoContext *context,
-						      const PangoFontDescription *desc,
-						      PangoLanguage *language);
-
-typedef struct {
-	PangoLanguage *language;
-	gboolean found;
-} FonsetForeachClosure;
-
 /**
- * pk_font_find_window:
+ * Try guessing the XID of the toplevel window that triggered us
  **/
+
 static void
-pk_font_find_window (GtkWindow *window, GtkWindow **active)
+toplevels_foreach_cb (GtkWindow *window,
+		      GtkWindow **active)
 {
 	if (gtk_window_has_toplevel_focus (window))
 		*active = window;
 }
 
-/**
- * pk_font_ptr_array_to_strv:
- **/
-gchar **
-pk_font_ptr_array_to_strv (GPtrArray *array)
+static guint
+guess_xid (void)
 {
-	gchar **strv_array;
-	const gchar *value_temp;
-	guint i;
+	guint xid = 0;
+	GtkWindow *active = NULL;
 
-	strv_array = g_new0 (gchar *, array->len + 2);
-	for (i=0; i<array->len; i++) {
-		value_temp = (const gchar *) g_ptr_array_index (array, i);
-		strv_array[i] = g_strdup (value_temp);
-	}
-	strv_array[i] = NULL;
+	g_list_foreach (gtk_window_list_toplevels (),
+			(GFunc) toplevels_foreach_cb, &active);
 
-	return strv_array;
+	if (active != NULL)
+		xid = GDK_WINDOW_XID (gtk_widget_get_window (GTK_WIDGET(active)));
+
+	return xid;
 }
 
+
 /**
- * pk_font_not_found:
+ * Invoke the PackageKit InstallFonts method over D-BUS
  **/
+
+static void
+pk_install_fonts_dbus_notify_cb (DBusGProxy *proxy,
+				 DBusGProxyCall *call,
+				 gpointer user_data)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	ret = dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID);
+
+	if (!ret) {
+		g_debug ("Did not install fonts: %s", error->message);
+		return;
+	} else {
+		/* XXX Actually get the return value of the method? */
+
+		g_debug ("Fonts installed");
+	}
+
+	/* XXX Make gtk/pango reload fonts? */
+}
+
+static GPtrArray *tags;
+
+static gboolean
+pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
+{
+	guint i;
+	DBusGConnection *connection;
+	DBusGProxy *proxy = NULL;
+	guint xid;
+	gchar **font_tags;
+	GError *error = NULL;
+	DBusGProxyCall *call;
+
+	g_return_val_if_fail (tags->len > 0, FALSE);
+
+	/* just print */
+	for (i = 0; i< tags->len; i++)
+		g_debug ("tags[%i]: %s", i, (const gchar *) g_ptr_array_index (tags, i));
+
+	/* get a strv out of the array that we will then own */
+	g_ptr_array_add (tags, NULL);
+	font_tags = (gchar **) g_ptr_array_free (tags, FALSE);
+	tags = NULL;
+
+	/* try to get the window XID */
+	xid = guess_xid ();
+
+	/* get bus */
+	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
+	if (connection == NULL) {
+		g_warning ("Could not connect to session bus: %s\n", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get proxy */
+	proxy = dbus_g_proxy_new_for_name (connection,
+					   "org.freedesktop.PackageKit",
+					   "/org/freedesktop/PackageKit",
+					   "org.freedesktop.PackageKit");
+	if (proxy == NULL) {
+		g_warning ("Could not connect to PackageKit session service\n");
+		goto out;
+	}
+
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
+
+	/* invoke the method */
+	call = dbus_g_proxy_begin_call (proxy, "InstallFonts",
+					pk_install_fonts_dbus_notify_cb, NULL, NULL,
+				        G_TYPE_UINT, xid,
+				        G_TYPE_UINT, 0,
+				        G_TYPE_STRV, font_tags,
+				        G_TYPE_INVALID);
+	if (call == NULL) {
+		g_warning ("Could not send method");
+		goto out;
+	}
+
+	g_debug ("InstallFonts method invoked");
+
+out:
+	g_strfreev (font_tags);
+	if (proxy != NULL)
+		g_object_unref (proxy);
+
+	return FALSE;
+}
+
+static void
+queue_install_fonts_tag (const char *tag)
+{
+	if (tags == NULL) {
+		tags = g_ptr_array_new ();
+		g_idle_add (pk_install_fonts_idle_cb, NULL);
+	}
+
+	g_ptr_array_add (tags, (gpointer) g_strdup (tag));
+}
+
 static void
 pk_font_not_found (PangoLanguage *language)
 {
@@ -84,23 +173,23 @@ pk_font_not_found (PangoLanguage *language)
 	gchar *tag = NULL;
 	const gchar *lang;
 
+	g_return_if_fail (language != NULL);
+
 	/* convert to language */
 	lang = pango_language_to_string (language);
-	g_message ("lang required '%s'", lang);
-	if (lang == NULL || strcmp (lang, "C") == 0)
-		goto out;
+	g_debug ("requested font language '%s'", lang);
 
-	/* create the font tag used in as a package buildrequire */
+	/* create the font tag used in as a package provides */
 	pat = FcPatternCreate ();
 	FcPatternAddString (pat, FC_LANG, (FcChar8 *) lang);
 	tag = (gchar *) FcNameUnparse (pat);
 	if (tag == NULL)
 		goto out;
 
-	g_message ("tag required '%s'", tag);
+	g_debug ("requested font tag '%s'", tag);
 
 	/* add to array for processing in idle callback */
-	g_ptr_array_add (array, (gpointer) g_strdup (tag));
+	queue_install_fonts_tag (tag);
 
 out:
 	if (pat != NULL)
@@ -108,11 +197,21 @@ out:
 	g_free (tag);
 }
 
+
 /**
- * pk_font_foreach_callback:
+ * A PangoFcFontMap implementation that detects font-not-found events
  **/
+
+
+typedef struct {
+	PangoLanguage *language;
+	gboolean found;
+} FonsetForeachClosure;
+
 static gboolean
-pk_font_foreach_callback (PangoFontset *fontset G_GNUC_UNUSED, PangoFont *font, gpointer data)
+fontset_foreach_cb (PangoFontset *fontset G_GNUC_UNUSED,
+		    PangoFont *font,
+		    gpointer data)
 {
 	FonsetForeachClosure *closure = data;
 	PangoFcFont *fcfont = PANGO_FC_FONT (font);
@@ -123,34 +222,44 @@ pk_font_foreach_callback (PangoFontset *fontset G_GNUC_UNUSED, PangoFont *font, 
 
 	/* old Pango version with non-readable pattern */
 	if (pattern == NULL) {
-		g_warning ("Old Pango version with non-readable pattern. Skipping auto missing font installation.");
+		g_warning ("Old Pango version with non-readable pattern. "
+			   "Skipping automatic missing-font installation.");
 		return closure->found = TRUE;
 	}
 
 	if (FcPatternGetLangSet (pattern, FC_LANG, 0, &langset) == FcResultMatch &&
-				 FcLangSetHasLang (langset, (FcChar8 *) closure->language) != FcLangDifferentLang)
+	    FcLangSetHasLang (langset, (FcChar8 *) closure->language) != FcLangDifferentLang)
 		closure->found = TRUE;
 
 	return closure->found;
 }
 
-/**
- * pk_font_load_fontset:
- **/
+
+static PangoFontset *(*pk_pango_fc_font_map_load_fontset_default) (PangoFontMap *font_map,
+								   PangoContext *context,
+								   const PangoFontDescription *desc,
+								   PangoLanguage *language);
+
 static PangoFontset *
-pk_font_load_fontset (PangoFontMap *font_map, PangoContext *context, const PangoFontDescription *desc, PangoLanguage *language)
+pk_pango_fc_font_map_load_fontset (PangoFontMap *font_map,
+				   PangoContext *context,
+				   const PangoFontDescription *desc,
+				   PangoLanguage *language)
 {
 	static PangoLanguage *last_language = NULL;
 	static GHashTable *seen_languages = NULL;
 	PangoFontset *fontset;
 	
-	fontset = pk_font_load_fontset_default (font_map, context, desc, language);
+	fontset = pk_pango_fc_font_map_load_fontset_default (font_map, context, desc, language);
 
 	/* "xx" is Pango's "unknown language" language code.
 	 * we can fall back to scripts maybe, but the facilities for that
 	 * is not in place yet.	Maybe Pango can use a four-letter script
 	 * code instead of "xx"... */
-	if (G_LIKELY (language == last_language) || language == NULL || language == pango_language_from_string ("xx"))
+	if (G_LIKELY (language == last_language) ||
+	    language == NULL ||
+	    language == pango_language_from_string ("C") ||
+	    language == pango_language_from_string ("xx"))
 		return fontset;
 
 	if (G_UNLIKELY (!seen_languages))
@@ -163,7 +272,7 @@ pk_font_load_fontset (PangoFontMap *font_map, PangoContext *context, const Pango
 
 		closure.language = language;
 		closure.found = FALSE;
-		pango_fontset_foreach (fontset, pk_font_foreach_callback, &closure);
+		pango_fontset_foreach (fontset, fontset_foreach_cb, &closure);
 		if (!closure.found)
 			pk_font_not_found (language);
 	}
@@ -172,143 +281,58 @@ pk_font_load_fontset (PangoFontMap *font_map, PangoContext *context, const Pango
 	return fontset;
 }
 
-/**
- * pk_font_map_class_init:
- **/
 static void
-pk_font_map_class_init (PangoFontMapClass *klass)
+pk_pango_fc_font_map_class_init (PangoFontMapClass *klass)
 {
-	g_assert (pk_font_load_fontset_default == NULL);
-	pk_font_load_fontset_default = klass->load_fontset;
-	klass->load_fontset = pk_font_load_fontset;
+	g_return_if_fail (pk_pango_fc_font_map_load_fontset_default == NULL);
+
+	pk_pango_fc_font_map_load_fontset_default = klass->load_fontset;
+	klass->load_fontset = pk_pango_fc_font_map_load_fontset;
 }
 
-/**
- * pk_font_overload_type:
- **/
 static GType
-pk_font_overload_type (GType font_map_type)
+pk_pango_fc_font_map_overload_type (GType default_pango_fc_font_map_type)
 {
 	GTypeQuery query;
-	g_type_query (font_map_type, &query);
+	g_type_query (default_pango_fc_font_map_type, &query);
 
-	return g_type_register_static_simple (font_map_type,
-					      g_intern_static_string ("MissingFontFontMap"),
+	return g_type_register_static_simple (default_pango_fc_font_map_type,
+					      g_intern_static_string ("PkPangoFcFontMap"),
 					      query.class_size,
-					      (GClassInitFunc) pk_font_map_class_init,
+					      (GClassInitFunc) pk_pango_fc_font_map_class_init,
 					      query.instance_size,
 					      NULL, 0);
 }
 
-/**
- * pk_font_dbus_notify_cb:
- **/
 static void
-pk_font_dbus_notify_cb (DBusGProxy *proxy, DBusGProxyCall *call, gpointer user_data)
-{
-
-	gboolean ret;
-	GError *error = NULL;
-	ret = dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID);
-	if (!ret)
-		g_message ("PackageKit: Did not install font: %s", error->message);
-}
-
-/**
- * pk_font_idle_cb:
- **/
-static gboolean
-pk_font_idle_cb (GPtrArray *array)
-{
-	guint i;
-	DBusGConnection *connection;
-	DBusGProxy *proxy = NULL;
-	guint xid = 0;
-	gchar **fonts = NULL;
-	GError *error = NULL;
-	GtkWindow *active = NULL;
-	GdkWindow *window;
-	GList *list;
-
-	/* nothing to do */
-	if (array->len == 0)
-		goto out;
-
-	/* just print */
-	for (i=0; i< array->len; i++)
-		g_message ("array[%i]: %s", i, (const gchar *) g_ptr_array_index (array, i));
-
-	/* try to get the window XID */
-	list = gtk_window_list_toplevels ();
-	g_list_foreach (list, (GFunc) pk_font_find_window, &active);
-	if (active != NULL) {
-		window = gtk_widget_get_window (GTK_WIDGET(active));
-		xid = (guint) GDK_WINDOW_XID(window);
-	}
-
-	/* get bus */
-	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
-	if (connection == NULL) {
-		g_print ("Could not connect to session DBUS: %s\n", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* get proxy */
-	proxy = dbus_g_proxy_new_for_name (connection,
-					   "org.freedesktop.PackageKit",
-					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.PackageKit");
-	if (proxy == NULL) {
-		g_print ("Cannot connect to PackageKit session service\n");
-		goto out;
-	}
-
-	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
-	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
-
-	/* invoke the method */
-	fonts = pk_font_ptr_array_to_strv (array);
-	DBusGProxyCall *call;
-	call = dbus_g_proxy_begin_call (proxy, "InstallFonts", pk_font_dbus_notify_cb, NULL, NULL, 
-				        G_TYPE_UINT, xid,
-				        G_TYPE_UINT, 0,
-				        G_TYPE_STRV, fonts,
-				        G_TYPE_INVALID);
-	if (call == NULL) {
-		g_message ("PackageKit: could not send method");
-		goto out;
-	}
-out:
-	g_strfreev (fonts);
-	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
-	g_ptr_array_free (array, TRUE);
-	if (proxy != NULL)
-		g_object_unref (proxy);
-
-	return FALSE;
-}
-
-/**
- * gtk_module_init:
- **/
-void
-gtk_module_init (gint *argc G_GNUC_UNUSED,
-		 gchar ***argv G_GNUC_UNUSED)
+install_pango_font_map (void)
 {
 	PangoFontMap *font_map;
 	GType font_map_type;
 
-	array = g_ptr_array_new ();
-	g_idle_add ((GSourceFunc) pk_font_idle_cb, array);
-
 	font_map = pango_cairo_font_map_get_default ();
-	if (!PANGO_IS_FC_FONT_MAP (font_map))
+	if (!PANGO_IS_FC_FONT_MAP (font_map)) {
+		g_warning ("Default pangocairo font map is not a pangofc fontmap. "
+			   "Skipping automatic missing-font installation.");
 		return;
+	}
 
-	font_map_type = pk_font_overload_type (G_TYPE_FROM_INSTANCE (font_map));
+	font_map_type = pk_pango_fc_font_map_overload_type (G_TYPE_FROM_INSTANCE (font_map));
 	font_map = g_object_new (font_map_type, NULL);
 	pango_cairo_font_map_set_default (PANGO_CAIRO_FONT_MAP (font_map));
 	g_object_unref (font_map);
 }
 
+
+/**
+ * GTK module declaraction
+ **/
+
+void gtk_module_init (gint *argc, gchar ***argv);
+
+void
+gtk_module_init (gint *argc G_GNUC_UNUSED,
+		 gchar ***argv G_GNUC_UNUSED)
+{
+	install_pango_font_map ();
+}
