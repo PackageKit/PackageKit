@@ -29,6 +29,7 @@
 #include <pango/pangocairo.h>
 #include <dbus/dbus-glib.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
 
 static GPtrArray *array = NULL;
 
@@ -43,16 +44,15 @@ typedef struct {
 	gboolean found;
 } FonsetForeachClosure;
 
-#if 0
 /**
  * pk_font_find_window:
  **/
 static void
 pk_font_find_window (GtkWindow *window, GtkWindow **active)
 {
-	g_message ("%p=%i", window, gtk_window_has_toplevel_focus (window));
+	if (gtk_window_has_toplevel_focus (window))
+		*active = window;
 }
-#endif
 
 /**
  * pk_font_ptr_array_to_strv:
@@ -223,9 +223,12 @@ pk_font_idle_cb (GPtrArray *array)
 	guint i;
 	DBusGConnection *connection;
 	DBusGProxy *proxy = NULL;
-	guint xid;
+	guint xid = 0;
 	gchar **fonts = NULL;
 	GError *error = NULL;
+	GtkWindow *active = NULL;
+	GdkWindow *window;
+	GList *list;
 
 	/* nothing to do */
 	if (array->len == 0)
@@ -235,15 +238,14 @@ pk_font_idle_cb (GPtrArray *array)
 	for (i=0; i< array->len; i++)
 		g_message ("array[%i]: %s", i, (const gchar *) g_ptr_array_index (array, i));
 
-#if 0
-	GtkWindow *active;
-	GList *list;
-
-	/* FIXME: try to get the window XID */
+	/* try to get the window XID */
 	list = gtk_window_list_toplevels ();
 	g_warning ("number of windows = %i", g_list_length (list));
 	g_list_foreach (list, (GFunc) pk_font_find_window, &active);
-#endif
+	if (active != NULL) {
+		window = gtk_widget_get_window (GTK_WIDGET(active));
+		xid = (guint) GDK_WINDOW_XID(window);
+	}
 
 	/* get bus */
 	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
@@ -265,9 +267,6 @@ pk_font_idle_cb (GPtrArray *array)
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
-
-	/* FIXME: get the xid from the calling application */
-	xid = 0;
 
 	/* invoke the method */
 	fonts = pk_font_ptr_array_to_strv (array);
