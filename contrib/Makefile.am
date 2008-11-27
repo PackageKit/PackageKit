@@ -12,8 +12,8 @@ if PK_BUILD_GSTREAMER_PLUGIN
 SUBDIRS += gstreamer-plugin
 endif
 
-if PK_BUILD_PANGO_MODULE
-SUBDIRS += pango-module
+if PK_BUILD_GTK_MODULE
+SUBDIRS += gtk-module
 endif
 
 bashcompletiondir = ${SYSCONFDIR}/bash_completion.d
