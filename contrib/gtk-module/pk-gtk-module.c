@@ -240,7 +240,6 @@ pk_font_idle_cb (GPtrArray *array)
 
 	/* try to get the window XID */
 	list = gtk_window_list_toplevels ();
-	g_warning ("number of windows = %i", g_list_length (list));
 	g_list_foreach (list, (GFunc) pk_font_find_window, &active);
 	if (active != NULL) {
 		window = gtk_widget_get_window (GTK_WIDGET(active));
