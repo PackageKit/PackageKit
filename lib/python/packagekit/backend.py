@@ -47,14 +47,14 @@ class PackageKitBaseBackend:
         # try to get LANG
         try:
             self.lang = os.environ['LANG']
-        except exceptions.KeyError, e:
+        except KeyError, e:
             print "Error: No LANG envp"
 
         # try to get NETWORK state
         try:
             if os.environ['NETWORK'] == 'TRUE':
                 self.has_network = True
-        except exceptions.KeyError, e:
+        except KeyError, e:
             print "Error: No NETWORK envp"
 
     def doLock(self):
