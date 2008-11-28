@@ -43,6 +43,7 @@ import signal
 import time
 import os.path
 import logging
+import socket
 
 import tarfile
 import tempfile
@@ -191,6 +192,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.refresh_cache()
             if not self.comps.connect():
                 self.error(ERROR_GROUP_LIST_INVALID, 'comps categories could not be loaded')
+
+        # timeout a socket after this much time
+        timeout = 15.0
+        socket.setdefaulttimeout(timeout)
 
         # this is global so we can catch sigquit and closedown
         yumbase = self.yumbase
