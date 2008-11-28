@@ -90,7 +90,6 @@ static GPtrArray *tags;
 static gboolean
 pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 {
-	guint i;
 	DBusGConnection *connection;
 	DBusGProxy *proxy = NULL;
 	guint xid;
@@ -99,10 +98,6 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (tags->len > 0, FALSE);
-
-	/* just print */
-	for (i = 0; i< tags->len; i++)
-		g_debug ("tags[%i]: %s", i, (const gchar *) g_ptr_array_index (tags, i));
 
 	/* get a strv out of the array that we will then own */
 	g_ptr_array_add (tags, NULL);
@@ -177,7 +172,6 @@ pk_font_not_found (PangoLanguage *language)
 
 	/* convert to language */
 	lang = pango_language_to_string (language);
-	g_debug ("requested font language '%s'", lang);
 
 	/* create the font tag used in as a package provides */
 	pat = FcPatternCreate ();
@@ -185,8 +179,6 @@ pk_font_not_found (PangoLanguage *language)
 	tag = (gchar *) FcNameUnparse (pat);
 	if (tag == NULL)
 		goto out;
-
-	g_debug ("requested font tag '%s'", tag);
 
 	/* add to array for processing in idle callback */
 	queue_install_fonts_tag (tag);
