@@ -1004,7 +1004,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # remove any of the packages we passed in
         for package_id in package_ids:
             pkg, inst = self._findPackage(package_id)
-            deps_list.remove(pkg)
+            if pkg in deps_list:
+                deps_list.remove(pkg)
 
         # remove any that are already installed
         for pkg in deps_list:
