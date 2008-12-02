@@ -1818,6 +1818,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def _get_obsoleted(self, name):
         try:
+            # make sure yum doesn't explode in some internal fit of rage
+            self.yumbase.up.doObsoletes()
             obsoletes = self.yumbase.up.getObsoletesTuples(newest=1)
             for (obsoleting, installed) in obsoletes:
                 if obsoleting[0] == name:
