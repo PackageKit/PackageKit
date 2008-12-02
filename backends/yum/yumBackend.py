@@ -1983,10 +1983,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.yumbase.repos.setCache(old_cache_setting)
 
     def _setup_yum(self):
-        self.yumbase.doConfigSetup(errorlevel=-1, debuglevel=-1)     # Setup Yum Config
-        self.yumbase.conf.throttle = "90%"                        # Set bandwidth throttle to 40%
-        self.dnlCallback = DownloadCallback(self, showNames=True)  # Download callback
-        self.yumbase.repos.setProgressBar(self.dnlCallback)       # Setup the download callback class
+        try:
+            # setup Yum Config
+            self.yumbase.doConfigSetup(errorlevel=-1, debuglevel=-1)
+        except Exception, e:
+            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+
+        # set bandwidth throttle to 90%
+        self.yumbase.conf.throttle = "90%"
+        self.dnlCallback = DownloadCallback(self, showNames=True)
+        self.yumbase.repos.setProgressBar(self.dnlCallback)
 
 class DownloadCallback(BaseMeter):
     """ Customized version of urlgrabber.progress.BaseMeter class """
