@@ -226,6 +226,7 @@ EXTRA_DIST =						\
 
 clean-local:
 	rm -f *~
+	rm -f transactions.db
 	rm -f pk-marshal.c pk-marshal.h
 
 CLEANFILES = *~ $(BUILT_SOURCES)
