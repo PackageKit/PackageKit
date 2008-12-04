@@ -259,6 +259,8 @@ class yumComps:
             cats = self.yumbase.comps.categories
         except yum.Errors.RepoError, e:
             return False
+        except Exception, e:
+            return False
         if self.yumbase.comps.compscount == 0:
             return False
 
