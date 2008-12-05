@@ -1576,10 +1576,18 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
             return False
 
+        # check if wrong arch
+        suitable_archs = rpmUtils.arch.getArchList()
+        if po.arch not in suitable_archs:
+            self.error(ERROR_INCOMPATIBLE_ARCHITECTURE, "Package %s has incompatible architecture %s. Valid architectures are %s" % (pkg, po.arch, suitable_archs))
+            return False
+
+        # check already installed
         if self._is_inst_arch(po):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package %s is already installed" % str(po))
             return False
 
+        # check if excluded
         if len(self.yumbase.conf.exclude) > 0:
             exactmatch, matched, unmatched = parsePackages([po], self.yumbase.conf.exclude, casematch=1)
             if po in exactmatch + matched:
