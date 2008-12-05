@@ -201,6 +201,16 @@ Requires: PackageKit-glib = %{version}-%{release}
 The PackageKit GTK+ module allows any Pango application to install
 fonts from configured repositories using PackageKit.
 
+%package command-not-found
+Summary: Ask the user to install command line programs automatically
+Group: Development/Libraries
+Requires: bash
+Requires: PackageKit-glib = %{version}-%{release}
+
+%description command-not-found
+A simple helper that offers to install new packages on the command line
+using PackageKit.
+
 %prep
 %setup -q
 
@@ -363,6 +373,12 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
 %{_libdir}/gtk-2.0/modules/*.so
+
+%files command-not-found
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_sysconfdir}/profile.d/*
+%{_libexecdir}/pk-command-not-found
 
 %files glib-devel
 %defattr(-,root,root,-)
