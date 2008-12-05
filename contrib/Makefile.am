@@ -16,6 +16,10 @@ if PK_BUILD_GTK_MODULE
 SUBDIRS += gtk-module
 endif
 
+if PK_BUILD_COMMAND_NOT_FOUND
+SUBDIRS += command-not-found
+endif
+
 bashcompletiondir = ${SYSCONFDIR}/bash_completion.d
 dist_bashcompletion_DATA = pk-completion.bash
 

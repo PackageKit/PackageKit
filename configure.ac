@@ -331,6 +331,13 @@ fi
 AM_CONDITIONAL(PK_BUILD_GTK_MODULE, test $build_gtk_module = "yes")
 
 dnl ---------------------------------------------------------------------------
+dnl - Able to build BASH command-not-found functionality
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(command_not_found, AS_HELP_STRING([--enable-command-not-found],[Build BASH command-not-found functionality]),
+	      build_command_not_found=$enableval,build_command_not_found=yes)
+AM_CONDITIONAL(PK_BUILD_COMMAND_NOT_FOUND, test $build_command_not_found = "yes")
+
+dnl ---------------------------------------------------------------------------
 dnl - Other tests
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(gcov, AS_HELP_STRING([--enable-gcov],[compile with coverage profiling instrumentation (gcc only)]),
@@ -597,6 +604,7 @@ contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
 contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
+contrib/command-not-found/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile
@@ -658,6 +666,7 @@ echo "
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
         Pango module:              ${build_gtk_module}
+        BASH Command not found:    ${build_command_not_found}
         QT library:                ${build_qt}
 
         Backends:
