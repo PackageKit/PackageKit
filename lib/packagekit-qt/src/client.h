@@ -218,6 +218,11 @@ public:
 	Groups getGroups();
 
 	/**
+	 * Returns a list containing the MIME types supported by the current backend
+	 */
+	QStringList getMimeTypes();
+
+	/**
 	 * Describes the current network state
 	 */
 	typedef enum {
