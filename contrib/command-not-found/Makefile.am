@@ -5,6 +5,7 @@ INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
+	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
 	-DEGG_VERBOSE="\"PK_VERBOSE\""			\
 	-DEGG_LOGGING="\"PK_LOGGING\""			\
@@ -18,6 +19,10 @@ libexec_PROGRAMS = pk-command-not-found
 pk_command_not_found_SOURCES =				\
 	egg-debug.c					\
 	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
+	pk-tools-common.c				\
+	pk-tools-common.h				\
 	pk-command-not-found.c				\
 	$(NULL)
 
@@ -29,4 +34,7 @@ pk_command_not_found_LDADD =				\
 
 bashprofiledir = ${SYSCONFDIR}/profile.d
 dist_bashprofile_DATA = PackageKit.sh
+
+confdir = $(PK_CONF_DIR)
+dist_conf_DATA = CommandNotFound.conf
 
