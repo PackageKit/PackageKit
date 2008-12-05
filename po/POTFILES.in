@@ -5,9 +5,11 @@ client/pk-console.c
 client/pk-generate-pack.c
 client/pk-monitor.c
 client/pk-tools-common.c
+contrib/command-not-found/pk-command-not-found.c
 contrib/packagekit-plugin/src/contents.cpp
 data/packagekit-catalog.xml.in
-data/packagekit-servicepack.xml.in
 data/packagekit-package-list.xml.in
+data/packagekit-servicepack.xml.in
 policy/org.freedesktop.packagekit.policy.in
 src/pk-main.c
+
