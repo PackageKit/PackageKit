@@ -226,6 +226,24 @@ pk_cnf_find_alternatives_case (const gchar *cmd, guint len, GPtrArray *array)
 			g_ptr_array_add (array, possible);
 		}
 	}
+
+	/* all lower */
+	possible = g_strdup (cmd);
+	for (i=0; i<len; i++)
+		possible[i] = g_ascii_tolower (cmd[i]);
+	if (strcmp (possible, cmd) != 0)
+		g_ptr_array_add (array, possible);
+	else
+		g_free (possible);
+
+	/* all upper */
+	possible = g_strdup (cmd);
+	for (i=0; i<len; i++)
+		possible[i] = g_ascii_toupper (cmd[i]);
+	if (strcmp (possible, cmd) != 0)
+		g_ptr_array_add (array, possible);
+	else
+		g_free (possible);
 }
 
 /**
