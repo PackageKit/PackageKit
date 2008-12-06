@@ -219,6 +219,12 @@ pk_cnf_find_alternatives_case (const gchar *cmd, guint len, GPtrArray *array)
 			possible[i] = temp;
 			g_ptr_array_add (array, possible);
 		}
+		temp = g_ascii_toupper (cmd[i]);
+		if (temp != cmd[i]) {
+			possible = g_strdup (cmd);
+			possible[i] = temp;
+			g_ptr_array_add (array, possible);
+		}
 	}
 }
 
