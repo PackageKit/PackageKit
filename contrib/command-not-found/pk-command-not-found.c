@@ -149,6 +149,28 @@ pk_cnf_find_alternatives_remove_double (const gchar *cmd, guint len, GPtrArray *
 }
 
 /**
+ * pk_cnf_find_alternatives_case:
+ *
+ * Remove double chars, e.g. Lshal -> lshal
+ **/
+static void
+pk_cnf_find_alternatives_case (const gchar *cmd, guint len, GPtrArray *array)
+{
+	guint i;
+	gchar *possible;
+	gchar temp;
+
+	for (i=0; i<len; i++) {
+		temp = g_ascii_tolower (cmd[i]);
+		if (temp != cmd[i]) {
+			possible = g_strdup (cmd);
+			possible[i] = temp;
+			g_ptr_array_add (array, possible);
+		}
+	}
+}
+
+/**
  * pk_cnf_find_alternatives:
  *
  * Generate a list of commands it might be
@@ -174,6 +196,7 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 	if (len > 3)
 		pk_cnf_find_alternatives_truncate (cmd, len, possible);
 	pk_cnf_find_alternatives_remove_double (cmd, len, possible);
+	pk_cnf_find_alternatives_case (cmd, len, possible);
 
 	/* remove duplicates using a helper array */
 	for (i=0; i<possible->len; i++) {
