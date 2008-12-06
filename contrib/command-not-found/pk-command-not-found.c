@@ -119,6 +119,16 @@ pk_cnf_find_alternatives_replace (const gchar *cmd, guint len, GPtrArray *array)
 			possible[i] = 's';
 			g_ptr_array_add (array, possible);
 		}
+		if (temp == 'k') {
+			possible = g_strdup (cmd);
+			possible[i] = 'c';
+			g_ptr_array_add (array, possible);
+		}
+		if (temp == 'c') {
+			possible = g_strdup (cmd);
+			possible[i] = 'k';
+			g_ptr_array_add (array, possible);
+		}
 	}
 }
 
