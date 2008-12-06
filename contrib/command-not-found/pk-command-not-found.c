@@ -99,6 +99,26 @@ pk_cnf_find_alternatives_replace (const gchar *cmd, guint len, GPtrArray *array)
 			possible[i] = 'o';
 			g_ptr_array_add (array, possible);
 		}
+		if (temp == 'c') {
+			possible = g_strdup (cmd);
+			possible[i] = 's';
+			g_ptr_array_add (array, possible);
+		}
+		if (temp == 's') {
+			possible = g_strdup (cmd);
+			possible[i] = 'c';
+			g_ptr_array_add (array, possible);
+		}
+		if (temp == 's') {
+			possible = g_strdup (cmd);
+			possible[i] = 'z';
+			g_ptr_array_add (array, possible);
+		}
+		if (temp == 'z') {
+			possible = g_strdup (cmd);
+			possible[i] = 's';
+			g_ptr_array_add (array, possible);
+		}
 	}
 }
 
@@ -139,6 +159,28 @@ pk_cnf_find_alternatives_remove_double (const gchar *cmd, guint len, GPtrArray *
 
 	for (i=1; i<len; i++) {
 		if (cmd[i-1] == cmd[i]) {
+			possible = g_strdup (cmd);
+			for (j=i; j<len; j++)
+				possible[j] = possible[j+1];
+			possible[len-1] = '\0';
+			g_ptr_array_add (array, possible);
+		}
+	}
+}
+
+/**
+ * pk_cnf_find_alternatives_locale:
+ *
+ * Fix British spellings, e.g. colourdiff -> colordiff
+ **/
+static void
+pk_cnf_find_alternatives_locale (const gchar *cmd, guint len, GPtrArray *array)
+{
+	guint i, j;
+	gchar *possible;
+
+	for (i=1; i<len; i++) {
+		if (cmd[i-1] == 'o' && cmd[i] == 'u') {
 			possible = g_strdup (cmd);
 			for (j=i; j<len; j++)
 				possible[j] = possible[j+1];
@@ -197,6 +239,7 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 		pk_cnf_find_alternatives_truncate (cmd, len, possible);
 	pk_cnf_find_alternatives_remove_double (cmd, len, possible);
 	pk_cnf_find_alternatives_case (cmd, len, possible);
+	pk_cnf_find_alternatives_locale (cmd, len, possible);
 
 	/* remove duplicates using a helper array */
 	for (i=0; i<possible->len; i++) {
