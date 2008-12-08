@@ -599,7 +599,7 @@ docs/api/Makefile
 docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
-contrib/packagekit-plugin/Makefile
+contrib/browser-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
 contrib/udev/Makefile
