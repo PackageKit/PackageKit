@@ -5,7 +5,7 @@ SUBDIRS += yum-packagekit
 endif
 
 if PK_BUILD_BROWSER_PLUGIN
-SUBDIRS += packagekit-plugin
+SUBDIRS += browser-plugin
 endif
 
 if PK_BUILD_GSTREAMER_PLUGIN
