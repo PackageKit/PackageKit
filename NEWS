@@ -1,3 +1,22 @@
+Version 0.3.12
+~~~~~~~~~~~~~~
+Released: 2008-12-08
+
+Bugfixes:
+ - Fix up the DBUS interface and destination rules to work with CVE-2008-4311 (Richard Hughes)
+ - pk-generate-package-list is not used anymore, remove from the man page (Anders F Bjorklund)
+ - Fix a small memory leak in pk_transaction_action_is_allowed (Richard Hughes)
+ - Don't emit a critical warning if the desktop file is not valid (Richard Hughes)
+
+Backends:
+ - apt: Fix apt configuration (Sebastian Heinlein)
+ - yum: Add a few more entries into the comps groups mapping (Richard Hughes)
+ - yum: Catch yum.Errors.RepoError when we get the yum comps groups. Fixes fd#18722 (Richard Hughes)
+ - yum: Remove two developer debugging statements left in by accident (Richard Hughes)
+ - yum: Don't error out if the non-installed dep check fails. Fixes rh#474138 (Richard Hughes)
+ - yum: Catch all exceptions from self.yumbase.doConfigSetup() as yum doesn't
+        seem capable of catching it's own exceptions internally. Fixes fd#18834 (Richard Hughes)
+
 Version 0.3.11
 ~~~~~~~~~~~~~~
 Released: 2008-11-24
