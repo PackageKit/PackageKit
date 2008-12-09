@@ -269,6 +269,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	gint retval;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
+	g_return_val_if_fail (spawn->priv->kill_id == 0, FALSE);
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
@@ -567,16 +568,25 @@ pk_spawn_finalize (GObject *object)
 	g_return_if_fail (spawn->priv != NULL);
 
 	/* disconnect the poll in case we were cancelled before completion */
-	if (spawn->priv->poll_id != 0)
+	if (spawn->priv->poll_id != 0) {
 		g_source_remove (spawn->priv->poll_id);
+		spawn->priv->poll_id = 0;
+	}
 
 	/* disconnect the SIGKILL check */
-	if (spawn->priv->kill_id != 0)
+	if (spawn->priv->kill_id != 0) {
 		g_source_remove (spawn->priv->kill_id);
+		spawn->priv->kill_id = 0;
+	}
 
 	/* still running? */
-	if (spawn->priv->stdin_fd != -1)
+	if (spawn->priv->stdin_fd != -1) {
+		egg_warning ("killing as still running");
 		pk_spawn_kill (spawn);
+		/* just hope the script responded to SIGQUIT */
+		if (spawn->priv->kill_id != 0)
+			g_source_remove (spawn->priv->kill_id);
+	}
 
 	/* free the buffers */
 	g_string_free (spawn->priv->stdout_buf, TRUE);
