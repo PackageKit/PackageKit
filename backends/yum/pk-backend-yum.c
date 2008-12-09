@@ -37,6 +37,8 @@ backend_stderr_cb (PkBackend *backend, const gchar *output)
 		return FALSE;
 	if (strstr (output, "GPG") != NULL)
 		return FALSE;
+	if (strstr (output, "DeprecationWarning") != NULL)
+		return FALSE;
 	return TRUE;
 }
 
