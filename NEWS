@@ -1,3 +1,58 @@
+Version 0.4.0
+~~~~~~~~~~~~~
+Released: 2008-12-09
+
+Notes:
+- Now integrates with BASH suggesting replacements and offering to install
+  missing packages.
+- Now integrates with Pango using a gtk-module to install missing fonts.
+- Much tighter security model and new audit logging framework.
+- Lots of new, untested, code so probably not a good idea for stable distributions.
+
+Translations:
+ - Updated Swedish translation (Daniel Nylander)
+ - Updated Polish translation (Piotr Drąg)
+
+New Features:
+ - qt: Add GetMimeTypes to Qt bindings (Adrien BUSTANY)
+ - Add a PolicyKit rule so other users can cancel tasks from other users (Richard Hughes)
+ - Add command-not-found functionality to PackageKit (Richard Hughes)
+ - Add a various possible replacement models to command not found (Richard Hughes)
+ - Use a config file to control the actions we take on command-not-found (Richard Hughes)
+ - Add a Pango module that can be used to automatically install missing fonts (Behdad Esfahbod)
+ - Set the environment variable NETWORK for the spawned backends (Richard Hughes)
+
+Bugfixes:
+ - Get the lang and network state in the generic spawned backend (Richard Hughes)
+ - pk-generate-package-list is not used any more, remove from the man page (Anders F Bjorklund)
+ - Check the sender for SetLocale and the UID for Cancel (Richard Hughes)
+ - Fix a small memory leak in pk_transaction_action_is_allowed (Richard Hughes)
+ - Fix a small memory leak in pk_backend_package (Richard Hughes)
+ - Make a lot of new strings translatable in pkcon (Richard Hughes)
+ - Add the DBus interface now that the default send interface is now deny (Richard Hughes)
+ - Allow all clients to send to all interfaces of the server. Fixes DBus introspection. (Richard Hughes)
+ - gtk-module: Fix typos, clean up and improve README (Behdad Esfahbod)
+ - glib: Don't emit a critical warning if a desktop file contains an error (Richard Hughes)
+ - qt: Fix make check with the threaded Polkit client (Adrien BUSTANY)
+ - qt: ifdef the Polkit relevant parts for make distcheck (Adrien BUSTANY)
+ - qt: Fix the old transactions, and upgrade to new API (Adrien BUSTANY)
+ - qt: Fixed freezed UI while waiting for blocking polkit_auth_obtain call (Thomas Goettlicher)
+
+Backends:
+ - apt: Fix apt configuration (Sebastian Heinlein)
+ - poldek: Implement get_mime_types (Marcin Banasiak)
+ - yum: Catch yum.Errors.RepoError when we get the yum comps groups. Fixes fd#18722 (Richard Hughes)
+ - yum: Add a few more entries into the comps groups mapping (Richard Hughes)
+ - yum: Use the NETWORK environment variable to change the way we access the repos (Richard Hughes)
+ - yum: Remove two developer debugging statements left in by accident (Richard Hughes)
+ - yum: Try harder to work from a cache when offline (Richard Hughes)
+ - yum: Avoid hanging the daemon when a repo is down. Fixes rh#473379 (Richard Hughes)
+ - yum: Catch all exceptions from self.yumbase.doConfigSetup. Fixes fd#18834 (Richard Hughes)
+ - yum: Don't error out with an internal error if the non-installed dep check fails. Fixes rh#474138 (Richard Hughes)
+ - yum: Make sure we call doObsoletes explicitly when we get the ObsoletesTuples (Richard Hughes)
+ - yum: As we can't treat yum like a usual python module, hand-hold it. (Richard Hughes)
+ - yum: check if a package has the correct architecture, and if not exit with an error. Fixes rh#474740 (Richard Hughes)
+
 Version 0.3.11
 ~~~~~~~~~~~~~~
 Released: 2008-11-24
