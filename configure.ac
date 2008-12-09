@@ -4,6 +4,7 @@ AC_INIT(PackageKit, 0.4.0)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
+AC_CONFIG_MACRO_DIR([m4])
 
 # Should we enable extra stuff automatically?
 # set no for release builds, yes for development builds
