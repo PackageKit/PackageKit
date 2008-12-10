@@ -52,6 +52,36 @@ class AptBackendTestCase(mox.MoxTestBase):
         self.backend = PackageKitAptBackend(None, None)
 
     @nose.tools.timed(10)
+    def testInit(self):
+        """Test the initialization"""
+        self.mox.ReplayAll()
+        self.backend.Init()
+        while threading.activeCount() > 1:
+            time.sleep(0.1)
+        binary = os.path.join(TEMPDIR,
+                              apt_pkg.Config["Dir::Cache"],
+                              apt_pkg.Config["Dir::Cache::pkgcache"])
+        source = os.path.join(TEMPDIR,
+                              apt_pkg.Config["Dir::Cache"],
+                              apt_pkg.Config["Dir::Cache::srcpkgcache"])
+        self.assertTrue(os.path.exists(source))
+        self.assertTrue(os.path.exists(binary))
+        pkg = self.backend._cache["xterm"]
+        self.assertEqual(pkg.candidateVersion, "235-1")
+
+    @nose.tools.timed(10)
+    def testRefresh(self):
+        """Test the Refresh of the cache method"""
+        self.mox.StubOutWithMock(self.backend, "Finished")
+        self.backend.Finished(EXIT_SUCCESS)
+        self.mox.ReplayAll()
+        self.backend.doRefreshCache(False)
+        while threading.activeCount() > 1:
+            time.sleep(0.1)
+        self.assertEqual(self.backend._cache["xterm"].candidateVersion, "237-1")
+        self.assertTrue(self.backend._cache.has_key("synaptic"))
+
+    @nose.tools.timed(10)
     def testSearchName(self):
         """Test the doSearchName method"""
         self.mox.StubOutWithMock(self.backend, "Package")
@@ -77,15 +107,24 @@ def setup():
     """Create a temporary and very simple chroot for apt"""
     apt_pkg.InitConfig()
     config = apt_pkg.Config
+    config.Set("Dir::Etc::sourcelist", 
+               os.path.join(TEMPDIR, "etc/apt/sources.list"))
+    config.Set("Dir::Etc::sourceparts", "")
     config.Set("Dir", TEMPDIR)
     config.Set("Dir::State::status",
                os.path.join(TEMPDIR, "var/lib/dpkg/status"))
-    os.makedirs(os.path.join(TEMPDIR, "var/lib/apt/lists"))
-    os.makedirs(os.path.join(TEMPDIR, "var/cache/apt/partial"))
+    os.makedirs(os.path.join(TEMPDIR, "var/lib/apt/lists/partial"))
+    os.makedirs(os.path.join(TEMPDIR, "var/cache/apt/archives/partial"))
     os.makedirs(os.path.join(TEMPDIR, "var/lib/dpkg/info"))
+    os.makedirs(os.path.join(TEMPDIR, "etc/apt"))
+    os.makedirs(os.path.join(TEMPDIR, "repo"))
+    shutil.copy("Packages.test", os.path.join(TEMPDIR, "repo/Packages"))
     shutil.copy("status.test", os.path.join(TEMPDIR, "var/lib/dpkg/status"))
     shutil.copy("xterm.list.test", os.path.join(TEMPDIR,
                                                 "var/lib/dpkg/info/xterm.list"))
+    sources = open(os.path.join(TEMPDIR, "etc/apt/sources.list"), "w")
+    sources.write("deb file://%s/repo/ ./\n" % TEMPDIR)
+    sources.close()
 
 
 def teardown():
