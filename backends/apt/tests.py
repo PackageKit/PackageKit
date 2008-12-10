@@ -54,7 +54,7 @@ class AptBackendTestCase(mox.MoxTestBase):
             self.mox.StubOutWithMock(self.backend, cb)
 
     @nose.tools.timed(10)
-    def testInit(self):
+    def test_00_Init(self):
         """Test the initialization"""
         self.mox.ReplayAll()
         self.backend.Init()
@@ -72,7 +72,7 @@ class AptBackendTestCase(mox.MoxTestBase):
         self.assertEqual(pkg.candidateVersion, "235-1")
 
     @nose.tools.timed(10)
-    def testRefresh(self):
+    def test_01_Refresh(self):
         """Test the Refresh of the cache method"""
         self.backend.Finished(EXIT_SUCCESS)
         self.mox.ReplayAll()
@@ -83,26 +83,38 @@ class AptBackendTestCase(mox.MoxTestBase):
         self.assertTrue(self.backend._cache.has_key("synaptic"))
 
     @nose.tools.timed(10)
-    def testSearchName(self):
+    def test_20_SearchName(self):
         """Test the doSearchName method"""
-        self.backend.Package('installed', 'xterm;235-1;i386;',
-                             'X terminal emulator')
+        self.backend.Package(INFO_INSTALLED, "xterm;235-1;i386;",
+                             "X terminal emulator")
         self.backend.Finished(EXIT_SUCCESS)
         self.mox.ReplayAll()
-        self.backend.doSearchName("none", "xterm")
+        self.backend.doSearchName(FILTER_NONE, "xterm")
         while threading.activeCount() > 1:
             time.sleep(0.1)
 
     @nose.tools.timed(10)
-    def testSearchFile(self):
+    def test_20_SearchFile(self):
         """Test the doSearchFile method"""
-        self.backend.Package('installed', 'xterm;235-1;i386;',
-                             'X terminal emulator')
+        self.backend.Package(INFO_INSTALLED, "xterm;235-1;i386;",
+                             "X terminal emulator")
         self.backend.Finished(EXIT_SUCCESS)
         self.mox.ReplayAll()
-        self.backend.doSearchFile("none", "xterm")
+        self.backend.doSearchFile(FILTER_NONE, "bin/xterm")
         while threading.activeCount() > 1:
             time.sleep(0.1)
+
+    @nose.tools.timed(10)
+    def test_20_GetUpdates(self):
+        """Test the doGetUpdates method"""
+        self.backend.Package(INFO_NORMAL, "xterm;237-1;i386;",
+                             "X terminal emulator")
+        self.backend.Finished(EXIT_SUCCESS)
+        self.mox.ReplayAll()
+        self.backend.doGetUpdates(FILTER_NONE)
+        while threading.activeCount() > 1:
+            time.sleep(0.1)
+
 
 def setup():
     """Create a temporary and very simple chroot for apt"""
