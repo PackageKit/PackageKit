@@ -410,6 +410,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             grp = self.yumbase.comps.return_group(grpid)
         except yum.Errors.RepoError, e:
             self.error(ERROR_NO_CACHE, _to_unicode(e))
+        except yum.Errors.GroupsError, e:
+            self.error(ERROR_GROUP_NOT_FOUND, _to_unicode(e))
         else:
             if grp:
                 name = grp.nameByLang(self._lang)
