@@ -76,6 +76,18 @@ class AptBackendTestCase(mox.MoxTestBase):
         while threading.activeCount() > 1:
             time.sleep(1)
 
+    @nose.tools.timed(10)
+    def testSearchFile(self):
+        """Test the doSearchFile method"""
+        self.mox.StubOutWithMock(self.backend, "Package")
+        self.backend.Package('installed', 'xterm;235-1;i386;',
+                             'X terminal emulator')
+        self.mox.ReplayAll()
+        self.backend.doSearchFile("none", "xterm")
+        while threading.activeCount() > 1:
+            time.sleep(1)
+
+
 def setup():
     """Create a temporary and very simple chroot for apt"""
     apt_pkg.InitConfig()
@@ -85,8 +97,10 @@ def setup():
                os.path.join(TEMPDIR, "var/lib/dpkg/status"))
     os.makedirs(os.path.join(TEMPDIR, "var/lib/apt/lists"))
     os.makedirs(os.path.join(TEMPDIR, "var/cache/apt/partial"))
-    os.makedirs(os.path.join(TEMPDIR, "var/lib/dpkg"))
+    os.makedirs(os.path.join(TEMPDIR, "var/lib/dpkg/info"))
     shutil.copy("status.test", os.path.join(TEMPDIR, "var/lib/dpkg/status"))
+    shutil.copy("xterm.list.test", os.path.join(TEMPDIR,
+                                                "var/lib/dpkg/info/xterm.list"))
 
 def teardown():
     """Clear up temporary files"""
