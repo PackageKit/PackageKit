@@ -1931,7 +1931,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         This method should be obsolete by the apt.package.Package.installedFiles
         attribute as soon as the consolidate branch of python-apt gets merged
         """
-        path = "/var/lib/dpkg/info/%s.list" % pkg.name
+        path = os.path.join(apt_pkg.Config["Dir"],
+                            "var/lib/dpkg/info/%s.list" % pkg.name)
         try:
             list = open(path)
             files = list.read().decode().split("\n")
