@@ -50,6 +50,8 @@ class AptBackendTestCase(mox.MoxTestBase):
         """Create a mox factory and a backend instance"""
         mox.MoxTestBase.setUp(self)
         self.backend = PackageKitAptBackend(None, None)
+        for cb in ["Package", "Finished"]:
+            self.mox.StubOutWithMock(self.backend, cb)
 
     @nose.tools.timed(10)
     def testInit(self):
@@ -72,7 +74,6 @@ class AptBackendTestCase(mox.MoxTestBase):
     @nose.tools.timed(10)
     def testRefresh(self):
         """Test the Refresh of the cache method"""
-        self.mox.StubOutWithMock(self.backend, "Finished")
         self.backend.Finished(EXIT_SUCCESS)
         self.mox.ReplayAll()
         self.backend.doRefreshCache(False)
@@ -84,9 +85,9 @@ class AptBackendTestCase(mox.MoxTestBase):
     @nose.tools.timed(10)
     def testSearchName(self):
         """Test the doSearchName method"""
-        self.mox.StubOutWithMock(self.backend, "Package")
         self.backend.Package('installed', 'xterm;235-1;i386;',
                              'X terminal emulator')
+        self.backend.Finished(EXIT_SUCCESS)
         self.mox.ReplayAll()
         self.backend.doSearchName("none", "xterm")
         while threading.activeCount() > 1:
@@ -95,9 +96,9 @@ class AptBackendTestCase(mox.MoxTestBase):
     @nose.tools.timed(10)
     def testSearchFile(self):
         """Test the doSearchFile method"""
-        self.mox.StubOutWithMock(self.backend, "Package")
         self.backend.Package('installed', 'xterm;235-1;i386;',
                              'X terminal emulator')
+        self.backend.Finished(EXIT_SUCCESS)
         self.mox.ReplayAll()
         self.backend.doSearchFile("none", "xterm")
         while threading.activeCount() > 1:
