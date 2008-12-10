@@ -37,6 +37,7 @@ import apt
 import apt_pkg
 import dbus
 import dbus.mainloop.glib
+import gobject
 import mox
 import nose.tools
 
@@ -52,10 +53,17 @@ class AptBackendTestCase(mox.MoxTestBase):
     def setUp(self):
         """Create a mox factory and a backend instance"""
         mox.MoxTestBase.setUp(self)
-        loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-        bus = dbus.SessionBus(mainloop=loop)
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        bus = dbus.SessionBus()
         bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
         self.backend = PackageKitAptBackend(bus_name, PACKAGEKIT_DBUS_PATH)
+        self.loop = gobject.MainLoop()
+
+    def tearDown(self):
+        mox.MoxTestBase.tearDown(self)
+        context = self.loop.get_context()
+        while context.pending():
+            context.iteration()
 
     @nose.tools.timed(10)
     def testSearchName(self):
