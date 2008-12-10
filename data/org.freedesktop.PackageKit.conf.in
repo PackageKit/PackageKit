@@ -14,6 +14,8 @@
  <!-- Allow anyone to call into the service - we'll reject callers using PolicyKit -->
   <policy context="default">
     <allow send_interface="org.freedesktop.PackageKit"/>
+    <allow send_interface="org.freedesktop.PackageKit.Transaction"/>
+    <allow send_destination="org.freedesktop.PackageKit"/>
   </policy>
 
 </busconfig>

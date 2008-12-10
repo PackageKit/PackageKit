@@ -44,6 +44,8 @@ typedef struct
 	PkRoleEnum			 role;
 	guint				 duration;
 	gchar				*data;
+	guint				 uid;
+	gchar				*cmdline;
 } PkTransactionObj;
 
 PkTransactionObj	*pk_transaction_obj_new		(void);
@@ -53,7 +55,9 @@ PkTransactionObj	*pk_transaction_obj_new_from_data	(const gchar		*tid,
 								 gboolean		 succeeded,
 								 PkRoleEnum		 role,
 								 guint			 duration,
-								 const gchar		*data);
+								 const gchar		*data,
+								 guint			 uid,
+								 const gchar		*cmdline);
 gboolean		 pk_transaction_obj_free		(PkTransactionObj	*obj);
 
 G_END_DECLS

@@ -54,12 +54,12 @@ Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
 	connect(d->p, SIGNAL(EulaRequired(const QString&, const QString&, const QString&, const QString&)), d, SLOT(eulaRequired(const QString&, const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(RequireRestart(const QString&, const QString&)), d, SLOT(requireRestart(const QString&, const QString&)));
 	connect(d->p, SIGNAL(StatusChanged(const QString&)), d, SLOT(statusChanged(const QString&)));
+	connect(d->p, SIGNAL(Transaction(const QString&, const QString&, bool, const QString&, uint, const QString&, uint, const QString&)), d, SLOT(transaction(const QString&, const QString&, bool, const QString&, uint, const QString&, uint, const QString&)));
 	connect(d->p, SIGNAL(UpdateDetail(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)), d, SLOT(updateDetail(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)));
 
-	qDebug() << "New transaction with tid" << tid;
 }
 
-Transaction::Transaction(const QString& tid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, Client* parent) : QObject(parent)
+Transaction::Transaction(const QString& tid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline, Client* parent) : QObject(parent)
 {
 	d = new TransactionPrivate(this);
 
@@ -72,6 +72,8 @@ Transaction::Transaction(const QString& tid, const QString& timespec, bool succe
 	d->role = r;
 	d->duration = duration;
 	d->data = data;
+	d->uid = uid;
+	d->cmdline = cmdline;
 	d->client = parent;
 }
 

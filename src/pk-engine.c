@@ -252,26 +252,29 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 /**
  * pk_engine_get_tid:
  **/
-gboolean
-pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
+void
+pk_engine_get_tid (PkEngine *engine, DBusGMethodInvocation *context)
 {
 	gchar *new_tid;
 	gboolean ret;
+	gchar *sender = NULL;
 
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	egg_debug ("GetTid method called");
+	sender = dbus_g_method_get_sender (context);
 	new_tid = pk_transaction_id_generate ();
 
-	ret = pk_transaction_list_create (engine->priv->transaction_list, new_tid);
+	ret = pk_transaction_list_create (engine->priv->transaction_list, new_tid, sender);
 	egg_debug ("sending tid: '%s'", new_tid);
-	*tid =  g_strdup (new_tid);
-	g_free (new_tid);
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
 
-	return TRUE;
+	/* return TID */
+	dbus_g_method_return (context, new_tid);
+	g_free (new_tid);
+	g_free (sender);
 }
 
 /**
@@ -569,6 +572,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	GError *error;
 	gchar *sender = NULL;
 	gchar *error_detail = NULL;
+	PkSecurityCaller *caller;
 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
@@ -577,8 +581,17 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
 
+	/* get caller */
+	caller = pk_security_caller_new_from_sender (engine->priv->security, sender);
+	if (caller == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY,
+				     "caller %s not found", sender);
+		dbus_g_method_return_error (context, error);
+		goto out;
+	}
+
 	/* use security model to get auth */
-	ret = pk_security_action_is_allowed (engine->priv->security, sender, FALSE, PK_ROLE_ENUM_SET_PROXY_PRIVATE, &error_detail);
+	ret = pk_security_action_is_allowed (engine->priv->security, caller, FALSE, PK_ROLE_ENUM_SET_PROXY_PRIVATE, &error_detail);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
 		dbus_g_method_return_error (context, error);
@@ -600,6 +613,8 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	pk_engine_reset_timer (engine);
 
 out:
+	if (caller != NULL)
+		pk_security_caller_unref (caller);
 	g_free (sender);
 	g_free (error_detail);
 }
@@ -850,7 +865,6 @@ pk_engine_test (EggTest *test)
 	PkEngine *engine;
 	PkBackend *backend;
 	guint idle;
-	gchar *tid;
 	gchar *actions;
 
 	if (!egg_test_start (test, "PkEngine"))
@@ -906,13 +920,6 @@ pk_engine_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "idle = %i", idle);
-
-	/************************************************************/
-	egg_test_title (test, "create a tid we never use");
-	ret = pk_engine_get_tid (engine, &tid, NULL);
-	egg_test_assert (test, ret);
-	egg_test_title_assert (test, "tid is non-null", tid != NULL);
-	g_free (tid);
 
 	g_object_unref (backend);
 	g_object_unref (engine);

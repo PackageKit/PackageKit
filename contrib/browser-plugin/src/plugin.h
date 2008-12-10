@@ -1,4 +1,4 @@
-/* -*- mode: C++; c-basic-offset: 4; indent-tabs-mode: nil; -*- */
+/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -46,7 +46,7 @@
 class PkpPluginInstance : public nsPluginInstanceBase
 {
 public:
-	PkpPluginInstance(NPP aInstance, const gchar *displayName, const gchar *packageNames, const gchar *desktopNames);
+	PkpPluginInstance(NPP aInstance, const gchar *displayName, const gchar *packageNames);
 	virtual ~PkpPluginInstance();
 
 	NPBool init(NPWindow* aWindow);

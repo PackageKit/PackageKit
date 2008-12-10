@@ -32,6 +32,7 @@ struct EggTest {
 	guint		 total;
 	guint		 succeeded;
 	gboolean	 started;
+	gboolean	 titled;
 	gchar		*type;
 	GTimer		*timer;
 	GMainLoop	*loop;
@@ -51,6 +52,7 @@ egg_test_init ()
 	test->succeeded = 0;
 	test->type = NULL;
 	test->started = FALSE;
+	test->titled = FALSE;
 	test->timer = g_timer_new ();
 	test->loop = g_main_loop_new (NULL, FALSE);
 	test->hang_loop_id = 0;
@@ -207,6 +209,12 @@ egg_test_title (EggTest *test, const gchar *format, ...)
 	va_list args;
 	gchar *va_args_buffer = NULL;
 
+	/* already titled? */
+	if (test->titled) {
+		g_print ("Already titled!\n");
+		exit (1);
+	}
+
 	/* reset the value egg_test_elapsed replies with */
 	g_timer_reset (test->timer);
 
@@ -214,8 +222,9 @@ egg_test_title (EggTest *test, const gchar *format, ...)
 	g_vasprintf (&va_args_buffer, format, args);
 	va_end (args);
 	g_print ("> check #%u\t%s: \t%s...", test->total+1, test->type, va_args_buffer);
-	g_free(va_args_buffer);
+	g_free (va_args_buffer);
 
+	test->titled = TRUE;
 	test->total++;
 }
 
@@ -228,6 +237,11 @@ egg_test_success (EggTest *test, const gchar *format, ...)
 	va_list args;
 	gchar *va_args_buffer = NULL;
 
+	/* not titled? */
+	if (!test->titled) {
+		g_print ("Not titled!\n");
+		exit (1);
+	}
 	if (format == NULL) {
 		g_print ("...OK\n");
 		goto finish;
@@ -236,8 +250,9 @@ egg_test_success (EggTest *test, const gchar *format, ...)
 	g_vasprintf (&va_args_buffer, format, args);
 	va_end (args);
 	g_print ("...OK [%s]\n", va_args_buffer);
-	g_free(va_args_buffer);
+	g_free (va_args_buffer);
 finish:
+	test->titled = FALSE;
 	test->succeeded++;
 }
 
@@ -249,6 +264,12 @@ egg_test_failed (EggTest *test, const gchar *format, ...)
 {
 	va_list args;
 	gchar *va_args_buffer = NULL;
+
+	/* not titled? */
+	if (!test->titled) {
+		g_print ("Not titled!\n");
+		exit (1);
+	}
 	if (format == NULL) {
 		g_print ("FAILED\n");
 		goto failed;
@@ -257,7 +278,7 @@ egg_test_failed (EggTest *test, const gchar *format, ...)
 	g_vasprintf (&va_args_buffer, format, args);
 	va_end (args);
 	g_print ("FAILED [%s]\n", va_args_buffer);
-	g_free(va_args_buffer);
+	g_free (va_args_buffer);
 failed:
 	exit (1);
 }
@@ -299,17 +320,16 @@ egg_test_get_data_file (const gchar *filename)
 	/* check to see if we are being run in the build root */
 	full = g_build_filename ("..", "data", "tests", filename, NULL);
 	ret = g_file_test (full, G_FILE_TEST_EXISTS);
-	if (ret) {
+	if (ret)
 		return full;
-	}
 	g_free (full);
 
 	/* check to see if we are being run in make check */
-	full = g_build_filename ("..", "..", "data", "tests", filename, NULL);
+	full = g_build_filename ("..", "..", "..", "data", "tests", filename, NULL);
 	ret = g_file_test (full, G_FILE_TEST_EXISTS);
-	if (ret) {
+	if (ret)
 		return full;
-	}
+	g_print ("[WARN] failed to find '%s'\n", full);
 	g_free (full);
 	return NULL;
 }

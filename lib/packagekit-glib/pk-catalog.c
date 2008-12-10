@@ -406,16 +406,20 @@ pk_catalog_test (EggTest *test)
 	egg_test_assert (test, catalog != NULL);
 
 	/************************************************************/
-	egg_test_title (test, "process the files getting non-null");
+	egg_test_title (test, "get test file");
 	path = egg_test_get_data_file ("test.catalog");
+	egg_test_assert (test, path != NULL);
+
+	/************************************************************/
+	egg_test_title (test, "process the files getting non-null");
 	filenames = g_strsplit (path, " ", 0);
 	list = pk_catalog_process_files (catalog, filenames);
-	g_free (path);
 	g_strfreev (filenames);
 	if (list != NULL)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
+	g_free (path);
 
 	/************************************************************/
 	egg_test_title (test, "have we got packages?");

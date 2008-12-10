@@ -34,8 +34,11 @@ G_BEGIN_DECLS
 #define PK_IS_SECURITY_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_SECURITY))
 #define PK_SECURITY_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_SECURITY, PkSecurityClass))
 
-/* not actually a role, but treated as one */
-#define PK_ROLE_ENUM_SET_PROXY_PRIVATE		1 << 31
+/* not actually roles */
+#define PK_ROLE_ENUM_SET_PROXY_PRIVATE		(PK_ROLE_ENUM_UNKNOWN + 1)
+
+/* when the UID is invalid or not known */
+#define PK_SECURITY_UID_INVALID			G_MAXUINT
 
 typedef struct PkSecurityPrivate PkSecurityPrivate;
 
@@ -50,19 +53,24 @@ typedef struct
 	GObjectClass	parent_class;
 } PkSecurityClass;
 
+typedef struct PkSecurityCaller_ PkSecurityCaller;
+
 GType		 pk_security_get_type		(void) G_GNUC_CONST;
 PkSecurity	*pk_security_new		(void);
 
-gboolean	 pk_security_uid_from_dbus_sender (PkSecurity	*security,
-						 const gchar	*dbus_name,
-						 guint		*uid)
-						 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_security_action_is_allowed	(PkSecurity	*security,
-						 const gchar	*dbus_sender,
-						 gboolean	 trusted,
-						 PkRoleEnum	 role,
-						 gchar		**error_detail)
-						 G_GNUC_WARN_UNUSED_RESULT;
+PkSecurityCaller *pk_security_caller_new_from_sender	(PkSecurity		*security,
+							 const gchar		*sender);
+void		 pk_security_caller_unref		(PkSecurityCaller	*caller);
+guint		 pk_security_get_uid			(PkSecurity		*security,
+							 PkSecurityCaller	*caller);
+gchar 		*pk_security_get_cmdline		(PkSecurity		*security,
+							 PkSecurityCaller	*caller);
+gboolean	 pk_security_action_is_allowed		(PkSecurity		*security,
+							 PkSecurityCaller	*caller,
+							 gboolean		 trusted,
+							 PkRoleEnum		 role,
+							 gchar			**error_detail)
+							 G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
 

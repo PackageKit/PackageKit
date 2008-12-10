@@ -850,7 +850,8 @@ pk_spawn_test (EggTest *test)
 	file = egg_test_get_data_file ("pk-spawn-dispatcher.py");
 	path = g_strdup_printf ("%s\tsearch-name\tnone\tpower manager", file);
 	argv = g_strsplit (path, "\t", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL);
+	envp = g_strsplit ("NETWORK=TRUE LANG=C", " ", 0);
+	ret = pk_spawn_argv (spawn, argv, envp);
 	g_free (file);
 	g_free (path);
 	if (ret)
@@ -884,7 +885,7 @@ pk_spawn_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "run the dispatcher with new input");
-	ret = pk_spawn_argv (spawn, argv, NULL);
+	ret = pk_spawn_argv (spawn, argv, envp);
 	if (ret)
 		egg_test_success (test, NULL);
 	else
@@ -945,6 +946,7 @@ pk_spawn_test (EggTest *test)
 		egg_test_failed (test, "dispatcher closed twice");
 
 	g_strfreev (argv);
+	g_strfreev (envp);
 	g_object_unref (spawn);
 
 	egg_test_end (test);

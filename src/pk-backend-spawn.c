@@ -525,6 +525,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar *value;
 	gchar *line;
 	GPtrArray *array;
+	gboolean ret;
 
 	array = g_ptr_array_new ();
 
@@ -546,7 +547,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	}
 	g_free (value);
 
-	/* ftp_proxy */
+	/* LANG */
 	value = pk_backend_get_locale (backend_spawn->priv->backend);
 	if (!egg_strzero (value)) {
 		line = g_strdup_printf ("%s=%s", "LANG", value);
@@ -554,6 +555,12 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		g_ptr_array_add (array, line);
 	}
 	g_free (value);
+
+	/* NETWORK */
+	ret = pk_backend_is_online (backend_spawn->priv->backend);
+	line = g_strdup_printf ("%s=%s", "NETWORK", ret ? "TRUE" : "FALSE");
+	egg_debug ("setting evp '%s'", line);
+	g_ptr_array_add (array, line);
 
 	envp = pk_ptr_array_to_strv (array);
 	g_ptr_array_foreach (array, (GFunc) g_free, NULL);

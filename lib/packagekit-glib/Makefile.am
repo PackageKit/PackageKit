@@ -7,6 +7,9 @@ INCLUDES = \
 	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/lib					\
+	-I$(top_builddir)/lib					\
+	-I$(top_builddir)/lib/packagekit-glib			\
+	-I.							\
 	-DPK_COMPILATION					\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"		\
@@ -24,7 +27,7 @@ libpackagekit_glib_includedir = $(includedir)/PackageKit/packagekit-glib
 
 libpackagekit_glib_include_HEADERS =				\
 	packagekit.h						\
-	pk-extra.h						\
+	pk-desktop.h						\
 	pk-connection.h						\
 	pk-package-id.h						\
 	pk-package-ids.h					\
@@ -54,8 +57,8 @@ libpackagekit_glib_la_SOURCES =					\
 	egg-string.h						\
 	pk-marshal.c						\
 	pk-marshal.h						\
-	pk-extra.c						\
-	pk-extra.h						\
+	pk-desktop.c						\
+	pk-desktop.h						\
 	pk-connection.c						\
 	pk-connection.h						\
 	pk-service-pack.c					\

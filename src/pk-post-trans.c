@@ -29,13 +29,15 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <packagekit-glib/packagekit.h>
+#include <sqlite3.h>
 
-#ifdef PK_BUILD_GIO
-  #include <gio/gio.h>
-#endif
 #ifdef USE_SECURITY_POLKIT
   #include <polkit/polkit.h>
   #include <polkit-dbus/polkit-dbus.h>
+#endif
+
+#ifdef PK_BUILD_GIO
+  #include <gio/gdesktopappinfo.h>
 #endif
 
 #include "egg-debug.h"
@@ -49,13 +51,14 @@
 
 struct PkPostTransPrivate
 {
+	sqlite3			*db;
 	PkBackend		*backend;
-	PkExtra			*extra;
 	GMainLoop		*loop;
 	PkObjList		*running_exec_list;
 	PkPackageList		*list;
 	guint			 finished_id;
 	guint			 package_id;
+	GHashTable		*hash;
 };
 
 enum {
@@ -107,114 +110,6 @@ pk_post_trans_set_progress_changed (PkPostTrans *post, guint percentage)
 }
 
 /**
- * pk_import_get_locale:
- **/
-static gchar *
-pk_import_get_locale (const gchar *buffer)
-{
-	guint len;
-	gchar *locale;
-	gchar *result;
-	result = g_strrstr (buffer, "[");
-	if (result == NULL)
-		return NULL;
-	locale = g_strdup (result+1);
-	len = egg_strlen (locale, 20);
-	locale[len-1] = '\0';
-	return locale;
-}
-
-/**
- * pk_post_trans_import_desktop_files_process_desktop:
- **/
-static void
-pk_post_trans_import_desktop_files_process_desktop (PkPostTrans *post, const gchar *package_name, const gchar *filename)
-{
-	GKeyFile *key;
-	gboolean ret;
-	guint i;
-	gchar *name = NULL;
-	gchar *name_unlocalised = NULL;
-	gchar *exec = NULL;
-	gchar *icon = NULL;
-	gchar *comment = NULL;
-	gchar *genericname = NULL;
-	const gchar *locale = NULL;
-	gchar **key_array;
-	gsize len;
-	gchar *locale_temp;
-	static GPtrArray *locale_array = NULL;
-
-	key = g_key_file_new ();
-	ret = g_key_file_load_from_file (key, filename, G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
-	if (!ret) {
-		egg_warning ("cannot open desktop file %s", filename);
-		return;
-	}
-
-	/* get this specific locale list */
-	key_array = g_key_file_get_keys (key, G_KEY_FILE_DESKTOP_GROUP, &len, NULL);
-	locale_array = g_ptr_array_new ();
-	for (i=0; i<len; i++) {
-		if (g_str_has_prefix (key_array[i], "Name")) {
-			/* set the locale */
-			locale_temp = pk_import_get_locale (key_array[i]);
-			if (locale_temp != NULL)
-				g_ptr_array_add (locale_array, g_strdup (locale_temp));
-		}
-	}
-	g_strfreev (key_array);
-
-	/* make sure this is still set, as we are sharing PkExtra */
-	pk_extra_set_access (post->priv->extra, PK_EXTRA_ACCESS_WRITE_ONLY);
-
-	/* get the default entry */
-	name_unlocalised = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", NULL);
-	if (!egg_strzero (name_unlocalised)) {
-		pk_extra_set_locale (post->priv->extra, "C");
-		pk_extra_set_data_locale (post->priv->extra, package_name, name_unlocalised);
-	}
-
-	/* for each locale */
-	for (i=0; i<locale_array->len; i++) {
-		locale = g_ptr_array_index (locale_array, i);
-		/* compare the translated against the default */
-		name = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", locale, NULL);
-
-		/* if different, then save */
-		if (egg_strequal (name_unlocalised, name) == FALSE) {
-			comment = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
-								"Comment", locale, NULL);
-			genericname = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
-								    "GenericName", locale, NULL);
-			pk_extra_set_locale (post->priv->extra, locale);
-
-			/* save in order of priority */
-			if (comment != NULL)
-				pk_extra_set_data_locale (post->priv->extra, package_name, comment);
-			else if (genericname != NULL)
-				pk_extra_set_data_locale (post->priv->extra, package_name, genericname);
-			else
-				pk_extra_set_data_locale (post->priv->extra, package_name, name);
-			g_free (comment);
-			g_free (genericname);
-		}
-		g_free (name);
-	}
-	g_ptr_array_foreach (locale_array, (GFunc) g_free, NULL);
-	g_ptr_array_free (locale_array, TRUE);
-	g_free (name_unlocalised);
-
-	exec = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", NULL);
-	icon = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", NULL);
-	pk_extra_set_data_package (post->priv->extra, package_name, icon, exec);
-	g_free (icon);
-	g_free (exec);
-
-	g_key_file_free (key);
-}
-
-/**
  * pk_post_trans_import_desktop_files_get_package:
  **/
 static gchar *
@@ -258,43 +153,6 @@ out:
 }
 
 /**
- * pk_post_trans_import_desktop_files_get_files:
- *
- * Returns a list of all the files in the applicaitons directory
- **/
-#ifdef PK_BUILD_GIO
-static guint
-pk_post_trans_get_filename_mtime (const gchar *filename)
-{
-	GFileInfo *info;
-	GFile *file;
-	GError *error = NULL;
-	GTimeVal time;
-
-	file = g_file_new_for_path (filename);
-	info = g_file_query_info (file, G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
-	if (info == NULL) {
-		egg_warning ("%s", error->message);
-		g_error_free (error);
-		return 0;
-	}
-
-	/* get the mtime */
-	g_file_info_get_modification_time (info, &time);
-	g_object_unref (file);
-	g_object_unref (info);
-
-	return time.tv_sec;
-}
-#else
-static guint
-pk_post_trans_get_filename_mtime (const gchar *filename)
-{
-	return 0;
-}
-#endif
-
-/**
  * pk_post_trans_string_list_new:
  **/
 static PkObjList *
@@ -311,67 +169,187 @@ pk_post_trans_string_list_new ()
 }
 
 /**
- * pk_post_trans_import_desktop_files_get_files:
- *
- * Returns a list of all the files in the applicaitons directory
+ * pk_post_trans_get_filename_md5:
  **/
-static PkObjList *
-pk_post_trans_import_desktop_files_get_files (PkPostTrans *post)
+static gchar *
+pk_post_trans_get_filename_md5 (const gchar *filename)
 {
-	GDir *dir;
-	PkObjList *list;
-	GPatternSpec *pattern;
-	gchar *filename;
-	gboolean match;
-	const gchar *name;
-	const gchar *directory = "/usr/share/applications";
+	gchar *md5 = NULL;
+	gchar *data = NULL;
+	gsize length;
+	GError *error = NULL;
+	gboolean ret;
 
-	/* open directory */
-	dir = g_dir_open (directory, 0, NULL);
-	if (dir == NULL) {
-		egg_warning ("not a valid desktop dir!");
-		return NULL;
+	/* check is no longer exists */
+	ret = g_file_test (filename, G_FILE_TEST_EXISTS);
+	if (!ret)
+		goto out;
+
+	/* get data */
+	ret = g_file_get_contents (filename, &data, &length, &error);
+	if (!ret) {
+		egg_warning ("failed to open file %s: %s", filename, error->message);
+		g_error_free (error);
+		goto out;
 	}
 
-	/* find files */
-	pattern = g_pattern_spec_new ("*.desktop");
-	name = g_dir_read_name (dir);
-	list = pk_post_trans_string_list_new ();
-	while (name != NULL) {
-		/* ITS4: ignore, not used for allocation and has to be NULL terminated */
-		match = g_pattern_match (pattern, strlen (name), name, NULL);
-		if (match) {
-			filename = g_build_filename (directory, name, NULL);
-			pk_obj_list_add (PK_OBJ_LIST (list), filename);
-		}
-		name = g_dir_read_name (dir);
-	}
-	g_dir_close (dir);
-
-	return list;
+	/* check md5 is same */
+	md5 = g_compute_checksum_for_data (G_CHECKSUM_MD5, (const guchar *) data, length);
+out:
+	g_free (data);
+	return md5;
 }
 
 /**
- * pk_post_trans_import_desktop_files_get_mtimes:
+ * pk_post_trans_sqlite_remove_filename:
  **/
-static PkObjList *
-pk_post_trans_import_desktop_files_get_mtimes (const PkObjList *files)
+static gint
+pk_post_trans_sqlite_remove_filename (PkPostTrans *post, const gchar *filename)
 {
-	guint i;
-	guint mtime;
-	gchar *encode;
-	const gchar *filename;
-	PkObjList *list;
+	gchar *statement;
+	gint rc;
 
-	list = pk_post_trans_string_list_new ();
-	for (i=0; i<PK_OBJ_LIST(files)->len; i++) {
-		filename = pk_obj_list_index (files, i);
-		mtime = pk_post_trans_get_filename_mtime (filename);
-		encode = g_strdup_printf ("%s|%i|v1", filename, mtime);
-		pk_obj_list_add (PK_OBJ_LIST (list), encode);
-		g_free (encode);
+	statement = g_strdup_printf ("DELETE FROM cache WHERE filename = '%s'", filename);
+	rc = sqlite3_exec (post->priv->db, statement, NULL, NULL, NULL);
+	g_free (statement);
+	return rc;
+}
+
+/**
+ * pk_post_trans_sqlite_add_filename_details:
+ **/
+static gint
+pk_post_trans_sqlite_add_filename_details (PkPostTrans *post, const gchar *filename, const gchar *package, const gchar *md5)
+{
+	gchar *statement;
+	gchar *error_msg = NULL;
+	sqlite3_stmt *sql_statement = NULL;
+	gint rc = -1;
+	gint show = TRUE;
+#ifdef PK_BUILD_GIO
+	GDesktopAppInfo *info;
+
+	/* find out if we should show desktop file in menus */
+	info = g_desktop_app_info_new_from_filename (filename);
+	if (info == NULL) {
+		egg_warning ("could not load desktop file %s", filename);
+		goto out;
 	}
-	return list;
+	show = g_app_info_should_show (G_APP_INFO(info));
+	g_object_unref (info);
+#endif
+
+	egg_debug ("add filename %s from %s with md5: %s (show: %i)", filename, package, md5, show);
+
+	/* the row might already exist */
+	statement = g_strdup_printf ("DELETE FROM cache WHERE filename = '%s'", filename);
+	sqlite3_exec (post->priv->db, statement, NULL, NULL, NULL);
+	g_free (statement);
+
+	/* prepare the query, as we don't escape it */
+	rc = sqlite3_prepare_v2 (post->priv->db, "INSERT INTO cache (filename, package, show, md5) VALUES (?, ?, ?, ?)", -1, &sql_statement, NULL);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL failed to prepare: %s", sqlite3_errmsg (post->priv->db));
+		goto out;
+	}
+
+	/* add data */
+	sqlite3_bind_text (sql_statement, 1, filename, -1, SQLITE_STATIC);
+	sqlite3_bind_text (sql_statement, 2, package, -1, SQLITE_STATIC);
+	sqlite3_bind_int (sql_statement, 3, show);
+	sqlite3_bind_text (sql_statement, 4, md5, -1, SQLITE_STATIC);
+
+	/* save this */
+	sqlite3_step (sql_statement);
+	rc = sqlite3_finalize (sql_statement);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		goto out;
+	}
+
+out:
+	return rc;
+}
+
+/**
+ * pk_post_trans_sqlite_add_filename:
+ **/
+static gint
+pk_post_trans_sqlite_add_filename (PkPostTrans *post, const gchar *filename, const gchar *md5_opt)
+{
+	gchar *md5 = NULL;
+	gchar *package = NULL;
+	gint rc = -1;
+
+	/* if we've got it, use old data */
+	if (md5_opt != NULL)
+		md5 = g_strdup (md5_opt);
+	else
+		md5 = pk_post_trans_get_filename_md5 (filename);
+
+	/* resolve */
+	package = pk_post_trans_import_desktop_files_get_package (post, filename);
+	if (package == NULL) {
+		egg_warning ("failed to get list");
+		goto out;
+	}
+
+	/* add */
+	rc = pk_post_trans_sqlite_add_filename_details (post, filename, package, md5);
+out:
+	g_free (md5);
+	g_free (package);
+	return rc;
+}
+
+/**
+ * pk_post_trans_sqlite_cache_rescan_cb:
+ **/
+static gint
+pk_post_trans_sqlite_cache_rescan_cb (void *data, gint argc, gchar **argv, gchar **col_name)
+{
+	PkPostTrans *post = PK_POST_TRANS (data);
+	const gchar *filename = NULL;
+	const gchar *md5 = NULL;
+	gchar *md5_calc = NULL;
+	gint i;
+
+	/* add the filename data to the array */
+	for (i=0; i<argc; i++) {
+		if (g_strcmp0 (col_name[i], "filename") == 0 && argv[i] != NULL)
+			filename = argv[i];
+		else if (g_strcmp0 (col_name[i], "md5") == 0 && argv[i] != NULL)
+			md5 = argv[i];
+	}
+
+	/* sanity check */
+	if (filename == NULL || md5 == NULL) {
+		egg_warning ("filename %s and md5 %s)", filename, md5);
+		goto out;
+	}
+
+	/* get md5 */
+	md5_calc = pk_post_trans_get_filename_md5 (filename);
+	if (md5_calc == NULL) {
+		egg_debug ("remove of %s as no longer found", filename);
+		pk_post_trans_sqlite_remove_filename (post, filename);
+		goto out;
+	}
+
+	/* we've checked the file */
+	g_hash_table_insert (post->priv->hash, g_strdup (filename), GUINT_TO_POINTER (1));
+
+	/* check md5 is same */
+	if (g_strcmp0 (md5, md5_calc) != 0) {
+		egg_debug ("add of %s as md5 invalid (%s vs %s)", filename, md5, md5_calc);
+		pk_post_trans_sqlite_add_filename (post, filename, md5_calc);
+	}
+
+	egg_debug ("existing filename %s valid, md5=%s", filename, md5);
+out:
+	g_free (md5_calc);
+	return 0;
 }
 
 /**
@@ -380,16 +358,20 @@ pk_post_trans_import_desktop_files_get_mtimes (const PkObjList *files)
 gboolean
 pk_post_trans_import_desktop_files (PkPostTrans *post)
 {
-	guint i;
-	gboolean ret;
-	gchar *package_name;
+	gchar *statement;
+	gchar *error_msg = NULL;
+	gint rc;
+	GError *error = NULL;
+	GDir *dir;
+	const gchar *filename;
+	gpointer data;
+	gchar *path;
+	GPtrArray *array;
 	gfloat step;
-	PkObjList *files;
-	PkObjList *mtimes;
-	PkObjList *mtimes_old;
-	gchar *filename;
+	guint i;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (post), FALSE);
+	g_return_val_if_fail (post->priv->db != NULL, FALSE);
 
 	if (post->priv->backend->desc->search_file == NULL) {
 		egg_debug ("cannot search files");
@@ -400,66 +382,59 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 	pk_backend_reset (post->priv->backend);
 	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
 
-	egg_debug ("getting old desktop mtimes");
-	mtimes_old = pk_post_trans_string_list_new ();
-	ret = pk_obj_list_from_file (PK_OBJ_LIST (mtimes_old), "/var/lib/PackageKit/desktop-mtimes.txt");
-	if (!ret)
-		egg_warning ("failed to get old mtimes of desktop files");
+	/* reset hash */
+	g_hash_table_remove_all (post->priv->hash);
+	pk_post_trans_set_progress_changed (post, 101);
 
-	/* get the file list */
-	files = pk_post_trans_import_desktop_files_get_files (post);
-
-	/* get the mtimes */
-	mtimes = pk_post_trans_import_desktop_files_get_mtimes (files);
-
-	/* remove old desktop files we've already processed */
-	pk_obj_list_remove_list (PK_OBJ_LIST(mtimes), PK_OBJ_LIST (mtimes_old));
-
-	/* shortcut, there are no files to scan */
-	if (PK_OBJ_LIST(mtimes)->len == 0) {
-		egg_debug ("no desktop files needed to scan");
-		goto no_changes;
+	/* first go through the existing data, and look for modifications and removals */
+	statement = g_strdup ("SELECT filename, md5 FROM cache");
+	rc = sqlite3_exec (post->priv->db, statement, pk_post_trans_sqlite_cache_rescan_cb, post, &error_msg);
+	g_free (statement);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
 	}
 
-	/* update UI */
-	pk_post_trans_set_progress_changed (post, 0);
-	step = 100.0f / PK_OBJ_LIST(mtimes)->len;
+	/* open directory */
+	dir = g_dir_open (PK_DESKTOP_DEFAULT_APPLICATION_DIR, 0, &error);
+	if (dir == NULL) {
+		egg_warning ("failed to open file %s: %s", PK_DESKTOP_DEFAULT_APPLICATION_DIR, error->message);
+		g_error_free (error);
+		goto out;
+	}
 
-	/* for each new package, process the desktop file */
-	for (i=0; i<PK_OBJ_LIST(mtimes)->len; i++) {
+	/* go through desktop files and add them to an array if not present */
+	filename = g_dir_read_name (dir);
+	array = g_ptr_array_new ();
+	while (filename != NULL) {
+		if (g_str_has_suffix (filename, ".desktop")) {
+			path = g_build_filename (PK_DESKTOP_DEFAULT_APPLICATION_DIR, filename, NULL);
+			data = g_hash_table_lookup (post->priv->hash, path);
+			if (data == NULL) {
+				egg_debug ("add of %s as not present in db", path);
+				g_ptr_array_add (array, g_strdup (path));
+			}
+			g_free (path);
+		}
+		filename = g_dir_read_name (dir);
+	}
+	g_dir_close (dir);
 
-		/* get the filename from the mtime encoded string */
-		filename = g_strdup (pk_obj_list_index (mtimes, i));
-		g_strdelimit (filename, "|", '\0');
+	step = 100.0f / array->len;
+	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
 
-		/* get the name */
-		package_name = pk_post_trans_import_desktop_files_get_package (post, filename);
-
-		/* process the file */
-		if (package_name != NULL)
-			pk_post_trans_import_desktop_files_process_desktop (post, package_name, filename);
-		else
-			egg_warning ("%s ignored, failed to get package name\n", filename);
-		g_free (package_name);
-		g_free (filename);
-
-		/* update UI */
+	/* process files in an array */
+	for (i=0; i<array->len; i++) {
 		pk_post_trans_set_progress_changed (post, i * step);
+		path = g_ptr_array_index (array, i);
+		pk_post_trans_sqlite_add_filename (post, path, NULL);
 	}
+	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
+	g_ptr_array_free (array, TRUE);
 
-	/* save new mtimes data */
-	ret = pk_obj_list_to_file (PK_OBJ_LIST (mtimes), "/var/lib/PackageKit/desktop-mtimes.txt");
-	if (!ret)
-		egg_warning ("failed to set old mtimes of desktop files");
-
-no_changes:
-	/* update UI */
+out:
 	pk_post_trans_set_progress_changed (post, 100);
 	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_FINISHED);
-
-	g_object_unref (files);
-	g_object_unref (mtimes);
-	g_object_unref (mtimes_old);
 	return TRUE;
 }
 
@@ -533,11 +508,11 @@ pk_post_trans_clear_firmware_requests (PkPostTrans *post)
 
 
 /**
- * pk_post_trans_update_files_cb:
+ * pk_post_trans_update_files_check_running_cb:
  **/
 static void
-pk_post_trans_update_files_cb (PkBackend *backend, const gchar *package_id,
-			       const gchar *filelist, PkPostTrans *post)
+pk_post_trans_update_files_check_running_cb (PkBackend *backend, const gchar *package_id,
+					     const gchar *filelist, PkPostTrans *post)
 {
 	guint i;
 	guint len;
@@ -635,10 +610,10 @@ out:
 }
 
 /**
- * pk_post_trans_check_process_filelists:
+ * pk_post_trans_check_running_process:
  **/
 gboolean
-pk_post_trans_check_process_filelists (PkPostTrans *post, gchar **package_ids)
+pk_post_trans_check_running_process (PkPostTrans *post, gchar **package_ids)
 {
 	PkStore *store;
 	guint signal_files;
@@ -650,17 +625,103 @@ pk_post_trans_check_process_filelists (PkPostTrans *post, gchar **package_ids)
 		return FALSE;
 	}
 
+	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
+	pk_post_trans_set_progress_changed (post, 101);
+
 	store = pk_backend_get_store (post->priv->backend);
 	pk_post_trans_update_process_list (post);
 
 	signal_files = g_signal_connect (post->priv->backend, "files",
-					 G_CALLBACK (pk_post_trans_update_files_cb), post);
+					 G_CALLBACK (pk_post_trans_update_files_check_running_cb), post);
 
 	/* get all the files touched in the packages we just updated */
+	pk_backend_reset (post->priv->backend);
 	pk_store_set_strv (store, "package_ids", package_ids);
 	post->priv->backend->desc->get_files (post->priv->backend, package_ids);
 
+	/* wait for finished */
+	g_main_loop_run (post->priv->loop);
+
 	g_signal_handler_disconnect (post->priv->backend, signal_files);
+	pk_post_trans_set_progress_changed (post, 100);
+	return TRUE;
+}
+
+/**
+ * pk_post_trans_update_files_check_desktop_cb:
+ **/
+static void
+pk_post_trans_update_files_check_desktop_cb (PkBackend *backend, const gchar *package_id,
+					     const gchar *filelist, PkPostTrans *post)
+{
+	guint i;
+	guint len;
+	gboolean ret;
+	gchar **files;
+	gchar **package;
+	PkPackageId *id;
+	gchar *md5;
+
+	id = pk_package_id_new_from_string (package_id);
+	files = g_strsplit (filelist, ";", 0);
+	package = g_strsplit (package_id, ";", 0);
+
+	/* check each file */
+	len = g_strv_length (files);
+	for (i=0; i<len; i++) {
+		/* exists? */
+		ret = g_file_test (files[i], G_FILE_TEST_EXISTS);
+		if (!ret)
+			continue;
+
+		/* .desktop file? */
+		ret = g_str_has_suffix (files[i], ".desktop");
+		if (!ret)
+			continue;
+
+		egg_debug ("adding filename %s", files[i]);
+		md5 = pk_post_trans_get_filename_md5 (files[i]);
+		pk_post_trans_sqlite_add_filename_details (post, files[i], package[0], md5);
+		g_free (md5);
+	}
+	g_strfreev (files);
+	g_strfreev (package);
+	pk_package_id_free (id);
+}
+
+/**
+ * pk_post_trans_check_desktop_files:
+ **/
+gboolean
+pk_post_trans_check_desktop_files (PkPostTrans *post, gchar **package_ids)
+{
+	PkStore *store;
+	guint signal_files;
+
+	g_return_val_if_fail (PK_IS_POST_TRANS (post), FALSE);
+
+	if (post->priv->backend->desc->get_files == NULL) {
+		egg_debug ("cannot get files");
+		return FALSE;
+	}
+
+	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
+	pk_post_trans_set_progress_changed (post, 101);
+
+	store = pk_backend_get_store (post->priv->backend);
+	signal_files = g_signal_connect (post->priv->backend, "files",
+					 G_CALLBACK (pk_post_trans_update_files_check_desktop_cb), post);
+
+	/* get all the files touched in the packages we just updated */
+	pk_backend_reset (post->priv->backend);
+	pk_store_set_strv (store, "package_ids", package_ids);
+	post->priv->backend->desc->get_files (post->priv->backend, package_ids);
+
+	/* wait for finished */
+	g_main_loop_run (post->priv->loop);
+
+	g_signal_handler_disconnect (post->priv->backend, signal_files);
+	pk_post_trans_set_progress_changed (post, 100);
 	return TRUE;
 }
 
@@ -682,9 +743,10 @@ pk_post_trans_finalize (GObject *object)
 	if (g_main_loop_is_running (post->priv->loop))
 		g_main_loop_quit (post->priv->loop);
 	g_main_loop_unref (post->priv->loop);
+	sqlite3_close (post->priv->db);
+	g_hash_table_unref (post->priv->hash);
 
 	g_object_unref (post->priv->backend);
-	g_object_unref (post->priv->extra);
 	g_object_unref (post->priv->list);
 	g_object_unref (post->priv->running_exec_list);
 
@@ -723,12 +785,17 @@ static void
 pk_post_trans_init (PkPostTrans *post)
 {
 	gboolean ret;
+	const gchar *statement;
+	gchar *error_msg = NULL;
+	gint rc;
 
 	post->priv = PK_POST_TRANS_GET_PRIVATE (post);
 	post->priv->running_exec_list = pk_post_trans_string_list_new ();
 	post->priv->loop = g_main_loop_new (NULL, FALSE);
 	post->priv->list = pk_package_list_new ();
 	post->priv->backend = pk_backend_new ();
+	post->priv->db = NULL;
+	post->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
 	post->priv->finished_id =
 		g_signal_connect (post->priv->backend, "finished",
@@ -737,13 +804,35 @@ pk_post_trans_init (PkPostTrans *post)
 		g_signal_connect (post->priv->backend, "package",
 				  G_CALLBACK (pk_post_trans_package_cb), post);
 
-	post->priv->extra = pk_extra_new ();
-	pk_extra_set_access (post->priv->extra, PK_EXTRA_ACCESS_WRITE_ONLY);
+	/* check if exists */
+	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
 
-	/* use the default location */
-	ret = pk_extra_set_database (post->priv->extra, NULL);
-	if (!ret)
-		egg_warning ("Could not open extra database");
+	egg_debug ("trying to open database '%s'", PK_DESKTOP_DEFAULT_DATABASE);
+	rc = sqlite3_open (PK_DESKTOP_DEFAULT_DATABASE, &post->priv->db);
+	if (rc != 0) {
+		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (post->priv->db));
+		sqlite3_close (post->priv->db);
+		post->priv->db = NULL;
+		return;
+	}
+
+	/* create if not exists */
+	if (!ret) {
+		egg_debug ("creating database cache in %s", PK_DESKTOP_DEFAULT_DATABASE);
+		statement = "CREATE TABLE cache ("
+			    "filename TEXT,"
+			    "package TEXT,"
+			    "show INTEGER,"
+			    "md5 TEXT);";
+		rc = sqlite3_exec (post->priv->db, statement, NULL, NULL, &error_msg);
+		if (rc != SQLITE_OK) {
+			egg_warning ("SQL error: %s\n", error_msg);
+			sqlite3_free (error_msg);
+		}
+	}
+
+	/* we don't need to keep syncing */
+	sqlite3_exec (post->priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
 }
 
 /**

@@ -1,4 +1,4 @@
-/* -*- mode: C++; c-basic-offset: 4; indent-tabs-mode: nil; -*- */
+/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -55,6 +55,10 @@
 
 #define MARGIN 5
 
+#if !GTK_CHECK_VERSION(2,14,0)
+#define GTK_ICON_LOOKUP_FORCE_SIZE (GtkIconLookupFlags) 0
+#endif
+
 ////////////////////////////////////////
 //
 // PkpContents class implementation
@@ -80,13 +84,12 @@ splitString(const gchar *str)
 	return v;
 }
 
-PkpContents::PkpContents(const gchar *displayName, const gchar *packageNames, const gchar *desktopNames) :
+PkpContents::PkpContents(const gchar *displayName, const gchar *packageNames) :
 	mPlugin(0),
 	mStatus(IN_PROGRESS),
 	mAppInfo(0),
 	mDisplayName(displayName),
 	mPackageNames(splitString(packageNames)),
-	mDesktopNames(splitString(desktopNames)),
 	mLayout(0),
 	mInstallPackageProxy(0),
 	mInstallPackageCall(0)
@@ -119,6 +122,7 @@ void PkpContents::recheck()
 	mStatus = IN_PROGRESS;
 	mAvailableVersion = "";
 	mAvailablePackageName = "";
+	mInstalledPackageName = "";
 
 	for (std::vector<std::string>::iterator i = mPackageNames.begin(); i != mPackageNames.end(); i++) {
 		GError *error = NULL;
@@ -137,8 +141,6 @@ void PkpContents::recheck()
 		}
 		g_strfreev (package_ids);
 	}
-
-	findAppInfo();
 
 	if (mClients.empty() && getStatus() == IN_PROGRESS)
 		setStatus(UNAVAILABLE);
@@ -185,6 +187,12 @@ void
 PkpContents::setAvailablePackageName(const gchar *name)
 {
 	mAvailablePackageName = name;
+}
+
+void
+PkpContents::setInstalledPackageName(const gchar *name)
+{
+	mInstalledPackageName = name;
 }
 
 void
@@ -257,8 +265,7 @@ get_style(PangoFontDescription **font_desc, guint32 *foreground, guint32 *backgr
 	GdkColor link_color = { 0, 0, 0, 0xeeee };
 	GdkColor *tmp = NULL;
 
-	gtk_widget_style_get (GTK_WIDGET (window),
-						 "link-color", &tmp, NULL);
+	gtk_widget_style_get (GTK_WIDGET (window), "link-color", &tmp, NULL);
 	if (tmp != NULL) {
 		link_color = *tmp;
 		gdk_color_free(tmp);
@@ -292,7 +299,7 @@ PkpContents::ensureLayout(cairo_t *cr, PangoFontDescription *font_desc, guint32 
 		break;
 	case INSTALLED:
 		if (mAppInfo != 0) {
-			append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
+			append_markup(markup, "<span color='#%06x' underline='single'>", link_color >> 8);
 			/* TRANSLATORS: run an applicaiton */
 			append_markup(markup, _("Run %s"), mDisplayName.c_str());
 			append_markup(markup, "</span>");
@@ -324,7 +331,7 @@ PkpContents::ensureLayout(cairo_t *cr, PangoFontDescription *font_desc, guint32 
 		append_markup(markup, "</span>");
 		break;
 	case AVAILABLE:
-		append_markup(markup, "\n<span color='#%06x' underline='single'>", link_color >> 8);
+		append_markup(markup, "<span color='#%06x' underline='single'>", link_color >> 8);
 		/* TRANSLATORS: To install a package */
 		append_markup(markup, _("Install %s now"), mDisplayName.c_str());
 		append_markup(markup, "</span>");
@@ -360,28 +367,111 @@ PkpContents::setPlugin(PkpPluginInstance *plugin)
 	mPlugin = plugin;
 }
 
+gchar *
+PkpContents::getBestDesktopFile()
+{
+	GPtrArray *array = NULL;
+	PkDesktop *desktop;
+	gboolean ret;
+	gchar *data = NULL;
+	const gchar *package;
+
+	/* open desktop database */
+	desktop = pk_desktop_new();
+	ret = pk_desktop_open_database(desktop, NULL);
+	if (!ret)
+		goto out;
+
+	/* get files */
+	package = mInstalledPackageName.c_str();
+	array = pk_desktop_get_shown_for_package(desktop, package, NULL);
+	if (array == NULL)
+		goto out;
+	if (array->len == 0)
+		goto out;
+
+	/* just use the first entry */
+	data = g_strdup((const gchar*) g_ptr_array_index(array, 0));
+
+out:
+	if (array != NULL) {
+		g_ptr_array_foreach(array, (GFunc) g_free, NULL);
+		g_ptr_array_free (array, TRUE);
+	}
+	g_object_unref(desktop);
+	return data;
+}
+
+gchar *
+PkpContents::getPackageIcon()
+{
+	gboolean ret;
+	GKeyFile *file;
+	gchar *data = NULL;
+	const gchar *filename;
+
+	/* get data from the best file */
+	file = g_key_file_new();
+	filename = getBestDesktopFile();
+	if (filename == NULL)
+		goto out;
+
+	ret = g_key_file_load_from_file(file, filename, G_KEY_FILE_NONE, NULL);
+	if (!ret) {
+		g_warning("failed to open %s", filename);
+		goto out;
+	}
+	data = g_key_file_get_string(file, G_KEY_FILE_DESKTOP_GROUP, G_KEY_FILE_DESKTOP_KEY_ICON, NULL);
+	g_key_file_free(file);
+out:
+	return data;
+}
+
 void
 PkpContents::draw(cairo_t *cr)
 {
 	guint32 foreground, background, link;
 	PangoFontDescription *font_desc;
+	guint x = mPlugin->getX();
+	guint y = mPlugin->getY();
+	cairo_surface_t *surface = NULL;
+	const gchar *filename;
+	GtkIconTheme *theme;
+	GdkPixbuf *pixbuf;
 
+	/* get properties */
 	get_style(&font_desc, &foreground, &background, &link);
 
+        /* fill background */
 	set_source_from_rgba(cr, background);
-	cairo_rectangle(cr, mPlugin->getX(), mPlugin->getY(), mPlugin->getWidth(), mPlugin->getHeight());
+	cairo_rectangle(cr, x, y, mPlugin->getWidth(), mPlugin->getHeight());
 	cairo_fill(cr);
 
+        /* grey outline */
 	cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-	cairo_rectangle(cr, mPlugin->getX() + 0.5, mPlugin->getY() + 0.5, mPlugin->getWidth() - 1, mPlugin->getHeight() - 1);
+	cairo_rectangle(cr, x + 0.5, y + 0.5, mPlugin->getWidth() - 1, mPlugin->getHeight() - 1);
 	cairo_set_line_width(cr, 1);
 	cairo_stroke(cr);
 
-	ensureLayout(cr, font_desc, link);
-	int width, height;
-	pango_layout_get_pixel_size(mLayout, &width, &height);
 
-	cairo_move_to(cr, mPlugin->getX() + MARGIN, mPlugin->getY() + MARGIN);
+	/* get themed icon */
+	filename = getPackageIcon();
+	if (filename == NULL)
+		filename = "package-x-generic";
+	theme = gtk_icon_theme_get_default();
+	pixbuf = gtk_icon_theme_load_icon(theme, filename, 48, GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+	if (pixbuf == NULL)
+		goto skip;
+	gdk_cairo_set_source_pixbuf(cr, pixbuf, x + MARGIN, y + MARGIN);
+	cairo_rectangle(cr, x + MARGIN, y + MARGIN, 48, 48);
+	cairo_fill(cr);
+	cairo_surface_destroy(surface);
+	g_object_unref(pixbuf);
+
+skip:
+	/* write text */
+	ensureLayout(cr, font_desc, link);
+	cairo_move_to(cr,(x + MARGIN*2) + 48, y + MARGIN + MARGIN);
 	set_source_from_rgba(cr, foreground);
 	pango_cairo_show_layout(cr, mLayout);
 }
@@ -434,8 +524,8 @@ PkpContents::getLinkIndex(int x, int y)
 	if (!mLayout)
 		return -1;
 
-	x -= MARGIN;
-	y -= MARGIN;
+	x -= (MARGIN * 2) + 48;
+	y -= (MARGIN * 2);
 
 	int index;
 	int trailing;
@@ -548,49 +638,6 @@ get_server_timestamp()
 	gtk_widget_destroy(invisible);
 }
 
-static gboolean
-validate_name(const gchar *name)
-{
-	const gchar *p;
-
-	for (p = name; *p; p++) {
-		char c = *p;
-		if (!((c >= 'A' && c <= 'Z') ||
-		      (c >= 'a' && c <= 'z') ||
-		      (c >= '0' && c <= '9') ||
-		      (c == '.') ||
-		      (c == '_') ||
-		      (c == '-')))
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
-void
-PkpContents::findAppInfo()
-{
-	for (std::vector<std::string>::iterator i = mDesktopNames.begin(); i != mDesktopNames.end(); i++) {
-		if (!validate_name(i->c_str())) {
-			g_warning("Bad desktop name: '%s'", i->c_str());
-			continue;
-		}
-
-		/* The "id" taken be g_desktop_app_info_new() is weirdly 'foo.desktop' not 'foo' */
-		char *id = g_strconcat(i->c_str(), ".desktop", NULL);
-		GDesktopAppInfo *desktopAppInfo = g_desktop_app_info_new(id);
-		g_free(id);
-
-		if (desktopAppInfo) {
-			mAppInfo = G_APP_INFO(desktopAppInfo);
-			break;
-		}
-	}
-
-	if (mAppInfo != 0)
-		setStatus(INSTALLED);
-}
-
 void
 PkpContents::runApplication (Time time)
 {
@@ -650,9 +697,9 @@ PkpContents::installPackage (Time time)
 							 "org.freedesktop.PackageKit");
 
 	/* will be NULL when activated not using a keyboard or a mouse */
-	event = gtk_get_current_event ();
+	event = gtk_get_current_event();
 	if (event != NULL && event->any.window != NULL) {
-		window = gdk_window_get_toplevel (event->any.window);
+		window = gdk_window_get_toplevel(event->any.window);
 		xid = GDK_DRAWABLE_XID(window);
 	}
 
@@ -674,6 +721,8 @@ PkpContents::installPackage (Time time)
 void
 PkpContents::onClientPackage(PkClient *client, const PkPackageObj *obj, PkpContents *contents)
 {
+	gchar *filename;
+
 	/* if we didn't use displayname, use the summary */
 	if (contents->mDisplayName.size() == 0)
 		contents->mDisplayName = obj->summary;
@@ -686,12 +735,36 @@ PkpContents::onClientPackage(PkClient *client, const PkPackageObj *obj, PkpConte
 			contents->setStatus(UPGRADABLE);
 		contents->setAvailableVersion(obj->id->version);
 		contents->setAvailablePackageName(obj->id->name);
+
+#if 0
+		/* if we have data from the repo, override the user:
+		 *  * we don't want the remote site pretending to install another package
+		 *  * it might be localised if the backend supports it */
+		if (obj->summary != NULL && obj->summary[0] != '\0')
+			contents->mDisplayName = obj->summary;
+#endif
+
 	} else if (obj->info == PK_INFO_ENUM_INSTALLED) {
 		if (contents->getStatus() == IN_PROGRESS)
 			contents->setStatus(INSTALLED);
 		else if (contents->getStatus() == AVAILABLE)
 			contents->setStatus(UPGRADABLE);
 		contents->setInstalledVersion(obj->id->version);
+		contents->setInstalledPackageName(obj->id->name);
+
+		/* get desktop file information */
+		filename = contents->getBestDesktopFile();
+		if (filename != NULL) {
+			contents->mAppInfo = G_APP_INFO(g_desktop_app_info_new_from_filename(filename));
+#if 0
+			/* override, as this will have translation */
+			contents->mDisplayName = g_app_info_get_name(contents->mAppInfo);
+#endif
+		}
+		g_free(filename);
+
+		if (contents->mAppInfo != 0)
+			contents->setStatus(INSTALLED);
 	}
 }
 

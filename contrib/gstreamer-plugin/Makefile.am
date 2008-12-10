@@ -31,6 +31,10 @@ pk_gstreamer_install_LDADD =				\
 clean-local:
 	rm -f *~
 
+EXTRA_DIST =						\
+	README						\
+	$(NULL)
+
 MAINTAINERCLEANFILES =					\
 	*~			      			\
 	Makefile.in					\

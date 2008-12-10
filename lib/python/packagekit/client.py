@@ -67,6 +67,7 @@ class PackageKitTransaction:
         self._allow_cancel = False
         self._method = None
         self._exit_handler = None
+        self.messages = []
         self.result = []
         # Connect the signal handlers to the DBus iface
         self._iface = iface
@@ -79,6 +80,7 @@ class PackageKitTransaction:
                         ('Category', self._on_category),
                         ('UpdateDetail', self._on_update_detail),
                         ('DistroUpgrade', self._on_distro_upgrade),
+                        ('Message', self._on_message),
                         ('RepoDetail', self._on_repo_detail)]:
             self._iface.connect_to_signal(sig, cb)
         self._main_loop = gobject.MainLoop()
@@ -134,6 +136,10 @@ class PackageKitTransaction:
         '''Callback for ErrorCode signal'''
         self._error_code = code
         self._error_details = details
+
+    def _on_message(self, code, details):
+        '''Callback for Message signal'''
+        self.messages.append(PackageKitMessage(code, details))
 
     def _on_finished(self, exit, runtime):
         '''Callback for Finished signal'''
@@ -220,7 +226,7 @@ class PackageKitClient:
             # not initialized, or daemon timed out
             pass
 
-    def resolve(self, filters, names, exit_handler=None):
+    def resolve(self, names, filters=FILTER_NONE, exit_handler=None):
         '''Resolve package names'''
         names_list = self._to_list(names)
         return self._run_transaction("Resolve", [filters, names_list],
@@ -232,22 +238,22 @@ class PackageKitClient:
         return self._run_transaction("GetDetails", [package_ids],
                                      exit_handler)
 
-    def search_name(self, filters, search, exit_handler=None):
+    def search_name(self, search, filters=FILTER_NONE, exit_handler=None):
         '''Search for packages by name'''
         return self._run_transaction("SearchName", [filters, search],
                                      exit_handler)
 
-    def search_group(self, filters, search, exit_handler=None):
+    def search_group(self, search, filters=FILTER_NONE, exit_handler=None):
         '''Search for packages by their group'''
         return self._run_transaction("SearchGroup", [filters, search], 
                                      exit_handler)
 
-    def search_details(self, filters, search, exit_handler=None):
+    def search_details(self, search, filters=FILTER_NONE, exit_handler=None):
         '''Search for packages by their details'''
         return self._run_transaction("SearchDetails", [filters], 
                                      exit_handler)
 
-    def search_file(self, filters, search, exit_handler=None):
+    def search_file(self, search, filters=FILTER_NONE, exit_handler=None):
         '''Search for packages by their files'''
         return self._run_transaction("SearchFile", [filters], 
                                      exit_handler)
@@ -320,7 +326,7 @@ class PackageKitClient:
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("DownloadPackages", [package_ids], exit_handler)
 
-    def get_depends(self, filters, packages, recursive=False, 
+    def get_depends(self, packages, filters=FILTER_NONE, recursive=False, 
                     exit_handler=None):
         '''Search for dependencies for packages'''
         package_ids = self._to_package_id_list(packages)
@@ -333,7 +339,7 @@ class PackageKitClient:
         package_ids = self._to_package_id_list(packages)
         return self._run_transaction("GetFiles", [package_ids], exit_handler)
 
-    def get_requires(self, filters, packages, recursive=False, 
+    def get_requires(self, packages, filters=FILTER_NONE, recursive=False, 
                      exit_handler=None):
         '''Search for requirements for packages'''
         package_ids = self._to_package_id_list(packages)

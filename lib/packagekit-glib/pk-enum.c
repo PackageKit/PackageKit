@@ -117,6 +117,7 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,	"download-packages"},
 	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,	"get-distro-upgrades"},
 	{PK_ROLE_ENUM_GET_CATEGORIES,		"get-categories"},
+	{PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,	"get-old-transactions"},
 	{0, NULL}
 };
 
@@ -165,6 +166,8 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED, "all-packages-already-installed"},
 	{PK_ERROR_ENUM_FILE_NOT_FOUND,		"file-not-found"},
 	{PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY,	"no-more-mirrors-to-try"},
+	{PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,	"no-distro-upgrade-data"},
+	{PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,	"incompatible-architecture"},
 	{0, NULL}
 };
 

@@ -56,7 +56,7 @@ static void     pk_transaction_list_finalize	(GObject        *object);
 #define PK_TRANSACTION_LIST_KEEP_FINISHED_TIMEOUT	5
 
 /* how long the tid is valid before it's destroyed, in seconds */
-#define PK_TRANSACTION_LIST_CREATE_COMMIT_TIMEOUT	5
+#define PK_TRANSACTION_LIST_CREATE_COMMIT_TIMEOUT	30
 
 /* the interval between each CST, in seconds */
 #define PK_TRANSACTION_WEDGE_CHECK			10
@@ -353,7 +353,7 @@ pk_transaction_list_no_commit_cb (PkTransactionItem *item)
  * pk_transaction_list_create:
  **/
 gboolean
-pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
+pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gchar *sender)
 {
 	gboolean ret;
 	PkTransactionItem *item;
@@ -394,6 +394,11 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
 	ret = pk_transaction_set_tid (item->transaction, item->tid);
 	if (!ret)
 		egg_error ("failed to set TID");
+
+	/* set the DBUS sender on the transaction */
+	ret = pk_transaction_set_sender (item->transaction, sender);
+	if (!ret)
+		egg_error ("failed to set sender");
 
 	/* put on the bus */
 	dbus_g_object_type_install_info (PK_TYPE_TRANSACTION, &dbus_glib_pk_transaction_object_info);
@@ -772,7 +777,7 @@ pk_transaction_list_test_get_item (PkTransactionList *tlist)
 	tid = pk_transaction_id_generate ();
 
 	/* create PkTransaction instance */
-	pk_transaction_list_create (tlist, tid);
+	pk_transaction_list_create (tlist, tid, ":0");
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	g_free (tid);
 
@@ -815,7 +820,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "create a transaction object");
-	ret = pk_transaction_list_create (tlist, tid);
+	ret = pk_transaction_list_create (tlist, tid, ":0");
 	if (ret)
 		egg_test_success (test, "created transaction %s", tid);
 	else
@@ -859,7 +864,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "add again the same tid (should fail)");
-	ret = pk_transaction_list_create (tlist, tid);
+	ret = pk_transaction_list_create (tlist, tid, ":0");
 	if (!ret)
 		egg_test_success (test, NULL);
 	else
@@ -887,7 +892,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "create another item");
-	ret = pk_transaction_list_create (tlist, tid);
+	ret = pk_transaction_list_create (tlist, tid, ":0");
 	if (ret)
 		egg_test_success (test, "created transaction %s", tid);
 	else

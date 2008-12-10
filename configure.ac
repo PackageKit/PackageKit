@@ -1,13 +1,14 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.3.11)
+AC_INIT(PackageKit, 0.4.1)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
+AC_CONFIG_MACRO_DIR([m4])
 
 # Should we enable extra stuff automatically?
 # set no for release builds, yes for development builds
-DEVELOPMENT_RELEASE=no
+DEVELOPMENT_RELEASE=yes
 
 # libtool versioning - this applies to libpackagekit
 #
@@ -18,8 +19,8 @@ DEVELOPMENT_RELEASE=no
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-LT_CURRENT=10
-LT_REVISION=2
+LT_CURRENT=11
+LT_REVISION=0
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -170,7 +171,7 @@ AC_PATH_PROG([MOC], [moc-qt4])
 dnl ---------------------------------------------------------------------------
 dnl - Is GIO available?
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(GIO, gio-2.0 >= $GIO_REQUIRED, PK_BUILD_GIO="yes", PK_BUILD_GIO="no")
+PKG_CHECK_MODULES(GIO, gio-2.0 >= $GIO_REQUIRED gio-unix-2.0 >= $GIO_REQUIRED, PK_BUILD_GIO="yes", PK_BUILD_GIO="no")
 if test "x$PK_BUILD_GIO" = "xyes"; then
 	with_gio="yes"
 	AC_DEFINE(PK_BUILD_GIO, 1, [define if GIO is installed])
@@ -314,6 +315,28 @@ else
 	build_gstreamer_plugin=no
 fi
 AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
+
+dnl ---------------------------------------------------------------------------
+dnl - Able to build GTK module
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK module functionality]),
+	      enable_gtk_module=$enableval,enable_gtk_module=yes)
+if test x$enable_gtk_module = xyes; then
+	PKG_CHECK_MODULES(PK_GTK_MODULE, gtk+-2.0 pangoft2 fontconfig dbus-glib-1,
+	                  build_gtk_module=yes, build_gtk_module=no)
+	AC_SUBST(PK_GTK_MODULE_CFLAGS)
+	AC_SUBST(PK_GTK_MODULE_LIBS)
+else
+	build_gtk_module=no
+fi
+AM_CONDITIONAL(PK_BUILD_GTK_MODULE, test $build_gtk_module = "yes")
+
+dnl ---------------------------------------------------------------------------
+dnl - Able to build BASH command-not-found functionality
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(command_not_found, AS_HELP_STRING([--enable-command-not-found],[Build BASH command-not-found functionality]),
+	      build_command_not_found=$enableval,build_command_not_found=yes)
+AM_CONDITIONAL(PK_BUILD_COMMAND_NOT_FOUND, test $build_command_not_found = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Other tests
@@ -577,10 +600,12 @@ docs/api/Makefile
 docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
-contrib/packagekit-plugin/Makefile
+contrib/browser-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
+contrib/gtk-module/Makefile
 contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
+contrib/command-not-found/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile
@@ -630,6 +655,7 @@ echo "
         datadir:                   ${datadir}
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
+        cppflags:                  ${CPPFLAGS}
         Building unit tests:       ${enable_tests}
         Able to run locally:       ${enable_local}
         Developer warnings:        ${enable_developer}
@@ -640,6 +666,8 @@ echo "
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
+        Pango module:              ${build_gtk_module}
+        BASH Command not found:    ${build_command_not_found}
         QT library:                ${build_qt}
 
         Backends:

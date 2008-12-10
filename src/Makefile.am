@@ -15,6 +15,7 @@ INCLUDES =						\
 	$(POLKIT_CFLAGS)				\
 	$(PYTHON_CFLAGS)				\
 	$(LIBNM_CFLAGS)					\
+	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DSBINDIR=\"$(sbindir)\"		 	\
 	-DDATADIR=\"$(datadir)\"			\
@@ -66,6 +67,8 @@ shared_SOURCES =					\
 	pk-network-unix.h				\
 	pk-time.h					\
 	pk-time.c					\
+	pk-syslog.h					\
+	pk-syslog.c					\
 	pk-conf.c					\
 	pk-conf.h					\
 	pk-store.c					\
@@ -223,6 +226,7 @@ EXTRA_DIST =						\
 
 clean-local:
 	rm -f *~
+	rm -f transactions.db
 	rm -f pk-marshal.c pk-marshal.h
 
 CLEANFILES = *~ $(BUILT_SOURCES)

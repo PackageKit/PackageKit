@@ -107,8 +107,8 @@ manpage.1: manpage.xml
         <listitem>
           <para>Set the filename of dependencies to be excluded.</para>
           <para>
-            Generally, the file list of packages is generated using
-            <command>pk-generate-package-list</command> on the target system.
+            Generally, the file list of packages is generated
+            when doing a PackageKit refresh on the target system.
             If not specified, <command>pkgenpack</command> uses
             <filename>/var/lib/PackageKit/system.package-list</filename> by default.
           </para>

@@ -1,3 +1,130 @@
+Version 0.4.0
+~~~~~~~~~~~~~
+Released: 2008-12-09
+
+Notes:
+- Now integrates with BASH suggesting replacements and offering to install
+  missing packages.
+- Now integrates with Pango using a gtk-module to install missing fonts.
+- Much tighter security model and new audit logging framework.
+- Lots of new, untested, code so probably not a good idea for stable distributions.
+
+Translations:
+ - Updated Swedish translation (Daniel Nylander)
+ - Updated Polish translation (Piotr Drąg)
+
+New Features:
+ - qt: Add GetMimeTypes to Qt bindings (Adrien BUSTANY)
+ - Add a PolicyKit rule so other users can cancel tasks from other users (Richard Hughes)
+ - Add command-not-found functionality to PackageKit (Richard Hughes)
+ - Add a various possible replacement models to command not found (Richard Hughes)
+ - Use a config file to control the actions we take on command-not-found (Richard Hughes)
+ - Add a Pango module that can be used to automatically install missing fonts (Behdad Esfahbod)
+ - Set the environment variable NETWORK for the spawned backends (Richard Hughes)
+
+Bugfixes:
+ - Get the lang and network state in the generic spawned backend (Richard Hughes)
+ - pk-generate-package-list is not used any more, remove from the man page (Anders F Bjorklund)
+ - Check the sender for SetLocale and the UID for Cancel (Richard Hughes)
+ - Fix a small memory leak in pk_transaction_action_is_allowed (Richard Hughes)
+ - Fix a small memory leak in pk_backend_package (Richard Hughes)
+ - Make a lot of new strings translatable in pkcon (Richard Hughes)
+ - Add the DBus interface now that the default send interface is now deny (Richard Hughes)
+ - Allow all clients to send to all interfaces of the server. Fixes DBus introspection. (Richard Hughes)
+ - gtk-module: Fix typos, clean up and improve README (Behdad Esfahbod)
+ - glib: Don't emit a critical warning if a desktop file contains an error (Richard Hughes)
+ - qt: Fix make check with the threaded Polkit client (Adrien BUSTANY)
+ - qt: ifdef the Polkit relevant parts for make distcheck (Adrien BUSTANY)
+ - qt: Fix the old transactions, and upgrade to new API (Adrien BUSTANY)
+ - qt: Fixed freezed UI while waiting for blocking polkit_auth_obtain call (Thomas Goettlicher)
+
+Backends:
+ - apt: Fix apt configuration (Sebastian Heinlein)
+ - poldek: Implement get_mime_types (Marcin Banasiak)
+ - yum: Catch yum.Errors.RepoError when we get the yum comps groups. Fixes fd#18722 (Richard Hughes)
+ - yum: Add a few more entries into the comps groups mapping (Richard Hughes)
+ - yum: Use the NETWORK environment variable to change the way we access the repos (Richard Hughes)
+ - yum: Remove two developer debugging statements left in by accident (Richard Hughes)
+ - yum: Try harder to work from a cache when offline (Richard Hughes)
+ - yum: Avoid hanging the daemon when a repo is down. Fixes rh#473379 (Richard Hughes)
+ - yum: Catch all exceptions from self.yumbase.doConfigSetup. Fixes fd#18834 (Richard Hughes)
+ - yum: Don't error out with an internal error if the non-installed dep check fails. Fixes rh#474138 (Richard Hughes)
+ - yum: Make sure we call doObsoletes explicitly when we get the ObsoletesTuples (Richard Hughes)
+ - yum: As we can't treat yum like a usual python module, hand-hold it. (Richard Hughes)
+ - yum: check if a package has the correct architecture, and if not exit with an error. Fixes rh#474740 (Richard Hughes)
+
+Version 0.3.11
+~~~~~~~~~~~~~~
+Released: 2008-11-24
+
+Translations:
+ - Updated German translation (Fabian Affolter)
+ - Updated Italian translation (Francesco Tombolini)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Slovak translation (Pavol Šimo)
+ - Updated Polish translation (Piotr Drąg)
+ - Updated Finnish translation (Ville-Pekka Vainio)
+ - Updated Simplified Chinese translation (sainrysec)
+ - Updated Malayalam Translation (Ani Peter)
+
+New Features:
+ - Add three commands to pkcon: list-create, list-diff and list-install (Richard Hughes)
+ - Pass around the PolkitCaller rather than the dbus sender (Richard Hughes)
+ - Add two elements to the Transaction signal so we can get the user and cmdline
+   in client tools (Richard Hughes)
+ - Glib: Remove PkExtra and use a new class PkDesktop to manage the desktop file cache
+   in a more abstract way (Richard Hughes)
+ - When a package is installed, automatically scan and add the desktop file if
+   RefreshCacheScanDesktopFiles is set (Richard Hughes)
+ - Add syslog logging so that we keep a record of obtained authorisations (Richard Hughes)
+ - Glib: Provide a method to only return desktop files that will be shown in menus (Richard Hughes)
+ - Plugin: Remove the 'desktopnames' parameter from the x-packagekit-plugin code and
+   add the desktop icon if installed (Richard Hughes)
+
+Bugfixes:
+ - Allow single charicter package names (Richard Hughes)
+ - Fix compile for older GTK versions (Anders F Bjorklund)
+ - When we do pkcon update, don't attempt to do what-provides if it's not implemented (Richard Hughes)
+ - Create the log file directory if we are running the daemon in a prefix (Richard Hughes)
+ - Fix a segfault in the error path when files could not be installed with pkcon (Richard Hughes)
+ - Set the transaction role in GetOldTransactions() else it shows as unknown (Richard Hughes)
+ - When logging to LOG_AUTHPRIV also log to LOG_DAEMON (Richard Hughes)
+ - Enable translations in the client tools. Fixes fd#18674 (Richard Hughes)
+ - Glib: Add GetDistroUpgrades to requeue as this may be required with a repo signature (Richard Hughes)
+ - Glib: Make bitfield functions return zero if any of the elements are unknown (Richard Hughes)
+ - Glib: Tidy up the error handling in PkClient so we always fix up remote errors (Richard Hughes)
+ - Glib: Fix crash when pk-control is referenced after it's finalized (Scott Reeves)
+ - Glib: Allow building the glib library outside the source tree (Trever Fischer)
+ - QT: Add a config.h to allow disabling polkit (Adrien BUSTANY)
+ - QT: Correct the location of the library in the cmake file (Trever Fischer)
+ - QT: Behave better if PolKit is not present (Adrien BUSTANY)
+ - QT: Fixed freezed ui while waiting for blocking PolicyKit call (Thomas Goettlicher)
+ - Python: Instead of only package ids allow to use PackageKitPackage
+   instances as parameter (Sebastian Heinlein)
+ - Python: Add PackageKitTransaction.get_error method which returns (Sebastian Heinlein)
+ - Python: Don't use CamelStyle for methods (Sebastian Heinlein)
+ - Python: Use error naming of the ErrorCode signal (Sebastian Heinlein)
+ - Python: Collect messages (Sebastian Heinlein)
+ - Python: Make filter optional (Sebastian Heinlein)
+
+Backends:
+ - alpm: Add initial version of what_provides to the backend (Valeriy Lyasotskiy)
+ - alpm: Added download_packages stuff (Valeriy Lyasotskiy)
+ - conary: Merged in more fixes from Andres (Ken VanDine)
+ - conary: Updated the update-detail call (Ken VanDine)
+ - yum: Further fixes to repository signing (Richard Hughes)
+ - yum: Don't explode if the preupgrade package cannot be found (Richard Hughes)
+ - yum: Don't setup the repo list in GetRepoList, this method doesn't change anything (Richard Hughes)
+ - yum: Add support for signed repository metadata (Tim Lauridsen)
+ - yum: Make sure the repos are setup before we run any command else (Richard Hughes)
+ - zypp: Don't leak the filters (Scott Reeves)
+ - zypp: Minor bugfix (Stefan Haas)
+ - zypp: zypp >= 5.20.0 is needed now (Stefan Haas)
+ - zypp: Fixed restart-flag handling (Stefan Haas)
+ - zypp: Do not abort when a repo is unavailable (Stefan Haas)
+ - zypp: Do not show empty messages or messages twice (Stefan Haas)
+ - zypp: Handle filters in WhatProvides and Resolve (Stefan Haas)
+
 Version 0.3.10
 ~~~~~~~~~~~~~~
 Released: 2008-11-10
@@ -316,7 +443,7 @@ New Features:
  - python: Implemented some extra methods and did some code cleanups (Tim Lauridsen)
  - python: Removed packagekitwrapper.py, it is replaced by packagekit/client.py (Tim Lauridsen)
  - python: Implemented the last methods and make the wrapper-test.py a lot better (Tim Lauridsen)
- - Change RefreshCacheScanDesktopFiles and RefreshCacheUpdatePackageList to default true (Richard Hughes)
+ - Change ScanDesktopFiles and UpdatePackageList to default true (Richard Hughes)
  - Use a new in-process desktop scanner and package list generator (Richard Hughes)
  - Add a --quiet flag for the import tools (Richard Hughes)
 
@@ -769,7 +896,7 @@ Released: 2008-07-04
  - Updated Polish translation (Piotr Drąg)
 
 * New features:
- - Add PkCatalog for installing catalogs of applications. (Richard Hughes)
+ - Add PkCatalog for installing catalogs of applications (Richard Hughes)
  - Add a mime handler for .catalog files (Richard Hughes)
 
 * Bugfixes:

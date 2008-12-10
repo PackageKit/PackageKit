@@ -780,9 +780,9 @@ pk_backend_get_status (PkBackend *backend)
 gboolean
 pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
-	gchar *summary_safe;
-	PkPackageObj *obj;
-	PkPackageId *id;
+	gchar *summary_safe = NULL;
+	PkPackageObj *obj = NULL;
+	PkPackageId *id = NULL;
 	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -793,7 +793,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	ret = pk_package_id_check (package_id);
 	if (!ret) {
 		egg_warning ("package_id invalid and cannot be processed: %s", package_id);
-		return FALSE;
+		goto out;
 	}
 
 	/* replace unsafe chars */
@@ -806,8 +806,10 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	if (ret) {
 		pk_package_obj_free (obj);
 		egg_debug ("skipping duplicate %s", package_id);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
+
 	/* update the 'last' package */
 	pk_package_obj_free (backend->priv->last_package);
 	backend->priv->last_package = pk_package_obj_copy (obj);
@@ -815,23 +817,23 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: package %s", package_id);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	/* we automatically set the transaction status for some infos */
-	if (info == PK_INFO_ENUM_DOWNLOADING) {
+	if (info == PK_INFO_ENUM_DOWNLOADING)
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	} else if (info == PK_INFO_ENUM_UPDATING) {
+	else if (info == PK_INFO_ENUM_UPDATING)
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	} else if (info == PK_INFO_ENUM_INSTALLING) {
+	else if (info == PK_INFO_ENUM_INSTALLING)
 		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-	} else if (info == PK_INFO_ENUM_REMOVING) {
+	else if (info == PK_INFO_ENUM_REMOVING)
 		pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
-	} else if (info == PK_INFO_ENUM_CLEANUP) {
+	else if (info == PK_INFO_ENUM_CLEANUP)
 		pk_backend_set_status (backend, PK_STATUS_ENUM_CLEANUP);
-	} else if (info == PK_INFO_ENUM_OBSOLETING) {
+	else if (info == PK_INFO_ENUM_OBSOLETING)
 		pk_backend_set_status (backend, PK_STATUS_ENUM_OBSOLETE);
-	}
 
 	/* we've sent a package for this transaction */
 	backend->priv->has_sent_package = TRUE;
@@ -839,10 +841,13 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	egg_debug ("emit package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary_safe);
 	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, obj);
 
+	/* success */
+	ret = TRUE;
+out:
 	pk_package_id_free (id);
 	pk_package_obj_free (obj);
 	g_free (summary_safe);
-	return TRUE;
+	return ret;
 }
 
 /**
@@ -1467,8 +1472,10 @@ pk_backend_finished (PkBackend *backend)
 	}
 
 	/* check we have not already finished */
-	if (backend->priv->finished)
+	if (backend->priv->finished) {
+		egg_warning ("already finished");
 		return FALSE;
+	}
 
 	/* check we got a Package() else the UI will suck */
 	if (!backend->priv->set_error &&
