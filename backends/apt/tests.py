@@ -35,15 +35,11 @@ import unittest
 
 import apt
 import apt_pkg
-import dbus
-import dbus.mainloop.glib
-import gobject
 import mox
 import nose.tools
 
-from aptDBUSBackend import PackageKitAptBackend, PACKAGEKIT_DBUS_SERVICE
+from aptDBUSBackend import PackageKitAptBackend
 from packagekit.enums import *
-from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH
 
 TEMPDIR = tempfile.mkdtemp(prefix="apt-backend-test")
 
@@ -53,17 +49,7 @@ class AptBackendTestCase(mox.MoxTestBase):
     def setUp(self):
         """Create a mox factory and a backend instance"""
         mox.MoxTestBase.setUp(self)
-        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-        bus = dbus.SessionBus()
-        bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
-        self.backend = PackageKitAptBackend(bus_name, PACKAGEKIT_DBUS_PATH)
-        self.loop = gobject.MainLoop()
-
-    def tearDown(self):
-        mox.MoxTestBase.tearDown(self)
-        context = self.loop.get_context()
-        while context.pending():
-            context.iteration()
+        self.backend = PackageKitAptBackend(None, None)
 
     @nose.tools.timed(10)
     def testSearchName(self):
@@ -87,7 +73,6 @@ class AptBackendTestCase(mox.MoxTestBase):
         while threading.activeCount() > 1:
             time.sleep(1)
 
-
 def setup():
     """Create a temporary and very simple chroot for apt"""
     apt_pkg.InitConfig()
@@ -101,6 +86,7 @@ def setup():
     shutil.copy("status.test", os.path.join(TEMPDIR, "var/lib/dpkg/status"))
     shutil.copy("xterm.list.test", os.path.join(TEMPDIR,
                                                 "var/lib/dpkg/info/xterm.list"))
+
 
 def teardown():
     """Clear up temporary files"""
