@@ -60,7 +60,7 @@ class AptBackendTestCase(mox.MoxTestBase):
         self.mox.ReplayAll()
         self.backend.doSearchName("none", "xterm")
         while threading.activeCount() > 1:
-            time.sleep(1)
+            time.sleep(0.1)
 
     @nose.tools.timed(10)
     def testSearchFile(self):
@@ -71,7 +71,7 @@ class AptBackendTestCase(mox.MoxTestBase):
         self.mox.ReplayAll()
         self.backend.doSearchFile("none", "xterm")
         while threading.activeCount() > 1:
-            time.sleep(1)
+            time.sleep(0.1)
 
 def setup():
     """Create a temporary and very simple chroot for apt"""
