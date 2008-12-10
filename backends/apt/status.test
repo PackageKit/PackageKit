@@ -7,8 +7,6 @@ Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
 Architecture: i386
 Version: 235-1
 Provides: x-terminal-emulator
-Depends: xbitmaps, libc6 (>= 2.7-1), libfontconfig1 (>= 2.4.0), libice6 (>= 1:1.0.0), libncurses5 (>= 5.6+20071006-3), libsm6, libx11-6, libxaw7, libxext6, libxft2 (>> 2.1.1), libxmu6, libxt6
-Recommends: x11-utils | xutils
 Suggests: xfonts-cyrillic
 Conffiles:
  /etc/X11/app-defaults/KOI8RXTerm dd942bff017ee9cfc2bb97bbdd7378b6
