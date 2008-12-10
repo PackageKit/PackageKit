@@ -1331,6 +1331,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_UNKNOWN, "Refreshing cache failed: %s" % e)
             self.Finished(EXIT_FAILED)
             return
+        self._open_cache(prange=(95,100))
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
