@@ -555,7 +555,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             for installed_file in self._get_installed_files(pkg):
                 if filename in installed_file:
                     self._emit_visible_package(filters, pkg)
-                    continue
+                    break
         self.Finished(EXIT_SUCCESS)
 
     @serialize
