@@ -2183,6 +2183,7 @@ def run():
     bus = dbus.SystemBus(mainloop=loop)
     bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
     manager = PackageKitAptBackend(bus_name, PACKAGEKIT_DBUS_PATH)
+    manager.run()
 
 def main():
     parser = optparse.OptionParser(description="APT backend for PackageKit")
