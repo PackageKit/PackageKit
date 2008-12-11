@@ -60,6 +60,62 @@ pk_package_id_new (void)
 }
 
 /**
+ * pk_package_id_get_name:
+ *
+ * Gets name property from given #PkPackageId object
+ *
+ * Return value: name property of given #PkPackageId object
+ **/
+const gchar *
+pk_package_id_get_name (const PkPackageId *id)
+{
+	g_return_val_if_fail (id != NULL, NULL);
+	return id->name;
+}
+
+/**
+ * pk_package_id_get_version:
+ *
+ * Gets version property from given #PkPackageId object
+ *
+ * Return value: version property of given #PkPackageId object
+ **/
+const gchar *
+pk_package_id_get_version (const PkPackageId *id)
+{
+	g_return_val_if_fail (id != NULL, NULL);
+	return id->version;
+}
+
+/**
+ * pk_package_id_get_arch:
+ *
+ * Gets arch property from given #PkPackageId object
+ *
+ * Return value: arch property of given #PkPackageId object
+ **/
+const gchar *
+pk_package_id_get_arch (const PkPackageId *id)
+{
+	g_return_val_if_fail (id != NULL, NULL);
+	return id->arch;
+}
+
+/**
+ * pk_package_id_get_data:
+ *
+ * Gets data property from given #PkPackageId object
+ *
+ * Return value: data property of given #PkPackageId object
+ **/
+const gchar *
+pk_package_id_get_data (const PkPackageId *id)
+{
+	g_return_val_if_fail (id != NULL, NULL);
+	return id->data;
+}
+
+/**
  * pk_strsplit:
  * @id: the ; delimited string to split
  * @parts: how many parts the delimted string should be split into
