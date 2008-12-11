@@ -43,6 +43,18 @@ backend_stderr_cb (PkBackend *backend, const gchar *output)
 }
 
 /**
+ * backend_stdout_cb:
+ */
+static gboolean
+backend_stdout_cb (PkBackend *backend, const gchar *output)
+{
+	/* unsigned rpm, this will be picked up by yum and and exception will be thrown */
+	if (strstr (output, "Presto") != NULL)
+		return FALSE;
+	return TRUE;
+}
+
+/**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
@@ -52,6 +64,7 @@ backend_initialize (PkBackend *backend)
 	egg_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_filter_stderr (spawn, backend_stderr_cb);
+	pk_backend_spawn_set_filter_stdout (spawn, backend_stdout_cb);
 	pk_backend_spawn_set_name (spawn, "yum");
 }
 
