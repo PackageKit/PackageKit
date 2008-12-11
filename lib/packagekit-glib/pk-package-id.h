@@ -44,6 +44,10 @@ typedef struct {
 
 /* objects */
 PkPackageId	*pk_package_id_new			(void);
+const gchar	*pk_package_id_get_name			(const PkPackageId	*id);
+const gchar	*pk_package_id_get_version		(const PkPackageId	*id);
+const gchar	*pk_package_id_get_arch			(const PkPackageId	*id);
+const gchar	*pk_package_id_get_data			(const PkPackageId	*id);
 PkPackageId	*pk_package_id_new_from_string		(const gchar		*package_id)
 							 G_GNUC_WARN_UNUSED_RESULT;
 PkPackageId	*pk_package_id_new_from_list		(const gchar		*name,
