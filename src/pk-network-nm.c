@@ -37,6 +37,8 @@
 #include <fcntl.h>
 
 #include <glib/gi18n.h>
+#include <dbus/dbus-glib.h>
+#include <NetworkManager.h>
 #include <libnm_glib.h>
 
 #include "egg-debug.h"
@@ -45,9 +47,12 @@
 
 static void     pk_network_nm_class_init	(PkNetworkNmClass *klass);
 static void     pk_network_nm_init		(PkNetworkNm      *network_nm);
-static void     pk_network_nm_finalize		(GObject        *object);
+static void     pk_network_nm_finalize		(GObject          *object);
 
 #define PK_NETWORK_NM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NETWORK_NM, PkNetworkNmPrivate))
+
+/* experimental code */
+#define PK_NETWORK_NM_GET_CONNECTION_TYPE	1
 
 /**
  * PkNetworkNmPrivate:
@@ -58,6 +63,7 @@ struct _PkNetworkNmPrivate
 {
 	libnm_glib_ctx		*ctx;
 	guint			 callback_id;
+	DBusGConnection		*bus;
 };
 
 enum {
@@ -70,6 +76,176 @@ static guint signals [PK_NETWORK_NM_LAST_SIGNAL] = { 0 };
 G_DEFINE_TYPE (PkNetworkNm, pk_network_nm, G_TYPE_OBJECT)
 
 /**
+ * pk_network_nm_prioritise_connection_type:
+ *
+ * GSM is more important than ethernet, so if we are using an
+ * important connection even bridged we should prioritise it
+ **/
+static NMDeviceType
+pk_network_nm_prioritise_connection_type (NMDeviceType type_old, NMDeviceType type_new)
+{
+	NMDeviceType type = type_old;
+	/* by sheer fluke we can use the enum ordering */
+	if (type_new > type_old)
+		type = type_new;
+	return type;
+}
+
+/**
+ * pk_network_nm_get_active_connection_type_for_device:
+ **/
+static NMDeviceType
+pk_network_nm_get_active_connection_type_for_device (PkNetworkNm *network_nm, const gchar *device)
+{
+	gboolean ret;
+	GError *error = NULL;
+	DBusGProxy *proxy;
+	GValue value = { 0 };
+	NMDeviceType type = NM_DEVICE_TYPE_UNKNOWN;
+
+	/* get if the device is default */
+	proxy = dbus_g_proxy_new_for_name (network_nm->priv->bus, "org.freedesktop.NetworkManager",
+					   device, "org.freedesktop.DBus.Properties");
+	ret = dbus_g_proxy_call (proxy, "Get", &error,
+				 G_TYPE_STRING, "org.freedesktop.NetworkManager.Device",
+				 G_TYPE_STRING, "DeviceType",
+				 G_TYPE_INVALID,
+				 G_TYPE_VALUE, &value,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		g_warning ("Error getting DeviceType: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	type = g_value_get_uint (&value);
+	egg_debug ("type: %i", type);
+out:
+	g_object_unref (proxy);
+	return type;
+}
+
+/**
+ * pk_network_nm_get_active_connection_type_for_connection:
+ **/
+static NMDeviceType
+pk_network_nm_get_active_connection_type_for_connection (PkNetworkNm *network_nm, const gchar *active_connection)
+{
+	guint i;
+	gboolean ret;
+	GError *error = NULL;
+	DBusGProxy *proxy;
+	const gchar *device;
+	GValue value_default = { 0 };
+	GValue value_devices = { 0 };
+	gboolean is_default;
+	GPtrArray *devices;
+	NMDeviceType type_tmp;
+	NMDeviceType type = NM_DEVICE_TYPE_UNKNOWN;
+
+
+	/* get if the device is default */
+	proxy = dbus_g_proxy_new_for_name (network_nm->priv->bus, "org.freedesktop.NetworkManager",
+					   active_connection, "org.freedesktop.DBus.Properties");
+	ret = dbus_g_proxy_call (proxy, "Get", &error,
+				 G_TYPE_STRING, "org.freedesktop.NetworkManager.Connection.Active",
+				 G_TYPE_STRING, "Default",
+				 G_TYPE_INVALID,
+				 G_TYPE_VALUE, &value_default,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		g_warning ("Error getting Default: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	is_default = g_value_get_boolean (&value_default);
+	egg_debug ("is_default: %i", is_default);
+	if (!is_default) {
+		egg_debug ("not default, skipping");
+		goto out;
+	}
+
+	/* get the physical devices for the connection */
+	ret = dbus_g_proxy_call (proxy, "Get", &error,
+				 G_TYPE_STRING, "org.freedesktop.NetworkManager.Connection.Active",
+				 G_TYPE_STRING, "Devices",
+				 G_TYPE_INVALID,
+				 G_TYPE_VALUE, &value_devices,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		g_warning ("Error getting Devices: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	devices = g_value_get_boxed (&value_devices);
+	egg_debug ("number of devices: %i", devices->len);
+	if (devices->len == 0)
+		goto out;
+
+	/* find the types of the active connection */
+	for (i=0; i<devices->len; i++) {
+		device = g_ptr_array_index (devices, i);
+		type_tmp = pk_network_nm_get_active_connection_type_for_device (network_nm, device);
+		type = pk_network_nm_prioritise_connection_type (type, type_tmp);
+	}
+
+out:
+	g_object_unref (proxy);
+	return type;
+}
+
+/**
+ * pk_network_nm_get_active_connection_type:
+ **/
+static NMDeviceType
+pk_network_nm_get_active_connection_type (PkNetworkNm *network_nm)
+{
+	guint i;
+	gboolean ret;
+	DBusGProxy *proxy;
+	GError *error = NULL;
+	GPtrArray *active_connections = NULL;
+	const gchar *active_connection;
+	GValue value = { 0 };
+	NMDeviceType type_tmp;
+	NMDeviceType type = NM_DEVICE_TYPE_UNKNOWN;
+
+	/* get proxy */
+	proxy = dbus_g_proxy_new_for_name (network_nm->priv->bus, "org.freedesktop.NetworkManager",
+					   "/org/freedesktop/NetworkManager",
+					   "org.freedesktop.DBus.Properties");
+	ret = dbus_g_proxy_call (proxy, "Get", &error,
+				 G_TYPE_STRING, "org.freedesktop.NetworkManager",
+				 G_TYPE_STRING, "ActiveConnections",
+				 G_TYPE_INVALID,
+				 G_TYPE_VALUE, &value,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		g_warning ("Error getting ActiveConnections: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	active_connections = g_value_get_boxed (&value);
+	egg_debug ("active connections: %i", active_connections->len);
+	if (active_connections->len == 0)
+		goto out;
+
+	/* find the active connection */
+	for (i=0; i<active_connections->len; i++) {
+		active_connection = g_ptr_array_index (active_connections, i);
+		type_tmp = pk_network_nm_get_active_connection_type_for_connection (network_nm, active_connection);
+		type = pk_network_nm_prioritise_connection_type (type, type_tmp);
+	}
+
+out:
+	g_object_unref (proxy);
+	g_ptr_array_foreach (active_connections, (GFunc) g_free, NULL);
+	g_ptr_array_free (active_connections, TRUE);
+	return type;
+}
+
+/**
  * pk_network_nm_get_network_state:
  * @network_nm: a valid #PkNetworkNm instance
  *
@@ -78,11 +254,36 @@ G_DEFINE_TYPE (PkNetworkNm, pk_network_nm, G_TYPE_OBJECT)
 PkNetworkEnum
 pk_network_nm_get_network_state (PkNetworkNm *network_nm)
 {
-	libnm_glib_state state;
 	PkNetworkEnum ret;
+#ifdef PK_NETWORK_NM_GET_CONNECTION_TYPE
+	NMDeviceType type;
+#else
+	libnm_glib_state state;
+#endif
 
 	g_return_val_if_fail (PK_IS_NETWORK_NM (network_nm), PK_NETWORK_ENUM_UNKNOWN);
 
+#ifdef PK_NETWORK_NM_GET_CONNECTION_TYPE
+	/* get connection type */
+	type = pk_network_nm_get_active_connection_type (network_nm);
+	switch (type) {
+	case NM_DEVICE_TYPE_UNKNOWN:
+		ret = PK_NETWORK_ENUM_OFFLINE;
+		break;
+	case NM_DEVICE_TYPE_ETHERNET:
+		ret = PK_NETWORK_ENUM_FAST;
+		break;
+	case NM_DEVICE_TYPE_WIFI:
+		ret = PK_NETWORK_ENUM_ONLINE;
+		break;
+	case NM_DEVICE_TYPE_GSM:
+	case NM_DEVICE_TYPE_CDMA:
+		ret = PK_NETWORK_ENUM_SLOW;
+		break;
+	default:
+		ret = PK_NETWORK_ENUM_ONLINE;
+	}
+#else
 	state = libnm_glib_get_network_state (network_nm->priv->ctx);
 	switch (state) {
 	case LIBNM_NO_NETWORK_CONNECTION:
@@ -91,6 +292,8 @@ pk_network_nm_get_network_state (PkNetworkNm *network_nm)
 	default:
 		ret = PK_NETWORK_ENUM_ONLINE;
 	}
+#endif
+	egg_debug ("network state is %s", pk_network_enum_to_text (ret));
 	return ret;
 }
 
@@ -133,6 +336,7 @@ pk_network_nm_class_init (PkNetworkNmClass *klass)
 static void
 pk_network_nm_init (PkNetworkNm *network_nm)
 {
+	GError *error = NULL;
 	GMainContext *context;
 
 	network_nm->priv = PK_NETWORK_NM_GET_PRIVATE (network_nm);
@@ -142,6 +346,13 @@ pk_network_nm_init (PkNetworkNm *network_nm)
 		libnm_glib_register_callback (network_nm->priv->ctx,
 					      pk_network_nm_nm_changed_cb,
 					      network_nm, context);
+
+	/* get system connection */
+	network_nm->priv->bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
+	if (network_nm->priv->bus == NULL) {
+		egg_warning ("Couldn't connect to system bus: %s", error->message);
+		g_error_free (error);
+	}
 }
 
 /**
