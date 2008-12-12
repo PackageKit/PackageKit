@@ -26,6 +26,7 @@ Requires: PackageKit-yum = %{version}-%{release}
 Requires: shared-mime-info
 Requires: python-sqlite2
 Requires: comps-extras
+Requires: preupgrade
 
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: dbus-devel  >= %{dbus_version}
