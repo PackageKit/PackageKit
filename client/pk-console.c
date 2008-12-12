@@ -265,7 +265,7 @@ pk_console_transaction_cb (PkClient *client, const PkTransactionObj *obj, gpoint
 	if (lines_len > 0)
 		g_print (" %s\n", _("Affected packages:"));
 	else
-		g_print (" %s\n", _("No affected packages"));
+		g_print (" %s\n", _("Affected packages: None"));
 	for (i=0; i<lines_len; i++) {
 		parts = g_strsplit (lines[i], "\t", 3);
 		id = pk_package_id_new_from_string (parts[1]);
