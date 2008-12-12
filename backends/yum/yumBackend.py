@@ -1950,7 +1950,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
 
         # yum 'helpfully' keeps an array of updates available
-        self.yumbase._up = None
+        self.yumbase.up = None
+
+        # clear the package sack so we can get new updates
+        self.yumbase.pkgSack = None
 
         fltlist = filters.split(';')
         package_list = []
