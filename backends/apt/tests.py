@@ -131,9 +131,9 @@ def setup():
     os.makedirs(os.path.join(TEMPDIR, "var/lib/dpkg/info"))
     os.makedirs(os.path.join(TEMPDIR, "etc/apt"))
     os.makedirs(os.path.join(TEMPDIR, "repo"))
-    shutil.copy("Packages.test", os.path.join(TEMPDIR, "repo/Packages"))
-    shutil.copy("status.test", os.path.join(TEMPDIR, "var/lib/dpkg/status"))
-    shutil.copy("xterm.list.test", os.path.join(TEMPDIR,
+    shutil.copy("data/Packages", os.path.join(TEMPDIR, "repo/Packages"))
+    shutil.copy("data/status", os.path.join(TEMPDIR, "var/lib/dpkg/status"))
+    shutil.copy("data/xterm.list", os.path.join(TEMPDIR,
                                                 "var/lib/dpkg/info/xterm.list"))
     sources = open(os.path.join(TEMPDIR, "etc/apt/sources.list"), "w")
     sources.write("deb file://%s/repo/ ./\n" % TEMPDIR)
