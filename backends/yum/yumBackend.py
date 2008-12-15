@@ -446,6 +446,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             grp = self.yumbase.comps.return_group(grpid)
         except yum.Errors.RepoError, e:
             self.error(ERROR_NO_CACHE, _to_unicode(e))
+        except yum.Errors.GroupsError, e:
+            self.error(ERROR_GROUP_NOT_FOUND, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
         else:
@@ -1948,7 +1950,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
 
         # yum 'helpfully' keeps an array of updates available
-        self.yumbase._up = None
+        self.yumbase.up = None
+
+        # clear the package sack so we can get new updates
+        self.yumbase.pkgSack = None
 
         fltlist = filters.split(';')
         package_list = []

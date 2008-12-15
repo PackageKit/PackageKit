@@ -315,7 +315,7 @@ class PackageKitClient:
 
     def get_packages(self, filters=FILTER_NONE, exit_handler=None):
         '''Return all packages'''
-        return self._run_transaction("GetUpdates", [filters], exit_handler)
+        return self._run_transaction("GetPackages", [filters], exit_handler)
 
     def update_system(self, exit_handler=None):
         '''Update the system'''

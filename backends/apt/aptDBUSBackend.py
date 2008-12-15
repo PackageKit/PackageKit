@@ -535,8 +535,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._canceled.set()
         self._canceled.wait()
 
-    @threaded
     @serialize
+    @threaded
     def doSearchFile(self, filters, filename):
         '''
         Implement the apt2-search-file functionality
@@ -555,11 +555,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             for installed_file in self._get_installed_files(pkg):
                 if filename in installed_file:
                     self._emit_visible_package(filters, pkg)
-                    continue
+                    break
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doSearchGroup(self, filters, group):
         '''
         Implement the apt2-search-group functionality
@@ -576,8 +576,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_visible_package(filters, pkg)
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doSearchName(self, filters, search):
         '''
         Implement the apt2-search-name functionality
@@ -594,8 +594,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_visible_package(filters, pkg)
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doSearchDetails(self, filters, search):
         '''
         Implement the apt2-search-details functionality
@@ -639,8 +639,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doGetDistroUpgrades(self):
         '''
         Implement the {backend}-get-distro-upgrades functionality
@@ -676,8 +676,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "The latest stable release")
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-update functionality
@@ -743,8 +743,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doGetUpdateDetail(self, pkg_ids):
         '''
         Implement the {backend}-get-update-details functionality
@@ -802,8 +802,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                               changelog, state, issued, updated)
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doGetDetails(self, pkg_ids):
         '''
         Implement the {backend}-get-details functionality
@@ -835,8 +835,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                          pkg.homepage, pkg.packageSize)
             self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     @unlock_cache_afterwards
     def doUpdateSystem(self):
         '''
@@ -860,8 +860,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     @unlock_cache_afterwards
     def doRemovePackages(self, ids, deps=True, auto=False):
         '''
@@ -911,8 +911,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doGetRepoList(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
@@ -992,8 +992,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.RepoDetail(repo_id, description, enabled)
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doRepoEnable(self, repo_id, enable):
         '''
         Implement the {backend}-repo-enable functionality
@@ -1079,8 +1079,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     @unlock_cache_afterwards
     def doUpdatePackages(self, ids):
         '''
@@ -1127,8 +1127,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.debug("Sending success signal")
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doDownloadPackages(self, ids, dest):
         '''
         Implement the {backend}-download-packages functionality
@@ -1193,8 +1193,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.debug("Sending success signal")
         self.Finished(EXIT_SUCCESS)
  
-    @threaded
     @serialize
+    @threaded
     @unlock_cache_afterwards
     def doInstallPackages(self, ids):
         '''
@@ -1240,8 +1240,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.debug("Sending success signal")
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     @unlock_cache_afterwards
     def doInstallFiles(self, trusted, full_paths):
         '''
@@ -1309,8 +1309,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     @unlock_cache_afterwards
     def doRefreshCache(self, force):
         '''
@@ -1331,11 +1331,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_UNKNOWN, "Refreshing cache failed: %s" % e)
             self.Finished(EXIT_FAILED)
             return
+        self._open_cache(prange=(95,100))
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doGetPackages(self, filters):
         '''
         Implement the apt2-get-packages functionality
@@ -1352,8 +1353,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doResolve(self, filters, names):
         '''
         Implement the apt2-resolve functionality
@@ -1374,8 +1375,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doGetDepends(self, filter, ids, recursive=False):
         '''
         Implement the apt2-get-depends functionality
@@ -1442,8 +1443,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doGetRequires(self, filter, ids, recursive=False):
         '''
         Implement the apt2-get-requires functionality
@@ -1499,8 +1500,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._cache.clear()
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doWhatProvides(self, filters, provides_type, search):
         def get_mapping_db(path):
             """
@@ -1588,8 +1589,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self.Finished(EXIT_SUCCESS)
 
-    @threaded
     @serialize
+    @threaded
     def doGetFiles(self, package_ids):
         """
         Emit the Files signal which includes the files included in a package
@@ -1931,7 +1932,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         This method should be obsolete by the apt.package.Package.installedFiles
         attribute as soon as the consolidate branch of python-apt gets merged
         """
-        path = "/var/lib/dpkg/info/%s.list" % pkg.name
+        path = os.path.join(apt_pkg.Config["Dir"],
+                            "var/lib/dpkg/info/%s.list" % pkg.name)
         try:
             list = open(path)
             files = list.read().decode().split("\n")
@@ -2183,6 +2185,7 @@ def run():
     bus = dbus.SystemBus(mainloop=loop)
     bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
     manager = PackageKitAptBackend(bus_name, PACKAGEKIT_DBUS_PATH)
+    manager.run()
 
 def main():
     parser = optparse.OptionParser(description="APT backend for PackageKit")
