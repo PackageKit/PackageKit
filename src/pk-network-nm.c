@@ -271,14 +271,14 @@ pk_network_nm_get_network_state (PkNetworkNm *network_nm)
 		ret = PK_NETWORK_ENUM_OFFLINE;
 		break;
 	case NM_DEVICE_TYPE_ETHERNET:
-		ret = PK_NETWORK_ENUM_FAST;
+		ret = PK_NETWORK_ENUM_WIRED;
 		break;
 	case NM_DEVICE_TYPE_WIFI:
-		ret = PK_NETWORK_ENUM_ONLINE;
+		ret = PK_NETWORK_ENUM_WIFI;
 		break;
 	case NM_DEVICE_TYPE_GSM:
 	case NM_DEVICE_TYPE_CDMA:
-		ret = PK_NETWORK_ENUM_SLOW;
+		ret = PK_NETWORK_ENUM_MOBILE;
 		break;
 	default:
 		ret = PK_NETWORK_ENUM_ONLINE;

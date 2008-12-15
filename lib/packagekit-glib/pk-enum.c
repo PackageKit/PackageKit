@@ -322,8 +322,9 @@ static const PkEnumMatch enum_network[] = {
 	{PK_NETWORK_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_NETWORK_ENUM_OFFLINE,		"offline"},
 	{PK_NETWORK_ENUM_ONLINE,		"online"},
-	{PK_NETWORK_ENUM_SLOW,			"slow"},
-	{PK_NETWORK_ENUM_FAST,			"fast"},
+	{PK_NETWORK_ENUM_WIRED,			"wired"},
+	{PK_NETWORK_ENUM_WIFI,			"wifi"},
+	{PK_NETWORK_ENUM_MOBILE,		"mobile"},
 	{0, NULL}
 };
 
