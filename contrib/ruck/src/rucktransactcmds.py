@@ -68,8 +68,7 @@ class UpdateCmd(TransactCmd):
         table_keys = ["repo", "name", "version"]
         table_rows = []
         for new_pkg in updates:
-            row = ruckformat.package_to_row(new_pkg['id'],
-                                           False, table_keys)
+            row = ruckformat.package_to_row(new_pkg, False, table_keys)
             table_rows.append(row)
 
         table_rows.sort(lambda x,y:cmp(string.lower(x[1]), string.lower(y[1])))
@@ -80,7 +79,7 @@ class UpdateCmd(TransactCmd):
         resp = rucktalk.prompt("Continue? Y/[N]")
         if (resp == 'y'):
             # FIXME: needs to deal with progress better
-            pkcon.update_system()
+            pkcon.update_packages(updates)
         else:
             rucktalk.message("Update aborted")
 
