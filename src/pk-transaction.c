@@ -1202,6 +1202,11 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 	transaction->priv->sender = g_strdup (sender);
 	egg_dbus_monitor_assign (transaction->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, sender);
 
+	/* we get the UID for all callers as we need to know when to cancel */
+	transaction->priv->caller = pk_security_caller_new_from_sender (transaction->priv->security, sender);
+	if (transaction->priv->caller != NULL)
+		transaction->priv->uid = pk_security_get_uid (transaction->priv->security, transaction->priv->caller);
+
 	return TRUE;
 }
 
@@ -1239,10 +1244,6 @@ pk_transaction_commit (PkTransaction *transaction)
 		egg_warning ("failed to commit (job not run?)");
 		return FALSE;
 	}
-
-	/* save uid */
-	if (transaction->priv->caller != NULL)
-		transaction->priv->uid = pk_security_get_uid (transaction->priv->security, transaction->priv->caller);
 
 	/* only save into the database for useful stuff */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
@@ -1392,8 +1393,7 @@ pk_transaction_action_is_allowed (PkTransaction *transaction, gboolean trusted, 
 
 	g_return_val_if_fail (transaction->priv->sender != NULL, FALSE);
 
-	/* get caller */
-	transaction->priv->caller = pk_security_caller_new_from_sender (transaction->priv->security, transaction->priv->sender);
+	/* we should always have caller */
 	if (transaction->priv->caller == NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
 				      "caller %s not found", transaction->priv->sender);
