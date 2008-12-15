@@ -212,6 +212,17 @@ Requires: PackageKit-glib = %{version}-%{release}
 A simple helper that offers to install new packages on the command line
 using PackageKit.
 
+%package ruck
+Summary: rug-like interface that uses PackageKit
+Group: Development/Libraries
+Requires: PackageKit = %{version}-%{release}
+
+%description ruck
+Ruck is a rug-like interface for PackageKit, where rug is the command-line
+interface for rcd and red carpet daemon.
+Ruck is for a couple of lazy people who got used to Red Carpet's rug command
+and are unable to learn any new tricks.
+
 %prep
 %setup -q
 
@@ -380,6 +391,12 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %doc README AUTHORS NEWS COPYING
 %{_sysconfdir}/profile.d/*
 %{_libexecdir}/pk-command-not-found
+
+%files ruck
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_bindir}/ruck
+%{_datadir}/ruck/*
 
 %files glib-devel
 %defattr(-,root,root,-)

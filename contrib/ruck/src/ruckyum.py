@@ -183,7 +183,7 @@ class RPMInstallCallback:
                 self.installed_pkg_names.append(hdr['name'])
                 return fd
             else:
-                self._localprint(_("No header - huh?"))
+                self._localprint("No header - huh?")
 
         elif what == rpm.RPMCALLBACK_INST_CLOSE_FILE:
             hdr = None
