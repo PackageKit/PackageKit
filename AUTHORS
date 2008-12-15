@@ -21,3 +21,6 @@ Backend: poldek
 Backend: zypp
     Boyd Timothy <btimothy@gmail.com>
     Scott Reeves <sreeves@novell.com>
+
+Client: ruck
+    Aidan Skinner <aidan@skinner.me.uk>
