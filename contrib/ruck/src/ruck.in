@@ -21,7 +21,7 @@ try:
     import sys
     import os
 
-    ruck_dir = "@DDIR@/rum"
+    ruck_dir = "@DDIR@/ruck"
     ruck_version = "@VERSION@"
 
     # FIXME: This has a special check to allow us to run ruck in-place
@@ -29,7 +29,7 @@ try:
     # out at some point.
 
     if not (os.path.isfile("./ruckmain.py") \
-            or (os.path.isdir(ruck_dir) and os.path.isfile(rum_dir + "/ruckmain.py"))):
+            or (os.path.isdir(ruck_dir) and os.path.isfile(ruck_dir + "/ruckmain.py"))):
         print "ERROR: ruck doesn't appear to be installed properly.  Please check your installation."
         sys.exit(1)
 
