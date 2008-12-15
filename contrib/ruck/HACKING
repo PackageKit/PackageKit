@@ -1,0 +1,8 @@
+CONTRIBUTING
+------------
+Contributors to ruck are more than welcome. Patches should be sent to the
+authors (see AUTHORS file) and should follow the existing stylistic
+conventions, be accompanied by a ChangeLog entry, and sent in GNU unified
+diff format (diff -u).
+
+Good Luck.
