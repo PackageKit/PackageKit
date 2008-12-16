@@ -28,7 +28,7 @@ from packagekit.backend import *
 from packagekit.progress import *
 from packagekit.package import PackagekitPackage
 import yum
-from urlgrabber.progress import BaseMeter, format_time, format_number
+from urlgrabber.progress import BaseMeter, format_number
 from yum.rpmtrans import RPMBaseCallback
 from yum.constants import *
 from yum.update_md import UpdateMetadata
@@ -64,6 +64,15 @@ MetaDataMap = {
     'other'         : STATUS_DOWNLOAD_CHANGELOG,
     'comps'         : STATUS_DOWNLOAD_GROUP,
     'updateinfo'    : STATUS_DOWNLOAD_UPDATEINFO
+}
+
+StatusPercentageMap = {
+    STATUS_DEP_RESOLVE : 5,
+    STATUS_DOWNLOAD    : 10,
+    STATUS_SIG_CHECK   : 40,
+    STATUS_TEST_COMMIT : 45,
+    STATUS_INSTALL     : 55,
+    STATUS_CLEANUP     : 95
 }
 
 class GPGKeyNotImported(exceptions.Exception):
@@ -187,6 +196,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         PackageKitBaseBackend.__init__(self, args)
         self.yumbase = PackageKitYumBase(self)
         self.package_summary_cache = {}
+        self.percentage_old = 0
+        self.sub_percentage_old = 0
         self.comps = yumComps(self.yumbase)
         if not self.comps.connect():
             self.refresh_cache()
@@ -202,6 +213,22 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self._setup_yum()
         if lock:
             self.doLock()
+
+    def percentage(self, percent=None):
+        '''
+        @param percent: Progress percentage
+        '''
+        if percent == 0 or percent > self.percentage_old:
+            PackageKitBaseBackend.percentage(self, percent)
+            self.percentage_old = percent
+
+    def sub_percentage(self, percent=None):
+        '''
+        @param percent: subprogress percentage
+        '''
+        if percent == 0 or percent > self.sub_percentage_old:
+            PackageKitBaseBackend.sub_percentage(self, percent)
+            self.sub_percentage_old = percent
 
     def details(self, package_id, package_license, group, desc, url, bytes):
         '''
@@ -2243,21 +2270,16 @@ class DownloadCallback(BaseMeter):
     """ Customized version of urlgrabber.progress.BaseMeter class """
     def __init__(self, base, showNames = False):
         BaseMeter.__init__(self)
-        self.totSize = ""
         self.base = base
-        self.showNames = showNames
-        self.oldName = None
-        self.lastPct = 0
-        self.totalPct = 0
+        self.percent_start = 0
         self.saved_pkgs = None
-        self.numPkgs = 0
-        self.bump = 0.0
+        self.number_packages = 0
+        self.download_package_number = 0
 
-    def setPackages(self, new_pkgs, startPct, numPct):
+    def setPackages(self, new_pkgs, percent_start, percent_length):
         self.saved_pkgs = new_pkgs
-        self.numPkgs = float(len(self.saved_pkgs))
-        self.bump = numPct/self.numPkgs
-        self.totalPct = startPct
+        self.number_packages = float(len(self.saved_pkgs))
+        self.percent_start = percent_start
 
     def _getPackage(self, name):
         if self.saved_pkgs:
@@ -2276,30 +2298,27 @@ class DownloadCallback(BaseMeter):
     def _do_start(self, now=None):
         name = self._getName()
         self.updateProgress(name, 0.0, "", "")
-        if not self.size is None:
-            self.totSize = format_number(self.size)
 
     def _do_update(self, amount_read, now=None):
+
         fread = format_number(amount_read)
         name = self._getName()
         if self.size is None:
             # Elapsed time
             etime = self.re.elapsed_time()
-            fetime = format_time(etime)
             frac = 0.0
-            self.updateProgress(name, frac, fread, fetime)
+            self.updateProgress(name, frac, fread, '')
         else:
             # Remaining time
             rtime = self.re.remaining_time()
-            frtime = format_time(rtime)
             frac = self.re.fraction_read()
-            self.updateProgress(name, frac, fread, frtime)
+            self.updateProgress(name, frac, fread, '')
 
     def _do_end(self, amount_read, now=None):
-        total_time = format_time(self.re.elapsed_time())
+
         total_size = format_number(amount_read)
         name = self._getName()
-        self.updateProgress(name, 1.0, total_size, total_time)
+        self.updateProgress(name, 1.0, total_size, '')
 
     def _getName(self):
         '''
@@ -2315,40 +2334,43 @@ class DownloadCallback(BaseMeter):
         @param fread: formated string containing BytesRead
         @param ftime: formated string containing remaining or elapsed time
         '''
-        pct = int(frac*100)
-        if name != self.oldName: # If this a new package
-            if self.oldName:
-                self.base.sub_percentage(100)
-            self.oldName = name
-            if self.bump > 0.0: # Bump the total download percentage
-                self.totalPct += self.bump
-                self.lastPct = 0
-                self.base.percentage(int(self.totalPct))
-            if self.showNames:
-                pkg = self._getPackage(name)
-                if pkg: # show package to download
-                    self.base._show_package(pkg, INFO_DOWNLOADING)
-                else:
-                    for key in MetaDataMap.keys():
-                        if key in name:
-                            typ = MetaDataMap[key]
-                            self.base.status(typ)
-                            break
-            self.base.sub_percentage(0)
-        else:
-            if self.lastPct != pct and pct != 0 and pct != 100:
-                self.lastPct = pct
-                # bump the sub persentage for this package
-                self.base.sub_percentage(pct)
+
+        val = int(frac*100)
+
+        # new package
+        if val == 0:
+            pkg = self._getPackage(name)
+            if pkg: # show package to download
+                self.base._show_package(pkg, INFO_DOWNLOADING)
+            else:
+                for key in MetaDataMap.keys():
+                    if key in name:
+                        typ = MetaDataMap[key]
+                        self.base.status(typ)
+                        break
+
+        # set sub-percentage
+        self.base.sub_percentage(val)
+
+        # refine percentage with subpercentage
+        pct_start = StatusPercentageMap[STATUS_DOWNLOAD]
+        pct_end = StatusPercentageMap[STATUS_SIG_CHECK]
+
+        div = (pct_end - pct_start) / self.number_packages
+        pct = pct_start + (div * self.download_package_number) + ((div / 100.0) * val)
+        self.base.percentage(pct)
+
+        # keep track of how many we downloaded
+        if val == 100:
+            self.download_package_number += 1
 
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self, base):
         RPMBaseCallback.__init__(self)
         self.base = base
-        self.pct = 0
         self.curpkg = None
-        self.startPct = 50
-        self.numPct = 50
+        self.percent_start = 0
+        self.percent_length = 0
 
         # this isn't defined in yum as it's only used in the rollback plugin
         TS_REPACKAGING = 'repackaging'
@@ -2372,11 +2394,6 @@ class PackageKitCallback(RPMBaseCallback):
                         TS_UPDATED: STATUS_CLEANUP,
                         TS_REPACKAGING: STATUS_REPACKAGING}
 
-    def _calcTotalPct(self, ts_current, ts_total):
-        bump = float(self.numPct)/ts_total
-        pct = int(self.startPct + (ts_current * bump))
-        return pct
-
     def _showName(self, status):
         # curpkg is a yum package object or simple string of the package name
         if type(self.curpkg) in types.StringTypes:
@@ -2389,6 +2406,7 @@ class PackageKitCallback(RPMBaseCallback):
             self.base.package(package_id, status, self.curpkg.summary)
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
+
         if str(package) != str(self.curpkg):
             self.curpkg = package
             try:
@@ -2396,12 +2414,18 @@ class PackageKitCallback(RPMBaseCallback):
                 self._showName(self.info_actions[action])
             except exceptions.KeyError, e:
                 self.base.message(MESSAGE_BACKEND_ERROR, "The constant '%s' was unknown, please report. details: %s" % (action, _to_unicode(e)))
-            pct = self._calcTotalPct(ts_current, ts_total)
-            self.base.percentage(pct)
-        val = (ts_current*100L)/ts_total
-        if val != self.pct:
-            self.pct = val
-            self.base.sub_percentage(val)
+
+        # do subpercentage
+        val = (te_current*100L)/te_total
+        self.base.sub_percentage(val)
+
+        # find out the offset
+        pct_start = StatusPercentageMap[STATUS_INSTALL]
+
+        # do percentage
+        div = (100 - pct_start) / ts_total
+        pct = div * (ts_current - 1) + pct_start + ((div / 100.0) * val)
+        self.base.percentage(pct)
 
     def errorlog(self, msg):
         # grrrrrrrr
@@ -2412,22 +2436,27 @@ class ProcessTransPackageKitCallback:
         self.base = base
 
     def event(self, state, data=None):
+
         if state == PT_DOWNLOAD:        # Start Downloading
             self.base.allow_cancel(True)
-            self.base.percentage(10)
+            pct_start = StatusPercentageMap[STATUS_DOWNLOAD]
+            self.base.percentage(pct_start)
             self.base.status(STATUS_DOWNLOAD)
         elif state == PT_DOWNLOAD_PKGS:   # Packages to download
             self.base.dnlCallback.setPackages(data, 10, 30)
         elif state == PT_GPGCHECK:
-            self.base.percentage(40)
+            pct_start = StatusPercentageMap[STATUS_SIG_CHECK]
+            self.base.percentage(pct_start)
             self.base.status(STATUS_SIG_CHECK)
         elif state == PT_TEST_TRANS:
+            pct_start = StatusPercentageMap[STATUS_TEST_COMMIT]
             self.base.allow_cancel(False)
-            self.base.percentage(45)
+            self.base.percentage(pct_start)
             self.base.status(STATUS_TEST_COMMIT)
         elif state == PT_TRANSACTION:
+            pct_start = StatusPercentageMap[STATUS_INSTALL]
             self.base.allow_cancel(False)
-            self.base.percentage(50)
+            self.base.percentage(pct_start)
 
 class DepSolveCallback(object):
 
@@ -2440,7 +2469,8 @@ class DepSolveCallback(object):
     def start(self):
         if not self.started:
             self.backend.status(STATUS_DEP_RESOLVE)
-            self.backend.percentage(None)
+            pct_start = StatusPercentageMap[STATUS_DEP_RESOLVE]
+            self.backend.percentage(pct_start)
 
     # Be lazy and not define the others explicitly
     def _do_nothing(self, *args, **kwargs):
