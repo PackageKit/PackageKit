@@ -1546,8 +1546,9 @@ pk_backend_is_online (PkBackend *backend)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	state = pk_network_get_network_state (backend->priv->network);
 	if (state == PK_NETWORK_ENUM_ONLINE ||
-	    state == PK_NETWORK_ENUM_SLOW ||
-	    state == PK_NETWORK_ENUM_FAST)
+	    state == PK_NETWORK_ENUM_MOBILE ||
+	    state == PK_NETWORK_ENUM_WIFI ||
+	    state == PK_NETWORK_ENUM_WIRED)
 		return TRUE;
 	return FALSE;
 }
