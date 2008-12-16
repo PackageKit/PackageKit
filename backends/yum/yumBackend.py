@@ -299,7 +299,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.yumbase.closeRpmDB()
                 self.yumbase.doUnlock(YUM_PID_FILE)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     def _do_meta_package_search(self, fltlist, key):
         grps = self.comps.get_meta_packages()
@@ -343,7 +343,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
                 pkgfilter.add_installed(installed)
                 pkgfilter.add_available(available)
@@ -370,7 +370,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         self._do_search(searchlist, filters, key)
 
     def search_details(self, filters, key):
@@ -381,7 +381,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
@@ -396,7 +396,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 pkgs = self.yumbase.rpmdb.searchNevra(name=package)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             found.extend(pkgs)
         return found
 
@@ -407,7 +407,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_NO_CACHE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return pkgs
 
     def _handle_newest(self, fltlist):
@@ -423,7 +423,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         installed = []
         available = []
@@ -431,7 +431,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 instpo = self.yumbase.rpmdb.searchNevra(name=pkg.name, epoch=pkg.epoch, ver=pkg.ver, rel=pkg.rel, arch=pkg.arch)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if len(instpo) > 0:
                 installed.append(instpo[0])
             else:
@@ -476,7 +476,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.GroupsError, e:
             self.error(ERROR_GROUP_NOT_FOUND, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             if grp:
                 name = grp.nameByLang(self.lang)
@@ -496,7 +496,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
         self.status(STATUS_QUERY)
         package_list = [] #we can't do emitting as found if we are post-processing
@@ -555,7 +555,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
 
         package_list = [] #we can't do emitting as found if we are post-processing
@@ -566,7 +566,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             pkgs = self.yumbase.rpmdb
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         pkgfilter.add_installed(pkgs)
 
         # Now show available packages.
@@ -576,7 +576,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
                 pkgfilter.add_available(pkgs)
 
@@ -602,7 +602,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             pkgs = self.yumbase.rpmdb.searchFiles(key)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         pkgfilter.add_installed(pkgs)
 
         # Check available for file
@@ -614,7 +614,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
                 pkgfilter.add_available(pkgs)
 
@@ -639,7 +639,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             pkgs = self.yumbase.rpmdb.searchProvides(search)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         pkgfilter.add_installed(pkgs)
 
         if not FILTER_INSTALLED in fltlist:
@@ -649,7 +649,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
                 pkgfilter.add_available(pkgs)
 
@@ -669,7 +669,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_NO_CACHE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         if len(cats) == 0:
             self.error(ERROR_GROUP_LIST_INVALID, "no comps categories")
@@ -704,7 +704,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 try:
                     grp = self.yumbase.comps.return_group(grp_id)
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 if grp:
                     grps.append(grp)
             for grp in sorted(grps):
@@ -749,7 +749,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
             # if we couldn't map package_id -> pkg
             if len(packs) == 0:
@@ -762,7 +762,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 try:
                     repo = self.yumbase.repos.getRepo(pkg_download.repoid)
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 remote = pkg_download.returnSimple('relativepath')
                 local = os.path.basename(remote)
                 if not os.path.exists(directory):
@@ -799,13 +799,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 try:
                     grp = self.yumbase.comps.return_group(name)
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 isGroup = True
             elif name[0] == '@':
                 try:
                     grp = self.yumbase.comps.return_group(name[1:])
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 isGroup = True
             if isGroup and not grp:
                 self.error(ERROR_PACKAGE_NOT_FOUND, "The Group %s dont exist" % name)
@@ -832,7 +832,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         # if the package is found, then return it (do not have to match the repo_id)
         if len(pkgs) != 0:
             return pkgs[0], True
@@ -842,7 +842,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         # nothing found
         if len(pkgs) == 0:
@@ -883,7 +883,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     try:
                         txmbrs = self.yumbase.groupRemove(grp.groupid)
                     except Exception, e:
-                        self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     for txmbr in self.yumbase.tsInfo:
                         deps_list.append(txmbr.po)
             else:
@@ -894,7 +894,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     try:
                         txmbrs = self.yumbase.remove(po=pkg)
                     except Exception, e:
-                        self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             percentage += bump
 
         # do the depsolve to pull in deps
@@ -902,7 +902,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 rc, msgs =  self.yumbase.buildTransaction()
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if rc != 2:
                 self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
             else:
@@ -926,7 +926,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             ret = self.yumbase.rpmdb.installed(po=pkg)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return ret
 
     def _is_inst_arch(self, pkg):
@@ -949,7 +949,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             exactarchlist = self.yumbase.conf.exactarchlist
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         # we look through each returned possibility and rule out the
         # ones that we obviously can't use
 
@@ -960,7 +960,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             installedByKey = self.yumbase.rpmdb.searchNevra(name=pkg.name, arch=pkg.arch)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         comparable = []
         for instpo in installedByKey:
             if rpmUtils.arch.isMultiLibArch(instpo.arch) == rpmUtils.arch.isMultiLibArch(pkg.arch):
@@ -991,7 +991,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         try:
                             ret = self.yumbase.allowedMultipleInstalls(pkg)
                         except Exception, e:
-                            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                         if ret:
                             return True
 
@@ -1012,7 +1012,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, arch=a)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             for pkg in pkgs:
                 if best:
                     if pkg.EVR > best.EVR:
@@ -1042,7 +1042,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             results = self.yumbase.findDeps(pkgs)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         require_list = []
         recursive_list = []
 
@@ -1081,12 +1081,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 txmbrs = self.yumbase.selectGroup(grp.groupid)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             try:
                 txmbrs = self.yumbase.groupRemove(grp.groupid)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         pkgs = []
         for t in txmbrs:
             pkgs.append(t.po)
@@ -1094,12 +1094,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 self.yumbase.deselectGroup(grp.groupid)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             try:
                 self.yumbase.groupUnremove(grp.groupid)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return pkgs
 
     def _get_depends_not_installed(self, fltlist, package_ids, recursive):
@@ -1123,7 +1123,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     try:
                         txmbrs = self.yumbase.selectGroup(grp.groupid)
                     except Exception, e:
-                        self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     for txmbr in self.yumbase.tsInfo:
                         deps_list.append(txmbr.po)
             else:
@@ -1134,14 +1134,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     try:
                         txmbrs = self.yumbase.install(po=pkg)
                     except Exception, e:
-                        self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             percentage += bump
 
         if len(self.yumbase.tsInfo) > 0 and recursive:
             try:
                 rc, msgs =  self.yumbase.buildTransaction()
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if rc != 2:
                 self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
             else:
@@ -1253,7 +1253,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if txmbr:
             self._runYumTransaction(allow_skip_broken=True)
         else:
@@ -1296,7 +1296,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 self.yumbase.doGroupSetup()
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             #we might have a rounding error
             self.percentage(100)
 
@@ -1309,7 +1309,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.YumBaseError, e:
             self.error(ERROR_UNKNOWN, "cannot refresh cache: %s" % _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         # update the comps groups too
         self.comps.refresh()
@@ -1324,7 +1324,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
         self.status(STATUS_QUERY)
 
@@ -1334,7 +1334,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 installedByKey = self.yumbase.rpmdb.searchNevra(name=package)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if FILTER_NOT_INSTALLED not in fltlist:
                 for pkg in installedByKey:
                     self._show_package(pkg, INFO_INSTALLED)
@@ -1345,7 +1345,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except yum.Errors.RepoError, e:
                     self.error(ERROR_NO_CACHE, _to_unicode(e))
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 else:
                     for pkg in pkgs:
                         if pkg.name == package:
@@ -1377,12 +1377,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 try:
                     txmbr = self.yumbase.selectGroup(grp.groupid)
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 for t in txmbr:
                     try:
                         repo = self.yumbase.repos.getRepo(t.po.repoid)
                     except Exception, e:
-                        self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     if not already_warned and not repo.gpgcheck:
                         self.message(MESSAGE_UNTRUSTED_PACKAGE, "The untrusted package %s will be installed from %s." % (t.po.name, repo))
                         already_warned = True
@@ -1408,7 +1408,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if pkgs:
             newest = pkgs[0]
             if newest.EVR > po.EVR:
@@ -1529,13 +1529,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except yum.Errors.MiscError:
                     self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file)
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 try:
                     self.yumbase._checkSignatures([po], None)
                 except yum.Errors.YumGPGCheckError, e:
                     self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e))
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             self.yumbase.conf.gpgcheck = 0
 
@@ -1550,7 +1550,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 try:
                     txmbr = self.yumbase.installLocal(inst_file)
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 if txmbr:
                     txmbrs.extend(txmbr)
                     self._checkForNewer(txmbr[0].po)
@@ -1575,7 +1575,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     try:
                         txmbr = self.yumbase.installLocal(inst_file)
                     except Exception, e:
-                        self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     if txmbr:
                         txmbrs.extend(txmbr)
                         if len(self.yumbase.tsInfo) > 0:
@@ -1587,7 +1587,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.InstallError, e:
                 self.error(ERROR_LOCAL_INSTALL_FAILED, _to_unicode(e))
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         shutil.rmtree(tempdir)
 
     def _check_local_file(self, pkg):
@@ -1602,7 +1602,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % pkg)
             return False
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             return False
 
         # check if wrong arch
@@ -1643,12 +1643,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     try:
                         txmbr = self.yumbase.update(po=pkg)
                     except Exception, e:
-                        self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     txmbrs.extend(txmbr)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if txmbrs:
             self._runYumTransaction(allow_skip_broken=True)
         else:
@@ -1680,7 +1680,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         # if return value is 1 (error), try again with skip-broken if allowed
         if allow_skip_broken and rc == 1:
@@ -1691,7 +1691,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.RepoError, e:
                 self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         # we did not succeed
         if rc != 2:
@@ -1746,7 +1746,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 else:
                     self.error(ERROR_TRANSACTION_ERROR, message)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     def remove_packages(self, allowdep, package_ids):
         '''
@@ -1768,7 +1768,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 try:
                     txmbr = self.yumbase.groupRemove(grp.groupid)
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 txmbrs.extend(txmbr)
             else:
                 pkg, inst = self._findPackage(package)
@@ -1776,7 +1776,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     try:
                         txmbr = self.yumbase.remove(po=pkg)
                     except Exception, e:
-                        self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     txmbrs.extend(txmbr)
                 if pkg and not inst:
                     self.error(ERROR_PACKAGE_NOT_INSTALLED, "The package %s is not installed" % pkg.name)
@@ -1877,7 +1877,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             pkgs = self.yumbase.rpmdb.searchNevra(name='preupgrade')
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if len(pkgs) == 0:
 
             # find preupgrade, which may not exist
@@ -1887,7 +1887,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.error(ERROR_NO_DISTRO_UPGRADE_DATA, "Could not find preupgrade package in any enabled repos")
                 return
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 return
 
             # shouldn't happen
@@ -1901,7 +1901,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 txmbr = self.yumbase.install(po=pkgs[0])
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if txmbr:
                 self._runYumTransaction()
             else:
@@ -1918,7 +1918,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 # could not find upgraded preupgrade package in any enabled repos
                 pass
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
                 if pkgs:
                     newest = pkgs[0]
@@ -1927,7 +1927,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         try:
                             txmbr = self.yumbase.update(po=pkgs[0])
                         except Exception, e:
-                            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                         if txmbr:
                             self._runYumTransaction()
         else:
@@ -1956,7 +1956,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             present_version = self.yumbase.conf.yumvar['releasever']
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if (present_version >= last_version):
             return
 
@@ -1994,7 +1994,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         md = self.updateMetadata
         for pkg in pkgs:
             if pkgfilter.pre_process(pkg):
@@ -2028,7 +2028,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_FOUND, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     def get_repo_list(self, filters):
         '''
@@ -2041,7 +2041,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             repos = self.yumbase.repos.repos.values()
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             return
         for repo in repos:
             if filters != FILTER_NOT_DEVELOPMENT or not _is_development_repo(repo.id):
@@ -2067,7 +2067,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             pkgs = self.yumbase.rpmdb.searchNevra(name=pkg.name, arch=pkg.arch)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if pkgs:
             return self._pkg_to_id(pkgs[0])
         else:
@@ -2160,7 +2160,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             repo = self.yumbase.repos.getRepo(repoid)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if repo:
             repo.cfg.set(repoid, parameter, value)
             try:
@@ -2195,7 +2195,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except yum.Errors.YumBaseError, e:
                     self.error(ERROR_UNKNOWN, "cannot install signature: %s" % str(e))
                 except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 except:
                     self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for %s" % pkg)
 
@@ -2228,7 +2228,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     def _refresh_yum_cache(self):
         self.status(STATUS_REFRESH_CACHE)
@@ -2237,7 +2237,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             self.yumbase.repos.setCache(0)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         try:
             self.yumbase.repos.populateSack(mdtype='metadata', cacheonly=1)
@@ -2246,20 +2246,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         self.yumbase.conf.cache = old_cache_setting
         try:
             self.yumbase.repos.setCache(old_cache_setting)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     def _setup_yum(self):
         try:
             # setup Yum Config
             self.yumbase.doConfigSetup(errorlevel=-1, debuglevel=-1)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _to_unicode(e))
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         # set bandwidth throttle to 90%
         self.yumbase.conf.throttle = "90%"
@@ -2356,9 +2356,10 @@ class DownloadCallback(BaseMeter):
         pct_start = StatusPercentageMap[STATUS_DOWNLOAD]
         pct_end = StatusPercentageMap[STATUS_SIG_CHECK]
 
-        div = (pct_end - pct_start) / self.number_packages
-        pct = pct_start + (div * self.download_package_number) + ((div / 100.0) * val)
-        self.base.percentage(pct)
+        if self.number_packages > 0:
+            div = (pct_end - pct_start) / self.number_packages
+            pct = pct_start + (div * self.download_package_number) + ((div / 100.0) * val)
+            self.base.percentage(pct)
 
         # keep track of how many we downloaded
         if val == 100:
