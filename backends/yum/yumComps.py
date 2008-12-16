@@ -21,6 +21,7 @@
 from packagekit.enums import *
 import sqlite3 as sqlite
 import os
+import yum
 
 groupMap = {
 'desktops;gnome-desktop'                      : GROUP_DESKTOP_GNOME,
@@ -361,8 +362,7 @@ class yumComps:
             grps.add(row[0])
         return list(grps)
 
-if __name__ == "__main__":
-    import yum
+def main():
     _yb = yum.YumBase()
     _db = "./packagekit-groups.sqlite"
     comps = yumComps(_yb, _db)
@@ -384,4 +384,7 @@ if __name__ == "__main__":
     _pkgs = comps.get_groups('other')
     print _pkgs
     os.unlink(_db) # kill the db
+
+if __name__ == "__main__":
+    main()
 
