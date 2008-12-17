@@ -114,21 +114,16 @@ pk_get_distro_id (void)
 		goto out;
 	}
 
-	/* check for foresight */
+	/* check for foresight or foresight derivatives */
 	ret = g_file_get_contents ("/etc/distro-release", &contents, NULL, NULL);
 	if (ret) {
-		/* Foresight Linux 2.0.2 */
+		/* Foresight Linux 2 */
 		split = g_strsplit (contents, " ", 0);
 		if (split == NULL)
 			goto out;
 
-		/* we can't get arch from /etc */
-		arch = pk_get_machine_type ();
-		if (arch == NULL)
-			goto out;
-
 		/* complete! */
-		distro = g_strdup_printf ("foresight-%s-%s", split[2], arch);
+		distro = g_strdup_printf ("foresight-%s", split[2]);
 		goto out;
 	}
 
