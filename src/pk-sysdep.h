@@ -22,29 +22,14 @@
 #ifndef __PK_SYSDEP_H
 #define __PK_SYSDEP_H
 
-#include <unistd.h>
+#include <glib.h>
 
-#ifdef linux
+G_BEGIN_DECLS
 
-#include <sys/syscall.h>
+gboolean	pk_ioprio_set_idle		(GPid		pid);
+gboolean	pk_ioprio_set_best_effort	(GPid		pid);
 
-enum {
-	IOPRIO_CLASS_NONE,
-	IOPRIO_CLASS_RT,
-	IOPRIO_CLASS_BE,
-	IOPRIO_CLASS_IDLE,
-};
+G_END_DECLS
 
-enum {
-	IOPRIO_WHO_PROCESS = 1,
-	IOPRIO_WHO_PGRP,
-	IOPRIO_WHO_USER,
-};
+#endif /* __PK_SYSDEP_H */
 
-#define IOPRIO_CLASS_SHIFT	13
-
-#endif
-
-int pk_set_ioprio_idle(pid_t pid);
-
-#endif
