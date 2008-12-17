@@ -50,6 +50,8 @@
 #include "pk-marshal.h"
 #include "pk-conf.h"
 
+#include "pk-sysdep.h"
+
 static void     pk_spawn_class_init	(PkSpawnClass *klass);
 static void     pk_spawn_init		(PkSpawn      *spawn);
 static void     pk_spawn_finalize	(GObject       *object);
@@ -390,6 +392,7 @@ gboolean
 pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 {
 	gboolean ret;
+	gboolean idleio;
 	guint i;
 	guint len;
 	gint nice;
@@ -459,10 +462,18 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	nice = pk_conf_get_int (spawn->priv->conf, "BackendSpawnNiceValue");
 	nice = CLAMP(nice, -20, 19);
 
+	/* get idle io from config */
+	idleio = pk_conf_get_bool (spawn->priv->conf, "BackendSpawnIdleIO");
+
 	/* don't completely bog the system down */
 	if (nice != 0) {
 		egg_debug ("renice to %i", nice);
 		setpriority (PRIO_PROCESS, spawn->priv->child_pid, nice);
+	}
+
+	if (idleio) {
+		egg_debug ("setting ioprio class to idle");
+		pk_set_ioprio_idle (spawn->priv->child_pid);
 	}
 
 	/* we failed to invoke the helper */
