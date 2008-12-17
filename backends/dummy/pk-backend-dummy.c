@@ -152,9 +152,9 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_details (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
-"Scribus is an desktop open source page layöut program with "
-"the aim of producing commercial grade output in PDF and "
-"Postscript, primarily, though not exclusively for Linux.\n"
+"Scribus is an desktop *open source* page layöut program with "
+"the aim of producing commercial grade output in **PDF** and "
+"**Postscript**, primarily, though not exclusively for Linux.\n"
 "\n"
 "While the goals of the program are for ease of use and simple easy to "
 "understand tools, Scribus offers support for professional publishing "
@@ -258,7 +258,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
 						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
 						  NULL, PK_RESTART_ENUM_SESSION,
-						  "Update to latest whizz bang version\n"
+						  "Update to latest *whizz* **bang** version\n"
 						  "* support this new thing\n"
 						  "* something else\n"
 						  "- and that new thing",
