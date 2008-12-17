@@ -1831,8 +1831,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         pkgver = _get_package_ver(pkg)
         package_id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         desc = pkg.description
-        desc = desc.replace('\n\n', ';')
-        desc = desc.replace('\n', ' ')
+        desc = desc.replace('\n', ';')
         group = self.comps.get_group(pkg.name)
         self.details(package_id, pkg.license, group, desc, pkg.url, pkg.size)
 
