@@ -19,31 +19,89 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <glib.h>
+#include <unistd.h>
+
+#ifdef linux
+ #include <sys/syscall.h>
+#endif
+
 #include "pk-sysdep.h"
 
 #ifdef linux
 
-static inline int 
-ioprio_set(int which, int who, int ioprio)
+enum {
+	IOPRIO_CLASS_NONE,
+	IOPRIO_CLASS_RT,
+	IOPRIO_CLASS_BE,
+	IOPRIO_CLASS_IDLE,
+};
+
+enum {
+	IOPRIO_WHO_PROCESS = 1,
+	IOPRIO_WHO_PGRP,
+	IOPRIO_WHO_USER,
+};
+
+#define IOPRIO_CLASS_SHIFT	13
+
+/**
+ * ioprio_set:
+ *
+ * FIXME: glibc should have this function
+ **/
+static inline gint
+ioprio_set (gint which, gint who, gint ioprio)
 {
 	return syscall (SYS_ioprio_set, which, who, ioprio);
 }
 
-int 
-pk_set_ioprio_idle(pid_t pid) 
+/**
+ * pk_ioprio_set_idle:
+ *
+ * Set the IO priority to idle
+ **/
+gboolean
+pk_ioprio_set_idle (GPid pid)
 {
-	int prio = 7;
-	int class = IOPRIO_CLASS_IDLE << IOPRIO_CLASS_SHIFT;
+	gint prio = 7;
+	gint class = IOPRIO_CLASS_IDLE << IOPRIO_CLASS_SHIFT;
 
-	return ioprio_set (IOPRIO_WHO_PROCESS, pid, prio | class);
+	return (ioprio_set (IOPRIO_WHO_PROCESS, pid, prio | class) == 0);
+}
+
+/**
+ * pk_ioprio_set_best_effort:
+ *
+ * Set the IO priority to best_effort
+ **/
+gboolean
+pk_ioprio_set_best_effort (GPid pid)
+{
+	gint prio = 7;
+	gint class = IOPRIO_CLASS_BE << IOPRIO_CLASS_SHIFT;
+
+	return (ioprio_set (IOPRIO_WHO_PROCESS, pid, prio | class) == 0);
 }
 
 #else
 
-int 
-pk_set_ioprio_idle(pid_t pid) 
+/**
+ * pk_ioprio_set_idle:
+ **/
+gboolean
+pk_ioprio_set_idle (GPid pid)
 {
-	return 0;
+	return TRUE;
+}
+
+/**
+ * pk_ioprio_set_best_effort:
+ **/
+gboolean
+pk_ioprio_set_best_effort (GPid pid)
+{
+	return TRUE;
 }
 
 #endif
