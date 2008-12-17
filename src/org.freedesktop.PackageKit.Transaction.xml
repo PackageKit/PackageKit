@@ -1441,7 +1441,10 @@
           <doc:summary>
             <doc:para>
               The multi-line package description.
-              NOTE: Tabs may have to be stripped from the description to avoid being split.
+            </doc:para>
+            <doc:para>
+              If formatting is required, then markdown syntax should be used,
+              e.g. <doc:tt>This is **critically** important</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -2112,8 +2115,11 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The update text describing the update in a non-localised way.
-              Newlines should be converted to <doc:tt>;</doc:tt> before printed.
+              The update text describing the update.
+            </doc:para>
+            <doc:para>
+              If formatting is required, then markdown syntax should be used,
+              e.g. <doc:tt>This is **critically** important</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
