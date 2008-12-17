@@ -22,10 +22,11 @@
 #ifndef __PK_SYSDEP_H
 #define __PK_SYSDEP_H
 
+#include <unistd.h>
+
 #ifdef linux
 
 #include <sys/syscall.h>
-#include <unistd.h>
 
 enum {
 	IOPRIO_CLASS_NONE,
@@ -42,10 +43,8 @@ enum {
 
 #define IOPRIO_CLASS_SHIFT	13
 
+#endif
+
 int pk_set_ioprio_idle(pid_t pid);
-
-#endif 
-
-#define pk_set_ioprio_idle
 
 #endif

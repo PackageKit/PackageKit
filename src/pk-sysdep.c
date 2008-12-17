@@ -20,6 +20,7 @@
  */
 
 #include "pk-sysdep.h"
+
 #ifdef linux
 
 static inline int 
@@ -35,6 +36,14 @@ pk_set_ioprio_idle(pid_t pid)
 	int class = IOPRIO_CLASS_IDLE << IOPRIO_CLASS_SHIFT;
 
 	return ioprio_set (IOPRIO_WHO_PROCESS, pid, prio | class);
+}
+
+#else
+
+int 
+pk_set_ioprio_idle(pid_t pid) 
+{
+	return 0;
 }
 
 #endif
