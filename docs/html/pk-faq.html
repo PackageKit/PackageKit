@@ -23,6 +23,7 @@
 <ul>
 <li><a href="#how-complete">How complete are the backends?</a></li>
 <li><a href="#catalogs">What's a package catalog?</a></li>
+<li><a href="#markup">Can I include formatting characters in package descriptions?</a></li>
 <li><a href="#1-click-install">Does PackageKit support 1-Click Install?</a></li>
 <li><a href="#run-as-root">When run as root, gpk-application and pkcon do not work!</a></li>
 <li><a href="#session-system">Why is there a session service and and a system service?</a></li>
@@ -126,6 +127,53 @@ Note: this isn't designed to replace one click install, it just does something t
 a different way.
 </p>
 <hr>
+
+<h3><a name="markup">Can I include formatting characters in package descriptions?</a></h3>
+<p>
+Yes, as long as the descripions are formatted with
+<a href="http://en.wikipedia.org/wiki/Markdown">Markdown</a> then the descriptions will be
+formatted correctly in client programs.
+Using Markdown is a deliberate choice as it does not force the vendor to adopt any specific
+markup language.
+An example Markdown package description would be:
+</p>
+<pre>
+GNOME Power Manager uses the information and facilities
+provided by HAL displaying icons and handling user
+callbacks in an **interactive** GNOME session.
+
+The following *GUI* programs are provided:
+* `gnome-power-preferences` - set policy and change preferences
+* `gnome-power-statistics` - view power graphs and device history
+</pre>
+<p>
+This would be rendered by a text program as:
+</p>
+<pre>
+GNOME Power Manager uses the information and facilities provided by HAL
+displaying icons and handling user callbacks in an interactive GNOME session.
+
+The following GUI programs are provided:
+* gnome-power-preferences - set policy and change preferences
+* gnome-power-statistics - view power graphs and device history
+</pre>
+<p>
+A GUI front-end would format the text like this:
+</p>
+<table bgcolor="#eeeeee" cellpadding="6px"><tr><td>
+<p>
+GNOME Power Manager uses the information and facilities provided by HAL displaying icons and handling user callbacks in an <b>interactive</b> GNOME session.
+</p>
+<p>
+The following <i>GUI</i> programs are provided:
+</p>
+<ul>
+<li><code>gnome-power-preferences</code> - set policy and change preferences</li>
+<li><code>gnome-power-statistics</code> - view power graphs and device history</li>
+</ul>
+</td></tr></table>
+<hr>
+
 <h3><a name="1-click-install">Does PackageKit support 1-Click Install?</a></h3>
 <p>
 No, as they are a potential security problem. The issues are as follows:
