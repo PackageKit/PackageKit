@@ -107,17 +107,6 @@ def _format_list(lst):
     else:
         return ""
 
-def _get_status(notice):
-    ut = notice['type']
-    if ut == 'security':
-        return INFO_SECURITY
-    elif ut == 'bugfix':
-        return INFO_BUGFIX
-    elif ut == 'enhancement':
-        return INFO_ENHANCEMENT
-    else:
-        return INFO_UNKNOWN
-
 def _getEVR(idver):
     '''
     get the e, v, r from the package id version
@@ -1735,6 +1724,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         name = "%s-%s" % (tok[0].lower(), tok[1])
         self.distro_upgrade(DISTRO_UPGRADE_STABLE, name, newest)
 
+    def _get_status(self, notice):
+        ut = notice['type']
+        if ut == 'security':
+            return INFO_SECURITY
+        elif ut == 'bugfix':
+            return INFO_BUGFIX
+        elif ut == 'enhancement':
+            return INFO_ENHANCEMENT
+        elif ut == 'newpackage':
+            return INFO_ENHANCEMENT
+        else:
+            self.message(MESSAGE_BACKEND_ERROR, "status unrecognised, please report in bugzilla: %s" % ut)
+            return INFO_NORMAL
+
     def get_updates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
@@ -1766,7 +1769,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 # Get info about package in updates info
                 notice = md.get_notice((pkg.name, pkg.version, pkg.release))
                 if notice:
-                    status = _get_status(notice)
+                    status = self._get_status(notice)
                     pkgfilter.add_custom(pkg, status)
                 else:
                     pkgfilter.add_custom(pkg, INFO_NORMAL)
