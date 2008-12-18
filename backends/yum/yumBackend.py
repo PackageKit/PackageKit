@@ -1607,8 +1607,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         pkgver = _get_package_ver(pkg)
         package_id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         desc = pkg.description
-        desc = desc.replace('\n\n', ';')
-        desc = desc.replace('\n', ' ')
+
+        # some RPM's (especially from google) have no description
+        if desc:
+            desc = desc.replace('\n\n', ';')
+            desc = desc.replace('\n', ' ')
+        else:
+            desc = ''
+
         group = self.comps.get_group(pkg.name)
         self.details(package_id, pkg.license, group, desc, pkg.url, pkg.size)
 
