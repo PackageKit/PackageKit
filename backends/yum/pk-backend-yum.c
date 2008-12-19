@@ -48,7 +48,7 @@ backend_stderr_cb (PkBackend *backend, const gchar *output)
 static gboolean
 backend_stdout_cb (PkBackend *backend, const gchar *output)
 {
-	/* unsigned rpm, this will be picked up by yum and and exception will be thrown */
+	/* presto is much too verbose... */
 	if (strstr (output, "Presto") != NULL)
 		return FALSE;
 	return TRUE;
@@ -142,9 +142,8 @@ backend_get_mime_types (PkBackend *backend)
 static const gchar *
 pk_backend_bool_to_text (gboolean value)
 {
-	if (value == TRUE) {
+	if (value == TRUE)
 		return "yes";
-	}
 	return "no";
 }
 
@@ -301,7 +300,7 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_strv_to_text (full_paths, PK_BACKEND_SPAWN_FILENAME_DELIM);
+	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
 	pk_backend_spawn_helper (spawn, "yumBackend.py", "install-files", pk_backend_bool_to_text (trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }

@@ -306,7 +306,7 @@ pk_strvalidate_char (gchar item)
  * @text: The input text to make safe
  *
  * Replaces chars in the text that may be dangerous, or that may print
- * incorrectly. These chars include new lines, tabs and quotes, and are
+ * incorrectly. These chars include new lines, tabs and line feed, and are
  * replaced by spaces.
  *
  * Return value: the new string with no insane chars
@@ -461,52 +461,6 @@ pk_va_list_to_argv (const gchar *string_first, va_list *args)
 	return array;
 }
 
-/**
- * pk_strv_to_text:
- * @array: a string array of package_id's
- *
- * Cats the string array of package_id's into one tab delimited string
- *
- * Return value: a string representation of all the package_id's.
- **/
-gchar *
-pk_strv_to_text (gchar **array, const gchar *delimiter)
-{
-	guint i;
-	guint size;
-	GString *string;
-	gchar *string_ret;
-
-	g_return_val_if_fail (array != NULL, NULL);
-	g_return_val_if_fail (delimiter != NULL, NULL);
-
-	string = g_string_new ("");
-
-	/* print all */
-	size = g_strv_length (array);
-
-	/* shortcut */
-	if (size == 1)
-		return g_strdup (array[0]);
-
-	/* append with delimiter */
-	for (i=0; i<size; i++) {
-		g_string_append (string, array[i]);
-		g_string_append (string, delimiter);
-	}
-
-	/* ITS4: ignore, we check this for validity */
-	size = strlen (delimiter);
-
-	/* remove trailing delimiter */
-	if (string->len > size)
-		g_string_set_size (string, string->len-size);
-
-	string_ret = g_string_free (string, FALSE);
-
-	return string_ret;
-}
-
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -532,7 +486,6 @@ pk_common_test (EggTest *test)
 {
 	gboolean ret;
 	gchar **array;
-	gchar *text;
 	gchar *text_safe;
 	gchar *present;
 	guint seconds;
@@ -573,17 +526,6 @@ pk_common_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
-	g_strfreev (array);
-
-	/************************************************************/
-	egg_test_title (test, "to text");
-	array = pk_va_list_to_argv_test ("richard", "phillip", "hughes", NULL);
-	text = pk_strv_to_text (array, "\t");
-	if (egg_strequal (text, "richard\tphillip\thughes"))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-	g_free (text);
 	g_strfreev (array);
 
 	/************************************************************
