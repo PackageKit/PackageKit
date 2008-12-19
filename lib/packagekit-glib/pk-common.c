@@ -635,7 +635,7 @@ pk_common_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "test replace unsafe (one invalid)");
-	text_safe = pk_strsafe ("Richard\tHughes");
+	text_safe = pk_strsafe ("Richard\rHughes");
 	if (egg_strequal (text_safe, "Richard Hughes"))
 		egg_test_success (test, NULL);
 	else
@@ -643,17 +643,8 @@ pk_common_test (EggTest *test)
 	g_free (text_safe);
 
 	/************************************************************/
-	egg_test_title (test, "test replace unsafe (one invalid 2)");
-	text_safe = pk_strsafe ("Richard\"Hughes\"");
-	if (egg_strequal (text_safe, "Richard Hughes "))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	g_free (text_safe);
-
-	/************************************************************/
 	egg_test_title (test, "test replace unsafe (multiple invalid)");
-	text_safe = pk_strsafe (" Richard\"Hughes\"");
+	text_safe = pk_strsafe (" Richard\rHughes\f");
 	if (egg_strequal (text_safe, " Richard Hughes "))
 		egg_test_success (test, NULL);
 	else
