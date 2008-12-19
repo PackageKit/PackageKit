@@ -279,7 +279,7 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 	gchar *full_paths_temp;
 
 	/* send the complete list as stdin */
-	full_paths_temp = pk_strv_to_text (full_paths, PK_BACKEND_SPAWN_FILENAME_DELIM);
+	full_paths_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
 	pk_backend_spawn_helper (spawn, BACKEND("install-files"), pk_backend_bool_to_text (trusted), full_paths_temp, NULL);
 	g_free (full_paths_temp);
 }
