@@ -624,6 +624,7 @@ pk_transaction_db_new (void)
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
 #ifdef EGG_TEST
+#include <glib/gstdio.h>
 #include "egg-test.h"
 
 void
@@ -640,6 +641,11 @@ pk_transaction_db_test (EggTest *test)
 #ifndef PK_IS_DEVELOPER
 	egg_test_end (test);
 	return;
+#endif
+
+	/* remove the self check file */
+#if PK_BUILD_LOCAL
+	g_unlink (PK_TRANSACTION_DB_FILE);
 #endif
 
 	db = pk_transaction_db_new ();
