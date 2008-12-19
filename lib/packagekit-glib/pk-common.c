@@ -318,9 +318,8 @@ pk_strsafe (const gchar *text)
 	gboolean ret;
 	const gchar *delimiters;
 
-	if (text == NULL) {
+	if (text == NULL)
 		return NULL;
-	}
 
 	/* is valid UTF8? */
 	ret = g_utf8_validate (text, -1, NULL);
@@ -330,7 +329,7 @@ pk_strsafe (const gchar *text)
 	}
 
 	/* rip out any insane characters */
-	delimiters = "\\\f\r\t\"";
+	delimiters = "\\\f\r\t";
 	text_safe = g_strdup (text);
 	g_strdelimit (text_safe, delimiters, ' ');
 	return text_safe;
@@ -416,9 +415,8 @@ pk_strv_to_ptr_array (gchar **array)
 
 	parray = g_ptr_array_new ();
 	length = g_strv_length (array);
-	for (i=0; i<length; i++) {
+	for (i=0; i<length; i++)
 		g_ptr_array_add (parray, g_strdup (array[i]));
-	}
 	return parray;
 }
 
