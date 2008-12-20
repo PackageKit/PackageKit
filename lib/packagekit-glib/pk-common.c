@@ -306,7 +306,7 @@ pk_strvalidate_char (gchar item)
  * @text: The input text to make safe
  *
  * Replaces chars in the text that may be dangerous, or that may print
- * incorrectly. These chars include new lines, tabs and quotes, and are
+ * incorrectly. These chars include new lines, tabs and line feed, and are
  * replaced by spaces.
  *
  * Return value: the new string with no insane chars
@@ -318,9 +318,8 @@ pk_strsafe (const gchar *text)
 	gboolean ret;
 	const gchar *delimiters;
 
-	if (text == NULL) {
+	if (text == NULL)
 		return NULL;
-	}
 
 	/* is valid UTF8? */
 	ret = g_utf8_validate (text, -1, NULL);
@@ -330,7 +329,7 @@ pk_strsafe (const gchar *text)
 	}
 
 	/* rip out any insane characters */
-	delimiters = "\\\f\r\t\"";
+	delimiters = "\\\f\r\t";
 	text_safe = g_strdup (text);
 	g_strdelimit (text_safe, delimiters, ' ');
 	return text_safe;
@@ -416,9 +415,8 @@ pk_strv_to_ptr_array (gchar **array)
 
 	parray = g_ptr_array_new ();
 	length = g_strv_length (array);
-	for (i=0; i<length; i++) {
+	for (i=0; i<length; i++)
 		g_ptr_array_add (parray, g_strdup (array[i]));
-	}
 	return parray;
 }
 
@@ -463,52 +461,6 @@ pk_va_list_to_argv (const gchar *string_first, va_list *args)
 	return array;
 }
 
-/**
- * pk_strv_to_text:
- * @array: a string array of package_id's
- *
- * Cats the string array of package_id's into one tab delimited string
- *
- * Return value: a string representation of all the package_id's.
- **/
-gchar *
-pk_strv_to_text (gchar **array, const gchar *delimiter)
-{
-	guint i;
-	guint size;
-	GString *string;
-	gchar *string_ret;
-
-	g_return_val_if_fail (array != NULL, NULL);
-	g_return_val_if_fail (delimiter != NULL, NULL);
-
-	string = g_string_new ("");
-
-	/* print all */
-	size = g_strv_length (array);
-
-	/* shortcut */
-	if (size == 1)
-		return g_strdup (array[0]);
-
-	/* append with delimiter */
-	for (i=0; i<size; i++) {
-		g_string_append (string, array[i]);
-		g_string_append (string, delimiter);
-	}
-
-	/* ITS4: ignore, we check this for validity */
-	size = strlen (delimiter);
-
-	/* remove trailing delimiter */
-	if (string->len > size)
-		g_string_set_size (string, string->len-size);
-
-	string_ret = g_string_free (string, FALSE);
-
-	return string_ret;
-}
-
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -534,7 +486,6 @@ pk_common_test (EggTest *test)
 {
 	gboolean ret;
 	gchar **array;
-	gchar *text;
 	gchar *text_safe;
 	gchar *present;
 	guint seconds;
@@ -575,17 +526,6 @@ pk_common_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
-	g_strfreev (array);
-
-	/************************************************************/
-	egg_test_title (test, "to text");
-	array = pk_va_list_to_argv_test ("richard", "phillip", "hughes", NULL);
-	text = pk_strv_to_text (array, "\t");
-	if (egg_strequal (text, "richard\tphillip\thughes"))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-	g_free (text);
 	g_strfreev (array);
 
 	/************************************************************
@@ -637,7 +577,7 @@ pk_common_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "test replace unsafe (one invalid)");
-	text_safe = pk_strsafe ("Richard\tHughes");
+	text_safe = pk_strsafe ("Richard\rHughes");
 	if (egg_strequal (text_safe, "Richard Hughes"))
 		egg_test_success (test, NULL);
 	else
@@ -645,17 +585,8 @@ pk_common_test (EggTest *test)
 	g_free (text_safe);
 
 	/************************************************************/
-	egg_test_title (test, "test replace unsafe (one invalid 2)");
-	text_safe = pk_strsafe ("Richard\"Hughes\"");
-	if (egg_strequal (text_safe, "Richard Hughes "))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
-	g_free (text_safe);
-
-	/************************************************************/
 	egg_test_title (test, "test replace unsafe (multiple invalid)");
-	text_safe = pk_strsafe (" Richard\"Hughes\"");
+	text_safe = pk_strsafe (" Richard\rHughes\f");
 	if (egg_strequal (text_safe, " Richard Hughes "))
 		egg_test_success (test, NULL);
 	else
