@@ -597,14 +597,14 @@ class PackageSearchCmd(PackageCmd):
         else:
             method = pkcon.search_name
 
-        filter = "none"
+        filter = pkenums.FILTER_NONE
         if options_dict.has_key('installed-only'):
-            filter = "installed"
+            filter = pkenums.FILTER_INSTALLED
         elif options_dict.has_key('uninstalled-only'):
-            filter = '~installed'
+            filter = pkenums.FILTER_NOT_INSTALLED
 
         result = {}
-        matches = method(filter, non_option_args[0])
+        matches = method(non_option_args[0], filter)
         if len(matches) > 0:
             table_keys = ["installed", "repo", "name", "version"]
             table_rows = []
