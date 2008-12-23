@@ -76,7 +76,7 @@ void		egg_warning_real		(const gchar	*func,
 void		egg_error_real			(const gchar	*func,
 						 const gchar	*file,
 						 int		 line,
-						 const gchar	*format, ...) __attribute__((format (printf,4,5)));
+						 const gchar	*format, ...) G_GNUC_NORETURN __attribute__((format (printf,4,5)));
 
 G_END_DECLS
 
