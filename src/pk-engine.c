@@ -239,7 +239,7 @@ pk_engine_notify_updates_changed_cb (PkNotify *notify, PkEngine *engine)
  * pk_engine_finished_cb:
  **/
 static void
-pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
+pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 

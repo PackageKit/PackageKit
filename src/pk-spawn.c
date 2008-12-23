@@ -393,7 +393,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	gboolean idleio;
 	guint i;
 	guint len;
-	gint nice;
+	gint nice_value;
 	gchar *command;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
@@ -457,13 +457,13 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 				 NULL);
 
 	/* get the nice value and ensure we are in the valid range */
-	nice = pk_conf_get_int (spawn->priv->conf, "BackendSpawnNiceValue");
-	nice = CLAMP(nice, -20, 19);
+	nice_value = pk_conf_get_int (spawn->priv->conf, "BackendSpawnNiceValue");
+	nice_value = CLAMP(nice_value, -20, 19);
 
 	/* don't completely bog the system down */
-	if (nice != 0) {
-		egg_debug ("renice to %i", nice);
-		setpriority (PRIO_PROCESS, spawn->priv->child_pid, nice);
+	if (nice_value != 0) {
+		egg_debug ("renice to %i", nice_value);
+		setpriority (PRIO_PROCESS, spawn->priv->child_pid, nice_value);
 	}
 
 	/* perhaps set idle IO priority */

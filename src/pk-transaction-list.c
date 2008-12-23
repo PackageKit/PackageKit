@@ -278,7 +278,7 @@ pk_transaction_list_run_item (PkTransactionList *tlist, PkTransactionItem *item)
  * pk_transaction_list_transaction_finished_cb:
  **/
 static void
-pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time, PkTransactionList *tlist)
+pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time_ms, PkTransactionList *tlist)
 {
 	guint i;
 	guint length;

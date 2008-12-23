@@ -93,7 +93,7 @@ out:
  * pk_generate_pack_package_cb:
  **/
 static void
-pk_generate_pack_package_cb (PkServicePack *pack, const PkPackageObj *obj, gpointer data)
+pk_generate_pack_package_cb (PkServicePack *pack_, const PkPackageObj *obj, gpointer data)
 {
 	g_return_if_fail (obj != NULL);
 	/* TRANSLATORS: This is the state of the transaction */
@@ -104,7 +104,7 @@ pk_generate_pack_package_cb (PkServicePack *pack, const PkPackageObj *obj, gpoin
  * pk_generate_pack_percentage_cb:
  **/
 static void
-pk_generate_pack_percentage_cb (PkServicePack *pack, guint percentage, gpointer data)
+pk_generate_pack_percentage_cb (PkServicePack *pack_, guint percentage, gpointer data)
 {
 	last_percentage = percentage;
 }
@@ -113,7 +113,7 @@ pk_generate_pack_percentage_cb (PkServicePack *pack, guint percentage, gpointer 
  * pk_generate_pack_status_cb:
  **/
 static void
-pk_generate_pack_status_cb (PkServicePack *pack, PkServicePackStatus status, gpointer data)
+pk_generate_pack_status_cb (PkServicePack *pack_, PkServicePackStatus status, gpointer data)
 {
 	if (status == PK_SERVICE_PACK_STATUS_DOWNLOAD_PACKAGES) {
 		/* TRANSLATORS: This is when the main packages are being downloaded */

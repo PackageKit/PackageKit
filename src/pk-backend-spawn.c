@@ -449,12 +449,12 @@ out:
  * pk_backend_spawn_exit_cb:
  **/
 static void
-pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit, PkBackendSpawn *backend_spawn)
+pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSpawn *backend_spawn)
 {
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
 	/* if we force killed the process, set an error */
-	if (exit == PK_SPAWN_EXIT_TYPE_SIGKILL) {
+	if (exit_enum == PK_SPAWN_EXIT_TYPE_SIGKILL) {
 		/* we just call this failed, and set an error */
 		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_PROCESS_KILL,
 				       "Process had to be killed to be cancelled");
@@ -463,8 +463,8 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit, PkBackendSpawn *
 	/* only emit if not finished */
 	if (!backend_spawn->priv->finished) {
 		/* ignore when we exit from a dispatcher */
-		if (exit != PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT &&
-		    exit != PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED) {
+		if (exit_enum != PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT &&
+		    exit_enum != PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED) {
 			egg_warning ("script exited without doing finished");
 			pk_backend_finished (backend_spawn->priv->backend);
 		}
@@ -682,7 +682,7 @@ pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
  * pk_backend_spawn_finished_cb:
  **/
 static void
-pk_backend_spawn_finished_cb (PkBackend *backend, PkExitEnum exit, PkBackendSpawn *backend_spawn)
+pk_backend_spawn_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkBackendSpawn *backend_spawn)
 {
 	gint timeout;
 
