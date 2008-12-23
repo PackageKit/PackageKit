@@ -943,6 +943,10 @@
             <doc:para>
               An array of package names, e.g. <doc:tt>scribus-clipart</doc:tt>.
             </doc:para>
+            <doc:para>
+              The package names are case sensitive, so for instance:
+              <doc:tt>Resolve('Packagekit')</doc:tt> would not match <doc:tt>PackageKit</doc:tt>.
+            </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
