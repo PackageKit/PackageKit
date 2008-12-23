@@ -43,8 +43,6 @@
 #include "pk-transaction-db.h"
 #include "pk-marshal.h"
 
-static void     pk_transaction_db_class_init	(PkTransactionDbClass *klass);
-static void     pk_transaction_db_init		(PkTransactionDb      *tdb);
 static void     pk_transaction_db_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_DB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_DB, PkTransactionDbPrivate))

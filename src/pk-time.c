@@ -43,8 +43,6 @@
 #include "pk-time.h"
 #include "pk-marshal.h"
 
-static void     pk_time_class_init	(PkTimeClass *klass);
-static void     pk_time_init		(PkTime      *time);
 static void     pk_time_finalize	(GObject     *object);
 
 #define PK_TIME_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TIME, PkTimePrivate))

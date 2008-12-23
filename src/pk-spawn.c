@@ -52,8 +52,6 @@
 
 #include "pk-sysdep.h"
 
-static void     pk_spawn_class_init	(PkSpawnClass *klass);
-static void     pk_spawn_init		(PkSpawn      *spawn);
 static void     pk_spawn_finalize	(GObject       *object);
 
 #define PK_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SPAWN, PkSpawnPrivate))
