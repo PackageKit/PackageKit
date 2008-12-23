@@ -177,7 +177,7 @@ pk_store_set_pointer (PkStore *store, const gchar *key, gpointer data)
 		return FALSE;
 	}
 	egg_debug ("saving %p for %s", data, key);
-	g_hash_table_insert (store->priv->hash_pointer, g_strdup (key), data+1);
+	g_hash_table_insert (store->priv->hash_pointer, g_strdup (key), GINT_TO_POINTER(GPOINTER_TO_INT(data)+1));
 	return TRUE;
 }
 
@@ -293,7 +293,7 @@ pk_store_get_pointer (const PkStore *store, const gchar *key)
 		egg_warning ("not set data for %s", key);
 		return NULL;
 	}
-	return value-1;
+	return GINT_TO_POINTER(GPOINTER_TO_INT(value)-1);
 }
 
 /**
