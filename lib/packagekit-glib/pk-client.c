@@ -509,7 +509,7 @@ pk_client_destroy_cb (DBusGProxy *proxy, PkClient *client)
 static void
 pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClient *client)
 {
-	PkExitEnum exit;
+	PkExitEnum exit_enum;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
@@ -523,7 +523,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 		client->priv->timeout_id = 0;
 	}
 
-	exit = pk_exit_enum_from_text (exit_text);
+	exit_enum = pk_exit_enum_from_text (exit_text);
 	egg_debug ("emit finished %s, %i", exit_text, runtime);
 
 	/* only this instance is finished, and do it before the signal so we can reset */
@@ -533,7 +533,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	 * in the ::Finished() handler */
 	client->priv->is_finishing = TRUE;
 
-	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit, runtime);
+	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit_enum, runtime);
 
 	/* done callback */
 	client->priv->is_finishing = FALSE;

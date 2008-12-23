@@ -302,14 +302,14 @@ static gboolean
 pk_backend_dbus_time_check (PkBackendDbus *backend_dbus)
 {
 	gdouble seconds;
-	guint time;
+	guint time_ms;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 
 	seconds = g_timer_elapsed (backend_dbus->priv->timer, NULL);
-	time = (guint) seconds * 1000;
-	if (time > PK_BACKEND_DBUS_MAX_SYNC_RUNTIME) {
-		egg_warning ("too much time for sync method: %ims", time);
+	time_ms = (guint) seconds * 1000;
+	if (time_ms > PK_BACKEND_DBUS_MAX_SYNC_RUNTIME) {
+		egg_warning ("too much time for sync method: %ims", time_ms);
 		pk_backend_error_code (backend_dbus->priv->backend,
 				       PK_ERROR_ENUM_INTERNAL_ERROR,
 				       "The backend took too much time to process the synchronous request - you need to fork!");
