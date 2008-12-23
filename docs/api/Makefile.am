@@ -80,7 +80,6 @@ INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	-I$(top_builddir)/lib/packagekit-glib		\
 	-I$(top_srcdir)/lib/packagekit-glib		\
-	-I$(top_srcdir)/libselftest			\
 	$(NULL)
 
 PK_GLIB_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
