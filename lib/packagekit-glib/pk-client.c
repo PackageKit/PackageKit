@@ -243,7 +243,7 @@ pk_client_error_fixup (GError **error)
  *
  * Return value: %TRUE if the error is the PolicyKit "RefusedByPolicy"
  **/
-gboolean
+static gboolean
 pk_client_error_refused_by_policy (GError *error)
 {
 	const gchar *error_name;
@@ -277,7 +277,7 @@ pk_client_error_refused_by_policy (GError *error)
  *
  * Return value: if we gained the privilege we asked for
  **/
-gboolean
+static gboolean
 pk_client_error_auth_obtain (GError *error)
 {
 	gboolean ret = FALSE;

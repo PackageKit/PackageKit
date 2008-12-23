@@ -424,7 +424,7 @@ pk_backend_dbus_set_locale (PkBackendDbus *backend_dbus, const gchar *locale)
 /**
  * pk_backend_dbus_startup:
  **/
-gboolean
+static gboolean
 pk_backend_dbus_startup (PkBackendDbus *backend_dbus)
 {
 	gboolean ret;
