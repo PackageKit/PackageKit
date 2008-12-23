@@ -151,7 +151,7 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 /**
  * pk_transaction_list_item_free:
  **/
-void
+static void
 pk_transaction_list_item_free (PkTransactionItem *item)
 {
 	g_return_if_fail (item != NULL);
@@ -170,7 +170,7 @@ pk_transaction_list_item_free (PkTransactionItem *item)
 /**
  * pk_transaction_list_remove_internal:
  **/
-gboolean
+static gboolean
 pk_transaction_list_remove_internal (PkTransactionList *tlist, PkTransactionItem *item)
 {
 	gboolean ret;

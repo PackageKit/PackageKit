@@ -230,7 +230,7 @@ pk_transaction_error_get_type (void)
  *
  * Returns time running in ms
  */
-guint
+static guint
 pk_transaction_get_runtime (PkTransaction *transaction)
 {
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), 0);
@@ -256,7 +256,7 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 /**
  * pk_transaction_get_text:
  **/
-gchar *
+static gchar *
 pk_transaction_get_text (PkTransaction *transaction)
 {
 	PkPackageId *id;
@@ -1332,7 +1332,7 @@ pk_transaction_search_check (const gchar *search, GError **error)
 /**
  * pk_transaction_filter_check:
  **/
-gboolean
+static gboolean
 pk_transaction_filter_check (const gchar *filter, GError **error)
 {
 	gchar **sections;
@@ -1452,7 +1452,7 @@ out:
 /**
  * pk_transaction_dbus_return_error:
  **/
-void
+static void
 pk_transaction_dbus_return_error (DBusGMethodInvocation *context, GError *error)
 {
 	/* not set inside the test suite */
@@ -1467,7 +1467,7 @@ pk_transaction_dbus_return_error (DBusGMethodInvocation *context, GError *error)
 /**
  * pk_transaction_dbus_return:
  **/
-void
+static void
 pk_transaction_dbus_return (DBusGMethodInvocation *context)
 {
 	/* not set inside the test suite */
