@@ -49,8 +49,6 @@
 #include <packagekit-glib/pk-connection.h>
 #include <packagekit-glib/pk-marshal.h>
 
-static void     pk_task_list_class_init		(PkTaskListClass *klass);
-static void     pk_task_list_init		(PkTaskList      *task_list);
 static void     pk_task_list_finalize		(GObject         *object);
 
 #define PK_TASK_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK_LIST, PkTaskListPrivate))

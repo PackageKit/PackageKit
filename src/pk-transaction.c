@@ -62,8 +62,6 @@
 #include "pk-post-trans.h"
 #include "pk-syslog.h"
 
-static void     pk_transaction_class_init	(PkTransactionClass *klass);
-static void     pk_transaction_init		(PkTransaction      *transaction);
 static void     pk_transaction_finalize		(GObject	    *object);
 
 #define PK_TRANSACTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION, PkTransactionPrivate))

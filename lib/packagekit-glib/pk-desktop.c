@@ -35,8 +35,6 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-static void     pk_desktop_class_init	(PkDesktopClass *klass);
-static void     pk_desktop_init		(PkDesktop      *desktop);
 static void     pk_desktop_finalize	(GObject        *object);
 
 #define PK_DESKTOP_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DESKTOP, PkDesktopPrivate))

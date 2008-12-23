@@ -46,8 +46,6 @@
 #include "pk-transaction-list.h"
 #include "org.freedesktop.PackageKit.Transaction.h"
 
-static void     pk_transaction_list_class_init	(PkTransactionListClass *klass);
-static void     pk_transaction_list_init	(PkTransactionList      *tlist);
 static void     pk_transaction_list_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionListPrivate))

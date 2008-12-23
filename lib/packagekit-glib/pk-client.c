@@ -66,8 +66,6 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-static void     pk_client_class_init	(PkClientClass *klass);
-static void     pk_client_init		(PkClient      *client);
 static void     pk_client_finalize	(GObject       *object);
 
 #define PK_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CLIENT, PkClientPrivate))
