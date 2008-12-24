@@ -205,8 +205,8 @@ static void
 backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids);
 	gchar *filters_text;
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, BACKEND("get-requires"), filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
