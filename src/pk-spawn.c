@@ -306,7 +306,7 @@ static gboolean
 pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 {
 	gint wrote;
-	guint length;
+	gint length;
 	gchar *buffer = NULL;
 	gboolean ret = TRUE;
 
