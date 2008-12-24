@@ -1702,9 +1702,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             self._cache.commit(PackageKitFetchProgress(self, fetch_range), 
                                PackageKitInstallProgress(self, install_range))
-        except apt.cache.FetchFailedException:
+        except apt.cache.FetchFailedException, e:
             self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED, "Download failed")
+            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED, e.message)
             self.Finished(EXIT_FAILED)
         except apt.cache.FetchCancelledException:
             self._open_cache(prange=(95,100))
