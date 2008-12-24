@@ -4577,7 +4577,7 @@ pk_client_new (void)
  * privileges.
  */
 __attribute__ ((constructor))
-void init()
+static void init()
 {
 	/* this is a bandaid */
 	prctl (PR_SET_DUMPABLE, 0);
