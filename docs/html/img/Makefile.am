@@ -39,6 +39,7 @@ IMAGE_FILES =					\
 	gpk-client-codecs.png			\
 	gpk-client-mime-type.png		\
 	gpk-client-font.png			\
+	gpk-markdown.png			\
 	$(NULL)
 
 EXTRA_DIST = 					\
