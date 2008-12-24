@@ -148,6 +148,10 @@ packagekitd_LDADD =					\
 	$(ARCHIVE_LIBS)					\
 	$(NULL)
 
+packagekitd_CFLAGS =					\
+	$(WARNINGFLAGS_C)				\
+	$(NULL)
+
 if BACKEND_TYPE_BOX
 packagekitd_INCLUDES =	 				\
 	$(BOX_CFLAGS)

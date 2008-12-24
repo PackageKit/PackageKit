@@ -32,6 +32,10 @@ pk_command_not_found_LDADD =				\
 	$(PK_GLIB_LIBS)					\
 	$(NULL)
 
+pk_command_not_found_CFLAGS =				\
+	$(WARNINGFLAGS_C)				\
+	$(NULL)
+
 bashprofiledir = ${SYSCONFDIR}/profile.d
 dist_bashprofile_DATA = PackageKit.sh
 
