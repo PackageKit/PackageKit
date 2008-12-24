@@ -62,8 +62,6 @@
 #include "pk-post-trans.h"
 #include "pk-syslog.h"
 
-static void     pk_transaction_class_init	(PkTransactionClass *klass);
-static void     pk_transaction_init		(PkTransaction      *transaction);
 static void     pk_transaction_finalize		(GObject	    *object);
 
 #define PK_TRANSACTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION, PkTransactionPrivate))
@@ -230,7 +228,7 @@ pk_transaction_error_get_type (void)
  *
  * Returns time running in ms
  */
-guint
+static guint
 pk_transaction_get_runtime (PkTransaction *transaction)
 {
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), 0);
@@ -256,7 +254,7 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 /**
  * pk_transaction_get_text:
  **/
-gchar *
+static gchar *
 pk_transaction_get_text (PkTransaction *transaction)
 {
 	PkPackageId *id;
@@ -399,12 +397,12 @@ pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum sta
  * pk_transaction_finished_emit:
  **/
 static void
-pk_transaction_finished_emit (PkTransaction *transaction, PkExitEnum exit, guint time)
+pk_transaction_finished_emit (PkTransaction *transaction, PkExitEnum exit_enum, guint time_ms)
 {
 	const gchar *exit_text;
-	exit_text = pk_exit_enum_to_text (exit);
-	egg_debug ("emitting finished '%s', %i", exit_text, time);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, time);
+	exit_text = pk_exit_enum_to_text (exit_enum);
+	egg_debug ("emitting finished '%s', %i", exit_text, time_ms);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, time_ms);
 }
 
 /**
@@ -526,10 +524,10 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend, PkDistroUpgradeEnum type,
  * pk_transaction_finished_cb:
  **/
 static void
-pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *transaction)
+pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransaction *transaction)
 {
 	gboolean ret;
-	guint time;
+	guint time_ms;
 	gchar *packages;
 	gchar **package_ids;
 	guint i, length;
@@ -559,7 +557,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_category);
 
 	/* check for session restarts */
-	if (exit == PK_EXIT_ENUM_SUCCESS &&
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
 	    (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	     transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 
@@ -587,7 +585,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	}
 
 	/* rescan desktop files after install */
-	if (exit == PK_EXIT_ENUM_SUCCESS &&
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 
 		/* refresh the desktop icon cache */
@@ -622,7 +620,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
 
 	/* do some optional extra actions when we've finished refreshing the cache */
-	if (exit == PK_EXIT_ENUM_SUCCESS &&
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 
 		/* generate the package list */
@@ -651,17 +649,17 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 
 	/* if we did ::repo-signature-required or ::eula-required, change the error code */
 	if (transaction->priv->emit_signature_required)
-		exit = PK_EXIT_ENUM_KEY_REQUIRED;
+		exit_enum = PK_EXIT_ENUM_KEY_REQUIRED;
 	else if (transaction->priv->emit_eula_required)
-		exit = PK_EXIT_ENUM_EULA_REQUIRED;
+		exit_enum = PK_EXIT_ENUM_EULA_REQUIRED;
 
 	/* invalidate some caches if we succeeded*/
-	if (exit == PK_EXIT_ENUM_SUCCESS)
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
 		pk_transaction_finish_invalidate_caches (transaction);
 
 	/* find the length of time we have been running */
-	time = pk_transaction_get_runtime (transaction);
-	egg_debug ("backend was running for %i ms", time);
+	time_ms = pk_transaction_get_runtime (transaction);
+	egg_debug ("backend was running for %i ms", time_ms);
 
 	/* add to the database if we are going to log it */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
@@ -698,14 +696,14 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	}
 
 	/* only reset the time if we succeeded */
-	if (exit == PK_EXIT_ENUM_SUCCESS)
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
 		pk_transaction_db_action_time_reset (transaction->priv->transaction_db, transaction->priv->role);
 
 	/* did we finish okay? */
-	if (exit == PK_EXIT_ENUM_SUCCESS)
-		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, TRUE, time);
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
+		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, TRUE, time_ms);
 	else
-		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, FALSE, time);
+		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, FALSE, time_ms);
 
 	/* remove any inhibit */
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
@@ -714,13 +712,13 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	if (transaction->priv->uid != PK_SECURITY_UID_INVALID)
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s from uid %i finished with %s after %ims",
 			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid,
-			       transaction->priv->uid, pk_exit_enum_to_text (exit), time);
+			       transaction->priv->uid, pk_exit_enum_to_text (exit_enum), time_ms);
 	else
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s finished with %s after %ims",
-			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, pk_exit_enum_to_text (exit), time);
+			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, pk_exit_enum_to_text (exit_enum), time_ms);
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
-	pk_transaction_finished_emit (transaction, exit, time);
+	pk_transaction_finished_emit (transaction, exit_enum, time_ms);
 }
 
 /**
@@ -1332,7 +1330,7 @@ pk_transaction_search_check (const gchar *search, GError **error)
 /**
  * pk_transaction_filter_check:
  **/
-gboolean
+static gboolean
 pk_transaction_filter_check (const gchar *filter, GError **error)
 {
 	gchar **sections;
@@ -1452,7 +1450,7 @@ out:
 /**
  * pk_transaction_dbus_return_error:
  **/
-void
+static void
 pk_transaction_dbus_return_error (DBusGMethodInvocation *context, GError *error)
 {
 	/* not set inside the test suite */
@@ -1467,7 +1465,7 @@ pk_transaction_dbus_return_error (DBusGMethodInvocation *context, GError *error)
 /**
  * pk_transaction_dbus_return:
  **/
-void
+static void
 pk_transaction_dbus_return (DBusGMethodInvocation *context)
 {
 	/* not set inside the test suite */

@@ -316,9 +316,6 @@ gboolean	 pk_client_rollback			(PkClient	*client,
 							 const gchar	*transaction_id,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_cancel			(PkClient	*client,
-							 GError		**error)
-							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_requeue			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;

@@ -32,6 +32,7 @@
 #include <glib/gstdio.h>
 
 #include "egg-debug.h"
+#include "pk-shared.h"
 
 /**
  * pk_directory_remove_contents:

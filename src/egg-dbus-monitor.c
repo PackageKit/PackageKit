@@ -32,8 +32,6 @@
 #include "egg-debug.h"
 #include "egg-dbus-monitor.h"
 
-static void     egg_dbus_monitor_class_init	(EggDbusMonitorClass	*klass);
-static void     egg_dbus_monitor_init		(EggDbusMonitor		*dbus_monitor);
 static void     egg_dbus_monitor_finalize	(GObject		*object);
 
 #define EGG_DBUS_MONITOR_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), EGG_TYPE_DBUS_MONITOR, EggDbusMonitorPrivate))

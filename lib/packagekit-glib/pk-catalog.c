@@ -35,8 +35,6 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-static void     pk_catalog_class_init	(PkCatalogClass	*klass);
-static void     pk_catalog_init		(PkCatalog	*catalog);
 static void     pk_catalog_finalize	(GObject	*object);
 
 #define PK_CATALOG_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CATALOG, PkCatalogPrivate))

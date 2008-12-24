@@ -46,8 +46,6 @@
 #include "pk-transaction-list.h"
 #include "org.freedesktop.PackageKit.Transaction.h"
 
-static void     pk_transaction_list_class_init	(PkTransactionListClass *klass);
-static void     pk_transaction_list_init	(PkTransactionList      *tlist);
 static void     pk_transaction_list_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionListPrivate))
@@ -151,7 +149,7 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 /**
  * pk_transaction_list_item_free:
  **/
-void
+static void
 pk_transaction_list_item_free (PkTransactionItem *item)
 {
 	g_return_if_fail (item != NULL);
@@ -170,7 +168,7 @@ pk_transaction_list_item_free (PkTransactionItem *item)
 /**
  * pk_transaction_list_remove_internal:
  **/
-gboolean
+static gboolean
 pk_transaction_list_remove_internal (PkTransactionList *tlist, PkTransactionItem *item)
 {
 	gboolean ret;
@@ -280,7 +278,7 @@ pk_transaction_list_run_item (PkTransactionList *tlist, PkTransactionItem *item)
  * pk_transaction_list_transaction_finished_cb:
  **/
 static void
-pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time, PkTransactionList *tlist)
+pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time_ms, PkTransactionList *tlist)
 {
 	guint i;
 	guint length;

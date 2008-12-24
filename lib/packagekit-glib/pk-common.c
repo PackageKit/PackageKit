@@ -195,7 +195,7 @@ pk_iso8601_difference (const gchar *isodate)
 	GTimeVal timeval_then;
 	GTimeVal timeval_now;
 	gboolean ret;
-	guint time;
+	guint time_s;
 
 	g_return_val_if_fail (isodate != NULL, 0);
 
@@ -208,9 +208,9 @@ pk_iso8601_difference (const gchar *isodate)
 	g_get_current_time (&timeval_now);
 
 	/* work out difference */
-	time = timeval_now.tv_sec - timeval_then.tv_sec;
+	time_s = timeval_now.tv_sec - timeval_then.tv_sec;
 
-	return time;
+	return time_s;
 }
 
 /**
@@ -245,17 +245,17 @@ pk_iso8601_to_date (const gchar *iso_date)
 	gboolean ret;
 	guint retval;
 	guint d, m, y;
-	GTimeVal time;
+	GTimeVal time_val;
 	GDate *date = NULL;
 
 	if (egg_strzero (iso_date))
 		goto out;
 
 	/* try to parse complete ISO8601 date */
-	ret = g_time_val_from_iso8601 (iso_date, &time);
+	ret = g_time_val_from_iso8601 (iso_date, &time_val);
 	if (ret) {
 		date = g_date_new ();
-		g_date_set_time_val (date, &time);
+		g_date_set_time_val (date, &time_val);
 		goto out;
 	}
 

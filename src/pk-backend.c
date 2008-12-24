@@ -1400,7 +1400,7 @@ pk_backend_get_role (PkBackend *backend)
  * Should only be used internally, or from PkRunner when setting CANCELLED.
  **/
 gboolean
-pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)
+pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit_enum)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -1408,13 +1408,13 @@ pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)
 	if (backend->priv->exit != PK_EXIT_ENUM_UNKNOWN) {
 		egg_warning ("already set exit status: old=%s, new=%s",
 			    pk_exit_enum_to_text (backend->priv->exit),
-			    pk_exit_enum_to_text (exit));
+			    pk_exit_enum_to_text (exit_enum));
 		egg_debug_backtrace ();
 		return FALSE;
 	}
 
 	/* new value */
-	backend->priv->exit = exit;
+	backend->priv->exit = exit_enum;
 	return TRUE;
 }
 

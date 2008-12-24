@@ -39,21 +39,21 @@
 static gchar *
 pk_transaction_id_get_random_hex_string (guint length)
 {
-	GRand *rand;
+	GRand *gen;
 	gint32 num;
 	gchar *string;
 	guint i;
 
-	rand = g_rand_new ();
+	gen = g_rand_new ();
 
 	/* allocate a string with the correct size */
 	string = g_strnfill (length, 'x');
 	for (i=0; i<length; i++) {
-		num = g_rand_int_range (rand, (gint32) 'a', (gint32) 'f');
+		num = g_rand_int_range (gen, (gint32) 'a', (gint32) 'f');
 		/* assign a random number as a char */
 		string[i] = (gchar) num;
 	}
-	g_rand_free (rand);
+	g_rand_free (gen);
 	return string;
 }
 

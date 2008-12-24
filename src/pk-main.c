@@ -118,9 +118,9 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
  * Return value: FALSE, as we don't want to repeat this action.
  **/
 static gboolean
-timed_exit_cb (GMainLoop *loop)
+timed_exit_cb (GMainLoop *mainloop)
 {
-	g_main_loop_quit (loop);
+	g_main_loop_quit (mainloop);
 	return FALSE;
 }
 

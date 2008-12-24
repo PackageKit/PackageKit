@@ -60,8 +60,6 @@
 #include "pk-security.h"
 #include "pk-conf.h"
 
-static void     pk_engine_class_init	(PkEngineClass *klass);
-static void     pk_engine_init		(PkEngine      *engine);
 static void     pk_engine_finalize	(GObject       *object);
 
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
@@ -241,7 +239,7 @@ pk_engine_notify_updates_changed_cb (PkNotify *notify, PkEngine *engine)
  * pk_engine_finished_cb:
  **/
 static void
-pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
+pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 

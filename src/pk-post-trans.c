@@ -74,7 +74,7 @@ G_DEFINE_TYPE (PkPostTrans, pk_post_trans, G_TYPE_OBJECT)
  * pk_post_trans_finished_cb:
  **/
 static void
-pk_post_trans_finished_cb (PkBackend *backend, PkExitEnum exit, PkPostTrans *post)
+pk_post_trans_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkPostTrans *post)
 {
 	if (g_main_loop_is_running (post->priv->loop))
 		g_main_loop_quit (post->priv->loop);
