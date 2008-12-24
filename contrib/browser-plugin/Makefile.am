@@ -4,6 +4,7 @@ plugin_LTLIBRARIES = packagekit-plugin.la
 packagekit_plugin_la_LDFLAGS = -rpath $(plugindir) -module -avoid-version -no-undefined
 packagekit_plugin_la_CPPFLAGS =			\
 	$(PK_BROWSER_PLUGIN_CFLAGS)		\
+	$(WARNINGFLAGS_CPP)			\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"	\
 	-I$(top_srcdir)/lib			\
 	-I$(srcdir)/sdk
