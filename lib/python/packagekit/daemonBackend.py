@@ -171,6 +171,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         self.loop = gobject.MainLoop()
 
+    def run(self):
         gobject.timeout_add_seconds(INACTIVE_CHECK_INTERVAL,
                                     self.check_for_inactivity)
         self.last_action_time = time.time()

@@ -218,27 +218,67 @@ pk_console_transaction_cb (PkClient *client, const PkTransactionObj *obj, gpoint
 {
 	struct passwd *pw;
 	const gchar *role_text;
+	gchar **lines;
+	gchar **parts;
+	guint i, lines_len;
+	PkPackageId *id;
 
 	role_text = pk_role_enum_to_text (obj->role);
 	if (awaiting_space)
 		g_print ("\n");
-	g_print ("Transaction  : %s\n", obj->tid);
-	g_print (" timespec    : %s\n", obj->timespec);
-	g_print (" succeeded   : %i\n", obj->succeeded);
-	g_print (" role        : %s\n", role_text);
-	g_print (" duration    : %i (seconds)\n", obj->duration);
-	g_print (" data        : %s\n", obj->data);
-	g_print (" cmdline     : %s\n", obj->cmdline);
-	g_print (" uid         : %i\n", obj->uid);
+	/* TRANSLATORS: this is an atomic transaction */
+	g_print ("%s: %s\n", _("Transaction"), obj->tid);
+	/* TRANSLATORS: this is the time the transaction was started in system timezone */
+	g_print (" %s: %s\n", _("System time"), obj->timespec);
+	/* TRANSLATORS: this is if the transaction succeeded or not */
+	g_print (" %s: %s\n", _("Succeeded"), obj->timespec ? _("True") : _("False"));
+	/* TRANSLATORS: this is the transactions role, e.g. "update-system" */
+	g_print (" %s: %s\n", _("Role"), role_text);
+
+	/* only print if not null */
+	if (obj->duration > 0) {
+		/* TRANSLATORS: this is The duration of the transaction */
+		g_print (" %s: %i %s\n", _("Duration"), obj->duration, _("(seconds)"));
+	}
+
+	/* TRANSLATORS: this is The command line used to do the action */
+	g_print (" %s: %s\n", _("Command line"), obj->cmdline);
+	/* TRANSLATORS: this is the user ID of the user that started the action */
+	g_print (" %s: %i\n", _("User ID"), obj->uid);
 
 	/* query real name */
 	pw = getpwuid(obj->uid);
 	if (pw != NULL) {
-		if (pw->pw_name != NULL)
-			g_print (" user name   : %s\n", pw->pw_name);
-		if (pw->pw_gecos != NULL)
-			g_print (" real name   : %s\n", pw->pw_gecos);
+		if (pw->pw_name != NULL) {
+			/* TRANSLATORS: this is the username, e.g. hughsie */
+			g_print (" %s: %s\n", _("Username"), pw->pw_name);
+		}
+		if (pw->pw_gecos != NULL) {
+			/* TRANSLATORS: this is the users real name, e.g. "Richard Hughes" */
+			g_print (" %s: %s\n", _("Real name"), pw->pw_gecos);
+		}
 	}
+
+	/* TRANSLATORS: these are packages touched by the transaction */
+	lines = g_strsplit (obj->data, "\n", -1);
+	lines_len = g_strv_length (lines);
+	if (lines_len > 0)
+		g_print (" %s\n", _("Affected packages:"));
+	else
+		g_print (" %s\n", _("Affected packages: None"));
+	for (i=0; i<lines_len; i++) {
+		parts = g_strsplit (lines[i], "\t", 3);
+		id = pk_package_id_new_from_string (parts[1]);
+		g_print (" - %s %s", parts[0], id->name);
+		if (!egg_strzero (id->version))
+			g_print ("-%s", id->version);
+		if (!egg_strzero (id->arch))
+			g_print (".%s", id->arch);
+		g_print ("\n");
+		pk_package_id_free (id);
+		g_strfreev (parts);
+	}
+	g_strfreev (lines);
 }
 
 /**
@@ -249,9 +289,12 @@ pk_console_distro_upgrade_cb (PkClient *client, const PkDistroUpgradeObj *obj, g
 {
 	if (awaiting_space)
 		g_print ("\n");
-	g_print ("Distro       : %s\n", obj->name);
-	g_print (" type        : %s\n", pk_update_state_enum_to_text (obj->state));
-	g_print (" summary     : %s\n", obj->summary);
+	/* TRANSLATORS: this is the distro, e.g. Fedora 10 */
+	g_print ("%s: %s\n", _("Distribution"), obj->name);
+	/* TRANSLATORS: this is type of update, stable or testing */
+	g_print (" %s: %s\n", _("Type"), pk_update_state_enum_to_text (obj->state));
+	/* TRANSLATORS: this is any summary text describing the upgrade */
+	g_print (" %s: %s\n", _("Summary"), obj->summary);
 }
 
 /**
@@ -262,14 +305,21 @@ pk_console_category_cb (PkClient *client, const PkCategoryObj *obj, gpointer use
 {
 	if (awaiting_space)
 		g_print ("\n");
-	g_print ("Category  : %s\n", obj->name);
-	g_print (" cat_id   : %s\n", obj->cat_id);
-	if (!egg_strzero (obj->parent_id))
-		g_print (" parent   : %s\n", obj->parent_id);
-	g_print (" name     : %s\n", obj->name);
-	if (!egg_strzero (obj->summary))
-		g_print (" summary  : %s\n", obj->summary);
-	g_print (" icon     : %s\n", obj->icon);
+	/* TRANSLATORS: this is the group category name */
+	g_print ("%s: %s\n", _("Category"), obj->name);
+	/* TRANSLATORS: this is group identifier */
+	g_print (" %s: %s\n", _("ID"), obj->cat_id);
+	if (!egg_strzero (obj->parent_id)) {
+		/* TRANSLATORS: this is the parent group */
+		g_print (" %s: %s\n", _("Parent"), obj->parent_id);
+	}
+	g_print (" %s: %s\n", _("Name"), obj->name);
+	if (!egg_strzero (obj->summary)) {
+		/* TRANSLATORS: this is the summary of the group */
+		g_print (" %s: %s\n", _("Summary"), obj->summary);
+	}
+	/* TRANSLATORS: this is preferred icon for the group */
+	g_print (" %s: %s\n", _("Icon"), obj->icon);
 }
 
 /**
@@ -285,31 +335,31 @@ pk_console_update_detail_cb (PkClient *client, const PkUpdateDetailObj *detail, 
 		g_print ("\n");
 	/* TRANSLATORS: this is a header for the package that can be updated */
 	g_print ("%s\n", _("Details about the update:"));
-	g_print ("  package:    '%s-%s.%s'\n", detail->id->name, detail->id->version, detail->id->arch);
+	g_print (" %s: '%s-%s.%s'\n", _("Package"), detail->id->name, detail->id->version, detail->id->arch);
 	if (!egg_strzero (detail->updates))
-		g_print ("  updates:    %s\n", detail->updates);
+		g_print (" %s: %s\n", _("Updates"), detail->updates);
 	if (!egg_strzero (detail->obsoletes))
-		g_print ("  obsoletes:  %s\n", detail->obsoletes);
+		g_print (" %s: %s\n", _("Obsoletes"), detail->obsoletes);
 	if (!egg_strzero (detail->vendor_url))
-		g_print ("  vendor URL: %s\n", detail->vendor_url);
+		g_print (" %s: %s\n", _("Vendor"), detail->vendor_url);
 	if (!egg_strzero (detail->bugzilla_url))
-		g_print ("  bug URL:    %s\n", detail->bugzilla_url);
+		g_print (" %s: %s\n", _("Bugzilla"), detail->bugzilla_url);
 	if (!egg_strzero (detail->cve_url))
-		g_print ("  cve URL:    %s\n", detail->cve_url);
+		g_print (" %s: %s\n", _("CVE"), detail->cve_url);
 	if (detail->restart != PK_RESTART_ENUM_NONE)
-		g_print ("  restart:    %s\n", pk_restart_enum_to_text (detail->restart));
+		g_print (" %s: %s\n", _("Restart"), pk_restart_enum_to_text (detail->restart));
 	if (!egg_strzero (detail->update_text))
-		g_print ("  update_text:%s\n", detail->update_text);
+		g_print (" %s: %s\n", _("Update text"), detail->update_text);
 	if (!egg_strzero (detail->changelog))
-		g_print ("  changelog:  %s\n", detail->changelog);
+		g_print (" %s: %s\n", _("Changes"), detail->changelog);
 	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN)
-		g_print ("  state:      %s\n", pk_update_state_enum_to_text (detail->state));
+		g_print (" %s: %s\n", _("State"), pk_update_state_enum_to_text (detail->state));
 	issued = pk_iso8601_from_date (detail->issued);
 	if (!egg_strzero (issued))
-		g_print ("  issued:     %s\n", issued);
+		g_print (" %s: %s\n", _("Issued"), issued);
 	updated = pk_iso8601_from_date (detail->updated);
 	if (!egg_strzero (updated))
-		g_print ("  updated:    %s\n", updated);
+		g_print (" %s: %s\n", _("Updated"), updated);
 	g_free (issued);
 	g_free (updated);
 }
@@ -321,15 +371,10 @@ static void
 pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 			   const gchar *description, gboolean enabled, gpointer data)
 {
-	gchar *repo;
-	repo = pk_strpad (repo_id, 28);
 	if (awaiting_space)
 		g_print ("\n");
-	if (enabled)
-		g_print ("  enabled   %s %s\n", repo, description);
-	else
-		g_print ("  disabled  %s %s\n", repo, description);
-	g_free (repo);
+	/* TRANSLATORS: if the repo is enabled */
+	g_print (" %s\t%s\t%s\n", enabled ? _("True") : _("False"), repo_id, description);
 }
 
 /**
@@ -338,7 +383,7 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 static gboolean
 pk_console_pulse_bar (PulseState *pulse_state)
 {
-	guint i;
+	gint i;
 
 	if (!has_output_bar)
 		return TRUE;
@@ -400,9 +445,9 @@ pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subper
 {
 	if (!is_console) {
 		if (percentage != PK_CLIENT_PERCENTAGE_INVALID)
-			g_print ("percentage: %i%%\n", percentage);
+			g_print ("%s: %i%%\n", _("Percentage"), percentage);
 		else
-			g_print ("percentage: unknown\n");
+			g_print ("%s: %s\n", _("Percentage"), _("Unknown"));
 		return;
 	}
 	percentage_last = percentage;
@@ -422,7 +467,7 @@ pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subper
  * pk_console_signature_finished_cb:
  **/
 static void
-pk_console_signature_finished_cb (PkClient *client_signature, PkExitEnum exit, guint runtime, gpointer data)
+pk_console_signature_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, gpointer data)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -440,7 +485,7 @@ pk_console_signature_finished_cb (PkClient *client_signature, PkExitEnum exit, g
  * pk_console_install_files_finished_cb:
  **/
 static void
-pk_console_install_files_finished_cb (PkClient *client_signature, PkExitEnum exit, guint runtime, gpointer data)
+pk_console_install_files_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, gpointer data)
 {
 	g_main_loop_quit (loop);
 }
@@ -449,11 +494,11 @@ pk_console_install_files_finished_cb (PkClient *client_signature, PkExitEnum exi
  * pk_console_finished_cb:
  **/
 static void
-pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpointer data)
+pk_console_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, gpointer data)
 {
 	PkRoleEnum role;
 	const gchar *role_text;
-	gfloat time;
+	gfloat time_s;
 	PkRestartEnum restart;
 
 	pk_client_get_role (client, &role, NULL, NULL);
@@ -467,12 +512,12 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 		g_source_remove (timer_id);
 
 	role_text = pk_role_enum_to_text (role);
-	time = (gfloat) runtime / 1000.0;
+	time_s = (gfloat) runtime / 1000.0;
 
 	/* do we need to new line? */
 	if (awaiting_space)
 		g_print ("\n");
-	egg_debug ("%s runtime was %.1f seconds", role_text, time);
+	egg_debug ("%s runtime was %.1f seconds", role_text, time_s);
 
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
@@ -484,19 +529,19 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 		g_print ("%s\n", _("Please restart the application as it is being used."));
 
 	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
-	    exit == PK_EXIT_ENUM_FAILED && need_requeue) {
+	    exit_enum == PK_EXIT_ENUM_FAILED && need_requeue) {
 		egg_warning ("waiting for second install file to finish");
 		return;
 	}
 
 	/* have we failed to install, and the gpg key is now installed */
-	if (exit == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
+	if (exit_enum == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
 		egg_debug ("key now installed");
 		return;
 	}
 
 	/* have we failed to install, and the eula key is now installed */
-	if (exit == PK_EXIT_ENUM_EULA_REQUIRED && need_requeue) {
+	if (exit_enum == PK_EXIT_ENUM_EULA_REQUIRED && need_requeue) {
 		egg_debug ("eula now agreed");
 		return;
 	}
@@ -703,7 +748,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	const PkPackageObj *obj;
 	guint i;
 	guint length;
-	gboolean remove;
+	gboolean remove_deps;
 	GPtrArray *array;
 	gchar **package_ids = NULL;
 	PkPackageList *list;
@@ -797,10 +842,10 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	}
 
 	/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-	remove = pk_console_get_prompt (_("Proceed removing additional packages?"), FALSE);
+	remove_deps = pk_console_get_prompt (_("Proceed removing additional packages?"), FALSE);
 
 	/* we chickened out */
-	if (!remove) {
+	if (!remove_deps) {
 		/* TRANSLATORS: We did not remove any packages */
 		g_print ("%s\n", _("The package removal was canceled!"));
 		ret = FALSE;
@@ -1344,7 +1389,7 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 	if (awaiting_space)
 		g_print ("\n");
 	/* TRANSLATORS: This was an unhandled error, and we don't have _any_ context */
-	g_print ("%s %s : %s\n", _("Error:"), pk_error_enum_to_text (error_code), details);
+	g_print ("%s %s: %s\n", _("Error:"), pk_error_enum_to_text (error_code), details);
 }
 
 /**
@@ -1376,6 +1421,7 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 {
 	PkRoleEnum role;
 	gchar **filevector;
+	gchar **current_file;
 
 	/* don't print if we are DownloadPackages */
 	pk_client_get_role (client, &role, NULL, NULL);
@@ -1392,8 +1438,7 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 	if (*filevector != NULL) {
 		/* TRANSLATORS: This a list files contained in the package */
 		g_print ("%s\n", _("Package files"));
-		gchar **current_file = filevector;
-
+		current_file = filevector;
 		while (*current_file != NULL) {
 			g_print ("  %s\n", *current_file);
 			current_file++;
@@ -1558,7 +1603,7 @@ pk_console_sigint_handler (int sig)
  * pk_console_get_summary:
  **/
 static gchar *
-pk_console_get_summary (PkBitfield roles)
+pk_console_get_summary (void)
 {
 	GString *string;
 	string = g_string_new ("");
@@ -1642,14 +1687,13 @@ main (int argc, char *argv[])
 	gchar *filter = NULL;
 	gchar *summary;
 	gchar **package_ids;
-	gboolean ret;
+	gboolean ret = FALSE;
 	const gchar *mode;
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
 	PkBitfield groups;
 	gchar *text;
-	ret = FALSE;
 	gboolean maybe_sync = TRUE;
 	PkBitfield filters = 0;
 
@@ -1694,7 +1738,7 @@ main (int argc, char *argv[])
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_new ();
 	roles = pk_control_get_actions (control, NULL);
-	summary = pk_console_get_summary (roles);
+	summary = pk_console_get_summary ();
 
 	context = g_option_context_new ("PackageKit Console Program");
 	g_option_context_set_summary (context, summary) ;
@@ -1906,8 +1950,7 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-time") == 0) {
 		PkRoleEnum role;
-		guint time;
-		gboolean ret;
+		guint time_ms;
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify an action, e.g. 'update-system'"));
 			goto out;
@@ -1917,12 +1960,12 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("You need to specify a correct role"));
 			goto out;
 		}
-		ret = pk_control_get_time_since_action (control, role, &time, &error);
+		ret = pk_control_get_time_since_action (control, role, &time_ms, &error);
 		if (!ret) {
 			error = g_error_new (1, 0, "%s", _("Failed to get last time"));
 			goto out;
 		}
-		g_print ("time since %s is %is\n", value, time);
+		g_print ("time since %s is %is\n", value, time_ms);
 		maybe_sync = FALSE;
 
 	} else if (strcmp (mode, "get-depends") == 0) {

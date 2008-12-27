@@ -6,13 +6,13 @@
 
 %{!?python_sitelib: %define python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
-Summary:   System daemon that is a DBUS abstraction layer for package management
+Summary:   Package management service
 Name:      PackageKit
 Version:   #VERSION#
 Release:   0.#BUILD#%{?alphatag}%{?dist}
 License:   GPLv2+
 Group:     System Environment/Libraries
-URL:       http://packagekit.freedesktop.org
+URL:       http://www.packagekit.org
 Source0:   http://www.packagekit.org/releases/%{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -20,11 +20,13 @@ Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: PackageKit-glib = %{version}-%{release}
 Requires: PackageKit-udev-helper = %{version}-%{release}
+Requires: PackageKit-gtk-module = %{version}-%{release}
 Requires: PackageKit-yum-plugin = %{version}-%{release}
 Requires: PackageKit-yum = %{version}-%{release}
 Requires: shared-mime-info
 Requires: python-sqlite2
 Requires: comps-extras
+Requires: preupgrade
 
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: dbus-devel  >= %{dbus_version}
@@ -49,6 +51,8 @@ BuildRequires: gstreamer-devel
 BuildRequires: gstreamer-plugins-base-devel
 BuildRequires: qt4-devel
 BuildRequires: cppunit-devel
+BuildRequires: pango-devel
+BuildRequires: fontconfig-devel
 
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
@@ -188,6 +192,37 @@ Provides: codeina = 0.10.1-10
 The PackageKit GStreamer plugin allows any Gstreamer application to install
 codecs from configured repositories using PackageKit.
 
+%package gtk-module
+Summary: Install fonts automatically using PackageKit
+Group: Development/Libraries
+Requires: pango
+Requires: PackageKit-glib = %{version}-%{release}
+
+%description gtk-module
+The PackageKit GTK+ module allows any Pango application to install
+fonts from configured repositories using PackageKit.
+
+%package command-not-found
+Summary: Ask the user to install command line programs automatically
+Group: Development/Libraries
+Requires: bash
+Requires: PackageKit-glib = %{version}-%{release}
+
+%description command-not-found
+A simple helper that offers to install new packages on the command line
+using PackageKit.
+
+%package ruck
+Summary: rug-like interface that uses PackageKit
+Group: Development/Libraries
+Requires: PackageKit = %{version}-%{release}
+
+%description ruck
+Ruck is a rug-like interface for PackageKit, where rug is the command-line
+interface for rcd and red carpet daemon.
+Ruck is for a couple of lazy people who got used to Red Carpet's rug command
+and are unable to learn any new tricks.
+
 %prep
 %setup -q
 
@@ -206,6 +241,9 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-2.0/modules/*.a
+rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-2.0/modules/*.la
+
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
 touch $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/groups.sqlite
 
@@ -342,6 +380,23 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %doc README AUTHORS NEWS COPYING
 %{_libexecdir}/pk-gstreamer-install
 %{_libexecdir}/gst-install-plugins-helper
+
+%files gtk-module
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_libdir}/gtk-2.0/modules/*.so
+
+%files command-not-found
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_sysconfdir}/profile.d/*
+%{_libexecdir}/pk-command-not-found
+
+%files ruck
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_bindir}/ruck
+%{_datadir}/ruck/*
 
 %files glib-devel
 %defattr(-,root,root,-)

@@ -112,6 +112,11 @@ Client::Groups Client::getGroups()
 	return flags;
 }
 
+QStringList Client::getMimeTypes()
+{
+	return d->daemon->GetMimeTypes().value().split(";");
+}
+
 Client::NetworkState Client::getNetworkState()
 {
 	QString state = d->daemon->GetNetworkState();

@@ -66,8 +66,6 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-static void     pk_client_class_init	(PkClientClass *klass);
-static void     pk_client_init		(PkClient      *client);
 static void     pk_client_finalize	(GObject       *object);
 
 #define PK_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CLIENT, PkClientPrivate))
@@ -109,6 +107,8 @@ struct _PkClientPrivate
 	gchar			*cached_directory;
 	PkProvidesEnum		 cached_provides;
 	PkBitfield		 cached_filters;
+	gint			 timeout;
+	guint			 timeout_id;
 };
 
 typedef enum {
@@ -241,7 +241,7 @@ pk_client_error_fixup (GError **error)
  *
  * Return value: %TRUE if the error is the PolicyKit "RefusedByPolicy"
  **/
-gboolean
+static gboolean
 pk_client_error_refused_by_policy (GError *error)
 {
 	const gchar *error_name;
@@ -275,7 +275,7 @@ pk_client_error_refused_by_policy (GError *error)
  *
  * Return value: if we gained the privilege we asked for
  **/
-gboolean
+static gboolean
 pk_client_error_auth_obtain (GError *error)
 {
 	gboolean ret = FALSE;
@@ -393,6 +393,33 @@ pk_client_set_synchronous (PkClient *client, gboolean synchronous, GError **erro
 }
 
 /**
+ * pk_client_set_timeout:
+ * @client: a valid #PkClient instance
+ * @timeout: the timeout in milliseconds, or -1 for disabled
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * A synchronous mode allows us to listen in all transactions.
+ *
+ * Return value: %TRUE if the timeout mode was set
+ **/
+gboolean
+pk_client_set_timeout (PkClient *client, gint timeout, GError **error)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* are we doing this again without reset? */
+	if (client->priv->timeout != -1) {
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "already set timeout to %i!", client->priv->timeout);
+		return FALSE;
+	}
+
+	client->priv->timeout = timeout;
+	return TRUE;
+}
+
+/**
  * pk_client_get_use_buffer:
  * @client: a valid #PkClient instance
  *
@@ -482,7 +509,7 @@ pk_client_destroy_cb (DBusGProxy *proxy, PkClient *client)
 static void
 pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClient *client)
 {
-	PkExitEnum exit;
+	PkExitEnum exit_enum;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
@@ -490,7 +517,13 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	 * see https://bugzilla.novell.com/show_bug.cgi?id=390929 for rationale */
 	g_object_ref (client);
 
-	exit = pk_exit_enum_from_text (exit_text);
+	/* stop the timeout timer if running */
+	if (client->priv->timeout_id != 0) {
+		g_source_remove (client->priv->timeout_id);
+		client->priv->timeout_id = 0;
+	}
+
+	exit_enum = pk_exit_enum_from_text (exit_text);
 	egg_debug ("emit finished %s, %i", exit_text, runtime);
 
 	/* only this instance is finished, and do it before the signal so we can reset */
@@ -500,7 +533,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	 * in the ::Finished() handler */
 	client->priv->is_finishing = TRUE;
 
-	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit, runtime);
+	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit_enum, runtime);
 
 	/* done callback */
 	client->priv->is_finishing = FALSE;
@@ -1203,6 +1236,28 @@ out:
 }
 
 /**
+ * pk_client_transaction_timeout_cb:
+ **/
+static gboolean
+pk_client_transaction_timeout_cb (PkClient *client)
+{
+	gboolean ret;
+	const gchar *details = "cancelling client as timeout is up";
+
+	egg_debug ("timeout up");
+	ret = pk_client_cancel (client, NULL);
+	if (!ret) {
+		egg_warning ("failed to cancel");
+		return TRUE;
+	}
+
+	/* emit signal */
+	egg_debug ("emit error-code %i, %s", PK_ERROR_ENUM_TRANSACTION_CANCELLED, details);
+	g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, PK_ERROR_ENUM_TRANSACTION_CANCELLED, details);
+	return FALSE;
+}
+
+/**
  * pk_client_allocate_transaction_id:
  * @client: a valid #PkClient instance
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1217,9 +1272,22 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 	gboolean ret;
 	gchar *tid;
 	GError *error_local = NULL;
+	const gchar **list;
+	guint len;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* special value meaning "don't wait if another transaction queued" */
+	if (client->priv->timeout == 0) {
+		list = pk_control_transaction_list_get (client->priv->control);
+		len = g_strv_length ((gchar**)list);
+		if (len > 0) {
+			if (error != NULL)
+				*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "will not queue as timeout 0");
+			return FALSE;
+		}
+	}
 
 	/* get a new ID */
 	ret = pk_control_allocate_transaction_id (client->priv->control, &tid, &error_local);
@@ -1247,6 +1315,11 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 		g_error_free (error_local);
 		return FALSE;
 	}
+
+	/* set a timeout */
+	if (client->priv->timeout > 0)
+		client->priv->timeout_id = g_timeout_add (client->priv->timeout, (GSourceFunc) pk_client_transaction_timeout_cb, client);
+
 	return TRUE;
 }
 
@@ -4268,6 +4341,12 @@ pk_client_reset (PkClient *client, GError **error)
 			return FALSE;
 	}
 
+	/* stop the timeout timer if running */
+	if (client->priv->timeout_id != 0) {
+		g_source_remove (client->priv->timeout_id);
+		client->priv->timeout_id = 0;
+	}
+
 	g_free (client->priv->tid);
 	g_free (client->priv->cached_package_id);
 	g_free (client->priv->cached_key_id);
@@ -4294,6 +4373,7 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
+	client->priv->timeout = -1;
 
 	pk_obj_list_clear (PK_OBJ_LIST (client->priv->package_list));
 	pk_obj_list_clear (client->priv->cached_data);
@@ -4331,6 +4411,8 @@ pk_client_init (PkClient *client)
 	client->priv->cached_provides = PK_PROVIDES_ENUM_UNKNOWN;
 	client->priv->cached_filters = PK_FILTER_ENUM_UNKNOWN;
 	client->priv->proxy = NULL;
+	client->priv->timeout = -1;
+	client->priv->timeout_id = 0;
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -4456,6 +4538,10 @@ pk_client_finalize (GObject *object)
 		g_main_loop_quit (client->priv->loop);
 	g_main_loop_unref (client->priv->loop);
 
+	/* stop the timeout timer if running */
+	if (client->priv->timeout_id != 0)
+		g_source_remove (client->priv->timeout_id);
+
 	/* disconnect signal handlers */
 	g_signal_handler_disconnect (client->priv->pconnection, client->priv->pconnection_signal_id);
 	pk_client_disconnect_proxy (client);
@@ -4491,7 +4577,7 @@ pk_client_new (void)
  * privileges.
  */
 __attribute__ ((constructor))
-void init()
+static void init()
 {
 	/* this is a bandaid */
 	prctl (PR_SET_DUMPABLE, 0);
@@ -4824,6 +4910,79 @@ pk_client_test (EggTest *test)
 		error = NULL;
 	}
 	g_object_unref (client);
+
+	/************************************************************
+	 ****************         TIMEOUTS         ******************
+	 ************************************************************/
+	client = pk_client_new ();
+	g_signal_connect (client, "finished",
+			  G_CALLBACK (pk_client_test_copy_finished_cb), test);
+	client_copy = pk_client_new ();
+	g_signal_connect (client_copy, "finished",
+			  G_CALLBACK (pk_client_test_copy_finished_cb), test);
+
+	/************************************************************/
+	egg_test_title (test, "set timeout");
+	ret = pk_client_set_timeout (client, 0, NULL);
+	if (ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed to set timout");
+
+	/************************************************************/
+	egg_test_title (test, "set timeout on copy");
+	ret = pk_client_set_timeout (client_copy, 500, NULL);
+	if (ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed to set timout");
+
+	/************************************************************/
+	egg_test_title (test, "set timeout (2)");
+	ret = pk_client_set_timeout (client, 1000, NULL);
+	if (!ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "set timeout when already set");
+
+	/************************************************************/
+	egg_test_title (test, "reset client, to clear timeout");
+	ret = pk_client_reset (client, NULL);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "set timeout");
+	ret = pk_client_set_timeout (client, 0, NULL);
+	if (ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed to set timout");
+
+	/************************************************************/
+	egg_test_title (test, "do first task (which will fail after 500ms)");
+	ret = pk_client_search_name (client_copy, PK_FILTER_ENUM_NONE, "power", &error);
+	if (ret) {
+		egg_test_success (test, NULL);
+	} else {
+		egg_test_failed (test, "failed: %s", error->message);
+		g_error_free (error);
+	}
+
+	/************************************************************/
+	egg_test_title (test, "do second task which should fail outright");
+	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
+	if (!ret) {
+		egg_test_success (test, "failed (in a good way): %s", error->message);
+		g_error_free (error);
+	} else {
+		egg_test_failed (test, "suceeded, which was bad");
+	}
+
+	/* 500ms plus breathing room */
+	egg_test_loop_wait (test, 600);
+
+	g_object_unref (client);
+
 out:
 	egg_test_end (test);
 }

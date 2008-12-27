@@ -28,8 +28,16 @@ pk_gstreamer_install_LDADD =				\
 	$(PK_GSTREAMER_PLUGIN_LIBS)			\
 	$(NULL)
 
+pk_gstreamer_install_CFLAGS =				\
+	$(WARNINGFLAGS_C)				\
+	$(NULL)
+
 clean-local:
 	rm -f *~
+
+EXTRA_DIST =						\
+	README						\
+	$(NULL)
 
 MAINTAINERCLEANFILES =					\
 	*~			      			\

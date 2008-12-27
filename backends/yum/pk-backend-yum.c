@@ -37,6 +37,20 @@ backend_stderr_cb (PkBackend *backend, const gchar *output)
 		return FALSE;
 	if (strstr (output, "GPG") != NULL)
 		return FALSE;
+	if (strstr (output, "DeprecationWarning") != NULL)
+		return FALSE;
+	return TRUE;
+}
+
+/**
+ * backend_stdout_cb:
+ */
+static gboolean
+backend_stdout_cb (PkBackend *backend, const gchar *output)
+{
+	/* presto is much too verbose... */
+	if (strstr (output, "Presto") != NULL)
+		return FALSE;
 	return TRUE;
 }
 
@@ -50,6 +64,7 @@ backend_initialize (PkBackend *backend)
 	egg_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_filter_stderr (spawn, backend_stderr_cb);
+	pk_backend_spawn_set_filter_stdout (spawn, backend_stdout_cb);
 	pk_backend_spawn_set_name (spawn, "yum");
 }
 
@@ -127,9 +142,8 @@ backend_get_mime_types (PkBackend *backend)
 static const gchar *
 pk_backend_bool_to_text (gboolean value)
 {
-	if (value == TRUE) {
+	if (value == TRUE)
 		return "yes";
-	}
 	return "no";
 }
 
@@ -212,8 +226,8 @@ static void
 backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids);
 	gchar *filters_text;
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "yumBackend.py", "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
@@ -286,7 +300,7 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_strv_to_text (full_paths, PK_BACKEND_SPAWN_FILENAME_DELIM);
+	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
 	pk_backend_spawn_helper (spawn, "yumBackend.py", "install-files", pk_backend_bool_to_text (trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }

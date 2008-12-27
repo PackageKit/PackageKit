@@ -21,11 +21,13 @@
 from packagekit.enums import *
 import sqlite3 as sqlite
 import os
+import yum
 
 groupMap = {
 'desktops;gnome-desktop'                      : GROUP_DESKTOP_GNOME,
 'desktops;window-managers'                    : GROUP_DESKTOP_OTHER,
 'desktops;sugar-desktop'                      : GROUP_DESKTOP_OTHER,
+'desktops;lxde-desktop'                       : GROUP_DESKTOP_OTHER,
 'desktops;kde-desktop'                        : GROUP_DESKTOP_KDE,
 'desktops;xfce-desktop'                       : GROUP_DESKTOP_XFCE,
 'apps;authoring-and-publishing'               : GROUP_PUBLISHING,
@@ -38,6 +40,7 @@ groupMap = {
 'apps;text-internet'                          : GROUP_INTERNET,
 'apps;graphical-internet'                     : GROUP_INTERNET,
 'apps;education'                              : GROUP_EDUCATION,
+'development;haskell'                         : GROUP_PROGRAMMING,
 'development;kde-software-development'        : GROUP_PROGRAMMING,
 'development;gnome-software-development'      : GROUP_PROGRAMMING,
 'development;development-tools'               : GROUP_PROGRAMMING,
@@ -63,6 +66,7 @@ groupMap = {
 'servers;mail-server'                         : GROUP_SERVERS,
 'servers;network-server'                      : GROUP_SERVERS,
 'servers;legacy-network-server'               : GROUP_SERVERS,
+'base-system;input-methods'                   : GROUP_LOCALIZATION,
 'base-system;java'                            : GROUP_SYSTEM,
 'base-system;base-x'                          : GROUP_SYSTEM,
 'base-system;system-tools'                    : GROUP_ADMIN_TOOLS,
@@ -169,6 +173,13 @@ groupMap = {
 'language-support;macedonian-support'         : GROUP_LOCALIZATION,
 'language-support;walloon-support'            : GROUP_LOCALIZATION,
 'language-support;kashubian-support'          : GROUP_LOCALIZATION,
+'language-support;kashmiri-support'           : GROUP_LOCALIZATION,
+'language-support;konkani-support'            : GROUP_LOCALIZATION,
+'language-support;tajik-support'              : GROUP_LOCALIZATION,
+'language-support;sindhi-support'             : GROUP_LOCALIZATION,
+'language-support;uzbek-support'              : GROUP_LOCALIZATION,
+'language-support;burmese-support'            : GROUP_LOCALIZATION,
+'language-support;maithili-support'           : GROUP_LOCALIZATION,
 'rpmfusion_free;kde-desktop'                  : GROUP_DESKTOP_KDE,
 'rpmfusion_free;misc-libs'                    : GROUP_OTHER,
 'rpmfusion_free;games'                        : GROUP_GAMES,
@@ -245,8 +256,12 @@ class yumComps:
 
     def refresh(self, force=False):
         ''' get the data from yum (slow, REALLY SLOW) '''
-
-        cats = self.yumbase.comps.categories
+        try:
+            cats = self.yumbase.comps.categories
+        except yum.Errors.RepoError, e:
+            return False
+        except Exception, e:
+            return False
         if self.yumbase.comps.compscount == 0:
             return False
 
@@ -349,8 +364,7 @@ class yumComps:
             grps.add(row[0])
         return list(grps)
 
-if __name__ == "__main__":
-    import yum
+def main():
     _yb = yum.YumBase()
     _db = "./packagekit-groups.sqlite"
     comps = yumComps(_yb, _db)
@@ -372,4 +386,7 @@ if __name__ == "__main__":
     _pkgs = comps.get_groups('other')
     print _pkgs
     os.unlink(_db) # kill the db
+
+if __name__ == "__main__":
+    main()
 

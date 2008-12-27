@@ -242,8 +242,13 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The network state, e.g. <doc:tt>unknown</doc:tt>,
-              <doc:tt>offline</doc:tt> or <doc:tt>online</doc:tt>.
+              The network state. If the system is managed using NetworkManager then the following
+              states are supported:
+              <doc:tt>unknown</doc:tt>, <doc:tt>offline</doc:tt>, <doc:tt>online</doc:tt>,
+              <doc:tt>wifi</doc:tt>, <doc:tt>mobile</doc:tt> or <doc:tt>wired</doc:tt>.
+              If the system is configured for legacy UNIX network fallback, or NetworkManager
+              is not running then the folowing states are supported:
+              <doc:tt>unknown</doc:tt>, <doc:tt>offline</doc:tt> or <doc:tt>online</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>

@@ -39,6 +39,11 @@ BackendShutdownTimeout=5
 # default=10
 BackendSpawnNiceValue=10
 
+# Set the iopriority class of the spawned backend to idle.
+# This ensures the process does not hog the disk when performing actions.
+# default=true
+BackendSpawnIdleIO=true
+
 # Default backend, as chosen in the configure script. This will be used where
 # no --backend="foo" option is given to the daemon.
 #
@@ -81,4 +86,12 @@ UpdatePackageList=true
 #
 # default=true
 UpdateCheckProcesses=true
+
+# Check for updates in testing repositories when we chack for updates
+#
+# NOTE: Don't enable this if you do not want testing updates to be checked
+# as this will increase the network bandwidth used.
+#
+# default=true
+CheckTestingRepos=true
 

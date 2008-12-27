@@ -1,9 +1,10 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.4.0)
+AC_INIT(PackageKit, 0.4.1)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
+AC_CONFIG_MACRO_DIR([m4])
 
 # Should we enable extra stuff automatically?
 # set no for release builds, yes for development builds
@@ -53,15 +54,49 @@ AC_SUBST(PYTHON_PACKAGE_DIR)
 dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
+CPPFLAGS="$CPPFLAGS -DG_DISABLE_SINGLE_INCLUDES -DGTK_DISABLE_SINGLE_INCLUDES"
+CPPFLAGS="$CPPFLAGS -DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED"
+CPPFLAGS="$CPPFLAGS -DGDK_MULTIHEAD_SAFE -DGTK_MULTIHEAD_SAFE"
+
 if test "$GCC" = "yes"; then
-	CPPFLAGS="$CPPFLAGS -Wcast-align -Wno-uninitialized"
-	CPPFLAGS="$CPPFLAGS -Wall -Wreturn-type"
-#	CPPFLAGS="$CPPFLAGS -Wformat-security"
-	CPPFLAGS="$CPPFLAGS -Werror"
-	CPPFLAGS="$CPPFLAGS -DG_DISABLE_SINGLE_INCLUDES -DGTK_DISABLE_SINGLE_INCLUDES"
-	CPPFLAGS="$CPPFLAGS -DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED"
-	CPPFLAGS="$CPPFLAGS -DGDK_MULTIHEAD_SAFE -DGTK_MULTIHEAD_SAFE"
+	# work both in C and C++
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wall"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Werror"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wcast-align -Wno-uninitialized"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wmissing-declarations"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wredundant-decls"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wmissing-noreturn"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wpointer-arith"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wcast-align"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wwrite-strings"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Winit-self"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wreturn-type"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wformat-nonliteral"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wformat-security"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wmissing-include-dirs"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wmissing-format-attribute"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wclobbered"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wempty-body"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wignored-qualifiers"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wsign-compare"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wtype-limits"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wuninitialized"
+
+	# work only in C
+	WARNINGFLAGS_C="$WARNINGFLAGS_CPP"
+	WARNINGFLAGS_C="$WARNINGFLAGS_C -Waggregate-return"
+	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wdeclaration-after-statement"
+	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wshadow"
+	WARNINGFLAGS_C="$WARNINGFLAGS_C -Winline"
+	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wswitch-enum"
+	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wmissing-parameter-type"
+	WARNINGFLAGS_C="$WARNINGFLAGS_C -Woverride-init"
+else
+	WARNINGFLAGS_C=""
+	WARNINGFLAGS_CPP=""
 fi
+AC_SUBST(WARNINGFLAGS_C)
+AC_SUBST(WARNINGFLAGS_CPP)
 
 dnl ---------------------------------------------------------------------------
 dnl - gettext stuff
@@ -314,6 +349,35 @@ else
 	build_gstreamer_plugin=no
 fi
 AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
+
+dnl ---------------------------------------------------------------------------
+dnl - Able to build GTK module
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK module functionality]),
+	      enable_gtk_module=$enableval,enable_gtk_module=yes)
+if test x$enable_gtk_module = xyes; then
+	PKG_CHECK_MODULES(PK_GTK_MODULE, gtk+-2.0 pangoft2 fontconfig dbus-glib-1,
+	                  build_gtk_module=yes, build_gtk_module=no)
+	AC_SUBST(PK_GTK_MODULE_CFLAGS)
+	AC_SUBST(PK_GTK_MODULE_LIBS)
+else
+	build_gtk_module=no
+fi
+AM_CONDITIONAL(PK_BUILD_GTK_MODULE, test $build_gtk_module = "yes")
+
+dnl ---------------------------------------------------------------------------
+dnl - Able to build BASH command-not-found functionality
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(command_not_found, AS_HELP_STRING([--enable-command-not-found],[Build BASH command-not-found functionality]),
+	      build_command_not_found=$enableval,build_command_not_found=yes)
+AM_CONDITIONAL(PK_BUILD_COMMAND_NOT_FOUND, test $build_command_not_found = "yes")
+
+dnl ---------------------------------------------------------------------------
+dnl - Build ruck (a rug-like interface for PackageKit)
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(ruck, AS_HELP_STRING([--enable-ruck],[Build ruck client]),
+	      build_ruck=$enableval,build_ruck=yes)
+AM_CONDITIONAL(PK_BUILD_RUCK, test $build_ruck = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Other tests
@@ -581,14 +645,19 @@ man/Makefile
 docs/Makefile
 docs/html/Makefile
 docs/html/img/Makefile
+docs/html/videos/Makefile
 docs/api/Makefile
 docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
-contrib/packagekit-plugin/Makefile
+contrib/browser-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
+contrib/gtk-module/Makefile
 contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
+contrib/command-not-found/Makefile
+contrib/ruck/Makefile
+contrib/ruck/src/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile
@@ -650,6 +719,9 @@ echo "
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
+        Pango module:              ${build_gtk_module}
+        BASH Command not found:    ${build_command_not_found}
+        RUCK client:               ${build_ruck}
         QT library:                ${build_qt}
 
         Backends:

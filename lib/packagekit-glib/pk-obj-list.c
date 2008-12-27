@@ -503,14 +503,14 @@ pk_obj_list_remove (PkObjList *list, gconstpointer obj)
 /**
  * pk_obj_list_remove_index:
  * @list: a valid #PkObjList instance
- * @index: the number to remove
+ * @idx: the number to remove
  *
  * Return value: TRUE is we removed something
  *
  * Removes an item from a list
  **/
 gboolean
-pk_obj_list_remove_index (PkObjList *list, guint index)
+pk_obj_list_remove_index (PkObjList *list, guint idx)
 {
 	gpointer obj;
 
@@ -518,7 +518,7 @@ pk_obj_list_remove_index (PkObjList *list, guint index)
 	g_return_val_if_fail (list->priv->func_free != NULL, FALSE);
 
 	/* get the object */
-	obj = g_ptr_array_remove_index (list->priv->array, index);
+	obj = g_ptr_array_remove_index (list->priv->array, idx);
 	if (obj == NULL)
 		return FALSE;
 	list->priv->func_free (obj);
@@ -655,18 +655,18 @@ out:
 /**
  * pk_obj_list_index:
  * @list: a valid #PkObjList instance
- * @index: the element to return
+ * @idx: the element to return
  *
  * Gets an object from the list
  **/
 gconstpointer
-pk_obj_list_index (const PkObjList *list, guint index)
+pk_obj_list_index (const PkObjList *list, guint idx)
 {
 	gconstpointer obj;
 
 	g_return_val_if_fail (PK_IS_OBJ_LIST (list), NULL);
 
-	obj = g_ptr_array_index (list->priv->array, index);
+	obj = g_ptr_array_index (list->priv->array, idx);
 	return obj;
 }
 

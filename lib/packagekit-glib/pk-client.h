@@ -173,6 +173,9 @@ gboolean	 pk_client_set_use_buffer		(PkClient	*client,
 gboolean	 pk_client_set_synchronous		(PkClient	*client,
 							 gboolean	 synchronous,
 							 GError		**error);
+gboolean	 pk_client_set_timeout			(PkClient	*client,
+							 gint		 timeout,
+							 GError		**error);
 gboolean	 pk_client_get_use_buffer		(PkClient	*client);
 gboolean	 pk_client_get_allow_cancel		(PkClient	*client,
 							 gboolean	*allow_cancel,
@@ -311,9 +314,6 @@ gboolean	 pk_client_resolve			(PkClient	*client,
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_rollback			(PkClient	*client,
 							 const gchar	*transaction_id,
-							 GError		**error)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_cancel			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_requeue			(PkClient	*client,

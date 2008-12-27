@@ -29,7 +29,6 @@ $(libpackagekit_qt_la_OBJECTS) :				\
 	daemonproxy.moc						\
 	package.moc						\
 	polkitclient.moc					\
-	polkitthread.moc					\
 	transaction.moc						\
 	transactionprivate.moc					\
 	transactionproxy.moc					\
@@ -54,8 +53,6 @@ libpackagekit_qt_la_SOURCES =					\
 	package.cpp						\
 	polkitclient.h						\
 	polkitclient.cpp					\
-	polkitthread.h						\
-	polkitthread.cpp					\
 	util.h							\
 	util.cpp						\
 	$(NULL)
@@ -64,6 +61,10 @@ libpackagekit_qt_la_LIBADD =					\
 	$(QTCORE_LIBS)						\
 	$(QTDBUS_LIBS)						\
 	$(POLKIT_LIBS)						\
+	$(NULL)
+
+libpackagekit_qt_la_CFLAGS =					\
+	$(WARNINGFLAGS_CPP)					\
 	$(NULL)
 
 libpackagekit_qt_la_LDFLAGS =					\

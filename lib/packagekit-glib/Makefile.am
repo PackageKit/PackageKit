@@ -114,6 +114,10 @@ libpackagekit_glib_la_LDFLAGS =					\
 	-export-symbols-regex '^pk_.*'				\
 	$(NULL)
 
+libpackagekit_glib_la_CFLAGS =					\
+	$(WARNINGFLAGS_C)					\
+	$(NULL)
+
 if EGG_BUILD_TESTS
 check_PROGRAMS =						\
 	pk-self-test

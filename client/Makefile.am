@@ -48,6 +48,10 @@ pkcon_LDADD =						\
 	$(PK_GLIB_LIBS)					\
 	$(NULL)
 
+pkcon_CFLAGS =						\
+	$(WARNINGFLAGS_C)				\
+	$(NULL)
+
 pkmon_SOURCES =						\
 	egg-debug.c					\
 	egg-debug.h					\
@@ -58,6 +62,10 @@ pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_GLIB_LIBS)					\
+	$(NULL)
+
+pkmon_CFLAGS =						\
+	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
 pkgenpack_SOURCES =					\
@@ -75,6 +83,10 @@ pkgenpack_LDADD = 					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_GLIB_LIBS)					\
+	$(NULL)
+
+pkgenpack_CFLAGS =					\
+	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
 if EGG_BUILD_TESTS

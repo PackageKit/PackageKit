@@ -6,7 +6,7 @@ plugin_LTLIBRARIES = libpk_backend_apt.la
 
 libpk_backend_apt_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_backend_apt_la_LDFLAGS = -module -avoid-version $(APT_LIBS)
-libpk_backend_apt_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(APT_CFLAGS)
+libpk_backend_apt_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(APT_CFLAGS) $(WARNINGFLAGS_CPP)
 libpk_backend_apt_la_CXXFLAGS = $(PK_PLUGIN_CFLAGS) $(APT_CFLAGS) -DPK_DB_DIR=\""$(PK_DB_DIR)"\"
 
 libpk_backend_apt_la_SOURCES =				\

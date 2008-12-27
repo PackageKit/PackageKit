@@ -27,7 +27,6 @@ set( lib_SRCS
 	transactionproxy.cpp
 	package.cpp
 	polkitclient.cpp
-	polkitthread.cpp
 	util.cpp
 )
 

@@ -189,10 +189,8 @@ egg_strlen (const gchar *text, guint len)
 gboolean
 egg_strequal (const gchar *id1, const gchar *id2)
 {
-	if (id1 == NULL || id2 == NULL) {
-		egg_debug ("string compare invalid '%s' and '%s'", id1, id2);
+	if (id1 == NULL || id2 == NULL)
 		return FALSE;
-	}
 	return (strcmp (id1, id2) == 0);
 }
 

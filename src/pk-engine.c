@@ -60,8 +60,6 @@
 #include "pk-security.h"
 #include "pk-conf.h"
 
-static void     pk_engine_class_init	(PkEngineClass *klass);
-static void     pk_engine_init		(PkEngine      *engine);
 static void     pk_engine_finalize	(GObject       *object);
 
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
@@ -241,7 +239,7 @@ pk_engine_notify_updates_changed_cb (PkNotify *notify, PkEngine *engine)
  * pk_engine_finished_cb:
  **/
 static void
-pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
+pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
@@ -865,7 +863,6 @@ pk_engine_test (EggTest *test)
 	PkEngine *engine;
 	PkBackend *backend;
 	guint idle;
-	gchar *tid;
 	gchar *actions;
 
 	if (!egg_test_start (test, "PkEngine"))
@@ -921,13 +918,6 @@ pk_engine_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "idle = %i", idle);
-
-	/************************************************************/
-	egg_test_title (test, "create a tid we never use");
-	ret = pk_engine_get_tid (engine, &tid, NULL);
-	egg_test_assert (test, ret);
-	egg_test_title_assert (test, "tid is non-null", tid != NULL);
-	g_free (tid);
 
 	g_object_unref (backend);
 	g_object_unref (engine);

@@ -107,6 +107,27 @@ pkg_from_package_id_str (const gchar *package_id_str)
 	return pkg;
 }
 
+gboolean
+pkg_equal (pmpkg_t *p1, pmpkg_t *p2)
+{
+	if (g_strcmp0 (alpm_pkg_get_name (p1), alpm_pkg_get_name (p2)) != 0)
+		return FALSE;
+	if (g_strcmp0 (alpm_pkg_get_version (p1), alpm_pkg_get_version (p2)) != 0)
+		return FALSE;
+	return TRUE;
+}
+
+gboolean
+pkg_equals_to (pmpkg_t *pkg, const gchar *name, const gchar *version)
+{
+	if (g_strcmp0 (alpm_pkg_get_name (pkg), name) != 0)
+		return FALSE;
+	if (version != NULL)
+		if (g_strcmp0 (alpm_pkg_get_version (pkg), version) != 0)
+			return FALSE;
+	return TRUE;
+}
+
 void
 cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 {
@@ -163,7 +184,7 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 void
 cb_trans_conv (pmtransconv_t conv, void *data1, void *data2, void *data3, int *response)
 {
-	// TODO: Add code here
+	// TODO: check if some code needs to be placed there
 }
 
 void
@@ -189,11 +210,12 @@ cb_dl_progress (const char *filename, off_t xfered, off_t total)
 			gchar *package_id = NULL;
 			gchar **package_ids = pk_backend_get_strv (backend_instance, "package_ids");
 			for (iterator = 0; package_id == NULL && iterator < g_strv_length (package_ids); ++iterator) {
-				PkPackageId *pk_package_id = pk_package_id_new_from_string (package_ids[iterator]);
-				gchar *pkginfo = g_strjoin ("-", pk_package_id->name, pk_package_id->version, NULL);
-				if (strstr (filename, pkginfo) != NULL)
+				PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
+				gchar *pkginfo = g_strjoin ("-", pk_package_id_get_name (id), pk_package_id_get_version (id), NULL);
+				if (g_str_has_prefix (filename, pkginfo))
 					package_id = package_ids[iterator];
 				g_free (pkginfo);
+				pk_package_id_free (id);
 			}
 
 			/* emit package */
@@ -207,60 +229,6 @@ cb_dl_progress (const char *filename, off_t xfered, off_t total)
 	int percent = (int) ((float) xfered) / ((float) total) * 100;
 	egg_debug ("alpm: download percentage for %s is %i", filename, percent);
 	// pk_backend_set_percentage ((PkBackend *) backend_instance, percent);
-}
-
-gboolean
-update_subprogress (void *data)
-{
-	if (subprogress_percentage == -1)
-		return FALSE;
-
-	egg_debug ("alpm: subprogress is %i", subprogress_percentage);
-
-	pk_backend_set_percentage ((PkBackend *) data, subprogress_percentage);
-	return TRUE;
-}
-
-gboolean
-update_progress (void *data)
-{
-	if (progress_percentage == -1)
-		return FALSE;
-
-	pk_backend_set_percentage ((PkBackend *) data, progress_percentage);
-	return TRUE;
-}
-
-gpointer
-state_notify (void *backend)
-{
-	g_timeout_add (300, update_subprogress, backend);
-	return backend;
-}
-
-gboolean
-pkg_equal (pmpkg_t *p1, pmpkg_t *p2)
-{
-/*
-	egg_debug (alpm_pkg_get_name (p1));
-	egg_debug (alpm_pkg_get_name (p2));
-*/
-	if (strcmp (alpm_pkg_get_name (p1), alpm_pkg_get_name (p2)) != 0)
-		return FALSE;
-	if (strcmp (alpm_pkg_get_version (p1), alpm_pkg_get_version (p2)) != 0)
-		return FALSE;
-	return TRUE;
-}
-
-gboolean
-pkg_equals_to (pmpkg_t *pkg, const gchar *name, const gchar *version)
-{
-	if (strcmp (alpm_pkg_get_name (pkg), name) != 0)
-		return FALSE;
-	if (version != NULL)
-		if (strcmp (alpm_pkg_get_version (pkg), version) != 0)
-			return FALSE;
-	return TRUE;
 }
 
 void
@@ -685,12 +653,13 @@ backend_cancel (PkBackend *backend)
 /**
  * backend_download_packages:
  */
-static void
-backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+static gboolean
+backend_download_packages_thread (PkBackend *backend)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	const gchar *directory = pk_backend_get_string (backend, "directory");
 
-	egg_debug ("alpm: downloading package to %s", directory);
+	egg_debug ("alpm: downloading packages to %s", directory);
 
 	/* old cachedirs list automatically gets freed in alpm, so make a copy */
 	alpm_list_t *cachedirs = NULL;
@@ -702,42 +671,36 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 	alpm_option_add_cachedir (directory);
 
 	/* create a new transaction */
-	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_NODEPS | PM_TRANS_FLAG_DOWNLOADONLY, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
-		egg_warning ("alpm: %s", alpm_strerrorlast ());
+	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_NODEPS | PM_TRANS_FLAG_DOWNLOADONLY, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
-		return;
+		return FALSE;
 	}
-	egg_debug ("alpm: transaction initialized");
 
 	/* add targets to the transaction */
 	int iterator;
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-		PkPackageId *package_id = pk_package_id_new_from_string (package_ids[iterator]);
-		if (alpm_trans_addtarget (package_id->name) == -1) {
-			egg_warning ("alpm: %s", alpm_strerrorlast ());
+		PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
+		if (alpm_trans_addtarget ((char *) pk_package_id_get_name (id)) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
-			return;
+			return FALSE;
 		}
-		egg_debug ("alpm: %s added to transaction queue", package_id->name);
-		pk_package_id_free (package_id);
+		pk_package_id_free (id);
 	}
 
 	alpm_list_t *data = NULL;
 
 	/* prepare and commit transaction */
-	if (alpm_trans_prepare (&data) == -1 || alpm_trans_commit (&data) == -1) {
-		egg_warning ("alpm: %s", alpm_strerrorlast ());
+	if (alpm_trans_prepare (&data) != 0 || alpm_trans_commit (&data) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		alpm_trans_release ();
 		pk_backend_finished (backend);
-		return;
+		return FALSE;
 	}
 
 	alpm_trans_release ();
-	egg_debug ("alpm: transaction released");
 
 	/* emit/cleanup downloaded files list */
 	for (list_iterator = downloaded_files; list_iterator; list_iterator = alpm_list_next (list_iterator)) {
@@ -752,6 +715,19 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 	alpm_option_set_cachedirs (cachedirs);
 
 	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+
+	pk_backend_thread_create (backend, backend_download_packages_thread);
 }
 
 int
@@ -1071,15 +1047,17 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 	int iterator;
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
 		// TODO: add changelog code here
-		PkPackageId *pk_package_id = pk_package_id_new_from_string (package_ids[iterator]);
+		PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
 
-		pmpkg_t *installed_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), pk_package_id->name);
+		pmpkg_t *installed_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), pk_package_id_get_name (id));
 
 		gchar *installed_package_id = installed_pkg ? pkg_to_package_id_str (installed_pkg, ALPM_LOCAL_DB_ALIAS) : NULL;
 		pk_backend_update_detail (backend, package_ids[iterator], installed_package_id, "", "", "", "", PK_RESTART_ENUM_NONE,
 			installed_pkg ? "Update to latest available version" : "Install as a dependency for another update",
 			NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
 		g_free (installed_package_id);
+
+		pk_package_id_free (id);
 	}
 
 	pk_backend_finished (backend);
@@ -1123,23 +1101,19 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 static gboolean
 backend_install_files_thread (PkBackend *backend)
 {
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-
 	gchar **full_paths = pk_backend_get_strv (backend, "full_paths");
 
 	/* create a new transaction */
-	if (alpm_trans_init (PM_TRANS_TYPE_UPGRADE, 0, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
+	if (alpm_trans_init (PM_TRANS_TYPE_UPGRADE, 0, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	egg_debug ("alpm: transaction initialized");
 
 	/* add targets to the transaction */
 	int iterator;
 	for (iterator = 0; iterator < g_strv_length (full_paths); ++iterator) {
-		if (alpm_trans_addtarget (full_paths[iterator]) == -1) {
-			egg_warning ("alpm: %s", alpm_strerrorlast ());
+		if (alpm_trans_addtarget (full_paths[iterator]) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
@@ -1150,19 +1124,8 @@ backend_install_files_thread (PkBackend *backend)
 
 	alpm_list_t *data = NULL;
 
-	/* prepare transaction */
-	if (alpm_trans_prepare (&data) == -1) {
-		egg_warning ("alpm: %s", alpm_strerrorlast ());
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
-		alpm_trans_release ();
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-	egg_debug ("alpm: transaction prepared");
-
-	/* commit transaction */
-	if (alpm_trans_commit (&data) == -1) {
-		egg_warning ("alpm: %s", alpm_strerrorlast ());
+	/* prepare and commit transaction */
+	if (alpm_trans_prepare (&data) != 0 || alpm_trans_commit (&data) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		alpm_trans_release ();
 		pk_backend_finished (backend);
@@ -1170,7 +1133,6 @@ backend_install_files_thread (PkBackend *backend)
 	}
 
 	alpm_trans_release ();
-	egg_debug ("alpm: transaction released");
 
 	pk_backend_finished (backend);
 	return TRUE;
@@ -1183,6 +1145,7 @@ static void
 backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	pk_backend_thread_create (backend, backend_install_files_thread);
 }
@@ -1193,48 +1156,32 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 static gboolean
 backend_install_packages_thread (PkBackend *backend)
 {
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	/* create a new transaction */
-	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_NODEPS, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
+	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_NODEPS, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	egg_debug ("alpm: %s", "transaction initialized");
 
 	/* add targets to the transaction */
 	int iterator;
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-		PkPackageId *package_id = pk_package_id_new_from_string (package_ids[iterator]);
-		if (alpm_trans_addtarget (package_id->name) == -1) {
-			egg_warning ("alpm: %s", alpm_strerrorlast ());
+		PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
+		if (alpm_trans_addtarget ((char *) pk_package_id_get_name (id)) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
 			return FALSE;
-		} else
-			egg_debug ("alpm: %s added to transaction queue", package_id->name);
-		pk_package_id_free (package_id);
+		}
+		pk_package_id_free (id);
 	}
 
 	alpm_list_t *data = NULL;
 
-	/* prepare transaction */
-	if (alpm_trans_prepare (&data) == -1) {
-		egg_warning ("alpm: %s", alpm_strerrorlast ());
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
-		alpm_trans_release ();
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-	egg_debug ("alpm: %s", "transaction prepared");
-
-	/* commit transaction */
-	if (alpm_trans_commit (&data) == -1) {
-		egg_warning ("alpm: %s", alpm_strerrorlast ());
+	/* prepare and commit transaction */
+	if (alpm_trans_prepare (&data) != 0 || alpm_trans_commit (&data) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		alpm_trans_release ();
 		pk_backend_finished (backend);
@@ -1242,7 +1189,6 @@ backend_install_packages_thread (PkBackend *backend)
 	}
 
 	alpm_trans_release ();
-	egg_debug ("alpm: %s", "transaction released");
 
 	pk_backend_finished (backend);
 	return TRUE;
@@ -1254,6 +1200,8 @@ backend_install_packages_thread (PkBackend *backend)
 static void
 backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+
 	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
 
@@ -1263,29 +1211,23 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-
 	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_NOSCRIPTLET, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerror (pm_errno));
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	egg_debug ("alpm: %s", "transaction initialized");
 
-	alpm_list_t *dbs = alpm_option_get_syncdbs ();
 	alpm_list_t *iterator;
-	for (iterator = dbs; iterator; iterator = alpm_list_next (iterator)) {
-		int update_result = alpm_db_update (FALSE, (pmdb_t *) alpm_list_getdata (iterator));
-		egg_debug ("alpm: update_result is %i", update_result);
-		if (update_result == -1) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerror (pm_errno));
+	for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
+		pmdb_t *db = (pmdb_t *) alpm_list_getdata (iterator);
+		if (alpm_db_update (FALSE, db) == -1) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			pk_backend_finished (backend);
 			return FALSE;
 		}
 	}
 
 	alpm_trans_release ();
-	egg_debug ("alpm: %s", "transaction released");
 
 	pk_backend_finished (backend);
 	return TRUE;
@@ -1298,12 +1240,13 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Can not refresh cache in offline mode");
 		pk_backend_finished (backend);
 		return;
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
@@ -1324,43 +1267,29 @@ backend_remove_packages_thread (PkBackend *backend)
 		flags |= PM_TRANS_FLAG_CASCADE;
 
 	/* create a new transaction */
-	if (alpm_trans_init (PM_TRANS_TYPE_REMOVE, flags, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
+	if (alpm_trans_init (PM_TRANS_TYPE_REMOVE, flags, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	egg_debug ("alpm: %s", "transaction initialized");
 
 	/* add targets to the transaction */
 	int iterator;
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-		PkPackageId *package_id = pk_package_id_new_from_string (package_ids[iterator]);
-		if (alpm_trans_addtarget (package_id->name) == -1) {
-			egg_warning ("alpm: %s", alpm_strerrorlast ());
+		PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
+		if (alpm_trans_addtarget ((char *) pk_package_id_get_name (id)) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
 			return FALSE;
-		} else
-			egg_debug ("alpm: %s added to transaction queue", package_id->name);
-		pk_package_id_free (package_id);
+		}
+		pk_package_id_free (id);
 	}
 
 	alpm_list_t *data = NULL;
 
-	/* prepare transaction */
-	if (alpm_trans_prepare (&data) == -1) {
-		egg_warning ("alpm: %s", alpm_strerrorlast ());
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
-		alpm_trans_release ();
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-	egg_debug ("alpm: %s", "transaction prepared");
-
-	/* commit transaction */
-	if (alpm_trans_commit (&data) == -1) {
-		egg_warning ("alpm: %s", alpm_strerrorlast ());
+	/* prepare and commit transaction */
+	if (alpm_trans_prepare (&data) != 0 || alpm_trans_commit (&data) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		alpm_trans_release ();
 		pk_backend_finished (backend);
@@ -1368,7 +1297,6 @@ backend_remove_packages_thread (PkBackend *backend)
 	}
 
 	alpm_trans_release ();
-	egg_debug ("alpm: %s", "transaction released");
 
 	pk_backend_finished (backend);
 	return TRUE;
@@ -1504,7 +1432,9 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
-	backend_install_packages (backend, package_ids);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+
+	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
 
 /**

@@ -50,8 +50,8 @@
 #include "pk-marshal.h"
 #include "pk-conf.h"
 
-static void     pk_spawn_class_init	(PkSpawnClass *klass);
-static void     pk_spawn_init		(PkSpawn      *spawn);
+#include "pk-sysdep.h"
+
 static void     pk_spawn_finalize	(GObject       *object);
 
 #define PK_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SPAWN, PkSpawnPrivate))
@@ -305,7 +305,7 @@ static gboolean
 pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 {
 	gint wrote;
-	guint length;
+	gint length;
 	gchar *buffer = NULL;
 	gboolean ret = TRUE;
 
@@ -390,9 +390,10 @@ gboolean
 pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 {
 	gboolean ret;
+	gboolean idleio;
 	guint i;
 	guint len;
-	gint nice;
+	gint nice_value;
 	gchar *command;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
@@ -456,13 +457,20 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 				 NULL);
 
 	/* get the nice value and ensure we are in the valid range */
-	nice = pk_conf_get_int (spawn->priv->conf, "BackendSpawnNiceValue");
-	nice = CLAMP(nice, -20, 19);
+	nice_value = pk_conf_get_int (spawn->priv->conf, "BackendSpawnNiceValue");
+	nice_value = CLAMP(nice_value, -20, 19);
 
 	/* don't completely bog the system down */
-	if (nice != 0) {
-		egg_debug ("renice to %i", nice);
-		setpriority (PRIO_PROCESS, spawn->priv->child_pid, nice);
+	if (nice_value != 0) {
+		egg_debug ("renice to %i", nice_value);
+		setpriority (PRIO_PROCESS, spawn->priv->child_pid, nice_value);
+	}
+
+	/* perhaps set idle IO priority */
+	idleio = pk_conf_get_bool (spawn->priv->conf, "BackendSpawnIdleIO");
+	if (idleio) {
+		egg_debug ("setting ioprio class to idle");
+		pk_ioprio_set_idle (spawn->priv->child_pid);
 	}
 
 	/* we failed to invoke the helper */
@@ -850,7 +858,8 @@ pk_spawn_test (EggTest *test)
 	file = egg_test_get_data_file ("pk-spawn-dispatcher.py");
 	path = g_strdup_printf ("%s\tsearch-name\tnone\tpower manager", file);
 	argv = g_strsplit (path, "\t", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL);
+	envp = g_strsplit ("NETWORK=TRUE LANG=C", " ", 0);
+	ret = pk_spawn_argv (spawn, argv, envp);
 	g_free (file);
 	g_free (path);
 	if (ret)
@@ -884,7 +893,7 @@ pk_spawn_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "run the dispatcher with new input");
-	ret = pk_spawn_argv (spawn, argv, NULL);
+	ret = pk_spawn_argv (spawn, argv, envp);
 	if (ret)
 		egg_test_success (test, NULL);
 	else
@@ -945,6 +954,7 @@ pk_spawn_test (EggTest *test)
 		egg_test_failed (test, "dispatcher closed twice");
 
 	g_strfreev (argv);
+	g_strfreev (envp);
 	g_object_unref (spawn);
 
 	egg_test_end (test);

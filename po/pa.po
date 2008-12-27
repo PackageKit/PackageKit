@@ -1,0 +1,408 @@
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Amanpreet Singh Alam <aalam@users.sf.net>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: packagekit.master\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-11-09 12:10+0000\n"
+"PO-Revision-Date: 2008-12-03 06:54+0530\n"
+"Last-Translator: Amanpreet Singh Alam <aalam@users.sf.net>\n"
+"Language-Team: Punjabi/Panjabi <punjabi-l10n@users.sf.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Lokalize 0.2\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "EULA ਮਨਜ਼ੂਰ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "ਪਰਮਾਣਕਿਤਾ ਲਈ EULA ਮਨਜ਼ੂਰ ਕਰਨਾ ਲਾਜ਼ਮੀ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਬਦਲਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਲਾਜ਼ਮੀ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid "Authentication is required to install a local file"
+msgstr "ਇੱਕ ਲੋਕਲ ਫਾਇਲ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਲਾਜ਼ਮੀ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a package"
+msgstr "ਇੱਕ ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਲਾਜ਼ਮੀ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install a security signature"
+msgstr "ਇੱਕ ਸੁਰੱਖਿਆ ਅੱਪਡੇਟ ਲਈ ਪਰਮਾਣਕਿਤਾ ਲਾਜ਼ਮੀ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the package lists"
+msgstr "ਪੈਕੇਜ ਲਿਸਟ ਤਾਜ਼ਾ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਲਾਜ਼ਮੀ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr "ਪੈਕੇਜ ਹਟਾਉਣ ਵਾਸਤੇ ਪਰਮਾਣਕਿਤਾ ਲਾਜ਼ਮੀ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr "ਇੱਕ ਟਰਾਂਜ਼ਿਸ਼ਨ ਵਾਪਸ ਲੈਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਲਾਜ਼ਮੀ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid "Authentication is required to update all packages"
+msgstr "ਸਭ ਪੈਕੇਜ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਲਾਜ਼ਮੀ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਲਾਜ਼ਮੀ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਪੈਰਾਮੀਟਰ ਬਦਲੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Further authentication is required to install an untrusted local file"
+msgstr "ਇੱਕ ਬੇਭਰੋਸੇਯੋਗ ਲੋਕਲ ਫਾਇਲ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਹੋਰ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install local file"
+msgstr "ਲੋਕਲ ਫਾਇਲ ਇੰਸਟਾਲ ਕਰੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Install package"
+msgstr "ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Install security signature"
+msgstr "ਸੁਰੱਖਿਆ ਦਸਤਖਤ ਇੰਸਟਾਲ ਕਰੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Install untrusted local file"
+msgstr "ਬੇਭਰੋਸੇਯੋਗ ਲੋਕਲ ਫਾਇਲ ਇੰਸਟਾਲ ਕਰੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Refresh package lists"
+msgstr "ਪੈਕੇਜ ਲਿਸਟ ਤਾਜ਼ਾ ਕਰੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Remove package"
+msgstr "ਪੈਕੇਜ ਹਟਾਓ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Rollback to a previous transaction"
+msgstr "ਇੱਕ ਪਿਛਲੀ ਟਰਾਂਜ਼ਿਸ਼ਨ ਵਾਪਸ ਲਵੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:21
+msgid "Update all packages"
+msgstr "ਸਭ ਪੈਕੇਜ ਅੱਪਡੇਟ ਕਰੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:22
+msgid "Update package"
+msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ ਕਰੋ"
+
+#: ../client/pk-console.c:224
+msgid "Update detail"
+msgstr "ਅੱਪਡੇਟ ਵੇਰਵਾ"
+
+#: ../client/pk-console.c:425
+msgid "A system restart is required"
+msgstr "ਸਿਸਟਮ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../client/pk-console.c:427
+msgid "A logout and login is required"
+msgstr "ਲਾਗ-ਆਉਟ ਅਤੇ ਲਾਗਇਨ ਕਰਨ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../client/pk-console.c:429
+msgid "An application restart is required"
+msgstr "ਇੱਕ ਐਪਲੀਕੇਸ਼ਨ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../client/pk-console.c:474
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "1 ਤੋਂ %i ਤੱਕ ਨੰਬਰ ਦਿਓ ਜੀ:"
+
+#: ../client/pk-console.c:524
+msgid "Could not find a package match"
+msgstr "ਇੱਕ ਰਲਦਾ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭਿਆ ਜਾ ਸਕਿਆ"
+
+#: ../client/pk-console.c:538
+msgid "There are multiple package matches"
+msgstr "ਕਈ ਰਲਦੇ ਪੈਕੇਜ ਲੱਭੇ ਹਨ"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:545
+msgid "Please enter the package number: "
+msgstr "ਪੈਕੇਜ ਨੰਬਰ ਦਿਓ ਜੀ:"
+
+#: ../client/pk-console.c:561
+msgid ""
+"Could not find a package with that name to install, or package already "
+"installed"
+msgstr "ਉਸ ਨਾਂ ਦਾ ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਲੱਭਿਆ ਜਾਂ ਪਹਿਲਾਂ ਹੀ ਇੰਸਟਾਲ ਹੈ"
+
+#: ../client/pk-console.c:643
+msgid "Could not find a package with that name to remove"
+msgstr "ਉਸ ਨਾਂ ਦਾ ਪੈਕੇਜ ਹਟਾਉਣ ਲਈ ਲੱਭਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ"
+
+#: ../client/pk-console.c:683
+msgid "The following packages have to be removed"
+msgstr "ਹੇਠ ਦਿੱਤੇ ਪੈਕੇਜ ਹਟਾਏ ਜਾ ਚੁੱਕੇ ਹਨ"
+
+#. get user input
+#: ../client/pk-console.c:692
+msgid "Okay to remove additional packages?"
+msgstr "ਹੋਰ ਪੈਕੇਜ ਹਟਾਉਣ ਲਈ ਮਨਜ਼ੂਰੀ ਹੈ?"
+
+#: ../client/pk-console.c:696
+msgid "Cancelled!"
+msgstr "ਰੱਦ ਕੀਤਾ!"
+
+#: ../client/pk-console.c:718
+msgid "Could not find a package with that name to update"
+msgstr "ਉਸ ਨਾਂ ਦਾ ਪੈਕੇਜ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਲੱਭਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ"
+
+#: ../client/pk-console.c:736
+msgid "Could not find what packages require this package"
+msgstr "ਇਸ ਪੈਕੇਜ ਲਈ ਲੋੜੀਦਾ ਪੈਕੇਜ ਲੱਭਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ"
+
+#: ../client/pk-console.c:754
+msgid "Could not get dependencies for this package"
+msgstr "ਇਸ ਪੈਕੇਜ ਲਈ ਨਿਰਭਰਤਾ ਲਈ ਨਹੀਂ ਜਾ ਸਕੀ"
+
+#: ../client/pk-console.c:772
+msgid "Could not find details for this package"
+msgstr "ਇਸ ਪੈਕੇਜ ਲਈ ਵੇਰਵਾ ਲੱਭਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ"
+
+#: ../client/pk-console.c:790
+#, c-format
+msgid "Could not find the files for this package"
+msgstr "ਇਸ ਪੈਕੇਜ ਲਈ ਫਾਇਲਾਂ ਲੱਭੀਆਂ ਨਹੀਂ ਜਾ ਸਕੀਆਂ"
+
+#: ../client/pk-console.c:870
+msgid "Package description"
+msgstr "ਪੈਕੇਜ ਵੇਰਵਾ"
+
+#: ../client/pk-console.c:893
+msgid "Package files"
+msgstr "ਪੈਕੇਜ ਫਾਇਲਾਂ"
+
+#: ../client/pk-console.c:901
+msgid "No files"
+msgstr "ਕੋਈ ਫਾਇਲ ਨਹੀਂ"
+
+#. get user input
+#: ../client/pk-console.c:933
+msgid "Okay to import key?"
+msgstr "ਕੁੰਜੀ ਇੰਪੋਰਟ ਕਰਨ ਲਵਾਂ?"
+
+#: ../client/pk-console.c:936
+msgid "Did not import key"
+msgstr "ਕੁੰਜੀ ਇੰਪੋਰਟ ਨਾ ਕਰੋ"
+
+#. get user input
+#: ../client/pk-console.c:976
+msgid "Do you agree?"
+msgstr "ਕੀ ਤੁਸੀਂ ਸਹਿਮਤ ਹੋ?"
+
+#: ../client/pk-console.c:979
+msgid "Did not agree to licence, task will fail"
+msgstr "ਲਾਈਸੈਂਸ ਨਾਲ ਸਹਿਮਤ ਨਹੀਂ, ਕੰਮ ਪੂਰਾ ਨਹੀਂ ਹੋਵੇਗਾ"
+
+#: ../client/pk-console.c:1008
+msgid "The daemon crashed mid-transaction!"
+msgstr "ਡੈਮਨ ਅਧੂਰੀ ਟਰਾਂਜ਼ਿਸ਼ਨ ਵਿੱਚ ਨਸ਼ਟ ਹੋ ਗਈ!"
+
+#. header
+#: ../client/pk-console.c:1061
+msgid "PackageKit Console Interface"
+msgstr "ਪੈਕੇਜਕਿੱਟ ਕਨਸੋਲ ਇੰਟਰਫੇਸ"
+
+#: ../client/pk-console.c:1061
+msgid "Subcommands:"
+msgstr "ਸਬ-ਕਮਾਂਡ:"
+
+#: ../client/pk-console.c:1165 ../client/pk-monitor.c:104 ../src/pk-main.c:189
+msgid "Show extra debugging information"
+msgstr "ਹੋਰ ਡੀਬੱਗ ਜਾਣਕਾਰੀ ਵੇਖੋ"
+
+#: ../client/pk-console.c:1167 ../client/pk-monitor.c:106
+msgid "Show the program version and exit"
+msgstr "ਪਰੋਗਰਾਮ ਵਰਜਨ ਵੇਖੋ ਅਤੇ ਬੰਦ ਕਰੋ"
+
+#: ../client/pk-console.c:1169
+msgid "Set the filter, e.g. installed"
+msgstr "ਫਿਲਟਰ ਸੈੱਟ ਕਰੋ, ਜਿਵੇਂ ਕਿ ਇੰਸਟਾਲ"
+
+#: ../client/pk-console.c:1171
+msgid "Exit without waiting for actions to complete"
+msgstr "ਪੂਰੇ ਹੋਣ ਵਾਲੇ ਐਕਸ਼ਨ ਦੀ ਉਡੀਕ ਕੀਤੇ ਬਿਨਾਂ ਬੰਦ ਕਰੋ"
+
+#: ../client/pk-console.c:1194
+msgid "Could not connect to system DBUS."
+msgstr "ਸਿਸਟਮ DBUS ਨਾਲ ਕੁਨੈਕਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ।"
+
+#: ../client/pk-console.c:1288
+#, c-format
+msgid "You need to specify a search type"
+msgstr "ਤੁਹਾਨੂੰ ਖੋਜ ਟਾਈਪ ਦੱਸਣੀ ਪਵੇਗੀ"
+
+#: ../client/pk-console.c:1293 ../client/pk-console.c:1300
+#: ../client/pk-console.c:1307 ../client/pk-console.c:1314
+#: ../client/pk-console.c:1421 ../client/pk-console.c:1428
+#: ../client/pk-console.c:1435 ../client/pk-console.c:1442
+#, c-format
+msgid "You need to specify a search term"
+msgstr "ਤੁਹਾਨੂੰ ਖੋਜ ਸ਼ਬਦ ਦੇਣਾ ਪਵੇਗਾ"
+
+#: ../client/pk-console.c:1319
+#, c-format
+msgid "Invalid search type"
+msgstr "ਗਲਤ ਖੋਜ ਟਾਈਪ"
+
+#: ../client/pk-console.c:1324
+#, c-format
+msgid "You need to specify a package or file to install"
+msgstr "ਤੁਹਾਨੂੰ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਇੱਕ ਪੈਕੇਜ ਜਾਂ ਫਾਇਲ ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../client/pk-console.c:1339
+#, c-format
+msgid "You need to specify a type, key_id and package_id"
+msgstr "ਤੁਹਾਨੂੰ ਇੱਕ ਟਾਈਪ, key_id ਜਾਂ package_id ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../client/pk-console.c:1346
+#, c-format
+msgid "You need to specify a package to remove"
+msgstr "ਤੁਹਾਨੂੰ ਹਟਾਉਣ ਵਾਸਤੇ ਇੱਕ ਪੈਕੇਜ ਦੇਣਾ ਪਵੇਗਾ"
+
+#: ../client/pk-console.c:1353
+#, c-format
+msgid "You need to specify a eula-id"
+msgstr "ਤੁਹਾਨੂੰ eula-id ਦੇਣਾ ਪਵੇਗਾ"
+
+#: ../client/pk-console.c:1369
+#, c-format
+msgid "You need to specify a package name to resolve"
+msgstr "ਤੁਹਾਨੂੰ ਹੱਲ਼ ਕਰਨ ਲਈ ਇੱਕ ਪੈਕੇਜ ਨਾਂ ਦੇਣਾ ਪਵੇਗਾ"
+
+#: ../client/pk-console.c:1376 ../client/pk-console.c:1383
+#, c-format
+msgid "You need to specify a repo name"
+msgstr "ਤੁਹਾਨੂੰ ਇੱਕ ਰੈਪੋ ਨਾਂ ਦੇਣਾ ਪਵੇਗਾ"
+
+#: ../client/pk-console.c:1390
+#, c-format
+msgid "You need to specify a repo name/parameter and value"
+msgstr "ਤੁਹਾਨੂੰ ਇੱਕ ਰੈਪੋ ਨਾਂ/ਪੈਰਾਮੀਟਰ ਅਤੇ ਮੁੱਲ ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../client/pk-console.c:1403
+#, c-format
+msgid "You need to specify a time term"
+msgstr "ਤੁਹਾਨੂੰ ਇੱਕ ਟਾਈਮ ਟਰਮ ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../client/pk-console.c:1408
+#, c-format
+msgid "You need to specify a correct role"
+msgstr "ਤੁਹਾਨੂੰ ਇੱਕ ਠੀਕ ਰੋਲ ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../client/pk-console.c:1413
+#, c-format
+msgid "Failed to get last time"
+msgstr "ਆਖਰੀ ਟਾਈਮ ਲੈਣ ਲਈ ਫੇਲ੍ਹ"
+
+#: ../client/pk-console.c:1449
+#, c-format
+msgid "You need to specify a package to find the details for"
+msgstr "ਤੁਹਾਨੂੰ ਵੇਰਵਾ ਲੱਭਣ ਲਈ ਇੱਕ ਪੈਕੇਜ ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../client/pk-console.c:1456
+#, c-format
+msgid "You need to specify a package to find the files for"
+msgstr "ਤੁਹਾਨੂੰ ਫਾਇਲਾਂ ਲੱਭਣ ਲਈ ਇੱਕ ਪੈਕੇਜ ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../client/pk-console.c:1503
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "ਚੋਣ '%s' ਸਹਿਯੋਗੀ ਨਹੀਂ"
+
+#: ../client/pk-console.c:1514
+msgid "Command failed"
+msgstr "ਕਮਾਂਡ ਫੇਲ੍ਹ ਹੈ"
+
+#: ../client/pk-console.c:1518
+msgid "You don't have the necessary privileges for this operation"
+msgstr "ਤੁਹਾਨੂੰ ਇਹ ਓਪਰੇਸ਼ਨ ਕਰਨ ਲਈ ਲੋੜੀਦੇ ਅਧਿਕਾਰ ਨਹੀਂ ਹਨ"
+
+#: ../client/pk-monitor.c:117
+msgid "PackageKit Monitor"
+msgstr "ਪੈਕੇਜਕਿੱਟ ਮਾਨੀਟਰ"
+
+#: ../client/pk-import-desktop.c:293 ../client/pk-import-specspo.c:169
+#, c-format
+msgid "Could not open database: %s"
+msgstr "ਡਾਟਾਬੇਸ ਖੋਲ੍ਹਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ: %s"
+
+#: ../client/pk-import-desktop.c:294 ../client/pk-import-specspo.c:170
+msgid "You probably need to run this program as the root user"
+msgstr "ਤੁਹਾਨੂੰ ਇਹ ਪਰੋਗਰਾਮ ਸੰਭਵ ਤੌਰ ਉੱਤੇ root ਯੂਜ਼ਰ ਵਜੋਂ ਚਲਾਉਣਾ ਚਾਹੀਦਾ ਹੈ"
+
+#: ../src/pk-main.c:83
+msgid "Startup failed due to security policies on this machine."
+msgstr "ਇਸ ਮਸ਼ੀਨ ਉੱਤੇ ਸੁਰੱਖਿਆ ਪਾਲਸੀਆਂ ਕਰਕੇ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਫੇਲ੍ਹ"
+
+#: ../src/pk-main.c:84
+msgid "This can happen for two reasons:"
+msgstr "ਇਹ ਦੋ ਕਾਰਨਾਂ ਕਰਕੇ ਹੋ ਸਕਦਾ ਹੈ:"
+
+#: ../src/pk-main.c:85
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "ਢੁੱਕਵਾਂ ਯੂਜ਼ਰ ਚੱਲਣਯੋਗ ਨੂੰ ਨਹੀਂ ਚਲਾ ਰਿਹਾ ਹੈ (ਅਕਸਰ root)"
+
+#: ../src/pk-main.c:86
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
+msgstr ""
+"org.freedesktop.PackageKit.conf ਫਾਇਲ /etc/dbus-1/system.d ਡਾਇਰੈਕਟਰੀ ਵਿੱਚ "
+"ਇੰਸਟਾਲ ਨਹੀਂ ਹੈ।"
+
+#: ../src/pk-main.c:185
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "ਵਰਤਣ ਲਈ ਪੈਕੇਜਿੰਗ ਬੈਕਐਂਡ, ਜਿਵੇਂ ਕਿ ਫ਼ਰਜ਼ੀ"
+
+#: ../src/pk-main.c:187
+msgid "Daemonize and detach from the terminal"
+msgstr "ਡੈਮੇਨਾਈਜ਼ ਅਤੇ ਟਰਮੀਨਲ ਤੋਂ ਵੱਖ"
+
+#: ../src/pk-main.c:191
+msgid "Disable the idle timer"
+msgstr "ਵੇਹਲਾ ਟਾਈਮਰ ਆਯੋਗ"
+
+#: ../src/pk-main.c:193
+msgid "Show version and exit"
+msgstr "ਵਰਜਨ ਵੇਖਾ ਕੇ ਬੰਦ ਕਰੋ"
+
+#: ../src/pk-main.c:195
+msgid "Exit after a small delay"
+msgstr "ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਬੰਦ ਕਰੋ"
+
+#: ../src/pk-main.c:197
+msgid "Exit after the engine has loaded"
+msgstr "ਇੰਜਣ ਲੋਡ ਕਰਨ ਦੇ ਬਾਅਦ ਬੰਦ ਕਰੋ"
+
+#: ../src/pk-main.c:207
+msgid "PackageKit service"
+msgstr "ਪੈਕੇਜਕਿੱਟ ਸਰਵਿਸ"
+
+#: ../src/pk-main.c:233
+msgid "Cannot connect to the system bus"
+msgstr "ਸਿਸਟਮ ਬੱਸ ਨਾਲ ਕੁਨੈਕਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"
+
+#: ../src/pk-main.c:273
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਗਲਤੀ: %s\n"
+

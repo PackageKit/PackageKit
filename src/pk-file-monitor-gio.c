@@ -42,8 +42,6 @@
 #include "pk-conf.h"
 #include "pk-file-monitor.h"
 
-static void     pk_file_monitor_class_init	(PkFileMonitorClass	*klass);
-static void     pk_file_monitor_init		(PkFileMonitor		*file_monitor);
 static void     pk_file_monitor_finalize	(GObject		*object);
 
 #define PK_FILE_MONITOR_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_FILE_MONITOR, PkFileMonitorPrivate))

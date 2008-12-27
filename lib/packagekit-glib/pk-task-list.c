@@ -49,8 +49,6 @@
 #include <packagekit-glib/pk-connection.h>
 #include <packagekit-glib/pk-marshal.h>
 
-static void     pk_task_list_class_init		(PkTaskListClass *klass);
-static void     pk_task_list_init		(PkTaskList      *task_list);
 static void     pk_task_list_finalize		(GObject         *object);
 
 #define PK_TASK_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK_LIST, PkTaskListPrivate))
@@ -175,11 +173,11 @@ pk_task_list_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskLis
  * gpk_task_list_finished_cb:
  **/
 static void
-gpk_task_list_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, PkTaskList *tlist)
+gpk_task_list_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, PkTaskList *tlist)
 {
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 	egg_debug ("emit finished");
-	g_signal_emit (tlist, signals [PK_TASK_LIST_FINISHED], 0, client, exit, runtime);
+	g_signal_emit (tlist, signals [PK_TASK_LIST_FINISHED], 0, client, exit_enum, runtime);
 }
 
 /**

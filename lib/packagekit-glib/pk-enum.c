@@ -167,6 +167,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_FILE_NOT_FOUND,		"file-not-found"},
 	{PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY,	"no-more-mirrors-to-try"},
 	{PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,	"no-distro-upgrade-data"},
+	{PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,	"incompatible-architecture"},
 	{0, NULL}
 };
 
@@ -321,8 +322,9 @@ static const PkEnumMatch enum_network[] = {
 	{PK_NETWORK_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_NETWORK_ENUM_OFFLINE,		"offline"},
 	{PK_NETWORK_ENUM_ONLINE,		"online"},
-	{PK_NETWORK_ENUM_SLOW,			"slow"},
-	{PK_NETWORK_ENUM_FAST,			"fast"},
+	{PK_NETWORK_ENUM_WIRED,			"wired"},
+	{PK_NETWORK_ENUM_WIFI,			"wifi"},
+	{PK_NETWORK_ENUM_MOBILE,		"mobile"},
 	{0, NULL}
 };
 
@@ -634,9 +636,9 @@ pk_info_enum_to_text (PkInfoEnum info)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 PkExitEnum
-pk_exit_enum_from_text (const gchar *exit)
+pk_exit_enum_from_text (const gchar *exit_text)
 {
-	return pk_enum_find_value (enum_exit, exit);
+	return pk_enum_find_value (enum_exit, exit_text);
 }
 
 /**
@@ -648,9 +650,9 @@ pk_exit_enum_from_text (const gchar *exit)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_exit_enum_to_text (PkExitEnum exit)
+pk_exit_enum_to_text (PkExitEnum exit_enum)
 {
-	return pk_enum_find_string (enum_exit, exit);
+	return pk_enum_find_string (enum_exit, exit_enum);
 }
 
 /**

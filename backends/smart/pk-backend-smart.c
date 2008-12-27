@@ -205,8 +205,8 @@ static void
 backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids);
 	gchar *filters_text;
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, BACKEND("get-requires"), filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
@@ -279,7 +279,7 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 	gchar *full_paths_temp;
 
 	/* send the complete list as stdin */
-	full_paths_temp = pk_strv_to_text (full_paths, PK_BACKEND_SPAWN_FILENAME_DELIM);
+	full_paths_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
 	pk_backend_spawn_helper (spawn, BACKEND("install-files"), pk_backend_bool_to_text (trusted), full_paths_temp, NULL);
 	g_free (full_paths_temp);
 }

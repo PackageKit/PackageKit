@@ -74,7 +74,7 @@ G_DEFINE_TYPE (PkPostTrans, pk_post_trans, G_TYPE_OBJECT)
  * pk_post_trans_finished_cb:
  **/
 static void
-pk_post_trans_finished_cb (PkBackend *backend, PkExitEnum exit, PkPostTrans *post)
+pk_post_trans_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkPostTrans *post)
 {
 	if (g_main_loop_is_running (post->priv->loop))
 		g_main_loop_quit (post->priv->loop);
@@ -224,14 +224,18 @@ pk_post_trans_sqlite_add_filename_details (PkPostTrans *post, const gchar *filen
 	gchar *statement;
 	gchar *error_msg = NULL;
 	sqlite3_stmt *sql_statement = NULL;
-	gint rc;
+	gint rc = -1;
 	gint show = TRUE;
 #ifdef PK_BUILD_GIO
-	GAppInfo *info;
+	GDesktopAppInfo *info;
 
 	/* find out if we should show desktop file in menus */
-	info = G_APP_INFO(g_desktop_app_info_new_from_filename (filename));
-	show = g_app_info_should_show (info);
+	info = g_desktop_app_info_new_from_filename (filename);
+	if (info == NULL) {
+		egg_warning ("could not load desktop file %s", filename);
+		goto out;
+	}
+	show = g_app_info_should_show (G_APP_INFO(info));
 	g_object_unref (info);
 #endif
 
