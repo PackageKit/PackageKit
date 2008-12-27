@@ -520,8 +520,9 @@ if test x$enable_apt = xyes; then
 fi
 
 if test x$enable_aptcc = xyes; then
-	PKG_CHECK_MODULES(ept, libept, [], [AC_MSG_ERROR([Can't find the ept library -- please install libept-dev])])
 	AC_CHECK_LIB(apt-pkg, main, , [AC_MSG_ERROR([Can't find the APT libraries -- please install libapt-pkg-dev])])
+        AC_SUBST(APTCC_CFLAGS)
+        AC_SUBST(APTCC_LIBS)
 fi
 
 if test x$enable_box = xyes; then
