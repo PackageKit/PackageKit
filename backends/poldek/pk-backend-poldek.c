@@ -1355,10 +1355,9 @@ search_package_thread (PkBackend *backend)
 
 		search = pk_backend_get_string (backend, "search");
 
-		if (provides == PK_PROVIDES_ENUM_ANY) {
+		if (provides == PK_PROVIDES_ENUM_ANY || provides == PK_PROVIDES_ENUM_CODEC) {
 			search_cmd = g_strdup_printf ("search -qp %s", search);
 		} else if (provides == PK_PROVIDES_ENUM_MODALIAS) {
-		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
 		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
 			search_cmd = g_strdup_printf ("search -qp mimetype(%s)", search);
 		}
