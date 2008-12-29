@@ -81,7 +81,7 @@ static PLDGroupRegex group_perlre[] = {
 	{PK_GROUP_ENUM_MULTIMEDIA, "/.*Multimedia\\|.*Sound/"},
 	{PK_GROUP_ENUM_NETWORK, "/.*Networking.*\\|/.*Mail\\|.*News\\|.*WWW/"},
 	{PK_GROUP_ENUM_OFFICE, "/.*Editors.*\\|.*Spreadsheets/"},
-	{PK_GROUP_ENUM_OTHER, "/^Applications$\\|.*Console\\|.*Emulators\\|.*File\\|.*Printing\\|.*Terminal\\|.*Text\\|Documentation\\|^Libraries.*\\|^Themes.*\\|^X11$\\|.*Amusements\\|^X11\\/Applications$\\|^X11\\/Libraries$\\|.*Window\\ Managers.*/"},
+	{PK_GROUP_ENUM_OTHER, "/^Applications$\\|.*Console\\|.*Emulators\\|.*File\\|.*Printing\\|.*Terminal\\|.*Text\\|^Libraries.*\\|^Themes.*\\|^X11$\\|.*Amusements\\|^X11\\/Applications$\\|^X11\\/Libraries$\\|.*Window\\ Managers.*/"},
 	{PK_GROUP_ENUM_PROGRAMMING, "/.*Development.*/"},
 	{PK_GROUP_ENUM_PUBLISHING, "/.*Publishing.*/"},
 	{PK_GROUP_ENUM_SERVERS, "/Daemons\\|.*Servers/"},
