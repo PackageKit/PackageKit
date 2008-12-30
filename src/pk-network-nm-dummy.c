@@ -42,8 +42,6 @@
 #include "pk-network-nm.h"
 #include "pk-marshal.h"
 
-static void     pk_network_nm_class_init	(PkNetworkNmClass *klass);
-static void     pk_network_nm_init		(PkNetworkNm      *network_nm);
 static void     pk_network_nm_finalize		(GObject          *object);
 
 #define PK_NETWORK_NM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NETWORK_NM, PkNetworkNmPrivate))
