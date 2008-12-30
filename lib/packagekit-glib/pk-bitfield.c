@@ -53,7 +53,7 @@ pk_bitfield_contain_priority (PkBitfield values, gint value, ...)
 {
 	va_list args;
 	guint i;
-	guint value_temp;
+	gint value_temp;
 	gint retval = -1;
 
 	/* we must query at least one thing */

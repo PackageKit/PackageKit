@@ -1,4 +1,4 @@
-SUBDIRS = img
+SUBDIRS = img videos
 
 HTML_FILES =				\
 	index.html			\

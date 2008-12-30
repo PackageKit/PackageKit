@@ -2101,6 +2101,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if notice:
             # Update Details
             desc = notice['description']
+            if desc:
+                desc = desc.replace("\t", " ")
+
             # Update References (Bugzilla, CVE ...)
             refs = notice['references']
             if refs:

@@ -63,6 +63,10 @@ libpackagekit_qt_la_LIBADD =					\
 	$(POLKIT_LIBS)						\
 	$(NULL)
 
+libpackagekit_qt_la_CFLAGS =					\
+	$(WARNINGFLAGS_CPP)					\
+	$(NULL)
+
 libpackagekit_qt_la_LDFLAGS =					\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
 	-export-dynamic						\

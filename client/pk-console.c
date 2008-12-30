@@ -383,7 +383,7 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 static gboolean
 pk_console_pulse_bar (PulseState *pulse_state)
 {
-	guint i;
+	gint i;
 
 	if (!has_output_bar)
 		return TRUE;
@@ -1421,6 +1421,7 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 {
 	PkRoleEnum role;
 	gchar **filevector;
+	gchar **current_file;
 
 	/* don't print if we are DownloadPackages */
 	pk_client_get_role (client, &role, NULL, NULL);
@@ -1437,8 +1438,7 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 	if (*filevector != NULL) {
 		/* TRANSLATORS: This a list files contained in the package */
 		g_print ("%s\n", _("Package files"));
-		gchar **current_file = filevector;
-
+		current_file = filevector;
 		while (*current_file != NULL) {
 			g_print ("  %s\n", *current_file);
 			current_file++;
@@ -1687,14 +1687,13 @@ main (int argc, char *argv[])
 	gchar *filter = NULL;
 	gchar *summary;
 	gchar **package_ids;
-	gboolean ret;
+	gboolean ret = FALSE;
 	const gchar *mode;
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
 	PkBitfield groups;
 	gchar *text;
-	ret = FALSE;
 	gboolean maybe_sync = TRUE;
 	PkBitfield filters = 0;
 
