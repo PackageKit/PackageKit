@@ -256,7 +256,7 @@ out:
 	return ret;
 }
 #else /* HAVE_ARCHIVE_H */
-gboolean
+static gboolean
 pk_service_pack_extract (const gchar *filename, const gchar *directory, GError **error)
 {
 	*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
