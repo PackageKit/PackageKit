@@ -681,6 +681,41 @@ pkg_cmp_name_evr_rev_recno (const struct pkg *p1, const struct pkg *p2) {
 	return rc;
 }
 
+/**
+ * do_post_search_process:
+ *
+ * Merges installed, available and removes duplicates.
+ *
+ **/
+static tn_array *
+do_post_search_process (tn_array *installed, tn_array *available)
+{
+	tn_array       *packages = NULL;
+	guint		i;
+
+	if (available != NULL) {
+		packages = n_ref (available);
+
+		if (installed != NULL) {
+			for (i = 0; i < n_array_size (installed); i++) {
+				struct pkg *pkg = n_array_nth (installed, i);
+
+				/* check for duplicates */
+				if (poldek_pkg_in_array (pkg, packages, (tn_fn_cmp)pkg_cmp_name_evr) == FALSE)
+					n_array_push (packages, pkg_link (pkg));
+
+			}
+
+			n_array_sort_ex (packages, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
+		}
+
+	} else if (installed != NULL) {
+		packages = n_ref (installed);
+	}
+
+	return packages;
+}
+
 static gboolean
 pkg_is_installed (struct pkg *pkg)
 {
@@ -989,6 +1024,34 @@ poldek_pkg_get_cves_from_pld_changelog (struct pkg *pkg, time_t since)
 	return cves;
 }
 
+/**
+ * poldek_pkg_is_devel:
+ */
+static gboolean
+poldek_pkg_is_devel (struct pkg *pkg)
+{
+	if (g_str_has_suffix (pkg->name, "-devel"))
+		return TRUE;
+	if (g_str_has_suffix (pkg->name, "-debuginfo"))
+		return TRUE;
+	if (g_str_has_suffix (pkg->name, "-static"))
+		return TRUE;
+
+	return FALSE;
+}
+
+/**
+ * poldek_pkg_is_gui:
+ */
+static gboolean
+poldek_pkg_is_gui (struct pkg *pkg)
+{
+	if (g_str_has_prefix (pkg_group (pkg), "X11"))
+		return TRUE;
+
+	return FALSE;
+}
+
 static void
 do_newest (tn_array *pkgs)
 {
@@ -1006,6 +1069,53 @@ do_newest (tn_array *pkgs)
 				continue;
 			}
 		}
+
+		i++;
+	}
+}
+
+/**
+ * do_filtering:
+ *
+ * Apply newest, devel and gui filters (if requested).
+ *
+ **/
+static void
+do_filtering (tn_array *packages, PkBitfield filters)
+{
+	guint	i = 0;
+
+	g_return_if_fail (packages != NULL);
+
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
+		do_newest (packages);
+
+	while (i < n_array_size (packages)) {
+		struct pkg     *pkg = n_array_nth (packages, i);
+
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT))
+			if (!poldek_pkg_is_devel (pkg)) {
+				n_array_remove_nth (packages, i);
+				continue;
+			}
+
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT))
+			if (poldek_pkg_is_devel (pkg)) {
+				n_array_remove_nth (packages, i);
+				continue;
+			}
+
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI))
+			if (!poldek_pkg_is_gui (pkg)) {
+				n_array_remove_nth (packages, i);
+				continue;
+			}
+
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI))
+			if (poldek_pkg_is_gui (pkg)) {
+				n_array_remove_nth (packages, i);
+				continue;
+			}
 
 		i++;
 	}
@@ -1325,32 +1435,6 @@ poldek_get_pkg_from_package_id (const gchar *package_id)
 }
 
 /**
- * poldek_pkg_is_devel:
- */
-static gboolean
-poldek_pkg_is_devel (struct pkg *pkg)
-{
-	if (g_str_has_suffix (pkg->name, "-devel"))
-		return TRUE;
-	if (g_str_has_suffix (pkg->name, "-debuginfo"))
-		return TRUE;
-
-	return FALSE;
-}
-
-/**
- * poldek_pkg_is_gui:
- */
-static gboolean
-poldek_pkg_is_gui (struct pkg *pkg)
-{
-	if (g_str_has_prefix (pkg_group (pkg), "X11"))
-		return TRUE;
-
-	return FALSE;
-}
-
-/**
  * search_package_thread:
  */
 static gboolean
@@ -1480,47 +1564,16 @@ search_package_thread (PkBackend *backend)
 			pkgs = installed;
 	}
 
-	if (pkgs) {
-		gint	i;
+	do_filtering (pkgs, filters);
 
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
-			do_newest (pkgs);
+	if (pkgs) {
+		guint	i;
 
 		for (i = 0; i < n_array_size (pkgs); i++) {
 			struct pkg *pkg = n_array_nth (pkgs, i);
 
 			if (sigint_reached ())
 				break;
-
-			/* check if we have to do development filtering
-			 * (devel or ~devel in filters) */
-			if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT) ||
-			    pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
-				if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
-					/* devel in filters */
-					if (!poldek_pkg_is_devel (pkg))
-						continue;
-				} else {
-					/* ~devel in filters */
-					if (poldek_pkg_is_devel (pkg))
-						continue;
-				}
-			}
-
-			/* check if we have to do gui filtering
-			 * (gui or ~gui in filters) */
-			if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI) ||
-			    pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI)) {
-				if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI)) {
-					/* gui in filters */
-					if (!poldek_pkg_is_gui (pkg))
-						continue;
-				} else {
-					/* ~gui in filters */
-					if (poldek_pkg_is_gui (pkg))
-						continue;
-				}
-			}
 
 			poldek_backend_package (backend, pkg, PK_INFO_ENUM_UNKNOWN, filters);
 		}
@@ -2316,6 +2369,61 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 /**
  * backend_get_packages:
  **/
+static gboolean
+backend_get_packages_thread (PkBackend *backend)
+{
+	PkBitfield	filters;
+	tn_array       *installed = NULL;
+	tn_array       *available = NULL;
+	tn_array       *packages = NULL;
+	guint		i;
+
+	filters = pk_backend_get_uint (backend, "filters");
+
+	pk_backend_set_percentage (backend, 0);
+
+	pb_load_packages (backend);
+
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) == FALSE)
+		installed = poldek_get_installed_packages ();
+
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) == FALSE)
+		available = poldek_get_avail_packages (ctx);
+
+	pk_backend_set_percentage (backend, 4);
+
+	packages = do_post_search_process (installed, available);
+
+	do_filtering (packages, filters);
+
+	pk_backend_set_percentage (backend, 10);
+
+	if (packages != NULL) {
+		for (i = 0; i < n_array_size (packages); i++) {
+			struct pkg     *pkg = n_array_nth (packages, i);
+
+			if (sigint_reached ())
+				break;
+
+			pk_backend_set_percentage (backend, (guint)(10 + (90 * (float)(i + 1) / n_array_size (packages))));
+
+			poldek_backend_package (backend, pkg, PK_INFO_ENUM_UNKNOWN, filters);
+		}
+	}
+
+	if (sigint_reached ())
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "");
+	else
+		pk_backend_set_percentage (backend, 100);
+
+	n_array_cfree (&installed);
+	n_array_cfree (&available);
+	n_array_cfree (&packages);
+
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
 static void
 backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
@@ -2323,8 +2431,7 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_NONE);
-	pk_backend_thread_create (backend, search_package_thread);
+	pk_backend_thread_create (backend, backend_get_packages_thread);
 }
 
 /**
