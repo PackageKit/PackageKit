@@ -1641,7 +1641,6 @@ main (int argc, char *argv[])
 	gchar *options_help;
 	gchar *filter = NULL;
 	gchar *summary;
-	gchar **package_ids;
 	gboolean ret;
 	const gchar *mode;
 	const gchar *value = NULL;
@@ -1876,9 +1875,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("You need to specify a package name to resolve"));
 			goto out;
 		}
-		package_ids = pk_package_ids_from_id (value);
-		ret = pk_client_resolve (client_async, filters, package_ids, &error);
-		g_strfreev (package_ids);
+		ret = pk_client_resolve (client_async, filters, argv, &error);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {
