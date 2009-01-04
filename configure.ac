@@ -584,9 +584,28 @@ if test x$enable_apt = xyes; then
 fi
 
 if test x$enable_aptcc = xyes; then
+	dnl Use C++
+	AC_LANG([C++])
+
 	AC_CHECK_LIB(apt-pkg, main, , [AC_MSG_ERROR([Can't find the APT libraries -- please install libapt-pkg-dev])])
-        AC_SUBST(APTCC_CFLAGS)
-        AC_SUBST(APTCC_LIBS)
+	AC_CHECK_HEADER(apt-pkg/init.h, , [AC_MSG_ERROR([Can't find the APT header files -- please install libapt-pkg-dev])])
+	AC_SUBST(APTCC_CFLAGS)
+	AC_SUBST(APTCC_LIBS)
+
+	AC_MSG_CHECKING([whether apt includes the automatic dependency removal patch (required)])
+
+	AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[#include <apt-pkg/depcache.h>]],
+					  [[extern pkgDepCache::ActionGroup d;]]),
+			  AC_MSG_RESULT([yes]),
+			  AC_MSG_FAILURE([need libapt-pkg 0.7 or later]))
+
+	AC_MSG_CHECKING([whether apt supports ddtp]) 
+
+	AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[#include <apt-pkg/pkgcache.h>]],
+					  [[pkgCache::DescIterator d;]]),
+			  AC_MSG_RESULT([yes])
+			  AC_DEFINE([HAVE_DDTP], [], [Set to true if apt is DDTP-enabled]),
+			  AC_MSG_RESULT([no]))
 fi
 
 if test x$enable_box = xyes; then
