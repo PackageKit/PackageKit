@@ -23,14 +23,38 @@
 
 #include <apt-pkg/depcache.h>
 #include <apt-pkg/pkgrecords.h>
+#include <apt-pkg/sourcelist.h>
+#include <apt-pkg/pkgcachegen.h>
+
+#include <packagekit-glib/packagekit.h>
+#include <pk-backend.h>
 
 #include <string>
 
 /** \return a short description string corresponding to the given
- *  version.
- */
-std::string get_short_description(const pkgCache::VerIterator &ver,
-                                   pkgRecords *records);
+*  version.
+*/
+void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
+		   const pkgCache::PkgIterator &pkg,
+		   const pkgCache::VerIterator &ver);
 
+void emit_details (PkBackend *backend, pkgRecords *records,
+		   const pkgCache::PkgIterator &pkg,
+		   const pkgCache::VerIterator &ver);
+
+void emit_requires (PkBackend *backend, pkgRecords *records, PkBitfield filters,
+		   const pkgCache::PkgIterator &pkg,
+		   const pkgCache::VerIterator &ver);
+
+class apt_init
+{
+public:
+	apt_init(const char *locale, pkgSourceList &apt_source_list);
+	~apt_init();
+
+	pkgRecords    *packageRecords;
+	pkgCache      *cacheFile;
+	MMap          *Map;
+};
 
 #endif
