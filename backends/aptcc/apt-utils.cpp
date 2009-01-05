@@ -20,91 +20,147 @@
  */
 
 #include "apt-utils.h"
-#include "apt.h"
 
 #include <apt-pkg/pkgrecords.h>
 #include <string.h>
 
-// used to emit packages it collects all the needed info
-void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver)
+std::string get_short_description(const pkgCache::VerIterator &ver,
+                                   pkgRecords *records)
 {
-	PkInfoEnum state;
-	if (pkg->CurrentState == pkgCache::State::Installed) {
-		state = PK_INFO_ENUM_INSTALLED;
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED))
-			return;
+	if(ver.end() || ver.FileList().end() || records == NULL)
+		return std::string();
+
+// #ifndef HAVE_DDTP
+// 	pkgCache::VerFileIterator vf = ver.FileList();
+//
+// 	if(vf.end())
+// 		return std::string();
+// 	else
+// 		return records->Lookup(vf).ShortDesc();
+// #else
+	pkgCache::DescIterator d = ver.TranslatedDescription();
+
+	if(d.end())
+		return std::string();
+
+	pkgCache::DescFileIterator df = d.FileList();
+
+	if(df.end())
+		return std::string();
+	else
+		// apt "helpfully" cw::util::transcodes the description for us, instead of
+		// providing direct access to it.  So I need to assume that the
+		// description is encoded in the current locale.
+		return records->Lookup(df).ShortDesc();
+// #endif
+}
+
+std::string get_long_description(const pkgCache::VerIterator &ver,
+				  pkgRecords *records)
+{
+	if(ver.end() || ver.FileList().end() || records == NULL)
+		return std::string();
+
+// #ifndef HAVE_DDTP
+// 	pkgCache::VerFileIterator vf = ver.FileList();
+// 
+// 	if(vf.end())
+// 		return std::string();
+// 	else
+// 		return records->Lookup(vf).LongDesc();
+// #else
+	pkgCache::DescIterator d = ver.TranslatedDescription();
+
+	if(d.end())
+		    return std::string();
+
+	pkgCache::DescFileIterator df = d.FileList();
+
+	if(df.end())
+		    return std::string();
+	else
+		    return records->Lookup(df).LongDesc();
+// #endif
+}
+
+PkGroupEnum
+get_enum_group (std::string group)
+{
+	if (group.compare ("admin") == 0) {
+		return PK_GROUP_ENUM_ADMIN_TOOLS;
+	} else if (group.compare ("base") == 0) {
+		return PK_GROUP_ENUM_SYSTEM;
+	} else if (group.compare ("comm") == 0) {
+		return PK_GROUP_ENUM_COMMUNICATION;
+	} else if (group.compare ("devel") == 0) {
+		return PK_GROUP_ENUM_PROGRAMMING;
+	} else if (group.compare ("doc") == 0) {
+		return PK_GROUP_ENUM_DOCUMENTATION;
+	} else if (group.compare ("editors") == 0) {
+		return PK_GROUP_ENUM_PUBLISHING;
+	} else if (group.compare ("electronics") == 0) {
+		return PK_GROUP_ENUM_ELECTRONICS;
+	} else if (group.compare ("embedded") == 0) {
+		return PK_GROUP_ENUM_SYSTEM;
+	} else if (group.compare ("games") == 0) {
+		return PK_GROUP_ENUM_GAMES;
+	} else if (group.compare ("gnome") == 0) {
+		return PK_GROUP_ENUM_DESKTOP_GNOME;
+	} else if (group.compare ("graphics") == 0) {
+		return PK_GROUP_ENUM_GRAPHICS;
+	} else if (group.compare ("hamradio") == 0) {
+		return PK_GROUP_ENUM_COMMUNICATION;
+	} else if (group.compare ("interpreters") == 0) {
+		return PK_GROUP_ENUM_PROGRAMMING;
+	} else if (group.compare ("kde") == 0) {
+		return PK_GROUP_ENUM_DESKTOP_KDE;
+	} else if (group.compare ("libdevel") == 0) {
+		return PK_GROUP_ENUM_PROGRAMMING;
+	} else if (group.compare ("libs") == 0) {
+		return PK_GROUP_ENUM_SYSTEM;
+	} else if (group.compare ("mail") == 0) {
+		return PK_GROUP_ENUM_INTERNET;
+	} else if (group.compare ("math") == 0) {
+		return PK_GROUP_ENUM_SCIENCE;
+	} else if (group.compare ("misc") == 0) {
+		return PK_GROUP_ENUM_OTHER;
+	} else if (group.compare ("net") == 0) {
+		return PK_GROUP_ENUM_NETWORK;
+	} else if (group.compare ("news") == 0) {
+		return PK_GROUP_ENUM_INTERNET;
+	} else if (group.compare ("oldlibs") == 0) {
+		return PK_GROUP_ENUM_LEGACY;
+	} else if (group.compare ("otherosfs") == 0) {
+		return PK_GROUP_ENUM_SYSTEM;
+	} else if (group.compare ("perl") == 0) {
+		return PK_GROUP_ENUM_PROGRAMMING;
+	} else if (group.compare ("python") == 0) {
+		return PK_GROUP_ENUM_PROGRAMMING;
+	} else if (group.compare ("science") == 0) {
+		return PK_GROUP_ENUM_SCIENCE;
+	} else if (group.compare ("shells") == 0) {
+		return PK_GROUP_ENUM_SYSTEM;
+	} else if (group.compare ("sound") == 0) {
+		return PK_GROUP_ENUM_MULTIMEDIA;
+	} else if (group.compare ("tex") == 0) {
+		return PK_GROUP_ENUM_PUBLISHING;
+	} else if (group.compare ("text") == 0) {
+		return PK_GROUP_ENUM_PUBLISHING;
+	} else if (group.compare ("utils") == 0) {
+		return PK_GROUP_ENUM_ACCESSORIES;
+	} else if (group.compare ("web") == 0) {
+		return PK_GROUP_ENUM_INTERNET;
+	} else if (group.compare ("x11") == 0) {
+		return PK_GROUP_ENUM_DESKTOP_OTHER;
+	} else if (group.compare ("alien") == 0) {
+		return PK_GROUP_ENUM_UNKNOWN;//FIXME alien is a unknown group?
+	} else if (group.compare ("translations") == 0) {
+		return PK_GROUP_ENUM_LOCALIZATION;
+	} else if (group.compare ("metapackages") == 0) {
+		return PK_GROUP_ENUM_COLLECTIONS;
+	} else if (group.compare ("unknown") == 0) {
+		return PK_GROUP_ENUM_UNKNOWN;
 	} else {
-		state = PK_INFO_ENUM_AVAILABLE;
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
-			return;
+		return PK_GROUP_ENUM_UNKNOWN;
 	}
-
-	if (filters != 0) {
-		std::string str = ver.Section();
-		std::string section, repo_section;
-
-		size_t found;
-		found = str.find_last_of("/");
-		section = str.substr(found + 1);
-		repo_section = str.substr(0, found);
-
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
-			// if ver.end() means unknow
-			// strcmp will be true when it's different than devel
-			std::string pkgName = pkg.Name();
-			if (pkgName.compare(pkgName.size() - 4, 4, "-dev") &&
-			    pkgName.compare(pkgName.size() - 4, 4, "-dbg") &&
-			    section.compare("devel") &&
-			    section.compare("libdevel"))
-				return;
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
-			std::string pkgName = pkg.Name();
-			if (!pkgName.compare(pkgName.size() - 4, 4, "-dev") ||
-			    !pkgName.compare(pkgName.size() - 4, 4, "-dbg") ||
-			    !section.compare("devel") ||
-			    !section.compare("libdevel"))
-				return;
-		}
-
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI)) {
-			// if ver.end() means unknow
-			// strcmp will be true when it's different than x11
-			if (section.compare("x11") && section.compare("gnome") &&
-			    section.compare("kde") && section.compare("graphics"))
-				return;
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI)) {
-			if (!section.compare("x11") || !section.compare("gnome") ||
-			    !section.compare("kde") || !section.compare("graphics"))
-				return;
-		}
-
-		// TODO add Ubuntu handling
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_FREE)) {
-			if (!repo_section.compare("contrib") || !repo_section.compare("non-free"))
-				return;
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_FREE)) {
-			if (repo_section.compare("contrib") && repo_section.compare("non-free"))
-				return;
-		}
-
-		// TODO test this one..
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_COLLECTIONS)) {
-			if (!repo_section.compare("metapackages"))
-				return;
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_COLLECTIONS)) {
-			if (repo_section.compare("metapackages"))
-				return;
-		}
-		
-	}
-	pkgCache::VerFileIterator vf = ver.FileList();
-
-	gchar *package_id;
-	package_id = pk_package_id_build ( pkg.Name(),
-					ver.VerStr(),
-					ver.Arch() ? ver.Arch() : "N/A", // _("N/A")
-					vf.File().Archive() ? vf.File().Archive() : "<NULL>");//  _("<NULL>")
-	pk_backend_package (backend, state, package_id, get_short_description(ver, records).c_str() );
 }

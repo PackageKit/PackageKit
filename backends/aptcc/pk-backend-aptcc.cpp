@@ -47,6 +47,7 @@
 #include <apt-pkg/sptr.h>
 #include <libintl.h>
 
+#include "apt.h"
 #include "apt-utils.h"
 
 #include <config.h>
@@ -83,8 +84,8 @@ static gboolean _updated_kernel = FALSE;
 static gboolean _updated_powertop = FALSE;
 static gboolean _has_signature = FALSE;
 
-static pkgRecords    *apt_package_records = 0;
-static pkgCache      *apt_cache_file = 0;
+// static pkgRecords    *apt_package_records = 0;
+// static pkgCache      *apt_cache_file = 0;
 static pkgSourceList *apt_source_list = 0;
 
 /**
@@ -95,26 +96,17 @@ backend_initialize (PkBackend *backend)
 {
 	_progress_percentage = 0;
 	egg_debug ("APTcc Initializing");
+
 	if (pkgInitConfig(*_config) == false ||
 	    pkgInitSystem(*_config,_system) == false)
 	{
 		egg_debug ("ERROR initializing backend");
 	}
 
-	MMap *Map = 0;
-
 	// Open the cache file
 	apt_source_list = new pkgSourceList;
 	apt_source_list->ReadMainList();
-
-	// Generate it and map it
-	OpProgress Prog;
-	pkgMakeStatusCache(*apt_source_list, Prog, &Map, true);
-	apt_cache_file = new pkgCache(Map);
-
-	// Create the text record parser
-	apt_package_records = new pkgRecords (*apt_cache_file);
-} 
+}
 
 /**
  * backend_destroy:
@@ -123,22 +115,10 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	egg_debug ("APTcc being destroied");
-	if (apt_package_records)
-	{
-		delete apt_package_records;
-		apt_package_records = NULL;
-	}
-
-	if (apt_cache_file)
-	{
-		delete apt_cache_file;
-		apt_cache_file = NULL;
-	}
-
 	if (apt_source_list)
 	{
 		delete apt_source_list;
-		apt_source_list=NULL;
+		apt_source_list = NULL;
 	}
 }
 
@@ -148,9 +128,29 @@ backend_destroy (PkBackend *backend)
 static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSIBILITY,
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_ACCESSORIES,
+		PK_GROUP_ENUM_ADMIN_TOOLS,
+		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_DOCUMENTATION,
+		PK_GROUP_ENUM_DESKTOP_GNOME,
+		PK_GROUP_ENUM_DESKTOP_KDE,
+		PK_GROUP_ENUM_DESKTOP_OTHER,
+		PK_GROUP_ENUM_ELECTRONICS,
 		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_INTERNET,
+		PK_GROUP_ENUM_LEGACY,
+		PK_GROUP_ENUM_LOCALIZATION,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_NETWORK,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SCIENCE,
 		PK_GROUP_ENUM_SYSTEM,
+		PK_GROUP_ENUM_COLLECTIONS,
+		PK_GROUP_ENUM_UNKNOWN,
 		-1);
 }
 
@@ -211,24 +211,109 @@ backend_cancel (PkBackend *backend)
 	}
 }
 
+static gboolean
+backend_get_depends_thread (PkBackend *backend)
+{
+	gchar **package_ids;
+	PkBitfield filters;
+
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	PkPackageId *pi = pk_package_id_new_from_string (package_ids[0]);
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_backend_finished (backend);
+		return false;
+	}
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
+
+	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+		pi = pk_package_id_new_from_string (package_ids[i]);
+		if (pi == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+			pk_backend_finished (backend);
+			delete m_apt;
+			return false;
+		}
+
+		pkgCache::PkgIterator Pkg = m_apt->cacheFile->FindPkg(pi->name);
+		if (Pkg.end() == true)
+		{
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
+			pk_package_id_free (pi);
+			pk_backend_finished (backend);
+			delete m_apt;
+			return false;
+		}
+
+		emit_requires (backend, m_apt->packageRecords, filters, Pkg, Pkg.VersionList());
+
+		pk_package_id_free (pi);
+	}
+
+	delete m_apt;
+
+	pk_backend_finished (backend);
+	return true;
+}
+
 /**
  * backend_get_depends:
  */
 static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
+	pk_backend_thread_create (backend, backend_get_depends_thread);
+}
+
+static gboolean
+backend_get_details_thread (PkBackend *backend)
+{
+	gchar **package_ids;
+	PkPackageId *pi;
+
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	if (package_ids == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_backend_finished (backend);
+		return false;
+	}
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (egg_strequal (package_ids[0], "scribus;1.3.4-1.fc8;i386;fedora")) {
-		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-				    "scribus-clipart;1.3.4-1.fc8;i386;fedora", "Clipart for scribus");
-	} else {
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-				    "glib2;2.14.0;i386;fedora", "The GLib library");
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-				    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
+	
+	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+		pi = pk_package_id_new_from_string (package_ids[i]);
+		if (pi == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+			pk_backend_finished (backend);
+			delete m_apt;
+			return false;
+		}
+
+		pkgCache::PkgIterator Pkg = m_apt->cacheFile->FindPkg(pi->name);
+		if (Pkg.end() == true)
+		{
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
+			pk_package_id_free (pi);
+			pk_backend_finished (backend);
+			delete m_apt;
+			return false;
+		}
+
+		emit_details (backend, m_apt->packageRecords, Pkg, Pkg.VersionList());
+
+		pk_package_id_free (pi);
 	}
+
+	delete m_apt;
+	
 	pk_backend_finished (backend);
+	return true;
 }
 
 /**
@@ -237,17 +322,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_details (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
-"Scribus is an desktop open source page layöut program with "
-"the aim of producing commercial grade output in PDF and "
-"Postscript, primarily, though not exclusively for Linux.\n"
-"\n"
-"While the goals of the program are for ease of use and simple easy to "
-"understand tools, Scribus offers support for professional publishing "
-"features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
-"import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager", 11214665);
-	pk_backend_finished (backend);
+	pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
 /**
@@ -681,358 +756,207 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
 	pk_backend_finished (backend);
 }
 
+static gboolean
+backend_search_group_thread (PkBackend *backend)
+{
+	const gchar *group;
+	PkBitfield filters;
+
+	group = pk_backend_get_string (backend, "search");
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+
+	if (group == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
+		pk_backend_finished (backend);
+		return false;
+	}
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
+
+	PkGroupEnum pkGroup = pk_group_enum_from_text (group);
+
+	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
+
+	vector<pkgCache::PkgIterator> output;
+	for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
+		// Ignore packages that exist only due to dependencies.
+		if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
+			continue;
+		}
+
+		// Ignore virtual packages
+		if (pkg.VersionList().end() == false) {
+			std::string section = pkg.VersionList().Section();
+
+			size_t found;
+			found = section.find_last_of("/");
+			section = section.substr(found + 1);
+
+			pkgCache::VerFileIterator vf = pkg.VersionList().FileList();
+
+			// Don't insert virtual packages instead add what it provides
+			if (pkGroup == get_enum_group(section)) {
+				output.push_back(pkg);
+			}
+		}
+	}
+
+	// TODO sort output
+	//   std::sort(output.begin(), output.end(), compare(s));
+	// TODO this might be faster than doing the normal iteration to remove duplicated packages
+	//   output.erase(std::unique(output.begin(), output.end(), result_equality(s)),
+	// 	       output.end());
+
+	// It's faster to emmit the packages here than in the matching part
+	for(vector<pkgCache::PkgIterator>::iterator i=output.begin();
+	    i != output.end(); ++i)
+	{
+		emit_package (backend, m_apt->packageRecords, filters, *i, (*i).VersionList());
+	}
+
+	delete m_apt;
+
+	pk_backend_set_percentage (backend, 100);
+	pk_backend_finished (backend);
+	return true;
+}
+
 /**
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *pkGroup)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_allow_cancel (backend, TRUE);
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-			    "vips-doc;7.12.4-2.fc8;noarch;linva",
-			    "The vips documentation package.");
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-			    "bǣwulf-utf8;0.1;noarch;hughsie",
-			    "The bǣwulf server test name.");
-	pk_backend_finished (backend);
+	pk_backend_thread_create (backend, backend_search_group_thread);
 }
 
-/**
- * backend_search_name_timeout:
- **/
 static gboolean
-backend_search_name_timeout (gpointer data)
+backend_search_name_thread (PkBackend *backend)
 {
-	gchar *locale;
-	PkBackend *backend = (PkBackend *) data;
-	locale = pk_backend_get_locale (backend);
+	const gchar *search;
+	PkBitfield filters;
 
-	egg_debug ("locale is %s", locale);
-	if (!egg_strequal (locale, "en_GB.utf8")) {
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-				    "evince;0.9.3-5.fc8;i386;installed",
-				    "PDF Dokument Ƥrŏgrȃɱ");
-	} else {
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-				    "evince;0.9.3-5.fc8;i386;installed",
-				    "PDF Document viewer");
+	search = pk_backend_get_string (backend, "search");
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_set_allow_cancel (backend, TRUE);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
+
+	unsigned NumPatterns = 1;
+
+	// To be able to search the descriptions too
+	bool NamesOnly = false;
+
+	// Make sure there is at least one argument
+	//    if (NumPatterns < 1)
+	//       return _error->Error(_("You must give exactly one pattern"));
+
+	// Compile the regex pattern
+	regex_t *Patterns = new regex_t[NumPatterns];
+	memset(Patterns, 0, sizeof(*Patterns) * NumPatterns);
+	for (unsigned I = 0; I != NumPatterns; I++)
+	{
+		if (regcomp(&Patterns[I], search, REG_EXTENDED | REG_ICASE |
+			    REG_NOSUB) != 0)
+		{
+			egg_debug("Regex compilation error");
+			for (; I != 0; I--)
+				regfree(&Patterns[1]);
+// 			return false;
+		}
+		
 	}
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "tetex;3.0-41.fc8;i386;fedora",
-			    "TeTeX is an implementation of TeX for Linux or UNIX systems.");
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-			    "scribus;1.3.4-1.fc8;i386;fedora",
-			    "Scribus is an desktop open source page layout program");
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-			    "vips-doc;7.12.4-2.fc8;noarch;linva",
-			    "The vips documentation package.");
+
+	if (_error->PendingError() == true)
+	{
+		for (unsigned I = 0; I != 1; I++)
+			regfree(&Patterns[I]);
+// 		return false;//TODO maybe an error msg
+	}
+
+	pkgDepCache::Policy Plcy;
+	vector<pkgCache::PkgIterator> output;
+	for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
+		// Ignore packages that exist only due to dependencies.
+		if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
+			continue;
+		}
+
+	// 	    for(vector<pkg_matcher *>::iterator m=matchers.begin();
+	// 		m!=matchers.end(); ++m)
+	// 		{
+	// 		pkg_match_result *r = get_match(*m, pkg,
+	// 						*apt_cache_file,
+	// 						*apt_package_records);
+	//
+	// 		if(r != NULL)
+	// 		    output.push_back(pair<pkgCache::PkgIterator, pkg_match_result *>(pkg, r));
+	// 		}
+		if (regexec(&Patterns[0],pkg.Name(), 0, 0, 0) == 0) {
+			// Don't insert virtual packages instead add what it provides
+			if (pkg.VersionList().end() == false) {
+				output.push_back(pkg);
+			} else {
+				// iterate over the provides list
+				for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
+					pkgCache::VerIterator V = Plcy.GetCandidateVer(Prv.OwnerPkg());
+					// check to see if the provided package isn't virtual too
+					if (V.end() == false)
+					{
+						bool insert = true;
+						// let's check if the packes isn't already in the list
+						for(vector<pkgCache::PkgIterator>::iterator i=output.begin();
+							i!=output.end(); ++i)
+						{
+							if (*i == Prv.OwnerPkg()) {
+								insert = false;
+								break;
+							}
+						}
+
+						if (insert) {
+							output.push_back(Prv.OwnerPkg());
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// TODO sort output
+	//   std::sort(output.begin(), output.end(), compare(s));
+	// TODO this might be faster than doing the normal iteration to remove duplicated packages
+	//   output.erase(std::unique(output.begin(), output.end(), result_equality(s)),
+	// 	       output.end());
+
+	// It's faster to emmit the packages here than in the matching part
+	for(vector<pkgCache::PkgIterator>::iterator i=output.begin();
+	    i != output.end(); ++i)
+	{
+		emit_package (backend, m_apt->packageRecords, filters, *i, (*i).VersionList());
+	}
+
+	for (unsigned I = 0; I != NumPatterns; I++)
+		regfree(&Patterns[I]);
+
+	delete m_apt;
+
+	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
-	return FALSE;
+	return true;
 }
 
-int LocalityCompare(const void *a, const void *b)
-{
-   pkgCache::VerFile *A = *(pkgCache::VerFile **)a;
-   pkgCache::VerFile *B = *(pkgCache::VerFile **)b;
-
-   if (A == 0 && B == 0)
-      return 0;
-   if (A == 0)
-      return 1;
-   if (B == 0)
-      return -1;
-
-   if (A->File == B->File)
-      return A->Offset - B->Offset;
-   return A->File - B->File;
-}
-
-void LocalitySort(pkgCache::VerFile **begin,
-                  unsigned long Count,size_t Size)
-{
-   qsort(begin,Count,Size,LocalityCompare);
-}
-
-void LocalitySort(pkgCache::DescFile **begin,
-                  unsigned long Count,size_t Size)
-{
-   qsort(begin,Count,Size,LocalityCompare);
-}
-
-struct ExDescFile
-{
-   pkgCache::DescFile *Df;
-   bool NameMatch;
-};
 /**
  * backend_search_name:
  */
 static void
 backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
-{
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_set_allow_cancel (backend, TRUE);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-
-	unsigned NumPatterns = 1;
-	egg_debug ("locale is %s", pk_backend_get_locale (backend));
-	setlocale(LC_ALL, pk_backend_get_locale (backend));
-
-// To be able to search the descriptions too
-bool NamesOnly = false;
-//    if (pkgInitConfig(*_config) == false ||
-// //        CmdL.Parse(argc,argv) == false ||
-//        pkgInitSystem(*_config,_system) == false)
-//    {
-//     egg_debug ("ERROR..........");
-//     }
-//     MMap *Map = 0;
-//                 egg_debug ("ONE");
-//     // Open the cache file
-//     pkgSourceList *SrcList = 0;
-//     SrcList = new pkgSourceList;
-//     SrcList->ReadMainList();
-//                 egg_debug ("TWO");
-//     // Generate it and map it
-//     OpProgress Prog;
-//     pkgMakeStatusCache(*SrcList, Prog, &Map, true);
-//                 egg_debug ("ENTRANDO NO LOOP");
-//     pkgCache *Cache = new pkgCache(Map);
-//-------
-                egg_debug ("ENTRANDO NO LOOP");
-//    pkgCache &Cache = *GCache;
-//    bool ShowFull = false; /*_config->FindB("APT::Cache::ShowFull",false);*/
-//    bool NamesOnly = false; /*_config->FindB("APT::Cache::NamesOnly",false);*/
-//    unsigned NumPatterns = 1;
-
-   pkgDepCache::Policy Plcy;
-
-   // Make sure there is at least one argument
-//    if (NumPatterns < 1)
-//       return _error->Error(_("You must give exactly one pattern"));
-
-   // Compile the regex pattern
-   egg_debug ("112");
-   regex_t *Patterns = new regex_t[NumPatterns];
-   memset(Patterns, 0, sizeof(*Patterns) * NumPatterns);
-   egg_debug ("222");
-   for (unsigned I = 0; I != NumPatterns; I++)
-   {
-   egg_debug ("inside");
-      if (regcomp(&Patterns[I], search, REG_EXTENDED | REG_ICASE |
-                  REG_NOSUB) != 0)
-      {
-      egg_debug ("Regex compilation error");
-         for (; I != 0; I--)
-            regfree(&Patterns[1]);
-         return egg_debug("Regex compilation error");
-      }
-      egg_debug ("22");
-   }
-
-//    // Create the text record parser
-//    apt_package_records = new pkgRecords (*Cache);
-   if (_error->PendingError() == true)
-   {
-      for (unsigned I = 0; I != 1; I++)
-         regfree(&Patterns[I]);
-      return /*false*/;//TODO maybe an error msg
-   }
-egg_debug ("3");
-   ExDescFile *DFList = new ExDescFile[apt_cache_file->HeaderP->PackageCount + 1];
-   memset(DFList, 0, sizeof(*DFList) * apt_cache_file->HeaderP->PackageCount + 1);
-
-   // Map versions that we want to write out onto the VerList array.
-   for (pkgCache::PkgIterator P = apt_cache_file->PkgBegin(); P.end() == false; P++)
-   {
-      DFList[P->ID].NameMatch = NumPatterns != 0;
-      for (unsigned I = 0; I != NumPatterns; I++)
-      {
-         if (regexec(&Patterns[I],P.Name(), 0, 0, 0) == 0)
-            DFList[P->ID].NameMatch &= true;
-         else
-            DFList[P->ID].NameMatch = false;
-      }
-
-      // Doing names only, drop any that dont match..
-      if (NamesOnly == false && DFList[P->ID].NameMatch == false)
-         continue;
-
-      // Find the proper version to use.
-      pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
-      if (V.end() == false)
-         DFList[P->ID].Df = V.DescriptionList().FileList();
-   }
-egg_debug ("4");
-   // Include all the packages that provide matching names too
-   for (pkgCache::PkgIterator P = apt_cache_file->PkgBegin(); P.end() == false; P++)
-   {
-      if (DFList[P->ID].NameMatch == false)
-         continue;
-
-      for (pkgCache::PrvIterator Prv = P.ProvidesList() ; Prv.end() == false; Prv++)
-      {
-         pkgCache::VerIterator V = Plcy.GetCandidateVer(Prv.OwnerPkg());
-         if (V.end() == false)
-         {
-            DFList[Prv.OwnerPkg()->ID].Df = V.DescriptionList().FileList();
-            DFList[Prv.OwnerPkg()->ID].NameMatch = true;
-         }
-      }
-   }
-
-   LocalitySort(&DFList->Df, apt_cache_file->HeaderP->PackageCount, sizeof(*DFList));
-egg_debug ("5");
-   // Iterate over all the version records and check them
-   for (ExDescFile *J = DFList; J->Df != 0; J++)
-   {
-      pkgRecords::Parser &P = apt_package_records->Lookup(pkgCache::DescFileIterator(*apt_cache_file,J->Df));
-
-      bool Match = true;
-      if (J->NameMatch == false)
-      {
-         string LongDesc = P.LongDesc();
-         Match = NumPatterns != 0;
-         for (unsigned I = 0; I != NumPatterns; I++)
-         {
-            if (regexec(&Patterns[I],LongDesc.c_str(),0,0,0) == 0)
-               Match &= true;
-            else
-               Match = false;
-         }
-      }
-
-      if (Match == true)
-      {
-         if (/*ShowFull == true*/false)
-         {
-            const char *Start;
-            const char *End;
-            P.GetRec(Start,End);
-            fwrite(Start,End-Start,1,stdout);
-            putc('\n',stdout);
-         }
-         else {
-//             printf("%s - %s\n",P.Name().c_str(),P.ShortDesc().c_str());
-
-
-// pkgCache::VerIterator V;
-//          for (V = Pkg.VersionList();
-pkgCache::PkgIterator Pkg = apt_cache_file->FindPkg(P.Name());
-pkgCache::VerIterator V = Pkg.VersionList();
-// pkgCache::DescIterator Desc = V.TranslatedDescription();
-//    pkgRecords::Parser &Pp = apt_package_records->Lookup(Desc.FileList());
-// 
-// std::string short_desc;
-//         {
-//             pkgCache::DescIterator d = V.TranslatedDescription();
-// 
-//             if(d.end()){}
-// //                 return;
-// 
-//             pkgCache::DescFileIterator df = d.FileList();
-// 
-//             if(df.end()) {
-//             egg_debug ("xxxxxxxxxx");
-// //                 return std::wstring();
-//             }  else {
-// //             egg_debug (apt_package_records->Lookup(df).ShortDesc().c_str());
-//             short_desc = apt_package_records->Lookup(df).ShortDesc();
-// //             printf(">>>>>>>>> %s\n", apt_package_records->Lookup(df).ShortDesc().c_str());
-//                 // apt "helpfully" cw::util::transcodes the description for us, instead of
-//                 // providing direct access to it.  So I need to assume that the
-//                 // description is encoded in the current locale.
-// //                 return cwidget::util::transcode(apt_package_records->Lookup(df).ShortDesc());
-//             }
-//         }
-// 
-//                gchar *package_id;
-//             package_id = pk_package_id_build ( P.Name().c_str(),
-//                             Desc.LanguageCode(),""                           ,
-//                             pk_backend_get_locale (backend));
-//             pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, short_desc.c_str() );
-
-            emit_package (backend, apt_package_records, filters, Pkg, V);
-         }
-      }
-   }
-          egg_debug ("FIM");
-         egg_debug ("ENTRANDO NO LOOP");
-//    // Include all the packages that provide matching names too
-//    for (pkgCache::PkgIterator P = Cache->PkgBegin(); P.end() == false; P++)
-//    {
-// //            egg_debug (P.Name());
-// gchar *package_id;
-//             package_id = pk_package_id_build ( P.Name(),
-//                             P.Section(),""                           ,
-//                             "");
-// 
-//             pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, "P.ShortDesc()" );
-//             break;
-// //    pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-// //                             P.Name() + ";3.0-41.fc8;i386;fedora",
-// //                             P.Name() );
-// //       if (DFList[P->ID].NameMatch == false)
-// //          continue;
-// // 
-// //       for (pkgCache::PrvIterator Prv = P.ProvidesList() ; Prv.end() == false; Prv++)
-// //       {
-// //          pkgCache::VerIterator V = Plcy.GetCandidateVer(Prv.OwnerPkg());
-// //          if (V.end() == false)
-// //          {
-// //             DFList[Prv.OwnerPkg()->ID].Df = V.DescriptionList().FileList();
-// //             DFList[Prv.OwnerPkg()->ID].NameMatch = true;
-// //          }
-// //       }
-//    }
-
-//    LocalitySort(&DFList->Df,Cache.HeaderP->PackageCount,sizeof(*DFList));
-// 
-//    // Iterate over all the version records and check them
-//    for (ExDescFile *J = DFList; J->Df != 0; J++)
-//    {
-//       pkgRecords::Parser &P = apt_package_records->Lookup(pkgCache::DescFileIterator(Cache,J->Df));
-// 
-//       bool Match = true;
-//       if (J->NameMatch == false)
-//       {
-//          string LongDesc = P.LongDesc();
-//          Match = NumPatterns != 0;
-//          for (unsigned I = 0; I != NumPatterns; I++)
-//          {
-//             if (regexec(&Patterns[I],LongDesc.c_str(),0,0,0) == 0)
-//                Match &= true;
-//             else
-//                Match = false;
-//          }
-//       }
-// 
-//       if (Match == true)
-//       {
-//          if (ShowFull == true)
-//          {
-//             const char *Start;
-//             const char *End;
-//             P.GetRec(Start,End);
-//             fwrite(Start,End-Start,1,stdout);
-//             putc('\n',stdout);
-//          }
-//          else
-//             printf("%s - %s\n",P.Name().c_str(),P.ShortDesc().c_str());
-//       }
-//    }
-// 
-//    delete [] DFList;
-//    for (unsigned I = 0; I != NumPatterns; I++)
-//       regfree(&Patterns[I]);
-//    if (ferror(stdout))
-//        return _error->Error("Write to stdout failed");
-//    return true;
-
-//----------
-pk_backend_set_percentage (backend, 100);
-                pk_backend_finished (backend);
+{;
+	pk_backend_thread_create (backend, backend_search_name_thread);
 }
 
 /**
@@ -1273,17 +1197,41 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	pk_backend_set_percentage (backend, _progress_percentage);
 }
 
-/**
- * backend_get_packages:
- */
-static void
-backend_get_packages (PkBackend *backend, PkBitfield filters)
+static gboolean
+backend_get_packages_thread (PkBackend *backend)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "update1;2.19.1-4.fc8;i386;fedora",
-			    "The first update");
+	PkBitfield filters;
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
+
+	for(pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin();
+	    !pkg.end(); ++pkg)
+	{
+		// Ignore packages that exist only due to dependencies.
+		if(pkg.VersionList().end() && pkg.ProvidesList().end())
+			continue;
+
+		// Don't insert virtual packages as they don't have all kinds of info
+		if (pkg.VersionList().end() == false)
+			emit_package (backend, m_apt->packageRecords, filters, pkg, pkg.VersionList());
+	}
+
+	delete m_apt;
+
 	pk_backend_finished (backend);
+	return true;
+}
+
+/**
+  * backend_get_packages:
+  */
+static void
+backend_get_packages (PkBackend *backend, PkBitfield filter)
+{
+	pk_backend_thread_create (backend, backend_get_packages_thread);
 }
 
 /**

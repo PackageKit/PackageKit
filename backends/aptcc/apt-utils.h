@@ -29,10 +29,19 @@
 #include <pk-backend.h>
 
 /** \return a short description string corresponding to the given
-*  version.
-*/
-void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &visible_ver);
+ *  version.
+ */
+std::string get_short_description(const pkgCache::VerIterator &ver,
+                                   pkgRecords *records);
 
+/** \return a short description string corresponding to the given
+ *  version.
+ */
+std::string get_long_description(const pkgCache::VerIterator &ver,
+                                   pkgRecords *records);
+
+/**
+  * Return the PkEnumGroup of the give group string.
+  */
+PkGroupEnum get_enum_group (std::string group);
 #endif
