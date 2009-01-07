@@ -29,9 +29,17 @@ elif [ "$DISTRO" = "Ubuntu" ]; then
 	else
 		xdg-open http://www.ubuntu.com/getubuntu
 	fi
+elif [ -e /etc/SuSE-release ] && [ -x /usr/sbin/wagon ]; then
+	xdg-su -c /usr/sbin/wagon
 else
+	TITLE="System is not recognised"
+	TEXT="Your distribution was not recognised by the upgrade script.\nPlease file a but in your distribution bug tracker under the component PackageKit."
 	# do not dep on zenity in build scripts
-	zenity --warning --title "System is not recognised" \
-	       --text "Your distribution was not recognised by the upgrade script.\nPlease file a but in your distribution bug tracker under the component PackageKit."
+	which zenity 2> /dev/null > /dev/null
+	if [ "$?" -eq 0 ]; then
+	    zenity --warning --title $TITLE --text $TEXT
+	else
+	    xmessage $TEXT
+	fi
 fi
 
