@@ -1919,6 +1919,7 @@ pk_backend_new (void)
 #include <glib/gstdio.h>
 
 static guint number_messages = 0;
+static guint number_packages = 0;
 
 /**
  * pk_backend_test_message_cb:
@@ -1953,6 +1954,9 @@ static gboolean
 pk_backend_test_func_true (PkBackend *backend)
 {
 	g_usleep (1000*1000);
+	/* trigger duplicate test */
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1962,6 +1966,16 @@ pk_backend_test_func_immediate_false (PkBackend *backend)
 {
 	pk_backend_finished (backend);
 	return FALSE;
+}
+
+/**
+ * pk_backend_test_package_cb:
+ **/
+static void
+pk_backend_test_package_cb (PkBackend *backend, const PkPackageObj *obj, EggTest *test)
+{
+	egg_debug ("package:%s", obj->id->name);
+	number_packages++;
 }
 
 void
@@ -1982,6 +1996,10 @@ pk_backend_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
+
+	/* connect */
+	g_signal_connect (backend, "package",
+			  G_CALLBACK (pk_backend_test_package_cb), test);
 
 	/************************************************************/
 	egg_test_title (test, "create a config file");
@@ -2163,6 +2181,13 @@ pk_backend_test (EggTest *test)
 	/* wait for Finished */
 	egg_test_loop_wait (test, 2000);
 	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "check duplicate filter");
+	if (number_packages == 1)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong number of pacakges: %s", number_packages);
 
 	/* reset */
 	pk_backend_reset (backend);
