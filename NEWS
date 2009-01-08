@@ -1,3 +1,26 @@
+Version 0.3.13
+~~~~~~~~~~~~~~
+Released: 2009-01-08
+
+Bugfixes:
+ - Make get_packages call GetPackages, not GetUpdates (Aidan Skinner)
+ - Correctly check the retval of a spawned backend that is killed (Richard Hughes)
+ - Fix a signed vs. unsigned problem when checking a PkBitfield (Richard Hughes)
+ - Allow pkcon to resolve all the command line arguments (Richard Hughes)
+ - Don't free the package twice if we skip it due to duplicate filtering (Richard Hughes)
+ - Fix the python client library for SearchDetails and SearchFile. Fixes fd#19426 (Richard Hughes)
+
+Backends:
+ - apt: Fix order of locking and threading (Sebastian Heinlein)
+ - apt: After calling refresh the cache has to be reopened (Sebastian Heinlein)
+ - conary: Forget arch in the distro_id for foresight (Ken VanDine)
+ - yum: Catch IOError and handle out of disk space. Fixes rh#478377 (Richard Hughes)
+ - yum: Import yum for file to fix exception handling. Fixes rh#476381 (Richard Hughes)
+ - yum: Treat new packages dragged in as update deps as enhancements (Richard Hughes)
+ - yum: Don't error when a package that does not have a description field. Fixes rh#477018 (Richard Hughes)
+ - yum: Fix comps retrieval when deselecting all sources (Richard Hughes)
+ - yum: Remove all tab characters in update descriptions (Richard Hughes)
+
 Version 0.3.12
 ~~~~~~~~~~~~~~
 Released: 2008-12-08
