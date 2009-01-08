@@ -804,7 +804,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	obj = pk_package_obj_new (info, id, summary_safe);
 	ret = pk_package_obj_equal (obj, backend->priv->last_package);
 	if (ret) {
-		pk_package_obj_free (obj);
 		egg_debug ("skipping duplicate %s", package_id);
 		ret = FALSE;
 		goto out;
