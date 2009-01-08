@@ -411,6 +411,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs.extend(ygl.recent)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2001,6 +2003,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs.extend(ygl.obsoletes)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         md = self.updateMetadata
@@ -2247,6 +2251,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.yumbase.repos.doSetup()
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
+            except exceptions.IOError, e:
+                self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2265,6 +2271,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.yumbase.repos.populateSack(mdtype='otherdata', cacheonly=1)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
