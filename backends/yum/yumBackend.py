@@ -2032,7 +2032,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 if not repo.isEnabled():
                     repo.enablePersistent()
-
+                    if repoid.find ("rawhide") != -1:
+                        warning = "These packages are untested and still under development." \
+                                  "This repository is used for development of new releases.\n\n" \
+                                  "This repository can see significant daily turnover and major " \
+                                  "functionality changes which cause unexpected problems with " \
+                                  "other development packages.\n" \
+                                  "Please use these packages if you want to work with the " \
+                                  "Fedora developers by testing these new development packages.\n\n" \
+                                  "If this is not correct, please disable the %s software source." % repoid
+                        self.message(MESSAGE_BACKEND_ERROR, warning.replace("\n", ";"))
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_FOUND, _to_unicode(e))
         except Exception, e:
