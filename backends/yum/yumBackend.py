@@ -412,7 +412,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except exceptions.IOError, e:
-            self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
+            self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2004,7 +2004,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except exceptions.IOError, e:
-            self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
+            self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         md = self.updateMetadata
@@ -2252,7 +2252,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
             except exceptions.IOError, e:
-                self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
+                self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2272,7 +2272,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except exceptions.IOError, e:
-            self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
+            self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 

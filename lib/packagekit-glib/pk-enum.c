@@ -168,6 +168,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY,	"no-more-mirrors-to-try"},
 	{PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,	"no-distro-upgrade-data"},
 	{PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,	"incompatible-architecture"},
+	{PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,	"no-space-on-device"},
 	{0, NULL}
 };
 
