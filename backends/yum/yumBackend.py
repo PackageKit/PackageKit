@@ -364,6 +364,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs.extend(ygl.recent)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
 
         installed = []
         available = []
@@ -1771,6 +1773,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs.extend(ygl.obsoletes)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
         md = self.updateMetadata
         for pkg in pkgs:
             if pkgfilter.pre_process(pkg):
@@ -1979,6 +1983,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.yumbase.repos.doSetup()
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
+            except exceptions.IOError, e:
+                self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
 
     def _refresh_yum_cache(self):
         self.status(STATUS_REFRESH_CACHE)
@@ -1992,6 +1998,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.yumbase.repos.populateSack(mdtype='otherdata', cacheonly=1)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
 
         self.yumbase.conf.cache = old_cache_setting
         self.yumbase.repos.setCache(old_cache_setting)
