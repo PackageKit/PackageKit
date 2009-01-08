@@ -250,12 +250,12 @@ class PackageKitClient:
 
     def search_details(self, search, filters=FILTER_NONE, exit_handler=None):
         '''Search for packages by their details'''
-        return self._run_transaction("SearchDetails", [filters], 
+        return self._run_transaction("SearchDetails", [filters, search],
                                      exit_handler)
 
     def search_file(self, search, filters=FILTER_NONE, exit_handler=None):
         '''Search for packages by their files'''
-        return self._run_transaction("SearchFile", [filters], 
+        return self._run_transaction("SearchFile", [filters, search],
                                      exit_handler)
 
     def install_packages(self, packages, exit_handler=None):
