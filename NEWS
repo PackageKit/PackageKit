@@ -1,3 +1,91 @@
+Version 0.4.1
+~~~~~~~~~~~~~
+Released: 2009-01-08
+
+Translations:
+ - Add Punjabi translation (A S Alam)
+ - Updated Spanish translation (Domingo Becker)
+ - Updated German translation (Fabian Affolter)
+ - Updated Polish translation (Piotr Drąg)
+
+New Features:
+ - Use NetworkManager to get the network device type for session policy decisions (Richard Hughes)
+ - Resolve() is now case sensitive (Richard Hughes)
+ - Upload some updated screenshots and some videos (Richard Hughes)
+ - Added arch linux recognition code to pk_get_distro_id (Valeriy Lyasotskiy)
+ - Adapted pk-upgrade-distro.sh for suse (Thomas Goettlicher)
+ - Don't let spawned backends hog the disk by default using ioprio (Adel Gadllah)
+ - glib: Add a client side timeout monitor so we can set a limit on queries (Richard Hughes)
+ - glib: Added accessors for PkPackageId (Valeriy Lyasotskiy)
+ - Import ruck, a port of rum, which is a port of rug (Aidan Skinner)
+ - ruck: Add ruck client (Aidan Skinner)
+ - Added search file method and search details convinience method to packagekit-qt (Daniel Nicoletti)
+ - Daemon backend: Separate object creation and running (Sebastian Heinlein)
+
+Bugfixes:
+ - QPackageKit: Revert the threaded polkit as it breaks everything (Adrien BUSTANY)
+ - Define a macro directory so we work with newer versions of libtool (Richard Hughes)
+ - Remove the concept of slow and fast interfaces, since we don't actualy know the speed (Richard Hughes)
+ - Get the caller (and uid) for all transactions from the GetTid method as we
+   cannot get the UID from the non-async methods (Richard Hughes)
+ - Clarify that free form text in Details and UpdateDetail is formatted to markdown syntax (Richard Hughes)
+ - Fix a signed vs. unsigned problem when checking the error of a spawned backend
+   that is killed (Richard Hughes)
+ - Fix a signed vs. unsigned problem when checking a PkBitfield (Richard Hughes)
+ - Enable more compiler warnings on GCC, and stop abusing global CFLAGS in configure (Richard Hughes)
+ - Allow pkcon to resolve all the command line arguments, not just the first one (Richard Hughes)
+ - Don't attempt to free the package object twice if we skip it due to duplicate filtering (Richard Hughes)
+ - Fix the python client library for SearchDetails and SearchFile. Fixes fd#19426 (Richard Hughes)
+ - Make get_packages call GetPackages, not GetUpdates (Aidan Skinner)
+ - ruck: Make update use update_packages instead of update_system (Aidan Skinner)
+ - ruck: convert to use native buildsystem (Richard Hughes)
+ - Forget arch for foresight, let the backend handle that at install time. (Ken VanDine)
+
+Backends:
+ - alpm: Code modified to use PkPackageId accessors (Valeriy Lyasotskiy)
+ - alpm: Download_packages stuff moved to its own thread (Valeriy Lyasotskiy)
+ - apt: Fix order of locking and threading (Sebastian Heinlein)
+ - apt: Start a new testing framework using mox and nose (Sebastian Heinlein)
+ - apt: Use the root of apt to search for files (Sebastian Heinlein)
+ - apt: Do not report a package twice if the file search string matches more
+        than once (Sebastian Heinlein)
+ - apt: Iterate over all pending events in the main loop during tests to allow
+        the dbus object to unregister (Sebastian Heinlein)
+ - apt: Add a test for file search (Sebastian Heinlein)
+ - apt: Do not register the test backend on the dbus (Sebastian Heinlein)
+ - apt: Shorten wait for join of test threads (Sebastian Heinlein)
+ - apt: Add test for doInit and doRefresh (Sebastian Heinlein)
+ - apt: Fix status test file by removing all dependencies of xterm (Sebastian Heinlein)
+ - apt: Add a test repository Packages file (Sebastian Heinlein)
+ - apt: Fix refresh: After calling refresh the cache has to be reopened (Sebastian Heinlein)
+ - apt: Register callbacks centrally for the test (Sebastian Heinlein)
+ - apt: Add check for updates, add numbers to the test name to make them sortable,
+        use variables where possible for internal strings (Sebastian Heinlein)
+ - apt: Move test data files to a separate folder (Sebastian Heinlein)
+ - apt: Adapt changed test data paths (Sebastian Heinlein)
+ - apt: Allow to speicify additional nosetests parameters for the test script (Sebastian Heinlein)
+ - apt: Provide details for a failed download (Sebastian Heinlein)
+ - dummy: Ddd some markdown text for demos (Richard Hughes)
+ - poldek: Documentation packages have its own group (Marcin Banasiak)
+ - poldek: Added support for InstallGStreamerCodecs (Marcin Banasiak)
+ - poldek: Improved SearchFile (query rpmdb for local files) (Marcin Banasiak)
+ - poldek: Move GetPackages to its own function (Marcin Banasiak)
+ - yum: Don't show DeprecationWarnings from yum (Richard Hughes)
+ - yum: Catch another exception from yum when doing self.yumbase.comps.return_group,
+        possibly triggered by deselecting all sources (Richard Hughes)
+ - yum: Clear the package sack before we get the updates list to ensure it's correct (Richard Hughes)
+ - yum: Import yum for file, rather than just in main to fix exception handling.
+        Fixes rh#476381 (Richard Hughes)
+ - yum: Emit more percentage signals so that the progress bar is smoother and the
+        time estimation is more accurate (Richard Hughes)
+ - yum: Print the full exception in the internal error case, else it's useful to no-one... (Richard Hughes)
+ - yum: Treat new packages dragged in as update deps as enhancements (Richard Hughes)
+ - yum: Don't show an error when we try to get the details of a package that does
+        not have a description field. Fixes RH#477018 (Richard Hughes)
+ - yum: Remove all tab characters in update descriptions (Richard Hughes)
+ - yum: Issue a warning when the user enables a rawhide repo (Richard Hughes)
+ - yum: Catch IOError and handle out of disk space. Fixes RH#478377 (Richard Hughes)
+
 Version 0.4.0
 ~~~~~~~~~~~~~
 Released: 2008-12-09
