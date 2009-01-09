@@ -1,6 +1,7 @@
 // apt.h  -*-c++-*-
 //
 //  Copyright 1999-2002, 2004-2005, 2007-2008 Daniel Burrows
+//  Copyright (C) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,7 +24,6 @@
 
 #include <apt-pkg/depcache.h>
 #include <apt-pkg/pkgrecords.h>
-#include <apt-pkg/sourcelist.h>
 #include <apt-pkg/pkgcachegen.h>
 #include <apt-pkg/policy.h>
 
@@ -51,18 +51,21 @@ void emit_requires (PkBackend *backend, pkgRecords *records, PkBitfield filters,
 		   const pkgCache::PkgIterator &pkg,
 		   const pkgCache::VerIterator &ver);
 
-class apt_init
+class aptcc
 {
 public:
-	apt_init(const char *locale, pkgSourceList &apt_source_list);
-	~apt_init();
+	aptcc();
+	~aptcc();
+
+	bool init(const char *locale, pkgSourceList &apt_source_list);
 
 	pkgCache::VerIterator find_ver(pkgCache::PkgIterator pkg);
 
 	pkgRecords    *packageRecords;
 	pkgCache      *cacheFile;
-	MMap          *Map;
 private:
+	MMap          *Map;
+
 	OpProgress    Progress;
 	pkgDepCache   *DCache;
 };

@@ -24,34 +24,17 @@
 #include <string>
 #include <packagekit-glib/packagekit.h>
 
-// #include <apt-pkg/pkgcache.h>
-// #include <apt-pkg/cachefile.h>
-// #include <apt-pkg/sourcelist.h>
-// #include <apt-pkg/mmap.h>
-// #include <apt-pkg/pkgcachegen.h>
-// #include <apt-pkg/pkgrecords.h>
-
 #include <apt-pkg/error.h>
-#include <apt-pkg/pkgcachegen.h>
 #include <apt-pkg/init.h>
-#include <apt-pkg/progress.h>
 #include <apt-pkg/sourcelist.h>
 #include <apt-pkg/cmndline.h>
 #include <apt-pkg/strutl.h>
 #include <apt-pkg/pkgrecords.h>
-#include <apt-pkg/srcrecords.h>
-#include <apt-pkg/version.h>
-#include <apt-pkg/policy.h>
-#include <apt-pkg/tagfile.h>
-#include <apt-pkg/algorithms.h>
-#include <apt-pkg/sptr.h>
-#include <libintl.h>
 
 #include "apt.h"
 #include "apt-utils.h"
 
 #include <config.h>
-// #include <apti18n.h>
 
 #include <locale.h>
 #include <iostream>
@@ -61,11 +44,8 @@
 #include <stdio.h>
 
 #include <iomanip>
-                                                                        /*}}}*/
 
 using namespace std;
-
-
 
 #include <pk-backend.h>
 
@@ -84,8 +64,6 @@ static gboolean _updated_kernel = FALSE;
 static gboolean _updated_powertop = FALSE;
 static gboolean _has_signature = FALSE;
 
-// static pkgRecords    *apt_package_records = 0;
-// static pkgCache      *apt_cache_file = 0;
 static pkgSourceList *apt_source_list = 0;
 
 /**
@@ -228,7 +206,12 @@ backend_get_depends_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
+	}
 
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
 		pi = pk_package_id_new_from_string (package_ids[i]);
@@ -284,7 +267,12 @@ backend_get_details_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
+	}
 	
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
 		pi = pk_package_id_new_from_string (package_ids[i]);
@@ -776,7 +764,12 @@ backend_search_group_thread (PkBackend *backend)
 
 	PkGroupEnum pkGroup = pk_group_enum_from_text (group);
 
-	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
+	}
 
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
@@ -788,13 +781,11 @@ backend_search_group_thread (PkBackend *backend)
 		// Ignore virtual packages
 		pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 		if (ver.end() == false) {
-			std::string section = pkg.VersionList().Section();
+			string section = pkg.VersionList().Section();
 
 			size_t found;
 			found = section.find_last_of("/");
 			section = section.substr(found + 1);
-
-// 			pkgCache::VerFileIterator vf = pkg.VersionList().FileList();
 
 			// Don't insert virtual packages instead add what it provides
 			if (pkGroup == get_enum_group(section)) {
@@ -803,7 +794,7 @@ backend_search_group_thread (PkBackend *backend)
 		}
 	}
 
-	std::sort(output.begin(), output.end(), compare());
+	sort(output.begin(), output.end(), compare());
 
 	// It's faster to emmit the packages here rather than in the matching part
 	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
@@ -841,7 +832,12 @@ backend_search_name_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
+	}
 
 	unsigned NumPatterns = 1;
 
@@ -863,7 +859,8 @@ backend_search_name_thread (PkBackend *backend)
 			egg_debug("Regex compilation error");
 			for (; I != 0; I--)
 				regfree(&Patterns[1]);
-// 			return false;
+			delete m_apt;
+			return false;
 		}
 		
 	}
@@ -872,7 +869,8 @@ backend_search_name_thread (PkBackend *backend)
 	{
 		for (unsigned I = 0; I != 1; I++)
 			regfree(&Patterns[I]);
-// 		return false;//TODO maybe an error msg
+		delete m_apt;
+		return false;
 	}
 
 	pkgDepCache::Policy Plcy;
@@ -882,7 +880,7 @@ backend_search_name_thread (PkBackend *backend)
 		if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
 			continue;
 		}
-
+		// TODO add suport for search in multiples words like "doc aptitude"
 	// 	    for(vector<pkg_matcher *>::iterator m=matchers.begin();
 	// 		m!=matchers.end(); ++m)
 	// 		{
@@ -902,7 +900,7 @@ backend_search_name_thread (PkBackend *backend)
 				// iterate over the provides list
 				for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
 					ver = m_apt->find_ver(Prv.OwnerPkg());
-// 					pkgCache::VerIterator V = Plcy.GetCandidateVer(Prv.OwnerPkg());
+
 					// check to see if the provided package isn't virtual too
 					if (ver.end() == false)
 					{
@@ -915,8 +913,8 @@ backend_search_name_thread (PkBackend *backend)
 		}
 	}
 
-	std::sort(output.begin(), output.end(), compare());
-	output.erase(std::unique(output.begin(), output.end(), result_equality()),
+	sort(output.begin(), output.end(), compare());
+	output.erase(unique(output.begin(), output.end(), result_equality()),
 		       output.end());
 
 	// It's faster to emmit the packages here than in the matching part
@@ -1191,7 +1189,12 @@ backend_get_packages_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
+	}
 
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	output.reserve(m_apt->cacheFile->HeaderP->PackageCount);
@@ -1208,7 +1211,7 @@ backend_get_packages_thread (PkBackend *backend)
 			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
 	}
 
-	std::sort(output.begin(), output.end(), compare());
+	sort(output.begin(), output.end(), compare());
 
 	// It's faster to emmit the packages rather here than in the matching part
 	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();

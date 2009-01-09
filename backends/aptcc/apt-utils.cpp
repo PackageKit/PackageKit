@@ -22,31 +22,30 @@
 #include "apt-utils.h"
 
 #include <apt-pkg/pkgrecords.h>
-#include <string.h>
 
-std::string get_short_description(const pkgCache::VerIterator &ver,
+string get_short_description(const pkgCache::VerIterator &ver,
                                    pkgRecords *records)
 {
 	if(ver.end() || ver.FileList().end() || records == NULL)
-		return std::string();
+		return string();
 
 // #ifndef HAVE_DDTP
 // 	pkgCache::VerFileIterator vf = ver.FileList();
 //
 // 	if(vf.end())
-// 		return std::string();
+// 		return string();
 // 	else
 // 		return records->Lookup(vf).ShortDesc();
 // #else
 	pkgCache::DescIterator d = ver.TranslatedDescription();
 
 	if(d.end())
-		return std::string();
+		return string();
 
 	pkgCache::DescFileIterator df = d.FileList();
 
 	if(df.end())
-		return std::string();
+		return string();
 	else
 		// apt "helpfully" cw::util::transcodes the description for us, instead of
 		// providing direct access to it.  So I need to assume that the
@@ -55,36 +54,36 @@ std::string get_short_description(const pkgCache::VerIterator &ver,
 // #endif
 }
 
-std::string get_long_description(const pkgCache::VerIterator &ver,
+string get_long_description(const pkgCache::VerIterator &ver,
 				  pkgRecords *records)
 {
 	if(ver.end() || ver.FileList().end() || records == NULL)
-		return std::string();
+		return string();
 
 // #ifndef HAVE_DDTP
 // 	pkgCache::VerFileIterator vf = ver.FileList();
 // 
 // 	if(vf.end())
-// 		return std::string();
+// 		return string();
 // 	else
 // 		return records->Lookup(vf).LongDesc();
 // #else
 	pkgCache::DescIterator d = ver.TranslatedDescription();
 
 	if(d.end())
-		return std::string();
+		return string();
 
 	pkgCache::DescFileIterator df = d.FileList();
 
 	if(df.end())
-		return std::string();
+		return string();
 	else
 		return records->Lookup(df).LongDesc();
 // #endif
 }
 
 PkGroupEnum
-get_enum_group (std::string group)
+get_enum_group (string group)
 {
 	if (group.compare ("admin") == 0) {
 		return PK_GROUP_ENUM_ADMIN_TOOLS;
