@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 200 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (C) 2001, 2005 Daniel Burrows (aptitude)
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -27,6 +28,36 @@
 
 #include <packagekit-glib/packagekit.h>
 #include <pk-backend.h>
+
+#include <string.h>
+
+using namespace std;
+
+// compare...uses the candidate version of each package.
+class compare
+{
+public:
+	compare() {}
+
+	bool operator()(const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &a,
+			const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &b)
+	{
+		return strcmp(a.first.Name(), b.first.Name()) < 0;
+	}
+};
+
+/** \brief operator== for match results. */
+class result_equality
+{
+public:
+	result_equality() {}
+
+	bool operator()(const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &a,
+			const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &b)
+	{
+		return strcmp(a.first.Name(), b.first.Name()) == 0;
+	}
+};
 
 /** \return a short description string corresponding to the given
  *  version.
