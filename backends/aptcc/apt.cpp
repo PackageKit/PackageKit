@@ -1,109 +1,112 @@
+// apt.cc
+//
+//  Copyright 1999-2008 Daniel Burrows
+//  Copyright (C) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; see the file COPYING.  If not, write to
+//  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+//  Boston, MA 02111-1307, USA.
 
 #include "apt.h"
 #include "apt-utils.h"
-#include <pk-backend.h>
-#include <apt-pkg/sourcelist.h>
 
-apt_init::apt_init(const char *locale, pkgSourceList &apt_source_list)
+#include <pk-backend.h>
+
+#include <apt-pkg/sourcelist.h>
+#include <apt-pkg/error.h>
+
+aptcc::aptcc()
 	:
 	packageRecords(0),
 	cacheFile(0),
 	Map(0),
 	DCache(0)
 {
+}
+
+bool aptcc::init(const char *locale, pkgSourceList &apt_source_list)
+{
 	// Generate it and map it
 	setlocale(LC_ALL, locale);
 	pkgMakeStatusCache(apt_source_list, Progress, &Map, true);
 	cacheFile = new pkgCache(Map);
+	if(_error->PendingError())
+		return false;
 
 	// Create the text record parser
 	packageRecords = new pkgRecords (*cacheFile);
 
-
-pkgSourceList List;
-  if(!List.ReadMainList())
-  printf("-->The list of sources could not be read.\n");
-
 	// create depcache
 	pkgPolicy Plcy(cacheFile);
-// if(_error->PendingError())
-// printf("-->PendingError\n");
-printf("-->ReadPinFile\n");
-if(!ReadPinFile(Plcy))
-    printf("-->return false;\n");
+	if(_error->PendingError()) {
+		return false;
+	}
 
-DCache = new pkgDepCache(cacheFile, &Plcy);
-// if(_error->PendingError())
-// printf("-->PendingError\n");
+	if(!ReadPinFile(Plcy)) {
+		return false;
+	}
 
-  DCache->Init(&Progress/*, WithLock, do_initselections, status_fname*/);
-  Progress.Done();
-//   if(_error->PendingError())
-printf("-->end\n");
+	DCache = new pkgDepCache(cacheFile, &Plcy);
+	if(_error->PendingError()) {
+		return false;
+	}
+
+	DCache->Init(&Progress);
+	if(_error->PendingError()) {
+		return false;
+	}
 }
 
-apt_init::~apt_init()
+aptcc::~aptcc()
 {
 	if (packageRecords)
 	{
 		egg_debug ("~apt_init packageRecords");
 		delete packageRecords;
-		packageRecords = NULL;
 	}
 
 	if (cacheFile)
 	{
 		egg_debug ("~apt_init cacheFile");
 		delete cacheFile;
-		cacheFile = NULL;
 	}
 
 	if (DCache)
 	{
 		egg_debug ("~apt_init DCache");
 		delete DCache;
-		DCache = NULL;
 	}
 
 	delete Map;
 }
 
-pkgCache::VerIterator apt_init::find_ver(pkgCache::PkgIterator pkg)
+pkgCache::VerIterator aptcc::find_ver(pkgCache::PkgIterator pkg)
 {
-// printf("-->sourcestr %s - %d<<<>>%d<\n", sourcestr.c_str(), source, cmdline_version_curr_or_cand);
-//   switch(source)
-//     {
-//     case cmdline_version_curr_or_cand:
-      if(!pkg.CurrentVer().end())
-	return pkg.CurrentVer();
-      // Fall-through.
-//     case cmdline_version_cand:
-//       {
+	// if the package is installed return the current version
+	if(!pkg.CurrentVer().end()) {
+		return pkg.CurrentVer();
+	}
 
-pkgDepCache::StateCache & State = (*DCache)[pkg];
-//    if (State.CandidateVer == 0)
-//       return NULL;
-//    return State.CandidateVerIter(*_depcache).VerStr();
-// printf("-->candver\n");
-pkgCache::VerIterator candver=State.CandidateVerIter(*DCache);
-// ::StateCache
-// 	pkgCache::VerIterator candver=Plcy.GetCandidateVer(pkg);
-// printf("-->candver\n");
-// 	pkgCache::VerIterator candver=((pkgDepCache::StateCache) (*DCache)[pkg]).CandidateVerIter(*apt_cache_file);
-// printf("-->candver\n");
+	// Else get the candidate version iterator
+	pkgCache::VerIterator candver=(*DCache)[pkg].CandidateVerIter(*DCache);
 	if(!candver.end())
-	  {
+	{
 	    return candver;
 	}
-// printf("-->candver\n");
-	  return pkg.VersionList();
-// 	    if(source == cmdline_version_cand)
-// 	      printf(_("No candidate version found for %s\n"), pkg.Name());
-// 	    else
-// 	      printf(_("No current or candidate version found for %s\n"), pkg.Name());
-// 	  }
 
-// 	return candver;
+	// return the version list as a last resource
+	return pkg.VersionList();
 }
 
 // used to emit packages it collects all the needed info
