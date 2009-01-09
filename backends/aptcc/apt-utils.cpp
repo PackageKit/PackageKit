@@ -72,14 +72,14 @@ std::string get_long_description(const pkgCache::VerIterator &ver,
 	pkgCache::DescIterator d = ver.TranslatedDescription();
 
 	if(d.end())
-		    return std::string();
+		return std::string();
 
 	pkgCache::DescFileIterator df = d.FileList();
 
 	if(df.end())
-		    return std::string();
+		return std::string();
 	else
-		    return records->Lookup(df).LongDesc();
+		return records->Lookup(df).LongDesc();
 // #endif
 }
 

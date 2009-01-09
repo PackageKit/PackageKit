@@ -778,7 +778,7 @@ backend_search_group_thread (PkBackend *backend)
 
 	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
 
-	vector<pkgCache::PkgIterator> output;
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
 		// Ignore packages that exist only due to dependencies.
 		if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
@@ -786,33 +786,30 @@ backend_search_group_thread (PkBackend *backend)
 		}
 
 		// Ignore virtual packages
-		if (pkg.VersionList().end() == false) {
+		pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+		if (ver.end() == false) {
 			std::string section = pkg.VersionList().Section();
 
 			size_t found;
 			found = section.find_last_of("/");
 			section = section.substr(found + 1);
 
-			pkgCache::VerFileIterator vf = pkg.VersionList().FileList();
+// 			pkgCache::VerFileIterator vf = pkg.VersionList().FileList();
 
 			// Don't insert virtual packages instead add what it provides
 			if (pkGroup == get_enum_group(section)) {
-				output.push_back(pkg);
+				output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
 			}
 		}
 	}
 
-	// TODO sort output
-	//   std::sort(output.begin(), output.end(), compare(s));
-	// TODO this might be faster than doing the normal iteration to remove duplicated packages
-	//   output.erase(std::unique(output.begin(), output.end(), result_equality(s)),
-	// 	       output.end());
+	std::sort(output.begin(), output.end(), compare());
 
-	// It's faster to emmit the packages here than in the matching part
-	for(vector<pkgCache::PkgIterator>::iterator i=output.begin();
+	// It's faster to emmit the packages here rather than in the matching part
+	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
 	    i != output.end(); ++i)
 	{
-		emit_package (backend, m_apt->packageRecords, filters, *i, (*i).VersionList());
+		emit_package (backend, m_apt->packageRecords, filters, i->first, i->second);
 	}
 
 	delete m_apt;
@@ -879,7 +876,7 @@ backend_search_name_thread (PkBackend *backend)
 	}
 
 	pkgDepCache::Policy Plcy;
-	vector<pkgCache::PkgIterator> output;
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
 		// Ignore packages that exist only due to dependencies.
 		if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
@@ -898,46 +895,35 @@ backend_search_name_thread (PkBackend *backend)
 	// 		}
 		if (regexec(&Patterns[0],pkg.Name(), 0, 0, 0) == 0) {
 			// Don't insert virtual packages instead add what it provides
-			if (pkg.VersionList().end() == false) {
-				output.push_back(pkg);
+			pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+			if (ver.end() == false) {
+				output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
 			} else {
 				// iterate over the provides list
 				for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
-					pkgCache::VerIterator V = Plcy.GetCandidateVer(Prv.OwnerPkg());
+					ver = m_apt->find_ver(Prv.OwnerPkg());
+// 					pkgCache::VerIterator V = Plcy.GetCandidateVer(Prv.OwnerPkg());
 					// check to see if the provided package isn't virtual too
-					if (V.end() == false)
+					if (ver.end() == false)
 					{
-						bool insert = true;
-						// let's check if the packes isn't already in the list
-						for(vector<pkgCache::PkgIterator>::iterator i=output.begin();
-							i!=output.end(); ++i)
-						{
-							if (*i == Prv.OwnerPkg()) {
-								insert = false;
-								break;
-							}
-						}
-
-						if (insert) {
-							output.push_back(Prv.OwnerPkg());
-						}
+						// we add the package now because we will need to
+						// remove duplicates later anyway
+						output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
 					}
 				}
 			}
 		}
 	}
 
-	// TODO sort output
-	//   std::sort(output.begin(), output.end(), compare(s));
-	// TODO this might be faster than doing the normal iteration to remove duplicated packages
-	//   output.erase(std::unique(output.begin(), output.end(), result_equality(s)),
-	// 	       output.end());
+	std::sort(output.begin(), output.end(), compare());
+	output.erase(std::unique(output.begin(), output.end(), result_equality()),
+		       output.end());
 
 	// It's faster to emmit the packages here than in the matching part
-	for(vector<pkgCache::PkgIterator>::iterator i=output.begin();
+	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
 	    i != output.end(); ++i)
 	{
-		emit_package (backend, m_apt->packageRecords, filters, *i, (*i).VersionList());
+		emit_package (backend, m_apt->packageRecords, filters, i->first, i->second);
 	}
 
 	for (unsigned I = 0; I != NumPatterns; I++)
@@ -1207,6 +1193,8 @@ backend_get_packages_thread (PkBackend *backend)
 
 	apt_init *m_apt = new apt_init(pk_backend_get_locale (backend), *apt_source_list);
 
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+	output.reserve(m_apt->cacheFile->HeaderP->PackageCount);
 	for(pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin();
 	    !pkg.end(); ++pkg)
 	{
@@ -1215,8 +1203,18 @@ backend_get_packages_thread (PkBackend *backend)
 			continue;
 
 		// Don't insert virtual packages as they don't have all kinds of info
-		if (pkg.VersionList().end() == false)
-			emit_package (backend, m_apt->packageRecords, filters, pkg, pkg.VersionList());
+		pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+		if (ver.end() == false)
+			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+	}
+
+	std::sort(output.begin(), output.end(), compare());
+
+	// It's faster to emmit the packages rather here than in the matching part
+	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
+	    i != output.end(); ++i)
+	{
+		emit_package (backend, m_apt->packageRecords, filters, i->first, i->second);
 	}
 
 	delete m_apt;

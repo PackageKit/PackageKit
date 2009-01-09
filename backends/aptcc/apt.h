@@ -25,23 +25,28 @@
 #include <apt-pkg/pkgrecords.h>
 #include <apt-pkg/sourcelist.h>
 #include <apt-pkg/pkgcachegen.h>
+#include <apt-pkg/policy.h>
 
 #include <packagekit-glib/packagekit.h>
 #include <pk-backend.h>
 
 #include <string>
 
-/** \return a short description string corresponding to the given
-*  version.
+/**
+*  Emits a package if it match the filters
 */
 void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
 		   const pkgCache::PkgIterator &pkg,
 		   const pkgCache::VerIterator &ver);
-
+/**
+*  Emits details
+*/
 void emit_details (PkBackend *backend, pkgRecords *records,
 		   const pkgCache::PkgIterator &pkg,
 		   const pkgCache::VerIterator &ver);
-
+/**
+*  Emits required packages
+*/
 void emit_requires (PkBackend *backend, pkgRecords *records, PkBitfield filters,
 		   const pkgCache::PkgIterator &pkg,
 		   const pkgCache::VerIterator &ver);
@@ -52,9 +57,14 @@ public:
 	apt_init(const char *locale, pkgSourceList &apt_source_list);
 	~apt_init();
 
+	pkgCache::VerIterator find_ver(pkgCache::PkgIterator pkg);
+
 	pkgRecords    *packageRecords;
 	pkgCache      *cacheFile;
 	MMap          *Map;
+private:
+	OpProgress    Progress;
+	pkgDepCache   *DCache;
 };
 
 #endif

@@ -2,21 +2,44 @@
 #include "apt.h"
 #include "apt-utils.h"
 #include <pk-backend.h>
+#include <apt-pkg/sourcelist.h>
 
 apt_init::apt_init(const char *locale, pkgSourceList &apt_source_list)
 	:
 	packageRecords(0),
 	cacheFile(0),
-	Map(0)
+	Map(0),
+	DCache(0)
 {
-	OpProgress    Prog;
 	// Generate it and map it
 	setlocale(LC_ALL, locale);
-	pkgMakeStatusCache(apt_source_list, Prog, &Map, true);
+	pkgMakeStatusCache(apt_source_list, Progress, &Map, true);
 	cacheFile = new pkgCache(Map);
 
 	// Create the text record parser
 	packageRecords = new pkgRecords (*cacheFile);
+
+
+pkgSourceList List;
+  if(!List.ReadMainList())
+  printf("-->The list of sources could not be read.\n");
+
+	// create depcache
+	pkgPolicy Plcy(cacheFile);
+// if(_error->PendingError())
+// printf("-->PendingError\n");
+printf("-->ReadPinFile\n");
+if(!ReadPinFile(Plcy))
+    printf("-->return false;\n");
+
+DCache = new pkgDepCache(cacheFile, &Plcy);
+// if(_error->PendingError())
+// printf("-->PendingError\n");
+
+  DCache->Init(&Progress/*, WithLock, do_initselections, status_fname*/);
+  Progress.Done();
+//   if(_error->PendingError())
+printf("-->end\n");
 }
 
 apt_init::~apt_init()
@@ -35,7 +58,52 @@ apt_init::~apt_init()
 		cacheFile = NULL;
 	}
 
+	if (DCache)
+	{
+		egg_debug ("~apt_init DCache");
+		delete DCache;
+		DCache = NULL;
+	}
+
 	delete Map;
+}
+
+pkgCache::VerIterator apt_init::find_ver(pkgCache::PkgIterator pkg)
+{
+// printf("-->sourcestr %s - %d<<<>>%d<\n", sourcestr.c_str(), source, cmdline_version_curr_or_cand);
+//   switch(source)
+//     {
+//     case cmdline_version_curr_or_cand:
+      if(!pkg.CurrentVer().end())
+	return pkg.CurrentVer();
+      // Fall-through.
+//     case cmdline_version_cand:
+//       {
+
+pkgDepCache::StateCache & State = (*DCache)[pkg];
+//    if (State.CandidateVer == 0)
+//       return NULL;
+//    return State.CandidateVerIter(*_depcache).VerStr();
+// printf("-->candver\n");
+pkgCache::VerIterator candver=State.CandidateVerIter(*DCache);
+// ::StateCache
+// 	pkgCache::VerIterator candver=Plcy.GetCandidateVer(pkg);
+// printf("-->candver\n");
+// 	pkgCache::VerIterator candver=((pkgDepCache::StateCache) (*DCache)[pkg]).CandidateVerIter(*apt_cache_file);
+// printf("-->candver\n");
+	if(!candver.end())
+	  {
+	    return candver;
+	}
+// printf("-->candver\n");
+	  return pkg.VersionList();
+// 	    if(source == cmdline_version_cand)
+// 	      printf(_("No candidate version found for %s\n"), pkg.Name());
+// 	    else
+// 	      printf(_("No current or candidate version found for %s\n"), pkg.Name());
+// 	  }
+
+// 	return candver;
 }
 
 // used to emit packages it collects all the needed info
@@ -46,12 +114,8 @@ void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
 	PkInfoEnum state;
 	if (pkg->CurrentState == pkgCache::State::Installed) {
 		state = PK_INFO_ENUM_INSTALLED;
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED))
-			return;
 	} else {
 		state = PK_INFO_ENUM_AVAILABLE;
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
-			return;
 	}
 
 	if (filters != 0) {
@@ -62,6 +126,14 @@ void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
 		found = str.find_last_of("/");
 		section = str.substr(found + 1);
 		repo_section = str.substr(0, found);
+
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)
+		    && state == PK_INFO_ENUM_INSTALLED) {
+			return;
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)
+		    && state == PK_INFO_ENUM_AVAILABLE) {
+			return;
+		}
 
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
 			// if ver.end() means unknow
