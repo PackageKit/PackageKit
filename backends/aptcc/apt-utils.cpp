@@ -163,3 +163,9 @@ get_enum_group (string group)
 		return PK_GROUP_ENUM_UNKNOWN;
 	}
 }
+
+bool ends_with (const string &str, const char *end)
+{
+	size_t endSize = strlen(end);
+	return str.size() >= endSize && (memcmp(str.data() + str.size() - endSize, end, endSize) == 0);
+}

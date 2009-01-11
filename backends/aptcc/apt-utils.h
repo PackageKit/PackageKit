@@ -73,5 +73,11 @@ string get_long_description(const pkgCache::VerIterator &ver,
 /**
   * Return the PkEnumGroup of the give group string.
   */
-PkGroupEnum get_enum_group (std::string group);
+PkGroupEnum get_enum_group (string group);
+
+/**
+  * Return if the given string ends with the other
+  */
+bool ends_with (const string &str, const char *end);
+
 #endif
