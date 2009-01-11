@@ -142,15 +142,15 @@ void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
 			// if ver.end() means unknow
 			// strcmp will be true when it's different than devel
 			std::string pkgName = pkg.Name();
-			if (pkgName.compare(pkgName.size() - 4, 4, "-dev") &&
-			    pkgName.compare(pkgName.size() - 4, 4, "-dbg") &&
+			if (!ends_with(pkgName, "-dev") &&
+			    !ends_with(pkgName, "-dbg") &&
 			    section.compare("devel") &&
 			    section.compare("libdevel"))
 				return;
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
 			std::string pkgName = pkg.Name();
-			if (!pkgName.compare(pkgName.size() - 4, 4, "-dev") ||
-			    !pkgName.compare(pkgName.size() - 4, 4, "-dbg") ||
+			if (ends_with(pkgName, "-dev") ||
+			    ends_with(pkgName, "-dbg") ||
 			    !section.compare("devel") ||
 			    !section.compare("libdevel"))
 				return;
