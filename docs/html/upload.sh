@@ -14,6 +14,7 @@ LOCATION="/srv/www/html"
 scp *.html $USER@$SERVER:/$LOCATION/
 scp img/*.png $USER@$SERVER:/$LOCATION/img/
 scp img/thumbnails/*.png $USER@$SERVER:/$LOCATION/img/thumbnails/
+scp videos/*.ogv $USER@$SERVER:/$LOCATION/videos/
 scp *.css $USER@$SERVER:/$LOCATION/
 scp ../api/html/*.html $USER@$SERVER:/$LOCATION/gtk-doc/
 scp ../api/html/*.png $USER@$SERVER:/$LOCATION/gtk-doc/

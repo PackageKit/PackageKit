@@ -804,7 +804,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	obj = pk_package_obj_new (info, id, summary_safe);
 	ret = pk_package_obj_equal (obj, backend->priv->last_package);
 	if (ret) {
-		pk_package_obj_free (obj);
 		egg_debug ("skipping duplicate %s", package_id);
 		ret = FALSE;
 		goto out;
@@ -1400,7 +1399,7 @@ pk_backend_get_role (PkBackend *backend)
  * Should only be used internally, or from PkRunner when setting CANCELLED.
  **/
 gboolean
-pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)
+pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit_enum)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -1408,13 +1407,13 @@ pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)
 	if (backend->priv->exit != PK_EXIT_ENUM_UNKNOWN) {
 		egg_warning ("already set exit status: old=%s, new=%s",
 			    pk_exit_enum_to_text (backend->priv->exit),
-			    pk_exit_enum_to_text (exit));
+			    pk_exit_enum_to_text (exit_enum));
 		egg_debug_backtrace ();
 		return FALSE;
 	}
 
 	/* new value */
-	backend->priv->exit = exit;
+	backend->priv->exit = exit_enum;
 	return TRUE;
 }
 
@@ -1920,6 +1919,7 @@ pk_backend_new (void)
 #include <glib/gstdio.h>
 
 static guint number_messages = 0;
+static guint number_packages = 0;
 
 /**
  * pk_backend_test_message_cb:
@@ -1954,6 +1954,9 @@ static gboolean
 pk_backend_test_func_true (PkBackend *backend)
 {
 	g_usleep (1000*1000);
+	/* trigger duplicate test */
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1963,6 +1966,16 @@ pk_backend_test_func_immediate_false (PkBackend *backend)
 {
 	pk_backend_finished (backend);
 	return FALSE;
+}
+
+/**
+ * pk_backend_test_package_cb:
+ **/
+static void
+pk_backend_test_package_cb (PkBackend *backend, const PkPackageObj *obj, EggTest *test)
+{
+	egg_debug ("package:%s", obj->id->name);
+	number_packages++;
 }
 
 void
@@ -1983,6 +1996,10 @@ pk_backend_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
+
+	/* connect */
+	g_signal_connect (backend, "package",
+			  G_CALLBACK (pk_backend_test_package_cb), test);
 
 	/************************************************************/
 	egg_test_title (test, "create a config file");
@@ -2164,6 +2181,13 @@ pk_backend_test (EggTest *test)
 	/* wait for Finished */
 	egg_test_loop_wait (test, 2000);
 	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "check duplicate filter");
+	if (number_packages == 1)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong number of pacakges: %s", number_packages);
 
 	/* reset */
 	pk_backend_reset (backend);

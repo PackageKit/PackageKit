@@ -158,9 +158,9 @@ egg_test_finish (EggTest *test)
 guint
 egg_test_elapsed (EggTest *test)
 {
-	gdouble time;
-	time = g_timer_elapsed (test->timer, NULL);
-	return (guint) (time * 1000.0f);
+	gdouble time_s;
+	time_s = g_timer_elapsed (test->timer, NULL);
+	return (guint) (time_s * 1000.0f);
 }
 
 /**
@@ -188,7 +188,6 @@ egg_test_end (EggTest *test)
 		g_print ("Not started test! Cannot finish!\n");
 		exit (1);
 	}
-	g_print ("OK\n");
 
 	/* disable hang check */
 	if (test->hang_loop_id != 0) {

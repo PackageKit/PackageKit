@@ -50,8 +50,6 @@
 #include "pk-network-unix.h"
 #include "pk-marshal.h"
 
-static void     pk_network_unix_class_init	(PkNetworkUnixClass *klass);
-static void     pk_network_unix_init		(PkNetworkUnix      *network_unix);
 static void     pk_network_unix_finalize	(GObject        *object);
 
 #define PK_NETWORK_UNIX_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NETWORK_UNIX, PkNetworkUnixPrivate))

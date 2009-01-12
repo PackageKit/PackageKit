@@ -7,7 +7,6 @@ rucksupport_DATA = 			\
 	ruckcommand.py			\
 	ruckmain.py			\
 	ruckformat.py			\
-	rucklocks.py 			\
 	ruckyum.py    			\
 	rucktalk.py
 

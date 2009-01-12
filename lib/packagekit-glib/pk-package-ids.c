@@ -173,7 +173,7 @@ pk_package_ids_size (gchar **package_ids)
  * pk_package_ids_to_text:
  * @package_ids: a string array of package_id's
  *
- * Cats the string array of package_id's into one tab delimited string
+ * Cats the string array of package_id's into one delimited string
  *
  * Return value: a string representation of all the package_id's.
  **/
@@ -183,7 +183,7 @@ pk_package_ids_to_text (gchar **package_ids)
 	/* special case as this is allowed */
 	if (package_ids == NULL)
 		return g_strdup ("(null)");
-	return pk_strv_to_text (package_ids, PK_PACKAGE_IDS_DELIM);
+	return g_strjoinv (PK_PACKAGE_IDS_DELIM, package_ids);
 }
 
 /***************************************************************************

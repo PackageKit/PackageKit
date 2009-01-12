@@ -224,7 +224,7 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *searc
 /**
  * backend_search_name_timeout:
  **/
-gboolean
+static gboolean
 backend_search_name_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;

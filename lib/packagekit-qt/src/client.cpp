@@ -500,6 +500,20 @@ Transaction* Client::rollback(Transaction* oldtrans)
 	return t;
 }
 
+Transaction* Client::searchFile(const QString& search, Filters filters)
+{
+        Transaction* t = d->createNewTransaction();
+
+        t->d->p->SearchFile(Util::filtersToString(filters), search);
+
+        return t;
+}
+
+Transaction* Client::searchFile(const QString& search, Filter filter)
+{
+        return Client::searchFile(search, Filters() << filter);
+}
+
 Transaction* Client::searchDetails(const QString& search, Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
@@ -507,6 +521,11 @@ Transaction* Client::searchDetails(const QString& search, Filters filters)
 	t->d->p->SearchDetails(Util::filtersToString(filters), search);
 
 	return t;
+}
+
+Transaction* Client::searchDetails(const QString& search, Filter filter)
+{
+        return Client::searchDetails(search, Filters() << filter);
 }
 
 Transaction* Client::searchGroup(Client::Group group, Filters filters)

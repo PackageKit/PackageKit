@@ -50,8 +50,6 @@
 
 #include "egg-debug.h"
 
-static void     pk_control_class_init	(PkControlClass *klass);
-static void     pk_control_init		(PkControl      *control);
 static void     pk_control_finalize	(GObject     *object);
 
 #define PK_CONTROL_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CONTROL, PkControlPrivate))

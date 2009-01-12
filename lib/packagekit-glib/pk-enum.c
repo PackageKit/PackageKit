@@ -168,6 +168,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY,	"no-more-mirrors-to-try"},
 	{PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,	"no-distro-upgrade-data"},
 	{PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,	"incompatible-architecture"},
+	{PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,	"no-space-on-device"},
 	{0, NULL}
 };
 
@@ -636,9 +637,9 @@ pk_info_enum_to_text (PkInfoEnum info)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 PkExitEnum
-pk_exit_enum_from_text (const gchar *exit)
+pk_exit_enum_from_text (const gchar *exit_text)
 {
-	return pk_enum_find_value (enum_exit, exit);
+	return pk_enum_find_value (enum_exit, exit_text);
 }
 
 /**
@@ -650,9 +651,9 @@ pk_exit_enum_from_text (const gchar *exit)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_exit_enum_to_text (PkExitEnum exit)
+pk_exit_enum_to_text (PkExitEnum exit_enum)
 {
-	return pk_enum_find_string (enum_exit, exit);
+	return pk_enum_find_string (enum_exit, exit_enum);
 }
 
 /**

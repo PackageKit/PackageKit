@@ -383,7 +383,7 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 static gboolean
 pk_console_pulse_bar (PulseState *pulse_state)
 {
-	guint i;
+	gint i;
 
 	if (!has_output_bar)
 		return TRUE;
@@ -467,7 +467,7 @@ pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subper
  * pk_console_signature_finished_cb:
  **/
 static void
-pk_console_signature_finished_cb (PkClient *client_signature, PkExitEnum exit, guint runtime, gpointer data)
+pk_console_signature_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, gpointer data)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -485,7 +485,7 @@ pk_console_signature_finished_cb (PkClient *client_signature, PkExitEnum exit, g
  * pk_console_install_files_finished_cb:
  **/
 static void
-pk_console_install_files_finished_cb (PkClient *client_signature, PkExitEnum exit, guint runtime, gpointer data)
+pk_console_install_files_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, gpointer data)
 {
 	g_main_loop_quit (loop);
 }
@@ -494,11 +494,11 @@ pk_console_install_files_finished_cb (PkClient *client_signature, PkExitEnum exi
  * pk_console_finished_cb:
  **/
 static void
-pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpointer data)
+pk_console_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, gpointer data)
 {
 	PkRoleEnum role;
 	const gchar *role_text;
-	gfloat time;
+	gfloat time_s;
 	PkRestartEnum restart;
 
 	pk_client_get_role (client, &role, NULL, NULL);
@@ -512,12 +512,12 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 		g_source_remove (timer_id);
 
 	role_text = pk_role_enum_to_text (role);
-	time = (gfloat) runtime / 1000.0;
+	time_s = (gfloat) runtime / 1000.0;
 
 	/* do we need to new line? */
 	if (awaiting_space)
 		g_print ("\n");
-	egg_debug ("%s runtime was %.1f seconds", role_text, time);
+	egg_debug ("%s runtime was %.1f seconds", role_text, time_s);
 
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
@@ -529,19 +529,19 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 		g_print ("%s\n", _("Please restart the application as it is being used."));
 
 	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
-	    exit == PK_EXIT_ENUM_FAILED && need_requeue) {
+	    exit_enum == PK_EXIT_ENUM_FAILED && need_requeue) {
 		egg_warning ("waiting for second install file to finish");
 		return;
 	}
 
 	/* have we failed to install, and the gpg key is now installed */
-	if (exit == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
+	if (exit_enum == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
 		egg_debug ("key now installed");
 		return;
 	}
 
 	/* have we failed to install, and the eula key is now installed */
-	if (exit == PK_EXIT_ENUM_EULA_REQUIRED && need_requeue) {
+	if (exit_enum == PK_EXIT_ENUM_EULA_REQUIRED && need_requeue) {
 		egg_debug ("eula now agreed");
 		return;
 	}
@@ -748,7 +748,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	const PkPackageObj *obj;
 	guint i;
 	guint length;
-	gboolean remove;
+	gboolean remove_deps;
 	GPtrArray *array;
 	gchar **package_ids = NULL;
 	PkPackageList *list;
@@ -842,10 +842,10 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	}
 
 	/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-	remove = pk_console_get_prompt (_("Proceed removing additional packages?"), FALSE);
+	remove_deps = pk_console_get_prompt (_("Proceed removing additional packages?"), FALSE);
 
 	/* we chickened out */
-	if (!remove) {
+	if (!remove_deps) {
 		/* TRANSLATORS: We did not remove any packages */
 		g_print ("%s\n", _("The package removal was canceled!"));
 		ret = FALSE;
@@ -1421,6 +1421,7 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 {
 	PkRoleEnum role;
 	gchar **filevector;
+	gchar **current_file;
 
 	/* don't print if we are DownloadPackages */
 	pk_client_get_role (client, &role, NULL, NULL);
@@ -1437,8 +1438,7 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 	if (*filevector != NULL) {
 		/* TRANSLATORS: This a list files contained in the package */
 		g_print ("%s\n", _("Package files"));
-		gchar **current_file = filevector;
-
+		current_file = filevector;
 		while (*current_file != NULL) {
 			g_print ("  %s\n", *current_file);
 			current_file++;
@@ -1603,7 +1603,7 @@ pk_console_sigint_handler (int sig)
  * pk_console_get_summary:
  **/
 static gchar *
-pk_console_get_summary (PkBitfield roles)
+pk_console_get_summary (void)
 {
 	GString *string;
 	string = g_string_new ("");
@@ -1686,15 +1686,13 @@ main (int argc, char *argv[])
 	gchar *options_help;
 	gchar *filter = NULL;
 	gchar *summary;
-	gchar **package_ids;
-	gboolean ret;
+	gboolean ret = FALSE;
 	const gchar *mode;
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
 	PkBitfield groups;
 	gchar *text;
-	ret = FALSE;
 	gboolean maybe_sync = TRUE;
 	PkBitfield filters = 0;
 
@@ -1739,7 +1737,7 @@ main (int argc, char *argv[])
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_new ();
 	roles = pk_control_get_actions (control, NULL);
-	summary = pk_console_get_summary (roles);
+	summary = pk_console_get_summary ();
 
 	context = g_option_context_new ("PackageKit Console Program");
 	g_option_context_set_summary (context, summary) ;
@@ -1921,9 +1919,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("You need to specify a package name to resolve"));
 			goto out;
 		}
-		package_ids = pk_package_ids_from_id (value);
-		ret = pk_client_resolve (client_async, filters, package_ids, &error);
-		g_strfreev (package_ids);
+		ret = pk_client_resolve (client_async, filters, argv, &error);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {
@@ -1951,8 +1947,7 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-time") == 0) {
 		PkRoleEnum role;
-		guint time;
-		gboolean ret;
+		guint time_ms;
 		if (value == NULL) {
 			error = g_error_new (1, 0, "%s", _("You need to specify an action, e.g. 'update-system'"));
 			goto out;
@@ -1962,12 +1957,12 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("You need to specify a correct role"));
 			goto out;
 		}
-		ret = pk_control_get_time_since_action (control, role, &time, &error);
+		ret = pk_control_get_time_since_action (control, role, &time_ms, &error);
 		if (!ret) {
 			error = g_error_new (1, 0, "%s", _("Failed to get last time"));
 			goto out;
 		}
-		g_print ("time since %s is %is\n", value, time);
+		g_print ("time since %s is %is\n", value, time_ms);
 		maybe_sync = FALSE;
 
 	} else if (strcmp (mode, "get-depends") == 0) {

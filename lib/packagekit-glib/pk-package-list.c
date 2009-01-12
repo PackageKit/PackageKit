@@ -51,8 +51,6 @@
 #include <packagekit-glib/pk-package-obj.h>
 #include <packagekit-glib/pk-package-list.h>
 
-static void     pk_package_list_class_init	(PkPackageListClass *klass);
-static void     pk_package_list_init		(PkPackageList      *plist);
 static void     pk_package_list_finalize	(GObject            *object);
 
 #define PK_PACKAGE_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_PACKAGE_LIST, PkPackageListPrivate))

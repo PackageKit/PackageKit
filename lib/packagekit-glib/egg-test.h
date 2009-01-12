@@ -33,7 +33,7 @@ void		 egg_test_title			(EggTest *test, const gchar *format, ...);
 void		 egg_test_title_assert		(EggTest *test, const gchar *text, gboolean value);
 void		 egg_test_assert		(EggTest *test, gboolean value);
 void		 egg_test_success		(EggTest *test, const gchar *format, ...);
-void		 egg_test_failed		(EggTest *test, const gchar *format, ...);
+void		 egg_test_failed		(EggTest *test, const gchar *format, ...) G_GNUC_NORETURN;
 EggTest		*egg_test_init			(void);
 gint		 egg_test_finish		(EggTest *test);
 guint		 egg_test_elapsed		(EggTest *test);

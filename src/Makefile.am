@@ -79,6 +79,8 @@ shared_SOURCES =					\
 	pk-notify.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
+	pk-sysdep.h					\
+	pk-sysdep.c					\
 	pk-update-detail-list.c				\
 	pk-update-detail-list.h				\
 	pk-file-monitor.h				\
@@ -144,6 +146,10 @@ packagekitd_LDADD =					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\
+	$(NULL)
+
+packagekitd_CFLAGS =					\
+	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
 if BACKEND_TYPE_BOX

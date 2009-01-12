@@ -597,21 +597,21 @@ class PackageSearchCmd(PackageCmd):
         else:
             method = pkcon.search_name
 
-        filter = "none"
+        filter = pkenums.FILTER_NONE
         if options_dict.has_key('installed-only'):
-            filter = "installed"
+            filter = pkenums.FILTER_INSTALLED
         elif options_dict.has_key('uninstalled-only'):
-            filter = '~installed'
+            filter = pkenums.FILTER_NOT_INSTALLED
 
         result = {}
-        matches = method(filter, non_option_args[0])
+        matches = method(non_option_args[0], filter)
         if len(matches) > 0:
             table_keys = ["installed", "repo", "name", "version"]
             table_rows = []
             no_abbrev = options_dict.has_key("no-abbrev")
 
             for pkg in matches:
-                row = ruckformat.package_to_row(pkg['id'], no_abbrev, table_keys)
+                row = ruckformat.package_to_row(pkg, no_abbrev, table_keys)
                 table_rows.append(row)
 
             if options_dict.has_key("sort-by-repo"):
@@ -662,8 +662,7 @@ class PackageListUpdatesCmd(PackageCmd):
         updates = pkcon.get_updates()
 
         for new_pkg in updates:
-            row = ruckformat.package_to_row(new_pkg['id'],
-                                           no_abbrev, table_keys)
+            row = ruckformat.package_to_row(new_pkg, no_abbrev, table_keys)
             table_rows.append(row)
 
         if len(table_rows):
@@ -708,7 +707,7 @@ class  PackageUpdatesSummaryCmd(PackageCmd):
         updates = pkcon.get_updates()
         repos = {}
         for pkg in updates:
-            bits = ruckformat.package_to_row(pkg['id'], False, ['repo'])
+            bits = ruckformat.package_to_row(pkg, False, ['repo'])
             if not repos.has_key(bits[0]):
                 repos[bits[0]] = [bits[0], 0]
             repos[bits[0]][1] = str(int(repos[bits[0]][1])+1)
@@ -768,13 +767,13 @@ class PackageInfoCmd(ruckcommand.RuckCommand):
             ## Find the latest version
             latest_ver, latest_id = None, None
             for pkg in plist:
-                row = ruckformat.package_to_row(pkg['id'], False, ['version'])
+                row = ruckformat.package_to_row(pkg, False, ['version'])
                 if latest_ver == None or row[0] > latest_ver:
                     latest_ver= row[0]
                     latest_id = pkg
 
             latest = pkcon.get_details(latest_id['id'])[0]
-            details = ruckformat.package_to_row(latest['id'], False, ['name', 'version', 'repo', 'installed'])
+            details = ruckformat.package_to_row(latest, False, ['name', 'version', 'repo', 'installed'])
             latest['name'] = details[0]
             latest['version'] = details[1]
             latest['repo'] = details[2]

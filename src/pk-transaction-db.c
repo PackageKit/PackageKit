@@ -43,8 +43,6 @@
 #include "pk-transaction-db.h"
 #include "pk-marshal.h"
 
-static void     pk_transaction_db_class_init	(PkTransactionDbClass *klass);
-static void     pk_transaction_db_init		(PkTransactionDb      *tdb);
 static void     pk_transaction_db_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_DB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_DB, PkTransactionDbPrivate))
@@ -272,7 +270,7 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 	const gchar *role_text;
 	gchar *statement;
 	gchar *timespec = NULL;
-	guint time;
+	guint time_ms;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
 	g_return_val_if_fail (tdb->priv->db != NULL, 0);
@@ -294,11 +292,11 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 	}
 
 	/* work out the difference */
-	time = pk_iso8601_difference (timespec);
-	egg_debug ("timespec=%s, difference=%i", timespec, time);
+	time_ms = pk_iso8601_difference (timespec);
+	egg_debug ("timespec=%s, difference=%i", timespec, time_ms);
 	g_free (timespec);
 
-	return time;
+	return time_ms;
 }
 
 /**
@@ -524,7 +522,8 @@ static gboolean
 pk_transaction_db_create_table_last_action (PkTransactionDb *tdb)
 {
 	const gchar *role_text;
-	gchar *statement;
+	const gchar *statement;
+	gchar *statement2;
 	gchar *timespec;
 	guint i;
 
@@ -537,9 +536,9 @@ pk_transaction_db_create_table_last_action (PkTransactionDb *tdb)
 	for (i=0; i<PK_ROLE_ENUM_UNKNOWN; i++) {
 		role_text = pk_role_enum_to_text (i);
 		/* reset to now if the role does not exist */
-		statement = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
-		g_free (statement);
+		statement2 = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
+		sqlite3_exec (tdb->priv->db, statement2, NULL, NULL, NULL);
+		g_free (statement2);
 	}
 	g_free (timespec);
 	return TRUE;
@@ -624,6 +623,7 @@ pk_transaction_db_new (void)
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
 #ifdef EGG_TEST
+#include <glib/gstdio.h>
 #include "egg-test.h"
 
 void
@@ -640,6 +640,11 @@ pk_transaction_db_test (EggTest *test)
 #ifndef PK_IS_DEVELOPER
 	egg_test_end (test);
 	return;
+#endif
+
+	/* remove the self check file */
+#if PK_BUILD_LOCAL
+	g_unlink (PK_TRANSACTION_DB_FILE);
 #endif
 
 	db = pk_transaction_db_new ();
