@@ -1332,6 +1332,12 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 		return FALSE;
 	}
 
+	/* same as last state? */
+	if (backend->priv->allow_cancel == allow_cancel) {
+		egg_debug ("ignoring same allow-cancel state");
+		return TRUE;
+	}
+
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
 		backend->priv->allow_cancel = allow_cancel;
