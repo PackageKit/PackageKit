@@ -136,6 +136,7 @@ pk_main_timeout_check_cb (PkEngine *engine)
 	if (idle > exit_idle_time) {
 		egg_warning ("exit!!");
 		g_main_loop_quit (loop);
+		return FALSE;
 	}
 	return TRUE;
 }
