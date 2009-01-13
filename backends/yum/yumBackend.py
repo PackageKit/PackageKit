@@ -184,6 +184,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
         self.yumbase = PackageKitYumBase(self)
+
+        # get the lock early
+        if lock:
+            self.doLock()
+
         self.package_summary_cache = {}
         self.percentage_old = 0
         self.sub_percentage_old = 0
@@ -200,8 +205,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # this is global so we can catch sigquit and closedown
         yumbase = self.yumbase
         self._setup_yum()
-        if lock:
-            self.doLock()
 
     def percentage(self, percent=None):
         '''
