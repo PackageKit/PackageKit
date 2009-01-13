@@ -19,7 +19,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: PackageKit-glib = %{version}-%{release}
-Requires: PackageKit-udev-helper = %{version}-%{release}
 Requires: PackageKit-gtk-module = %{version}-%{release}
 Requires: PackageKit-yum-plugin = %{version}-%{release}
 Requires: PackageKit-yum = %{version}-%{release}
@@ -54,6 +53,10 @@ BuildRequires: cppunit-devel
 BuildRequires: pango-devel
 BuildRequires: fontconfig-devel
 
+# functionality moved to udev itself
+Obsoletes: PackageKit-udev-helper < %{version}-%{release}
+Obsoletes: udev-packagekit < %{version}-%{release}
+
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
 to manage packages in a secure way using a cross-distro,
@@ -84,18 +87,6 @@ Requires: %{name} = %{version}-%{release}
 
 %description docs
 API docs for PackageKit.
-
-%package udev-helper
-Summary: Tell PackageKit to install firmware that udev requires
-Group: System Environment/Base
-Requires: udev
-Requires: PackageKit
-Obsoletes: udev-packagekit < %{version}-%{release}
-
-%description udev-helper
-PackageKit-udev-helper tells PackageKit that firmware was not available and was
-needed. This allows PackageKit to do the right thing and prompt for
-the firmware to be installed.
 
 %package yum-plugin
 Summary: Tell PackageKit to check for updates when yum exits
@@ -345,14 +336,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %doc README AUTHORS NEWS COPYING
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/refresh-packagekit.conf
 /usr/lib/yum-plugins/refresh-packagekit.*
-
-%files udev-helper
-%defattr(-, root, root)
-%dir %{_localstatedir}/run/PackageKit
-%dir %{_localstatedir}/run/PackageKit/udev
-%doc README AUTHORS NEWS COPYING
-%{_sysconfdir}/udev/rules.d/*.rules
-/lib/udev/*.sh
 
 %files glib
 %defattr(-,root,root,-)
