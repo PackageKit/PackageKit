@@ -83,6 +83,7 @@ static const PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_LOADING_CACHE,		"loading-cache"},
 	{PK_STATUS_ENUM_SCAN_APPLICATIONS,	"scan-applications"},
 	{PK_STATUS_ENUM_GENERATE_PACKAGE_LIST,	"generate-package-list"},
+	{PK_STATUS_ENUM_WAITING_FOR_LOCK,	"waiting-for-lock"},
 	{0, NULL}
 };
 
