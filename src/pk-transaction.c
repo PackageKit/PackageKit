@@ -1645,7 +1645,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
-	gchar *directory;
+	gchar *directory = NULL;
 	gint retval;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -1659,7 +1659,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 				     "DownloadPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check if the sender is the same */
@@ -1667,7 +1667,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	if (!ret) {
 		/* don't release tid */
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
@@ -1678,7 +1678,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* create cache directory */
@@ -1690,7 +1690,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
 				     "cannot create %s", directory);
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -1704,12 +1704,14 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		return;
+		pk_transaction_dbus_return_error (context, error);
+		goto out;
 	}
 
-	g_free (directory);
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
+out:
+	g_free (directory);
 }
 
 /**
