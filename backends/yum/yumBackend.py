@@ -1402,8 +1402,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The packages failed to be installed")
 
     def _checkForNewer(self, po):
+	pkgs = None
         try:
             pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
+        except yum.Errors.PackageSackError:
+            pass
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if pkgs:
