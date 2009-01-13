@@ -1021,9 +1021,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
 
-	/* we are no longer waiting, we are setting up */
-	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
-
 	/* connect up the signals */
 	transaction->priv->signal_allow_cancel =
 		g_signal_connect (transaction->priv->backend, "allow-cancel",
@@ -1078,6 +1075,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->running = TRUE;
 	transaction->priv->has_been_run = TRUE;
 	transaction->priv->allow_cancel = FALSE;
+
+	/* we are no longer waiting, we are setting up */
+	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
 
 	/* set all possible arguments for backend */
 	store = pk_backend_get_store (priv->backend);
