@@ -277,7 +277,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try: # Try to lock yum
                 self.yumbase.doLock(YUM_PID_FILE)
                 PackageKitBaseBackend.doLock(self)
+                self.allow_cancel(False)
             except yum.Errors.LockError, e:
+                self.allow_cancel(True)
                 time.sleep(2)
                 retries += 1
                 if retries > 100:
