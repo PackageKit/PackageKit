@@ -645,7 +645,6 @@ contrib/Makefile
 contrib/browser-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
-contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
 contrib/ruck/Makefile

@@ -1,4 +1,4 @@
-SUBDIRS = udev
+SUBDIRS =
 
 if BACKEND_TYPE_YUM
 SUBDIRS += yum-packagekit
