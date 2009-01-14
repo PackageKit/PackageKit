@@ -536,8 +536,9 @@ pk_transaction_list_print (PkTransactionList *tlist)
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		role = pk_transaction_priv_get_role (item->transaction);
-		g_print ("%0i\t%s\trunning[%i] committed[%i] finished[%i]\n", i,
-			 pk_role_enum_to_text (role), item->running, item->committed, item->finished);
+		g_print ("%0i\t%s\t%s\trunning[%i] committed[%i] finished[%i]\n", i,
+			 pk_role_enum_to_text (role), item->tid, item->running,
+			 item->committed, item->finished);
 	}
 }
 
