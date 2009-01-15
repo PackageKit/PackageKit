@@ -730,8 +730,8 @@ pk_service_pack_scan_files_in_directory (PkServicePack *pack)
 	GDir *dir;
 	const gchar *filename;
 
-	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
-	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), NULL);
+	g_return_val_if_fail (pack->priv->directory != NULL, NULL);
 
 	/* try and open the directory */
 	dir = g_dir_open (pack->priv->directory, 0, NULL);
