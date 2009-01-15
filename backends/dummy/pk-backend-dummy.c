@@ -789,7 +789,7 @@ backend_update_system (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	_progress_percentage = 0;
-	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
+	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 	_signal_timeout = g_timeout_add (1000, backend_update_system_timeout, backend);
 }
 

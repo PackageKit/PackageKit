@@ -91,6 +91,7 @@ struct _PkClientPrivate
 	PkConnection		*pconnection;
 	gulong			 pconnection_signal_id;
 	PkRestartEnum		 require_restart;
+	GPtrArray		*require_restart_list;
 	PkStatusEnum		 last_status;
 	PkRoleEnum		 role;
 	gboolean		 cached_force;
@@ -455,6 +456,23 @@ pk_client_get_require_restart (PkClient *client)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	return client->priv->require_restart;
+}
+
+/**
+ * pk_client_get_require_restart_list:
+ * @client: a valid #PkClient instance
+ *
+ * This method allows a client program to discover what packages
+ * caused different require restarts.
+ *
+ * Return value: a #PkRestartEnum value, e.g. PK_RESTART_ENUM_SYSTEM
+ **/
+const GPtrArray	*
+pk_client_get_require_restart_list (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	return client->priv->require_restart_list;
 }
 
 /**
@@ -944,15 +962,21 @@ pk_client_caller_active_changed_cb (DBusGProxy  *proxy,
 static void
 pk_client_require_restart_cb (DBusGProxy  *proxy,
 			      const gchar *restart_text,
-			      const gchar *details,
+			      const gchar *package_id,
 			      PkClient    *client)
 {
 	PkRestartEnum restart;
+	PkPackageId *id;
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	restart = pk_restart_enum_from_text (restart_text);
-	egg_debug ("emit require-restart %i, %s", restart, details);
-	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, details);
+	id = pk_package_id_new_from_string (package_id);
+
+	/* save this in the array (is freed from array) */
+	g_ptr_array_add (client->priv->require_restart_list, id);
+
+	egg_debug ("emit require-restart %i, %s", restart, package_id);
+	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, id);
 	if (restart > client->priv->require_restart) {
 		client->priv->require_restart = restart;
 		egg_debug ("restart status now %s", pk_restart_enum_to_text (restart));
@@ -4144,8 +4168,8 @@ pk_client_class_init (PkClientClass *klass)
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, require_restart),
-			      NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+			      NULL, NULL, g_cclosure_marshal_VOID__UINT_POINTER,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_POINTER);
 	/**
 	 * PkClient::message:
 	 * @client: the #PkClient instance that emitted the signal
@@ -4357,6 +4381,10 @@ pk_client_reset (PkClient *client, GError **error)
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
 
+	/* clear restart array */
+	g_ptr_array_foreach (client->priv->require_restart_list, (GFunc) pk_package_id_free, NULL);
+	g_ptr_array_set_size (client->priv->require_restart_list, 0);
+
 	/* we need to do this now we have multiple paths */
 	pk_client_disconnect_proxy (client);
 
@@ -4399,6 +4427,7 @@ pk_client_init (PkClient *client)
 	client->priv->is_finished = FALSE;
 	client->priv->is_finishing = FALSE;
 	client->priv->package_list = pk_package_list_new ();
+	client->priv->require_restart_list = g_ptr_array_new ();
 	client->priv->cached_data = pk_obj_list_new ();
 	client->priv->cached_package_id = NULL;
 	client->priv->cached_package_ids = NULL;
@@ -4532,6 +4561,10 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->tid);
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
+
+	/* clear restart array */
+	g_ptr_array_foreach (client->priv->require_restart_list, (GFunc) pk_package_id_free, NULL);
+	g_ptr_array_free (client->priv->require_restart_list, TRUE);
 
 	/* clear the loop, if we were using it */
 	if (client->priv->synchronous)

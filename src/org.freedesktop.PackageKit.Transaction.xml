@@ -1915,11 +1915,11 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="details" direction="out">
+      <arg type="s" name="package_id" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              Optional details about the restart
+              The package ID that caused the restart notifier.
             </doc:para>
           </doc:summary>
         </doc:doc>

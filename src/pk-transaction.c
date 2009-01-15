@@ -886,7 +886,7 @@ pk_transaction_eula_required_cb (PkBackend *backend, const gchar *eula_id, const
  * pk_transaction_require_restart_cb:
  **/
 static void
-pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const gchar *details, PkTransaction *transaction)
+pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const gchar *package_id, PkTransaction *transaction)
 {
 	const gchar *restart_text;
 
@@ -894,8 +894,8 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, co
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	restart_text = pk_restart_enum_to_text (restart);
-	egg_debug ("emitting require-restart %s, '%s'", restart_text, details);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_REQUIRE_RESTART], 0, restart_text, details);
+	egg_debug ("emitting require-restart %s, '%s'", restart_text, package_id);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_REQUIRE_RESTART], 0, restart_text, package_id);
 }
 
 /**

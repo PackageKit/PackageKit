@@ -290,6 +290,11 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
+		if (!pk_package_id_check (sections[2])) {
+			egg_warning ("invalid package_id");
+			ret = FALSE;
+			goto out;
+		}
 		pk_backend_require_restart (backend_spawn->priv->backend, restart_enum, sections[2]);
 	} else if (egg_strequal (command, "message")) {
 		if (size != 3) {
