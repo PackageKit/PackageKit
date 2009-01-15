@@ -36,6 +36,7 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
+#include "pk-conf.h"
 #include "pk-network.h"
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
@@ -88,6 +89,7 @@ struct _PkBackendPrivate
 	gboolean		 set_signature;
 	gboolean		 set_eula;
 	gboolean		 has_sent_package;
+	gboolean		 use_time;
 	PkNetwork		*network;
 	PkStore			*store;
 	PkPackageObj		*last_package;
@@ -652,10 +654,9 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 		remaining = pk_time_get_remaining (backend->priv->time);
 		egg_debug ("this will now take ~%i seconds", remaining);
 
-#ifdef PK_IS_DEVELOPER
-		/* Until the predicted time is more sane... */
-		backend->priv->last_remaining = remaining;
-#endif
+		/* value cached from config file */
+		if (backend->priv->use_time)
+			backend->priv->last_remaining = remaining;
 	}
 
 	/* emit the progress changed signal */
@@ -1337,6 +1338,12 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 		return FALSE;
 	}
 
+	/* same as last state? */
+	if (backend->priv->allow_cancel == allow_cancel) {
+		egg_debug ("ignoring same allow-cancel state");
+		return TRUE;
+	}
+
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
 		backend->priv->allow_cancel = allow_cancel;
@@ -1868,6 +1875,8 @@ pk_backend_reset (PkBackend *backend)
 static void
 pk_backend_init (PkBackend *backend)
 {
+	PkConf *conf;
+
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
@@ -1891,6 +1900,11 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->file_monitor = pk_file_monitor_new ();
 	g_signal_connect (backend->priv->file_monitor, "file-changed",
 			  G_CALLBACK (pk_backend_file_monitor_changed_cb), backend);
+
+	/* do we use time estimation? */
+	conf = pk_conf_new ();
+	backend->priv->use_time = pk_conf_get_bool (conf, "UseRemainingTimeEstimation");
+	g_object_unref (conf);
 
 	pk_backend_reset (backend);
 }

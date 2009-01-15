@@ -153,8 +153,6 @@ def _truncate(text, length, etc='...'):
 def _is_development_repo(repo):
     if repo.endswith('-debuginfo'):
         return True
-    if repo.endswith('-testing'):
-        return True
     if repo.endswith('-debug'):
         return True
     if repo.endswith('-development'):
@@ -184,6 +182,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
         self.yumbase = PackageKitYumBase(self)
+
+        # get the lock early
+        if lock:
+            self.doLock()
+
         self.package_summary_cache = {}
         self.percentage_old = 0
         self.sub_percentage_old = 0
@@ -200,8 +203,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # this is global so we can catch sigquit and closedown
         yumbase = self.yumbase
         self._setup_yum()
-        if lock:
-            self.doLock()
 
     def percentage(self, percent=None):
         '''
@@ -274,7 +275,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try: # Try to lock yum
                 self.yumbase.doLock(YUM_PID_FILE)
                 PackageKitBaseBackend.doLock(self)
+                self.allow_cancel(False)
             except yum.Errors.LockError, e:
+                self.allow_cancel(True)
+                self.status(STATUS_WAITING_FOR_LOCK)
                 time.sleep(2)
                 retries += 1
                 if retries > 100:
@@ -1396,8 +1400,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The packages failed to be installed")
 
     def _checkForNewer(self, po):
+	pkgs = None
         try:
             pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
+        except yum.Errors.PackageSackError:
+            pass
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if pkgs:

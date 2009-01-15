@@ -59,7 +59,7 @@ typedef struct _PkControlClass		PkControlClass;
 typedef enum
 {
 	PK_CONTROL_ERROR_FAILED,
-	PK_CONTROL_ERROR_CANNOT_START_DAEMON,
+	PK_CONTROL_ERROR_CANNOT_START_DAEMON
 } PkControlError;
 
 struct _PkControl

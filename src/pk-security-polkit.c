@@ -66,8 +66,8 @@ pk_security_caller_new_from_sender (PkSecurity *security, const gchar *sender)
 	PolKitCaller *caller;
 	DBusError dbus_error;
 
-	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
-	g_return_val_if_fail (sender != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
+	g_return_val_if_fail (sender != NULL, NULL);
 
 	/* get the PolKitCaller information */
 	dbus_error_init (&dbus_error);
