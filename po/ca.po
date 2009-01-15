@@ -21,7 +21,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-11-19 16:26+0000\n"
+"POT-Creation-Date: 2009-01-15 17:03+0000\n"
 "PO-Revision-Date: 2008-11-02 12:27+0100\n"
 "Last-Translator: Xavier Conde Rueda <xavi.conde@gmail.com>\n"
 "Language-Team: Catalan <fedora@softcatala.net>\n"
@@ -31,37 +31,37 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:286
+#: ../client/pk-console.c:287
 msgid "Details about the update:"
 msgstr "Detalls quant a l'actualització:"
 
-#: ../client/pk-console.c:479
+#: ../client/pk-console.c:480
 msgid "Please restart the computer to complete the update."
 msgstr "Reinicieu l'ordinador per completar l'actualització."
 
-#: ../client/pk-console.c:481
+#: ../client/pk-console.c:482
 msgid "Please logout and login to complete the update."
 msgstr "Sortiu i entreu per completar l'actualització."
 
-#: ../client/pk-console.c:483
+#: ../client/pk-console.c:484
 msgid "Please restart the application as it is being used."
 msgstr "Cal que reinicieu l'aplicació perquè s'està fent servir."
 
 #. TRANSLATORS: The package is already installed on the system
-#: ../client/pk-console.c:595
-#, c-format
-msgid "The package '%s' is already installed"
+#: ../client/pk-console.c:596
+#, fuzzy, c-format
+msgid "The package %s is already installed"
 msgstr "El paquet «%s» ja s'ha instal·lat"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:603
-#, c-format
-msgid "The package '%s' could not be installed: %s"
+#: ../client/pk-console.c:604
+#, fuzzy, c-format
+msgid "The package %s could not be installed: %s"
 msgstr "No s'ha pogut instal·lar el paquet «%s»: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:628 ../client/pk-console.c:655
-#: ../client/pk-console.c:751 ../client/pk-console.c:868
+#: ../client/pk-console.c:629 ../client/pk-console.c:656
+#: ../client/pk-console.c:752 ../client/pk-console.c:869
 #: ../client/pk-tools-common.c:61 ../client/pk-tools-common.c:79
 #: ../client/pk-tools-common.c:86
 #, c-format
@@ -69,258 +69,253 @@ msgid "Internal error: %s"
 msgstr "Error intern: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:636 ../client/pk-console.c:1263
+#: ../client/pk-console.c:637 ../client/pk-console.c:1264
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "No s'ha pogut instal·lar els paquets: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:663
+#: ../client/pk-console.c:664
 #, c-format
 msgid "This tool could not install the files: %s"
 msgstr "No s'ha pogut instal·lar els fitxers: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:719
-#, c-format
-msgid "This tool could not remove '%s': %s"
+#: ../client/pk-console.c:720
+#, fuzzy, c-format
+msgid "This tool could not remove %s: %s"
 msgstr "No s'ha pogut suprimir «%s»: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:742 ../client/pk-console.c:813
+#: ../client/pk-console.c:743 ../client/pk-console.c:781
+#: ../client/pk-console.c:814
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "No s'ha pogut suprimir els paquets: %s"
 
-#. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:780
-#, c-format
-msgid "This tool could not remove the packages: '%s'"
-msgstr "No s'ha pogut suprimir els paquets: «%s»"
-
 #. TRANSLATORS: When removing, we might have to remove other dependencies
-#: ../client/pk-console.c:792
+#: ../client/pk-console.c:793
 msgid "The following packages have to be removed:"
 msgstr "Els següents paquets s'han hagut d'eliminar:"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:799
+#: ../client/pk-console.c:800
 msgid "Proceed removing additional packages?"
 msgstr "Voleu eliminar els paquets addicionals?"
 
 #. TRANSLATORS: We did not remove any packages
-#: ../client/pk-console.c:804
+#: ../client/pk-console.c:805
 msgid "The package removal was canceled!"
 msgstr "S'ha cancel·lat la supressió dels paquets"
 
 #. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:845
-#, c-format
-msgid "This tool could not download the package '%s' as it could not be found"
+#: ../client/pk-console.c:846
+#, fuzzy, c-format
+msgid "This tool could not download the package %s as it could not be found"
 msgstr "No s'ha trobat el paquet «%s» per a baixar"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:876
+#: ../client/pk-console.c:877
 #, c-format
 msgid "This tool could not download the packages: %s"
 msgstr "No s'ha pogut baixar els paquets: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:903 ../client/pk-console.c:912
-#, c-format
-msgid "This tool could not update '%s': %s"
+#: ../client/pk-console.c:904 ../client/pk-console.c:913
+#, fuzzy, c-format
+msgid "This tool could not update %s: %s"
 msgstr "No s'ha pogut actualitzar «%s»: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:934 ../client/pk-console.c:942
-#, c-format
-msgid "This tool could not get the requirements for '%s': %s"
+#: ../client/pk-console.c:935 ../client/pk-console.c:943
+#, fuzzy, c-format
+msgid "This tool could not get the requirements for %s: %s"
 msgstr "No s'han obtingut els requeriments per a «%s»: %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:964 ../client/pk-console.c:972
-#, c-format
-msgid "This tool could not get the dependencies for '%s': %s"
+#: ../client/pk-console.c:965 ../client/pk-console.c:973
+#, fuzzy, c-format
+msgid "This tool could not get the dependencies for %s: %s"
 msgstr "No s'han pogut obtenir les dependències per a «%s»: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:994 ../client/pk-console.c:1002
-#, c-format
-msgid "This tool could not get package details for '%s': %s"
+#: ../client/pk-console.c:995 ../client/pk-console.c:1003
+#, fuzzy, c-format
+msgid "This tool could not get package details for %s: %s"
 msgstr "No s'han pogut obtenir els detalls del paquet de «%s»: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1024
-#, c-format
-msgid "This tool could not find the files for '%s': %s"
+#: ../client/pk-console.c:1025
+#, fuzzy, c-format
+msgid "This tool could not find the files for %s: %s"
 msgstr "No s'han pogut trobar els fitxers per a «%s»: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1032
-#, c-format
-msgid "This tool could not get the file list for '%s': %s"
+#: ../client/pk-console.c:1033
+#, fuzzy, c-format
+msgid "This tool could not get the file list for %s: %s"
 msgstr "No s'ha pogut obtenir la llista de fitxers per a «%s»: %s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
-#: ../client/pk-console.c:1054
+#: ../client/pk-console.c:1055
 #, c-format
 msgid "File already exists: %s"
 msgstr ""
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1059 ../client/pk-console.c:1115
-#: ../client/pk-console.c:1190
+#: ../client/pk-console.c:1060 ../client/pk-console.c:1116
+#: ../client/pk-console.c:1191
 #, fuzzy
 msgid "Getting package list"
 msgstr "S'està obtenint la informació de paquets..."
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1065 ../client/pk-console.c:1121
-#: ../client/pk-console.c:1196
+#: ../client/pk-console.c:1066 ../client/pk-console.c:1122
+#: ../client/pk-console.c:1197
 #, fuzzy, c-format
 msgid "This tool could not get package list: %s"
 msgstr "No s'ha pogut suprimir els paquets: %s"
 
 #. TRANSLATORS: There was an error saving the list
-#: ../client/pk-console.c:1076
+#: ../client/pk-console.c:1077
 #, fuzzy, c-format
 msgid "Failed to save to disk"
 msgstr "S'ha produït un error en obtenir l'última hora"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1110 ../client/pk-console.c:1185
+#: ../client/pk-console.c:1111 ../client/pk-console.c:1186
 #, c-format
 msgid "File does not exist: %s"
 msgstr ""
 
 #. TRANSLATORS: header to a list of packages newly added
-#: ../client/pk-console.c:1142
+#: ../client/pk-console.c:1143
 #, fuzzy
 msgid "Packages to add"
 msgstr "Monitorització de Packagekit"
 
 #. TRANSLATORS: header to a list of packages removed
-#: ../client/pk-console.c:1150
+#: ../client/pk-console.c:1151
 #, fuzzy
 msgid "Packages to remove"
 msgstr "Servei del PackageKit"
 
 #. TRANSLATORS: We didn't find any differences
-#: ../client/pk-console.c:1218
+#: ../client/pk-console.c:1219
 #, fuzzy, c-format
 msgid "No new packages need to be installed"
 msgstr "No s'ha pogut instal·lar el paquet «%s»: %s"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1224
+#: ../client/pk-console.c:1225
 msgid "To install"
 msgstr ""
 
 #. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1235
+#: ../client/pk-console.c:1236
 msgid "Searching for package: "
 msgstr ""
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1239
+#: ../client/pk-console.c:1240
 #, fuzzy
 msgid "not found."
 msgstr "No s'ha trobat el directori"
 
 #. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1250
+#: ../client/pk-console.c:1251
 #, fuzzy, c-format
 msgid "No packages can be found to install"
 msgstr "No s'han trobat paquets en el vostre sistema"
 
 #. TRANSLATORS: installing new packages from package list
-#: ../client/pk-console.c:1256
+#: ../client/pk-console.c:1257
 #, fuzzy
 msgid "Installing packages"
 msgstr "Baixant paquets"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1292
-#, c-format
-msgid "This tool could not find the update details for '%s': %s"
+#: ../client/pk-console.c:1293
+#, fuzzy, c-format
+msgid "This tool could not find the update details for %s: %s"
 msgstr "No s'han trobat els detalls per a actualitzar «%s»: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1300
-#, c-format
-msgid "This tool could not get the update details for '%s': %s"
+#: ../client/pk-console.c:1301
+#, fuzzy, c-format
+msgid "This tool could not get the update details for %s: %s"
 msgstr "No s'han obtingut els detalls per a actualitzar «%s»: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1346
+#: ../client/pk-console.c:1347
 msgid "Error:"
 msgstr "Error:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1360
+#: ../client/pk-console.c:1361
 msgid "Package description"
 msgstr "Descripció del paquet"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1393
+#: ../client/pk-console.c:1394
 msgid "Package files"
 msgstr "Fitxers del paquet"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1402
+#: ../client/pk-console.c:1403
 msgid "No files"
 msgstr "No hi ha fitxers"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1425
+#: ../client/pk-console.c:1426
 msgid "Repository signature required"
 msgstr "Es necessita la signatura del repositori"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1435
+#: ../client/pk-console.c:1436
 msgid "Do you accept this signature?"
 msgstr "Voleu acceptar aquesta signatura?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1439
+#: ../client/pk-console.c:1440
 msgid "The signature was not accepted."
 msgstr "No s'ha sobreescrit el paquet."
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1473
+#: ../client/pk-console.c:1474
 msgid "End user license agreement required"
 msgstr "Cal l'acord de llicència d'usuari final"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1480
+#: ../client/pk-console.c:1481
 msgid "Do you agree to this license?"
 msgstr "Esteu d'acord amb aquesta llicència?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1484
+#: ../client/pk-console.c:1485
 msgid "The license was refused."
 msgstr "S'ha rebutjat la llicència."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1513
+#: ../client/pk-console.c:1514
 msgid "The daemon crashed mid-transaction!"
 msgstr "El servei ha fallat a meitat de la transacció!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1566
+#: ../client/pk-console.c:1567
 msgid "PackageKit Console Interface"
 msgstr "Interfície de consola de PackageKit"
 
-#: ../client/pk-console.c:1566
+#: ../client/pk-console.c:1567
 msgid "Subcommands:"
 msgstr "Subordres:"
 
-#: ../client/pk-console.c:1657 ../client/pk-generate-pack.c:183
-#: ../client/pk-monitor.c:114 ../src/pk-main.c:196
+#: ../client/pk-console.c:1657 ../client/pk-generate-pack.c:184
+#: ../client/pk-monitor.c:115 ../src/pk-main.c:191
 msgid "Show extra debugging information"
 msgstr "Mostra la informació extra de la depuració"
 
-#: ../client/pk-console.c:1659 ../client/pk-monitor.c:116
+#: ../client/pk-console.c:1659 ../client/pk-monitor.c:117
 msgid "Show the program version and exit"
 msgstr "Mostra la versió del programa i surt"
 
@@ -333,207 +328,207 @@ msgid "Exit without waiting for actions to complete"
 msgstr "Surt sense esperar que es completin les accions"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1685
+#: ../client/pk-console.c:1690
 msgid "This tool could not connect to system DBUS."
 msgstr "No s'ha pogut connectar al sistema DBUS."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1770
+#: ../client/pk-console.c:1775
 msgid "The filter specified was invalid"
 msgstr ""
 
-#: ../client/pk-console.c:1787
+#: ../client/pk-console.c:1792
 msgid "You need to specify a search type, e.g. name"
 msgstr "Cal que especifiqueu un tipus de cerca, p.e. per nom"
 
-#: ../client/pk-console.c:1792 ../client/pk-console.c:1799
-#: ../client/pk-console.c:1806 ../client/pk-console.c:1813
-#: ../client/pk-console.c:1924 ../client/pk-console.c:1934
-#: ../client/pk-console.c:1941 ../client/pk-console.c:1948
+#: ../client/pk-console.c:1797 ../client/pk-console.c:1804
+#: ../client/pk-console.c:1811 ../client/pk-console.c:1818
+#: ../client/pk-console.c:1927 ../client/pk-console.c:1937
+#: ../client/pk-console.c:1944 ../client/pk-console.c:1951
 msgid "You need to specify a search term"
 msgstr "Cal que especifiqueu un terme per a la cerca"
 
-#: ../client/pk-console.c:1818
+#: ../client/pk-console.c:1823
 msgid "Invalid search type"
 msgstr "El tipus de cerca no és vàlid"
 
-#: ../client/pk-console.c:1823
+#: ../client/pk-console.c:1828
 msgid "You need to specify a package or file to install"
 msgstr "Cal que especifiqueu un paquet o un fitxer a instal·lar"
 
-#: ../client/pk-console.c:1830
+#: ../client/pk-console.c:1835
 msgid "You need to specify a type, key_id and package_id"
 msgstr ""
 "Cal que especifiqueu un tipus, un identificador de clau i un identificador "
 "de paquet"
 
-#: ../client/pk-console.c:1837
+#: ../client/pk-console.c:1842
 msgid "You need to specify a package to remove"
 msgstr "Cal que especifiqueu un paquet a eliminar"
 
-#: ../client/pk-console.c:1843
+#: ../client/pk-console.c:1848
 msgid ""
 "You need to specify the destination directory and then the packages to "
 "download"
 msgstr "Cal que especifiqueu el directori destí i els paquets a baixar"
 
-#: ../client/pk-console.c:1848
+#: ../client/pk-console.c:1853
 msgid "Directory not found"
 msgstr "No s'ha trobat el directori"
 
-#: ../client/pk-console.c:1854
+#: ../client/pk-console.c:1859
 msgid "You need to specify a licence identifier (eula-id)"
 msgstr "Cal que especifiqueu un identificador de llicència (eula-id)"
 
-#: ../client/pk-console.c:1870
+#: ../client/pk-console.c:1875
 msgid "You need to specify a package name to resolve"
 msgstr "Cal que especifiqueu un nom de paquet a resoldre"
 
-#: ../client/pk-console.c:1879 ../client/pk-console.c:1886
+#: ../client/pk-console.c:1882 ../client/pk-console.c:1889
 msgid "You need to specify a repository name"
 msgstr "Cal que especifiqueu un nom de repositori"
 
-#: ../client/pk-console.c:1893
+#: ../client/pk-console.c:1896
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Cal que especifiqueu un nom / paràmetre de repositori i un valor"
 
-#: ../client/pk-console.c:1906
+#: ../client/pk-console.c:1909
 msgid "You need to specify an action, e.g. 'update-system'"
 msgstr "Cal que especifiqueu una acció, p.e. 'update-system'"
 
-#: ../client/pk-console.c:1911
+#: ../client/pk-console.c:1914
 msgid "You need to specify a correct role"
 msgstr "Cal que especifiqueu un rol correcte"
 
-#: ../client/pk-console.c:1916
+#: ../client/pk-console.c:1919
 msgid "Failed to get last time"
 msgstr "S'ha produït un error en obtenir l'última hora"
 
-#: ../client/pk-console.c:1955
+#: ../client/pk-console.c:1958
 msgid "You need to specify a package to find the details for"
 msgstr "Cal que especifiqueu un paquet per cercar-ne els detalls"
 
-#: ../client/pk-console.c:1962
+#: ../client/pk-console.c:1965
 msgid "You need to specify a package to find the files for"
 msgstr "Cal que especifiqueu un paquet per cercar-ne fitxers"
 
-#: ../client/pk-console.c:1969
+#: ../client/pk-console.c:1972
 #, fuzzy
 msgid "You need to specify a list file to create"
 msgstr "Cal que especifiqueu un valor per a l'hora"
 
-#: ../client/pk-console.c:1977 ../client/pk-console.c:1985
+#: ../client/pk-console.c:1980 ../client/pk-console.c:1988
 #, fuzzy
 msgid "You need to specify a list file to open"
 msgstr "Cal que especifiqueu un valor per a l'hora"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2038
+#: ../client/pk-console.c:2041
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "L'opció '%s' no està disponible"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2051
+#: ../client/pk-console.c:2054
 msgid "You don't have the necessary privileges for this operation"
 msgstr "No teniu suficients privilegis per a aquesta operació"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2054
+#: ../client/pk-console.c:2057
 msgid "Command failed"
 msgstr "L'ordre ha fallat"
 
 #. TRANSLATORS: This is the state of the transaction
-#: ../client/pk-generate-pack.c:99
+#: ../client/pk-generate-pack.c:100
 msgid "Downloading"
 msgstr "Baixant"
 
 #. TRANSLATORS: This is when the main packages are being downloaded
-#: ../client/pk-generate-pack.c:119
+#: ../client/pk-generate-pack.c:120
 msgid "Downloading packages"
 msgstr "Baixant paquets"
 
 #. TRANSLATORS: This is when the dependency packages are being downloaded
-#: ../client/pk-generate-pack.c:124
+#: ../client/pk-generate-pack.c:125
 msgid "Downloading dependencies"
 msgstr "Baixant dependències"
 
-#: ../client/pk-generate-pack.c:185
+#: ../client/pk-generate-pack.c:186
 msgid "Set the file name of dependencies to be excluded"
 msgstr "Establiu el nom del fitxer de dependències a excloure"
 
-#: ../client/pk-generate-pack.c:187
+#: ../client/pk-generate-pack.c:188
 msgid "The output directory (the current directory is used if ommitted)"
 msgstr "El directori de sortida (o el directori actual si s'omet)"
 
-#: ../client/pk-generate-pack.c:189
+#: ../client/pk-generate-pack.c:190
 msgid "The package to be put into the service pack"
 msgstr "Paquet que s'inclourà en els paquets de servei"
 
-#: ../client/pk-generate-pack.c:191
+#: ../client/pk-generate-pack.c:192
 msgid "Put all updates available in the service pack"
 msgstr ""
 "S'han ficat totes les actualitzacions disponibles en el paquet de servei"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:214
+#: ../client/pk-generate-pack.c:220
 msgid "Neither --package or --updates option selected."
 msgstr "No s'ha seleccionat --package o --updates."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:222
+#: ../client/pk-generate-pack.c:228
 msgid "Both options selected."
 msgstr "S'han seleccionat ambdues."
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:255
+#: ../client/pk-generate-pack.c:261
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "Existeix un grup de paquets amb el mateix nom, voleu sobreescriure'l?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:258
+#: ../client/pk-generate-pack.c:264
 msgid "The pack was not overwritten."
 msgstr "No s'ha sobreescrit el paquet."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:270
+#: ../client/pk-generate-pack.c:276
 msgid "Failed to create directory:"
 msgstr "S'ha produït un error en crear el directori:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:279
+#: ../client/pk-generate-pack.c:285
 msgid "Failed to open package list."
 msgstr "S'ha produït un error en obrir la llista de paquets."
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:289
+#: ../client/pk-generate-pack.c:295
 msgid "Finding package name."
 msgstr "S'està cercant el nom del paquet."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:293
+#: ../client/pk-generate-pack.c:299
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "No s'ha trobat el paquet «%s»: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:309
+#: ../client/pk-generate-pack.c:315
 msgid "Creating service pack..."
 msgstr "S'està creant els paquets de servei..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:316
+#: ../client/pk-generate-pack.c:322
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "Paquets de servei creats a «%s»"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:320
+#: ../client/pk-generate-pack.c:326
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "No s'ha pogut crear «%s»: %s"
 
-#: ../client/pk-monitor.c:126
+#: ../client/pk-monitor.c:132
 msgid "PackageKit Monitor"
 msgstr "Monitorització de Packagekit"
 
@@ -559,55 +554,55 @@ msgid "Please enter a number from 1 to %i: "
 msgstr "Si us plau, introduïu un valor d'1 a %i:"
 
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/packagekit-plugin/src/contents.cpp:291
+#: ../contrib/packagekit-plugin/src/contents.cpp:298
 msgid "Getting package information..."
 msgstr "S'està obtenint la informació de paquets..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/packagekit-plugin/src/contents.cpp:297
+#: ../contrib/packagekit-plugin/src/contents.cpp:304
 #, c-format
 msgid "Run %s"
 msgstr "Executa %s"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/packagekit-plugin/src/contents.cpp:303
+#: ../contrib/packagekit-plugin/src/contents.cpp:310
 msgid "Installed version"
 msgstr "Versió instal·lada"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/packagekit-plugin/src/contents.cpp:311
+#: ../contrib/packagekit-plugin/src/contents.cpp:318
 #, c-format
 msgid "Run version %s now"
 msgstr "Executa la versió %s ara"
 
-#: ../contrib/packagekit-plugin/src/contents.cpp:317
+#: ../contrib/packagekit-plugin/src/contents.cpp:324
 msgid "Run now"
 msgstr "Executa ara"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/packagekit-plugin/src/contents.cpp:323
+#: ../contrib/packagekit-plugin/src/contents.cpp:330
 #, c-format
 msgid "Update to version %s"
 msgstr "Actualitza a la versió %s"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/packagekit-plugin/src/contents.cpp:329
+#: ../contrib/packagekit-plugin/src/contents.cpp:336
 #, c-format
 msgid "Install %s now"
 msgstr "Instal·la %s ara"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/packagekit-plugin/src/contents.cpp:332
+#: ../contrib/packagekit-plugin/src/contents.cpp:339
 msgid "Version"
 msgstr "Versió"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/packagekit-plugin/src/contents.cpp:337
+#: ../contrib/packagekit-plugin/src/contents.cpp:344
 msgid "No packages found for your system"
 msgstr "No s'han trobat paquets en el vostre sistema"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/packagekit-plugin/src/contents.cpp:342
+#: ../contrib/packagekit-plugin/src/contents.cpp:349
 msgid "Installing..."
 msgstr "S'està instal·lant..."
 
@@ -707,22 +702,22 @@ msgstr ""
 msgid "Update packages"
 msgstr ""
 
-#: ../src/pk-main.c:85
+#: ../src/pk-main.c:86
 msgid "Startup failed due to security policies on this machine."
 msgstr ""
 "L'inici ha fallat a causa de les polítiques de seguretat d'aquesta màquina."
 
-#: ../src/pk-main.c:86
+#: ../src/pk-main.c:87
 msgid "This can happen for two reasons:"
 msgstr "Això pot succeir per dos raons:"
 
-#: ../src/pk-main.c:87
+#: ../src/pk-main.c:88
 msgid "The correct user is not launching the executable (usually root)"
 msgstr ""
 "Un usuari incorrecte està executant l'aplicació (normalment és el "
 "superusuari root)"
 
-#: ../src/pk-main.c:88
+#: ../src/pk-main.c:89
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system "
 "directory:"
@@ -730,42 +725,45 @@ msgstr ""
 "El fitxer org.freedesktop.PackageKit.conf no està instal·lat al directori "
 "del sistema:"
 
-#: ../src/pk-main.c:192
+#: ../src/pk-main.c:187
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Administrador de paquets a usar, p.ex. dummy"
 
-#: ../src/pk-main.c:194
+#: ../src/pk-main.c:189
 msgid "Daemonize and detach from the terminal"
 msgstr "Inicia el servei i separa del terminal"
 
-#: ../src/pk-main.c:198
+#: ../src/pk-main.c:193
 msgid "Disable the idle timer"
 msgstr "Desactiva el temporitzador d'inactivitat"
 
-#: ../src/pk-main.c:200
+#: ../src/pk-main.c:195
 msgid "Show version and exit"
 msgstr "Mostra la versió i surt"
 
-#: ../src/pk-main.c:202
+#: ../src/pk-main.c:197
 msgid "Exit after a small delay"
 msgstr "Surt després d'una petita pausa"
 
-#: ../src/pk-main.c:204
+#: ../src/pk-main.c:199
 msgid "Exit after the engine has loaded"
 msgstr "Surt després de que el motor s'hagi cargat"
 
-#: ../src/pk-main.c:214
+#: ../src/pk-main.c:213
 msgid "PackageKit service"
 msgstr "Servei del PackageKit"
 
-#: ../src/pk-main.c:250
+#: ../src/pk-main.c:249
 msgid "Cannot connect to the system bus"
 msgstr "No s'ha pogut connectar al bus del sistema"
 
-#: ../src/pk-main.c:296
+#: ../src/pk-main.c:298
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "S'ha produït un error en intentar iniciar: %s\n"
+
+#~ msgid "This tool could not remove the packages: '%s'"
+#~ msgstr "No s'ha pogut suprimir els paquets: «%s»"
 
 #~ msgid "Okay to import key?"
 #~ msgstr "Esteu d'acord en importar la clau?"
