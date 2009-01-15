@@ -491,6 +491,24 @@ pk_console_install_files_finished_cb (PkClient *client, PkExitEnum exit_enum, gu
 }
 
 /**
+ * pk_console_require_restart_cb:
+ **/
+static void
+pk_console_require_restart_cb (PkClient *client, PkRestartEnum restart, const PkPackageId *id, gpointer data)
+{
+	if (restart == PK_RESTART_ENUM_SYSTEM) {
+		/* TRANSLATORS: a package requires the system to be restarted */
+		g_print ("%s %s-%s.%s\n", _("System restart required by:"), id->name, id->version, id->arch);
+	} else if (restart == PK_RESTART_ENUM_SESSION) {
+		/* TRANSLATORS: a package requires the session to be restarted */
+		g_print ("%s %s-%s.%s\n", _("Session restart required:"), id->name, id->version, id->arch);
+	} else if (restart == PK_RESTART_ENUM_APPLICATION) {
+		/* TRANSLATORS: a package requires the application to be restarted */
+		g_print ("%s %s-%s.%s\n", _("Application restart required by:"), id->name, id->version, id->arch);
+	}
+}
+
+/**
  * pk_console_finished_cb:
  **/
 static void
@@ -1792,6 +1810,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_progress_changed_cb), NULL);
 	g_signal_connect (client_async, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
+	g_signal_connect (client_async, "require-restart",
+			  G_CALLBACK (pk_console_require_restart_cb), NULL);
 	g_signal_connect (client_async, "error-code",
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
 

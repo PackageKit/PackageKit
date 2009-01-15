@@ -1400,7 +1400,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The packages failed to be installed")
 
     def _checkForNewer(self, po):
-	pkgs = None
+        pkgs = None
         try:
             pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
         except yum.Errors.PackageSackError:
@@ -1662,7 +1662,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if (pkg.name in self.rebootpkgs \
                 or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']))\
                 and txmbr.ts_state in TS_INSTALL_STATES:
-                self.require_restart(RESTART_SYSTEM, "")
+                self.require_restart(RESTART_SYSTEM, self._pkg_to_id(pkg))
                 break
 
     def _runYumTransaction(self, allow_remove_deps=None, allow_skip_broken=False):

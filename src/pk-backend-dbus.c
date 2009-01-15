@@ -238,10 +238,10 @@ pk_backend_dbus_error_code_cb (DBusGProxy *proxy, const gchar *error_text,
  **/
 static void
 pk_backend_dbus_require_restart_cb (DBusGProxy *proxy, PkRestartEnum type,
-				    const gchar *details, PkBackendDbus *backend_dbus)
+				    const gchar *package_id, PkBackendDbus *backend_dbus)
 {
 	egg_debug ("got signal");
-	pk_backend_require_restart (backend_dbus->priv->backend, type, details);
+	pk_backend_require_restart (backend_dbus->priv->backend, type, package_id);
 }
 
 /**

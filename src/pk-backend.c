@@ -929,21 +929,30 @@ pk_backend_get_progress (PkBackend *backend,
  * pk_backend_require_restart:
  **/
 gboolean
-pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *details)
+pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *package_id)
 {
+	gboolean ret = FALSE;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: require-restart %s", pk_restart_enum_to_text (restart));
-		return FALSE;
+		goto out;
 	}
 
-	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), details);
-	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
+	/* check we are valid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		egg_warning ("package_id invalid and cannot be processed: %s", package_id);
+		goto out;
+	}
 
-	return TRUE;
+	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
+	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, package_id);
+out:
+	return ret;
 }
 
 /**
