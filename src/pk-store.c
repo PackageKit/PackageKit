@@ -252,7 +252,7 @@ pk_store_get_uint (const PkStore *store, const gchar *key)
 	value = g_hash_table_lookup (store->priv->hash_pointer, (gpointer) key);
 	if (value == NULL) {
 		egg_warning ("not set data for %s", key);
-		return FALSE;
+		return 0;
 	}
 	/* we do the +1/-1 as NULL also means missing in the hash table */
 	return GPOINTER_TO_INT (value)-1;
