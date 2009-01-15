@@ -143,8 +143,6 @@ def _truncate(text, length, etc='...'):
 def _is_development_repo(repo):
     if repo.endswith('-debuginfo'):
         return True
-    if repo.endswith('-testing'):
-        return True
     if repo.endswith('-debug'):
         return True
     if repo.endswith('-development'):
