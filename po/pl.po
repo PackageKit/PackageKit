@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-01-15 16:57+0000\n"
-"PO-Revision-Date: 2008-12-16 23:25+0100\n"
+"PO-Revision-Date: 2009-01-16 20:32+0100\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -183,18 +183,17 @@ msgstr "Nieznane"
 #. TRANSLATORS: a package requires the system to be restarted
 #: ../client/pk-console.c:501
 msgid "System restart required by:"
-msgstr ""
+msgstr "Ponowne uruchomienie systemu jest wymagane przez:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:504
-#, fuzzy
 msgid "Session restart required:"
-msgstr "Wymagany jest podpis repozytorium"
+msgstr "Wymagane jest ponowne uruchomienie sesji:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:507
 msgid "Application restart required by:"
-msgstr ""
+msgstr "Ponowne uruchomienie programu jest wymagane przez:"
 
 #: ../client/pk-console.c:543
 msgid "Please restart the computer to complete the update."
