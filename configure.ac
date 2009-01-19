@@ -326,6 +326,7 @@ if test x$enable_browser_plugin = xyes; then
 		LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
 
 		AC_CHECK_FUNCS(gdk_app_launch_context_new)
+		AC_CHECK_HEADER(npfunctions.h, xulrunner_plugin_new=yes, xulrunner_plugin_new=no)
 
 		CPPFLAGS="$packagekit_save_CPPFLAGS"
 		LDFLAGS="$packagekit_save_LDFLAGS"
@@ -334,6 +335,7 @@ else
 	build_browser_plugin=no
 fi
 AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
+AM_CONDITIONAL(PK_XULRUNNER_PLUGIN_NEW, test $xulrunner_plugin_new = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Able to build gstreamer plugin
