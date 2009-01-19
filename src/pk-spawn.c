@@ -375,7 +375,8 @@ pk_spawn_exit (PkSpawn *spawn)
 	} while (ret && count++ < 50);
 
 	/* the script exited okay */
-	ret = TRUE;
+	if (count < 50)
+		ret = TRUE;
 out:
 	spawn->priv->is_sending_exit = FALSE;
 	return ret;
