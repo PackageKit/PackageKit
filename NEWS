@@ -1,3 +1,46 @@
+Version 0.4.2
+~~~~~~~~~~~~~
+Released: 2009-01-19
+
+Translations:
+ - Added British translation (Tim Waugh)
+ - Updated Slovak translation (Pavol Šimo)
+ - Updated Greek translation (Jennie Petoumenou)
+ - Updated Polish translation (Piotr Drąg)
+
+New Features:
+ - Use the detail field as a package_id so we can propogate useful information
+   to clients (Richard Hughes)
+ - Add an entry to the config file to turn on time estimation, and enable it
+   by default (Richard Hughes)
+ - Remove the udev helper from PackageKit now the core functionality is in
+   udev itself (Richard Hughes)
+
+Bugfixes:
+ - If a script is still running and PkSpawn is asked to unload, be more careful
+   about disconnecting timers (Richard Hughes)
+ - Ensure we call the backend finalise method when the daemon times out (Richard Hughes)
+ - Ensure we send the correct network state with the new changed codepath (Richard Hughes)
+ - Don't leak directory on commit-failed error path (Richard Hughes)
+ - Set the setup signal after we've connected the backend to the transaction so
+   it is emitted for clients (Richard Hughes)
+ - Don't emit allow-cancel over and over if it is the same state as before (Richard Hughes)
+ - A *-testing repo is not a development repo, so should not be filtered by
+   default. Fixes rh#480135 (Richard Hughes)
+ - Remove the obsolete specific vendor_url for each PolicyKit authorisation
+   and rely on the packagekit homepage. Fixes novell#450349 (Richard Hughes)
+ - Only try to exit the spawned backend if it is running, which removes an error
+   warning if it is already closed (Richard Hughes)
+ - Clear the backend store in pk_backend_reset() as we can't guarantee the
+   ordering for cancelled jobs (Richard Hughes)
+ - Fix compile of the browser plugin with newer versions of xulrunner (Richard Hughes)
+
+Backends:
+ - dummy: Output a load of messages we can play with in GUI tools (Richard Hughes)
+ - yum: Get the yum lock before we start setting up comps (Richard Hughes)
+ - yum: Set the allow cancel flag when we are waiting for yum to release its lock (Richard Hughes)
+ - yum: Fixed a bug that prevents installing a local file that isn't in the repos (Trever Fischer)
+
 Version 0.4.1
 ~~~~~~~~~~~~~
 Released: 2009-01-08
