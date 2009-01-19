@@ -996,6 +996,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
+	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_text (priv->role));
 
 	/* connect up the signals */
 	transaction->priv->signal_allow_cancel =
