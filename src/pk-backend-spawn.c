@@ -677,9 +677,16 @@ pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 static gboolean
 pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
 {
+	gboolean ret;
+
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	egg_debug ("closing dispatcher as idle");
-	pk_spawn_exit (backend_spawn->priv->spawn);
+
+	/* only try to close if running */
+	ret = pk_spawn_is_running (backend_spawn->priv->spawn);
+	if (ret) {
+		egg_debug ("closing dispatcher as running and is idle");
+		pk_spawn_exit (backend_spawn->priv->spawn);
+	}
 	return FALSE;
 }
 
