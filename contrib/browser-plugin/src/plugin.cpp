@@ -250,7 +250,7 @@ PkpPluginInstance::refresh()
 	NPN_InvalidateRect(mInstance, &rect);
 }
 
-uint16
+uint16_t
 PkpPluginInstance::HandleEvent(void *event)
 {
 	XEvent *xev = (XEvent *)event;
