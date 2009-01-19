@@ -11,7 +11,7 @@ packagekit_plugin_la_CPPFLAGS =			\
 if PK_XULRUNNER_PLUGIN_NEW
 packagekit_plugin_la_CPPFLAGS += -I$(srcdir)/sdk-new
 else
-packagekit_plugin_la_CPPFLAGS += -I$(srcdir)/sdk-new
+packagekit_plugin_la_CPPFLAGS += -I$(srcdir)/sdk
 endif
 
 packagekit_plugin_la_LIBADD =			\
