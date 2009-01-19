@@ -1447,9 +1447,6 @@ pk_backend_finished_delay (gpointer data)
 	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
 
-	/* clear all state */
-	pk_store_reset (backend->priv->store);
-
 	egg_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
 	backend->priv->signal_finished = 0;
@@ -1873,6 +1870,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->last_remaining = 0;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	pk_store_reset (backend->priv->store);
 	pk_time_reset (backend->priv->time);
 
 	return TRUE;
