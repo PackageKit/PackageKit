@@ -955,16 +955,24 @@ pk_backend_test_spawn (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tsystem\tdetails about the restart");
+	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data");
 	egg_test_assert (test, ret);
 
 	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tmooville\tdetails about the restart");
+	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart invalid enum");
+	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data");
 	if (!ret)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not detect incorrect enum");
+
+	/************************************************************/
+	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart invalid PackageId");
+	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tsystem\tdetails about the restart");
+	if (!ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "did not detect incorrect package id");
 
 	/************************************************************/
 	egg_test_title (test, "test pk_backend_spawn_parse_stdout AllowUpdate1");
