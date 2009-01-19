@@ -145,6 +145,27 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 }
 
 /**
+ * pk_spawn_exit_type_enum_to_text:
+ **/
+static const gchar *
+pk_spawn_exit_type_enum_to_text (PkSpawnExitType type)
+{
+	if (type == PK_SPAWN_EXIT_TYPE_SUCCESS)
+		return "success";
+	if (type == PK_SPAWN_EXIT_TYPE_FAILED)
+		return "failed";
+	if (type == PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED)
+		return "dispatcher-changed";
+	if (type == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT)
+		return "dispatcher-exit";
+	if (type == PK_SPAWN_EXIT_TYPE_SIGQUIT)
+		return "sigquit";
+	if (type == PK_SPAWN_EXIT_TYPE_SIGKILL)
+		return "sigkill";
+	return "unknown";
+}
+
+/**
  * pk_spawn_check_child:
  **/
 static gboolean
@@ -220,7 +241,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT;
 
 	/* don't emit if we just closed an invalid dispatcher */
-	egg_debug ("emitting exit %i", spawn->priv->exit);
+	egg_debug ("emitting exit %s", pk_spawn_exit_type_enum_to_text (spawn->priv->exit));
 	g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
 
 	return FALSE;
