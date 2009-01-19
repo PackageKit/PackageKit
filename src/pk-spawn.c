@@ -279,6 +279,18 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 }
 
 /**
+ * pk_spawn_is_running:
+ *
+ * Is this instance controlling a script?
+ *
+ **/
+gboolean
+pk_spawn_is_running (PkSpawn *spawn)
+{
+	return (spawn->priv->child_pid != -1);
+}
+
+/**
  * pk_spawn_kill:
  *
  * We send SIGQUIT and after a few ms SIGKILL
