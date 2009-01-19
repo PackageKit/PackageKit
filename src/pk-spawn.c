@@ -328,7 +328,7 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 	/* write to the waiting process */
 	wrote = write (spawn->priv->stdin_fd, buffer, length);
 	if (wrote != length) {
-		egg_warning ("wrote %i/%i bytes on fd %i", wrote, length, spawn->priv->stdin_fd);
+		egg_warning ("wrote %i/%i bytes on fd %i (%s)", wrote, length, spawn->priv->stdin_fd, strerror (errno));
 		ret = FALSE;
 	}
 out:
