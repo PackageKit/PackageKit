@@ -135,7 +135,7 @@ struct _PkClientClass
 							 const gchar	*details);
 	void		(* require_restart)		(PkClient	*client,
 							 PkRestartEnum	 restart,
-							 const gchar	*details);
+							 PkPackageId	*id);
 	void		(* message)			(PkClient	*client,
 							 PkMessageEnum	 message,
 							 const gchar	*details);
@@ -344,6 +344,7 @@ gboolean	 pk_client_repo_set_data		(PkClient	*client,
 /* cached stuff */
 PkPackageList	*pk_client_get_package_list		(PkClient	*client);
 PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
+const GPtrArray	*pk_client_get_require_restart_list	(PkClient	*client);
 PkObjList	*pk_client_get_cached_objects		(PkClient	*client);
 
 /* not job specific */

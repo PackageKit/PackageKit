@@ -104,7 +104,7 @@ gboolean	 pk_backend_update_detail		(PkBackend	*backend,
 							 const gchar	*updated);
 gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 							 PkRestartEnum	 restart,
-							 const gchar	*details);
+							 const gchar	*package_id);
 gboolean	 pk_backend_message			(PkBackend	*backend,
 							 PkMessageEnum	 message,
 							 const gchar	*details, ...);

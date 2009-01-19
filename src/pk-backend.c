@@ -929,21 +929,30 @@ pk_backend_get_progress (PkBackend *backend,
  * pk_backend_require_restart:
  **/
 gboolean
-pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *details)
+pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *package_id)
 {
+	gboolean ret = FALSE;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: require-restart %s", pk_restart_enum_to_text (restart));
-		return FALSE;
+		goto out;
 	}
 
-	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), details);
-	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
+	/* check we are valid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		egg_warning ("package_id invalid and cannot be processed: %s", package_id);
+		goto out;
+	}
 
-	return TRUE;
+	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
+	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, package_id);
+out:
+	return ret;
 }
 
 /**
@@ -1438,9 +1447,6 @@ pk_backend_finished_delay (gpointer data)
 	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
 
-	/* clear all state */
-	pk_store_reset (backend->priv->store);
-
 	egg_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
 	backend->priv->signal_finished = 0;
@@ -1864,6 +1870,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->last_remaining = 0;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	pk_store_reset (backend->priv->store);
 	pk_time_reset (backend->priv->time);
 
 	return TRUE;

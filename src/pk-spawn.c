@@ -145,6 +145,27 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 }
 
 /**
+ * pk_spawn_exit_type_enum_to_text:
+ **/
+static const gchar *
+pk_spawn_exit_type_enum_to_text (PkSpawnExitType type)
+{
+	if (type == PK_SPAWN_EXIT_TYPE_SUCCESS)
+		return "success";
+	if (type == PK_SPAWN_EXIT_TYPE_FAILED)
+		return "failed";
+	if (type == PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED)
+		return "dispatcher-changed";
+	if (type == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT)
+		return "dispatcher-exit";
+	if (type == PK_SPAWN_EXIT_TYPE_SIGQUIT)
+		return "sigquit";
+	if (type == PK_SPAWN_EXIT_TYPE_SIGKILL)
+		return "sigkill";
+	return "unknown";
+}
+
+/**
  * pk_spawn_check_child:
  **/
 static gboolean
@@ -220,7 +241,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT;
 
 	/* don't emit if we just closed an invalid dispatcher */
-	egg_debug ("emitting exit %i", spawn->priv->exit);
+	egg_debug ("emitting exit %s", pk_spawn_exit_type_enum_to_text (spawn->priv->exit));
 	g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
 
 	return FALSE;
@@ -255,6 +276,18 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 
 	/* never repeat */
 	return FALSE;
+}
+
+/**
+ * pk_spawn_is_running:
+ *
+ * Is this instance controlling a script?
+ *
+ **/
+gboolean
+pk_spawn_is_running (PkSpawn *spawn)
+{
+	return (spawn->priv->child_pid != -1);
 }
 
 /**
@@ -329,7 +362,7 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 	/* write to the waiting process */
 	wrote = write (spawn->priv->stdin_fd, buffer, length);
 	if (wrote != length) {
-		egg_warning ("wrote %i/%i bytes on fd %i", wrote, length, spawn->priv->stdin_fd);
+		egg_warning ("wrote %i/%i bytes on fd %i (%s)", wrote, length, spawn->priv->stdin_fd, strerror (errno));
 		ret = FALSE;
 	}
 out:
@@ -375,7 +408,8 @@ pk_spawn_exit (PkSpawn *spawn)
 	} while (ret && count++ < 50);
 
 	/* the script exited okay */
-	ret = TRUE;
+	if (count < 50)
+		ret = TRUE;
 out:
 	spawn->priv->is_sending_exit = FALSE;
 	return ret;
@@ -442,7 +476,9 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 		/* kill off existing instance */
 		egg_debug ("changing dispatcher (exit old instance)");
 		spawn->priv->is_changing_dispatcher = TRUE;
-		pk_spawn_exit (spawn);
+		ret = pk_spawn_exit (spawn);
+		if (!ret)
+			egg_warning ("failed to exit previous instance");
 		spawn->priv->is_changing_dispatcher = FALSE;
 	}
 
