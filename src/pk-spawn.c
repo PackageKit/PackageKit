@@ -443,7 +443,9 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 		/* kill off existing instance */
 		egg_debug ("changing dispatcher (exit old instance)");
 		spawn->priv->is_changing_dispatcher = TRUE;
-		pk_spawn_exit (spawn);
+		ret = pk_spawn_exit (spawn);
+		if (!ret)
+			egg_warning ("failed to exit previous instance");
 		spawn->priv->is_changing_dispatcher = FALSE;
 	}
 
