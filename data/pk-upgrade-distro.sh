@@ -29,6 +29,8 @@ elif [ "$DISTRO" = "Ubuntu" ]; then
 	else
 		xdg-open http://www.ubuntu.com/getubuntu
 	fi
+elif [ -e /etc/SuSE-release ] && [ -x /usr/sbin/wagon ]; then
+	xdg-su -c /usr/sbin/wagon
 else
 	# do not dep on zenity in build scripts
 	zenity --warning --title "System is not recognised" \
