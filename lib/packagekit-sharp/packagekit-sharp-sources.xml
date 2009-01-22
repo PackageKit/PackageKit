@@ -1,8 +1,10 @@
 <gapi-parser-input>
   <api filename="./packagekit-api.raw">
     <library name="libpackagekit-glib.dll">
-      <namespace name="PackageKit">
-        <dir>../packagekit-glib</dir>
+      <namespace name="Pk">
+        <directory path="../packagekit-glib">
+	  <exclude>pk-client.c</exclude>
+	</directory>
       </namespace>
     </library>
   </api>

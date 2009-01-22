@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<metadata>
+	<attr	path="/api/namespace[@name='Pk']" name="name">PackageKit</attr>
+</metadata>
