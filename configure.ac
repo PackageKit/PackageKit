@@ -178,6 +178,18 @@ fi
 AM_CONDITIONAL(PK_BUILD_QT, test $build_qt = "yes")
 
 dnl ---------------------------------------------------------------------------
+dnl - Build PackageKit-Sharp
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(managed, AS_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
+	      enable_managed=$enableval,enable_managed=false)
+if test x$enable_managed = xyes; then
+	build_managed=yes
+else
+	build_managed=no
+fi
+AM_CONDITIONAL(PK_BUILD_MANAGED, test $build_managed = "yes")
+
+dnl ---------------------------------------------------------------------------
 dnl - libarchive
 dnl ---------------------------------------------------------------------------
 AC_CHECK_HEADERS(archive.h,
@@ -710,6 +722,7 @@ lib/packagekit-qt/Makefile
 lib/packagekit-qt/modules/Makefile
 lib/packagekit-qt/src/Makefile
 lib/packagekit-qt/test/Makefile
+lib/packagekit-sharp/Makefile
 lib/python/Makefile
 lib/python/packagekit/Makefile
 policy/Makefile
@@ -742,6 +755,7 @@ echo "
         BASH Command not found:    ${build_command_not_found}
         RUCK client:               ${build_ruck}
         QT library:                ${build_qt}
+	Managed bindings:          ${build_managed}
 
         Backends:
         ALPM backend:              ${enable_alpm}
