@@ -15,7 +15,8 @@ api:
 	gapi2-parser packagekit-sharp-sources.xml
 
 
-CUSTOMS =
+CUSTOMS =				\
+	Client.custom
 
 SOURCES =
 
