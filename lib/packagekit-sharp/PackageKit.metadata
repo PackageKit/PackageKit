@@ -1,4 +1,11 @@
 <?xml version="1.0"?>
 <metadata>
 	<attr	path="/api/namespace[@name='Pk']" name="name">PackageKit</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_download_packages']/*/*[@name='package_ids']" name="null_term_array">1</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_get_tid']" name="hidden">true</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_set_tid']" name="hidden">true</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_get_use_buffer']" name="hidden">true</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_set_use_buffer']" name="hidden">true</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_install_packages']/*/*[@name='package_ids']" name="null_term_array">1</attr>
+	<attr	path="/api/namespace/object[@cname='PkObjList']/method[@cname='pk_obj_list_set_to_string']" name="name">SetToStringFunc</attr>
 </metadata>
