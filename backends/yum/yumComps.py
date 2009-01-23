@@ -19,7 +19,7 @@
 #    Richard Hughes <richard@hughsie.com>
 
 from packagekit.enums import *
-import sqlite3 as sqlite
+import sqlite3
 import os
 import yum
 
@@ -212,7 +212,7 @@ class yumComps:
         ''' connect to database '''
         try:
             # will be created if it does not exist
-            self.connection = sqlite.connect(self.db)
+            self.connection = sqlite3.connect(self.db)
             self.cursor = self.connection.cursor()
         except Exception, e:
             print 'cannot connect to database %s: %s' % (self.db, str(e))
@@ -240,7 +240,7 @@ class yumComps:
         try: # kill the old db
             self.connection.close()
             os.unlink(self.db) # kill the db
-            self.connection = sqlite.connect(self.db)
+            self.connection = sqlite3.connect(self.db)
             self.cursor = self.connection.cursor()
         except Exception, e:
             print e
@@ -364,7 +364,7 @@ class yumComps:
 
 def main():
     _yb = yum.YumBase()
-    _db = "./packagekit-groups.sqlite"
+    _db = "/var/cache/yum/packagekit-groups.sqlite"
     comps = yumComps(_yb, _db)
     comps.connect()
     print "pk group system"

@@ -22,4 +22,5 @@ docbook2pdf ../../man/pkcon.xml --output ./files
 docbook2pdf ../../man/pkmon.xml --output ./files
 docbook2pdf ../../man/pkgenpack.xml --output ./files
 scp files/* $USER@$SERVER:/$LOCATION/files/
+scp ../../contrib/PackageKit.catalog $USER@$SERVER:/$LOCATION/files/
 
