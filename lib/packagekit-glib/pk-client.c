@@ -1680,7 +1680,7 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
  * pk_client_get_depends:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for depends
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1755,7 +1755,7 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 /**
  * pk_client_download_packages:
  * @client: a valid #PkClient instance
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @directory: the location where packages are to be downloaded
  * @error: a %GError to put the error code and message in, or %NULL
  * Get the packages that depend this one, i.e. child->parent.
@@ -1916,7 +1916,7 @@ pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
  * pk_client_get_requires:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for requires
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -2063,7 +2063,7 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 /**
  * pk_client_get_update_detail:
  * @client: a valid #PkClient instance
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get details about the specific update, for instance any CVE urls and
@@ -2255,7 +2255,7 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 /**
  * pk_client_get_details:
  * @client: a valid #PkClient instance
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get details of a package, so more information can be obtained for GUI
@@ -2384,7 +2384,7 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 /**
  * pk_client_get_files:
  * @client: a valid #PkClient instance
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get the file list (i.e. a list of files installed) for the specified package.
@@ -2478,7 +2478,7 @@ pk_client_remove_packages_action (PkClient *client, gchar **package_ids,
 /**
  * pk_client_remove_packages:
  * @client: a valid #PkClient instance
- * @package_ids: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @allow_deps: if other dependant packages are allowed to be removed from the computer
  * @autoremove: if other packages installed at the same time should be tried to remove
  * @error: a %GError to put the error code and message in, or %NULL
@@ -2694,7 +2694,7 @@ pk_client_install_package_action (PkClient *client, gchar **package_ids, GError 
 /**
  * pk_client_install_packages:
  * @client: a valid #PkClient instance
- * @package_ids: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Install a package of the newest and most correct version.
@@ -2808,7 +2808,7 @@ pk_client_install_signature_action (PkClient *client, PkSigTypeEnum type, const 
 /**
  * pk_client_install_signature:
  * @client: a valid #PkClient instance
- * @package_id: a signature_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_id: a signature_id structure such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Install a signature of the newest and most correct version.
@@ -2910,7 +2910,7 @@ pk_client_update_packages_action (PkClient *client, gchar **package_ids, GError 
 /**
  * pk_client_update_packages:
  * @client: a valid #PkClient instance
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Update specific packages to the newest available versions.
