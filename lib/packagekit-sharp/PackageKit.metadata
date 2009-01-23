@@ -2,10 +2,168 @@
 <metadata>
 	<attr	path="/api/namespace[@name='Pk']" name="name">PackageKit</attr>
 	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_download_packages']/*/*[@name='package_ids']" name="null_term_array">1</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_get_details']/*/*[@name='package_ids']" name="null_term_array">1</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_get_update_detail']/*/*[@name='package_ids']" name="null_term_array">1</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_get_requires']/*/*[@name='package_ids']" name="null_term_array">1</attr>
 	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_get_tid']" name="hidden">true</attr>
 	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_set_tid']" name="hidden">true</attr>
 	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_get_use_buffer']" name="hidden">true</attr>
 	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_set_use_buffer']" name="hidden">true</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_update_packages']/*/*[@name='package_ids']" name="null_term_array">1</attr>
 	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_install_packages']/*/*[@name='package_ids']" name="null_term_array">1</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_install_files']/*/*[@name='files_rel']" name="null_term_array">1</attr>
 	<attr	path="/api/namespace/object[@cname='PkObjList']/method[@cname='pk_obj_list_set_to_string']" name="name">SetToStringFunc</attr>
+	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_get_require_restart']" name="name">GetRequireRestartStatus</attr>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="AllowCancel" cname="allow-cancel" when="LAST" manual="true" field_name="allow-cancel">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="gboolean" name="allow_cancel" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="CallerActiveChanged" cname="caller-active-changed" when="LAST" manual="true" field_name="caller-active-changed">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="gboolean" name="is_active" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="Category" cname="category" when="LAST" manual="true" field_name="category">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="PkCategoryObj*" name="details" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="Destroy" cname="destroy" when="LAST" field_name="destroy">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="DistroUpgrade" cname="distro-upgrade" when="LAST" manual="true" field_name="distro-upgrade">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="gpointer" name="arg1" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="ErrorCode" cname="error-code" when="LAST" manual="true" field_name="error-code">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="PkErrorCodeEnum" name="code" />
+	      <parameter type="gchar*" name="details" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="EulaRequired" cname="eula-required" when="LAST" manual="true" field_name="eula-required">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="gchar*" name="eula_id" />
+	      <parameter type="gchar*" name="package_id" />
+	      <parameter type="gchar*" name="vendor_name" />
+	      <parameter type="gchar*" name="license_agreement" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="Finished" cname="finished" when="LAST" manual="true" field_name="finished">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="PkExitEnum" name="exit" />
+	      <parameter type="guint" name="runtime" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="Message" cname="message" when="LAST" manual="true" field_name="message">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="PkMessageEnum" name="message" />
+	      <parameter type="gchar*" name="details" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="ProgressChanged" cname="progress-changed" when="LAST" manual="true" field_name="progress-changed">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="guint" name="percentage" />
+	      <parameter type="guint" name="subpercentage" />
+	      <parameter type="guint" name="elapsed" />
+	      <parameter type="guint" name="remaining" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="RepoDetail" cname="repo-detail" when="LAST" manual="true" field_name="repo-detail">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="gchar*" name="repo_id" />
+	      <parameter type="gchar*" name="description" />
+	      <parameter type="gboolean" name="enabled" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="RepoSignatureRequired" cname="repo-signature-required" when="LAST" manual="true" field_name="repo-signature-required">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="gchar*" name="package_id" />
+	      <parameter type="gchar*" name="repository_name" />
+	      <parameter type="gchar*" name="key_url" />
+	      <parameter type="gchar*" name="key_userid" />
+	      <parameter type="gchar*" name="key_fingerprint" />
+	      <parameter type="gchar*" name="key_timestamp" />
+	      <parameter type="PkSigTypeEnum" name="type" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="RequireRestart" cname="require-restart" when="LAST" manual="true" field_name="require-restart">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="PkRestartEnum" name="restart" />
+	      <parameter type="gchar*" name="details" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="StatusChanged" cname="status-changed" when="LAST" manual="true" field_name="status-changed">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="PkStatusEnum" name="status" />
+	    </parameters>
+	  </signal>
+	</add-node>
+	<add-node	path="/api/namespace/object[@cname='PkClient']">
+	  <signal name="UpdateDetail" cname="update-detail" when="LAST" manual="true" field_name="update-detail">
+	    <return-type type="void" />
+	    <parameters>
+	      <parameter type="PkClient*" name="client" />
+	      <parameter type="gpointer" name="details" />
+	    </parameters>
+	  </signal>
+	</add-node>
 </metadata>
