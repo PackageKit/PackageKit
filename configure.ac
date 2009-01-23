@@ -178,11 +178,24 @@ fi
 AM_CONDITIONAL(PK_BUILD_QT, test $build_qt = "yes")
 
 dnl ---------------------------------------------------------------------------
-dnl - Build PackageKit-Sharp
+dnl - Build packageKit-sharp
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(managed, AS_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
 	      enable_managed=$enableval,enable_managed=false)
 if test x$enable_managed = xyes; then
+	PKG_CHECK_MODULES(GLIBSHARP, glib-sharp-2.0)
+	AC_SUBST(GLIBSHARP_CFLAGS)
+	AC_SUBST(GLIBSHARP_LIBS)
+
+	AC_PATH_PROG(MCS, mcs)
+	CS="C#"
+	if test ! -x "$MCS"; then
+		AC_PATH_PROG(MCS, gmcs)
+		if test ! -x "$MCS"; then
+			AC_MSG_ERROR([No $CS compiler found])
+		fi
+	fi
+
 	build_managed=yes
 else
 	build_managed=no

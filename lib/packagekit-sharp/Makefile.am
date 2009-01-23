@@ -4,7 +4,7 @@ generated/Client.cs: packagekit-api.xml $(CUSTOMS)
 	gapi2-codegen --outdir=generated --customdir=$(srcdir) --generate packagekit-api.xml
 
 packagekit-sharp.dll: $(srcdir)/generated/Client.cs $(SOURCES) $(CUSTOMS)
-	gmcs -unsafe -pkg:glib-sharp-2.0 -target:library -out:packagekit-sharp.dll $(srcdir)/generated/*.cs $(SOURCES)
+	$(MCS) -unsafe $(GLIBSHARP_LIBS) -target:library -out:packagekit-sharp.dll $(srcdir)/generated/*.cs $(SOURCES)
 
 packagekit-api.xml: $(srcdir)/packagekit-api.raw $(srcdir)/PackageKit.metadata
 	cp $(srcdir)/packagekit-api.raw packagekit-api.xml
