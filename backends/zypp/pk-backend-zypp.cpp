@@ -281,7 +281,6 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_PUBLISHING,
 		PK_GROUP_ENUM_SECURITY,
 		PK_GROUP_ENUM_SYSTEM,
-		PK_GROUP_ENUM_UNKNOWN,
 		-1);
 }
 
