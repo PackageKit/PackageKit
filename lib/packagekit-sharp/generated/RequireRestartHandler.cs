@@ -14,9 +14,9 @@ namespace PackageKit {
 			}
 		}
 
-		public string Details{
+		public PackageKit.PackageId Id{
 			get {
-				return (string) Args[1];
+				return (PackageKit.PackageId) Args[1];
 			}
 		}
 

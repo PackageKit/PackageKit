@@ -35,7 +35,7 @@ namespace PackageKit {
 		{
 			try {
 				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnMessage ((PackageKit.MessageEnum) message, GLib.Marshaller.PtrToStringGFree(details));
+				client_managed.OnMessage ((PackageKit.MessageEnum) message, GLib.Marshaller.Utf8PtrToString (details));
 			} catch (Exception e) {
 				GLib.ExceptionManager.RaiseUnhandledException (e, false);
 			}
@@ -65,35 +65,612 @@ namespace PackageKit {
 				v.Dispose ();
 		}
 
-		[GLib.CDeclCallback]
-		delegate void MessageSignalDelegate (IntPtr arg0, int arg1, IntPtr arg2, IntPtr gch);
+		[GLib.Signal("message")]
+		public event PackageKit.MessageHandler Message {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "message", typeof (PackageKit.MessageArgs));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "message", typeof (PackageKit.MessageArgs));
+				sig.RemoveDelegate (value);
+			}
+		}
 
-		static void MessageSignalCallback (IntPtr arg0, int arg1, IntPtr arg2, IntPtr gch)
+		[GLib.CDeclCallback]
+		delegate void DetailsVMDelegate (IntPtr client, IntPtr package_detail);
+
+		static DetailsVMDelegate DetailsVMCallback;
+
+		static void details_cb (IntPtr client, IntPtr package_detail)
 		{
-			PackageKit.MessageArgs args = new PackageKit.MessageArgs ();
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnDetails (package_detail == IntPtr.Zero ? null : (PackageKit.DetailsObj) GLib.Opaque.GetOpaque (package_detail, typeof (PackageKit.DetailsObj), false));
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideDetails (GLib.GType gtype)
+		{
+			if (DetailsVMCallback == null)
+				DetailsVMCallback = new DetailsVMDelegate (details_cb);
+			OverrideVirtualMethod (gtype, "details", DetailsVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideDetails")]
+		protected virtual void OnDetails (PackageKit.DetailsObj package_detail)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
+			GLib.Value[] vals = new GLib.Value [2];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (package_detail);
+			inst_and_params.Append (vals [1]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.CDeclCallback]
+		delegate void DetailsSignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr gch);
+
+		static void DetailsSignalCallback (IntPtr arg0, IntPtr arg1, IntPtr gch)
+		{
+			PackageKit.DetailsArgs args = new PackageKit.DetailsArgs ();
 			try {
 				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
 				if (sig == null)
 					throw new Exception("Unknown signal GC handle received " + gch);
 
-				args.Args = new object[2];
-				args.Args[0] = (PackageKit.MessageEnum) arg1;
-				args.Args[1] = GLib.Marshaller.PtrToStringGFree(arg2);
-				PackageKit.MessageHandler handler = (PackageKit.MessageHandler) sig.Handler;
+				args.Args = new object[1];
+				args.Args[0] = arg1 == IntPtr.Zero ? null : (PackageKit.DetailsObj) GLib.Opaque.GetOpaque (arg1, typeof (PackageKit.DetailsObj), false);
+				PackageKit.DetailsHandler handler = (PackageKit.DetailsHandler) sig.Handler;
 				handler (GLib.Object.GetObject (arg0), args);
 			} catch (Exception e) {
 				GLib.ExceptionManager.RaiseUnhandledException (e, false);
 			}
 		}
 
-		[GLib.Signal("message")]
-		public event PackageKit.MessageHandler Message {
+		[GLib.Signal("details")]
+		public event PackageKit.DetailsHandler Details {
 			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "message", new MessageSignalDelegate(MessageSignalCallback));
+				GLib.Signal sig = GLib.Signal.Lookup (this, "details", new DetailsSignalDelegate(DetailsSignalCallback));
 				sig.AddDelegate (value);
 			}
 			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "message", new MessageSignalDelegate(MessageSignalCallback));
+				GLib.Signal sig = GLib.Signal.Lookup (this, "details", new DetailsSignalDelegate(DetailsSignalCallback));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void CallerActiveChangedVMDelegate (IntPtr client, bool is_active);
+
+		static CallerActiveChangedVMDelegate CallerActiveChangedVMCallback;
+
+		static void calleractivechanged_cb (IntPtr client, bool is_active)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnCallerActiveChanged (is_active);
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideCallerActiveChanged (GLib.GType gtype)
+		{
+			if (CallerActiveChangedVMCallback == null)
+				CallerActiveChangedVMCallback = new CallerActiveChangedVMDelegate (calleractivechanged_cb);
+			OverrideVirtualMethod (gtype, "caller-active-changed", CallerActiveChangedVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideCallerActiveChanged")]
+		protected virtual void OnCallerActiveChanged (bool is_active)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
+			GLib.Value[] vals = new GLib.Value [2];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (is_active);
+			inst_and_params.Append (vals [1]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.Signal("caller-active-changed")]
+		public event PackageKit.CallerActiveChangedHandler CallerActiveChanged {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "caller-active-changed", typeof (PackageKit.CallerActiveChangedArgs));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "caller-active-changed", typeof (PackageKit.CallerActiveChangedArgs));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void ErrorCodeVMDelegate (IntPtr client, int code, IntPtr details);
+
+		static ErrorCodeVMDelegate ErrorCodeVMCallback;
+
+		static void errorcode_cb (IntPtr client, int code, IntPtr details)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnErrorCode ((PackageKit.ErrorCodeEnum) code, GLib.Marshaller.Utf8PtrToString (details));
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideErrorCode (GLib.GType gtype)
+		{
+			if (ErrorCodeVMCallback == null)
+				ErrorCodeVMCallback = new ErrorCodeVMDelegate (errorcode_cb);
+			OverrideVirtualMethod (gtype, "error-code", ErrorCodeVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideErrorCode")]
+		protected virtual void OnErrorCode (PackageKit.ErrorCodeEnum code, string details)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (3);
+			GLib.Value[] vals = new GLib.Value [3];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (code);
+			inst_and_params.Append (vals [1]);
+			vals [2] = new GLib.Value (details);
+			inst_and_params.Append (vals [2]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.Signal("error-code")]
+		public event PackageKit.ErrorCodeHandler ErrorCode {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "error-code", typeof (PackageKit.ErrorCodeArgs));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "error-code", typeof (PackageKit.ErrorCodeArgs));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void ProgressChangedVMDelegate (IntPtr client, uint percentage, uint subpercentage, uint elapsed, uint remaining);
+
+		static ProgressChangedVMDelegate ProgressChangedVMCallback;
+
+		static void progresschanged_cb (IntPtr client, uint percentage, uint subpercentage, uint elapsed, uint remaining)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnProgressChanged (percentage, subpercentage, elapsed, remaining);
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideProgressChanged (GLib.GType gtype)
+		{
+			if (ProgressChangedVMCallback == null)
+				ProgressChangedVMCallback = new ProgressChangedVMDelegate (progresschanged_cb);
+			OverrideVirtualMethod (gtype, "progress-changed", ProgressChangedVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideProgressChanged")]
+		protected virtual void OnProgressChanged (uint percentage, uint subpercentage, uint elapsed, uint remaining)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (5);
+			GLib.Value[] vals = new GLib.Value [5];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (percentage);
+			inst_and_params.Append (vals [1]);
+			vals [2] = new GLib.Value (subpercentage);
+			inst_and_params.Append (vals [2]);
+			vals [3] = new GLib.Value (elapsed);
+			inst_and_params.Append (vals [3]);
+			vals [4] = new GLib.Value (remaining);
+			inst_and_params.Append (vals [4]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.Signal("progress-changed")]
+		public event PackageKit.ProgressChangedHandler ProgressChanged {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "progress-changed", typeof (PackageKit.ProgressChangedArgs));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "progress-changed", typeof (PackageKit.ProgressChangedArgs));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void PackageVMDelegate (IntPtr client, IntPtr obj);
+
+		static PackageVMDelegate PackageVMCallback;
+
+		static void package_cb (IntPtr client, IntPtr obj)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnPackage (obj == IntPtr.Zero ? null : (PackageKit.PackageObj) GLib.Opaque.GetOpaque (obj, typeof (PackageKit.PackageObj), false));
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverridePackage (GLib.GType gtype)
+		{
+			if (PackageVMCallback == null)
+				PackageVMCallback = new PackageVMDelegate (package_cb);
+			OverrideVirtualMethod (gtype, "package", PackageVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverridePackage")]
+		protected virtual void OnPackage (PackageKit.PackageObj obj)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
+			GLib.Value[] vals = new GLib.Value [2];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (obj);
+			inst_and_params.Append (vals [1]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.CDeclCallback]
+		delegate void PackageSignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr gch);
+
+		static void PackageSignalCallback (IntPtr arg0, IntPtr arg1, IntPtr gch)
+		{
+			PackageKit.PackageArgs args = new PackageKit.PackageArgs ();
+			try {
+				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
+				if (sig == null)
+					throw new Exception("Unknown signal GC handle received " + gch);
+
+				args.Args = new object[1];
+				args.Args[0] = arg1 == IntPtr.Zero ? null : (PackageKit.PackageObj) GLib.Opaque.GetOpaque (arg1, typeof (PackageKit.PackageObj), false);
+				PackageKit.PackageHandler handler = (PackageKit.PackageHandler) sig.Handler;
+				handler (GLib.Object.GetObject (arg0), args);
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		[GLib.Signal("package")]
+		public event PackageKit.PackageHandler Package {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "package", new PackageSignalDelegate(PackageSignalCallback));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "package", new PackageSignalDelegate(PackageSignalCallback));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void AllowCancelVMDelegate (IntPtr client, bool allow_cancel);
+
+		static AllowCancelVMDelegate AllowCancelVMCallback;
+
+		static void allowcancel_cb (IntPtr client, bool allow_cancel)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnAllowCancel (allow_cancel);
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideAllowCancel (GLib.GType gtype)
+		{
+			if (AllowCancelVMCallback == null)
+				AllowCancelVMCallback = new AllowCancelVMDelegate (allowcancel_cb);
+			OverrideVirtualMethod (gtype, "allow-cancel", AllowCancelVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideAllowCancel")]
+		protected virtual void OnAllowCancel (bool allow_cancel)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
+			GLib.Value[] vals = new GLib.Value [2];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (allow_cancel);
+			inst_and_params.Append (vals [1]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.Signal("allow-cancel")]
+		public event PackageKit.AllowCancelHandler AllowCancel {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "allow-cancel", typeof (PackageKit.AllowCancelArgs));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "allow-cancel", typeof (PackageKit.AllowCancelArgs));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void TransactionVMDelegate (IntPtr client, IntPtr obj);
+
+		static TransactionVMDelegate TransactionVMCallback;
+
+		static void transaction_cb (IntPtr client, IntPtr obj)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnTransaction (obj == IntPtr.Zero ? null : (PackageKit.TransactionObj) GLib.Opaque.GetOpaque (obj, typeof (PackageKit.TransactionObj), false));
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideTransaction (GLib.GType gtype)
+		{
+			if (TransactionVMCallback == null)
+				TransactionVMCallback = new TransactionVMDelegate (transaction_cb);
+			OverrideVirtualMethod (gtype, "transaction", TransactionVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideTransaction")]
+		protected virtual void OnTransaction (PackageKit.TransactionObj obj)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
+			GLib.Value[] vals = new GLib.Value [2];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (obj);
+			inst_and_params.Append (vals [1]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.CDeclCallback]
+		delegate void TransactionSignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr gch);
+
+		static void TransactionSignalCallback (IntPtr arg0, IntPtr arg1, IntPtr gch)
+		{
+			PackageKit.TransactionArgs args = new PackageKit.TransactionArgs ();
+			try {
+				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
+				if (sig == null)
+					throw new Exception("Unknown signal GC handle received " + gch);
+
+				args.Args = new object[1];
+				args.Args[0] = arg1 == IntPtr.Zero ? null : (PackageKit.TransactionObj) GLib.Opaque.GetOpaque (arg1, typeof (PackageKit.TransactionObj), false);
+				PackageKit.TransactionHandler handler = (PackageKit.TransactionHandler) sig.Handler;
+				handler (GLib.Object.GetObject (arg0), args);
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		[GLib.Signal("transaction")]
+		public event PackageKit.TransactionHandler Transaction {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "transaction", new TransactionSignalDelegate(TransactionSignalCallback));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "transaction", new TransactionSignalDelegate(TransactionSignalCallback));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void RepoSignatureRequiredVMDelegate (IntPtr client, IntPtr package_id, IntPtr repository_name, IntPtr key_url, IntPtr key_userid, IntPtr key_id, IntPtr key_fingerprint, IntPtr key_timestamp, int type);
+
+		static RepoSignatureRequiredVMDelegate RepoSignatureRequiredVMCallback;
+
+		static void reposignaturerequired_cb (IntPtr client, IntPtr package_id, IntPtr repository_name, IntPtr key_url, IntPtr key_userid, IntPtr key_id, IntPtr key_fingerprint, IntPtr key_timestamp, int type)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnRepoSignatureRequired (GLib.Marshaller.Utf8PtrToString (package_id), GLib.Marshaller.Utf8PtrToString (repository_name), GLib.Marshaller.Utf8PtrToString (key_url), GLib.Marshaller.Utf8PtrToString (key_userid), GLib.Marshaller.Utf8PtrToString (key_id), GLib.Marshaller.Utf8PtrToString (key_fingerprint), GLib.Marshaller.Utf8PtrToString (key_timestamp), (PackageKit.SigTypeEnum) type);
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideRepoSignatureRequired (GLib.GType gtype)
+		{
+			if (RepoSignatureRequiredVMCallback == null)
+				RepoSignatureRequiredVMCallback = new RepoSignatureRequiredVMDelegate (reposignaturerequired_cb);
+			OverrideVirtualMethod (gtype, "repo-signature-required", RepoSignatureRequiredVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideRepoSignatureRequired")]
+		protected virtual void OnRepoSignatureRequired (string package_id, string repository_name, string key_url, string key_userid, string key_id, string key_fingerprint, string key_timestamp, PackageKit.SigTypeEnum type)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (9);
+			GLib.Value[] vals = new GLib.Value [9];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (package_id);
+			inst_and_params.Append (vals [1]);
+			vals [2] = new GLib.Value (repository_name);
+			inst_and_params.Append (vals [2]);
+			vals [3] = new GLib.Value (key_url);
+			inst_and_params.Append (vals [3]);
+			vals [4] = new GLib.Value (key_userid);
+			inst_and_params.Append (vals [4]);
+			vals [5] = new GLib.Value (key_id);
+			inst_and_params.Append (vals [5]);
+			vals [6] = new GLib.Value (key_fingerprint);
+			inst_and_params.Append (vals [6]);
+			vals [7] = new GLib.Value (key_timestamp);
+			inst_and_params.Append (vals [7]);
+			vals [8] = new GLib.Value (type);
+			inst_and_params.Append (vals [8]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.Signal("repo-signature-required")]
+		public event PackageKit.RepoSignatureRequiredHandler RepoSignatureRequired {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "repo-signature-required", typeof (PackageKit.RepoSignatureRequiredArgs));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "repo-signature-required", typeof (PackageKit.RepoSignatureRequiredArgs));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void CategoryVMDelegate (IntPtr client, IntPtr obj);
+
+		static CategoryVMDelegate CategoryVMCallback;
+
+		static void category_cb (IntPtr client, IntPtr obj)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnCategory (obj == IntPtr.Zero ? null : (PackageKit.CategoryObj) GLib.Opaque.GetOpaque (obj, typeof (PackageKit.CategoryObj), false));
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideCategory (GLib.GType gtype)
+		{
+			if (CategoryVMCallback == null)
+				CategoryVMCallback = new CategoryVMDelegate (category_cb);
+			OverrideVirtualMethod (gtype, "category", CategoryVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideCategory")]
+		protected virtual void OnCategory (PackageKit.CategoryObj obj)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
+			GLib.Value[] vals = new GLib.Value [2];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (obj);
+			inst_and_params.Append (vals [1]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.CDeclCallback]
+		delegate void CategorySignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr gch);
+
+		static void CategorySignalCallback (IntPtr arg0, IntPtr arg1, IntPtr gch)
+		{
+			PackageKit.CategoryArgs args = new PackageKit.CategoryArgs ();
+			try {
+				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
+				if (sig == null)
+					throw new Exception("Unknown signal GC handle received " + gch);
+
+				args.Args = new object[1];
+				args.Args[0] = arg1 == IntPtr.Zero ? null : (PackageKit.CategoryObj) GLib.Opaque.GetOpaque (arg1, typeof (PackageKit.CategoryObj), false);
+				PackageKit.CategoryHandler handler = (PackageKit.CategoryHandler) sig.Handler;
+				handler (GLib.Object.GetObject (arg0), args);
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		[GLib.Signal("category")]
+		public event PackageKit.CategoryHandler Category {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "category", new CategorySignalDelegate(CategorySignalCallback));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "category", new CategorySignalDelegate(CategorySignalCallback));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void EulaRequiredVMDelegate (IntPtr client, IntPtr eula_id, IntPtr package_id, IntPtr vendor_name, IntPtr license_agreement);
+
+		static EulaRequiredVMDelegate EulaRequiredVMCallback;
+
+		static void eularequired_cb (IntPtr client, IntPtr eula_id, IntPtr package_id, IntPtr vendor_name, IntPtr license_agreement)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnEulaRequired (GLib.Marshaller.Utf8PtrToString (eula_id), GLib.Marshaller.Utf8PtrToString (package_id), GLib.Marshaller.Utf8PtrToString (vendor_name), GLib.Marshaller.Utf8PtrToString (license_agreement));
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideEulaRequired (GLib.GType gtype)
+		{
+			if (EulaRequiredVMCallback == null)
+				EulaRequiredVMCallback = new EulaRequiredVMDelegate (eularequired_cb);
+			OverrideVirtualMethod (gtype, "eula-required", EulaRequiredVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideEulaRequired")]
+		protected virtual void OnEulaRequired (string eula_id, string package_id, string vendor_name, string license_agreement)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (5);
+			GLib.Value[] vals = new GLib.Value [5];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (eula_id);
+			inst_and_params.Append (vals [1]);
+			vals [2] = new GLib.Value (package_id);
+			inst_and_params.Append (vals [2]);
+			vals [3] = new GLib.Value (vendor_name);
+			inst_and_params.Append (vals [3]);
+			vals [4] = new GLib.Value (license_agreement);
+			inst_and_params.Append (vals [4]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.Signal("eula-required")]
+		public event PackageKit.EulaRequiredHandler EulaRequired {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "eula-required", typeof (PackageKit.EulaRequiredArgs));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "eula-required", typeof (PackageKit.EulaRequiredArgs));
 				sig.RemoveDelegate (value);
 			}
 		}
@@ -171,107 +748,268 @@ namespace PackageKit {
 		}
 
 		[GLib.CDeclCallback]
-		delegate void CallerActiveChangedVMDelegate (IntPtr client, bool is_active);
+		delegate void DestroyVMDelegate (IntPtr client, int exit, uint runtime);
 
-		static CallerActiveChangedVMDelegate CallerActiveChangedVMCallback;
+		static DestroyVMDelegate DestroyVMCallback;
 
-		static void calleractivechanged_cb (IntPtr client, bool is_active)
+		static void destroy_cb (IntPtr client, int exit, uint runtime)
 		{
 			try {
 				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnCallerActiveChanged (is_active);
+				client_managed.OnDestroy ((PackageKit.ExitEnum) exit, runtime);
 			} catch (Exception e) {
 				GLib.ExceptionManager.RaiseUnhandledException (e, false);
 			}
 		}
 
-		private static void OverrideCallerActiveChanged (GLib.GType gtype)
+		private static void OverrideDestroy (GLib.GType gtype)
 		{
-			if (CallerActiveChangedVMCallback == null)
-				CallerActiveChangedVMCallback = new CallerActiveChangedVMDelegate (calleractivechanged_cb);
-			OverrideVirtualMethod (gtype, "caller-active-changed", CallerActiveChangedVMCallback);
+			if (DestroyVMCallback == null)
+				DestroyVMCallback = new DestroyVMDelegate (destroy_cb);
+			OverrideVirtualMethod (gtype, "destroy", DestroyVMCallback);
 		}
 
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideCallerActiveChanged")]
-		protected virtual void OnCallerActiveChanged (bool is_active)
-		{
-			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
-			GLib.Value[] vals = new GLib.Value [2];
-			vals [0] = new GLib.Value (this);
-			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (is_active);
-			inst_and_params.Append (vals [1]);
-			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
-			foreach (GLib.Value v in vals)
-				v.Dispose ();
-		}
-
-		[GLib.CDeclCallback]
-		delegate void CallerActiveChangedSignalDelegate (IntPtr arg0, bool arg1, IntPtr gch);
-
-		static void CallerActiveChangedSignalCallback (IntPtr arg0, bool arg1, IntPtr gch)
-		{
-			PackageKit.CallerActiveChangedArgs args = new PackageKit.CallerActiveChangedArgs ();
-			try {
-				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
-				if (sig == null)
-					throw new Exception("Unknown signal GC handle received " + gch);
-
-				args.Args = new object[1];
-				args.Args[0] = arg1;
-				PackageKit.CallerActiveChangedHandler handler = (PackageKit.CallerActiveChangedHandler) sig.Handler;
-				handler (GLib.Object.GetObject (arg0), args);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		[GLib.Signal("caller-active-changed")]
-		public event PackageKit.CallerActiveChangedHandler CallerActiveChanged {
-			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "caller-active-changed", new CallerActiveChangedSignalDelegate(CallerActiveChangedSignalCallback));
-				sig.AddDelegate (value);
-			}
-			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "caller-active-changed", new CallerActiveChangedSignalDelegate(CallerActiveChangedSignalCallback));
-				sig.RemoveDelegate (value);
-			}
-		}
-
-		[GLib.CDeclCallback]
-		delegate void ErrorCodeVMDelegate (IntPtr client, int code, IntPtr details);
-
-		static ErrorCodeVMDelegate ErrorCodeVMCallback;
-
-		static void errorcode_cb (IntPtr client, int code, IntPtr details)
-		{
-			try {
-				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnErrorCode ((PackageKit.ErrorCodeEnum) code, GLib.Marshaller.PtrToStringGFree(details));
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		private static void OverrideErrorCode (GLib.GType gtype)
-		{
-			if (ErrorCodeVMCallback == null)
-				ErrorCodeVMCallback = new ErrorCodeVMDelegate (errorcode_cb);
-			OverrideVirtualMethod (gtype, "error-code", ErrorCodeVMCallback);
-		}
-
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideErrorCode")]
-		protected virtual void OnErrorCode (PackageKit.ErrorCodeEnum code, string details)
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideDestroy")]
+		protected virtual void OnDestroy (PackageKit.ExitEnum exit, uint runtime)
 		{
 			GLib.Value ret = GLib.Value.Empty;
 			GLib.ValueArray inst_and_params = new GLib.ValueArray (3);
 			GLib.Value[] vals = new GLib.Value [3];
 			vals [0] = new GLib.Value (this);
 			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (code);
+			vals [1] = new GLib.Value (exit);
 			inst_and_params.Append (vals [1]);
-			vals [2] = new GLib.Value (details);
+			vals [2] = new GLib.Value (runtime);
+			inst_and_params.Append (vals [2]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.Signal("destroy")]
+		public event PackageKit.DestroyHandler Destroy {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "destroy", typeof (PackageKit.DestroyArgs));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "destroy", typeof (PackageKit.DestroyArgs));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void FilesVMDelegate (IntPtr client, IntPtr package_id, IntPtr filelist);
+
+		static FilesVMDelegate FilesVMCallback;
+
+		static void files_cb (IntPtr client, IntPtr package_id, IntPtr filelist)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnFiles (GLib.Marshaller.Utf8PtrToString (package_id), GLib.Marshaller.Utf8PtrToString (filelist));
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideFiles (GLib.GType gtype)
+		{
+			if (FilesVMCallback == null)
+				FilesVMCallback = new FilesVMDelegate (files_cb);
+			OverrideVirtualMethod (gtype, "files", FilesVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideFiles")]
+		protected virtual void OnFiles (string package_id, string filelist)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (3);
+			GLib.Value[] vals = new GLib.Value [3];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (package_id);
+			inst_and_params.Append (vals [1]);
+			vals [2] = new GLib.Value (filelist);
+			inst_and_params.Append (vals [2]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.Signal("files")]
+		public event PackageKit.FilesHandler Files {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "files", typeof (PackageKit.FilesArgs));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "files", typeof (PackageKit.FilesArgs));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void DistroUpgradeVMDelegate (IntPtr client, int type, IntPtr name, IntPtr summary);
+
+		static DistroUpgradeVMDelegate DistroUpgradeVMCallback;
+
+		static void distroupgrade_cb (IntPtr client, int type, IntPtr name, IntPtr summary)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnDistroUpgrade ((PackageKit.UpdateStateEnum) type, GLib.Marshaller.Utf8PtrToString (name), GLib.Marshaller.Utf8PtrToString (summary));
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideDistroUpgrade (GLib.GType gtype)
+		{
+			if (DistroUpgradeVMCallback == null)
+				DistroUpgradeVMCallback = new DistroUpgradeVMDelegate (distroupgrade_cb);
+			OverrideVirtualMethod (gtype, "distro-upgrade", DistroUpgradeVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideDistroUpgrade")]
+		protected virtual void OnDistroUpgrade (PackageKit.UpdateStateEnum type, string name, string summary)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (4);
+			GLib.Value[] vals = new GLib.Value [4];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (type);
+			inst_and_params.Append (vals [1]);
+			vals [2] = new GLib.Value (name);
+			inst_and_params.Append (vals [2]);
+			vals [3] = new GLib.Value (summary);
+			inst_and_params.Append (vals [3]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.CDeclCallback]
+		delegate void DistroUpgradeSignalDelegate (IntPtr arg0, int arg1, IntPtr arg2, IntPtr arg3, IntPtr gch);
+
+		static void DistroUpgradeSignalCallback (IntPtr arg0, int arg1, IntPtr arg2, IntPtr arg3, IntPtr gch)
+		{
+			PackageKit.DistroUpgradeArgs args = new PackageKit.DistroUpgradeArgs ();
+			try {
+				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
+				if (sig == null)
+					throw new Exception("Unknown signal GC handle received " + gch);
+
+				args.Args = new object[3];
+				args.Args[0] = (PackageKit.UpdateStateEnum) arg1;
+				args.Args[1] = GLib.Marshaller.Utf8PtrToString (arg2);
+				args.Args[2] = GLib.Marshaller.Utf8PtrToString (arg3);
+				PackageKit.DistroUpgradeHandler handler = (PackageKit.DistroUpgradeHandler) sig.Handler;
+				handler (GLib.Object.GetObject (arg0), args);
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		[GLib.Signal("distro-upgrade")]
+		public event PackageKit.DistroUpgradeHandler DistroUpgrade {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "distro-upgrade", new DistroUpgradeSignalDelegate(DistroUpgradeSignalCallback));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "distro-upgrade", new DistroUpgradeSignalDelegate(DistroUpgradeSignalCallback));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void RepoDetailVMDelegate (IntPtr client, IntPtr repo_id, IntPtr description, bool enabled);
+
+		static RepoDetailVMDelegate RepoDetailVMCallback;
+
+		static void repodetail_cb (IntPtr client, IntPtr repo_id, IntPtr description, bool enabled)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnRepoDetail (GLib.Marshaller.Utf8PtrToString (repo_id), GLib.Marshaller.Utf8PtrToString (description), enabled);
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideRepoDetail (GLib.GType gtype)
+		{
+			if (RepoDetailVMCallback == null)
+				RepoDetailVMCallback = new RepoDetailVMDelegate (repodetail_cb);
+			OverrideVirtualMethod (gtype, "repo-detail", RepoDetailVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideRepoDetail")]
+		protected virtual void OnRepoDetail (string repo_id, string description, bool enabled)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (4);
+			GLib.Value[] vals = new GLib.Value [4];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (repo_id);
+			inst_and_params.Append (vals [1]);
+			vals [2] = new GLib.Value (description);
+			inst_and_params.Append (vals [2]);
+			vals [3] = new GLib.Value (enabled);
+			inst_and_params.Append (vals [3]);
+			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
+			foreach (GLib.Value v in vals)
+				v.Dispose ();
+		}
+
+		[GLib.Signal("repo-detail")]
+		public event PackageKit.RepoDetailHandler RepoDetail {
+			add {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "repo-detail", typeof (PackageKit.RepoDetailArgs));
+				sig.AddDelegate (value);
+			}
+			remove {
+				GLib.Signal sig = GLib.Signal.Lookup (this, "repo-detail", typeof (PackageKit.RepoDetailArgs));
+				sig.RemoveDelegate (value);
+			}
+		}
+
+		[GLib.CDeclCallback]
+		delegate void RequireRestartVMDelegate (IntPtr client, int restart, IntPtr id);
+
+		static RequireRestartVMDelegate RequireRestartVMCallback;
+
+		static void requirerestart_cb (IntPtr client, int restart, IntPtr id)
+		{
+			try {
+				Client client_managed = GLib.Object.GetObject (client, false) as Client;
+				client_managed.OnRequireRestart ((PackageKit.RestartEnum) restart, id == IntPtr.Zero ? null : (PackageKit.PackageId) GLib.Opaque.GetOpaque (id, typeof (PackageKit.PackageId), false));
+			} catch (Exception e) {
+				GLib.ExceptionManager.RaiseUnhandledException (e, false);
+			}
+		}
+
+		private static void OverrideRequireRestart (GLib.GType gtype)
+		{
+			if (RequireRestartVMCallback == null)
+				RequireRestartVMCallback = new RequireRestartVMDelegate (requirerestart_cb);
+			OverrideVirtualMethod (gtype, "require-restart", RequireRestartVMCallback);
+		}
+
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideRequireRestart")]
+		protected virtual void OnRequireRestart (PackageKit.RestartEnum restart, PackageKit.PackageId id)
+		{
+			GLib.Value ret = GLib.Value.Empty;
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (3);
+			GLib.Value[] vals = new GLib.Value [3];
+			vals [0] = new GLib.Value (this);
+			inst_and_params.Append (vals [0]);
+			vals [1] = new GLib.Value (restart);
+			inst_and_params.Append (vals [1]);
+			vals [2] = new GLib.Value (id);
 			inst_and_params.Append (vals [2]);
 			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
 			foreach (GLib.Value v in vals)
@@ -279,112 +1017,103 @@ namespace PackageKit {
 		}
 
 		[GLib.CDeclCallback]
-		delegate void ErrorCodeSignalDelegate (IntPtr arg0, int arg1, IntPtr arg2, IntPtr gch);
+		delegate void RequireRestartSignalDelegate (IntPtr arg0, int arg1, IntPtr arg2, IntPtr gch);
 
-		static void ErrorCodeSignalCallback (IntPtr arg0, int arg1, IntPtr arg2, IntPtr gch)
+		static void RequireRestartSignalCallback (IntPtr arg0, int arg1, IntPtr arg2, IntPtr gch)
 		{
-			PackageKit.ErrorCodeArgs args = new PackageKit.ErrorCodeArgs ();
+			PackageKit.RequireRestartArgs args = new PackageKit.RequireRestartArgs ();
 			try {
 				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
 				if (sig == null)
 					throw new Exception("Unknown signal GC handle received " + gch);
 
 				args.Args = new object[2];
-				args.Args[0] = (PackageKit.ErrorCodeEnum) arg1;
-				args.Args[1] = GLib.Marshaller.PtrToStringGFree(arg2);
-				PackageKit.ErrorCodeHandler handler = (PackageKit.ErrorCodeHandler) sig.Handler;
+				args.Args[0] = (PackageKit.RestartEnum) arg1;
+				args.Args[1] = arg2 == IntPtr.Zero ? null : (PackageKit.PackageId) GLib.Opaque.GetOpaque (arg2, typeof (PackageKit.PackageId), false);
+				PackageKit.RequireRestartHandler handler = (PackageKit.RequireRestartHandler) sig.Handler;
 				handler (GLib.Object.GetObject (arg0), args);
 			} catch (Exception e) {
 				GLib.ExceptionManager.RaiseUnhandledException (e, false);
 			}
 		}
 
-		[GLib.Signal("error-code")]
-		public event PackageKit.ErrorCodeHandler ErrorCode {
+		[GLib.Signal("require-restart")]
+		public event PackageKit.RequireRestartHandler RequireRestart {
 			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "error-code", new ErrorCodeSignalDelegate(ErrorCodeSignalCallback));
+				GLib.Signal sig = GLib.Signal.Lookup (this, "require-restart", new RequireRestartSignalDelegate(RequireRestartSignalCallback));
 				sig.AddDelegate (value);
 			}
 			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "error-code", new ErrorCodeSignalDelegate(ErrorCodeSignalCallback));
+				GLib.Signal sig = GLib.Signal.Lookup (this, "require-restart", new RequireRestartSignalDelegate(RequireRestartSignalCallback));
 				sig.RemoveDelegate (value);
 			}
 		}
 
 		[GLib.CDeclCallback]
-		delegate void ProgressChangedVMDelegate (IntPtr client, uint percentage, uint subpercentage, uint elapsed, uint remaining);
+		delegate void UpdateDetailVMDelegate (IntPtr client, IntPtr update_detail);
 
-		static ProgressChangedVMDelegate ProgressChangedVMCallback;
+		static UpdateDetailVMDelegate UpdateDetailVMCallback;
 
-		static void progresschanged_cb (IntPtr client, uint percentage, uint subpercentage, uint elapsed, uint remaining)
+		static void updatedetail_cb (IntPtr client, IntPtr update_detail)
 		{
 			try {
 				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnProgressChanged (percentage, subpercentage, elapsed, remaining);
+				client_managed.OnUpdateDetail (update_detail == IntPtr.Zero ? null : (PackageKit.UpdateDetailObj) GLib.Opaque.GetOpaque (update_detail, typeof (PackageKit.UpdateDetailObj), false));
 			} catch (Exception e) {
 				GLib.ExceptionManager.RaiseUnhandledException (e, false);
 			}
 		}
 
-		private static void OverrideProgressChanged (GLib.GType gtype)
+		private static void OverrideUpdateDetail (GLib.GType gtype)
 		{
-			if (ProgressChangedVMCallback == null)
-				ProgressChangedVMCallback = new ProgressChangedVMDelegate (progresschanged_cb);
-			OverrideVirtualMethod (gtype, "progress-changed", ProgressChangedVMCallback);
+			if (UpdateDetailVMCallback == null)
+				UpdateDetailVMCallback = new UpdateDetailVMDelegate (updatedetail_cb);
+			OverrideVirtualMethod (gtype, "update-detail", UpdateDetailVMCallback);
 		}
 
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideProgressChanged")]
-		protected virtual void OnProgressChanged (uint percentage, uint subpercentage, uint elapsed, uint remaining)
+		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideUpdateDetail")]
+		protected virtual void OnUpdateDetail (PackageKit.UpdateDetailObj update_detail)
 		{
 			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (5);
-			GLib.Value[] vals = new GLib.Value [5];
+			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
+			GLib.Value[] vals = new GLib.Value [2];
 			vals [0] = new GLib.Value (this);
 			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (percentage);
+			vals [1] = new GLib.Value (update_detail);
 			inst_and_params.Append (vals [1]);
-			vals [2] = new GLib.Value (subpercentage);
-			inst_and_params.Append (vals [2]);
-			vals [3] = new GLib.Value (elapsed);
-			inst_and_params.Append (vals [3]);
-			vals [4] = new GLib.Value (remaining);
-			inst_and_params.Append (vals [4]);
 			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
 			foreach (GLib.Value v in vals)
 				v.Dispose ();
 		}
 
 		[GLib.CDeclCallback]
-		delegate void ProgressChangedSignalDelegate (IntPtr arg0, uint arg1, uint arg2, uint arg3, uint arg4, IntPtr gch);
+		delegate void UpdateDetailSignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr gch);
 
-		static void ProgressChangedSignalCallback (IntPtr arg0, uint arg1, uint arg2, uint arg3, uint arg4, IntPtr gch)
+		static void UpdateDetailSignalCallback (IntPtr arg0, IntPtr arg1, IntPtr gch)
 		{
-			PackageKit.ProgressChangedArgs args = new PackageKit.ProgressChangedArgs ();
+			PackageKit.UpdateDetailArgs args = new PackageKit.UpdateDetailArgs ();
 			try {
 				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
 				if (sig == null)
 					throw new Exception("Unknown signal GC handle received " + gch);
 
-				args.Args = new object[4];
-				args.Args[0] = arg1;
-				args.Args[1] = arg2;
-				args.Args[2] = arg3;
-				args.Args[3] = arg4;
-				PackageKit.ProgressChangedHandler handler = (PackageKit.ProgressChangedHandler) sig.Handler;
+				args.Args = new object[1];
+				args.Args[0] = arg1 == IntPtr.Zero ? null : (PackageKit.UpdateDetailObj) GLib.Opaque.GetOpaque (arg1, typeof (PackageKit.UpdateDetailObj), false);
+				PackageKit.UpdateDetailHandler handler = (PackageKit.UpdateDetailHandler) sig.Handler;
 				handler (GLib.Object.GetObject (arg0), args);
 			} catch (Exception e) {
 				GLib.ExceptionManager.RaiseUnhandledException (e, false);
 			}
 		}
 
-		[GLib.Signal("progress-changed")]
-		public event PackageKit.ProgressChangedHandler ProgressChanged {
+		[GLib.Signal("update-detail")]
+		public event PackageKit.UpdateDetailHandler UpdateDetail {
 			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "progress-changed", new ProgressChangedSignalDelegate(ProgressChangedSignalCallback));
+				GLib.Signal sig = GLib.Signal.Lookup (this, "update-detail", new UpdateDetailSignalDelegate(UpdateDetailSignalCallback));
 				sig.AddDelegate (value);
 			}
 			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "progress-changed", new ProgressChangedSignalDelegate(ProgressChangedSignalCallback));
+				GLib.Signal sig = GLib.Signal.Lookup (this, "update-detail", new UpdateDetailSignalDelegate(UpdateDetailSignalCallback));
 				sig.RemoveDelegate (value);
 			}
 		}
@@ -426,669 +1155,14 @@ namespace PackageKit {
 				v.Dispose ();
 		}
 
-		[GLib.CDeclCallback]
-		delegate void StatusChangedSignalDelegate (IntPtr arg0, int arg1, IntPtr gch);
-
-		static void StatusChangedSignalCallback (IntPtr arg0, int arg1, IntPtr gch)
-		{
-			PackageKit.StatusChangedArgs args = new PackageKit.StatusChangedArgs ();
-			try {
-				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
-				if (sig == null)
-					throw new Exception("Unknown signal GC handle received " + gch);
-
-				args.Args = new object[1];
-				args.Args[0] = (PackageKit.StatusEnum) arg1;
-				PackageKit.StatusChangedHandler handler = (PackageKit.StatusChangedHandler) sig.Handler;
-				handler (GLib.Object.GetObject (arg0), args);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
 		[GLib.Signal("status-changed")]
 		public event PackageKit.StatusChangedHandler StatusChanged {
 			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "status-changed", new StatusChangedSignalDelegate(StatusChangedSignalCallback));
+				GLib.Signal sig = GLib.Signal.Lookup (this, "status-changed", typeof (PackageKit.StatusChangedArgs));
 				sig.AddDelegate (value);
 			}
 			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "status-changed", new StatusChangedSignalDelegate(StatusChangedSignalCallback));
-				sig.RemoveDelegate (value);
-			}
-		}
-
-		[GLib.CDeclCallback]
-		delegate void RepoSignatureRequiredVMDelegate (IntPtr client, IntPtr package_id, IntPtr repository_name, IntPtr key_url, IntPtr key_userid, IntPtr key_fingerprint, IntPtr key_timestamp, int type);
-
-		static RepoSignatureRequiredVMDelegate RepoSignatureRequiredVMCallback;
-
-		static void reposignaturerequired_cb (IntPtr client, IntPtr package_id, IntPtr repository_name, IntPtr key_url, IntPtr key_userid, IntPtr key_fingerprint, IntPtr key_timestamp, int type)
-		{
-			try {
-				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnRepoSignatureRequired (GLib.Marshaller.PtrToStringGFree(package_id), GLib.Marshaller.PtrToStringGFree(repository_name), GLib.Marshaller.PtrToStringGFree(key_url), GLib.Marshaller.PtrToStringGFree(key_userid), GLib.Marshaller.PtrToStringGFree(key_fingerprint), GLib.Marshaller.PtrToStringGFree(key_timestamp), (PackageKit.SigTypeEnum) type);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		private static void OverrideRepoSignatureRequired (GLib.GType gtype)
-		{
-			if (RepoSignatureRequiredVMCallback == null)
-				RepoSignatureRequiredVMCallback = new RepoSignatureRequiredVMDelegate (reposignaturerequired_cb);
-			OverrideVirtualMethod (gtype, "repo-signature-required", RepoSignatureRequiredVMCallback);
-		}
-
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideRepoSignatureRequired")]
-		protected virtual void OnRepoSignatureRequired (string package_id, string repository_name, string key_url, string key_userid, string key_fingerprint, string key_timestamp, PackageKit.SigTypeEnum type)
-		{
-			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (8);
-			GLib.Value[] vals = new GLib.Value [8];
-			vals [0] = new GLib.Value (this);
-			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (package_id);
-			inst_and_params.Append (vals [1]);
-			vals [2] = new GLib.Value (repository_name);
-			inst_and_params.Append (vals [2]);
-			vals [3] = new GLib.Value (key_url);
-			inst_and_params.Append (vals [3]);
-			vals [4] = new GLib.Value (key_userid);
-			inst_and_params.Append (vals [4]);
-			vals [5] = new GLib.Value (key_fingerprint);
-			inst_and_params.Append (vals [5]);
-			vals [6] = new GLib.Value (key_timestamp);
-			inst_and_params.Append (vals [6]);
-			vals [7] = new GLib.Value (type);
-			inst_and_params.Append (vals [7]);
-			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
-			foreach (GLib.Value v in vals)
-				v.Dispose ();
-		}
-
-		[GLib.CDeclCallback]
-		delegate void RepoSignatureRequiredSignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5, IntPtr arg6, int arg7, IntPtr gch);
-
-		static void RepoSignatureRequiredSignalCallback (IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5, IntPtr arg6, int arg7, IntPtr gch)
-		{
-			PackageKit.RepoSignatureRequiredArgs args = new PackageKit.RepoSignatureRequiredArgs ();
-			try {
-				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
-				if (sig == null)
-					throw new Exception("Unknown signal GC handle received " + gch);
-
-				args.Args = new object[7];
-				args.Args[0] = GLib.Marshaller.PtrToStringGFree(arg1);
-				args.Args[1] = GLib.Marshaller.PtrToStringGFree(arg2);
-				args.Args[2] = GLib.Marshaller.PtrToStringGFree(arg3);
-				args.Args[3] = GLib.Marshaller.PtrToStringGFree(arg4);
-				args.Args[4] = GLib.Marshaller.PtrToStringGFree(arg5);
-				args.Args[5] = GLib.Marshaller.PtrToStringGFree(arg6);
-				args.Args[6] = (PackageKit.SigTypeEnum) arg7;
-				PackageKit.RepoSignatureRequiredHandler handler = (PackageKit.RepoSignatureRequiredHandler) sig.Handler;
-				handler (GLib.Object.GetObject (arg0), args);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		[GLib.Signal("repo-signature-required")]
-		public event PackageKit.RepoSignatureRequiredHandler RepoSignatureRequired {
-			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "repo-signature-required", new RepoSignatureRequiredSignalDelegate(RepoSignatureRequiredSignalCallback));
-				sig.AddDelegate (value);
-			}
-			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "repo-signature-required", new RepoSignatureRequiredSignalDelegate(RepoSignatureRequiredSignalCallback));
-				sig.RemoveDelegate (value);
-			}
-		}
-
-		[GLib.CDeclCallback]
-		delegate void CategoryVMDelegate (IntPtr client, IntPtr details);
-
-		static CategoryVMDelegate CategoryVMCallback;
-
-		static void category_cb (IntPtr client, IntPtr details)
-		{
-			try {
-				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnCategory (details == IntPtr.Zero ? null : (PackageKit.CategoryObj) GLib.Opaque.GetOpaque (details, typeof (PackageKit.CategoryObj), false));
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		private static void OverrideCategory (GLib.GType gtype)
-		{
-			if (CategoryVMCallback == null)
-				CategoryVMCallback = new CategoryVMDelegate (category_cb);
-			OverrideVirtualMethod (gtype, "category", CategoryVMCallback);
-		}
-
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideCategory")]
-		protected virtual void OnCategory (PackageKit.CategoryObj details)
-		{
-			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
-			GLib.Value[] vals = new GLib.Value [2];
-			vals [0] = new GLib.Value (this);
-			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (details);
-			inst_and_params.Append (vals [1]);
-			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
-			foreach (GLib.Value v in vals)
-				v.Dispose ();
-		}
-
-		[GLib.CDeclCallback]
-		delegate void CategorySignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr gch);
-
-		static void CategorySignalCallback (IntPtr arg0, IntPtr arg1, IntPtr gch)
-		{
-			PackageKit.CategoryArgs args = new PackageKit.CategoryArgs ();
-			try {
-				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
-				if (sig == null)
-					throw new Exception("Unknown signal GC handle received " + gch);
-
-				args.Args = new object[1];
-				args.Args[0] = arg1 == IntPtr.Zero ? null : (PackageKit.CategoryObj) GLib.Opaque.GetOpaque (arg1, typeof (PackageKit.CategoryObj), false);
-				PackageKit.CategoryHandler handler = (PackageKit.CategoryHandler) sig.Handler;
-				handler (GLib.Object.GetObject (arg0), args);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		[GLib.Signal("category")]
-		public event PackageKit.CategoryHandler Category {
-			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "category", new CategorySignalDelegate(CategorySignalCallback));
-				sig.AddDelegate (value);
-			}
-			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "category", new CategorySignalDelegate(CategorySignalCallback));
-				sig.RemoveDelegate (value);
-			}
-		}
-
-		[GLib.CDeclCallback]
-		delegate void EulaRequiredVMDelegate (IntPtr client, IntPtr eula_id, IntPtr package_id, IntPtr vendor_name, IntPtr license_agreement);
-
-		static EulaRequiredVMDelegate EulaRequiredVMCallback;
-
-		static void eularequired_cb (IntPtr client, IntPtr eula_id, IntPtr package_id, IntPtr vendor_name, IntPtr license_agreement)
-		{
-			try {
-				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnEulaRequired (GLib.Marshaller.PtrToStringGFree(eula_id), GLib.Marshaller.PtrToStringGFree(package_id), GLib.Marshaller.PtrToStringGFree(vendor_name), GLib.Marshaller.PtrToStringGFree(license_agreement));
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		private static void OverrideEulaRequired (GLib.GType gtype)
-		{
-			if (EulaRequiredVMCallback == null)
-				EulaRequiredVMCallback = new EulaRequiredVMDelegate (eularequired_cb);
-			OverrideVirtualMethod (gtype, "eula-required", EulaRequiredVMCallback);
-		}
-
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideEulaRequired")]
-		protected virtual void OnEulaRequired (string eula_id, string package_id, string vendor_name, string license_agreement)
-		{
-			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (5);
-			GLib.Value[] vals = new GLib.Value [5];
-			vals [0] = new GLib.Value (this);
-			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (eula_id);
-			inst_and_params.Append (vals [1]);
-			vals [2] = new GLib.Value (package_id);
-			inst_and_params.Append (vals [2]);
-			vals [3] = new GLib.Value (vendor_name);
-			inst_and_params.Append (vals [3]);
-			vals [4] = new GLib.Value (license_agreement);
-			inst_and_params.Append (vals [4]);
-			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
-			foreach (GLib.Value v in vals)
-				v.Dispose ();
-		}
-
-		[GLib.CDeclCallback]
-		delegate void EulaRequiredSignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr gch);
-
-		static void EulaRequiredSignalCallback (IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr gch)
-		{
-			PackageKit.EulaRequiredArgs args = new PackageKit.EulaRequiredArgs ();
-			try {
-				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
-				if (sig == null)
-					throw new Exception("Unknown signal GC handle received " + gch);
-
-				args.Args = new object[4];
-				args.Args[0] = GLib.Marshaller.PtrToStringGFree(arg1);
-				args.Args[1] = GLib.Marshaller.PtrToStringGFree(arg2);
-				args.Args[2] = GLib.Marshaller.PtrToStringGFree(arg3);
-				args.Args[3] = GLib.Marshaller.PtrToStringGFree(arg4);
-				PackageKit.EulaRequiredHandler handler = (PackageKit.EulaRequiredHandler) sig.Handler;
-				handler (GLib.Object.GetObject (arg0), args);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		[GLib.Signal("eula-required")]
-		public event PackageKit.EulaRequiredHandler EulaRequired {
-			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "eula-required", new EulaRequiredSignalDelegate(EulaRequiredSignalCallback));
-				sig.AddDelegate (value);
-			}
-			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "eula-required", new EulaRequiredSignalDelegate(EulaRequiredSignalCallback));
-				sig.RemoveDelegate (value);
-			}
-		}
-
-		[GLib.CDeclCallback]
-		delegate void DestroyVMDelegate (IntPtr client);
-
-		static DestroyVMDelegate DestroyVMCallback;
-
-		static void destroy_cb (IntPtr client)
-		{
-			try {
-				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnDestroy ();
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		private static void OverrideDestroy (GLib.GType gtype)
-		{
-			if (DestroyVMCallback == null)
-				DestroyVMCallback = new DestroyVMDelegate (destroy_cb);
-			OverrideVirtualMethod (gtype, "destroy", DestroyVMCallback);
-		}
-
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideDestroy")]
-		protected virtual void OnDestroy ()
-		{
-			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (1);
-			GLib.Value[] vals = new GLib.Value [1];
-			vals [0] = new GLib.Value (this);
-			inst_and_params.Append (vals [0]);
-			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
-			foreach (GLib.Value v in vals)
-				v.Dispose ();
-		}
-
-		[GLib.Signal("destroy")]
-		public event System.EventHandler Destroy {
-			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "destroy");
-				sig.AddDelegate (value);
-			}
-			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "destroy");
-				sig.RemoveDelegate (value);
-			}
-		}
-
-		[GLib.CDeclCallback]
-		delegate void DistroUpgradeVMDelegate (IntPtr client, IntPtr arg1);
-
-		static DistroUpgradeVMDelegate DistroUpgradeVMCallback;
-
-		static void distroupgrade_cb (IntPtr client, IntPtr arg1)
-		{
-			try {
-				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnDistroUpgrade (arg1);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		private static void OverrideDistroUpgrade (GLib.GType gtype)
-		{
-			if (DistroUpgradeVMCallback == null)
-				DistroUpgradeVMCallback = new DistroUpgradeVMDelegate (distroupgrade_cb);
-			OverrideVirtualMethod (gtype, "distro-upgrade", DistroUpgradeVMCallback);
-		}
-
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideDistroUpgrade")]
-		protected virtual void OnDistroUpgrade (IntPtr arg1)
-		{
-			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
-			GLib.Value[] vals = new GLib.Value [2];
-			vals [0] = new GLib.Value (this);
-			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (arg1);
-			inst_and_params.Append (vals [1]);
-			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
-			foreach (GLib.Value v in vals)
-				v.Dispose ();
-		}
-
-		[GLib.CDeclCallback]
-		delegate void DistroUpgradeSignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr gch);
-
-		static void DistroUpgradeSignalCallback (IntPtr arg0, IntPtr arg1, IntPtr gch)
-		{
-			PackageKit.DistroUpgradeArgs args = new PackageKit.DistroUpgradeArgs ();
-			try {
-				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
-				if (sig == null)
-					throw new Exception("Unknown signal GC handle received " + gch);
-
-				args.Args = new object[1];
-				args.Args[0] = arg1;
-				PackageKit.DistroUpgradeHandler handler = (PackageKit.DistroUpgradeHandler) sig.Handler;
-				handler (GLib.Object.GetObject (arg0), args);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		[GLib.Signal("distro-upgrade")]
-		public event PackageKit.DistroUpgradeHandler DistroUpgrade {
-			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "distro-upgrade", new DistroUpgradeSignalDelegate(DistroUpgradeSignalCallback));
-				sig.AddDelegate (value);
-			}
-			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "distro-upgrade", new DistroUpgradeSignalDelegate(DistroUpgradeSignalCallback));
-				sig.RemoveDelegate (value);
-			}
-		}
-
-		[GLib.CDeclCallback]
-		delegate void RepoDetailVMDelegate (IntPtr client, IntPtr repo_id, IntPtr description, bool enabled);
-
-		static RepoDetailVMDelegate RepoDetailVMCallback;
-
-		static void repodetail_cb (IntPtr client, IntPtr repo_id, IntPtr description, bool enabled)
-		{
-			try {
-				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnRepoDetail (GLib.Marshaller.PtrToStringGFree(repo_id), GLib.Marshaller.PtrToStringGFree(description), enabled);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		private static void OverrideRepoDetail (GLib.GType gtype)
-		{
-			if (RepoDetailVMCallback == null)
-				RepoDetailVMCallback = new RepoDetailVMDelegate (repodetail_cb);
-			OverrideVirtualMethod (gtype, "repo-detail", RepoDetailVMCallback);
-		}
-
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideRepoDetail")]
-		protected virtual void OnRepoDetail (string repo_id, string description, bool enabled)
-		{
-			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (4);
-			GLib.Value[] vals = new GLib.Value [4];
-			vals [0] = new GLib.Value (this);
-			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (repo_id);
-			inst_and_params.Append (vals [1]);
-			vals [2] = new GLib.Value (description);
-			inst_and_params.Append (vals [2]);
-			vals [3] = new GLib.Value (enabled);
-			inst_and_params.Append (vals [3]);
-			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
-			foreach (GLib.Value v in vals)
-				v.Dispose ();
-		}
-
-		[GLib.CDeclCallback]
-		delegate void RepoDetailSignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr arg2, bool arg3, IntPtr gch);
-
-		static void RepoDetailSignalCallback (IntPtr arg0, IntPtr arg1, IntPtr arg2, bool arg3, IntPtr gch)
-		{
-			PackageKit.RepoDetailArgs args = new PackageKit.RepoDetailArgs ();
-			try {
-				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
-				if (sig == null)
-					throw new Exception("Unknown signal GC handle received " + gch);
-
-				args.Args = new object[3];
-				args.Args[0] = GLib.Marshaller.PtrToStringGFree(arg1);
-				args.Args[1] = GLib.Marshaller.PtrToStringGFree(arg2);
-				args.Args[2] = arg3;
-				PackageKit.RepoDetailHandler handler = (PackageKit.RepoDetailHandler) sig.Handler;
-				handler (GLib.Object.GetObject (arg0), args);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		[GLib.Signal("repo-detail")]
-		public event PackageKit.RepoDetailHandler RepoDetail {
-			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "repo-detail", new RepoDetailSignalDelegate(RepoDetailSignalCallback));
-				sig.AddDelegate (value);
-			}
-			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "repo-detail", new RepoDetailSignalDelegate(RepoDetailSignalCallback));
-				sig.RemoveDelegate (value);
-			}
-		}
-
-		[GLib.CDeclCallback]
-		delegate void RequireRestartVMDelegate (IntPtr client, int restart, IntPtr details);
-
-		static RequireRestartVMDelegate RequireRestartVMCallback;
-
-		static void requirerestart_cb (IntPtr client, int restart, IntPtr details)
-		{
-			try {
-				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnRequireRestart ((PackageKit.RestartEnum) restart, GLib.Marshaller.PtrToStringGFree(details));
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		private static void OverrideRequireRestart (GLib.GType gtype)
-		{
-			if (RequireRestartVMCallback == null)
-				RequireRestartVMCallback = new RequireRestartVMDelegate (requirerestart_cb);
-			OverrideVirtualMethod (gtype, "require-restart", RequireRestartVMCallback);
-		}
-
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideRequireRestart")]
-		protected virtual void OnRequireRestart (PackageKit.RestartEnum restart, string details)
-		{
-			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (3);
-			GLib.Value[] vals = new GLib.Value [3];
-			vals [0] = new GLib.Value (this);
-			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (restart);
-			inst_and_params.Append (vals [1]);
-			vals [2] = new GLib.Value (details);
-			inst_and_params.Append (vals [2]);
-			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
-			foreach (GLib.Value v in vals)
-				v.Dispose ();
-		}
-
-		[GLib.CDeclCallback]
-		delegate void RequireRestartSignalDelegate (IntPtr arg0, int arg1, IntPtr arg2, IntPtr gch);
-
-		static void RequireRestartSignalCallback (IntPtr arg0, int arg1, IntPtr arg2, IntPtr gch)
-		{
-			PackageKit.RequireRestartArgs args = new PackageKit.RequireRestartArgs ();
-			try {
-				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
-				if (sig == null)
-					throw new Exception("Unknown signal GC handle received " + gch);
-
-				args.Args = new object[2];
-				args.Args[0] = (PackageKit.RestartEnum) arg1;
-				args.Args[1] = GLib.Marshaller.PtrToStringGFree(arg2);
-				PackageKit.RequireRestartHandler handler = (PackageKit.RequireRestartHandler) sig.Handler;
-				handler (GLib.Object.GetObject (arg0), args);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		[GLib.Signal("require-restart")]
-		public event PackageKit.RequireRestartHandler RequireRestart {
-			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "require-restart", new RequireRestartSignalDelegate(RequireRestartSignalCallback));
-				sig.AddDelegate (value);
-			}
-			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "require-restart", new RequireRestartSignalDelegate(RequireRestartSignalCallback));
-				sig.RemoveDelegate (value);
-			}
-		}
-
-		[GLib.CDeclCallback]
-		delegate void UpdateDetailVMDelegate (IntPtr client, IntPtr details);
-
-		static UpdateDetailVMDelegate UpdateDetailVMCallback;
-
-		static void updatedetail_cb (IntPtr client, IntPtr details)
-		{
-			try {
-				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnUpdateDetail (details);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		private static void OverrideUpdateDetail (GLib.GType gtype)
-		{
-			if (UpdateDetailVMCallback == null)
-				UpdateDetailVMCallback = new UpdateDetailVMDelegate (updatedetail_cb);
-			OverrideVirtualMethod (gtype, "update-detail", UpdateDetailVMCallback);
-		}
-
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideUpdateDetail")]
-		protected virtual void OnUpdateDetail (IntPtr details)
-		{
-			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
-			GLib.Value[] vals = new GLib.Value [2];
-			vals [0] = new GLib.Value (this);
-			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (details);
-			inst_and_params.Append (vals [1]);
-			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
-			foreach (GLib.Value v in vals)
-				v.Dispose ();
-		}
-
-		[GLib.CDeclCallback]
-		delegate void UpdateDetailSignalDelegate (IntPtr arg0, IntPtr arg1, IntPtr gch);
-
-		static void UpdateDetailSignalCallback (IntPtr arg0, IntPtr arg1, IntPtr gch)
-		{
-			PackageKit.UpdateDetailArgs args = new PackageKit.UpdateDetailArgs ();
-			try {
-				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
-				if (sig == null)
-					throw new Exception("Unknown signal GC handle received " + gch);
-
-				args.Args = new object[1];
-				args.Args[0] = arg1;
-				PackageKit.UpdateDetailHandler handler = (PackageKit.UpdateDetailHandler) sig.Handler;
-				handler (GLib.Object.GetObject (arg0), args);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		[GLib.Signal("update-detail")]
-		public event PackageKit.UpdateDetailHandler UpdateDetail {
-			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "update-detail", new UpdateDetailSignalDelegate(UpdateDetailSignalCallback));
-				sig.AddDelegate (value);
-			}
-			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "update-detail", new UpdateDetailSignalDelegate(UpdateDetailSignalCallback));
-				sig.RemoveDelegate (value);
-			}
-		}
-
-		[GLib.CDeclCallback]
-		delegate void AllowCancelVMDelegate (IntPtr client, bool allow_cancel);
-
-		static AllowCancelVMDelegate AllowCancelVMCallback;
-
-		static void allowcancel_cb (IntPtr client, bool allow_cancel)
-		{
-			try {
-				Client client_managed = GLib.Object.GetObject (client, false) as Client;
-				client_managed.OnAllowCancel (allow_cancel);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		private static void OverrideAllowCancel (GLib.GType gtype)
-		{
-			if (AllowCancelVMCallback == null)
-				AllowCancelVMCallback = new AllowCancelVMDelegate (allowcancel_cb);
-			OverrideVirtualMethod (gtype, "allow-cancel", AllowCancelVMCallback);
-		}
-
-		[GLib.DefaultSignalHandler(Type=typeof(PackageKit.Client), ConnectionMethod="OverrideAllowCancel")]
-		protected virtual void OnAllowCancel (bool allow_cancel)
-		{
-			GLib.Value ret = GLib.Value.Empty;
-			GLib.ValueArray inst_and_params = new GLib.ValueArray (2);
-			GLib.Value[] vals = new GLib.Value [2];
-			vals [0] = new GLib.Value (this);
-			inst_and_params.Append (vals [0]);
-			vals [1] = new GLib.Value (allow_cancel);
-			inst_and_params.Append (vals [1]);
-			g_signal_chain_from_overridden (inst_and_params.ArrayPtr, ref ret);
-			foreach (GLib.Value v in vals)
-				v.Dispose ();
-		}
-
-		[GLib.CDeclCallback]
-		delegate void AllowCancelSignalDelegate (IntPtr arg0, bool arg1, IntPtr gch);
-
-		static void AllowCancelSignalCallback (IntPtr arg0, bool arg1, IntPtr gch)
-		{
-			PackageKit.AllowCancelArgs args = new PackageKit.AllowCancelArgs ();
-			try {
-				GLib.Signal sig = ((GCHandle) gch).Target as GLib.Signal;
-				if (sig == null)
-					throw new Exception("Unknown signal GC handle received " + gch);
-
-				args.Args = new object[1];
-				args.Args[0] = arg1;
-				PackageKit.AllowCancelHandler handler = (PackageKit.AllowCancelHandler) sig.Handler;
-				handler (GLib.Object.GetObject (arg0), args);
-			} catch (Exception e) {
-				GLib.ExceptionManager.RaiseUnhandledException (e, false);
-			}
-		}
-
-		[GLib.Signal("allow-cancel")]
-		public event PackageKit.AllowCancelHandler AllowCancel {
-			add {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "allow-cancel", new AllowCancelSignalDelegate(AllowCancelSignalCallback));
-				sig.AddDelegate (value);
-			}
-			remove {
-				GLib.Signal sig = GLib.Signal.Lookup (this, "allow-cancel", new AllowCancelSignalDelegate(AllowCancelSignalCallback));
+				GLib.Signal sig = GLib.Signal.Lookup (this, "status-changed", typeof (PackageKit.StatusChangedArgs));
 				sig.RemoveDelegate (value);
 			}
 		}

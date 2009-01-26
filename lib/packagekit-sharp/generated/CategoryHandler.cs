@@ -8,7 +8,7 @@ namespace PackageKit {
 	public delegate void CategoryHandler(object o, CategoryArgs args);
 
 	public class CategoryArgs : GLib.SignalArgs {
-		public PackageKit.CategoryObj Details{
+		public PackageKit.CategoryObj Obj{
 			get {
 				return (PackageKit.CategoryObj) Args[0];
 			}

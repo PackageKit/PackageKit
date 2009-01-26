@@ -8,9 +8,15 @@ namespace PackageKit {
 	public delegate void DestroyHandler(object o, DestroyArgs args);
 
 	public class DestroyArgs : GLib.SignalArgs {
-		public PackageKit.CategoryObj Details{
+		public PackageKit.ExitEnum Exit{
 			get {
-				return (PackageKit.CategoryObj) Args[0];
+				return (PackageKit.ExitEnum) Args[0];
+			}
+		}
+
+		public uint Runtime{
+			get {
+				return (uint) Args[1];
 			}
 		}
 
