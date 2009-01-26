@@ -32,21 +32,27 @@ namespace PackageKit {
 			}
 		}
 
-		public string KeyFingerprint{
+		public string KeyId{
 			get {
 				return (string) Args[4];
 			}
 		}
 
-		public string KeyTimestamp{
+		public string KeyFingerprint{
 			get {
 				return (string) Args[5];
 			}
 		}
 
+		public string KeyTimestamp{
+			get {
+				return (string) Args[6];
+			}
+		}
+
 		public PackageKit.SigTypeEnum Type{
 			get {
-				return (PackageKit.SigTypeEnum) Args[6];
+				return (PackageKit.SigTypeEnum) Args[7];
 			}
 		}
 

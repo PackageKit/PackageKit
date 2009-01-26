@@ -8,9 +8,21 @@ namespace PackageKit {
 	public delegate void DistroUpgradeHandler(object o, DistroUpgradeArgs args);
 
 	public class DistroUpgradeArgs : GLib.SignalArgs {
-		public IntPtr Arg1{
+		public PackageKit.UpdateStateEnum Type{
 			get {
-				return (IntPtr) Args[0];
+				return (PackageKit.UpdateStateEnum) Args[0];
+			}
+		}
+
+		public string Name{
+			get {
+				return (string) Args[1];
+			}
+		}
+
+		public string Summary{
+			get {
+				return (string) Args[2];
 			}
 		}
 

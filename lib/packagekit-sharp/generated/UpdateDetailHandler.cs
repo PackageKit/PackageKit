@@ -8,9 +8,9 @@ namespace PackageKit {
 	public delegate void UpdateDetailHandler(object o, UpdateDetailArgs args);
 
 	public class UpdateDetailArgs : GLib.SignalArgs {
-		public IntPtr Details{
+		public PackageKit.UpdateDetailObj UpdateDetail{
 			get {
-				return (IntPtr) Args[0];
+				return (PackageKit.UpdateDetailObj) Args[0];
 			}
 		}
 
