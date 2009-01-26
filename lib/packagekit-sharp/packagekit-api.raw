@@ -13,7 +13,7 @@
       <member cname="PK_CATALOG_PROGRESS_PROVIDES" name="Provides" />
       <member cname="PK_CATALOG_PROGRESS_LAST" name="Last" />
     </enum>
-    <enum name="ClientError" cname="PkClientError" type="enum">
+    <enum name="ClientError" cname="PkClientError" gtype="pk_client_error_get_type" type="enum">
       <member cname="PK_CLIENT_ERROR_FAILED" name="Failed" />
       <member cname="PK_CLIENT_ERROR_FAILED_AUTH" name="FailedAuth" />
       <member cname="PK_CLIENT_ERROR_NO_TID" name="NoTid" />
@@ -498,6 +498,154 @@
     </object>
     <object name="Client" cname="PkClient" parent="GObject">
       <field name="Priv" cname="priv" type="PkClientPrivate*" />
+      <signal name="StatusChanged" cname="status-changed" when="LAST" field_name="status_changed">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkStatusEnum" name="status" />
+        </parameters>
+      </signal>
+      <signal name="ProgressChanged" cname="progress-changed" when="LAST" field_name="progress_changed">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="guint" name="percentage" />
+          <parameter type="guint" name="subpercentage" />
+          <parameter type="guint" name="elapsed" />
+          <parameter type="guint" name="remaining" />
+        </parameters>
+      </signal>
+      <signal name="Package" cname="package" when="LAST" manual="true" field_name="package">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkPackageObj*" name="obj" />
+        </parameters>
+      </signal>
+      <signal name="Transaction" cname="transaction" when="LAST" manual="true" field_name="transaction">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkTransactionObj*" name="obj" />
+        </parameters>
+      </signal>
+      <signal name="DistroUpgrade" cname="distro-upgrade" when="LAST" manual="true" field_name="distro_upgrade">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkUpdateStateEnum" name="type" />
+          <parameter type="const-gchar*" name="name" />
+          <parameter type="const-gchar*" name="summary" />
+        </parameters>
+      </signal>
+      <signal name="UpdateDetail" cname="update-detail" when="LAST" manual="true" field_name="update_detail">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkUpdateDetailObj*" name="update_detail" />
+        </parameters>
+      </signal>
+      <signal name="Details" cname="details" when="LAST" manual="true" field_name="details">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkDetailsObj*" name="package_detail" />
+        </parameters>
+      </signal>
+      <signal name="Files" cname="files" when="LAST" field_name="files">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="const-gchar*" name="package_id" />
+          <parameter type="const-gchar*" name="filelist" />
+        </parameters>
+      </signal>
+      <signal name="RepoSignatureRequired" cname="repo-signature-required" when="LAST" field_name="repo_signature_required">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="const-gchar*" name="package_id" />
+          <parameter type="const-gchar*" name="repository_name" />
+          <parameter type="const-gchar*" name="key_url" />
+          <parameter type="const-gchar*" name="key_userid" />
+          <parameter type="const-gchar*" name="key_id" />
+          <parameter type="const-gchar*" name="key_fingerprint" />
+          <parameter type="const-gchar*" name="key_timestamp" />
+          <parameter type="PkSigTypeEnum" name="type" />
+        </parameters>
+      </signal>
+      <signal name="EulaRequired" cname="eula-required" when="LAST" field_name="eula_required">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="const-gchar*" name="eula_id" />
+          <parameter type="const-gchar*" name="package_id" />
+          <parameter type="const-gchar*" name="vendor_name" />
+          <parameter type="const-gchar*" name="license_agreement" />
+        </parameters>
+      </signal>
+      <signal name="RepoDetail" cname="repo-detail" when="LAST" field_name="repo_detail">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="const-gchar*" name="repo_id" />
+          <parameter type="const-gchar*" name="description" />
+          <parameter type="gboolean" name="enabled" />
+        </parameters>
+      </signal>
+      <signal name="ErrorCode" cname="error-code" when="LAST" field_name="error_code">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkErrorCodeEnum" name="code" />
+          <parameter type="const-gchar*" name="details" />
+        </parameters>
+      </signal>
+      <signal name="RequireRestart" cname="require-restart" when="LAST" manual="true" field_name="require_restart">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkRestartEnum" name="restart" />
+          <parameter type="PkPackageId*" name="id" />
+        </parameters>
+      </signal>
+      <signal name="Message" cname="message" when="LAST" field_name="message">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkMessageEnum" name="message" />
+          <parameter type="const-gchar*" name="details" />
+        </parameters>
+      </signal>
+      <signal name="AllowCancel" cname="allow-cancel" when="LAST" field_name="allow_cancel">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="gboolean" name="allow_cancel" />
+        </parameters>
+      </signal>
+      <signal name="CallerActiveChanged" cname="caller-active-changed" when="LAST" field_name="caller_active_changed">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="gboolean" name="is_active" />
+        </parameters>
+      </signal>
+      <signal name="Category" cname="category" when="LAST" manual="true" field_name="category">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkCategoryObj*" name="obj" />
+        </parameters>
+      </signal>
+      <signal name="Destroy" cname="destroy" when="LAST" field_name="finished">
+        <return-type type="void" />
+        <parameters>
+          <parameter type="PkClient*" name="client" />
+          <parameter type="PkExitEnum" name="exit" />
+          <parameter type="guint" name="runtime" />
+        </parameters>
+      </signal>
       <method name="AcceptEula" cname="pk_client_accept_eula">
         <return-type type="gboolean" />
         <parameters>
