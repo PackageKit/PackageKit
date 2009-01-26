@@ -736,6 +736,7 @@ lib/packagekit-qt/modules/Makefile
 lib/packagekit-qt/src/Makefile
 lib/packagekit-qt/test/Makefile
 lib/packagekit-sharp/Makefile
+lib/packagekit-sharp/samples/Makefile
 lib/python/Makefile
 lib/python/packagekit/Makefile
 policy/Makefile
