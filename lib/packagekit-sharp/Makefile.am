@@ -16,7 +16,8 @@ api:
 
 
 CUSTOMS =				\
-	Client.custom
+	Client.custom			\
+	PackageList.custom
 
 SOURCES =
 

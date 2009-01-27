@@ -1325,7 +1325,7 @@
           <parameter type="const-gchar*" name="package_id" />
         </parameters>
       </method>
-      <method name="GetObj" cname="pk_package_list_get_obj">
+      <method name="GetObj" cname="pk_package_list_get_obj" hidden="1">
         <return-type type="const-PkPackageObj*" />
         <parameters>
           <parameter type="guint" name="item" />
