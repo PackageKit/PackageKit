@@ -33,3 +33,6 @@ EXTRA_DIST =				\
 	packagekit-api.xml			\
 	$(srcdir)/generated/*.cs	\
 	PackageKit.metadata
+
+DIST_SUBDIRS =				\
+	samples
