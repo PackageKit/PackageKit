@@ -1,6 +1,8 @@
 all:			\
 	ListUpdates.sh	\
-	UpdateSystem.sh
+	ListUpdates.exe	\
+	UpdateSystem.sh	\
+	UpdateSystem.exe
 
 .cs.exe: ../packagekit-sharp.dll
 	$(MCS) -debug -out:$@ -r:$(srcdir)/../packagekit-sharp.dll $(GLIBSHARP_LIBS) $<
