@@ -1359,8 +1359,8 @@
       <method name="SortSummary" cname="pk_package_list_sort_summary">
         <return-type type="gboolean" />
       </method>
-      <method name="ToStrv" cname="pk_package_list_to_strv">
-        <return-type type="gchar**" />
+      <method cname="pk_package_list_to_strv" name="ToStringArray">
+        <return-type type="gchar**" null_term_array="1" />
       </method>
     </object>
     <object name="ServicePack" cname="PkServicePack" parent="GObject">

@@ -87,6 +87,15 @@ namespace PackageKit {
 		}
 
 		[DllImport("libpackagekit-glib.dll")]
+		static extern IntPtr pk_package_list_to_strv(IntPtr raw);
+
+		public string[] ToStringArray() {
+			IntPtr raw_ret = pk_package_list_to_strv(Handle);
+			string[] ret = GLib.Marshaller.NullTermPtrToStringArray (raw_ret, false);
+			return ret;
+		}
+
+		[DllImport("libpackagekit-glib.dll")]
 		static extern bool pk_package_list_sort_summary(IntPtr raw);
 
 		public bool SortSummary() {
@@ -103,15 +112,6 @@ namespace PackageKit {
 			bool raw_ret = pk_package_list_add(Handle, (int) info, ident == null ? IntPtr.Zero : ident.Handle, native_summary);
 			bool ret = raw_ret;
 			GLib.Marshaller.Free (native_summary);
-			return ret;
-		}
-
-		[DllImport("libpackagekit-glib.dll")]
-		static extern IntPtr pk_package_list_to_strv(IntPtr raw);
-
-		public string ToStrv() {
-			IntPtr raw_ret = pk_package_list_to_strv(Handle);
-			string ret = GLib.Marshaller.PtrToStringGFree(raw_ret);
 			return ret;
 		}
 
