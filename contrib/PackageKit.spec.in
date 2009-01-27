@@ -51,6 +51,8 @@ BuildRequires: qt4-devel
 BuildRequires: cppunit-devel
 BuildRequires: pango-devel
 BuildRequires: fontconfig-devel
+#BuildRequires: gtk-sharp2-devel
+#BuildRequires: mono-core
 
 # functionality moved to udev itself
 Obsoletes: PackageKit-udev-helper < %{version}-%{release}
