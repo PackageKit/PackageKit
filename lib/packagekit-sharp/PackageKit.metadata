@@ -15,6 +15,8 @@
 	<attr	path="/api/namespace/object[@cname='PkObjList']/method[@cname='pk_obj_list_set_to_string']" name="name">SetToStringFunc</attr>
 	<attr	path="/api/namespace/object[@cname='PkClient']/method[@cname='pk_client_get_require_restart']" name="name">GetRequireRestartStatus</attr>
 	<attr	path="/api/namespace/object[@cname='PkPackageList']/method[@name='GetObj']" name="hidden">1</attr>
+	<attr	path="/api/namespace/object[@cname='PkPackageList']/method[@cname='pk_package_list_to_strv']/return-type" name="null_term_array">1</attr>
+	<attr	path="/api/namespace/object[@cname='PkPackageList']/method[@cname='pk_package_list_to_strv']" name="name">ToStringArray</attr>
 	<add-node	path="/api/namespace/object[@cname='PkClient']">
 	  <signal name="Finished" cname="finished" when="LAST" manual="true" field_name="finished">
 	    <return-type type="void" />
