@@ -1,22 +1,5 @@
-SUBDIRS = thumbnails
-
 IMAGE_FILES =					\
 	assassin.png				\
-	author-alefebvre.png			\
-	author-btimothy.png			\
-	author-caglar.png			\
-	author-elliot.png			\
-	author-glatzor.png			\
-	author-grzegorzdabrowski.png		\
-	author-hughsie.png			\
-	author-jbowes.png			\
-	author-kenvandine.png			\
-	author-lmacken.png			\
-	author-rnorwood.png			\
-	author-timlau.png			\
-	author-tomparker.png			\
-	author-unknown.png			\
-	dialog-information.png			\
 	gpk-added-deps.png			\
 	gpk-application-groups.png		\
 	gpk-application-search.png		\
@@ -54,16 +37,6 @@ IMAGE_FILES =					\
 	kpk-search.png				\
 	kpk-settings.png			\
 	kpk-update.png				\
-	large-accessories-text-editor.png	\
-	large-applications-development.png	\
-	large-authors.png			\
-	large-dialog-information.png		\
-	large-emblem-favorite.png		\
-	large-emblem-photos.png			\
-	large-help-browser.png			\
-	large-preferences-system.png		\
-	large-system-users.png			\
-	packagekit.png				\
 	pk-command-not-found.png		\
 	pk-opensuse-updater.png			\
 	pk-self-check.png			\
@@ -74,18 +47,14 @@ IMAGE_FILES =					\
 	pk-update-normal.png			\
 	pk-update-security.png			\
 	pk-web-plugin.png			\
-	profile-bevan.png			\
-	profile-graham.png			\
-	profile-suzan.png			\
-	status-bad.png				\
-	status-good.png				\
 	$(NULL)
 
-helpfiledir = $(datadir)/PackageKit/website/img
+helpfiledir = $(datadir)/PackageKit/website/img/thumbnails
 helpfile_DATA = $(IMAGE_FILES)
 
 EXTRA_DIST = $(IMAGE_FILES)
 
 clean-local:
 	rm -f *~
+
 
