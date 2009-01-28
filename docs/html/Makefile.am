@@ -1,6 +1,7 @@
 SUBDIRS = img videos
 
 HTML_FILES =				\
+	style.css			\
 	index.html			\
 	pk-authors.html			\
 	pk-bugs.html			\
@@ -15,9 +16,10 @@ HTML_FILES =				\
 	pk-package-not-found.html	\
 	pk-using.html
 
-EXTRA_DIST = 				\
-	style.css			\
-	$(HTML_FILES)
+helpfiledir = $(datadir)/PackageKit/website
+helpfile_DATA = $(HTML_FILES)
+
+EXTRA_DIST = $(HTML_FILES)
 
 clean-local:
 	rm -f *~
