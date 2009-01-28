@@ -3996,9 +3996,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::package:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @info: the #PkInfoEnum of the package, e.g. PK_INFO_ENUM_INSTALLED
-	 * @package_id: the package_id of the package
-	 * @summary: the summary of the package
+	 * @obj: a pointer to a PkPackageObj structure describing the package
 	 *
 	 * The ::package signal is emitted when the update list may have
 	 * changed and the client program may have to update some UI.
@@ -4012,12 +4010,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::transaction:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @tid: the ID of the transaction
-	 * @timespec: the iso8601 date and time the transaction completed
-	 * @succeeded: if the transaction succeeded
-	 * @role: the #PkRoleEnum of the transaction, e.g. PK_ROLE_ENUM_REFRESH_CACHE
-	 * @duration: the duration in milliseconds of the transaction
-	 * @data: the data of the transaction, typiically a list of package_id's
+	 * @obj: a pointer to a PkTransactionObj structure describing the transaction
 	 *
 	 * The ::transaction is emitted when the method GetOldTransactions() is
 	 * called, and the values are being replayed from a database.
@@ -4031,9 +4024,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::distro_upgrade:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @type: A valid upgrade %PkUpdateStateEnum type
-	 * @name: The short name of the distribution, e.g. <literal>Fedora Core 10 RC1</literal>
-	 * @summary: The multi-line description of the release.
+	 * @obj: a pointer to a PkDistroUpgradeObj structure describing the upgrade
 	 *
 	 * The ::distro_upgrade signal is emitted when the method GetDistroUpgrades() is
 	 * called, and the upgrade options are being sent.
@@ -4047,7 +4038,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::update-detail:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @details: a pointer to a PkUpdateDetailsObj strusture descibing the update
+	 * @obj: a pointer to a PkUpdateDetailsObj structure describing the update
 	 *
 	 * The ::update-detail signal is emitted when GetUpdateDetail() is
 	 * called on a set of package_id's.
@@ -4061,7 +4052,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::details:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @detail: a pointer to a PkDetailObj strusture descibing the package
+	 * @obj: a pointer to a PkDetailObj structure describing the package in detail
 	 *
 	 * The ::details signal is emitted when GetDetails() is called.
 	 **/
@@ -4219,7 +4210,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::category:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @details: a pointer to a PkCategoryObj structure describing the category
+	 * @obj: a pointer to a PkCategoryObj structure describing the category
 	 *
 	 * The ::category signal is emitted when GetCategories() is called.
 	 **/
