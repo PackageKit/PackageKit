@@ -164,7 +164,15 @@ def _is_development_repo(repo):
 def _format_msgs(msgs):
     if isinstance(msgs, basestring):
         msgs = msgs.split('\n')
-    text = ";".join(msgs)
+
+    # yum can pass us structures (!) in the message field
+    try:
+        text = ";".join(msgs)
+    except exceptions.TypeError, e:
+        text = str(msgs)
+    except Exception, e:
+        text = _format_str(traceback.format_exc())
+
     text = _truncate(text, 1024)
     text = text.replace(";Please report this error in bugzilla", "")
     text = text.replace("Missing Dependency: ", "")
