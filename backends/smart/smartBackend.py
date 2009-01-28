@@ -1158,8 +1158,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 repo = channel['alias']
                 if repo.endswith('-debuginfo'):
                     return False
-                if repo.endswith('-testing'):
-                    return False
                 if repo.endswith('-debug'):
                     return False
                 if repo.endswith('-development'):
