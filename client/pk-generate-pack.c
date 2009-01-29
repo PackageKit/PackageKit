@@ -255,11 +255,18 @@ main (int argc, char *argv[])
 	if (directory == NULL)
 		directory = g_get_current_dir ();
 
-	/* are we dumb and can't check for depends? */
+	/* are we dumb and can't do some actions */
 	control = pk_control_new ();
 	roles = pk_control_get_actions (control, NULL);
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
-		g_print ("Please use a backend that supports GetDepends!\n");
+		/* TRANSLATORS: This is when the backend doesn't have the capability to get-depends */
+		g_print ("%s (GetDepends)\n", _("The package manager cannot perform this type of operation."));
+		retval = 1;
+		goto out;
+	}
+	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
+		/* TRANSLATORS: This is when the backend doesn't have the capability to download */
+		g_print ("%s (DownloadPackage)\n", _("The package manager cannot perform this type of operation."));
 		retval = 1;
 		goto out;
 	}
