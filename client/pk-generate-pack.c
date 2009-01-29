@@ -50,12 +50,12 @@ pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
 
 	distro_id = pk_get_distro_id ();
 	if (name != NULL) {
-		filename = g_strdup_printf ("%s/%s-%s.servicepack", directory, name, distro_id);
+		filename = g_strdup_printf ("%s/%s-%s.%s", directory, name, distro_id, PK_SERVICE_PACK_FILE_EXTENSION);
 	} else {
 		iso_time = pk_iso8601_present ();
 		/* don't include the time, just use the date prefix */
 		iso_time[10] = '\0';
-		filename = g_strdup_printf ("%s/updates-%s-%s.servicepack", directory, iso_time, distro_id);
+		filename = g_strdup_printf ("%s/updates-%s-%s.%s", directory, iso_time, distro_id, PK_SERVICE_PACK_FILE_EXTENSION);
 	}
 	g_free (distro_id);
 	g_free (iso_time);
