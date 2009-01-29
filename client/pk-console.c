@@ -1875,7 +1875,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("You need to specify a package name to resolve"));
 			goto out;
 		}
-		ret = pk_client_resolve (client_async, filters, argv, &error);
+		ret = pk_client_resolve (client_async, filters, argv+2, &error);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {
