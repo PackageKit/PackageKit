@@ -31,6 +31,7 @@
 #include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
 
 #include "pk-tools-common.h"
 
@@ -226,6 +227,14 @@ main (int argc, char *argv[])
 	if (package != NULL && updates) {
 		/* TRANSLATORS: This is when the user fails to supply just one argument */
 		g_print ("%s\n", _("Both options selected."));
+		g_print ("%s", options_help);
+		return 1;
+	}
+
+	/* no argument given to --package */
+	if (package != NULL && egg_strzero (package)) {
+		/* TRANSLATORS: This is when the user fails to supply the package name */
+		g_print ("%s\n", _("A package name is required"));
 		g_print ("%s", options_help);
 		return 1;
 	}
