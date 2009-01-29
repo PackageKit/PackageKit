@@ -239,6 +239,14 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+	/* no argument given to --output */
+	if (directory != NULL && egg_strzero (directory)) {
+		/* TRANSLATORS: This is when the user fails to supply the output */
+		g_print ("%s\n", _("A output directory or file name is required"));
+		retval = 1;
+		goto out;
+	}
+
 	/* fall back to the system copy */
 	if (package_list == NULL)
 		package_list = g_strdup (PK_SYSTEM_PACKAGE_LIST_FILENAME);
