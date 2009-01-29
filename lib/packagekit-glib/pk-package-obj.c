@@ -188,7 +188,7 @@ pk_package_obj_get_info	(const PkPackageObj *obj)
 /**
  * pk_package_obj_get_id:
  **/
-PkPackageId *
+const PkPackageId *
 pk_package_obj_get_id (const PkPackageObj *obj)
 {
 	return obj->id;
@@ -196,7 +196,7 @@ pk_package_obj_get_id (const PkPackageObj *obj)
 /**
  * pk_package_obj_get_summary:
  **/
-gchar *
+const gchar *
 pk_package_obj_get_summary (const PkPackageObj *obj)
 {
 	return obj->summary;
