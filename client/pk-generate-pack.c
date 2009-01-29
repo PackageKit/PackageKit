@@ -186,7 +186,7 @@ main (int argc, char *argv[])
 		{ "with-package-list", 'l', 0, G_OPTION_ARG_STRING, &package_list,
 			_("Set the file name of dependencies to be excluded"), NULL},
 		{ "output", 'o', 0, G_OPTION_ARG_STRING, &directory,
-			_("The output directory (the current directory is used if ommitted)"), NULL},
+			_("The output file or directory (the current directory is used if ommitted)"), NULL},
 		{ "package", 'p', 0, G_OPTION_ARG_STRING, &package,
 			_("The package to be put into the service pack"), NULL},
 		{ "updates", 'u', 0, G_OPTION_ARG_NONE, &updates,
@@ -271,8 +271,19 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
-	/* get fn */
-	filename = pk_generate_pack_get_filename (package, directory);
+	/* the user can speciify a complete path */
+	ret = g_file_test (directory, G_FILE_TEST_IS_DIR);
+	if (ret) {
+		filename = pk_generate_pack_get_filename (package, directory);
+	} else {
+		if (!g_str_has_suffix (directory, PK_SERVICE_PACK_FILE_EXTENSION)) {
+			/* TRANSLATORS: the user specified an absolute path, but didn't get the extension correct */
+			g_print ("%s .%s \n", _("If specifying a file, the service pack name must end with"), PK_SERVICE_PACK_FILE_EXTENSION);
+			retval = 1;
+			goto out;
+		}
+		filename = g_strdup (directory);
+	}
 
 	/* download packages to a temporary directory */
 	tempdir = g_build_filename (g_get_tmp_dir (), "pack", NULL);
