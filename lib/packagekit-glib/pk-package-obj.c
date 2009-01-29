@@ -176,6 +176,32 @@ out:
 	return obj;
 }
 
+/**
+ * pk_package_obj_get_info:
+ **/
+PkInfoEnum
+pk_package_obj_get_info	(const PkPackageObj *obj)
+{
+	return obj->info;
+}
+
+/**
+ * pk_package_obj_get_id:
+ **/
+PkPackageId *
+pk_package_obj_get_id (const PkPackageObj *obj)
+{
+	return obj->id;
+}
+/**
+ * pk_package_obj_get_summary:
+ **/
+gchar *
+pk_package_obj_get_summary (const PkPackageObj *obj)
+{
+	return obj->summary;
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/

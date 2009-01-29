@@ -52,6 +52,8 @@ gboolean	 pk_package_obj_equal_fuzzy_arch	(const PkPackageObj	*obj1,
 							 const PkPackageObj	*obj2);
 gchar		*pk_package_obj_to_string		(const PkPackageObj	*obj);
 PkPackageObj	*pk_package_obj_from_string		(const gchar		*text);
-
+PkInfoEnum	 pk_package_obj_get_info		(const PkPackageObj	*obj);
+PkPackageId	*pk_package_obj_get_id			(const PkPackageObj	*obj);
+gchar		*pk_package_obj_get_summary		(const PkPackageObj	*obj);
 #endif /* __PK_PACKAGE_OBJ_H */
 
