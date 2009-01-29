@@ -163,7 +163,6 @@ main (int argc, char *argv[])
 	GOptionContext *context;
 	gchar *options_help;
 	gboolean ret;
-	guint retval;
 	gchar *filename = NULL;
 	PkClient *client = NULL;
 	PkControl *control = NULL;
@@ -179,6 +178,7 @@ main (int argc, char *argv[])
 	gchar *package_list = NULL;
 	gchar *package = NULL;
 	gboolean updates = FALSE;
+	gint retval = 1;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -219,24 +219,24 @@ main (int argc, char *argv[])
 	if (package == NULL && !updates) {
 		/* TRANSLATORS: This is when the user fails to supply the correct arguments */
 		g_print ("%s\n", _("Neither --package or --updates option selected."));
-		g_print ("%s", options_help);
-		return 1;
+		retval = 1;
+		goto out;
 	}
 
 	/* both options selected */
 	if (package != NULL && updates) {
 		/* TRANSLATORS: This is when the user fails to supply just one argument */
 		g_print ("%s\n", _("Both options selected."));
-		g_print ("%s", options_help);
-		return 1;
+		retval = 1;
+		goto out;
 	}
 
 	/* no argument given to --package */
 	if (package != NULL && egg_strzero (package)) {
 		/* TRANSLATORS: This is when the user fails to supply the package name */
 		g_print ("%s\n", _("A package name is required"));
-		g_print ("%s", options_help);
-		return 1;
+		retval = 1;
+		goto out;
 	}
 
 	/* fall back to the system copy */
@@ -252,6 +252,7 @@ main (int argc, char *argv[])
 	roles = pk_control_get_actions (control, NULL);
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
 		g_print ("Please use a backend that supports GetDepends!\n");
+		retval = 1;
 		goto out;
 	}
 
@@ -271,6 +272,7 @@ main (int argc, char *argv[])
 		if (!overwrite) {
 			/* TRANSLATORS: This is when the pack was not overwritten */
 			g_print ("%s\n", _("The pack was not overwritten."));
+			retval = 1;
 			goto out;
 		}
 	}
@@ -283,6 +285,7 @@ main (int argc, char *argv[])
 	if (retval != 0) {
 		/* TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows */
 		g_print ("%s '%s'\n", _("Failed to create directory:"), tempdir);
+		retval = 1;
 		goto out;
 	}
 
@@ -292,6 +295,7 @@ main (int argc, char *argv[])
 	if (!ret) {
 		/* TRANSLATORS: This is when the list of packages from the remote computer cannot be opened */
 		g_print ("%s: '%s'\n", _("Failed to open package list."), package_list);
+		retval = 1;
 		goto out;
 	}
 
@@ -307,6 +311,7 @@ main (int argc, char *argv[])
 			/* TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows */
 			g_print (_("Failed to find package '%s': %s"), package, error->message);
 			g_error_free (error);
+			retval = 1;
 			goto out;
 		}
 	}
@@ -330,6 +335,7 @@ main (int argc, char *argv[])
 		/* TRANSLATORS: we succeeded in making the file */
 		g_print (_("Service pack created '%s'"), filename);
 		g_print ("\n");
+		retval = 0;
 	} else {
 		/* TRANSLATORS: we failed to make te file */
 		g_print (_("Failed to create '%s': %s"), filename, error->message);
@@ -347,12 +353,13 @@ out:
 		g_object_unref (client);
 	if (list != NULL)
 		g_object_unref (list);
+	if (control != NULL)
+		g_object_unref (control);
 	g_free (tempdir);
 	g_free (filename);
 	g_free (package_id);
 	g_free (directory);
 	g_free (package_list);
 	g_free (options_help);
-	g_object_unref (control);
-	return 0;
+	return retval;
 }
