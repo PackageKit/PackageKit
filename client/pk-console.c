@@ -539,12 +539,16 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, g
 
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
-	if (restart == PK_RESTART_ENUM_SYSTEM)
+	if (restart == PK_RESTART_ENUM_SYSTEM) {
+		/* TRANSLATORS: a package needs to restart they system */
 		g_print ("%s\n", _("Please restart the computer to complete the update."));
-	else if (restart == PK_RESTART_ENUM_SESSION)
+	} else if (restart == PK_RESTART_ENUM_SESSION) {
+		/* TRANSLATORS: a package needs to restart the session */
 		g_print ("%s\n", _("Please logout and login to complete the update."));
-	else if (restart == PK_RESTART_ENUM_APPLICATION)
+	} else if (restart == PK_RESTART_ENUM_APPLICATION) {
+		/* TRANSLATORS: a package needs to restart the application */
 		g_print ("%s\n", _("Please restart the application as it is being used."));
+	}
 
 	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
 	    exit_enum == PK_EXIT_ENUM_FAILED && need_requeue) {
@@ -1716,12 +1720,16 @@ main (int argc, char *argv[])
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
+			/* TRANSLATORS: command line argument, if we should show debugging information */
 			_("Show extra debugging information"), NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
+			/* TRANSLATORS: command line argument, just show the version string */
 			_("Show the program version and exit"), NULL},
 		{ "filter", '\0', 0, G_OPTION_ARG_STRING, &filter,
+			/* TRANSLATORS: command line argument, use a filter to narrow down results */
 			_("Set the filter, e.g. installed"), NULL},
 		{ "nowait", 'n', 0, G_OPTION_ARG_NONE, &nowait,
+			/* TRANSLATORS: command line argument, work asynchronously */
 			_("Exit without waiting for actions to complete"), NULL},
 		{ NULL}
 	};
@@ -1853,74 +1861,86 @@ main (int argc, char *argv[])
 	/* parse the big list */
 	if (strcmp (mode, "search") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a search type, e.g. name"));
+			/* TRANSLATORS: a search type can be name, details, file, etc */
+			error = g_error_new (1, 0, "%s", _("A search type is required, e.g. name"));
 			goto out;
 
 		} else if (strcmp (value, "name") == 0) {
 			if (details == NULL) {
-				error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
+				/* TRANSLATORS: the user needs to provide a search term */
+				error = g_error_new (1, 0, "%s", _("A search term is required"));
 				goto out;
 			}
 			ret = pk_client_search_name (client_async, filters, details, &error);
 
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
-				error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
+				/* TRANSLATORS: the user needs to provide a search term */
+				error = g_error_new (1, 0, "%s", _("A search term is required"));
 				goto out;
 			}
 			ret = pk_client_search_details (client_async, filters, details, &error);
 
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
-				error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
+				/* TRANSLATORS: the user needs to provide a search term */
+				error = g_error_new (1, 0, "%s", _("A search term is required"));
 				goto out;
 			}
 			ret = pk_client_search_group (client_async, filters, details, &error);
 
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
-				error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
+				/* TRANSLATORS: the user needs to provide a search term */
+				error = g_error_new (1, 0, "%s", _("A search term is required"));
 				goto out;
 			}
 			ret = pk_client_search_file (client_async, filters, details, &error);
 		} else {
+			/* TRANSLATORS: the search type was provided, but invalid */
 			error = g_error_new (1, 0, "%s", _("Invalid search type"));
 		}
 
 	} else if (strcmp (mode, "install") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a package or file to install"));
+			/* TRANSLATORS: the user did not specify what they wanted to install */
+			error = g_error_new (1, 0, "%s", _("A package name or filename to install is required"));
 			goto out;
 		}
 		ret = pk_console_install_stuff (client_async, argv, &error);
 
 	} else if (strcmp (mode, "install-sig") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a type, key_id and package_id"));
+			/* TRANSLATORS: geeky error, 99.9999% of users won't see this */
+			error = g_error_new (1, 0, "%s", _("A type, key_id and package_id are required"));
 			goto out;
 		}
 		ret = pk_client_install_signature (client_async, PK_SIGTYPE_ENUM_GPG, details, parameter, &error);
 
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a package to remove"));
+			/* TRANSLATORS: the user did not specify what they wanted to remove */
+			error = g_error_new (1, 0, "%s", _("A package name to remove is required"));
 			goto out;
 		}
 		ret = pk_console_remove_packages (client_async, argv, &error);
 	} else if (strcmp (mode, "download") == 0) {
 		if (value == NULL || details == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify the destination directory and then the packages to download"));
+			/* TRANSLATORS: the user did not specify anything about what to download or where */
+			error = g_error_new (1, 0, "%s", _("A destination directory and then the package names to download are required"));
 			goto out;
 		}
 		ret = g_file_test (value, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR);
 		if (!ret) {
+			/* TRANSLATORS: the directory does not exist, so we can't continue */
 			error = g_error_new (1, 0, "%s: %s", _("Directory not found"), value);
 			goto out;
 		}
 		ret = pk_console_download_packages (client_async, argv, value, &error);
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a licence identifier (eula-id)"));
+			/* TRANSLATORS: geeky error, 99.9999% of users won't see this */
+			error = g_error_new (1, 0, "%s", _("A licence identifier (eula-id) is required"));
 			goto out;
 		}
 		ret = pk_client_accept_eula (client_async, value, &error);
@@ -1936,28 +1956,32 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "resolve") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a package name to resolve"));
+			/* TRANSLATORS: The user did not specify a package name */
+			error = g_error_new (1, 0, "%s", _("A package name to resolve is required"));
 			goto out;
 		}
 		ret = pk_client_resolve (client_async, filters, argv+2, &error);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a repository name"));
+			/* TRANSLATORS: The user did not specify a repository (software source) name */
+			error = g_error_new (1, 0, "%s", _("A repository name is required"));
 			goto out;
 		}
 		ret = pk_client_repo_enable (client_async, value, TRUE, &error);
 
 	} else if (strcmp (mode, "repo-disable") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a repository name"));
+			/* TRANSLATORS: The user did not specify a repository (software source) name */
+			error = g_error_new (1, 0, "%s", _("A repository name is required"));
 			goto out;
 		}
 		ret = pk_client_repo_enable (client_async, value, FALSE, &error);
 
 	} else if (strcmp (mode, "repo-set-data") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a repo name/parameter and value"));
+			/* TRANSLATORS: The user didn't provide any data */
+			error = g_error_new (1, 0, "%s", _("A repo name, parameter and value are required"));
 			goto out;
 		}
 		ret = pk_client_repo_set_data (client_async, value, details, parameter, &error);
@@ -1969,12 +1993,14 @@ main (int argc, char *argv[])
 		PkRoleEnum role;
 		guint time_ms;
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify an action, e.g. 'update-system'"));
+			/* TRANSLATORS: The user didn't specify what action to use */
+			error = g_error_new (1, 0, "%s", _("An action, e.g. 'update-system' is required"));
 			goto out;
 		}
 		role = pk_role_enum_from_text (value);
 		if (role == PK_ROLE_ENUM_UNKNOWN) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a correct role"));
+			/* TRANSLATORS: The user specified an invalid action */
+			error = g_error_new (1, 0, "%s", _("A correct role is required"));
 			goto out;
 		}
 		ret = pk_control_get_time_since_action (control, role, &time_ms, &error);
@@ -1988,7 +2014,8 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-depends") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
+			/* TRANSLATORS: The user did not provide a package name */
+			error = g_error_new (1, 0, "%s", _("A package name is required"));
 			goto out;
 		}
 		ret = pk_console_get_depends (client_async, filters, value, &error);
@@ -1998,42 +2025,48 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
+			/* TRANSLATORS: The user did not provide a package name */
+			error = g_error_new (1, 0, "%s", _("A package name is required"));
 			goto out;
 		}
 		ret = pk_console_get_update_detail (client_async, value, &error);
 
 	} else if (strcmp (mode, "get-requires") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
+			/* TRANSLATORS: The user did not provide a package name */
+			error = g_error_new (1, 0, "%s", _("A package name is required"));
 			goto out;
 		}
 		ret = pk_console_get_requires (client_async, filters, value, &error);
 
 	} else if (strcmp (mode, "what-provides") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a search term"));
+			/* TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it */
+			error = g_error_new (1, 0, "%s", _("A package provide string is required"));
 			goto out;
 		}
 		ret = pk_client_what_provides (client_async, filters, PK_PROVIDES_ENUM_CODEC, value, &error);
 
 	} else if (strcmp (mode, "get-details") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a package to find the details for"));
+			/* TRANSLATORS: The user did not provide a package name */
+			error = g_error_new (1, 0, "%s", _("A package name is required"));
 			goto out;
 		}
 		ret = pk_console_get_details (client_async, value, &error);
 
 	} else if (strcmp (mode, "get-files") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a package to find the files for"));
+			/* TRANSLATORS: The user did not provide a package name */
+			error = g_error_new (1, 0, "%s", _("A package name is required"));
 			goto out;
 		}
 		ret = pk_console_get_files (client_async, value, &error);
 
 	} else if (strcmp (mode, "list-create") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a list file to create"));
+			/* TRANSLATORS: The user didn't specify a filename to create as a list */
+			error = g_error_new (1, 0, "%s", _("A list file name to create is required"));
 			goto out;
 		}
 		ret = pk_console_list_create (client_async, value, &error);
@@ -2041,7 +2074,8 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "list-diff") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a list file to open"));
+			/* TRANSLATORS: The user didn't specify a filename to open as a list */
+			error = g_error_new (1, 0, "%s", _("A list file to open is required"));
 			goto out;
 		}
 		ret = pk_console_list_diff (client_async, value, &error);
@@ -2049,7 +2083,8 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "list-install") == 0) {
 		if (value == NULL) {
-			error = g_error_new (1, 0, "%s", _("You need to specify a list file to open"));
+			/* TRANSLATORS: The user didn't specify a filename to open as a list */
+			error = g_error_new (1, 0, "%s", _("A list file to open is required"));
 			goto out;
 		}
 		ret = pk_console_list_install (client_async, value, &error);
@@ -2115,7 +2150,7 @@ out:
 			g_print ("Command failed in an unknown way. Please report!\n");
 		} else if (g_str_has_prefix (error->message, "org.freedesktop.packagekit."))  {
 			/* TRANSLATORS: User does not have permission to do this */
-			g_print ("%s\n", _("You don't have the necessary privileges for this operation"));
+			g_print ("%s\n", _("Incorrect privileges for this operation"));
 		} else {
 			/* TRANSLATORS: Generic failure of what they asked to do */
 			g_print ("%s:  %s\n", _("Command failed"), error->message);
