@@ -184,12 +184,16 @@ main (int argc, char *argv[])
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 			_("Show extra debugging information"), NULL },
 		{ "with-package-list", 'l', 0, G_OPTION_ARG_STRING, &package_list,
+			/* TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target */
 			_("Set the file name of dependencies to be excluded"), NULL},
 		{ "output", 'o', 0, G_OPTION_ARG_STRING, &directory,
+			/* TRANSLATORS: the output location */
 			_("The output file or directory (the current directory is used if ommitted)"), NULL},
 		{ "package", 'p', 0, G_OPTION_ARG_STRING, &package,
+			/* TRANSLATORS: put a list of packages in the pack */
 			_("The package to be put into the service pack"), NULL},
 		{ "updates", 'u', 0, G_OPTION_ARG_NONE, &updates,
+			/* TRANSLATORS: put all pending updates in the pack */
 			_("Put all updates available in the service pack"), NULL},
 		{ NULL}
 	};

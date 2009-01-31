@@ -129,6 +129,7 @@ main (int argc, char *argv[])
 	g_type_init ();
 
 	context = g_option_context_new (NULL);
+	/* TRANSLATORS: this is a program that monitors PackageKit */
 	g_option_context_set_summary (context, _("PackageKit Monitor"));
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_parse (context, &argc, &argv, NULL);

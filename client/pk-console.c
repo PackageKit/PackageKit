@@ -313,6 +313,7 @@ pk_console_category_cb (PkClient *client, const PkCategoryObj *obj, gpointer use
 		/* TRANSLATORS: this is the parent group */
 		g_print (" %s: %s\n", _("Parent"), obj->parent_id);
 	}
+	/* TRANSLATORS: this is the name of the parent group */
 	g_print (" %s: %s\n", _("Name"), obj->name);
 	if (!egg_strzero (obj->summary)) {
 		/* TRANSLATORS: this is the summary of the group */
@@ -335,31 +336,54 @@ pk_console_update_detail_cb (PkClient *client, const PkUpdateDetailObj *detail, 
 		g_print ("\n");
 	/* TRANSLATORS: this is a header for the package that can be updated */
 	g_print ("%s\n", _("Details about the update:"));
+	/* TRANSLATORS: details about the update, package name and version */
 	g_print (" %s: '%s-%s.%s'\n", _("Package"), detail->id->name, detail->id->version, detail->id->arch);
-	if (!egg_strzero (detail->updates))
+	if (!egg_strzero (detail->updates)) {
+		/* TRANSLATORS: details about the update, any packages that this update updates */
 		g_print (" %s: %s\n", _("Updates"), detail->updates);
-	if (!egg_strzero (detail->obsoletes))
+	}
+	if (!egg_strzero (detail->obsoletes)) {
+		/* TRANSLATORS: details about the update, any packages that this update obsoletes */
 		g_print (" %s: %s\n", _("Obsoletes"), detail->obsoletes);
-	if (!egg_strzero (detail->vendor_url))
+	}
+	if (!egg_strzero (detail->vendor_url)) {
+		/* TRANSLATORS: details about the update, the vendor URLs */
 		g_print (" %s: %s\n", _("Vendor"), detail->vendor_url);
-	if (!egg_strzero (detail->bugzilla_url))
+	}
+	if (!egg_strzero (detail->bugzilla_url)) {
+		/* TRANSLATORS: details about the update, the bugzilla URLs */
 		g_print (" %s: %s\n", _("Bugzilla"), detail->bugzilla_url);
-	if (!egg_strzero (detail->cve_url))
+	}
+	if (!egg_strzero (detail->cve_url)) {
+		/* TRANSLATORS: details about the update, the CVE URLs */
 		g_print (" %s: %s\n", _("CVE"), detail->cve_url);
-	if (detail->restart != PK_RESTART_ENUM_NONE)
+	}
+	if (detail->restart != PK_RESTART_ENUM_NONE) {
+		/* TRANSLATORS: details about the update, if the package requires a restart */
 		g_print (" %s: %s\n", _("Restart"), pk_restart_enum_to_text (detail->restart));
-	if (!egg_strzero (detail->update_text))
+	}
+	if (!egg_strzero (detail->update_text)) {
+		/* TRANSLATORS: details about the update, any description of the update */
 		g_print (" %s: %s\n", _("Update text"), detail->update_text);
-	if (!egg_strzero (detail->changelog))
+	}
+	if (!egg_strzero (detail->changelog)) {
+		/* TRANSLATORS: details about the update, the changelog for the package */
 		g_print (" %s: %s\n", _("Changes"), detail->changelog);
-	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN)
+	}
+	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
+		/* TRANSLATORS: details about the update, the ongoing state of the update */
 		g_print (" %s: %s\n", _("State"), pk_update_state_enum_to_text (detail->state));
+	}
 	issued = pk_iso8601_from_date (detail->issued);
-	if (!egg_strzero (issued))
+	if (!egg_strzero (issued)) {
+		/* TRANSLATORS: details about the update, date the update was issued */
 		g_print (" %s: %s\n", _("Issued"), issued);
+	}
 	updated = pk_iso8601_from_date (detail->updated);
-	if (!egg_strzero (updated))
+	if (!egg_strzero (updated)) {
+		/* TRANSLATORS: details about the update, date the update was updated */
 		g_print (" %s: %s\n", _("Updated"), updated);
+	}
 	g_free (issued);
 	g_free (updated);
 }
@@ -1631,7 +1655,9 @@ pk_console_get_summary (void)
 	string = g_string_new ("");
 
 	/* TRANSLATORS: This is the header to the --help menu */
-	g_string_append_printf (string, "%s\n\n%s\n", _("PackageKit Console Interface"), _("Subcommands:"));
+	g_string_append_printf (string, "%s\n\n%s\n", _("PackageKit Console Interface"),
+				/* these are commands we can use with pkcon */
+				_("Subcommands:"));
 
 	/* always */
 	g_string_append_printf (string, "  %s\n", "get-actions");
