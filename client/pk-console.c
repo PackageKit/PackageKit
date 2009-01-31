@@ -1979,7 +1979,8 @@ main (int argc, char *argv[])
 		}
 		ret = pk_control_get_time_since_action (control, role, &time_ms, &error);
 		if (!ret) {
-			error = g_error_new (1, 0, "%s", _("Failed to get last time"));
+			/* TRANSLATORS: we keep a database updated with the time that an action was last executed */
+			error = g_error_new (1, 0, "%s", _("Failed to get the time since this action was last completed"));
 			goto out;
 		}
 		g_print ("time since %s is %is\n", value, time_ms);
