@@ -294,6 +294,15 @@ if test x$enable_browser_plugin = xyes; then
 
 		CPPFLAGS="$packagekit_save_CPPFLAGS"
 		LDFLAGS="$packagekit_save_LDFLAGS"
+
+		# Are we specifying a different mozilla plugin directory?
+		AC_ARG_WITH(mozilla-plugin-dir, [AC_HELP_STRING([--with-mozilla-plugin-dir=<dir>], [where to put the mozilla plugin])])
+		if ! test -z "$with_mozilla_plugin_dir" ; then
+			MOZILLA_PLUGIN_DIR="$with_mozilla_plugin_dir"
+		else
+			MOZILLA_PLUGIN_DIR="$LIBDIR/mozilla/plugins"
+		fi
+		AC_SUBST(MOZILLA_PLUGIN_DIR)
 	fi
 else
 	build_browser_plugin=no

@@ -1,4 +1,4 @@
-plugindir=$(libdir)/mozilla/plugins
+plugindir=$(MOZILLA_PLUGIN_DIR)
 plugin_LTLIBRARIES = packagekit-plugin.la
 
 packagekit_plugin_la_LDFLAGS = -rpath $(plugindir) -module -avoid-version -no-undefined
