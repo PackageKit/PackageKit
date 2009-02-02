@@ -793,8 +793,8 @@ pk_spawn_test (EggTest *test)
 	egg_test_loop_check (test);
 
 	/************************************************************/
-	egg_test_title (test, "make sure finished in SIGKILL");
-	if (mexit == PK_SPAWN_EXIT_TYPE_SIGKILL)
+	egg_test_title (test, "make sure finished in SIGQUIT");
+	if (mexit == PK_SPAWN_EXIT_TYPE_SIGQUIT)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "finish %i!", mexit);
