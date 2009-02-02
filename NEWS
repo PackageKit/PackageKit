@@ -1,3 +1,32 @@
+Version 0.4.3
+~~~~~~~~~~~~~
+Released: 2009-02-02
+
+Translations:
+ - Updated Finnish translation (Ville-Pekka Vainio)
+ - Updated Catalan translation (Xavier Conde)
+
+New Features:
+ - Add new packagekit-sharp binding (Stephane Delcroix)
+ - Allow the user to specify a complete output file name with pkgenpack (Richard Hughes)
+
+Bugfixes:
+ - Repair pkcon resolve argument parsing (Martin Pitt)
+ - Remove dep on python-sqlite2 and use internal python sqlite. Fixes rh#481270 (Richard Hughes)
+ - Dist the website in the tarball correctly, and install in the -docs subpackage (Richard Hughes)
+ - Fix up a translation in pkcon when we fail to get the time since action (Richard Hughes)
+ - Add an option to configure so we can specify a different directory. Fixes fd#19884 (Richard Hughes)
+ - Remove bare send_interface lines in the DBus rules (Scott Reeves)
+ - Add _get_info, get_id and _get_summary for PkPackageObj (Stephane Delcroix)
+ - Removed -Wswitch-enum from compiler switches (Valeriy Lyasotskiy)
+ - Don't print an internal error if we don't pass an argument to --package (Utsav Handa)
+
+Backends:
+ - alpm: Change source code to be more standards compliant (Valeriy Lyasotskiy)
+ - smart: Don't filter *-testing channels as development (Anders F Bjorklund)
+ - yum: Get some useful text when yum passes us an invalid message. Fixes fd#19781 (Richard Hughes)
+ - zypp: Remove GROUP_ENUM_UNKNOWN as engine returns empty if included in list (Scott Reeves)
+
 Version 0.4.2
 ~~~~~~~~~~~~~
 Released: 2009-01-19
