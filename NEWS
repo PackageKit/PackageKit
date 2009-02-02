@@ -1,3 +1,30 @@
+Version 0.3.14
+~~~~~~~~~~~~~~
+Released: 2009-02-02
+
+Bugfixes:
+ - Repair pkcon resolve argument parsing (Martin Pitt)
+ - Call the backend finalise method when the daemon times out (Richard Hughes)
+ - Set the setup signal after we've connected the backend to the transaction so
+   it is emitted for clients (Richard Hughes)
+ - Don't emit allow-cancel over and over if it is the same state as before (Richard Hughes)
+ - Remove dep on python-sqlite2 and use internal python sqlite. Fixes rh#481270 (Richard Hughes)
+ - Add an option to configure so we can specify a different browser plugin
+   directory. Fixes fd#19884 (Richard Hughes)
+ - Add SUSE to pk-upgrade-distro (Scott Reeves)
+ - Remove bare send_interface lines (Scott Reeves)
+ - Don't print an internal error if we don't pass an argument to --package (Utsav Handa)
+
+Backends:
+ - smart: Don't filter *-testing channels as development (Anders F Bjorklund)
+ - yum: Set the allow cancel flags when we are waiting for yum to release its lock (Richard Hughes)
+ - yum: Try harder to get some useful text when yum passes us a structure in a message.
+   Hopefully works around fd#19781 (Richard Hughes)
+ - yum: Fixed a bug that prevents installing a local file that isn't in the repos (Trever Fischer)
+ - yum -testing repo is not a development repo, so should not be filtered by
+   default. Fixes rh#480135 (Richard Hughes)
+ - zypp: remove GROUP_ENUM_UNKNOWN as engine returns empty if included in list (Scott Reeves)
+
 Version 0.3.13
 ~~~~~~~~~~~~~~
 Released: 2009-01-08
