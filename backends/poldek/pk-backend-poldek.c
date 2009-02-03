@@ -1559,8 +1559,29 @@ search_package_thread (PkBackend *backend)
 			n_array_sort_ex(pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
 
 			n_array_free (installed);
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) || available) {
+
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) && available) {
+			tn_array *dbpkgs = NULL;
+			guint i;
+
+			dbpkgs = poldek_get_installed_packages ();
+			pkgs = n_array_new (4, (tn_fn_free)pkg_free, NULL);
+
+			for (i = 0; i < n_array_size (available); i++) {
+				struct pkg *pkg = n_array_nth (available, i);
+
+				/* drop installed packages */
+				if (!poldek_pkg_in_array (pkg, dbpkgs, (tn_fn_cmp)pkg_cmp_name_evr)) {
+					n_array_push (pkgs, pkg_link (pkg));
+				}
+			}
+
+			n_array_free (available);
+			n_array_free (dbpkgs);
+
+		} else if (available) {
 			pkgs = available;
+
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) || installed)
 			pkgs = installed;
 	}
