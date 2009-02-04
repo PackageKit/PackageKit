@@ -88,7 +88,7 @@ struct _PkControlClass
 };
 
 GQuark		 pk_control_error_quark			(void);
-GType		 pk_control_get_type		  	(void) G_GNUC_CONST;
+GType		 pk_control_get_type		  	(void);
 PkControl	*pk_control_new				(void);
 
 gboolean	 pk_control_allocate_transaction_id	(PkControl	*control,

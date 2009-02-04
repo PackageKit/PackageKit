@@ -86,7 +86,7 @@ typedef struct
 
 GQuark		 pk_service_pack_error_quark			(void);
 GType		 pk_service_pack_error_get_type			(void);
-GType		 pk_service_pack_get_type			(void) G_GNUC_CONST;
+GType		 pk_service_pack_get_type			(void);
 PkServicePack	*pk_service_pack_new				(void);
 
 /* used by the server */

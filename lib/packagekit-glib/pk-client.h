@@ -158,7 +158,7 @@ struct _PkClientClass
 GQuark		 pk_client_error_quark			(void);
 GType		 pk_client_error_get_type		(void);
 
-GType		 pk_client_get_type			(void) G_GNUC_CONST;
+GType		 pk_client_get_type			(void);
 PkClient	*pk_client_new				(void);
 
 gboolean	 pk_client_set_tid			(PkClient	*client,

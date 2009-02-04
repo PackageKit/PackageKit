@@ -47,7 +47,7 @@ typedef struct
 	GObjectClass			 parent_class;
 } PkUpdateDetailListClass;
 
-GType			 pk_update_detail_list_get_type		(void) G_GNUC_CONST;
+GType			 pk_update_detail_list_get_type		(void);
 PkUpdateDetailList	 *pk_update_detail_list_new		(void);
 
 gboolean		 pk_update_detail_list_clear		(PkUpdateDetailList	*list);

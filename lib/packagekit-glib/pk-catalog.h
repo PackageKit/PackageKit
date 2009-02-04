@@ -60,7 +60,7 @@ typedef enum {
 	PK_CATALOG_PROGRESS_LAST
 } PkCatalogProgress;
 
-GType		 pk_catalog_get_type		  	(void) G_GNUC_CONST;
+GType		 pk_catalog_get_type		  	(void);
 PkCatalog	*pk_catalog_new				(void);
 PkPackageList	*pk_catalog_process_files		(PkCatalog		*catalog,
 							 gchar			**filenames);
