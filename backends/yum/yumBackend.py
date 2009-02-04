@@ -638,9 +638,21 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
 
+        # old standard
+        if search.startswith("gstreamer0.10("):
+            provide = search
+        elif provides_type == PROVIDES_CODEC:
+            provide = "gstreamer0.10(%s)" % search
+        elif provides_type == PROVIDES_FONT:
+            provide = "font(%s)" % search
+        elif provides_type == PROVIDES_MIMETYPE:
+            provide = "mimehandler(%s)" % search
+        else:
+            self.error(ERROR_NOT_SUPPORTED, "this backend does not support %s provides" % provides_type)
+
         # Check installed for file
         try:
-            pkgs = self.yumbase.rpmdb.searchProvides(search)
+            pkgs = self.yumbase.rpmdb.searchProvides(provide)
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         pkgfilter.add_installed(pkgs)
@@ -648,7 +660,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if not FILTER_INSTALLED in fltlist:
             # Check available for file
             try:
-                pkgs = self.yumbase.pkgSack.searchProvides(search)
+                pkgs = self.yumbase.pkgSack.searchProvides(provide)
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
             except Exception, e:
