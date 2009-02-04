@@ -50,7 +50,7 @@ typedef struct
 } PkBackendSpawnClass;
 
 /* general */
-GType		 pk_backend_spawn_get_type		(void) G_GNUC_CONST;
+GType		 pk_backend_spawn_get_type		(void);
 PkBackendSpawn	*pk_backend_spawn_new			(void);
 gboolean	 pk_backend_spawn_helper		(PkBackendSpawn	*backend_spawn,
 							 const gchar	*first_element, ...);

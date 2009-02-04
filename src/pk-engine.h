@@ -65,8 +65,8 @@ typedef enum
 
 
 GQuark		 pk_engine_error_quark			(void);
-GType		 pk_engine_error_get_type		(void) G_GNUC_CONST;
-GType		 pk_engine_get_type		  	(void) G_GNUC_CONST;
+GType		 pk_engine_error_get_type		(void);
+GType		 pk_engine_get_type		  	(void);
 PkEngine	*pk_engine_new				(void);
 
 /* general */

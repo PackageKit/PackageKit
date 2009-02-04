@@ -58,7 +58,7 @@ struct _PkNetworkClass
 	GObjectClass	parent_class;
 };
 
-GType		 pk_network_get_type		  	(void) G_GNUC_CONST;
+GType		 pk_network_get_type		  	(void);
 PkNetwork	*pk_network_new				(void);
 PkNetworkEnum	 pk_network_get_network_state		(PkNetwork	*network);
 

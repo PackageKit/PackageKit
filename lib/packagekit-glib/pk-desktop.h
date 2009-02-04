@@ -66,7 +66,7 @@ struct _PkDesktopClass
 	GObjectClass	parent_class;
 };
 
-GType		 pk_desktop_get_type			(void) G_GNUC_CONST;
+GType		 pk_desktop_get_type			(void);
 PkDesktop	*pk_desktop_new				(void);
 gboolean	 pk_desktop_open_database		(PkDesktop	*desktop,
 							 GError		**error);

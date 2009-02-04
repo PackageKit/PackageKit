@@ -51,7 +51,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkTransactionListClass;
 
-GType		 pk_transaction_list_get_type	  	(void) G_GNUC_CONST;
+GType		 pk_transaction_list_get_type	  	(void);
 PkTransactionList *pk_transaction_list_new		(void);
 
 gboolean	 pk_transaction_list_create		(PkTransactionList	*tlist,

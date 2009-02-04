@@ -63,7 +63,7 @@ typedef enum {
 	PK_SPAWN_EXIT_TYPE_UNKNOWN
 } PkSpawnExitType;
 
-GType		 pk_spawn_get_type		  	(void) G_GNUC_CONST;
+GType		 pk_spawn_get_type		  	(void);
 PkSpawn		*pk_spawn_new				(void);
 
 gboolean	 pk_spawn_argv				(PkSpawn	*spawn,
