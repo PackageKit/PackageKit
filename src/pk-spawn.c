@@ -477,8 +477,14 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 		egg_debug ("changing dispatcher (exit old instance)");
 		spawn->priv->is_changing_dispatcher = TRUE;
 		ret = pk_spawn_exit (spawn);
-		if (!ret)
+		if (!ret) {
 			egg_warning ("failed to exit previous instance");
+			/* remove poll, as we can't reply on pk_spawn_check_child() */
+			if (spawn->priv->poll_id != 0) {
+				g_source_remove (spawn->priv->poll_id);
+				spawn->priv->poll_id = 0;
+			}
+		}
 		spawn->priv->is_changing_dispatcher = FALSE;
 	}
 
