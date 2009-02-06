@@ -290,6 +290,11 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
+		if (!pk_package_id_check (sections[2])) {
+			egg_warning ("invalid package_id");
+			ret = FALSE;
+			goto out;
+		}
 		pk_backend_require_restart (backend_spawn->priv->backend, restart_enum, sections[2]);
 	} else if (egg_strequal (command, "message")) {
 		if (size != 3) {
@@ -672,9 +677,16 @@ pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 static gboolean
 pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
 {
+	gboolean ret;
+
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	egg_debug ("closing dispatcher as idle");
-	pk_spawn_exit (backend_spawn->priv->spawn);
+
+	/* only try to close if running */
+	ret = pk_spawn_is_running (backend_spawn->priv->spawn);
+	if (ret) {
+		egg_debug ("closing dispatcher as running and is idle");
+		pk_spawn_exit (backend_spawn->priv->spawn);
+	}
 	return FALSE;
 }
 
@@ -943,16 +955,24 @@ pk_backend_test_spawn (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tsystem\tdetails about the restart");
+	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data");
 	egg_test_assert (test, ret);
 
 	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tmooville\tdetails about the restart");
+	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart invalid enum");
+	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data");
 	if (!ret)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not detect incorrect enum");
+
+	/************************************************************/
+	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart invalid PackageId");
+	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tsystem\tdetails about the restart");
+	if (!ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "did not detect incorrect package id");
 
 	/************************************************************/
 	egg_test_title (test, "test pk_backend_spawn_parse_stdout AllowUpdate1");

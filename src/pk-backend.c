@@ -36,6 +36,7 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
+#include "pk-conf.h"
 #include "pk-network.h"
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
@@ -88,6 +89,7 @@ struct _PkBackendPrivate
 	gboolean		 set_signature;
 	gboolean		 set_eula;
 	gboolean		 has_sent_package;
+	gboolean		 use_time;
 	PkNetwork		*network;
 	PkStore			*store;
 	PkPackageObj		*last_package;
@@ -652,10 +654,9 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 		remaining = pk_time_get_remaining (backend->priv->time);
 		egg_debug ("this will now take ~%i seconds", remaining);
 
-#ifdef PK_IS_DEVELOPER
-		/* Until the predicted time is more sane... */
-		backend->priv->last_remaining = remaining;
-#endif
+		/* value cached from config file */
+		if (backend->priv->use_time)
+			backend->priv->last_remaining = remaining;
 	}
 
 	/* emit the progress changed signal */
@@ -804,7 +805,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	obj = pk_package_obj_new (info, id, summary_safe);
 	ret = pk_package_obj_equal (obj, backend->priv->last_package);
 	if (ret) {
-		pk_package_obj_free (obj);
 		egg_debug ("skipping duplicate %s", package_id);
 		ret = FALSE;
 		goto out;
@@ -929,21 +929,30 @@ pk_backend_get_progress (PkBackend *backend,
  * pk_backend_require_restart:
  **/
 gboolean
-pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *details)
+pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *package_id)
 {
+	gboolean ret = FALSE;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: require-restart %s", pk_restart_enum_to_text (restart));
-		return FALSE;
+		goto out;
 	}
 
-	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), details);
-	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
+	/* check we are valid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		egg_warning ("package_id invalid and cannot be processed: %s", package_id);
+		goto out;
+	}
 
-	return TRUE;
+	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
+	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, package_id);
+out:
+	return ret;
 }
 
 /**
@@ -1338,6 +1347,12 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 		return FALSE;
 	}
 
+	/* same as last state? */
+	if (backend->priv->allow_cancel == allow_cancel) {
+		egg_debug ("ignoring same allow-cancel state");
+		return TRUE;
+	}
+
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
 		backend->priv->allow_cancel = allow_cancel;
@@ -1431,9 +1446,6 @@ pk_backend_finished_delay (gpointer data)
 	/* this wasn't set otherwise, assume success */
 	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
-
-	/* clear all state */
-	pk_store_reset (backend->priv->store);
 
 	egg_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
@@ -1858,6 +1870,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->last_remaining = 0;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	pk_store_reset (backend->priv->store);
 	pk_time_reset (backend->priv->time);
 
 	return TRUE;
@@ -1869,6 +1882,8 @@ pk_backend_reset (PkBackend *backend)
 static void
 pk_backend_init (PkBackend *backend)
 {
+	PkConf *conf;
+
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
@@ -1892,6 +1907,11 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->file_monitor = pk_file_monitor_new ();
 	g_signal_connect (backend->priv->file_monitor, "file-changed",
 			  G_CALLBACK (pk_backend_file_monitor_changed_cb), backend);
+
+	/* do we use time estimation? */
+	conf = pk_conf_new ();
+	backend->priv->use_time = pk_conf_get_bool (conf, "UseRemainingTimeEstimation");
+	g_object_unref (conf);
 
 	pk_backend_reset (backend);
 }
@@ -1920,6 +1940,7 @@ pk_backend_new (void)
 #include <glib/gstdio.h>
 
 static guint number_messages = 0;
+static guint number_packages = 0;
 
 /**
  * pk_backend_test_message_cb:
@@ -1954,6 +1975,9 @@ static gboolean
 pk_backend_test_func_true (PkBackend *backend)
 {
 	g_usleep (1000*1000);
+	/* trigger duplicate test */
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1963,6 +1987,16 @@ pk_backend_test_func_immediate_false (PkBackend *backend)
 {
 	pk_backend_finished (backend);
 	return FALSE;
+}
+
+/**
+ * pk_backend_test_package_cb:
+ **/
+static void
+pk_backend_test_package_cb (PkBackend *backend, const PkPackageObj *obj, EggTest *test)
+{
+	egg_debug ("package:%s", obj->id->name);
+	number_packages++;
 }
 
 void
@@ -1983,6 +2017,10 @@ pk_backend_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
+
+	/* connect */
+	g_signal_connect (backend, "package",
+			  G_CALLBACK (pk_backend_test_package_cb), test);
 
 	/************************************************************/
 	egg_test_title (test, "create a config file");
@@ -2164,6 +2202,13 @@ pk_backend_test (EggTest *test)
 	/* wait for Finished */
 	egg_test_loop_wait (test, 2000);
 	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "check duplicate filter");
+	if (number_packages == 1)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "wrong number of pacakges: %s", number_packages);
 
 	/* reset */
 	pk_backend_reset (backend);

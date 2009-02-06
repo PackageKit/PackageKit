@@ -260,7 +260,7 @@ get_locale_variants (PkBackend *backend, const gchar *lang)
 	tn_array *langs;
 	gchar *copy;
 	gchar *wocc = NULL;
-	gchar *sep = "@.";
+	const gchar *sep = "@.";
 	gint len;
 
 	/* first check cached_locale_variants */
@@ -393,7 +393,7 @@ poldek_get_bytes_to_download_from_ts (struct poldek_ts *ts)
 static long
 do_get_bytes_to_download (struct poldek_ts *ts, tn_array *pkgs)
 {
-	gint i;
+	size_t i;
 	long bytes = 0;
 
 	for (i = 0; i < n_array_size (pkgs); i++) {
@@ -498,7 +498,7 @@ poldek_vf_progress_reset (void *bar)
 static gint
 poldek_pkg_in_array_idx (const struct pkg *pkg, const tn_array *array, tn_fn_cmp cmp_fn)
 {
-	gint	i;
+	size_t	i;
 
 	if (array) {
 		for (i = 0; i < n_array_size (array); i++) {
@@ -534,7 +534,8 @@ ts_confirm (void *data, struct poldek_ts *ts)
 {
 	tn_array	*ipkgs, *dpkgs, *rpkgs;
 	PkBackend	*backend = (PkBackend *)data;
-	gint		i = 0, result = 1;
+	size_t		i = 0;
+	gint		result = 1;
 
 	egg_debug ("START\n");
 
@@ -763,17 +764,17 @@ get_pkgid_from_localpath (const gchar *localpath)
 	db = pkgdb_open (ts->pmctx, ts->rootdir, NULL, O_RDONLY, NULL);
 
 	if (db) {
-		const struct pm_dbrec *dbrec;
+		const struct pm_dbrec *ldbrec;
 		struct pkgdb_it it;
 
 		pkgdb_it_init (db, &it, PMTAG_FILE, localpath);
 
 		/* get only one package */
-		if ((dbrec = pkgdb_it_get (&it)) != NULL) {
+		if ((ldbrec = pkgdb_it_get (&it)) != NULL) {
 			gchar *name = NULL, *version = NULL, *release = NULL, *arch = NULL;
 			gint epoch;
 
-			pm_dbrec_nevr (dbrec, &name, &epoch, &version, &release, &arch, NULL);
+			pm_dbrec_nevr (ldbrec, &name, &epoch, &version, &release, &arch, NULL);
 
 			pkgid = g_strdup_printf ("%s-%s-%s.%s", name, version, release, arch);
 		}
@@ -1129,7 +1130,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires,
 	     struct pkg *pkg, PkBackend *backend)
 {
 	tn_array	*tmp = NULL;
-	gint		i;
+	size_t		i;
 	PkBitfield filters;
 	gboolean recursive;
 
@@ -1140,7 +1141,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires,
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 		for (i = 0; i < n_array_size (installed); i++) {
 			struct pkg      *ipkg = n_array_nth (installed, i);
-			int j;
+			size_t j;
 
 			/* self match */
 			if (pkg_cmp_name_evr (pkg, ipkg) == 0)
@@ -1173,7 +1174,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires,
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 		for (i = 0; i < n_array_size (available); i++) {
 			struct pkg      *apkg = n_array_nth (available, i);
-			int j;
+			size_t j;
 
 			/* self match */
 			if (pkg_cmp_name_evr (pkg, apkg) == 0)
@@ -1225,7 +1226,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 {
 	tn_array	*reqs = pkg->reqs;
 	tn_array	*tmp = NULL;
-	gint		i;
+	size_t		i;
 	PkBitfield filters;
 	gboolean recursive;
 
@@ -1240,7 +1241,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 	for (i = 0; i < n_array_size (reqs); i++) {
 		struct capreq	*req = n_array_nth (reqs, i);
 		gboolean	found = FALSE;
-		gint		j;
+		size_t		j;
 
 		/* skip it */
 		if (capreq_is_rpmlib (req))
@@ -1558,8 +1559,29 @@ search_package_thread (PkBackend *backend)
 			n_array_sort_ex(pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
 
 			n_array_free (installed);
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) || available) {
+
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) && available) {
+			tn_array *dbpkgs = NULL;
+			guint i;
+
+			dbpkgs = poldek_get_installed_packages ();
+			pkgs = n_array_new (4, (tn_fn_free)pkg_free, NULL);
+
+			for (i = 0; i < n_array_size (available); i++) {
+				struct pkg *pkg = n_array_nth (available, i);
+
+				/* drop installed packages */
+				if (!poldek_pkg_in_array (pkg, dbpkgs, (tn_fn_cmp)pkg_cmp_name_evr)) {
+					n_array_push (pkgs, pkg_link (pkg));
+				}
+			}
+
+			n_array_free (available);
+			n_array_free (dbpkgs);
+
+		} else if (available) {
 			pkgs = available;
+
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) || installed)
 			pkgs = installed;
 	}
@@ -1782,7 +1804,7 @@ show_rpm_progress (PkBackend *backend, gchar *message)
 
 		/* emit remove for packages marked for removal */
 		if (rpkgs) {
-			gint i;
+			size_t i;
 
 			/* XXX: don't release rpkgs array here! */
 			for (i = 0; i < n_array_size (rpkgs); i++) {
@@ -2070,7 +2092,7 @@ backend_download_packages_thread (PkBackend *backend)
 	tn_array *pkgs;
 	gchar **package_ids;
 	const gchar *destdir;
-	gint i;
+	size_t i;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	destdir = pk_backend_get_string (backend, "directory");
@@ -2188,7 +2210,7 @@ backend_get_depends_thread (PkBackend *backend)
 {
 	struct pkg	*pkg;
 	tn_array	*deppkgs, *available, *installed;
-	gint		i;
+	size_t		i;
 	gchar **package_ids;
 
 	pb_load_packages (backend);
@@ -2297,7 +2319,7 @@ static gboolean
 backend_get_files_thread (PkBackend *backend)
 {
 	gchar **package_ids;
-	gint n;
+	size_t n;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 
@@ -2311,7 +2333,8 @@ backend_get_files_thread (PkBackend *backend)
 		if (pkg != NULL) {
 			struct pkgflist *flist = pkg_get_flist (pkg);
 			GString *filelist;
-			gchar *result, *sep;
+			gchar *result;
+			const gchar *sep;
 			gint i, j;
 
 			sep = "";
@@ -2442,7 +2465,7 @@ backend_get_requires_thread (PkBackend *backend)
 {
 	struct pkg	*pkg;
 	tn_array	*reqpkgs, *available, *installed;
-	gint		i;
+	size_t		i;
 	gchar **package_ids;
 
 	pb_load_packages (backend);
@@ -2491,7 +2514,7 @@ get_obsoletedby_pkg (struct pkg *pkg)
 {
 	tn_array *dbpkgs;
 	GString *obsoletes = NULL;
-	gint i;
+	size_t i;
 
 	g_return_val_if_fail (pkg != NULL, NULL);
 
@@ -2696,7 +2719,7 @@ backend_install_packages_thread (PkBackend *backend)
 	struct vf_progress	vf_progress;
 	gchar **package_ids;
 	GString *cmd;
-	gint i;
+	size_t i;
 
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_INSTALL);
 	package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -2768,7 +2791,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 	sources = poldek_get_sources (ctx);
 
 	if (sources) {
-		gint	i;
+		size_t	i;
 
 		pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_REFRESH_CACHE);
 		pd->step = 0;
@@ -2834,7 +2857,7 @@ backend_remove_packages_thread (PkBackend *backend)
 	GString *cmd;
 	gchar *command;
 	gchar **package_ids;
-	gint i;
+	size_t i;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	pb_load_packages (backend);
@@ -2993,7 +3016,7 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 	sources = poldek_get_sources (ctx);
 
 	if (sources) {
-		gint i;
+		size_t i;
 
 		for (i = 0; i < n_array_size (sources); i++) {
 			struct source *src = n_array_nth (sources, i);

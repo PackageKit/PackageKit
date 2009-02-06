@@ -17,7 +17,6 @@
     <_description>Cancel foreign task</_description>
     <_message>Authentication is required to cancel a task that was not started by yourself</_message>
     <icon_name>pk-package-delete</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-cancel</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -28,7 +27,6 @@
     <_description>Install signed package</_description>
     <_message>Authentication is required to install a signed package</_message>
     <icon_name>pk-package-add</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-package</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -39,7 +37,6 @@
     <_description>Install untrusted local file</_description>
     <_message>Authentication is required to install an untrusted package</_message>
     <icon_name>pk-package-add</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-file</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin</allow_active>
@@ -50,7 +47,6 @@
     <_description>Trust a key used for signing packages</_description>
     <_message>Authentication is required to consider a key used for signing packages as trusted</_message>
     <icon_name>pk-package-add</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-signature</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin</allow_active>
@@ -61,7 +57,6 @@
     <_description>Accept EULA</_description>
     <_message>Authentication is required to accept a EULA</_message>
     <icon_name>pk-package-add</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-accept-eula</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>yes</allow_active>
@@ -72,7 +67,6 @@
     <_description>Remove package</_description>
     <_message>Authentication is required to remove packages</_message>
     <icon_name>pk-package-delete</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-remove</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -83,7 +77,6 @@
     <_description>Update packages</_description>
     <_message>Authentication is required to update packages</_message>
     <icon_name>pk-package-update</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-update-system</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -94,7 +87,6 @@
     <_description>Rollback to a previous transaction</_description>
     <_message>Authentication is required to rollback a transaction</_message>
     <icon_name>pk-rollback</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-rollback</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -105,7 +97,6 @@
     <_description>Change software source parameters</_description>
     <_message>Authentication is required to change software source parameters</_message>
     <icon_name>pk-package-info</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-repo-enable</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -116,7 +107,6 @@
     <_description>Refresh system sources</_description>
     <_message>Authentication is required to refresh the system sources</_message>
     <icon_name>pk-refresh-cache</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-refresh-cache</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>yes</allow_active>
@@ -127,7 +117,6 @@
     <_description>Set network proxy</_description>
     <_message>Authentication is required to set the network proxy used for downloading packages</_message>
     <icon_name>applications-internet</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-set-proxy</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>yes</allow_active>

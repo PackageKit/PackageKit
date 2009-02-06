@@ -318,9 +318,9 @@ PkpContents::ensureLayout(cairo_t *cr, PangoFontDescription *font_desc, guint32 
 				append_markup(markup, _("Run version %s now"), mInstalledVersion.c_str());
 				append_markup(markup, "</span>");
 			} else {
-				/* TRANSLATORS: run the application now */
 				append_markup(markup,
 				              "\n<span color='#%06x' underline='single'>%s</span>",
+					      /* TRANSLATORS: run the application now */
 					      _("Run now"), link_color >> 8);
 		        }
 		}

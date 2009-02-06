@@ -46,7 +46,7 @@ typedef struct
 	GObjectClass		 parent_class;
 } PkStoreClass;
 
-GType		 pk_store_get_type			(void) G_GNUC_CONST;
+GType		 pk_store_get_type			(void);
 PkStore		*pk_store_new				(void);
 
 gboolean	 pk_store_set_array			(PkStore	*store,

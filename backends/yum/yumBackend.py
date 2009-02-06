@@ -153,8 +153,6 @@ def _truncate(text, length, etc='...'):
 def _is_development_repo(repo):
     if repo.endswith('-debuginfo'):
         return True
-    if repo.endswith('-testing'):
-        return True
     if repo.endswith('-debug'):
         return True
     if repo.endswith('-development'):
@@ -166,7 +164,15 @@ def _is_development_repo(repo):
 def _format_msgs(msgs):
     if isinstance(msgs, basestring):
         msgs = msgs.split('\n')
-    text = ";".join(msgs)
+
+    # yum can pass us structures (!) in the message field
+    try:
+        text = ";".join(msgs)
+    except exceptions.TypeError, e:
+        text = str(msgs)
+    except Exception, e:
+        text = _format_str(traceback.format_exc())
+
     text = _truncate(text, 1024)
     text = text.replace(";Please report this error in bugzilla", "")
     text = text.replace("Missing Dependency: ", "")
@@ -184,6 +190,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
         self.yumbase = PackageKitYumBase(self)
+
+        # get the lock early
+        if lock:
+            self.doLock()
+
         self.package_summary_cache = {}
         self.percentage_old = 0
         self.sub_percentage_old = 0
@@ -200,8 +211,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # this is global so we can catch sigquit and closedown
         yumbase = self.yumbase
         self._setup_yum()
-        if lock:
-            self.doLock()
 
     def percentage(self, percent=None):
         '''
@@ -274,7 +283,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try: # Try to lock yum
                 self.yumbase.doLock(YUM_PID_FILE)
                 PackageKitBaseBackend.doLock(self)
+                self.allow_cancel(False)
             except yum.Errors.LockError, e:
+                self.allow_cancel(True)
+                self.status(STATUS_WAITING_FOR_LOCK)
                 time.sleep(2)
                 retries += 1
                 if retries > 100:
@@ -411,6 +423,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs.extend(ygl.recent)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -624,9 +638,21 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
 
+        # old standard
+        if search.startswith("gstreamer0.10("):
+            provide = search
+        elif provides_type == PROVIDES_CODEC:
+            provide = "gstreamer0.10(%s)" % search
+        elif provides_type == PROVIDES_FONT:
+            provide = "font(%s)" % search
+        elif provides_type == PROVIDES_MIMETYPE:
+            provide = "mimehandler(%s)" % search
+        else:
+            self.error(ERROR_NOT_SUPPORTED, "this backend does not support %s provides" % provides_type)
+
         # Check installed for file
         try:
-            pkgs = self.yumbase.rpmdb.searchProvides(search)
+            pkgs = self.yumbase.rpmdb.searchProvides(provide)
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         pkgfilter.add_installed(pkgs)
@@ -634,7 +660,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if not FILTER_INSTALLED in fltlist:
             # Check available for file
             try:
-                pkgs = self.yumbase.pkgSack.searchProvides(search)
+                pkgs = self.yumbase.pkgSack.searchProvides(provide)
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
             except Exception, e:
@@ -1394,8 +1420,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The packages failed to be installed")
 
     def _checkForNewer(self, po):
+        pkgs = None
         try:
             pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
+        except yum.Errors.PackageSackError:
+            pass
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if pkgs:
@@ -1653,7 +1682,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if (pkg.name in self.rebootpkgs \
                 or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']))\
                 and txmbr.ts_state in TS_INSTALL_STATES:
-                self.require_restart(RESTART_SYSTEM, "")
+                self.require_restart(RESTART_SYSTEM, self._pkg_to_id(pkg))
                 break
 
     def _runYumTransaction(self, allow_remove_deps=None, allow_skip_broken=False):
@@ -2001,6 +2030,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs.extend(ygl.obsoletes)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         md = self.updateMetadata
@@ -2032,7 +2063,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 if not repo.isEnabled():
                     repo.enablePersistent()
-
+                    if repoid.find ("rawhide") != -1:
+                        warning = "These packages are untested and still under development." \
+                                  "This repository is used for development of new releases.\n\n" \
+                                  "This repository can see significant daily turnover and major " \
+                                  "functionality changes which cause unexpected problems with " \
+                                  "other development packages.\n" \
+                                  "Please use these packages if you want to work with the " \
+                                  "Fedora developers by testing these new development packages.\n\n" \
+                                  "If this is not correct, please disable the %s software source." % repoid
+                        self.message(MESSAGE_BACKEND_ERROR, warning.replace("\n", ";"))
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_FOUND, _to_unicode(e))
         except Exception, e:
@@ -2238,6 +2278,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.yumbase.repos.doSetup()
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, _to_unicode(e))
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2256,6 +2298,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.yumbase.repos.populateSack(mdtype='otherdata', cacheonly=1)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 

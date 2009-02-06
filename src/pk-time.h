@@ -48,7 +48,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkTimeClass;
 
-GType		 pk_time_get_type		  	(void) G_GNUC_CONST;
+GType		 pk_time_get_type		  	(void);
 PkTime		*pk_time_new				(void);
 
 gboolean	 pk_time_add_data			(PkTime		*time,

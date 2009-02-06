@@ -78,7 +78,7 @@ struct _PkTaskListClass
 							 const gchar	*details);
 };
 
-GType		 pk_task_list_get_type			(void) G_GNUC_CONST;
+GType		 pk_task_list_get_type			(void);
 PkTaskList	*pk_task_list_new			(void);
 
 gboolean	 pk_task_list_refresh			(PkTaskList	*tlist);

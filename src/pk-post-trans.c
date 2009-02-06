@@ -518,7 +518,6 @@ pk_post_trans_update_files_check_running_cb (PkBackend *backend, const gchar *pa
 	guint len;
 	gboolean ret;
 	gchar **files;
-	gchar *details;
 	PkPackageId *id;
 
 	id = pk_package_id_new_from_string (package_id);
@@ -541,9 +540,8 @@ pk_post_trans_update_files_check_running_cb (PkBackend *backend, const gchar *pa
 		 * suggest an application restart instead */
 
 		/* send signal about session restart */
-		details = g_strdup_printf ("package %s updated, and %s is running", id->name, files[i]);
-		pk_backend_require_restart (post->priv->backend, PK_RESTART_ENUM_SESSION, details);
-		g_free (details);
+		egg_debug ("package %s updated, and %s is running", id->name, files[i]);
+		pk_backend_require_restart (post->priv->backend, PK_RESTART_ENUM_SESSION, package_id);
 	}
 	g_strfreev (files);
 	pk_package_id_free (id);

@@ -83,9 +83,13 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
 		egg_warning ("RequestName failed!");
 		g_clear_error (error);
 		message = g_strdup_printf ("%s\n%s\n* %s\n* %s '%s'\n",
+					   /* TRANSLATORS: failed due to DBus security */
 					   _("Startup failed due to security policies on this machine."),
+					   /* TRANSLATORS: only two ways this can fail... */
 					   _("This can happen for two reasons:"),
+					   /* TRANSLATORS: only allowed to be owned by root */
 					   _("The correct user is not launching the executable (usually root)"),
+					   /* TRANSLATORS: or we are installed in a prefix */
 					   _("The org.freedesktop.PackageKit.conf file is not "
 					     "installed in the system directory:"),
 					     "/etc/dbus-1/system.d");
@@ -135,7 +139,8 @@ pk_main_timeout_check_cb (PkEngine *engine)
 	egg_debug ("idle is %i", idle);
 	if (idle > exit_idle_time) {
 		egg_warning ("exit!!");
-		exit (0);
+		g_main_loop_quit (loop);
+		return FALSE;
 	}
 	return TRUE;
 }
@@ -184,18 +189,25 @@ main (int argc, char *argv[])
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
+		  /* TRANSLATORS: a backend is the system package tool, e.g. yum, apt */
 		  _("Packaging backend to use, e.g. dummy"), NULL },
 		{ "daemonize", '\0', 0, G_OPTION_ARG_NONE, &use_daemon,
+		  /* TRANSLATORS: if we should run in the background */
 		  _("Daemonize and detach from the terminal"), NULL },
 		{ "verbose", '\0', 0, G_OPTION_ARG_NONE, &verbose,
+		  /* TRANSLATORS: if we should show debugging data */
 		  _("Show extra debugging information"), NULL },
 		{ "disable-timer", '\0', 0, G_OPTION_ARG_NONE, &disable_timer,
+		  /* TRANSLATORS: if we should not monitor how long we are inactive for */
 		  _("Disable the idle timer"), NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &version,
+		  /* TRANSLATORS: show version */
 		  _("Show version and exit"), NULL },
 		{ "timed-exit", '\0', 0, G_OPTION_ARG_NONE, &timed_exit,
+		  /* TRANSLATORS: exit after we've started up, used for user profiling */
 		  _("Exit after a small delay"), NULL },
 		{ "immediate-exit", '\0', 0, G_OPTION_ARG_NONE, &immediate_exit,
+		  /* TRANSLATORS: exit straight away, used for automatic profiling */
 		  _("Exit after the engine has loaded"), NULL },
 		{ NULL}
 	};
@@ -210,6 +222,7 @@ main (int argc, char *argv[])
 	dbus_g_thread_init ();
 	g_type_init ();
 
+	/* TRANSLATORS: describing the service that is running */
 	context = g_option_context_new (_("PackageKit service"));
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_parse (context, &argc, &argv, NULL);
@@ -246,6 +259,7 @@ main (int argc, char *argv[])
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
+		/* TRANSLATORS: fatal error, dbus is not running */
 		g_print ("%s: %s\n", _("Cannot connect to the system bus"), error->message);
 		g_error_free (error);
 		goto exit_program;
@@ -295,6 +309,7 @@ main (int argc, char *argv[])
 	engine = pk_engine_new ();
 
 	if (!pk_object_register (system_connection, G_OBJECT (engine), &error)) {
+		/* TRANSLATORS: cannot register on system bus, unknown reason */
 		g_print (_("Error trying to start: %s\n"), error->message);
 		g_error_free (error);
 		goto out;

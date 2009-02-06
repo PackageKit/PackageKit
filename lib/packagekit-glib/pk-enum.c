@@ -83,6 +83,7 @@ static const PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_LOADING_CACHE,		"loading-cache"},
 	{PK_STATUS_ENUM_SCAN_APPLICATIONS,	"scan-applications"},
 	{PK_STATUS_ENUM_GENERATE_PACKAGE_LIST,	"generate-package-list"},
+	{PK_STATUS_ENUM_WAITING_FOR_LOCK,	"waiting-for-lock"},
 	{0, NULL}
 };
 
@@ -168,6 +169,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY,	"no-more-mirrors-to-try"},
 	{PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,	"no-distro-upgrade-data"},
 	{PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,	"incompatible-architecture"},
+	{PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,	"no-space-on-device"},
 	{0, NULL}
 };
 

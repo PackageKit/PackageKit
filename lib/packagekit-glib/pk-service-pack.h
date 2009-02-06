@@ -40,6 +40,9 @@ G_BEGIN_DECLS
 #define PK_SERVICE_PACK_ERROR	 	(pk_service_pack_error_quark ())
 #define PK_SERVICE_PACK_TYPE_ERROR	(pk_service_pack_error_get_type ())
 
+/* the file extension to a servicepack */
+#define PK_SERVICE_PACK_FILE_EXTENSION	"servicepack"
+
 typedef struct PkServicePackPrivate PkServicePackPrivate;
 
 typedef enum
@@ -83,7 +86,7 @@ typedef struct
 
 GQuark		 pk_service_pack_error_quark			(void);
 GType		 pk_service_pack_error_get_type			(void);
-GType		 pk_service_pack_get_type			(void) G_GNUC_CONST;
+GType		 pk_service_pack_get_type			(void);
 PkServicePack	*pk_service_pack_new				(void);
 
 /* used by the server */

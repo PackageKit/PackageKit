@@ -46,7 +46,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkFileMonitorClass;
 
-GType		 pk_file_monitor_get_type	 	(void) G_GNUC_CONST;
+GType		 pk_file_monitor_get_type	 	(void);
 gboolean	 pk_file_monitor_set_file		(PkFileMonitor	*file_monitor,
 							 const gchar	*filename);
 PkFileMonitor	*pk_file_monitor_new			(void);

@@ -46,7 +46,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkPostTransClass;
 
-GType		 pk_post_trans_get_type			(void) G_GNUC_CONST;
+GType		 pk_post_trans_get_type			(void);
 PkPostTrans	*pk_post_trans_new			(void);
 
 gboolean	 pk_post_trans_clear_firmware_requests	(PkPostTrans	*post);

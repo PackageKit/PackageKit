@@ -365,7 +365,7 @@ pk_desktop_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get files");
 	array = pk_desktop_get_files_for_package (desktop, "gnome-packagekit", NULL);
-	if (array->len > 5)
+	if (array->len >= 5)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "length=%i", array->len);

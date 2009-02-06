@@ -53,7 +53,7 @@ typedef enum {
 	PK_SYSLOG_TYPE_UNKNOWN
 } PkSyslogType;
 
-GType		 pk_syslog_get_type		(void) G_GNUC_CONST;
+GType		 pk_syslog_get_type		(void);
 PkSyslog	*pk_syslog_new			(void);
 void		 pk_syslog_add			(PkSyslog	*syslog,
 						 PkSyslogType	 type,

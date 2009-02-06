@@ -504,7 +504,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 		if (item->committed && !item->finished)
 			g_ptr_array_add (parray, g_strdup (item->tid));
 	}
-	egg_debug ("%i transactions in list, %i active", length, parray->len);
+	egg_debug ("%i transactions in list, %i committed but not finished", length, parray->len);
 	array = pk_ptr_array_to_strv (parray);
 	g_ptr_array_foreach (parray, (GFunc) g_free, NULL);
 	g_ptr_array_free (parray, TRUE);
@@ -539,8 +539,9 @@ pk_transaction_list_print (PkTransactionList *tlist)
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		role = pk_transaction_priv_get_role (item->transaction);
-		g_print ("%0i\t%s\trunning[%i] committed[%i] finished[%i]\n", i,
-			 pk_role_enum_to_text (role), item->running, item->committed, item->finished);
+		g_print ("%0i\t%s\t%s\trunning[%i] committed[%i] finished[%i]\n", i,
+			 pk_role_enum_to_text (role), item->tid, item->running,
+			 item->committed, item->finished);
 	}
 }
 

@@ -751,6 +751,11 @@ backend_update_system_timeout (gpointer data)
 				    "The Linux kernel (the core of the Linux operating system)");
 	}
 	if (_progress_percentage == 30 && !_updated_gtkhtml) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS, "A newer package preupgrade is available in fedora-updates-testing");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
 		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
@@ -789,7 +794,7 @@ backend_update_system (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	_progress_percentage = 0;
-	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
+	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 	_signal_timeout = g_timeout_add (1000, backend_update_system_timeout, backend);
 }
 

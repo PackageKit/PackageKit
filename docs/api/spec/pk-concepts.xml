@@ -937,7 +937,7 @@
     <para>
       If the transaction is waiting for a package lock (when a legacy tool like
       <literal>pirut</literal> is loaded and has the <literal>yum</literal> lock)
-      then the transaction will be stuck at <literal>PK_STATUS_ENUM_SETUP</literal>.
+      then the transaction will be stuck at <literal>PK_STATUS_ENUM_WAITING_FOR_LOCK</literal>.
     </para>
     <para>
       As a backend writer, you do not have to set <literal>PK_STATUS_ENUM_RUNNING</literal>
