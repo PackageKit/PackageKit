@@ -23,6 +23,9 @@
 
 #include <apt-pkg/pkgrecords.h>
 
+static int descrBufferSize = 4096;
+static char *descrBuffer = new char[descrBufferSize];
+
 string get_short_description(const pkgCache::VerIterator &ver,
                                    pkgRecords *records)
 {
@@ -54,6 +57,46 @@ string get_short_description(const pkgCache::VerIterator &ver,
 // #endif
 }
 
+// TODO try to find out how aptitude makes continuos lines keep that way
+static char *debParser(string descr)
+{
+   unsigned int i;
+   string::size_type nlpos=0;
+
+   nlpos = descr.find('\n');
+   // delete first line
+   if (nlpos != string::npos)
+      descr.erase(0, nlpos + 2);        // del "\n " too
+
+   while (nlpos < descr.length()) {
+      nlpos = descr.find('\n', nlpos);
+      if (nlpos == string::npos)
+         break;
+
+      i = nlpos;
+      // del char after '\n' (always " ")
+      i++;
+      descr.erase(i, 1);
+
+      // delete lines likes this: " .", makeing it a \n
+      if (descr[i] == '.') {
+         descr.erase(i, 1);
+         nlpos++;
+         continue;
+      }
+      // skip ws
+      while (descr[++i] == ' ');
+
+//      // not a list, erase nl
+//       if(!(descr[i] == '*' || descr[i] == '-' || descr[i] == 'o'))
+//      descr.erase(nlpos,1);
+
+      nlpos++;
+   }
+   strcpy(descrBuffer, descr.c_str());
+   return descrBuffer;
+}
+
 string get_long_description(const pkgCache::VerIterator &ver,
 				  pkgRecords *records)
 {
@@ -78,7 +121,7 @@ string get_long_description(const pkgCache::VerIterator &ver,
 	if(df.end())
 		return string();
 	else
-		return records->Lookup(df).LongDesc();
+		return debParser(records->Lookup(df).LongDesc());
 // #endif
 }
 
