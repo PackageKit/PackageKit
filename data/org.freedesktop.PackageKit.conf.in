@@ -13,7 +13,14 @@
 
  <!-- Allow anyone to call into the service - we'll reject callers using PolicyKit -->
   <policy context="default">
-    <allow send_destination="org.freedesktop.PackageKit"/>
+    <allow send_destination="org.freedesktop.PackageKit"
+           send_interface="org.freedesktop.PackageKit"/>
+    <allow send_destination="org.freedesktop.PackageKit"
+           send_interface="org.freedesktop.PackageKitTransaction"/>
+    <allow send_destination="org.freedesktop.PackageKit"
+           send_interface="org.freedesktop.DBus.Properties"/>
+    <allow send_destination="org.freedesktop.PackageKit"
+           send_interface="org.freedesktop.DBus.Introspectable"/>
   </policy>
 
 </busconfig>
