@@ -1261,7 +1261,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for path in full_paths:
             deb = apt.debfile.DebPackage(path, self._cache)
             packages.append(deb)
-            if not deb.checkDeb():
+            if not deb.check():
                 self.ErrorCode(ERROR_UNKNOWN, deb._failureString)
                 self.Finished(EXIT_FAILED)
                 return
