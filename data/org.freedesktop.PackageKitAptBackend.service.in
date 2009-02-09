@@ -1,5 +1,5 @@
 [D-BUS Service]
 Name=org.freedesktop.PackageKitAptBackend
-Exec=@servicedir@/aptDBUSBackend.py
+Exec=@servicedir@/pk-backend-apt.py
 User=@PK_BACKEND_USER@
 
