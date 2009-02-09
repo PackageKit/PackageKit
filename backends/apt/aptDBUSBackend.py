@@ -40,6 +40,7 @@ import urllib2
 import warnings
 
 import apt
+import apt.debfile
 import apt_pkg
 import dbus
 import dbus.glib
@@ -50,7 +51,6 @@ import gobject
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded, serialize
 from packagekit.enums import *
 
-import debfile
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 
@@ -250,6 +250,7 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
     """
     Class to initiate and monitor installation of local package files with dpkg
     """
+    #FIXME: Use the merged DpkgInstallProgress of python-apt
     def recover(self):
         """
         Run "dpkg --configure -a"
@@ -1258,7 +1259,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Collect all dependencies which need to be installed
         self.StatusChanged(STATUS_DEP_RESOLVE)
         for path in full_paths:
-            deb = debfile.DebPackage(path, self._cache)
+            deb = apt.debfile.DebPackage(path, self._cache)
             packages.append(deb)
             if not deb.checkDeb():
                 self.ErrorCode(ERROR_UNKNOWN, deb._failureString)
@@ -1273,14 +1274,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "before: %s" % remove)
                 self.Finished(EXIT_FAILED)
                 return
-            if deb.compareToVersionInCache() == debfile.VERSION_OUTDATED:
+            if deb.compare_to_version_in_cache() == \
+               apt.debfile.VERSION_OUTDATED:
                 self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
         if len(self._cache.getChanges()) > 0 and not \
            self._commit_changes((10,25), (25,50)): 
             return False
-       # Install the Debian package files
+        # Install the Debian package files
         d = PackageKitDpkgInstallProgress(self)
         try:
             d.startUpdate()
