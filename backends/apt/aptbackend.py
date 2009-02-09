@@ -196,55 +196,6 @@ class PackageKitCache(apt.cache.Cache):
             yield self._dict[pkgname]
         raise StopIteration
 
-    def isVirtualPackage(self, name):
-        """ 
-        Return True if the package of the given name is a virtual package
-        """
-        try:
-            virtual_pkg = self._cache[name]
-        except KeyError:
-            return False
-        if len(virtual_pkg.VersionList) == 0:
-            return True
-        return False
-
-    def getProvidingPackages(self, virtual):
-        """
-        Return a list of packages which provide the virtual package of the
-        specified name
-        """
-        providers = []
-        try:
-            vp = self._cache[virtual]
-            if len(vp.VersionList) != 0:
-                return providers
-        except KeyError:
-            return providers
-        for pkg in self:
-            v = self._depcache.GetCandidateVer(pkg._pkg)
-            if v == None:
-                continue
-            for p in v.ProvidesList:
-                #print virtual
-                #print p[0]
-                if virtual == p[0]:
-                    # we found a pkg that provides this virtual
-                    # pkg, check if the proivdes is any good
-                    providers.append(pkg)
-                    #cand = self._cache[pkg.name]
-                    #candver = self._cache._depcache.GetCandidateVer(cand._pkg)
-                    #instver = cand._pkg.CurrentVer
-                    #res = apt_pkg.CheckDep(candver.VerStr,oper,ver)
-                    #if res == True:
-                    #    self._dbg(1,"we can use %s" % pkg.name)
-                    #    or_found = True
-                    #    break
-        return providers
-
-    def clear(self):
-        """ Unmark all changes """
-        self._depcache.Init()
-
 
 class DpkgInstallProgress(apt.progress.InstallProgress):
     """
