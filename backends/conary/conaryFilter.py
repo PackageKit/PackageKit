@@ -24,7 +24,8 @@ from packagekit.filter import *
 
 import re
 from pkConaryLog import log
-from conaryInit import conary_db
+from conarypk import ConaryPk
+
 class ConaryFilter(PackagekitFilter):
 
     def _pkg_get_unique(self, pkg):
@@ -44,18 +45,11 @@ class ConaryFilter(PackagekitFilter):
         '''
         Return if the packages are installed
         '''
-        log.info("======= FILTER ===== " )
-        log.info(pkg)
-        troveTuple = pkg
-        db = conary_db()
-        try:
-            troveTuple = troveTuple[0], troveTuple[1], troveTuple[2]
-            localInstall = db.findTrove(None, troveTuple)
-            installed = True
-        except:
-            installed = False
-        log.info("Installed ???")
-        log.info(installed)
-        return installed
+        conary_cli = ConaryPk()
+        result = conary_cli.query(pkg['name'])
+        if result:
+            return True
+        else:
+            return False
 
 
