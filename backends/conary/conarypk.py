@@ -51,6 +51,7 @@ class ConaryPk:
             if "foresight.rpath.org" in i.asString():
                 labels.append(i.asString())
         return labels
+
     def query(self, name):
         """ do a conary query """
         if name is None or name == "":
