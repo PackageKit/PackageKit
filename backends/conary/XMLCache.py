@@ -20,8 +20,15 @@ class XMLRepo:
         else:
             return None
         
-    def search(self, search):
-        return self._searchPackage(search)
+    def search(self, search, where ):
+        if where == "name":
+            return self._searchNamePackage(search)
+        elif where == "details":
+            return self._searchDetailsPackage(search)
+        elif where == "group":
+            return self._searchGroupPackage(search)
+        else:
+            return self._searchPackage(search)
 
     def _setRepo(self,repo):  
         self.repo = repo
@@ -40,11 +47,11 @@ class XMLRepo:
         pkg = {}
         cat = []
         for node in package_node.childNodes:
-            if pkg.has_key('categorie'):
+            if pkg.has_key('category'):
                 cat.append(str(node.childNodes[0].nodeValue))
             else:
                 pkg[str(node.nodeName)] = str(node.childNodes[0].nodeValue)
-        pkg["categorie"] = cat
+        pkg["category"] = cat
         return pkg
 
     def _getPackage(self, name):
@@ -57,7 +64,34 @@ class XMLRepo:
                 if name == pkg["name"]:
                     return pkg
         return None
-                    
+
+    def _searchNamePackage(self, name):
+        doc = self._open()
+        results = []
+        for packages in doc.childNodes:
+            for package in packages.childNodes:
+                pkg = self._generatePackage(package)
+                pkg["label"] = self.label
+                if name.lower() in pkg["name"]:
+                    results.append(pkg['name'])
+        return  [ self._getPackage(i) for i in set(results) ]
+
+    def _searchGroupPackage(self, name):
+        doc = self._open()
+        results_name = []
+        for packages in doc.childNodes:
+            for package in packages.childNodes:
+                pkg = self._generatePackage(package)
+                pkg["label"] = self.label
+                if not pkg.has_key("category"):
+                    continue
+                for j in pkg["category"]:
+                    if name.lower() in j.lower():
+                        results_name.append(pkg['name'])
+        return [ self._getPackage(i) for i in set(results_name) ]
+
+    def _searchDetailsPackage(self, name):
+        return self._searchPackage(name)
     def _searchPackage(self, name):
         doc = self._open()
         results = []
@@ -68,15 +102,23 @@ class XMLRepo:
                 for i in pkg.keys():
                     if i  == "label":
                         continue
-                    if i =='categorie':
+                    if i =='category':
                         for j in pkg[i]:
                             if name.lower() in j.lower():
-                                results.append(pkg)
+                                results.append(pkg['name'])
                     if name.lower() in pkg[i]:
-                        results.append(pkg)
+                        results.append(pkg['name'])
+        return  [ self._getPackage(i) for i in set(results) ]
+    def _getAllPackages(self):
+        doc = self._open()
+        results = []
+        for packages in doc.childNodes:
+            for package in packages.childNodes:
+                pkg = self._generatePackage(package)
+                pkg["label"] = self.label
+                results.append(pkg)
         return results
 
-        
 
 class XMLCache:
     #xml_files = ["foresight.rpath.org@fl:2"]
@@ -136,10 +178,13 @@ class XMLCache:
         else:
             return None
 
-    def search(self, search ):
+    def search(self, search, where = "name" ):
+        """ 
+            @where (string) values = name | details | group |
+        """
         repositories_result = []
         for repo in self.repos:
-            results = repo.search(search)
+            results = repo.search(search , where )
             for i in results:
                 repositories_result.append(i)
         return repositories_result
@@ -151,7 +196,13 @@ class XMLCache:
             label = i + '.xml'
             filename = self.xml_path + label
             wwwfile = self.server + label
-            wget = url.urlopen( wwwfile )
+            try:
+                wget = url.urlopen( wwwfile )
+            except:
+                from packagekit.backend import PackageKitBaseBackend
+                from packagekit.enums import ERROR_NO_CACHE
+                Pk = PackageKitBaseBackend("")
+                Pk.error(ERROR_NO_CACHE," %s can not open" % wwwfile)
             openfile = open( filename ,'w')
             openfile.writelines(wget.readlines())
             openfile.close()
@@ -178,9 +229,28 @@ class XMLCache:
                 t_key =  key
                 tmp  = value
         return t_key
-
+    def _getAllCategories(self):
+        categories = []
+        for i in self.repos:
+            pkgs = i._getAllPackages()
+            for pkg in pkgs:
+                if pkg.has_key('category'):
+                    for cat in pkg["category"]:
+                        categories.append(cat)
+        categories.sort()
+        return set( categories )
+        
 
 if __name__ == '__main__':
     from conaryBackend import groupMap
-    XMLCache()._getCategorieBase( groupMap,  ['GTK', 'Graphics', 'Photography', 'Viewer'])
+  #  print ">>> name"
+   # print XMLCache().search('music', 'name' )
+   # print ">> details"
+   # l= XMLCache().search('GTK', 'group' )
+   # for v,p in enumerate(l):
+   #     print v,p["name"]
+    print "{",
+    for i in XMLCache()._getAllCategories():
+        print "'%s':" % i
+    print "}",
 

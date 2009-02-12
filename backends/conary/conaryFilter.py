@@ -46,7 +46,8 @@ class ConaryFilter(PackagekitFilter):
         Return if the packages are installed
         '''
         conary_cli = ConaryPk()
-        result = conary_cli.query(pkg['name'])
+        result = conary_cli.query(pkg)
+            
         if result:
             return True
         else:
