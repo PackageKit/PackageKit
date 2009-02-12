@@ -3,8 +3,37 @@ import sys
 from xml.dom.minidom import parse
 import urllib as url
 
+
+from conary.lib import sha1helper
+from conary.lib import util
+
+from packagekit.backend import PackageKitBaseBackend
+from packagekit.enums import ERROR_NO_CACHE
+
+
 from pkConaryLog import log
 from conarypk import ConaryPk
+from conaryEnums import groupMap
+
+def getGroup( categorieList):
+    where = {}
+    for cat in categorieList:
+        for group,categories in groupMap.items():
+            if cat in categories:
+                if where.has_key(group):
+                    where[group] = where[group] +1
+                else:
+                    where[group] = 1
+
+    tmp = 0
+    t_key = ""
+    for key, value in where.items():
+        if value > tmp:
+            t_key =  key
+            tmp  = value
+    return t_key
+
+
 class XMLRepo:
     xml_path = ""
     repository = ""
@@ -83,11 +112,17 @@ class XMLRepo:
             for package in packages.childNodes:
                 pkg = self._generatePackage(package)
                 pkg["label"] = self.label
+                """
                 if not pkg.has_key("category"):
                     continue
                 for j in pkg["category"]:
                     if name.lower() in j.lower():
                         results_name.append(pkg['name'])
+                """
+                if pkg.has_key("category"):
+                    group = getGroup(pkg["category"])
+                    if name.lower() == group:
+                        results_name.append(pkg["name"])
         return [ self._getPackage(i) for i in set(results_name) ]
 
     def _searchDetailsPackage(self, name):
@@ -147,7 +182,6 @@ class XMLCache:
             self.repos.append(XMLRepo( xml_file + ".xml", self.xml_path ))
 
     def _getJobCachePath(self, applyList):
-        from conary.lib import sha1helper
         applyStr = '\0'.join(['%s=%s[%s]--%s[%s]%s' % (x[0], x[1][0], x[1][1], x[2][0], x[2][1], x[3]) for x in applyList])
         return self.jobPath + '/' + sha1helper.sha1ToString(sha1helper.sha1String(applyStr))
 
@@ -159,7 +193,6 @@ class XMLCache:
     def cacheUpdateJob(self, applyList, updJob):
         jobPath = self._getJobCachePath(applyList)
         if os.path.exists(jobPath):
-            from conary.lib import util
             util.rmtree(jobPath)
         os.mkdir(jobPath)
         updJob.freeze(jobPath)
@@ -199,13 +232,14 @@ class XMLCache:
             try:
                 wget = url.urlopen( wwwfile )
             except:
-                from packagekit.backend import PackageKitBaseBackend
-                from packagekit.enums import ERROR_NO_CACHE
                 Pk = PackageKitBaseBackend("")
                 Pk.error(ERROR_NO_CACHE," %s can not open" % wwwfile)
             openfile = open( filename ,'w')
             openfile.writelines(wget.readlines())
             openfile.close()
+    def getGroup(self,categorieList):
+        return getGroup(categorieList)
+                
     def _getCategorieBase(self, mapDict, categorieList ):
         if not categorieList:
             return None
@@ -229,6 +263,7 @@ class XMLCache:
                 t_key =  key
                 tmp  = value
         return t_key
+
     def _getAllCategories(self):
         categories = []
         for i in self.repos:
@@ -242,15 +277,10 @@ class XMLCache:
         
 
 if __name__ == '__main__':
-    from conaryBackend import groupMap
   #  print ">>> name"
    # print XMLCache().search('music', 'name' )
    # print ">> details"
-   # l= XMLCache().search('GTK', 'group' )
-   # for v,p in enumerate(l):
-   #     print v,p["name"]
-    print "{",
-    for i in XMLCache()._getAllCategories():
-        print "'%s':" % i
-    print "}",
-
+    l= XMLCache().search('Internet', 'group' )
+    for v,p in enumerate(l):
+        print v,p["name"]
+  # print  XMLCache().getGroup(['GTK', 'Graphics', 'Photography', 'Viewer'])
