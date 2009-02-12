@@ -47,73 +47,6 @@ pkpackage = PackagekitPackage()
 
 from pkConaryLog import log, pdb
 
-groupMap = {
-    '2DGraphics'          : GROUP_GRAPHICS,
-    'Accessibility'       : GROUP_ACCESSIBILITY,
-    'AdvancedSettings'    : GROUP_ADMIN_TOOLS,
-    'Application'         : GROUP_OTHER,
-    'ArcadeGame'          : GROUP_GAMES,
-    'Audio'               : GROUP_MULTIMEDIA,
-    'AudioVideo'          : GROUP_MULTIMEDIA,
-    'BlocksGame'          : GROUP_GAMES,
-    'BoardGame'           : GROUP_GAMES,
-    'Calculator'          : GROUP_ACCESSORIES,
-    'Calendar'            : GROUP_ACCESSORIES,
-    'CardGame'            : GROUP_GAMES,
-    'Compiz'              : GROUP_SYSTEM,
-    'ContactManagement'   : GROUP_ACCESSORIES,
-    'Core'                : GROUP_SYSTEM,
-    'Database'            : GROUP_SERVERS,
-    'DesktopSettings'     : GROUP_ADMIN_TOOLS,
-    'Development'         : GROUP_PROGRAMMING,
-    'Email'               : GROUP_INTERNET,
-    'FileTransfer'        : GROUP_INTERNET,
-    'Filesystem'          : GROUP_SYSTEM,
-    'GNOME'               : GROUP_DESKTOP_GNOME,
-    'GTK'                 : GROUP_DESKTOP_GNOME,
-    'GUIDesigner'         : GROUP_PROGRAMMING,
-    'Game'                : GROUP_GAMES,
-    'Graphics'            : GROUP_GRAPHICS,
-    'HardwareSettings'    : GROUP_ADMIN_TOOLS,
-    'IRCClient'           : GROUP_INTERNET,
-    'InstantMessaging'    : GROUP_INTERNET,
-    'LogicGame'           : GROUP_GAMES,
-    'Monitor'             : GROUP_ADMIN_TOOLS,
-    'Music'               : GROUP_MULTIMEDIA,
-    'Network'             : GROUP_INTERNET,
-    'News'                : GROUP_INTERNET,
-    'Office'              : GROUP_OFFICE,
-    'P2P'                 : GROUP_INTERNET,
-    'PackageManager'      : GROUP_ADMIN_TOOLS,
-    'Photography'         : GROUP_MULTIMEDIA,
-    'Player'              : GROUP_MULTIMEDIA,
-    'Presentation'        : GROUP_OFFICE,
-    'Publishing'          : GROUP_OFFICE,
-    'RasterGraphics'      : GROUP_GRAPHICS,
-    'Security'            : GROUP_SECURITY,
-    'Settings'            : GROUP_ADMIN_TOOLS,
-    'Spreadsheet'         : GROUP_OFFICE,
-    'System'              : GROUP_SYSTEM,
-    'Telephony'           : GROUP_COMMUNICATION,
-    'TerminalEmulator'    : GROUP_ACCESSORIES,
-    'TextEditor'          : GROUP_ACCESSORIES,
-    'Utility'             : GROUP_ACCESSORIES,
-    'VectorGraphics'      : GROUP_GRAPHICS,
-    'Video'               : GROUP_MULTIMEDIA,
-    'Viewer'              : GROUP_MULTIMEDIA,
-    'WebBrowser'          : GROUP_INTERNET,
-    'WebDevelopment'      : GROUP_PROGRAMMING,
-    'WordProcessor'       : GROUP_OFFICE,
-    ''                    : GROUP_UNKNOWN
-}
-
-revGroupMap = {}
-
-for (con_cat, pk_group) in groupMap.items():
-    if revGroupMap.has_key(pk_group):
-        revGroupMap[pk_group].append(con_cat)
-    else:
-        revGroupMap[pk_group] = [con_cat]
 
 #from conary.lib import util
 #sys.excepthook = util.genExcepthook()
@@ -680,7 +613,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             categories  = ""
             if metadata.has_key("category"):
-                categories =  Cache()._getCategorieBase( groupMap, metadata['category'])
+                categories =  Cache().getGroup( metadata['category'])
             else:
                 categories = None
             # Package size goes here, but I don't know how to find that for conary packages.
