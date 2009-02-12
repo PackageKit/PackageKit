@@ -7,7 +7,7 @@ dist_helper_DATA = 			\
 	XMLCache.py		\
 	pkConaryLog.py \
     conarypk.py \
-    conaryEnum.py 
+    conaryEnums.py 
 
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_conary.la
