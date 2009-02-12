@@ -3,11 +3,11 @@ from packagekit.enums import GROUP_ACCESSIBILITY, GROUP_ACCESSORIES, GROUP_EDUCA
 """
 Classify the Categories and help me to make a backend
 
-    from XMLCache import XMLCache 
-    print "categoryMap = {",
-    for i in XMLCache()._getAllCategories():
-        print "'%s':" % i
-    print "}",
+#    from XMLCache import XMLCache 
+#    print "categoryMap = {",
+#    for i in XMLCache()._getAllCategories():
+#        print "'%s':" % i
+#    print "}",
 
 """
 
@@ -33,9 +33,9 @@ categoryMap = {
 'News': GROUP_INTERNET,
 'X-SuSE-Core-Office': GROUP_SYSTEM,
 'X-Red-Hat-Base': GROUP_SYSTEM,
-'GNOME': GROUP_OTHER,
+#'GNOME': GROUP_OTHER,
 'Settings': GROUP_SYSTEM,
-'GTK': GROUP_OTHER,
+#'GTK': GROUP_OTHER,
 'System': GROUP_SYSTEM,
 'Graphics': GROUP_GRAPHICS,
 'X-Ximian-Main': GROUP_OFFICE,
