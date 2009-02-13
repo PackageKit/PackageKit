@@ -38,7 +38,6 @@ from conaryFilter import *
 from XMLCache import XMLCache as Cache
 from conaryInit import *
 
-# zodman fix
 from conaryInit import init_conary_config, init_conary_client
 from conary import conarycfg, conaryclient
 from conarypk import ConaryPk
@@ -48,8 +47,8 @@ pkpackage = PackagekitPackage()
 from pkConaryLog import log, pdb
 
 
-#from conary.lib import util
-#sys.excepthook = util.genExcepthook()
+from conary.lib import util
+sys.excepthook = util.genExcepthook()
 def ExceptionHandler(func):
     return func
     def display(error):
@@ -251,6 +250,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             @filters  (list)  list of filters
             @package (list ) list with packages name for resolve
         """
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_INFO)
+
         log.info("======== resolve =========")
         log.info("filters: %s package:%s " % (filters, package))
 
@@ -385,15 +388,17 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                                                  withFiles = True):
                     files.append(path)
             return files
+        
+        for package in package_id.split("&"):
+            log.info(package)
+            name, version, flavor, installed = self._findPackage(package)
 
-        name, version, flavor, installed = self._findPackage(package_id)
+            if installed == INFO_INSTALLED:
+                files = _get_files(self.client.db, name, version, flavor)
+            else:
+                files = _get_files(self.client.repos, name, version, flavor)
 
-        if installed == INFO_INSTALLED:
-            files = _get_files(self.client.db, name, version, flavor)
-        else:
-            files = _get_files(self.client.repos, name, version, flavor)
-
-        self.files(package_id, ';'.join(files))
+            self.files(package_id, ';'.join(files))
 
     @ExceptionHandler
     def update_system(self):
@@ -454,9 +459,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                         'Package already installed')
 
                 self.status(INFO_INSTALLING)
-                log.info(">>> end Prepare Update")
+                log.info(">>> Prepare Update")
                 self._get_package_update(name, version, flavor)
-                self.status(STATUS_WAIT)
                 log.info(">>> end Prepare Update")
                 self._do_package_update(name, version, flavor)
             else:
