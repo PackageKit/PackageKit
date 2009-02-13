@@ -25,13 +25,7 @@ def getGroup( categorieList):
                 else:
                     where[group] = 1
 
-    tmp = 0
-    t_key = ""
-    for key, value in where.items():
-        if value > tmp:
-            t_key =  key
-            tmp  = value
-    return t_key
+    return max( where.iteritems())[0]
 
 
 class XMLRepo:
