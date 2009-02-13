@@ -240,10 +240,10 @@ backend_get_update_detail_timeout (gpointer data)
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
 						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source",
 						  "", PK_UPDATE_STATE_ENUM_STABLE, "2008-07-31", NULL);
-		} else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
+		}
+		if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
 			pk_backend_update_detail (backend, package_id,
-						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed"
-						  PK_PACKAGE_IDS_DELIM
+						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed^"
 						  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
 						  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
@@ -251,7 +251,8 @@ backend_get_update_detail_timeout (gpointer data)
 						  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
 						  PK_RESTART_ENUM_SYSTEM, "Update to newest version",
 						  "", PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
-		} else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
+		}
+		if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
 			pk_backend_update_detail (backend, package_id,
 						  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
 						  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
@@ -262,22 +263,6 @@ backend_get_update_detail_timeout (gpointer data)
 						  "* something else\n"
 						  "- and that new thing",
 						  "", PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
-
-		} else if (egg_strequal (package_id, "vino;2.24.2.fc9;i386;fedora")) {
-			pk_backend_update_detail (backend, package_id,
-						  "vino;2.24.1.fc9;i386;fedora", "",
-						  "", "", NULL, PK_RESTART_ENUM_NONE,
-						  "Cannot get update as update conflics with vncviewer",
-						  "", PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
-
-
-		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
-				    "",
-				    "Remote desktop server for the desktop");
-
-		} else {
-			/* signal to UI */
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "the package update detail was not found for %s", package_id);
 		}
 	}
 	pk_backend_finished (backend);

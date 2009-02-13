@@ -4,10 +4,8 @@ dist_helper_DATA = 			\
 	conaryFilter.py		\
 	conaryCallback.py	\
 	conaryInit.py		\
-	XMLCache.py		\
-	pkConaryLog.py \
-    conarypk.py \
-    conaryEnums.py 
+	Cache.py		\
+	pkConaryLog.py
 
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_conary.la

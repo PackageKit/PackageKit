@@ -239,32 +239,6 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 }
 
 /**
-    pk_backend_search_groups
-*/
-static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
-{
-	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "search-group", filters_text, search, NULL);
-	g_free (filters_text);
-}
-
-
-
-/**
-    pk_backend_search_details
-*/
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
-{
-	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "search-details", filters_text, search, NULL);
-	g_free (filters_text);
-}
-
-/**
  * pk_backend_update_packages:
  */
 static void
@@ -350,9 +324,9 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
-	backend_search_details,					/* search_details */
+	NULL,					/* search_details */
 	NULL,					/* search_file */
-	backend_search_group,					/* search_group */
+	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
