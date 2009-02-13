@@ -180,7 +180,7 @@ AM_CONDITIONAL(PK_BUILD_QT, test $build_qt = "yes")
 dnl ---------------------------------------------------------------------------
 dnl - Build packageKit-sharp
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(managed, AS_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
+AC_ARG_ENABLE(managed, AC_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
 	      enable_managed=$enableval,enable_managed=false)
 if test x$enable_managed = xyes; then
 	PKG_CHECK_MODULES(GLIBSHARP, glib-sharp-2.0)
