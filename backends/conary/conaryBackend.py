@@ -28,31 +28,96 @@ from conary.deps import deps
 from conary import dbstore, queryrep, versions, updatecmd
 from conary.local import database
 from conary import trove
-from conary.conaryclient import cmdline
 
 from packagekit.backend import *
 from packagekit.package import *
-from packagekit.progress import PackagekitProgress
 from conaryCallback import UpdateCallback
 from conaryFilter import *
-from XMLCache import XMLCache as Cache
-from conaryInit import *
+#from XMLCache import XMLCache as Cache
 
+# zodman fix
+from Cache import Cache
 from conaryInit import init_conary_config, init_conary_client
 from conary import conarycfg, conaryclient
-from conarypk import ConaryPk
 
 pkpackage = PackagekitPackage()
 
 from pkConaryLog import log, pdb
 
+groupMap = {
+    '2DGraphics'          : GROUP_GRAPHICS,
+    'Accessibility'       : GROUP_ACCESSIBILITY,
+    'AdvancedSettings'    : GROUP_ADMIN_TOOLS,
+    'Application'         : GROUP_OTHER,
+    'ArcadeGame'          : GROUP_GAMES,
+    'Audio'               : GROUP_MULTIMEDIA,
+    'AudioVideo'          : GROUP_MULTIMEDIA,
+    'BlocksGame'          : GROUP_GAMES,
+    'BoardGame'           : GROUP_GAMES,
+    'Calculator'          : GROUP_ACCESSORIES,
+    'Calendar'            : GROUP_ACCESSORIES,
+    'CardGame'            : GROUP_GAMES,
+    'Compiz'              : GROUP_SYSTEM,
+    'ContactManagement'   : GROUP_ACCESSORIES,
+    'Core'                : GROUP_SYSTEM,
+    'Database'            : GROUP_SERVERS,
+    'DesktopSettings'     : GROUP_ADMIN_TOOLS,
+    'Development'         : GROUP_PROGRAMMING,
+    'Email'               : GROUP_INTERNET,
+    'FileTransfer'        : GROUP_INTERNET,
+    'Filesystem'          : GROUP_SYSTEM,
+    'GNOME'               : GROUP_DESKTOP_GNOME,
+    'GTK'                 : GROUP_DESKTOP_GNOME,
+    'GUIDesigner'         : GROUP_PROGRAMMING,
+    'Game'                : GROUP_GAMES,
+    'Graphics'            : GROUP_GRAPHICS,
+    'HardwareSettings'    : GROUP_ADMIN_TOOLS,
+    'IRCClient'           : GROUP_INTERNET,
+    'InstantMessaging'    : GROUP_INTERNET,
+    'LogicGame'           : GROUP_GAMES,
+    'Monitor'             : GROUP_ADMIN_TOOLS,
+    'Music'               : GROUP_MULTIMEDIA,
+    'Network'             : GROUP_INTERNET,
+    'News'                : GROUP_INTERNET,
+    'Office'              : GROUP_OFFICE,
+    'P2P'                 : GROUP_INTERNET,
+    'PackageManager'      : GROUP_ADMIN_TOOLS,
+    'Photography'         : GROUP_MULTIMEDIA,
+    'Player'              : GROUP_MULTIMEDIA,
+    'Presentation'        : GROUP_OFFICE,
+    'Publishing'          : GROUP_OFFICE,
+    'RasterGraphics'      : GROUP_GRAPHICS,
+    'Security'            : GROUP_SECURITY,
+    'Settings'            : GROUP_ADMIN_TOOLS,
+    'Spreadsheet'         : GROUP_OFFICE,
+    'System'              : GROUP_SYSTEM,
+    'Telephony'           : GROUP_COMMUNICATION,
+    'TerminalEmulator'    : GROUP_ACCESSORIES,
+    'TextEditor'          : GROUP_ACCESSORIES,
+    'Utility'             : GROUP_ACCESSORIES,
+    'VectorGraphics'      : GROUP_GRAPHICS,
+    'Video'               : GROUP_MULTIMEDIA,
+    'Viewer'              : GROUP_MULTIMEDIA,
+    'WebBrowser'          : GROUP_INTERNET,
+    'WebDevelopment'      : GROUP_PROGRAMMING,
+    'WordProcessor'       : GROUP_OFFICE
+}
 
-from conary.lib import util
-sys.excepthook = util.genExcepthook()
+revGroupMap = {}
+
+for (con_cat, pk_group) in groupMap.items():
+    if revGroupMap.has_key(pk_group):
+        revGroupMap[pk_group].append(con_cat)
+    else:
+        revGroupMap[pk_group] = [con_cat]
+
+#from conary.lib import util
+#sys.excepthook = util.genExcepthook()
+
 def ExceptionHandler(func):
-    return func
     def display(error):
         return str(error).replace('\n', ' ')
+
     def wrapper(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
@@ -68,6 +133,7 @@ def ExceptionHandler(func):
         except Exception, e:
             self.error(ERROR_UNKNOWN, display(e), exit=True)
     return wrapper
+
 def _format_str(str):
     """
     Convert a multi line string to a list separated by ';'
@@ -105,7 +171,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         frzFlavor = flavor.freeze()
         return ','.join([frzVersion, frzFlavor])
 
-    def _thawData(self, frzVersion, frzFlavor ):
+    def _thawData(self, data):
+        frzVersion, frzFlavor = data.split(',')
         version = versions.ThawVersion(frzVersion)
         flavor = deps.ThawFlavor(frzFlavor)
         return version, flavor
@@ -118,73 +185,80 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return ','.join(arches)
 
     @ExceptionHandler
-    def check_installed(self, troveTuple):
-        log.debug("============check installed =========")
-        cli = ConaryPk()
-        result = cli.query(troveTuple[0])
-        if result:
-            installed = INFO_INSTALLED
-        else:
-            installed = INFO_AVAILABLE
-
-        return installed
-           
-    @ExceptionHandler
     def get_package_id(self, name, versionObj, flavor):
-
         version = versionObj.trailingRevision()
-
         arch = self._get_arch(flavor)
-
-        cache = Cache()
-        pkg  = cache.resolve(name)
-        data = versionObj.asString() + "#"
-        if pkg:
-            try:
-                data +=str(pkg)
-            except:
-                pass
+        data = self._freezeData(versionObj, flavor)
         return pkpackage.get_package_id(name, version, arch, data)
 
     @ExceptionHandler
     def get_package_from_id(self, package_id):
         """ package_id(string) =
-        "dpaster;0.1-3-1;x86;/foresight.rpath.org@fl:2-qa/0.1-3-1#{'version': '0.1-3-1', 'category': [], 'name': 'dpaster', 'label': 'foresight.rpath.org@fl:2-qa'}"
+        "pastebinit;0.7-1-1;x86;/foresight.rpath.org@fl:2-qa/1222042924.172:0.7-1-1,1#x86"
         """
         log.info("=========== get package from package_id ======================")
+        log.info(package_id)
         name, verString, archString, data =  pkpackage.get_package_from_id(package_id)
-        summary = data.split("#")
-        repo = summary[0]
-        if summary[1]:
-            metadata = eval(summary[1])
-        else:
-            metadata = {} 
-        cli = ConaryPk()
-        return  cli.request_query(name)
+        log.info(data)
+        version, flavor = self._thawData(data)
+        return name, version, flavor
 
-    def _do_search(self, filters, searchlist, where = "name"):
+    def _do_search(self, searchlist, filters):
         """
-         searchlist(str)ist as the package for search like
-         filters(str) as the filter
+        searchlist(str)ist as the package for search like
+        filters(str) as the filter
         """
         fltlist = filters.split(';')
-        if where != "name" and where != "details" and where != "group":
-            log.info("where %s" % where)
-            self.error(ERROR_UNKNOWN, "DORK---- search where not found")
+        pkgfilter = ConaryFilter(fltlist)
+        #pkgfilter = ConaryFilter()
+
+        troveSpecs = [ updatecmd.parseTroveSpec(searchlist,
+                                                allowEmptyName=False) ]
+        # get a hold of cached data
         cache = Cache()
         log.debug((searchlist, fltlist))
 
-        troveTupleList = cache.search(searchlist, where )
+        try:
+            troveTupleList = cache.search(searchlist)
+            log.info("FOUND!!!!!! %s"% str(troveTupleList))
+        finally:
+            pass
 
-        if len(troveTupleList) > 0 :
-            for i in troveTupleList:
-                log.info("FOUND!!!!!! %s " % i["name"] )
-            log.info("FOUND (%s) elements " % len(troveTupleList) )
+        # Remove dupes
+        tempDict = {}
+        try:
+            for element in troveTupleList:
+                tempDict[element] = None
+        except TypeError:
+            del tempDict  # move on to the next method
         else:
-            log.info("NOT FOUND %s " % searchlist )
-            self.error(ERROR_PACKAGE_NOT_FOUND, "Not Found %s " % searchlist )
+            troveTupleList = tempDict.keys()
 
-        self._resolve_list( fltlist, troveTupleList  )
+        # Get the latest first
+        troveTupleList.sort()
+        troveTupleList.reverse()
+
+        for troveTuple in troveTupleList:
+            troveTuple = tuple([item.encode('UTF-8') for item in troveTuple])
+            name = troveTuple[0]
+            version = versions.ThawVersion(troveTuple[1])
+            flavor = deps.ThawFlavor(troveTuple[2])
+            troveTuple = tuple([name, version, flavor])
+            log.info("TROVETUPLE %s" % str(troveTuple))
+            installed = self.check_installed(troveTuple)
+
+            if installed is "installed":
+                pkgfilter.add_installed([troveTuple])
+                log.info(" === Installed ========= %s" % name)
+            else:
+                pkgfilter.add_available([troveTuple])
+                log.info("=== Available====== %s" % name)
+
+        # we couldn't do this when generating the list
+
+        package_list = pkgfilter.post_process()
+        log.info("package_list %s" %package_list)
+        self._show_package_list(package_list)
 
     def _get_update(self, applyList, cache=True):
         updJob = self.client.newUpdateJob()
@@ -221,133 +295,111 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             applyList = [(name, (None, None), (version, flavor), True)]
         return self._do_update(applyList)
 
-    def _resolve_list(self, filters, pkgsList ):
-        log.info("======= _resolve_list =====")
-        specList = []
-        cli = ConaryPk()
-        for pkg in pkgsList:
-            name = pkg["name"]
-            repo = pkg["label"]
-            version = pkg["version"]
-            trove = name, None , cli.flavor
-            specList.append( trove  )
-        trovesList = cli.repos.findTroves(cli.default_label, specList )
-
-        pkgFilter = ConaryFilter(filters)
-        troves = trovesList.values()
-        for trovelst in troves:
-            t = trovelst[0]
-            installed = pkgFilter._pkg_is_installed( t[0] )
-            if installed:
-                pkgFilter.add_installed( trovelst )
-            else:
-                pkgFilter.add_available( trovelst )
-
-       
-        package_list = pkgFilter.post_process()
-        self._show_package_list(package_list)
- 
     @ExceptionHandler
-    def resolve(self, filters, package ):
-        """ 
-            @filters  (list)  list of filters
-            @package (list ) list with packages name for resolve
-        """
+    def resolve(self, filters, packages):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-
         log.info("======== resolve =========")
-        log.info("filters: %s package:%s " % (filters, package))
-
-        cache = Cache()
-        pkg_dict = cache.resolve( package[0] )
-
-        if pkg_dict is None:
-            self.error(ERROR_INTERNAL_ERROR, "Package Not found on repository")
-
-        filter = ConaryFilter(filters)
-
-        installed = filter._pkg_is_installed( pkg_dict["name"] )
-        
-        conary_cli = ConaryPk()
-
-        troveTuple =  conary_cli.request_query( package[0] )
-
-        log.info(">>> %s" % troveTuple)
-
-        if installed:
-            filter.add_installed( troveTuple  )
+        log.info("filters: %s package:%s " % (filters, packages))
+        if len(packages):
+            for i in packages:
+                self._do_search(i, filters)
         else:
-            filter.add_available( troveTuple )
+            self._do_search(packages, filters)
 
-        package_list = filter.post_process()
+    @ExceptionHandler
+    def check_installed(self, troveTuple):
+        log.debug("============check installed =========")
+        log.info(troveTuple)
+        db = conaryclient.ConaryClient(self.cfg).db
+        try:
+            troveTuple = troveTuple[0], troveTuple[1], troveTuple[2]
+            localInstall = db.findTrove(None, troveTuple)
+            installed = INFO_INSTALLED
+        except:
+            installed = INFO_AVAILABLE
+        log.info(installed)
+        return installed
+
+    def _pkg_is_installed(self, pkg):
+        '''
+        Return if the package is installed.
+        '''
+        return self.check_installed(pkg)
+
+    @ExceptionHandler
+    def search_group(self, filters, key):
+        '''
+        Implement the {backend}-search-name functionality
+        FIXME: Ignoring filters for now.
+        '''
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_QUERY)
+
+        fltlist = filters.split(';')
+        pkgfilter = ConaryFilter(fltlist)
+        pkgfilter = ConaryFilter(fltlist)
+        cache = Cache()
+
+        try:
+            troveTupleList = cache.searchByGroups(revGroupMap[key])
+        finally:
+            # FIXME: Really need to send an error here
+            pass
+
+        troveTupleList.sort()
+        troveTupleList.reverse()
+
+        for troveTuple in troveTupleList:
+            troveTuple = tuple([item.encode('UTF-8') for item in troveTuple[0:2]])
+            name = troveTuple[0]
+            version = versions.ThawVersion(troveTuple[1])
+            flavor = deps.ThawFlavor(troveTuple[2])
+            category = troveTuple[3][0]
+            category = category.encode('UTF-8')
+            troveTuple = tuple([name, version, flavor])
+            installed = self.check_installed(troveTuple)
+            if installed:
+                pkgfilter.add_installed([troveTuple])
+            else:
+                pkgfilter.add_available([troveTuple])
+
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
         log.info("package_list %s" % package_list)
         self._show_package_list(package_list)
 
     def _show_package_list(self, lst):
-        """ 
-            HOW its showed on packageKit
-            @lst(list(tuple) = [ ( troveTuple, status ) ]
-        """
+        log.info("------------- show_package_list ----------")
+        log.info(lst)
         for troveTuple, status in lst:
-            # take the basic info
             name = troveTuple[0]
             version = troveTuple[1]
             flavor = troveTuple[2]
-            # get the string id from packagekit 
             package_id = self.get_package_id(name, version, flavor)
-            
-            # split the list for get Determine info
-            summary = package_id.split(";")
-            repo = summary[3].split("#")[0]
-
-            metadata = eval(summary[3].split("#")[1])
-            log.info("====== show the package ")
-            log.info(metadata)
-            if metadata.has_key("shortDesc"):
-                meta = metadata["shortDesc"]
-            else:
-                meta = " "
-            self.package(package_id, status, meta )
-
-    @ExceptionHandler
-    def search_group(self, options, searchlist):
-        '''
-        Implement the {backend}-search-group functionality
-        '''
-        log.info("============= search_group ========")
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_QUERY)
-        log.info("options: %s searchlist:%s "%(options, searchlist))
-        self._do_search(options, searchlist, 'group')
-
+            log.info("pkg id")
+            log.info(package_id)
+            summary = self._get_metadata(package_id, 'shortDesc') or " "
+            #summary = " "
+            log.info("####Package %s %s %s" % (package_id, status, summary ))
+            self.package(package_id, status, summary)
 
     @ExceptionHandler
     def search_name(self, options, searchlist):
         '''
         Implement the {backend}-search-name functionality
         '''
-        log.info("============= search_name ========")
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
+        log.info("============= search_name ========")
         log.info("options: %s searchlist:%s "%(options, searchlist))
-        self._do_search(options, searchlist, 'name')
+        self._do_search(searchlist, options)
 
-    @ExceptionHandler
-    def search_details(self, options, search):
-        '''
-        Implement the {backend}-search-details functionality
-        '''
-        log.info("============= search_details ========")
-        self.allow_cancel(True)
-        #self.percentage(None)
-        self.status(STATUS_QUERY)
-        log.info("options: %s searchlist:%s "%(options, search))
-        self._do_search(options, search, 'details' )
-       
+    def search_details(self, opt, key):
+        pass
 
     def get_requires(self, filters, package_ids, recursive_text):
         pass
@@ -391,17 +443,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                                                  withFiles = True):
                     files.append(path)
             return files
-        
-        for package in package_id.split("&"):
-            log.info(package)
-            name, version, flavor, installed = self._findPackage(package)
 
-            if installed == INFO_INSTALLED:
-                files = _get_files(self.client.db, name, version, flavor)
-            else:
-                files = _get_files(self.client.repos, name, version, flavor)
+        name, version, flavor, installed = self._findPackage(package_id)
 
-            self.files(package_id, ';'.join(files))
+        if installed == INFO_INSTALLED:
+            files = _get_files(self.client.db, name, version, flavor)
+        else:
+            files = _get_files(self.client.repos, name, version, flavor)
+
+        self.files(package_id, ';'.join(files))
 
     @ExceptionHandler
     def update_system(self):
@@ -410,13 +460,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         updJob, suggMap = self._do_update(applyList)
 
-#    @ExceptionHandler
+    @ExceptionHandler
     def refresh_cache(self):
         #log.debug("refresh-cache command ")
         self.percentage()
         self.status(STATUS_REFRESH_CACHE)
         cache = Cache()
-        cache.refresh()
+        if not cache.is_populate_database:
+            self.status(STATUS_WAIT)
+            cache.populate_database()
 
     @ExceptionHandler
     def update(self, package_ids):
@@ -426,13 +478,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_RUNNING)
-        
+
         for package in package_ids.split(" "):
             name, version, flavor, installed = self._findPackage(package)
             if name:
-               # self._do_package_update(name, version, flavor)
-               cli = ConaryPk()
-               cli.update(name)
+                self._do_package_update(name, version, flavor)
             else:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'No available updates')
 
@@ -447,10 +497,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-{install, update}-packages functionality
         '''
-
+        log.info(package_ids)
+        #for package_id in package_ids.split('%'):
         for package_id in package_ids:
+            log.info(package_id)
             name, version, flavor, installed = self._findPackage(package_id)
-            log.info((name, version, flavor, installed ))
+            log.info((name, version))
 
             self.allow_cancel(True)
             self.percentage(0)
@@ -462,9 +514,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                         'Package already installed')
 
                 self.status(INFO_INSTALLING)
-                log.info(">>> Prepare Update")
                 self._get_package_update(name, version, flavor)
-                log.info(">>> end Prepare Update")
                 self._do_package_update(name, version, flavor)
             else:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'Package was not found')
@@ -575,11 +625,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         #vendor_url = _format_list(urls['vendor'])
         vendor_url = ""
         reboot = "none"
-        desc = " "
+        desc = self._get_metadata(package_id, 'longDesc') or " "
         self.update_detail(package_id, update, obsolete, vendor_url, bz_url, cve_url,
                 reboot, desc, changelog="", state="", issued="", updated="")
 
-   # @ExceptionHandler
+    @ExceptionHandler
     def get_details(self, package_ids):
         '''
         Print a detailed description for a given package
@@ -592,52 +642,26 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info(package_ids[0])
         package_id = package_ids[0]
         name, version, flavor, installed = self._findPackage(package_id)
-        
-        summary = package_id.split(";")
-        log.info("====== summar")
-        log.info(summary)
 
-        repo = summary[3].split("#")[0]
-        metadata = eval(summary[3].split("#")[1])
-        short_package_id  = ""
-        for i in summary[0:3]:
-            short_package_id += i +';'
-
-        log.info("Metadata--------------------")
-        log.info(metadata)
+        log.info("name--------------------")
+        log.info((package_id, name))
 
         if name:
-            if metadata.has_key("shortDesc"):
-                shortDesc = metadata["shortDesc"] 
-            else:
-                shortDesc = ""
-            if metadata.has_key("longDesc"):
-                longDesc = metadata["longDesc"] 
-            else:
-                longDesc = ""
+            shortDesc = self._get_metadata(package_id, 'shortDesc') or name
+            longDesc = self._get_metadata(package_id, 'longDesc') or ""
+            url = "http://www.foresightlinux.org/packages/" + name + ".html"
+            categories = self._get_metadata(package_id, 'categories') or "unknown"
 
-            url = "http://www.foresightlinux.org/packages/%s.html" % name
-
-            categories  = ""
-            if metadata.has_key("category"):
-                categories =  Cache().getGroup( metadata['category'])
-            else:
-                categories = None
             # Package size goes here, but I don't know how to find that for conary packages.
-            self.details(short_package_id, None, categories, longDesc, url, 0)
+            self.details(package_id, None, categories, longDesc, url, 0)
         else:
             self.error(ERROR_PACKAGE_NOT_FOUND, 'Package was not found')
 
     def _show_package(self, name, version, flavor, status):
         '''  Show info about package'''
         package_id = self.get_package_id(name, version, flavor)
-        summary = package_id.split(";")
-        metadata = eval(summary[3].split("#")[1])
-        if metadata.has_key("shortDesc"):
-            meta = metadata["shortDesc"]
-        else:
-            meta = " "
-        self.package(package_id, status, meta)
+        summary = self._get_metadata(package_id, 'shortDesc') or ""
+        self.package(package_id, status, summary)
 
     def _get_status(self, notice):
         # We need to figure out how to get this info, this is a place holder
@@ -656,19 +680,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         log.info("============== get_updates ========================")
         updateItems = self.client.fullUpdateItemList()
-        log.info("============== end get_updates ========================")
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
-        log.info("_get_update ....")
         updJob, suggMap = self._get_update(applyList)
-        log.info("_get_update ....end.")
 
         jobLists = updJob.getJobs()
-        log.info("get Jobs")
 
         totalJobs = len(jobLists)
         for num, job in enumerate(jobLists):
             status = '2'
-            log.info( (num, job)  )
             name = job[0][0]
 
             # On an erase display the old version/flavor information.
@@ -692,16 +711,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         log.info("========== _findPackage ==========")
         log.info(package_id)
-        troveTuples = self.get_package_from_id(package_id)
-        for troveTuple in troveTuples:
-            log.info("======== trove ")
-            log.info(troveTuple)
-            installed = self.check_installed(troveTuple)
-            log.info(installed)
-            name, version, flavor = troveTuple
-            return name, version, flavor, installed
-        else:
-            self.error(ERROR_INTERNAL_ERROR, "package_id Not Correct ")
+        name, version, flavor = self.get_package_from_id(package_id)
+        troveTuple = (name, version, flavor)
+        log.info("======== trove ")
+        log.info(troveTuple)
+        installed = self.check_installed(troveTuple)
+        return name, version, flavor, installed
 
     def repo_set_data(self, repoid, parameter, value):
         '''
@@ -721,12 +736,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         pass
 
-from pkConaryLog import pdb
-
 def main():
     backend = PackageKitConaryBackend('')
     log.info("======== argv =========== ")
-    log.info(sys.argv[1:])
+    log.info(sys.argv)
     backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":

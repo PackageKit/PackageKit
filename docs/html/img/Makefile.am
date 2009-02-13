@@ -16,7 +16,6 @@ IMAGE_FILES =					\
 	author-timlau.png			\
 	author-tomparker.png			\
 	author-unknown.png			\
-	author-zodman.png			\
 	dialog-information.png			\
 	gpk-added-deps.png			\
 	gpk-application-groups.png		\

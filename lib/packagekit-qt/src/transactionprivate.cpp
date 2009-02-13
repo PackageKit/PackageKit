@@ -136,12 +136,12 @@ void TransactionPrivate::updateDetail(const QString& pid, const QString& updates
 	Client::UpdateInfo i;
 	i.package = new Package(pid);
 	if( !updates.isEmpty() ) {
-		foreach(const QString p, updates.split("&")) {
+		foreach(const QString p, updates.split("^")) {
 			i.updates.append(new Package(p));
 		}
 	}
 	if( !obsoletes.isEmpty() ) {
-		foreach(const QString p, obsoletes.split("&")) {
+		foreach(const QString p, obsoletes.split("^")) {
 			i.obsoletes.append(new Package(p));
 		}
 	}
