@@ -243,7 +243,8 @@ backend_get_update_detail_timeout (gpointer data)
 		}
 		if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
 			pk_backend_update_detail (backend, package_id,
-						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed^"
+						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed"
+						  PK_PACKAGE_IDS_DELIM
 						  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
 						  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
