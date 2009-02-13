@@ -155,7 +155,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         name, verString, archString, data =  pkpackage.get_package_from_id(package_id)
         summary = data.split("#")
         repo = summary[0]
-        metadata = eval(summary[1])
+        if summary[1]:
+            metadata = eval(summary[1])
+        else:
+            metadata = {} 
         cli = ConaryPk()
         return  cli.request_query(name)
 
