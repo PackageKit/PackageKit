@@ -1,5 +1,4 @@
 import os
-import sys
 from xml.dom.minidom import parse
 import urllib as url
 
@@ -15,17 +14,21 @@ from pkConaryLog import log
 from conarypk import ConaryPk
 from conaryEnums import groupMap
 
-def getGroup( categorieList):
+def getGroup(categorieList):
     where = {}
+    if categorieList:
+        return None
     for cat in categorieList:
         for group,categories in groupMap.items():
             if cat in categories:
-                if where.has_key(group):
+                if group in where:
                     where[group] = where[group] +1
                 else:
                     where[group] = 1
-
-    return max( where.iteritems())[0]
+    if where.values():
+        return max( where.iteritems())[0]
+    else:
+        return None
 
 
 class XMLRepo:
@@ -117,6 +120,7 @@ class XMLRepo:
                     group = getGroup(pkg["category"])
                     if name.lower() == group:
                         results_name.append(pkg["name"])
+            log.info(results_name)
         return [ self._getPackage(i) for i in set(results_name) ]
 
     def _searchDetailsPackage(self, name):
@@ -191,8 +195,16 @@ class XMLCache:
         os.mkdir(jobPath)
         updJob.freeze(jobPath)
 
-    def getTroves(self):
-        pass
+    def convertTroveToDict(self, troveTupleList):
+        mList = []
+        for troveTuple in troveTupleList: 
+            pkg = {}
+            pkg["name"] = troveTuple[0]
+            pkg["version"] = troveTuple[1].trailingRevision()
+            pkg["label"] = troveTuple[1].trailingLabel() 
+            mList.append(pkg)
+        return mList
+            
     def searchByGroups(self, groups):
         pass
     def refresh(self):
