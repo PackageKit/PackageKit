@@ -177,9 +177,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info("where %s" % where)
             self.error(ERROR_UNKNOWN, "DORK---- search where not found")
         cache = Cache()
-        log.debug((searchlist, fltlist))
+        log.debug((searchlist, where))
 
         troveTupleList = cache.search(searchlist, where )
+        log.info("XMLCACHE results:")
+        log.info(troveTupleList)
 
         if len(troveTupleList) > 0 :
             for i in troveTupleList:

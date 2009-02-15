@@ -16,8 +16,9 @@ from conaryEnums import groupMap
 
 def getGroup(categorieList):
     where = {}
-    if categorieList:
+    if  not categorieList:
         return None
+    log.info(categorieList)
     for cat in categorieList:
         for group,categories in groupMap.items():
             if cat in categories:
