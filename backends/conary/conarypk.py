@@ -108,7 +108,7 @@ class ConaryPk:
 
 if __name__ == "__main__":
     conary = ConaryPk()
-    print conary.query("dpaster")
+    print conary.query("vim-scripts")
     #print conary.query("gimpasdas")
     #print conary.request_query("dpaster",'zodyrepo.rpath.org@rpl:devel')
     #print conary.request_query("gimp")
