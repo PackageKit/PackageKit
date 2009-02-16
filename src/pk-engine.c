@@ -294,6 +294,22 @@ pk_engine_get_network_state (PkEngine *engine, gchar **state, GError **error)
 }
 
 /**
+ * pk_engine_get_daemon_state:
+ **/
+gboolean
+pk_engine_get_daemon_state (PkEngine *engine, gchar **state, GError **error)
+{
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	*state = pk_transaction_list_get_state (engine->priv->transaction_list);
+
+	/* reset the timer */
+	pk_engine_reset_timer (engine);
+
+	return TRUE;
+}
+
+/**
  * pk_engine_get_transaction_list:
  **/
 gboolean
