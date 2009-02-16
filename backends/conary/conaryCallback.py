@@ -41,29 +41,33 @@ class UpdateCallback(callbacks.UpdateCallback):
     def requestingChangeSet(self):
         log.info("Callback ........ STATUS_REQUEST changeset ")
         self.backend.status(STATUS_DOWNLOAD)
-        self.progress.step()
         self.backend.percentage(self.progress.percent)
+        log.info(self.progress.percent)
+        self.progress.step()
 
     def downloadingChangeSet(self, got, need):
+        log.info("Callback ........ STATUS_DOWNLOAD  Changeset %s percent %s/%s bytes" % ( got*100/float(need), got,need) )
         self.progress.set_subpercent( got*100 / float(need) )
-        self.backend.sub_percentage(self.progress.percent)
+        self.backend.percentage(self.progress.percent)
+        log.info( "%s percent" % self.progress.percent)
 
-        log.info("Callback ........ STATUS_DOWNLOAD  Changeset %s percent" % self.progress.percent )
 
 
     # 2 
     def resolvingDependencies(self):
         #self.backend.status('Resolving Dependencies')
         log.info("Callback ........ STATUS_DEP_RESOLVE ")
-        self.backend.sub_percentage(self.progress.percent)
+        self.backend.percentage(self.progress.percent)
         self.backend.status(STATUS_DEP_RESOLVE)
         self.progress.step()
         self.backend.percentage(self.progress.percent)
+        log.info(self.progress.percent)
     # 3 
     def setChangesetHunk(self, num, total):
         log.info("callback. .......... set Changeset HUnk %s/%s" % (num, total ) )
         self.progress.step()
         self.backend.percentage(self.progress.percent)
+        log.info(self.progress.percent)
 
    # 5
     def setUpdateHunk(self, hunk, hunkCount):
@@ -77,12 +81,14 @@ class UpdateCallback(callbacks.UpdateCallback):
         else:
             self.smallUpdate = True
 
+        log.info(self.progress.percent)
     # 6
     def setUpdateJob(self, job):
         log.info("callback. .......... set update Job")
         self.currentJob = job
         self.progress.step()
         self.backend.percentage(self.progress.percent)
+        log.info(self.progress.percent)
 
     #7
     def creatingRollback(self):
@@ -91,6 +97,7 @@ class UpdateCallback(callbacks.UpdateCallback):
         self.backend.status(STATUS_ROLLBACK)
         self.progress.step()
         self.backend.percentage(self.progress.percent)
+        log.info(self.progress.percent)
 
 
     def preparingUpdate(self, troveNum, troveCount, add=0):
@@ -103,7 +110,7 @@ class UpdateCallback(callbacks.UpdateCallback):
             sub_percent = (add + troveNum) / (2 * float(troveCount)) * 100
             self.progress.set_subpercent(sub_percent)
             p = self.progress.percent
-            self.backend.sub_percentage(p)
+            self.backend.percentage(p)
 
             if self.smallUpdate:
                 self.backend.percentage(self.progress.percent)
@@ -132,6 +139,7 @@ class UpdateCallback(callbacks.UpdateCallback):
             self.backend.status(STATUS_INSTALL)
             package_id = self.backend.get_package_id(name, newVersion, newFlavor)
             self.backend.package(package_id, INFO_INSTALLING, '')
+        log.info(self.progress.percent)
     #8
     def creatingDatabaseTransaction(self, troveNum, troveCount):
         log.info("callback. .......... creating Database Transactions")
@@ -139,6 +147,7 @@ class UpdateCallback(callbacks.UpdateCallback):
         self.preparingUpdate(troveNum, troveCount, add=troveCount)
         self.backend.percentage(self.progress.percent)
 
+        log.info(self.progress.percent)
 
     # 9
     def committingTransaction(self):
@@ -148,6 +157,7 @@ class UpdateCallback(callbacks.UpdateCallback):
         self.backend.status(STATUS_COMMIT)
         self.progress.step()
         self.backend.percentage(self.progress.percent)
+        log.info(self.progress.percent)
 
     #10
     def updateDone(self):
@@ -155,6 +165,7 @@ class UpdateCallback(callbacks.UpdateCallback):
         self.progress.step()
         self.backend.percentage(self.progress.percent)
         self.currentJob = None
+        log.info(self.progress.percent)
 
 
 

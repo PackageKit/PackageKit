@@ -497,7 +497,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info((name, version, flavor, installed ))
 
             self.allow_cancel(True)
-            self.percentage(None)
+            self.percentage(0)
             self.status(STATUS_RUNNING)
 
             if name:
@@ -702,7 +702,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     @ExceptionHandler
     def get_updates(self, filters):
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
         self.status(STATUS_INFO)
         log.info("============== get_updates ========================")
         cli = ConaryPk()
