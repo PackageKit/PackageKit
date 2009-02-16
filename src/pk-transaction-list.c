@@ -564,19 +564,19 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 
 	/* wrong flags */
 	if (wrong != 0)
-		g_string_append_printf (string, "%i have inconsistent flags\n", wrong);
+		g_string_append_printf (string, "ERROR: %i have inconsistent flags\n", wrong);
 
 	/* some are not committed */
 	if (no_commit != 0)
-		g_string_append_printf (string, "%i have not been committed\n", no_commit);
+		g_string_append_printf (string, "WARNING: %i have not been committed\n", no_commit);
 
 	/* more than one running */
 	if (running > 1)
-		g_string_append_printf (string, "%i are running\n", running);
+		g_string_append_printf (string, "ERROR: %i are running\n", running);
 
 	/* nothing running */
 	if (waiting == length)
-		g_string_append_printf (string, "everything is waiting!\n");
+		g_string_append_printf (string, "WARNING: everything is waiting!\n");
 out:
 	return g_string_free (string, FALSE);
 }
