@@ -86,6 +86,12 @@
         although the daemon will start and stop less often.
       </para>
     </sect2>
+    <sect2 id="config-main-timeout">
+      <title>UseSyslog</title>
+      <para>
+        Syslog is used to audit and log actions wherever its available.
+      </para>
+    </sect2>
     <sect2 id="config-main-default">
       <title>DefaultBackend</title>
       <para>
