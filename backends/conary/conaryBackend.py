@@ -193,7 +193,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             troveTupleList = pk.query( searchlist)
             log.info(troveTupleList)
             if not troveTupleList:
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Not Found %s " % searchlist )
+                error = {}
+                error["group"] = ERROR_GROUP_NOT_FOUND
+                error["details"] = ERROR_PACKAGE_NOT_FOUND
+                error["name"] = error["details"]
+                self.error(error[where], "Not Found %s " % searchlist )
             else:
                 troveTupleList = cache.convertTroveToDict( troveTupleList ) 
                 log.info("convert")
@@ -204,12 +208,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _get_update(self, applyList, cache=True):
         from conary.conaryclient.update import NoNewTrovesError
         updJob = self.client.newUpdateJob()
-        log.info("prepareUpdateJob")
         try:
             suggMap = self.client.prepareUpdateJob(updJob, applyList)
         except NoNewTrovesError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "No new apps were found")
-        log.info("END >>> prepareUpdateJob")
         if cache:
             Cache().cacheUpdateJob(applyList, updJob)
         return updJob, suggMap
@@ -227,6 +229,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             updJob = self._get_update(applyList, cache=False)
         self.allow_cancel(False)
+
         restartDir = self.client.applyUpdateJob(updJob)
         return updJob
 
@@ -699,7 +702,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     @ExceptionHandler
     def get_updates(self, filters):
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
         self.status(STATUS_INFO)
         log.info("============== get_updates ========================")
         cli = ConaryPk()
