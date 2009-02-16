@@ -315,6 +315,45 @@ out:
 }
 
 /**
+ * pk_control_get_daemon_state:
+ * @control: a valid #PkControl instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * The engine state debugging output
+ *
+ * Return value: a string of debugging data of unspecified format
+ **/
+gchar *
+pk_control_get_daemon_state (PkControl *control, GError **error)
+{
+	gboolean ret;
+	GError *error_local = NULL;
+	gchar *state = NULL;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* check to see if we have a valid proxy */
+	if (control->priv->proxy == NULL) {
+		egg_warning ("No proxy for manager");
+		goto out;
+	}
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetDaemonState", &error_local,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &state,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		/* abort as the DBUS method failed */
+		egg_warning ("GetDaemonState failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+out:
+	return state;
+}
+
+/**
  * pk_control_get_network_state:
  * @control: a valid #PkControl instance
  * @error: a %GError to put the error code and message in, or %NULL

@@ -638,6 +638,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
 
+        # guess
+        if provides_type == PROVIDES_ANY and search.startswith(":"):
+            provides_type = PROVIDES_FONT
+
         # old standard
         if search.startswith("gstreamer0.10("):
             provide = search

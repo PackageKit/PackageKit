@@ -106,6 +106,8 @@ PkBitfield	 pk_control_get_groups			(PkControl	*control,
 							 GError		**error);
 gchar		**pk_control_get_mime_types		(PkControl	*control,
 							 GError		**error);
+gchar		*pk_control_get_daemon_state		(PkControl	*control,
+							 GError		**error);
 PkNetworkEnum	 pk_control_get_network_state		(PkControl	*control,
 							 GError		**error);
 gboolean	 pk_control_get_backend_detail		(PkControl	*control,
