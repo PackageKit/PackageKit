@@ -95,12 +95,12 @@ pk_task_list_print (PkTaskList *tlist)
 	length = tlist->priv->task_list->len;
 	egg_debug ("Tasks:");
 	if (length == 0) {
-		egg_debug ("[none]...");
+		g_print ("[none]...\n");
 		return TRUE;
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		egg_debug ("%s\t%s:%s %s", item->tid, pk_role_enum_to_text (item->role),
+		g_print ("%s\t%s:%s %s\n", item->tid, pk_role_enum_to_text (item->role),
 			 pk_status_enum_to_text (item->status), item->text);
 	}
 	return TRUE;
