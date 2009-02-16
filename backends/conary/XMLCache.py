@@ -14,10 +14,19 @@ from pkConaryLog import log
 from conarypk import ConaryPk
 from conaryEnums import groupMap
 
-def getGroup(categorieList):
+def getGroup( categorieList ):
+    where = mapGroup( categorieList )
+    if where.values():
+        return max( where.iteritems())[0]
+    else:
+        return None
+
+
+
+def mapGroup(categorieList):
     where = {}
     if  not categorieList:
-        return None
+        return where
     log.info(categorieList)
     for cat in categorieList:
         for group,categories in groupMap.items():
@@ -26,11 +35,7 @@ def getGroup(categorieList):
                     where[group] = where[group] +1
                 else:
                     where[group] = 1
-    if where.values():
-        return max( where.iteritems())[0]
-    else:
-        return None
-
+    return where
 
 class XMLRepo:
     xml_path = ""
@@ -282,12 +287,14 @@ class XMLCache:
         categories.sort()
         return set( categories )
         
+        
 
 if __name__ == '__main__':
   #  print ">>> name"
    # print XMLCache().search('music', 'name' )
    # print ">> details"
-    l= XMLCache().search('Internet', 'group' )
-    for v,p in enumerate(l):
-        print v,p["name"]
-  # print  XMLCache().getGroup(['GTK', 'Graphics', 'Photography', 'Viewer'])
+   # l= XMLCache().search('Internet', 'group' )
+
+    #for v,p in enumerate(l):
+    #    print v,p["name"]
+    print  XMLCache().getGroup(['GTK', 'Graphics', 'Photography', 'Viewer'])
