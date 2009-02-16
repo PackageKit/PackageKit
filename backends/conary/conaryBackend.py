@@ -193,7 +193,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             troveTupleList = pk.query( searchlist)
             log.info(troveTupleList)
             if not troveTupleList:
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Not Found %s " % searchlist )
+                error = {}
+                error["group"] = ERROR_GROUP_NOT_FOUND
+                error["details"] = ERROR_PACKAGE_NOT_FOUND
+                error["name"] = error["details"]
+                self.error(error[where], "Not Found %s " % searchlist )
             else:
                 troveTupleList = cache.convertTroveToDict( troveTupleList ) 
                 log.info("convert")
