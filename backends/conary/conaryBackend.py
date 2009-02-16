@@ -208,12 +208,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _get_update(self, applyList, cache=True):
         from conary.conaryclient.update import NoNewTrovesError
         updJob = self.client.newUpdateJob()
-        log.info("prepareUpdateJob")
         try:
             suggMap = self.client.prepareUpdateJob(updJob, applyList)
         except NoNewTrovesError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "No new apps were found")
-        log.info("END >>> prepareUpdateJob")
         if cache:
             Cache().cacheUpdateJob(applyList, updJob)
         return updJob, suggMap
@@ -231,6 +229,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             updJob = self._get_update(applyList, cache=False)
         self.allow_cancel(False)
+
         restartDir = self.client.applyUpdateJob(updJob)
         return updJob
 
@@ -498,7 +497,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info((name, version, flavor, installed ))
 
             self.allow_cancel(True)
-            self.percentage(0)
+            self.percentage(None)
             self.status(STATUS_RUNNING)
 
             if name:
