@@ -1375,7 +1375,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self._checkForNewer(txmbr[0].po)
                     # Added the package to the transaction set
                 else:
-                    self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s" % inst_file)
+                    self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s as no transaction" % _to_unicode(inst_file))
             if len(self.yumbase.tsInfo) == 0:
                 self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s" % " or ".join(inst_files))
             self._runYumTransaction()
