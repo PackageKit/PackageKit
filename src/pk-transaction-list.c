@@ -523,26 +523,74 @@ pk_transaction_list_get_size (PkTransactionList *tlist)
 }
 
 /**
+ * pk_transaction_list_get_state:
+ **/
+gchar *
+pk_transaction_list_get_state (PkTransactionList *tlist)
+{
+	guint i;
+	guint length;
+	guint running = 0;
+	guint waiting = 0;
+	guint wrong = 0;
+	guint no_commit = 0;
+	PkRoleEnum role;
+	PkTransactionItem *item;
+	GString *string;
+
+	length = tlist->priv->array->len;
+	string = g_string_new ("State:\n");
+	if (length == 0)
+		goto out;
+
+	/* iterate tasks */
+	for (i=0; i<length; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+		if (item->running)
+			running++;
+		if (item->committed && !item->finished && !item->running)
+			waiting++;
+		if (!item->committed && !item->finished && !item->running)
+			no_commit++;
+		if (!item->committed && item->finished)
+			wrong++;
+		if (item->running && item->finished)
+			wrong++;
+		role = pk_transaction_priv_get_role (item->transaction);
+		g_string_append_printf (string, "%0i\t%s\t%s\trunning[%i] committed[%i] finished[%i]\n", i,
+					pk_role_enum_to_text (role), item->tid, item->running,
+					item->committed, item->finished);
+	}
+
+	/* wrong flags */
+	if (wrong != 0)
+		g_string_append_printf (string, "%i have inconsistent flags\n", wrong);
+
+	/* some are not committed */
+	if (no_commit != 0)
+		g_string_append_printf (string, "%i have not been committed\n", no_commit);
+
+	/* more than one running */
+	if (running > 1)
+		g_string_append_printf (string, "%i are running\n", running);
+
+	/* nothing running */
+	if (waiting == length)
+		g_string_append_printf (string, "everything is waiting!\n");
+out:
+	return g_string_free (string, FALSE);
+}
+
+/**
  * pk_transaction_list_print:
  **/
 static void
 pk_transaction_list_print (PkTransactionList *tlist)
 {
-	guint i;
-	guint length;
-	PkRoleEnum role;
-	PkTransactionItem *item;
-
-	length = tlist->priv->array->len;
-	if (length == 0)
-		return;
-	for (i=0; i<length; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		role = pk_transaction_priv_get_role (item->transaction);
-		g_print ("%0i\t%s\t%s\trunning[%i] committed[%i] finished[%i]\n", i,
-			 pk_role_enum_to_text (role), item->tid, item->running,
-			 item->committed, item->finished);
-	}
+	gchar *state;
+	state = pk_transaction_list_get_state (tlist);
+	g_print ("%s", state);
+	g_free (state);
 }
 
 /**

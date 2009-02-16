@@ -66,6 +66,8 @@ gboolean	 pk_transaction_list_role_present	(PkTransactionList	*tlist,
 							 PkRoleEnum		 role);
 gchar		**pk_transaction_list_get_array		(PkTransactionList	*tlist)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		*pk_transaction_list_get_state		(PkTransactionList	*tlist)
+							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
 
 G_END_DECLS
