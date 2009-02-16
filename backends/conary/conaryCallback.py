@@ -47,8 +47,8 @@ class UpdateCallback(callbacks.UpdateCallback):
 
     def downloadingChangeSet(self, got, need):
         log.info("Callback ........ STATUS_DOWNLOAD  Changeset %s percent %s/%s bytes" % ( got*100/float(need), got,need) )
-        self.progress.set_subpercent( got*100 / float(need) )
-        self.backend.percentage(self.progress.percent)
+        #self.progress.set_subpercent( got*100 / float(need) )
+        self.backend.sub_percentage( got*100/float(need) )
         log.info( "%s percent" % self.progress.percent)
 
 
@@ -109,8 +109,7 @@ class UpdateCallback(callbacks.UpdateCallback):
         if troveNum > 0 and troveCount > 0:
             sub_percent = (add + troveNum) / (2 * float(troveCount)) * 100
             self.progress.set_subpercent(sub_percent)
-            p = self.progress.percent
-            self.backend.percentage(p)
+            self.backend.sub_percentage(sub_percent)
 
             if self.smallUpdate:
                 self.backend.percentage(self.progress.percent)
@@ -144,10 +143,9 @@ class UpdateCallback(callbacks.UpdateCallback):
     def creatingDatabaseTransaction(self, troveNum, troveCount):
         log.info("callback. .......... creating Database Transactions")
         self.progress.step()
-        self.preparingUpdate(troveNum, troveCount, add=troveCount)
         self.backend.percentage(self.progress.percent)
-
         log.info(self.progress.percent)
+        self.preparingUpdate(troveNum, troveCount, add=troveCount)
 
     # 9
     def committingTransaction(self):
