@@ -166,6 +166,11 @@ void Client::suggestDaemonQuit()
 	d->daemon->SuggestDaemonQuit();
 }
 
+Client::DaemonError Client::getLastError ()
+{
+	return d->lastError;
+}
+
 ////// Transaction functions
 
 Transaction* Client::acceptEula(EulaInfo info)
@@ -692,6 +697,7 @@ Transaction* Client::updateSystem()
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
 		emit daemonError(DaemonUnreachable);
+		d->lastError = DaemonUnreachable;
 		return NULL;
 	}
 
