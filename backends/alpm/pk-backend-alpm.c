@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007 Andreas Obergrusberger <tradiaz@yahoo.de>
+ * Copyright (C) 2008, 2009 Valeriy Lyasotskiy <onestep@ukr.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -48,15 +49,16 @@
 #include <string.h>
 #include <ctype.h>
 
-int progress_percentage;
-int subprogress_percentage;
 PkBackend *backend_instance = NULL;
 
 GHashTable *group_map;
 
 alpm_list_t *syncfirst = NULL;
 alpm_list_t *downloaded_files = NULL;
-gchar *current = NULL;
+gchar *current_file = NULL;
+
+off_t trans_xfered;
+off_t trans_total;
 
 typedef enum {
 	PK_ALPM_SEARCH_TYPE_NULL,
@@ -85,19 +87,19 @@ pkg_from_package_id_str (const gchar *package_id_str)
 	PkPackageId *pkg_id = pk_package_id_new_from_string (package_id_str);
 
 	/* do all this fancy stuff */
-	if (strcmp (ALPM_LOCAL_DB_ALIAS, pkg_id->data) == 0)
+	if (egg_strequal (ALPM_LOCAL_DB_ALIAS, pk_package_id_get_data (pkg_id)))
 		repo = alpm_option_get_localdb ();
 	else {
 		alpm_list_t *iterator;
 		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
 			repo = alpm_list_getdata (iterator);
-			if (strcmp (alpm_db_get_name (repo), pkg_id->data) == 0)
+			if (egg_strequal (alpm_db_get_name (repo), pk_package_id_get_data (pkg_id)) == 0)
 				break;
 		}
 	}
 
 	if (repo != NULL)
-		pkg = alpm_db_get_pkg (repo, pkg_id->name);
+		pkg = alpm_db_get_pkg (repo, pk_package_id_get_name (pkg_id));
 	else
 		pkg = NULL;
 
@@ -211,28 +213,33 @@ cb_trans_conv (pmtransconv_t conv, void *data1, void *data2, void *data3, int *r
 }
 
 static void
-cb_trans_progress (pmtransprog_t event, const char *pkgname, int percent, int howmany, int remain)
+cb_trans_progress (pmtransprog_t event, const char *pkgname, int percent, int howmany, int current)
 {
-	egg_debug ("alpm: transaction percentage for %s is %i", pkgname, percent);
-	// pk_backend_set_percentage ((PkBackend *) backend_instance, percent);
+	if (event == PM_TRANS_PROGRESS_ADD_START || event == PM_TRANS_PROGRESS_UPGRADE_START || event == PM_TRANS_PROGRESS_REMOVE_START) {
+		int trans_percent;
+
+		egg_debug ("alpm: transaction percentage for %s is %i", pkgname, percent);
+		egg_debug ("alpm: current is %i", current);
+		trans_percent = (int) ((float) ((current - 1) * 100 + percent)) / ((float) (howmany * 100)) * 100;
+		pk_backend_set_sub_percentage ((PkBackend *) backend_instance, percent);
+		pk_backend_set_percentage ((PkBackend *) backend_instance, trans_percent);
+	}
 }
 
 static void
-cb_dl_progress (const char *filename, off_t xfered, off_t total)
+cb_dl_progress (const char *filename, off_t file_xfered, off_t file_total)
 {
-	int percent;
+	int file_percent;
+	int trans_percent;
 
 	if (g_str_has_suffix (filename, ALPM_PKG_EXT)) {
-		if (xfered == total)
-			downloaded_files = alpm_list_add (downloaded_files, g_strdup (filename));
-
-		if (g_strcmp0 (filename, current) != 0) {
+		if (!egg_strequal (filename, current_file)) {
 			unsigned int iterator;
 			gchar *package_id = NULL;
 			gchar **package_ids = pk_backend_get_strv (backend_instance, "package_ids");
 
-			g_free (current);
-			current = g_strdup (filename);
+			g_free (current_file);
+			current_file = g_strdup (filename);
 
 			/* search for this package in package_ids */
 			for (iterator = 0; package_id == NULL && iterator < g_strv_length (package_ids); ++iterator) {
@@ -252,9 +259,24 @@ cb_dl_progress (const char *filename, off_t xfered, off_t total)
 		}
 	}
 
-	percent = (int) ((float) xfered) / ((float) total) * 100;
-	egg_debug ("alpm: download percentage for %s is %i", filename, percent);
-	// pk_backend_set_percentage ((PkBackend *) backend_instance, percent);
+	file_percent = (int) ((float) file_xfered) / ((float) file_total) * 100;
+	trans_percent = (int) ((float) (trans_xfered + file_xfered)) / ((float) trans_total) * 100;
+	pk_backend_set_sub_percentage ((PkBackend *) backend_instance, file_percent);
+	pk_backend_set_percentage((PkBackend *) backend_instance, trans_percent);
+
+	if (file_xfered == file_total) {
+		downloaded_files = alpm_list_add (downloaded_files, g_strdup (filename));
+		trans_xfered = trans_xfered + file_total;
+	}
+}
+
+static void
+cb_dl_total (off_t total)
+{
+	trans_total = total;
+	/* zero total size means that download is finished, so clear trans_xfered */
+	if (total == 0)
+		trans_xfered = 0;
 }
 
 static void
@@ -444,11 +466,11 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 			egg_debug ("config: new section '%s'", section);
 			if (!strlen (section)) {
 				egg_debug ("config file %s, line %d: bad section name", file, linenum);
-				return (1);
+				return 1;
 			}
 
 			/* if we are not looking at the options section, register a db */
-			if (strcmp (section, "options") != 0)
+			if (!egg_strequal (section, "options"))
 				db = alpm_db_register_sync (section);
 		} else {
 			/* directive */
@@ -462,80 +484,80 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 
 			if (key == NULL) {
 				egg_error ("config file %s, line %d: syntax error in config file - missing key.", file, linenum);
-				return (1);
+				return 1;
 			}
 			if (section == NULL) {
 				egg_error ("config file %s, line %d: all directives must belong to a section.", file, linenum);
-				return (1);
+				return 1;
 			}
 
-			if (ptr == NULL && strcmp (section, "options") == 0) {
+			if (ptr == NULL && egg_strequal (section, "options")) {
 				/* directives without settings, all in [options] */
-				if (strcmp (key, "NoPassiveFTP") == 0) {
+				if (egg_strequal (key, "NoPassiveFTP")) {
 					alpm_option_set_nopassiveftp (1);
 					egg_debug ("config: nopassiveftp");
-				} else if (strcmp (key, "UseSyslog") == 0) {
+				} else if (egg_strequal (key, "UseSyslog")) {
 					alpm_option_set_usesyslog (1);
 					egg_debug ("config: usesyslog");
-				} else if (strcmp (key, "UseDelta") == 0) {
+				} else if (egg_strequal (key, "UseDelta")) {
 					alpm_option_set_usedelta (1);
 					egg_debug ("config: usedelta");
 				} else {
 					egg_error ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
-					return(1);
+					return 1;
 				}
 			} else {
 				/* directives with settings */
-				if (strcmp (key, "Include") == 0) {
+				if (egg_strequal (key, "Include")) {
 					egg_debug ("config: including %s", ptr);
 					parse_config(ptr, section, db);
 					/* Ignore include failures... assume non-critical */
-				} else if (strcmp (section, "options") == 0) {
-					if (strcmp (key, "NoUpgrade") == 0) {
+				} else if (egg_strequal (section, "options")) {
+					if (egg_strequal (key, "NoUpgrade")) {
 						set_repeating_option (ptr, "NoUpgrade", alpm_option_add_noupgrade);
-					} else if (strcmp (key, "NoExtract") == 0) {
+					} else if (egg_strequal (key, "NoExtract")) {
 						set_repeating_option (ptr, "NoExtract", alpm_option_add_noextract);
-					} else if (strcmp (key, "IgnorePkg") == 0) {
+					} else if (egg_strequal (key, "IgnorePkg")) {
 						set_repeating_option (ptr, "IgnorePkg", alpm_option_add_ignorepkg);
-					} else if (strcmp (key, "IgnoreGroup") == 0) {
+					} else if (egg_strequal (key, "IgnoreGroup")) {
 						set_repeating_option (ptr, "IgnoreGroup", alpm_option_add_ignoregrp);
-					} else if (strcmp (key, "HoldPkg") == 0) {
+					} else if (egg_strequal (key, "HoldPkg")) {
 						set_repeating_option (ptr, "HoldPkg", alpm_option_add_holdpkg);
-					} else if (strcmp (key, "SyncFirst") == 0) {
+					} else if (egg_strequal (key, "SyncFirst")) {
 						set_repeating_option (ptr, "SyncFirst", option_add_syncfirst);
-					} else if (strcmp (key, "DBPath") == 0) {
+					} else if (egg_strequal (key, "DBPath")) {
 						alpm_option_set_dbpath (ptr);
-					} else if (strcmp (key, "CacheDir") == 0) {
+					} else if (egg_strequal (key, "CacheDir")) {
 						if (alpm_option_add_cachedir(ptr) != 0) {
 							egg_error ("problem adding cachedir '%s' (%s)", ptr, alpm_strerrorlast ());
-							return (1);
+							return 1;
 						}
 						egg_debug ("config: cachedir: %s", ptr);
-					} else if (strcmp (key, "RootDir") == 0) {
+					} else if (egg_strequal (key, "RootDir")) {
 						alpm_option_set_root (ptr);
 						egg_debug ("config: rootdir: %s", ptr);
-					} else if (strcmp (key, "LogFile") == 0) {
+					} else if (egg_strequal (key, "LogFile")) {
 						alpm_option_set_logfile (ptr);
 						egg_debug ("config: logfile: %s", ptr);
-					} else if (strcmp (key, "XferCommand") == 0) {
+					} else if (egg_strequal (key, "XferCommand")) {
 						alpm_option_set_xfercommand (ptr);
 						egg_debug ("config: xfercommand: %s", ptr);
 					} else {
 						egg_error ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
-						return (1);
+						return 1;
 					}
-				} else if (strcmp (key, "Server") == 0) {
+				} else if (egg_strequal (key, "Server")) {
 					/* let's attempt a replacement for the current repo */
 					char *server = strreplace (ptr, "$repo", section);
 
 					if (alpm_db_setserver (db, server) != 0) {
 						/* pm_errno is set by alpm_db_setserver */
-						return (1);
+						return 1;
 					}
 					free (server);
 				} else {
 					egg_error ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
-					return (1);
+					return 1;
 				}
 			}
 		}
@@ -581,6 +603,7 @@ backend_initialize (PkBackend *backend)
 	}
 
 	alpm_option_set_dlcb (cb_dl_progress);
+	alpm_option_set_totaldlcb (cb_dl_total);
 
 	/* fill in group mapping */
 	group_map = g_hash_table_new (g_str_hash, g_str_equal);
@@ -952,7 +975,7 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 				match = TRUE;
 				break;
 			case PK_ALPM_SEARCH_TYPE_RESOLVE:
-				match = strcmp (alpm_pkg_get_name (pkg), needle) == 0;
+				match = egg_strequal (alpm_pkg_get_name (pkg), needle);
 				break;
 			case PK_ALPM_SEARCH_TYPE_NAME:
 				match = strstr (alpm_pkg_get_name (pkg), needle) != NULL;
@@ -972,7 +995,7 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 					gchar *group = (gchar *) g_hash_table_lookup (group_map, (char *) alpm_list_getdata (groups));
 					if (group == NULL)
 						group = (gchar *) "other";
-					match = strcmp (group, needle) == 0;
+					match = egg_strequal (group, needle);
 				}
 				break;
 			case PK_ALPM_SEARCH_TYPE_PROVIDES:
@@ -1508,4 +1531,3 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* update_system */
 	backend_what_provides				/* what_provides */
 );
-
