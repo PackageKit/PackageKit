@@ -226,12 +226,12 @@ public:
 	 * Describes the current network state
 	 */
 	typedef enum {
-    	Offline,
-    	Online,
-    	Mobile,
-    	Wifi,
+		Offline,
+		Online,
+		Mobile,
+		Wifi,
 		Wired,
-    	UnknownNetworkState = -1
+		UnknownNetworkState = -1
 	} NetworkState;
 
 	/**
@@ -560,7 +560,7 @@ public:
 	/**
 	 * \brief Installs the local packages \p files
 	 *
-	 * \trusted indicate if the packages are signed by a trusted authority
+	 * \p trusted indicate if the packages are signed by a trusted authority
 	 */
 	Transaction* installFiles(const QStringList& files, bool trusted);
 	Transaction* installFile(const QString& file, bool trusted);
@@ -619,13 +619,13 @@ public:
 	 */
 	Transaction* rollback(Transaction* oldtrans);
 
-        /**
-         * \brief Search in the packages files
-         *
-         * \p filters can be used to restrict the returned packages
-         */
-        Transaction* searchFile(const QString& search, Filters filters = Filters() << NoFilter);
-        Transaction* searchFile(const QString& search, Filter filter);
+	/**
+	 * \brief Search in the packages files
+	 *
+	 * \p filters can be used to restrict the returned packages
+	 */
+	Transaction* searchFile(const QString& search, Filters filters = Filters() << NoFilter);
+	Transaction* searchFile(const QString& search, Filter filter);
 
 	/**
 	 * \brief Search in the packages details
@@ -633,7 +633,7 @@ public:
 	 * \p filters can be used to restrict the returned packages
 	 */
 	Transaction* searchDetails(const QString& search, Filters filters = Filters() << NoFilter);
-        Transaction* searchDetails(const QString& search, Filter filter);
+	Transaction* searchDetails(const QString& search, Filter filter);
 
 	/**
 	 * \brief Lists all the packages in the given \p group
