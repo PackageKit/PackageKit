@@ -161,6 +161,8 @@ public:
 		FilterNotSource,
 		FilterCollections,
 		FilterNotCollections,
+		FilterApplication,
+		FilterNotApplication,
 		UnknownFilter = -1
 	} Filter;
 	typedef QSet<Filter> Filters;
