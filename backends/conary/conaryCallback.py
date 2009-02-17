@@ -35,7 +35,7 @@ class UpdateCallback(callbacks.UpdateCallback):
         self.smallUpdate = False
         self.error = []
         self.progress = PackagekitProgress()
-        self.progress.set_steps( range( 1, 101,10) )
+        self.progress.set_steps([ 0,5,10,15,20,60,75,80,90,100 ]  )
     # 1
     # 4
     def requestingChangeSet(self):
@@ -47,8 +47,8 @@ class UpdateCallback(callbacks.UpdateCallback):
 
     def downloadingChangeSet(self, got, need):
         log.info("Callback ........ STATUS_DOWNLOAD  Changeset %s percent %s/%s bytes" % ( got*100/float(need), got,need) )
-        #self.progress.set_subpercent( got*100 / float(need) )
-        self.backend.sub_percentage( got*100/float(need) )
+        self.progress.set_subpercent( got*100 / float(need) )
+        self.backend.percentage( self.progress.percent )
         log.info( "%s percent" % self.progress.percent)
 
 
@@ -76,11 +76,11 @@ class UpdateCallback(callbacks.UpdateCallback):
 
         if hunk < hunkCount:
             p = hunk / float(hunkCount) * 100.0
-            #self.progress.set_subpercent(p)
-            self.backend.percentage(self.progress.percent)
+            self.progress.set_subpercent(p)
         else:
             self.smallUpdate = True
 
+        self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
     # 6
     def setUpdateJob(self, job):
@@ -102,18 +102,15 @@ class UpdateCallback(callbacks.UpdateCallback):
 
     def preparingUpdate(self, troveNum, troveCount, add=0):
         log.info("callback ....... preparing Update  trove %s/%s" % (troveNum, troveCount) )
-        self.progress.step()
+        #self.progress.step()
         if not self.currentJob or len(self.currentJob) == 0 or troveNum > troveCount:
             return
 
         if troveNum > 0 and troveCount > 0:
             sub_percent = (add + troveNum) / (2 * float(troveCount)) * 100
             self.progress.set_subpercent(sub_percent)
-            self.backend.sub_percentage(sub_percent)
 
-            if self.smallUpdate:
-                self.backend.percentage(self.progress.percent)
-
+        self.backend.percentage(self.progress.percent)
         if troveNum > 0:
             troveNum -= 1
         log.info("currentJob")
