@@ -226,11 +226,12 @@ public:
 	 * Describes the current network state
 	 */
 	typedef enum {
-    	Offline,
-    	Online,
-    	Slow,
-    	Fast,
-    	UnknownNetworkState = -1
+		Offline,
+		Online,
+		Mobile,
+		Wifi,
+		Wired,
+		UnknownNetworkState = -1
 	} NetworkState;
 
 	/**
@@ -406,6 +407,18 @@ public:
 	} UpgradeType;
 
 	/**
+	 * Describes an error at the daemon level (for example, PackageKit crashes or is unreachable)
+	 */
+	typedef enum {
+		DaemonUnreachable,
+		UnkownDaemonError = -1
+	} DaemonError;
+	/**
+	 * Returns the last daemon error that was caught
+	 */
+	DaemonError getLastError();
+
+	/**
 	 * Describes a software update
 	 * \li \c package is the package which triggered the update
 	 * \li \c updates are the packages to be updated
@@ -547,7 +560,7 @@ public:
 	/**
 	 * \brief Installs the local packages \p files
 	 *
-	 * \trusted indicate if the packages are signed by a trusted authority
+	 * \p trusted indicate if the packages are signed by a trusted authority
 	 */
 	Transaction* installFiles(const QStringList& files, bool trusted);
 	Transaction* installFile(const QString& file, bool trusted);
@@ -606,13 +619,13 @@ public:
 	 */
 	Transaction* rollback(Transaction* oldtrans);
 
-        /**
-         * \brief Search in the packages files
-         *
-         * \p filters can be used to restrict the returned packages
-         */
-        Transaction* searchFile(const QString& search, Filters filters = Filters() << NoFilter);
-        Transaction* searchFile(const QString& search, Filter filter);
+	/**
+	 * \brief Search in the packages files
+	 *
+	 * \p filters can be used to restrict the returned packages
+	 */
+	Transaction* searchFile(const QString& search, Filters filters = Filters() << NoFilter);
+	Transaction* searchFile(const QString& search, Filter filter);
 
 	/**
 	 * \brief Search in the packages details
@@ -620,7 +633,7 @@ public:
 	 * \p filters can be used to restrict the returned packages
 	 */
 	Transaction* searchDetails(const QString& search, Filters filters = Filters() << NoFilter);
-        Transaction* searchDetails(const QString& search, Filter filter);
+	Transaction* searchDetails(const QString& search, Filter filter);
 
 	/**
 	 * \brief Lists all the packages in the given \p group
@@ -662,6 +675,11 @@ Q_SIGNALS:
 	 * \p action is the PolicyKit name of the action
 	 */
 	void authError(const QString& action);
+
+	/**
+	 * Emitted when the PackageKit daemon is not reachable anymore
+	 */
+	void daemonError(PackageKit::Client::DaemonError e);
 
 	/**
 	 * Emitted when the daemon's locked state changes

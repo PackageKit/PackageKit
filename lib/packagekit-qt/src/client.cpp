@@ -166,6 +166,11 @@ void Client::suggestDaemonQuit()
 	d->daemon->SuggestDaemonQuit();
 }
 
+Client::DaemonError Client::getLastError ()
+{
+	return d->lastError;
+}
+
 ////// Transaction functions
 
 Transaction* Client::acceptEula(EulaInfo info)
@@ -176,6 +181,11 @@ Transaction* Client::acceptEula(EulaInfo info)
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
+
 	t->d->p->AcceptEula(info.id);
 
 	return t;
@@ -184,6 +194,11 @@ Transaction* Client::acceptEula(EulaInfo info)
 Transaction* Client::downloadPackages(const QList<Package*>& packages)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
+
 	t->d->p->DownloadPackages(Util::packageListToPids(packages));
 
 	return t;
@@ -197,6 +212,11 @@ Transaction* Client::downloadPackage(Package* package)
 Transaction* Client::getDepends(const QList<Package*>& packages, Filters filters, bool recursive)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
+
 
 	t->d->p->GetDepends(Util::filtersToString(filters), Util::packageListToPids(packages), recursive);
 
@@ -221,6 +241,10 @@ Transaction* Client::getDepends(Package* package, Filter filter, bool recursive)
 Transaction* Client::getDetails(const QList<Package*>& packages)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	foreach(Package* p, packages) {
 		t->d->packageMap.insert(p->id(), p);
@@ -239,6 +263,10 @@ Transaction* Client::getDetails(Package* package)
 Transaction* Client::getFiles(const QList<Package*>& packages)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->GetFiles(Util::packageListToPids(packages));
 
@@ -253,6 +281,10 @@ Transaction* Client::getFiles(Package* package)
 Transaction* Client::getOldTransactions(uint number)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->GetOldTransactions(number);
 
@@ -262,6 +294,10 @@ Transaction* Client::getOldTransactions(uint number)
 Transaction* Client::getPackages(Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->GetPackages(Util::filtersToString(filters));
 
@@ -276,6 +312,10 @@ Transaction* Client::getPackages(Filter filter)
 Transaction* Client::getRepoList(Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->GetRepoList(Util::filtersToString(filters));
 
@@ -290,6 +330,10 @@ Transaction* Client::getRepoList(Filter filter)
 Transaction* Client::getRequires(const QList<Package*>& packages, Filters filters, bool recursive)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->GetRequires(Util::filtersToString(filters), Util::packageListToPids(packages), recursive);
 
@@ -314,6 +358,10 @@ Transaction* Client::getRequires(Package* package, Filter filter, bool recursive
 Transaction* Client::getUpdateDetail(const QList<Package*>& packages)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->GetUpdateDetail(Util::packageListToPids(packages));
 
@@ -328,6 +376,10 @@ Transaction* Client::getUpdateDetail(Package* package)
 Transaction* Client::getUpdates(Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->GetUpdates(Util::filtersToString(filters));
 
@@ -342,6 +394,10 @@ Transaction* Client::getUpdates(Filter filter)
 Transaction* Client::getDistroUpgrades()
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->GetDistroUpgrades();
 
@@ -357,6 +413,10 @@ Transaction* Client::installFiles(const QStringList& files, bool trusted)
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->InstallFiles(trusted, files);
 
@@ -376,6 +436,10 @@ Transaction* Client::installPackages(const QList<Package*>& packages)
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->InstallPackages(Util::packageListToPids(packages));
 
@@ -395,6 +459,10 @@ Transaction* Client::installSignature(SignatureType type, const QString& key_id,
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->InstallSignature(Util::enumToString<Client>(type, "SignatureType"), key_id, p->id());
 
@@ -409,6 +477,10 @@ Transaction* Client::refreshCache(bool force)
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->RefreshCache(force);
 
@@ -423,6 +495,10 @@ Transaction* Client::removePackages(const QList<Package*>& packages, bool allow_
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->RemovePackages(Util::packageListToPids(packages), allow_deps, autoremove);
 
@@ -442,6 +518,10 @@ Transaction* Client::repoEnable(const QString& repo_id, bool enable)
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->RepoEnable(repo_id, enable);
 
@@ -456,6 +536,10 @@ Transaction* Client::repoSetData(const QString& repo_id, const QString& paramete
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->RepoSetData(repo_id, parameter, value);
 
@@ -465,6 +549,10 @@ Transaction* Client::repoSetData(const QString& repo_id, const QString& paramete
 Transaction* Client::resolve(const QStringList& packageNames, Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->Resolve(Util::filtersToString(filters), packageNames);
 
@@ -494,6 +582,10 @@ Transaction* Client::rollback(Transaction* oldtrans)
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->Rollback(oldtrans->tid());
 
@@ -503,6 +595,10 @@ Transaction* Client::rollback(Transaction* oldtrans)
 Transaction* Client::searchFile(const QString& search, Filters filters)
 {
         Transaction* t = d->createNewTransaction();
+		if (!t) {
+			emit daemonError(DaemonUnreachable);
+			return NULL;
+		}
 
         t->d->p->SearchFile(Util::filtersToString(filters), search);
 
@@ -517,6 +613,10 @@ Transaction* Client::searchFile(const QString& search, Filter filter)
 Transaction* Client::searchDetails(const QString& search, Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->SearchDetails(Util::filtersToString(filters), search);
 
@@ -531,6 +631,10 @@ Transaction* Client::searchDetails(const QString& search, Filter filter)
 Transaction* Client::searchGroup(Client::Group group, Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->SearchGroup(Util::filtersToString(filters), Util::enumToString<Client>(group, "Group"));
 
@@ -545,6 +649,10 @@ Transaction* Client::searchGroup(Client::Group group, Filter filter)
 Transaction* Client::searchName(const QString& search, Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->SearchName(Util::filtersToString(filters), search);
 
@@ -564,6 +672,10 @@ Transaction* Client::updatePackages(const QList<Package*>& packages)
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->UpdatePackages(Util::packageListToPids(packages));
 
@@ -583,6 +695,11 @@ Transaction* Client::updateSystem()
 	}
 
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		d->lastError = DaemonUnreachable;
+		return NULL;
+	}
 
 	t->d->p->UpdateSystem();
 
@@ -592,6 +709,10 @@ Transaction* Client::updateSystem()
 Transaction* Client::whatProvides(ProvidesType type, const QString& search, Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
+	if (!t) {
+		emit daemonError(DaemonUnreachable);
+		return NULL;
+	}
 
 	t->d->p->WhatProvides(Util::filtersToString(filters), Util::enumToString<Client>(type, "ProvidesType", "Provides"), search);
 

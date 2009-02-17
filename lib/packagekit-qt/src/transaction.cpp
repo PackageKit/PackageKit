@@ -173,5 +173,15 @@ QString Transaction::data()
 	return d->data;
 }
 
+uint Transaction::uid()
+{
+	return d->uid;
+}
+
+QString Transaction::cmdline()
+{
+	return d->cmdline;
+}
+
 #include "transaction.moc"
 

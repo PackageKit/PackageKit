@@ -22,6 +22,7 @@
 #define CLIENTPRIVATE_H
 
 #include <QtCore>
+#include "client.h"
 
 namespace PackageKit {
 
@@ -46,6 +47,8 @@ public:
 
 	// Get a tid, creates a new transaction and sets it up (ie call SetLocale)
 	Transaction* createNewTransaction();
+
+	Client::DaemonError lastError;
 
 public slots:
 	// org.freedesktop.PackageKit

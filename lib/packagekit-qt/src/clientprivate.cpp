@@ -38,6 +38,11 @@ Transaction* ClientPrivate::createNewTransaction()
 {
 	QMutexLocker locker(&runningTransactionsLocker);
 	Transaction* t = new Transaction(daemon->GetTid(), c);
+	if (t->tid().isEmpty()) {
+		qDebug() << "empty tid, the daemon is probably not here anymore";
+		return NULL;
+	}
+
 	if(!locale.isNull())
 		t->setLocale(locale);
 
