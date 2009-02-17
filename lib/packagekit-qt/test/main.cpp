@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 	PackageKit::Client::BackendDetail d = PackageKit::Client::instance()->getBackendDetail();
 	if(d.name != "Dummy") {
 		qWarning("Please use the dummy backend for testing");
-		return 0;
+		//return 0;
 	}
 
 	CppUnit::TextUi::TestRunner runner;
