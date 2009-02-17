@@ -405,10 +405,17 @@ public:
 		UnknownUpgradeType = -1
 	} UpgradeType;
 
+	/**
+	 * Describes an error at the daemon level (for example, PackageKit crashes or is unreachable)
+	 */
 	typedef enum {
 		DaemonUnreachable,
 		UnkownDaemonError = -1
 	} DaemonError;
+	/**
+	 * Returns the last daemon error that was caught
+	 */
+	DaemonError getLastError();
 
 	/**
 	 * Describes a software update
@@ -671,7 +678,7 @@ Q_SIGNALS:
 	/**
 	 * Emitted when the PackageKit daemon is not reachable anymore
 	 */
-	void daemonError(DaemonError e);
+	void daemonError(PackageKit::Client::DaemonError e);
 
 	/**
 	 * Emitted when the daemon's locked state changes
