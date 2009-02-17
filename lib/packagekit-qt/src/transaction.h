@@ -334,7 +334,7 @@ Q_SIGNALS:
 	 * Indicates that a restart is required
 	 * \p package is the package who triggered the restart signal
 	 */
-	void requireRestart(PackageKit::Client::RestartType type, const QString& details);
+	void requireRestart(PackageKit::Client::RestartType type, Package* p);
 
 	/**
 	 * Emitted when the transaction's status has changed
