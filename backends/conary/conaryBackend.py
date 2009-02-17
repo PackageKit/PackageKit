@@ -295,6 +295,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         solved = False
         if pkg_dict is None:
             # verifica si esta en repositorios
+            log.info("doing a rq")
             troveTuple = conary_cli.query(package[0])
             if not troveTuple:
                 self.error(ERROR_INTERNAL_ERROR, "Package Not found")
@@ -782,7 +783,7 @@ from pkConaryLog import pdb
 def main():
     backend = PackageKitConaryBackend('')
     log.info("======== argv =========== ")
-    log.info(sys.argv[1:])
+    log.info(sys.argv)
     backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":
