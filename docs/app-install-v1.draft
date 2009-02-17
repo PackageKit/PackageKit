@@ -1,4 +1,4 @@
-***                     app-install version 1                                ***
+                     app-install version 1
 
 Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
 Copyright (C) 2009 Roderick B. Greening <roderick.greening@gmail.com>
@@ -81,6 +81,7 @@ TABLE localised:
 STRING application_id (name of the desktop file, with no extension)
 STRING application_name (Name in desktop file, in locale)
 STRING application_summary (Comment in desktop file, in locale)
+STRING repo_name (for adding and removal)
 STRING locale
 
 TABLE general
@@ -88,6 +89,7 @@ STRING application_id (name of the desktop file, with no extension)
 STRING package_name (to save on expensive SearchFile's)
 STRING icon_name (without path or extension)
 STRING group (Categories from desktop file, _not_ PK groups or PK categories)
+STRING repo_name (for adding and removal)
 STRING application_name (Name in desktop file)
 STRING application_summary (Comment in desktop file)
 
