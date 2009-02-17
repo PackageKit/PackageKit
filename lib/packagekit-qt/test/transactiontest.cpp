@@ -5,6 +5,7 @@ using namespace PackageKit;
 TransactionTest::TransactionTest(QObject* parent) : QObject(parent) 
 {
 	currentPackage = NULL;
+	connect (PackageKit::Client::instance(), SIGNAL(daemonError(DaemonError)), this, SLOT(error()));
 }
 
 TransactionTest::~TransactionTest()
@@ -118,6 +119,11 @@ void TransactionTest::getRepos_cb(const QString& repoName, const QString& repoDe
 {
 	qDebug() << "Repository" << repoName << " (" << repoDetail << ") is" << (enabled ? "enabled" : "disabled");
 	success = TRUE;
+}
+
+void TransactionTest::error ()
+{
+	qDebug() << "Aieeeeee";
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TransactionTest);

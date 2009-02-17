@@ -405,6 +405,11 @@ public:
 		UnknownUpgradeType = -1
 	} UpgradeType;
 
+	typedef enum {
+		DaemonUnreachable,
+		UnkownDaemonError = -1
+	} DaemonError;
+
 	/**
 	 * Describes a software update
 	 * \li \c package is the package which triggered the update
@@ -662,6 +667,11 @@ Q_SIGNALS:
 	 * \p action is the PolicyKit name of the action
 	 */
 	void authError(const QString& action);
+
+	/**
+	 * Emitted when the PackageKit daemon is not reachable anymore
+	 */
+	void daemonError(DaemonError e);
 
 	/**
 	 * Emitted when the daemon's locked state changes
