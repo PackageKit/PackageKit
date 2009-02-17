@@ -228,8 +228,9 @@ public:
 	typedef enum {
     	Offline,
     	Online,
-    	Slow,
-    	Fast,
+    	Mobile,
+    	Wifi,
+		Wired,
     	UnknownNetworkState = -1
 	} NetworkState;
 
