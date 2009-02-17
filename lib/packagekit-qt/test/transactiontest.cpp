@@ -24,6 +24,14 @@ void TransactionTest::searchName()
 	CPPUNIT_ASSERT_MESSAGE("searchName", success);
 }
 
+void TransactionTest::searchDesktop()
+{
+	success = FALSE;
+	Package* p = PackageKit::Client::instance()->searchFromDesktopFile("/usr/share/applications/nautilus-cd-burner.desktop");
+	qDebug() << "searchDesktop";
+	CPPUNIT_ASSERT_MESSAGE("searchDesktop", p);
+}
+
 void TransactionTest::resolveAndInstallAndRemove()
 {
 	success = FALSE;
