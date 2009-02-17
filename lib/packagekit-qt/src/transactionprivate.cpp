@@ -116,9 +116,9 @@ void TransactionPrivate::repoSignatureRequired(const QString& pid, const QString
 	t->repoSignatureRequired(i);
 }
 
-void TransactionPrivate::requireRestart(const QString& type, const QString& pid)
+void TransactionPrivate::requireRestart(const QString& type, const QString& details)
 {
-	t->requireRestart((Client::RestartType)Util::enumFromString<Client>(type, "RestartType", "Restart"), new Package(pid));
+	t->requireRestart((Client::RestartType)Util::enumFromString<Client>(type, "RestartType", "Restart"), details);
 }
 
 void TransactionPrivate::statusChanged(const QString& status)
