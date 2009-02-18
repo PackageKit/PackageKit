@@ -120,6 +120,7 @@ POLKIT_GRANT_REQUIRED=0.8
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
 QTGUI_REQUIRED=4.4.0
+QTSQL_REQUIRED=4.4.0
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -167,6 +168,11 @@ if test x$enable_qt = xyes; then
 	PKG_CHECK_MODULES(QTGUI, QtGui >= $QTGUI_REQUIRED)
 	AC_SUBST(QTGUI_CFLAGS)
 	AC_SUBST(QTGUI_LIBS)
+
+
+	PKG_CHECK_MODULES(QTSQL, QtSql >= $QTSQL_REQUIRED)
+	AC_SUBST(QTSQL_CFLAGS)
+	AC_SUBST(QTSQL_LIBS)
 
 	PKG_CHECK_MODULES(CPPUNIT, cppunit)
 	AC_SUBST(CPPUNIT_CFLAGS)
