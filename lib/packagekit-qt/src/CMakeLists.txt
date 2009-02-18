@@ -39,6 +39,7 @@ set_target_properties( packagekit-qt PROPERTIES VERSION 2.0 SOVERSION 2 )
 target_link_libraries(packagekit-qt
   ${QT_QTCORE_LIBRARY}
   ${QT_QTDBUS_LIBRARY}
+  ${QT_QTSQL_LIBRARY}
   polkit-dbus
   dbus-1
 )
