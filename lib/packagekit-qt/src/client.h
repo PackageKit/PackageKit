@@ -162,6 +162,8 @@ public:
 		FilterNotSource,
 		FilterCollections,
 		FilterNotCollections,
+		FilterApplication,
+		FilterNotApplication,
 		UnknownFilter = -1
 	} Filter;
 	typedef QSet<Filter> Filters;
@@ -651,6 +653,16 @@ public:
 	 */
 	Transaction* searchName(const QString& search, Filters filters = Filters() << NoFilter);
 	Transaction* searchName(const QString& search, Filter filter);
+
+	/**
+	 * \brief Tries to find a package name from a desktop file
+	 *
+	 * This function looks into /var/lib/PackageKit/desktop-files.db and searches for the associated package name.
+	 *
+	 * \p path the path to the desktop file (as shipped by the package)
+	 * \return The associated package, or NULL if there's no result
+	 */
+	Package* searchFromDesktopFile(const QString& path);
 
 	/**
 	 * Update the given \p packages

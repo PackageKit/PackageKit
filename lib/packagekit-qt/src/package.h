@@ -308,6 +308,7 @@ private:
 	friend class Transaction;
 	friend class TransactionPrivate;
 	friend class Details;
+	friend class Client;
 	Package(const QString& packageId, const QString& state = QString(), const QString& summary = QString());
 	void setDetails(Details* det);
 	class Private;

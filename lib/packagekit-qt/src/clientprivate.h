@@ -22,6 +22,7 @@
 #define CLIENTPRIVATE_H
 
 #include <QtCore>
+#include <QtSql>
 #include "client.h"
 
 namespace PackageKit {
@@ -39,6 +40,7 @@ public:
 
 	DaemonProxy* daemon;
 	Client* c;
+	QSqlDatabase desktopDB; // Used to search in /var/lib/PackageKit/desktop-files.db
 
 	QString locale;
 
