@@ -393,6 +393,13 @@ fi
 AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
 
 dnl ---------------------------------------------------------------------------
+dnl - Able to build gstreamer plugin
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(app_install, AS_HELP_STRING([--enable-app-install],[Build application installer functionality]),
+	      enable_app_install=$enableval,enable_app_install=no)
+AM_CONDITIONAL(PK_BUILD_APP_INSTALL, test $enable_app_install = "yes")
+
+dnl ---------------------------------------------------------------------------
 dnl - Able to build GTK module
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK module functionality]),
@@ -716,6 +723,7 @@ contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
 contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
+contrib/app-install/Makefile
 contrib/ruck/Makefile
 contrib/ruck/src/Makefile
 backends/Makefile
@@ -781,6 +789,7 @@ echo "
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
+        Application install:       ${enable_app_install}
         Pango module:              ${build_gtk_module}
         BASH Command not found:    ${build_command_not_found}
         RUCK client:               ${build_ruck}
