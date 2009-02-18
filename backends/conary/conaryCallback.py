@@ -253,7 +253,7 @@ class RemoveCallback(callbacks.UpdateCallback):
         self.smallUpdate = False
         self.error = []
         self.progress = PackagekitProgress()
-        self.progress.set_steps([ 0,5,10,15,20,60,75,80,90,100 ]  )
+        self.progress.set_steps([ 0,5,10,15,20,60,75,100 ]  )
      # 1
     def resolvingDependencies(self):
         #self.backend.status('Resolving Dependencies')
@@ -315,11 +315,12 @@ class RemoveCallback(callbacks.UpdateCallback):
             self.progress.set_subpercent(sub_percent)
 
         self.backend.percentage(self.progress.percent)
-        if troveNum > 0:
-            troveNum -= 1
-        log.info("currentJob")
-        log.info(self.currentJob[troveNum])
-        job = self.currentJob[troveNum]
+        log.info("currentJob %s" % troveNum)
+        log.info("job %s" % self.currentJob)
+        if len(self.currentJob) > troveNum:
+            job = self.currentJob[troveNum]
+        else:
+            return
         name = job[0]
         oldVersion, oldFlavor = job[1]
         newVersion, newFlavor = job[2]
@@ -345,7 +346,7 @@ class RemoveCallback(callbacks.UpdateCallback):
         self.progress.step()
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
-        self.preparingUpdate(troveNum, troveCount, add=troveCount)
+        #self.preparingUpdate(troveNum, troveCount, add=troveCount)
     #8
     def committingTransaction(self):
         #self.backend.status('Committing Transaction')

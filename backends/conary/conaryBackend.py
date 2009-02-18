@@ -506,7 +506,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                         'Package already installed')
 
-                self.status(INFO_INSTALLING)
+                self.status(STATUS_INSTALL)
                 log.info(">>> Prepare Update")
                 self._get_package_update(name, version, flavor)
                 log.info(">>> end Prepare Update")
@@ -533,7 +533,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     self.error(ERROR_PACKAGE_NOT_INSTALLED, 'The package %s is not installed' % name)
 
                 name = '-%s' % name
-                self.status(INFO_REMOVING)
+                self.status(STATUS_REMOVE)
                 self._get_package_update(name, version, flavor)
                 self._do_package_update(name, version, flavor)
             else:
