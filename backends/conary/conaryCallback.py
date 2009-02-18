@@ -76,7 +76,7 @@ class UpdateCallback(callbacks.UpdateCallback):
         self.smallUpdate = False
         self.error = []
         self.progress = PackagekitProgress()
-        self.progress.set_steps([ 0,5,10,15,20,60,75,80,90,100 ]  )
+        self.progress.set_steps([ 0,5,8,10,12,20,35,80,90,100 ]  )
     # 1
     # 4
     def requestingChangeSet(self):
