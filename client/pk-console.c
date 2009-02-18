@@ -1703,6 +1703,8 @@ pk_console_get_summary (void)
 		g_string_append_printf (string, "  %s\n", "get-update-detail [package]");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_PACKAGES))
 		g_string_append_printf (string, "  %s\n", "get-packages");
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_ROLLBACK))
+		g_string_append_printf (string, "  %s\n", "rollback");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REPO_LIST))
 		g_string_append_printf (string, "  %s\n", "repo-list");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPO_ENABLE))
@@ -1971,6 +1973,14 @@ main (int argc, char *argv[])
 		}
 		ret = pk_client_accept_eula (client_async, value, &error);
 		maybe_sync = FALSE;
+
+	} else if (strcmp (mode, "rollback") == 0) {
+		if (value == NULL) {
+			/* TRANSLATORS: geeky error, 99.9999% of users won't see this */
+			error = g_error_new (1, 0, "%s", _("A transaction identifier (tid) is required"));
+			goto out;
+		}
+		ret = pk_client_rollback (client_async, value, &error);
 
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
