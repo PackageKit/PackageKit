@@ -33,7 +33,7 @@ from conary.conaryclient import cmdline
 from packagekit.backend import *
 from packagekit.package import *
 from packagekit.progress import PackagekitProgress
-from conaryCallback import UpdateCallback
+from conaryCallback import UpdateCallback, GetUpdateCallback, RemoveCallback
 from conaryFilter import *
 from XMLCache import XMLCache as Cache
 from conaryInit import *
@@ -524,6 +524,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_RUNNING)
         log.info("========== Remove Packages ============ ")
         log.info( allowDeps ) 
+        self.client.setUpdateCallback(RemoveCallback(self, self.cfg))
         #for package_id in package_ids.split('%'):
         for package_id in package_ids:
             name, version, flavor, installed = self._findPackage(package_id)
@@ -537,6 +538,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self._do_package_update(name, version, flavor)
             else:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'The package was not found')
+        self.client.setUpdateCallback(self.callback)
 
     def _get_metadata(self, package_id, field):
         '''
@@ -705,13 +707,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_INFO)
+        getUpdateC= GetUpdateCallback(self,self.cfg)
+        self.client.setUpdateCallback(getUpdateC)
+        log.info("callback changed")
         log.info("============== get_updates ========================")
         cli = ConaryPk()
         updateItems =cli.cli.fullUpdateItemList()
 #        updateItems = cli.cli.getUpdateItemList()
         for i in updateItems:
             log.info(i[0])
-        log.info("============== end get_updates ========================")
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         log.info("_get_update ....")
         updJob, suggMap = self._get_update(applyList)
@@ -740,7 +744,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             troveTuple.append(version)
             installed = self.check_installed(troveTuple)
             self._show_package(name, version, flavor, INFO_NORMAL)
-        
+        log.info("============== end get_updates ========================")
+        self.client.setUpdateCallback(self.callback)
 
     def _findPackage(self, package_id):
         '''
