@@ -2322,6 +2322,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # set bandwidth throttle to 90%
         self.yumbase.conf.throttle = "90%"
+        self.yumbase.rpmdb.auto_close = True
         self.dnlCallback = DownloadCallback(self, showNames=True)
         self.yumbase.repos.setProgressBar(self.dnlCallback)
 

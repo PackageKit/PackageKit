@@ -81,21 +81,21 @@ TABLE localised:
 STRING application_id (name of the desktop file, with no extension)
 STRING application_name (Name in desktop file, in locale)
 STRING application_summary (Comment in desktop file, in locale)
-STRING repo_name (for adding and removal)
 STRING locale
 
 TABLE general
 STRING application_id (name of the desktop file, with no extension)
 STRING package_name (to save on expensive SearchFile's)
 STRING icon_name (without path or extension)
-STRING group (Categories from desktop file, _not_ PK groups or PK categories)
+STRING group_id (Categories from desktop file, _not_ PK groups or PK categories)
 STRING repo_name (for adding and removal)
 STRING application_name (Name in desktop file)
 STRING application_summary (Comment in desktop file)
 
 == Possible Commands ==
-pk-app-install-merge-cache --name=livna --source=/var/cache/yum/livna-apps.db --cache=/usr/share/app-install/cache/desktop.db
-pk-app-install-remove-cache --name=livna --cache=/usr/share/app-install/cache/desktop.db
+pk-app-install action=create --cache=/usr/share/app-install/cache/desktop.db
+pk-app-install action=add --repo=livna --source=/var/cache/yum/livna-apps.db --cache=/usr/share/app-install/cache/desktop.db
+pk-app-install action=remove --repo=livna --cache=/usr/share/app-install/cache/desktop.db
 * need to do the latter then former in a spec file on upgrade
 
 all distro specific stuff to live in backends/, but typically:

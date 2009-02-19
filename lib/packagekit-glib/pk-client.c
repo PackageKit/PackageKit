@@ -2265,6 +2265,29 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 }
 
 /**
+ * pk_client_rollback_action:
+ **/
+static gboolean
+pk_client_rollback_action (PkClient *client, const gchar *transaction_id, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
+				 G_TYPE_STRING, transaction_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
+}
+
+/**
  * pk_client_rollback:
  * @client: a valid #PkClient instance
  * @transaction_id: a transaction_id structure
@@ -2279,6 +2302,7 @@ gboolean
 pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **error)
 {
 	gboolean ret;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -2299,15 +2323,33 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 	client->priv->role = PK_ROLE_ENUM_ROLLBACK;
 	client->priv->cached_transaction_id = g_strdup (transaction_id);
 
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		if (error != NULL)
-			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+	/* hopefully do the operation first time */
+	ret = pk_client_rollback_action (client, transaction_id, &error_local);
+
+	/* we were refused by policy */
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
+		/* try to get auth */
+		if (pk_client_error_auth_obtain (error_local)) {
+			/* clear old error */
+			g_clear_error (&error_local);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, &error_local);
+			if (!ret)
+				goto out;
+
+			/* retry the action now we have got auth */
+			ret = pk_client_rollback_action (client, transaction_id, &error_local);
+		}
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
-				 G_TYPE_STRING, transaction_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+out:
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
+	}
+
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -2316,7 +2358,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+
 	return ret;
 }
 
