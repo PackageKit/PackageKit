@@ -13,20 +13,23 @@ INCLUDES =						\
 	-DEGG_CONSOLE="\"PK_CONSOLE\""			\
 	-I$(top_srcdir)/lib
 
-sbin_PROGRAMS = pk-app-install
+sbin_PROGRAMS = pk-app-install-create pk-app-install-remove
 
-pk_app_install_SOURCES =				\
+pk_app_install_create_SOURCES =				\
 	egg-debug.c					\
 	egg-debug.h					\
-	pk-app-install.c				\
+	pk-app-install-create.c				\
+	pk-app-install-common.h				\
 	$(NULL)
+pk_app_install_create_LDADD = $(GLIB_LIBS) $(SQLITE_LIBS)
+pk_app_install_create_CFLAGS = $(WARNINGFLAGS_C)
 
-pk_app_install_LDADD =					\
-	$(GLIB_LIBS)					\
-	$(SQLITE_LIBS)					\
+pk_app_install_remove_SOURCES =				\
+	egg-debug.c					\
+	egg-debug.h					\
+	pk-app-install-remove.c				\
+	pk-app-install-common.h				\
 	$(NULL)
-
-pk_app_install_CFLAGS =					\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
+pk_app_install_remove_LDADD = $(GLIB_LIBS) $(SQLITE_LIBS)
+pk_app_install_remove_CFLAGS = $(WARNINGFLAGS_C)
 
