@@ -33,7 +33,7 @@ from conary.conaryclient import cmdline
 from packagekit.backend import *
 from packagekit.package import *
 from packagekit.progress import PackagekitProgress
-from conaryCallback import UpdateCallback, GetUpdateCallback, RemoveCallback
+from conaryCallback import UpdateCallback, GetUpdateCallback, RemoveCallback, UpdateSystemCallback
 from conaryFilter import *
 from XMLCache import XMLCache as Cache
 from conaryInit import *
@@ -448,12 +448,18 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     @ExceptionHandler
     def update_system(self):
         self.allow_cancel(True)
+        self.status(STATUS_UPDATE)
+        self.client.setUpdateCallback( UpdateSystemCallback(self, self.cfg) )
         updateItems = self.client.fullUpdateItemList()
         pprint(updateItems)
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
-        pprint(applyList)
-        upJob, suggMap = self._get_update(applyList)
-        updJob, suggMap = self._do_update(applyList)
+
+        log.info(">>>>>>>>>> get update >>>>>>>>>>>>")
+        self._get_update(applyList)
+        log.info(">>>>>>>>>> DO Update >>>>>>>>>>>>")
+        self._do_update(applyList)
+        log.info(">>>>>>>>>>END DO Update >>>>>>>>>>>>")
+        self.client.setUpdateCallback(self.callback )
 
 #    @ExceptionHandler
     def refresh_cache(self):
@@ -525,6 +531,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info("========== Remove Packages ============ ")
         log.info( allowDeps ) 
         self.client.setUpdateCallback(RemoveCallback(self, self.cfg))
+        errors = ""
         #for package_id in package_ids.split('%'):
         for package_id in package_ids:
             name, version, flavor, installed = self._findPackage(package_id)
@@ -535,6 +542,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 name = '-%s' % name
                 self.status(STATUS_REMOVE)
                 self._get_package_update(name, version, flavor)
+                callback = self.client.getUpdateCallback()
+                if callback.error:
+                    self.error(ERROR_DEP_RESOLUTION_FAILED,', '.join(callback.error))
+                        
                 self._do_package_update(name, version, flavor)
             else:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'The package was not found')

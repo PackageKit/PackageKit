@@ -4,9 +4,10 @@ dist_helper_DATA = 			\
 	conaryFilter.py			\
 	conaryCallback.py		\
 	conaryInit.py			\
-	XMLCache.py			\
+	XMLCache.py			    \
 	pkConaryLog.py			\
-	conarypk.py			\
+	conarypk.py			    \
+    conaryProgress.py       \
 	conaryEnums.py
 
 plugindir = $(PK_PLUGIN_DIR)
