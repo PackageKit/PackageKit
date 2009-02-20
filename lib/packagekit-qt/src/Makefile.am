@@ -5,6 +5,7 @@ NULL =
 INCLUDES = \
 	$(QTCORE_CFLAGS)					\
 	$(QTDBUS_CFLAGS)					\
+	$(QTSQL_CFLAGS)						\
 	$(POLKIT_CFLAGS)					\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
@@ -60,6 +61,7 @@ libpackagekit_qt_la_SOURCES =					\
 libpackagekit_qt_la_LIBADD =					\
 	$(QTCORE_LIBS)						\
 	$(QTDBUS_LIBS)						\
+	$(QTSQL_LIBS)						\
 	$(POLKIT_LIBS)						\
 	$(NULL)
 

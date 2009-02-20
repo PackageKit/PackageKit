@@ -120,6 +120,7 @@ POLKIT_GRANT_REQUIRED=0.8
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
 QTGUI_REQUIRED=4.4.0
+QTSQL_REQUIRED=4.4.0
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -167,6 +168,11 @@ if test x$enable_qt = xyes; then
 	PKG_CHECK_MODULES(QTGUI, QtGui >= $QTGUI_REQUIRED)
 	AC_SUBST(QTGUI_CFLAGS)
 	AC_SUBST(QTGUI_LIBS)
+
+
+	PKG_CHECK_MODULES(QTSQL, QtSql >= $QTSQL_REQUIRED)
+	AC_SUBST(QTSQL_CFLAGS)
+	AC_SUBST(QTSQL_LIBS)
 
 	PKG_CHECK_MODULES(CPPUNIT, cppunit)
 	AC_SUBST(CPPUNIT_CFLAGS)
@@ -385,6 +391,13 @@ else
 	build_gstreamer_plugin=no
 fi
 AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
+
+dnl ---------------------------------------------------------------------------
+dnl - Able to build gstreamer plugin
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(app_install, AS_HELP_STRING([--enable-app-install],[Build application installer functionality]),
+	      enable_app_install=$enableval,enable_app_install=no)
+AM_CONDITIONAL(PK_BUILD_APP_INSTALL, test $enable_app_install = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Able to build GTK module
@@ -684,6 +697,7 @@ contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
 contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
+contrib/app-install/Makefile
 contrib/ruck/Makefile
 contrib/ruck/src/Makefile
 backends/Makefile
@@ -748,6 +762,7 @@ echo "
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
+        Application install:       ${enable_app_install}
         Pango module:              ${build_gtk_module}
         BASH Command not found:    ${build_command_not_found}
         RUCK client:               ${build_ruck}

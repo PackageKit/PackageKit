@@ -22,6 +22,8 @@
 #define CLIENTPRIVATE_H
 
 #include <QtCore>
+#include <QtSql>
+#include "client.h"
 
 namespace PackageKit {
 
@@ -38,6 +40,7 @@ public:
 
 	DaemonProxy* daemon;
 	Client* c;
+	QSqlDatabase desktopDB; // Used to search in /var/lib/PackageKit/desktop-files.db
 
 	QString locale;
 
@@ -46,6 +49,8 @@ public:
 
 	// Get a tid, creates a new transaction and sets it up (ie call SetLocale)
 	Transaction* createNewTransaction();
+
+	Client::DaemonError lastError;
 
 public slots:
 	// org.freedesktop.PackageKit
