@@ -1,6 +1,7 @@
 .deps
 .libs
 *.o
-pk-app-install
+pk-app-install-create
+pk-app-install-remove
 *.db
 
