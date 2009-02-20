@@ -58,7 +58,8 @@ pk_console_resolve (PkBitfield filter, const gchar *package, GError **error)
 	ret = pk_client_resolve (client, filter, packages, &error_local);
 	g_strfreev (packages);
 	if (!ret) {
-		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+		if (error != NULL)
+			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -76,14 +77,16 @@ pk_console_resolve (PkBitfield filter, const gchar *package, GError **error)
 		/* reset */
 		ret = pk_client_reset (client, &error_local);
 		if (!ret) {
-			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+			if (error != NULL)
+				*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
 		/* anything provide it? */
 		ret = pk_client_what_provides (client, filter, PK_PROVIDES_ENUM_ANY, package, &error_local);
 		if (!ret) {
-			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+			if (error != NULL)
+				*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -110,8 +113,10 @@ pk_console_resolve_package_id (const PkPackageList *list, GError **error)
 	length = pk_package_list_get_size (list);
 
 	if (length == 0) {
-		/* TRANSLATORS: The package was not found in any software sources */
-		*error = g_error_new (1, 0, _("The package could not be found"));
+		if (error != NULL) {
+			/* TRANSLATORS: The package was not found in any software sources */
+			*error = g_error_new (1, 0, _("The package could not be found"));
+		}
 		return NULL;
 	}
 
