@@ -36,7 +36,7 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
         self.smallUpdate = False
         self.error = []
         self.progress = PackagekitProgress()
-        self.progress.set_steps([ 50,100 ]  )
+        self.progress.set_steps([ 50 ]  )
         self.disablepercent = False
         self.dostep = True
     #1
