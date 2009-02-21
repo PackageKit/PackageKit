@@ -229,8 +229,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             updJob = self._get_update(applyList, cache=False)
         self.allow_cancel(False)
-
-        restartDir = self.client.applyUpdateJob(updJob)
+        try:
+            restartDir = self.client.applyUpdateJob(updJob)
+        except errors.InternalConaryError:
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"get-updates first and then update sytem")
         return updJob
 
     def _get_package_update(self, name, version, flavor):
@@ -455,7 +457,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
 
         log.info(">>>>>>>>>> get update >>>>>>>>>>>>")
-        self._get_update(applyList)
+        #self._get_update(applyList)
         log.info(">>>>>>>>>> DO Update >>>>>>>>>>>>")
         self._do_update(applyList)
         log.info(">>>>>>>>>>END DO Update >>>>>>>>>>>>")

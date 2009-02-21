@@ -36,7 +36,9 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
         self.smallUpdate = False
         self.error = []
         self.progress = PackagekitProgress()
-        self.progress.set_steps([ 30,60,65 ]  )
+        self.progress.set_steps([ 50,100 ]  )
+        self.disablepercent = False
+        self.dostep = True
     #1
     #3
     def requestingChangeSet(self):
@@ -44,10 +46,13 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
         self.backend.status(STATUS_DOWNLOAD)
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
+        if not self.disablepercent:
+            self.progress.step()
     #2
     def downloadingChangeSet(self, got, need):
         log.info("Callback UpdateSystem........ STATUS_DOWNLOAD  Changeset %.2f percent %.2f/%.2f Mbytes" % ( got*100/float(need), got/MEGA,need/MEGA) )
-        self.progress.set_subpercent( got*100 / float(need) )
+        if not self.disablepercent:
+            self.progress.set_subpercent( got*100 / float(need) )
         self.backend.percentage( self.progress.percent )
         log.info( "%s percent" % self.progress.percent)
 
@@ -57,22 +62,27 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
         self.backend.percentage(self.progress.percent)
         self.backend.status(STATUS_DEP_RESOLVE)
         self.progress.step()
-        self.backend.percentage(self.progress.percent)
-        log.info(self.progress.percent)
-
+    #5  >> request> download
     def setChangesetHunk(self, num, total):
         log.info("callback. .......... set Changeset HUnk %s/%s" % (num, total ) )
-        self.progress.step()
+        self.progress.set_subpercent( num*100/float(total) )
+        self.disablepercent = True
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
-
+        if num == total:
+            self.dostep =True
+    #6 
     def setUpdateHunk(self, hunk, hunkCount):
         log.info("callback. .......... set update HUnk %s/%s" % ( hunk, hunkCount))
-        self.progress.step()
+        if self.dostep:
+            self.progress.step()
+            self.disablepercent = True
+            self.dostep = False
+
 
         if hunk < hunkCount:
-            p = hunk / float(hunkCount) * 100.0
-            self.progress.set_subpercent(p)
+            p = hunk*100/float(hunkCount)
+            self.progress.set_subpercent( p )
         else:
             self.smallUpdate = True
 
@@ -80,77 +90,59 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
         log.info(self.progress.percent)
 
     def setUpdateJob(self, job):
-        log.info("callback. .......... set update Job")
         self.currentJob = job
-        self.progress.step()
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
 
     def creatingRollback(self):
         #self.backend.status('Creating Rollback')
-        log.info("Callback ........ STATUS_ROLLBACK  ")
         self.backend.status(STATUS_ROLLBACK)
-        self.progress.step()
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
 
 
     def preparingUpdate(self, troveNum, troveCount, add=0):
-        log.info("callback ....... preparing Update  trove %s/%s" % (troveNum, troveCount) )
         #self.progress.step()
         if not self.currentJob or len(self.currentJob) == 0 or troveNum > troveCount:
             return
 
-        if troveNum > 0 and troveCount > 0:
-            sub_percent = (add + troveNum) / (2 * float(troveCount)) * 100
-            self.progress.set_subpercent(sub_percent)
 
         self.backend.percentage(self.progress.percent)
         if troveNum > 0:
             troveNum -= 1
-        log.info("currentJob")
-        log.info(self.currentJob[troveNum])
         job = self.currentJob[troveNum]
         name = job[0]
         oldVersion, oldFlavor = job[1]
         newVersion, newFlavor = job[2]
         #log.info("JOB>>>>>>>> %s " % str(job) )
         if oldVersion and newVersion:
-            log.info("Callback ........ STATUS_UPDATE preparing Update ")
             self.backend.status(STATUS_UPDATE)
             package_id = self.backend.get_package_id(name, newVersion, newFlavor)
             self.backend.package(package_id, INFO_UPDATING, '')
         elif oldVersion and not newVersion:
-            log.info("Callback ........ STATUS_REMOVE preparing Update ")
             self.backend.status(STATUS_REMOVE)
             package_id = self.backend.get_package_id(name, oldVersion, oldFlavor)
             self.backend.package(package_id, INFO_REMOVING, '')
         elif not oldVersion and newVersion:
-            log.info("Callback ........ STATUS_INSTALL preparing Update")
             self.backend.status(STATUS_INSTALL)
             package_id = self.backend.get_package_id(name, newVersion, newFlavor)
             self.backend.package(package_id, INFO_INSTALLING, '')
         log.info(self.progress.percent)
 
     def creatingDatabaseTransaction(self, troveNum, troveCount):
-        log.info("callback. .......... creating Database Transactions")
-        self.progress.step()
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
         self.preparingUpdate(troveNum, troveCount, add=troveCount)
 
     def committingTransaction(self):
         #self.backend.status('Committing Transaction')
-        log.info("Callback ........ STATUS_COMMIT  transactions ")
 
         self.backend.status(STATUS_COMMIT)
-        self.progress.step()
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
 
     def updateDone(self):
         log.info("callback. ..........  update done")
-        self.progress.step()
         self.backend.percentage(self.progress.percent)
         self.currentJob = None
         log.info(self.progress.percent)
