@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-02-17 08:37+0000\n"
-"PO-Revision-Date: 2009-02-18 00:44-0300\n"
+"POT-Creation-Date: 2009-02-18 13:42+0000\n"
+"PO-Revision-Date: 2009-02-19 15:19-0300\n"
 "Last-Translator: Igor Pires Soares <igor@projetofedora.org>\n"
 "Language-Team: Brazilian Portuguese <fedora-trans-pt_br@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -503,159 +503,164 @@ msgstr "Subcomandos:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1750
+#: ../client/pk-console.c:1752
 #: ../client/pk-generate-pack.c:185
-#: ../client/pk-monitor.c:115
+#: ../client/pk-monitor.c:125
 #: ../contrib/command-not-found/pk-command-not-found.c:510
 #: ../src/pk-main.c:199
 msgid "Show extra debugging information"
 msgstr "Mostrar informações extras de depuração"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1753
-#: ../client/pk-monitor.c:117
+#: ../client/pk-console.c:1755
+#: ../client/pk-monitor.c:127
 msgid "Show the program version and exit"
 msgstr "Mostrar a versão do programa e sair"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1756
+#: ../client/pk-console.c:1758
 msgid "Set the filter, e.g. installed"
 msgstr "Definir o filtro, p. ex.: instalados"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1759
+#: ../client/pk-console.c:1761
 msgid "Exit without waiting for actions to complete"
 msgstr "Sair sem esperar pelo término das ações"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1786
+#: ../client/pk-console.c:1788
 msgid "This tool could not connect to system DBUS."
 msgstr "Esta ferramenta não pôde conectar ao DBUS do sistema."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1873
+#: ../client/pk-console.c:1875
 msgid "The filter specified was invalid"
 msgstr "O filtro especificado era inválido"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1891
+#: ../client/pk-console.c:1893
 msgid "A search type is required, e.g. name"
 msgstr "Um tipo de pesquisa é requerido, p. ex. nome"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1897
-#: ../client/pk-console.c:1905
-#: ../client/pk-console.c:1913
-#: ../client/pk-console.c:1921
+#: ../client/pk-console.c:1899
+#: ../client/pk-console.c:1907
+#: ../client/pk-console.c:1915
+#: ../client/pk-console.c:1923
 msgid "A search term is required"
 msgstr "Um termo de pesquisa é requerido"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1927
+#: ../client/pk-console.c:1929
 msgid "Invalid search type"
 msgstr "Tipo de pesquisa inválido"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1933
+#: ../client/pk-console.c:1935
 msgid "A package name or filename to install is required"
 msgstr "O nome do pacote ou arquivo é requerido"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1941
+#: ../client/pk-console.c:1943
 msgid "A type, key_id and package_id are required"
 msgstr "Um tipo, key_id e package_id são requeridos"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1949
+#: ../client/pk-console.c:1951
 msgid "A package name to remove is required"
 msgstr "O nome do pacote para remoção é requerido"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1956
+#: ../client/pk-console.c:1958
 msgid "A destination directory and then the package names to download are required"
 msgstr "O diretório de destino seguido dos nomes dos pacotes a serem baixados é requerido"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1962
+#: ../client/pk-console.c:1964
 msgid "Directory not found"
 msgstr "Diretório não encontrado"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1969
+#: ../client/pk-console.c:1971
 msgid "A licence identifier (eula-id) is required"
 msgstr "Um identificador de licença (eula-id) é requerido"
 
+#. TRANSLATORS: geeky error, 99.9999% of users won't see this
+#: ../client/pk-console.c:1980
+msgid "A transaction identifier (tid) is required"
+msgstr "Um identificador de transação (tid) é requerido"
+
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1986
+#: ../client/pk-console.c:1996
 msgid "A package name to resolve is required"
 msgstr "O nome de pacote a ser analisado é requerido"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1994
-#: ../client/pk-console.c:2002
+#: ../client/pk-console.c:2004
+#: ../client/pk-console.c:2012
 msgid "A repository name is required"
 msgstr "O nome do repositório é requerido"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2010
+#: ../client/pk-console.c:2020
 msgid "A repo name, parameter and value are required"
 msgstr "Um nome de repositório, parâmetro e um valor são requeridos"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2023
+#: ../client/pk-console.c:2033
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Uma ação, p. ex. \"update-system\" é requerida"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2029
+#: ../client/pk-console.c:2039
 msgid "A correct role is required"
 msgstr "Um modo correto é requerido"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2035
+#: ../client/pk-console.c:2045
 msgid "Failed to get the time since this action was last completed"
 msgstr "Falha ao obter o tempo em que essa ação foi completada pela última vez"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2044
-#: ../client/pk-console.c:2055
-#: ../client/pk-console.c:2063
-#: ../client/pk-console.c:2079
-#: ../client/pk-console.c:2087
+#: ../client/pk-console.c:2054
+#: ../client/pk-console.c:2065
+#: ../client/pk-console.c:2073
+#: ../client/pk-console.c:2089
+#: ../client/pk-console.c:2097
 #: ../client/pk-generate-pack.c:241
 msgid "A package name is required"
 msgstr "O nome do pacote é requerido"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2071
+#: ../client/pk-console.c:2081
 msgid "A package provide string is required"
 msgstr "É necessário especificar o que o pacote fornece"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2095
+#: ../client/pk-console.c:2105
 msgid "A list file name to create is required"
 msgstr "O nome de arquivo da lista a ser criada é requerido"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2104
-#: ../client/pk-console.c:2113
+#: ../client/pk-console.c:2114
+#: ../client/pk-console.c:2123
 msgid "A list file to open is required"
 msgstr "Uma lista de arquivos a serem abertos é requerida"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2166
+#: ../client/pk-console.c:2176
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "A opção \"%s\" não é suportada"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2179
+#: ../client/pk-console.c:2189
 msgid "Incorrect privileges for this operation"
 msgstr "Privilégios incorretos para esta operação"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2182
+#: ../client/pk-console.c:2192
 msgid "Command failed"
 msgstr "O comando falhou"
 
@@ -770,7 +775,7 @@ msgid "Failed to create '%s': %s"
 msgstr "Falha ao criar \"%s\": %s"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:133
+#: ../client/pk-monitor.c:143
 msgid "PackageKit Monitor"
 msgstr "Monitor do PackageKit"
 

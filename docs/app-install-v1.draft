@@ -85,21 +85,24 @@ STRING locale
 
 TABLE general
 STRING application_id (name of the desktop file, with no extension)
-STRING package_name (to save on expensive SearchFile's)
-STRING icon_name (without path or extension)
+STRING package_name (the package name, e.g. 'nautilus')
 STRING group_id (Categories from desktop file, _not_ PK groups or PK categories)
 STRING repo_name (for adding and removal)
 STRING application_name (Name in desktop file)
 STRING application_summary (Comment in desktop file)
 
+icon_name is not needed as it will be renamed to ${application_id}.png
+
 == Possible Commands ==
-pk-app-install action=create --cache=/usr/share/app-install/cache/desktop.db
-pk-app-install action=add --repo=livna --source=/var/cache/yum/livna-apps.db --cache=/usr/share/app-install/cache/desktop.db
-pk-app-install action=remove --repo=livna --cache=/usr/share/app-install/cache/desktop.db
+pk-app-install-create --cache=/usr/share/app-install/cache/desktop.db
+pk-app-install-add --repo=livna --source=./livna/desktop.db --icondir=./livna/icons --cache=/usr/share/app-install/cache/desktop.db
+pk-app-install-remove --repo=livna --icondir=/usr/share/app-install/icons --cache=/usr/share/app-install/cache/desktop.db
 * need to do the latter then former in a spec file on upgrade
 
 all distro specific stuff to live in backends/, but typically:
 yum-app-install-generate --name=livna --cache=~/livna-apps.db
+pk-app-install-generate --repo=livna --desktopdir=/usr/share/icons --icondir=/usr/share/icons --outputdir=./icons
+
 
 == Open questions ===
 

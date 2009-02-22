@@ -1316,8 +1316,9 @@ pk_console_list_install (PkClient *client, const gchar *file, GError **error)
 	g_print ("%s:\n", _("To install"));
 	for (i=0; i<length; i++) {
 		obj = pk_package_list_get_obj (new, i);
-		g_print ("%i\t%s\n", i+1, obj->id->name);
+		g_print ("%s ", obj->id->name);
 	}
+	g_print ("\n");
 
 	/* resolve */
 	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
@@ -1325,12 +1326,12 @@ pk_console_list_install (PkClient *client, const gchar *file, GError **error)
 		obj = pk_package_list_get_obj (new, i);
 		/* TRANSLATORS: searching takes some time.... */
 		g_print ("%.0f%%\t%s %s...", (100.0f/length)*i, _("Searching for package: "), obj->id->name);
-		package_id = pk_console_perhaps_resolve (client, filters, obj->id->name, &error_local);
+		package_id = pk_console_perhaps_resolve (client, filters, obj->id->name, NULL);
 		if (package_id == NULL) {
 			/* TRANSLATORS: package was not found -- this is the end of a string ended in ... */
 			g_print (" %s\n", _("not found."));
 		} else {
-			g_print (" %s\n", package_id);
+			g_print (" %s\n", obj->id->version);
 			g_ptr_array_add (array, package_id);
 			/* no need to free */
 		}

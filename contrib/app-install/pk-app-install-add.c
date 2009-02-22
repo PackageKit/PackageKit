@@ -76,7 +76,6 @@ pk_app_install_create (const gchar *cache)
 		statement = "CREATE TABLE general ("
 			    "application_id TEXT primary key,"
 			    "package_name TEXT,"
-			    "icon_name TEXT,"
 			    "group_id TEXT,"
 			    "repo_name TEXT,"
 			    "application_name TEXT,"
@@ -107,14 +106,51 @@ out:
 }
 
 /**
+ * pk_app_install_remove_icons_sqlite_cb:
+ **/
+static gint
+pk_app_install_remove_icons_sqlite_cb (void *data, gint argc, gchar **argv, gchar **col_name)
+{
+	gint i;
+	gchar *col;
+	gchar *value;
+	const gchar *application_id = NULL;
+	gchar *path;
+	gchar *filename;
+	const gchar *icondir = (const gchar *) data;
+
+	for (i=0; i<argc; i++) {
+		col = col_name[i];
+		value = argv[i];
+		if (g_strcmp0 (col, "application_id") == 0)
+			application_id = value;
+	}
+	if (application_id == NULL)
+		goto out;
+
+	egg_warning ("application_id=%s", application_id);
+	filename = g_strdup_printf ("%s.png", application_id);
+	path = g_build_filename (icondir, "48x48", filename, NULL);
+
+//	g_unlink (path);
+	egg_warning ("path=%s", path);
+
+	g_free (filename);
+	g_free (path);
+out:
+	return 0;
+}
+
+/**
  * pk_app_install_remove:
  **/
 static gboolean
-pk_app_install_remove (const gchar *cache, const gchar *repo)
+pk_app_install_remove (const gchar *cache, const gchar *icondir, const gchar *repo)
 {
 	gboolean ret = TRUE;
 	gchar *statement = NULL;
 	sqlite3 *db = NULL;
+	gchar *error_msg;
 	gint rc;
 
 	/* open database */
@@ -123,6 +159,18 @@ pk_app_install_remove (const gchar *cache, const gchar *repo)
 		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (db));
 		ret = FALSE;
 		goto out;
+	}
+
+	/* remove icons */
+	if (icondir != NULL) {
+		statement = g_strdup_printf ("SELECT application_id FROM general WHERE repo_name = '%s'", repo);
+		rc = sqlite3_exec (db, statement, pk_app_install_remove_icons_sqlite_cb, (void*) icondir, &error_msg);
+		g_free (statement);
+		if (rc != SQLITE_OK) {
+			egg_warning ("SQL error: %s\n", error_msg);
+			sqlite3_free (error_msg);
+			return 0;
+		}
 	}
 
 	/* delete from localised (localised has no repo_name, so key off general) */
@@ -170,9 +218,9 @@ out:
  * pk_app_install_add:
  **/
 static gboolean
-pk_app_install_add (const gchar *cache, const gchar *repo, const gchar *source)
+pk_app_install_add (const gchar *cache, const gchar *icondir, const gchar *repo, const gchar *source)
 {
-	egg_debug ("add");
+	egg_warning ("cache=%s, source=%s, repo=%s, icondir=%s", cache, source, repo, icondir);
 	return TRUE;
 }
 
@@ -189,6 +237,7 @@ main (int argc, char *argv[])
 	gchar *cache = NULL;
 	gchar *repo = NULL;
 	gchar *source = NULL;
+	gchar *icondir = NULL;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -202,6 +251,9 @@ main (int argc, char *argv[])
 		{ "source", 's', 0, G_OPTION_ARG_STRING, &source,
 		  /* TRANSLATORS: the source database, typically used for adding */
 		  _("Source cache file to add to the main database"), NULL},
+		{ "icondir", 'i', 0, G_OPTION_ARG_STRING, &icondir,
+		  /* TRANSLATORS: the icon directory */
+		  _("Icon directory"), NULL},
 		{ "repo", 'n', 0, G_OPTION_ARG_STRING, &repo,
 		  /* TRANSLATORS: the repo of the software source, e.g. fedora */
 		  _("Name of the remote repo"), NULL},
@@ -222,7 +274,7 @@ main (int argc, char *argv[])
 
 	egg_debug_init (verbose);
 
-	egg_debug ("cache=%s, source=%s, repo=%s", cache, source, repo);
+	egg_debug ("cache=%s, source=%s, repo=%s, icondir=%s", cache, source, repo, icondir);
 
 	/* use default */
 	if (cache == NULL) {
@@ -248,14 +300,36 @@ main (int argc, char *argv[])
 			retval = 1;
 			goto out;
 		}
-		pk_app_install_remove (cache, repo, source);
+		if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
+			egg_warning ("The icon directory '%s' could not be found", icondir);
+			retval = 1;
+			goto out;
+		}
+		pk_app_install_add (cache, icondir, repo, source);
 	} else if (g_strcmp0 (action, "remove") == 0) {
 		if (repo == NULL) {
 			egg_warning ("A repo name is required");
 			retval = 1;
 			goto out;
 		}
-		pk_app_install_remove (cache, repo);
+		if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
+			egg_warning ("The icon directory '%s' could not be found", icondir);
+			retval = 1;
+			goto out;
+		}
+		pk_app_install_remove (cache, icondir, repo);
+	} else if (g_strcmp0 (action, "generate") == 0) {
+		if (repo == NULL) {
+			egg_warning ("A repo name is required");
+			retval = 1;
+			goto out;
+		}
+		if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
+			egg_warning ("The icon directory '%s' could not be found", icondir);
+			retval = 1;
+			goto out;
+		}
+		pk_app_install_remove (cache, icondir, repo);
 	} else {
 		egg_warning ("An action is required");
 		retval = 1;
@@ -265,6 +339,7 @@ out:
 	g_free (cache);
 	g_free (repo);
 	g_free (source);
+	g_free (icondir);
 	return 0;
 }
 
