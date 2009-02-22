@@ -112,7 +112,7 @@ main (int argc, char *argv[])
 			goto out;
 		}
 		statement = "CREATE TABLE localised ("
-			    "application_id TEXT primary key,"
+			    "application_id TEXT,"
 			    "application_name TEXT,"
 			    "application_summary TEXT,"
 			    "locale TEXT);";
