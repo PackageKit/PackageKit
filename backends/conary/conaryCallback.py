@@ -65,7 +65,11 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
     #5  >> request> download
     def setChangesetHunk(self, num, total):
         log.info("callback. .......... set Changeset HUnk %s/%s" % (num, total ) )
-        self.progress.set_subpercent( num*100/float(total) )
+        if total > 0:
+            p = num*100/float(total)
+        else:
+            p = 0
+        self.progress.set_subpercent(p)
         self.disablepercent = True
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
