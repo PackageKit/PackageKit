@@ -102,7 +102,7 @@ main (int argc, char *argv[])
 			    "application_id TEXT primary key,"
 			    "package_name TEXT,"
 			    "group_id TEXT,"
-			    "repo_name TEXT,"
+			    "repo_id TEXT,"
 			    "application_name TEXT,"
 			    "application_summary TEXT);";
 		rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
