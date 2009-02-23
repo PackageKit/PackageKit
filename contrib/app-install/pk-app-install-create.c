@@ -98,27 +98,27 @@ main (int argc, char *argv[])
 
 	/* create */
 	if (create_file == FALSE) {
-		statement = "CREATE TABLE general ("
+		statement = "CREATE TABLE applications ("
 			    "application_id TEXT primary key,"
 			    "package_name TEXT,"
 			    "group_id TEXT,"
-			    "repo_name TEXT,"
+			    "repo_id TEXT,"
 			    "application_name TEXT,"
 			    "application_summary TEXT);";
 		rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
 		if (rc) {
-			egg_warning ("Can't create general table: %s\n", sqlite3_errmsg (db));
+			egg_warning ("Can't create applications table: %s\n", sqlite3_errmsg (db));
 			retval = 1;
 			goto out;
 		}
-		statement = "CREATE TABLE localised ("
+		statement = "CREATE TABLE translations ("
 			    "application_id TEXT,"
 			    "application_name TEXT,"
 			    "application_summary TEXT,"
 			    "locale TEXT);";
 		rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
 		if (rc) {
-			egg_warning ("Can't create localised table: %s\n", sqlite3_errmsg (db));
+			egg_warning ("Can't create translations table: %s\n", sqlite3_errmsg (db));
 			retval = 1;
 			goto out;
 		}

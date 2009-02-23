@@ -142,7 +142,7 @@ main (int argc, char *argv[])
 	}
 
 	/* remove icons */
-	statement = g_strdup_printf ("SELECT application_id FROM general WHERE repo_name = '%s'", repo);
+	statement = g_strdup_printf ("SELECT application_id FROM applications WHERE repo_id = '%s'", repo);
 	rc = sqlite3_exec (db, statement, pk_app_install_remove_icons_sqlite_cb, (void*) icondir, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
@@ -151,10 +151,10 @@ main (int argc, char *argv[])
 		return 0;
 	}
 
-	/* delete from localised (localised has no repo_name, so key off general) */
-	statement = g_strdup_printf ("DELETE FROM localised WHERE EXISTS ( "
-				      "SELECT general.application_id FROM general WHERE "
-				      "general.application_id = general.application_id AND general.repo_name = '%s')", repo);
+	/* delete from translations (translations has no repo_id, so key of applications) */
+	statement = g_strdup_printf ("DELETE FROM translations WHERE EXISTS ( "
+				      "SELECT applications.application_id FROM applications WHERE "
+				      "applications.application_id = applications.application_id AND applications.repo_id = '%s')", repo);
 	rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
 	g_free (statement);
 	if (rc) {
@@ -162,10 +162,10 @@ main (int argc, char *argv[])
 		ret = FALSE;
 		goto out;
 	}
-	egg_debug ("%i removals from localised", sqlite3_changes (db));
+	egg_debug ("%i removals from translations", sqlite3_changes (db));
 
-	/* delete from general */
-	statement = g_strdup_printf ("DELETE FROM general WHERE repo_name = '%s'", repo);
+	/* delete from applications */
+	statement = g_strdup_printf ("DELETE FROM applications WHERE repo_id = '%s'", repo);
 	rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
 	g_free (statement);
 	if (rc) {
@@ -173,7 +173,7 @@ main (int argc, char *argv[])
 		ret = FALSE;
 		goto out;
 	}
-	egg_debug ("%i removals from general", sqlite3_changes (db));
+	egg_debug ("%i removals from applications", sqlite3_changes (db));
 
 	/* reclaim memory */
 	statement = g_strdup ("VACUUM");
