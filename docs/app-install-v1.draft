@@ -77,17 +77,17 @@ This is used, for instance:
 
 == Schema ==
 
-TABLE localised:
+TABLE translations:
 STRING application_id (name of the desktop file, with no extension)
 STRING application_name (Name in desktop file, in locale)
 STRING application_summary (Comment in desktop file, in locale)
 STRING locale
 
-TABLE general
+TABLE applications:
 STRING application_id (name of the desktop file, with no extension)
 STRING package_name (the package name, e.g. 'nautilus')
-STRING group_id (Categories from desktop file, _not_ PK groups or PK categories)
-STRING repo_name (for adding and removal)
+STRING categories (Categories from desktop file, _not_ PK groups or PK categories)
+STRING repo_id (for adding and removal)
 STRING application_name (Name in desktop file)
 STRING application_summary (Comment in desktop file)
 
