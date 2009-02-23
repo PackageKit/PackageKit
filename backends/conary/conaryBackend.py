@@ -180,8 +180,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.debug((searchlist, where))
 
         troveTupleList = cache.search(searchlist, where )
-        log.info("XMLCACHE results:")
-        log.info(troveTupleList)
 
         if len(troveTupleList) > 0 :
             for i in troveTupleList:
@@ -190,7 +188,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             log.info("NOT FOUND %s " % searchlist )
             pk = ConaryPk()
-            troveTupleList = pk.query( searchlist)
+            troveTupleList = pk.query(searchlist)
             log.info(troveTupleList)
             if not troveTupleList:
                 error = {}
@@ -259,10 +257,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             version = pkg["version"]
             trove = name, None , cli.flavor
             specList.append( trove  )
-        log.info(specList)
         trovesList = cli.repos.findTroves(cli.default_label, specList, allowMissing=True )
-        log.info(trovesList)
-
         pkgFilter = ConaryFilter(filters)
         troves = trovesList.values()
         for trovelst in troves:

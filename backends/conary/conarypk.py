@@ -9,6 +9,7 @@ from conary.versions import Label
 from conary.errors import TroveNotFound
 from conary.conaryclient.update import NoNewTrovesError
 
+from pkConaryLog import log
 
 class ConaryPk:
     def __init__(self):
