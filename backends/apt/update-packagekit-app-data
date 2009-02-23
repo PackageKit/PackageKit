@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+# update-packagekit-app-data - Generate a cache of mime type and codec handlers
+# Authors: Michael Vogt <mvo@ubuntu.com>
+#          Sebastian Heinlein <devel@glatzor.de>
+
+import sys
+import glob
+import os
+import os.path
+import re
+import sys
+
+from optparse import OptionParser
+
+import gdbm
+
+try:
+    import xdg.DesktopEntry
+except ImportError, e:
+    print "WARNING: can not import xdg.DesktopEntry, aborting"
+    sys.exit(0)
+
+def generate_mime_map(desktop_dir, cache_dir):
+    dicts = { 'mime':{}, 'codec':{} }
+
+    def record_provider(de, cp, defield,dictname):
+        try: 
+            keys = de.get(defield, list=True)
+        except keyError: 
+            return
+        if not keys: return
+        dict = dicts[dictname]
+        for key in keys:
+            # gst-caps support
+            if dictname == 'codec' and ',' in key:
+                key = key.split(",")[0]
+            try:
+                l = dict[key]
+            except KeyError:
+                l = []; dict[key] = l
+            l.append(cp)
+
+    for fn in glob.glob(os.path.join(desktop_dir, 'desktop/*.desktop')):
+        try:
+            de = xdg.DesktopEntry.DesktopEntry(fn)
+        except Exception, e:
+            print >>sys.stderr, "bad .desktop file: %s: %s" % (fn, e)
+        try:
+            component = de.get('X-AppInstall-Section')
+            package = de.get('X-AppInstall-Package')
+        except KeyError:
+            continue
+        cp = component+"/"+package
+        record_provider(de, cp, 'MimeType','mime')
+        record_provider(de, cp, 'X-AppInstall-Codecs','codec')
+
+    for (dictname, dict) in dicts.iteritems():
+        g = gdbm.open(os.path.join(cache_dir,
+                                   dictname+"-map.gdbm"),
+                      'nfu')
+        for (key,l) in dict.iteritems():
+            g[key] = ' '.join(l)
+        g.sync()
+        g.close()
+
+def main():
+    parser = OptionParser()
+    parser.add_option ("-d", "--desktop-dir", action="store",
+                       dest="desktop_dir", 
+                       default="/usr/share/app-install",
+                       help="Directory that contains the desktop files "
+                            "of the applications")
+    parser.add_option ("-c", "--cache-dir", action="store",
+                       dest="cache_dir", 
+                       default="/var/lib/PackageKit",
+                       help="Directory where the data should be cached in")
+    (options, args) = parser.parse_args()
+    for path in (options.desktop_dir, options.cache_dir):
+        if not os.path.isdir(path):
+            print "%s is not a valid directory" % path
+            sys.exit(1)
+    print "Generating mime/codec maps..."
+    generate_mime_map(options.desktop_dir, options.cache_dir)
+
+if __name__ == "__main__":
+    main()
