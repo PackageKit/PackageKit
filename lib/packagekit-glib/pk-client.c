@@ -4413,6 +4413,7 @@ pk_client_reset (PkClient *client, GError **error)
 	g_free (client->priv->cached_directory);
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
+	g_object_unref (client->priv->package_list);
 
 	/* clear restart array */
 	g_ptr_array_foreach (client->priv->require_restart_list, (GFunc) pk_package_id_free, NULL);
@@ -4435,8 +4436,9 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 	client->priv->timeout = -1;
+	client->priv->package_list = pk_package_list_new ();
 
-	pk_obj_list_clear (PK_OBJ_LIST (client->priv->package_list));
+	/* TODO: make clean */
 	pk_obj_list_clear (client->priv->cached_data);
 	return TRUE;
 }
