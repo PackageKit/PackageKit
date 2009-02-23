@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-02-21 00:57+0100\n"
-"PO-Revision-Date: 2009-02-21 00:59+0100\n"
+"POT-Creation-Date: 2009-02-23 20:11+0100\n"
+"PO-Revision-Date: 2009-02-23 20:34+0100\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -238,14 +238,14 @@ msgstr "Nie można zainstalować pakietu %s: %s"
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
 #: ../client/pk-console.c:720 ../client/pk-console.c:747
 #: ../client/pk-console.c:843 ../client/pk-console.c:960
-#: ../client/pk-tools-common.c:61 ../client/pk-tools-common.c:79
-#: ../client/pk-tools-common.c:86
+#: ../client/pk-tools-common.c:62 ../client/pk-tools-common.c:81
+#: ../client/pk-tools-common.c:89
 #, c-format
 msgid "Internal error: %s"
 msgstr "Wewnętrzny błąd: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:728 ../client/pk-console.c:1355
+#: ../client/pk-console.c:728 ../client/pk-console.c:1356
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "To narzędzie nie może zainstalować pakietów: %s"
@@ -385,256 +385,259 @@ msgid "To install"
 msgstr "Do zainstalowania"
 
 #. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1327
+#: ../client/pk-console.c:1328
 msgid "Searching for package: "
 msgstr "Wyszukiwanie pakietu: "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1331
+#: ../client/pk-console.c:1332
 msgid "not found."
 msgstr "nie znaleziono."
 
 #. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1342
+#: ../client/pk-console.c:1343
 #, c-format
 msgid "No packages can be found to install"
 msgstr "Nie można znaleźć pakietów do zainstalowania"
 
 #. TRANSLATORS: installing new packages from package list
-#: ../client/pk-console.c:1348
+#: ../client/pk-console.c:1349
 msgid "Installing packages"
 msgstr "Instalowanie pakietów"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1384
+#: ../client/pk-console.c:1385
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
 msgstr "To narzędzie nie może znaleźć szczegółów aktualizacji dla %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1392
+#: ../client/pk-console.c:1393
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
 msgstr "To narzędzie nie może uzyskać szczegółów aktualizacji dla %s: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1438
+#: ../client/pk-console.c:1439
 msgid "Error:"
 msgstr "Błąd:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1452
+#: ../client/pk-console.c:1453
 msgid "Package description"
 msgstr "Opis pakietu"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1486
+#: ../client/pk-console.c:1487
 msgid "Package files"
 msgstr "Pliki pakietu"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1494
+#: ../client/pk-console.c:1495
 msgid "No files"
 msgstr "Brak plików"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1517
+#: ../client/pk-console.c:1518
 msgid "Repository signature required"
 msgstr "Wymagany jest podpis repozytorium"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1527
+#: ../client/pk-console.c:1528
 msgid "Do you accept this signature?"
 msgstr "Zaakceptować ten podpis?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1531
+#: ../client/pk-console.c:1532
 msgid "The signature was not accepted."
 msgstr "Podpis nie został zaakceptowany."
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1565
+#: ../client/pk-console.c:1566
 msgid "End user license agreement required"
 msgstr "Licencja jest wymagana"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1572
+#: ../client/pk-console.c:1573
 msgid "Do you agree to this license?"
 msgstr "Zaakceptować tę licencję?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1576
+#: ../client/pk-console.c:1577
 msgid "The license was refused."
 msgstr "Odrzucono licencję."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1605
+#: ../client/pk-console.c:1606
 msgid "The daemon crashed mid-transaction!"
 msgstr "Demon zawiesił się w połowie transakcji!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1658
+#: ../client/pk-console.c:1659
 msgid "PackageKit Console Interface"
 msgstr "Interfejs konsoli PackageKit"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1660
+#: ../client/pk-console.c:1661
 msgid "Subcommands:"
 msgstr "Podpolecenia:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1752 ../client/pk-generate-pack.c:185
+#: ../client/pk-console.c:1753 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
 #: ../contrib/command-not-found/pk-command-not-found.c:510
-#: ../src/pk-main.c:199
+#: ../contrib/app-install/pk-app-install-add.c:244
+#: ../contrib/app-install/pk-app-install-create.c:48
+#: ../contrib/app-install/pk-app-install-generate.c:244
+#: ../contrib/app-install/pk-app-install-remove.c:87 ../src/pk-main.c:199
 msgid "Show extra debugging information"
 msgstr "Wyświetla dodatkowe informacje o debugowaniu"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1755 ../client/pk-monitor.c:127
+#: ../client/pk-console.c:1756 ../client/pk-monitor.c:127
 msgid "Show the program version and exit"
 msgstr "Wyświetla wersję programu i wyłącza"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1758
+#: ../client/pk-console.c:1759
 msgid "Set the filter, e.g. installed"
 msgstr "Ustawia filtr, np. zainstalowane"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1761
+#: ../client/pk-console.c:1762
 msgid "Exit without waiting for actions to complete"
 msgstr "Wyłącza bez oczekiwania na zakończenie działań"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1788
+#: ../client/pk-console.c:1789
 msgid "This tool could not connect to system DBUS."
 msgstr "To narzędzie nie może połączyć się z systemowym D-Bus."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1875
+#: ../client/pk-console.c:1876
 msgid "The filter specified was invalid"
 msgstr "Podany filtr jest nieprawidłowy"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1893
+#: ../client/pk-console.c:1894
 msgid "A search type is required, e.g. name"
 msgstr "Wymagany jest typ wyszukiwania, np. nazwa"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1899 ../client/pk-console.c:1907
-#: ../client/pk-console.c:1915 ../client/pk-console.c:1923
+#: ../client/pk-console.c:1900 ../client/pk-console.c:1908
+#: ../client/pk-console.c:1916 ../client/pk-console.c:1924
 msgid "A search term is required"
 msgstr "Wymagany jest wyszukiwany termin"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1929
+#: ../client/pk-console.c:1930
 msgid "Invalid search type"
 msgstr "Nieprawidłowy typ wyszukiwania"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1935
+#: ../client/pk-console.c:1936
 msgid "A package name or filename to install is required"
 msgstr "Wymagana jest nazwa pakietu lub pliku do zainstalowania"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1943
+#: ../client/pk-console.c:1944
 msgid "A type, key_id and package_id are required"
 msgstr "Wymagany jest typ, key_id i package_id"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1951
+#: ../client/pk-console.c:1952
 msgid "A package name to remove is required"
 msgstr "Wymagana jest nazwa pakietu do usunięcia"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1958
+#: ../client/pk-console.c:1959
 msgid ""
 "A destination directory and then the package names to download are required"
 msgstr "Wymagany jest katalog docelowy, a następnie nazwy pakietów do pobrania"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1964
+#: ../client/pk-console.c:1965
 msgid "Directory not found"
 msgstr "Nie znaleziono katalogu"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1971
+#: ../client/pk-console.c:1972
 msgid "A licence identifier (eula-id) is required"
 msgstr "Wymagany jest identyfikator licencji (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1980
+#: ../client/pk-console.c:1981
 msgid "A transaction identifier (tid) is required"
 msgstr "Wymagany jest identyfikator transakcji (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1996
+#: ../client/pk-console.c:1997
 msgid "A package name to resolve is required"
 msgstr "Wymagana jest nazwa pakietu do rozwiązania"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2004 ../client/pk-console.c:2012
+#: ../client/pk-console.c:2005 ../client/pk-console.c:2013
 msgid "A repository name is required"
 msgstr "Wymagana jest nazwa repozytorium"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2020
+#: ../client/pk-console.c:2021
 msgid "A repo name, parameter and value are required"
 msgstr "Wymagana jest nazwa, parametr i wartość repozytorium"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2033
+#: ../client/pk-console.c:2034
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Wymagane jest działanie, np. \"update-system\""
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2039
+#: ../client/pk-console.c:2040
 msgid "A correct role is required"
 msgstr "Wymagana jest bieżąca rola"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2045
+#: ../client/pk-console.c:2046
 msgid "Failed to get the time since this action was last completed"
 msgstr ""
 "Uzyskanie czasu od ostatniego zakończenia tego działania nie powiodło się"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2054 ../client/pk-console.c:2065
-#: ../client/pk-console.c:2073 ../client/pk-console.c:2089
-#: ../client/pk-console.c:2097 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2055 ../client/pk-console.c:2066
+#: ../client/pk-console.c:2074 ../client/pk-console.c:2090
+#: ../client/pk-console.c:2098 ../client/pk-generate-pack.c:241
 msgid "A package name is required"
 msgstr "Wymagana jest nazwa pakietu"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2081
+#: ../client/pk-console.c:2082
 msgid "A package provide string is required"
 msgstr "Wymagany jest łańcuch dostarczania pakietu"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2105
+#: ../client/pk-console.c:2106
 msgid "A list file name to create is required"
 msgstr "Wymagana jest lista nazw plików do utworzenia"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2114 ../client/pk-console.c:2123
+#: ../client/pk-console.c:2115 ../client/pk-console.c:2124
 msgid "A list file to open is required"
 msgstr "Wymagana jest lista plików do otwarcia"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2176
+#: ../client/pk-console.c:2177
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Opcja \"%s\" nie jest obsługiwana"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2189
+#: ../client/pk-console.c:2190
 msgid "Incorrect privileges for this operation"
 msgstr "Niepoprawne uprawnienia dla tego działania"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2192
+#: ../client/pk-console.c:2193
 msgid "Command failed"
 msgstr "Polecenie nie powiodło się"
 
@@ -756,22 +759,22 @@ msgid "PackageKit Monitor"
 msgstr "Monitor PackageKit"
 
 #. TRANSLATORS: The package was not found in any software sources
-#: ../client/pk-tools-common.c:114
+#: ../client/pk-tools-common.c:118
 #, c-format
 msgid "The package could not be found"
 msgstr "Nie można znaleźć pakietu"
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-tools-common.c:125
+#: ../client/pk-tools-common.c:130
 msgid "More than one package matches:"
 msgstr "Pasuje więcej niż jeden pakiet:"
 
 #. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-tools-common.c:132
+#: ../client/pk-tools-common.c:137
 msgid "Please choose the correct package: "
 msgstr "Proszę wybrać poprawny pakiet: "
 
-#: ../client/pk-tools-common.c:157
+#: ../client/pk-tools-common.c:162
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Proszę podać numer od 1 do %i: "
@@ -898,6 +901,55 @@ msgstr "Nie znaleziono pakietów dla systemu"
 #: ../contrib/browser-plugin/src/contents.cpp:349
 msgid "Installing..."
 msgstr "Instalowanie..."
+
+#. TRANSLATORS: the action is non-localised
+#: ../contrib/app-install/pk-app-install-add.c:247
+#: ../contrib/app-install/pk-app-install-generate.c:247
+msgid "The action, one of 'create', 'add', or 'remove'"
+msgstr "Działanie, jedno z \"create\", \"add\" lub \"remove\""
+
+#. TRANSLATORS: if we are specifing a out-of-tree database
+#: ../contrib/app-install/pk-app-install-add.c:250
+#: ../contrib/app-install/pk-app-install-generate.c:250
+#: ../contrib/app-install/pk-app-install-remove.c:90
+msgid "Main cache file to use (if not specififed, default is used)"
+msgstr ""
+"Używany główny plik pamięci podręcznej (jeśli nie podano, użyty zostanie "
+"domyślny)"
+
+#. TRANSLATORS: the source database, typically used for adding
+#: ../contrib/app-install/pk-app-install-add.c:253
+#: ../contrib/app-install/pk-app-install-generate.c:253
+msgid "Source cache file to add to the main database"
+msgstr "Źródłowy plik pamięci podręcznej do dodania do głównej bazy danych"
+
+#. TRANSLATORS: the icon directory
+#: ../contrib/app-install/pk-app-install-add.c:256
+#: ../contrib/app-install/pk-app-install-generate.c:256
+#: ../contrib/app-install/pk-app-install-remove.c:93
+msgid "Icon directory"
+msgstr "Katalog ikon"
+
+#. TRANSLATORS: the repo of the software source, e.g. fedora
+#: ../contrib/app-install/pk-app-install-add.c:259
+#: ../contrib/app-install/pk-app-install-generate.c:259
+#: ../contrib/app-install/pk-app-install-remove.c:96
+msgid "Name of the remote repo"
+msgstr "Nazwa zdalnego repozytorium"
+
+#. TRANSLATORS: tool that gets called when the command is not found
+#: ../contrib/app-install/pk-app-install-add.c:270
+#: ../contrib/app-install/pk-app-install-create.c:62
+#: ../contrib/app-install/pk-app-install-generate.c:270
+#: ../contrib/app-install/pk-app-install-remove.c:107
+msgid "PackageKit Application Database Installer"
+msgstr "Instalator bazy danych programów PackageKit"
+
+#. TRANSLATORS: if we are specifing a out-of-tree database
+#: ../contrib/app-install/pk-app-install-create.c:51
+msgid "Main database file to use (if not specififed, default is used)"
+msgstr ""
+"Używany główny plik bazy danych (jeśli nie podano, użyty zostanie domyślny)"
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
