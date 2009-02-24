@@ -40,6 +40,7 @@ static gboolean _updated_gtkhtml = FALSE;
 static gboolean _updated_kernel = FALSE;
 static gboolean _updated_powertop = FALSE;
 static gboolean _has_signature = FALSE;
+static gboolean _use_blocked = FALSE;
 
 /**
  * backend_initialize:
@@ -306,12 +307,6 @@ backend_get_update_detail_timeout (gpointer data)
 						  "", "", NULL, PK_RESTART_ENUM_NONE,
 						  "Cannot get update as update conflics with vncviewer",
 						  "", PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
-
-
-		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
-				    "",
-				    "Remote desktop server for the desktop");
-
 		} else {
 			/* signal to UI */
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "the package update detail was not found for %s", package_id);
@@ -341,10 +336,12 @@ backend_get_updates_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 
-	if (!_updated_powertop && !_updated_kernel && !_updated_gtkhtml) {
-		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
-				    "vino;2.24.2.fc9;i386;fedora",
-				    "Remote desktop server for the desktop");
+	if (_use_blocked) {
+		if (!_updated_powertop && !_updated_kernel && !_updated_gtkhtml) {
+			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
+					    "vino;2.24.2.fc9;i386;fedora",
+					    "Remote desktop server for the desktop");
+		}
 	}
 	if (!_updated_powertop) {
 		pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
@@ -744,65 +741,81 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 }
 
 /**
- * backend_update_packages_update_timeout:
- **/
-static gboolean
-backend_update_packages_update_timeout (gpointer data)
-{
-	guint len;
-	PkBackend *backend = (PkBackend *) data;
-	const gchar *package;
-
-	package = _package_ids[_package_current];
-	/* emit the next package */
-	if (egg_strequal (package, "powertop;1.8-1.fc8;i386;fedora")) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package, "Power consumption monitor");
-		_updated_powertop = TRUE;
-	}
-	if (egg_strequal (package, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package,
-				    "The Linux kernel (the core of the Linux operating system)");
-		_updated_kernel = TRUE;
-	}
-	if (egg_strequal (package, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package, "An HTML widget for GTK+ 2.0");
-		_updated_gtkhtml = TRUE;
-	}
-
-	/* are we done? */
-	_package_current++;
-	len = pk_package_ids_size (_package_ids);
-	if (_package_current + 1 > len) {
-		pk_backend_set_percentage (backend, 100);
-		pk_backend_finished (backend);
-		_signal_timeout = 0;
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/**
  * backend_update_packages_download_timeout:
  **/
 static gboolean
 backend_update_packages_download_timeout (gpointer data)
 {
-	guint len;
 	PkBackend *backend = (PkBackend *) data;
+	guint sub;
 
-	/* emit the next package */
-	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, _package_ids[_package_current], "The same thing");
-
-	/* are we done? */
-	_package_current++;
-	len = pk_package_ids_size (_package_ids);
-	if (_package_current + 1 > len) {
-		_package_current = 0;
-		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-		pk_backend_set_percentage (backend, 50);
-		_signal_timeout = g_timeout_add (2000, backend_update_packages_update_timeout, backend);
+	if (_progress_percentage == 100) {
+		pk_backend_finished (backend);
 		return FALSE;
 	}
+	if (_progress_percentage == 0 && !_updated_powertop) {
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+				    "powertop;1.8-1.fc8;i386;fedora",
+				    "Power consumption monitor");
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	if (_progress_percentage == 20 && !_updated_kernel) {
+		pk_backend_set_sub_percentage (backend, 100);
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+				    "The Linux kernel (the core of the Linux operating system)");
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	if (_progress_percentage == 30 && !_updated_gtkhtml) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS, "A newer package preupgrade is available in fedora-updates-testing");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
+		pk_backend_set_sub_percentage (backend, 100);
+		if (_use_blocked) {
+			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
+					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					    "An HTML widget for GTK+ 2.0");
+			_updated_gtkhtml = FALSE;
+		} else {
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					    "An HTML widget for GTK+ 2.0");
+			_updated_gtkhtml = TRUE;
+		}
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	if (_progress_percentage == 40 && !_updated_powertop) {
+		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
+		pk_backend_set_allow_cancel (backend, FALSE);
+		pk_backend_set_sub_percentage (backend, 100);
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+				    "powertop;1.8-1.fc8;i386;fedora",
+				    "Power consumption monitor");
+		_updated_powertop = TRUE;
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	if (_progress_percentage == 60 && !_updated_kernel) {
+		pk_backend_set_sub_percentage (backend, 100);
+		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+				    "The Linux kernel (the core of the Linux operating system)");
+		_updated_kernel = TRUE;
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	if (_progress_percentage == 80 && !_updated_kernel) {
+		pk_backend_set_sub_percentage (backend, 100);
+		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
+				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+				    "The Linux kernel (the core of the Linux operating system)");
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	_progress_percentage += 1;
+	pk_backend_set_percentage (backend, _progress_percentage);
+	sub = (_progress_percentage % 10) * 10;
+	if (sub != 0)
+		pk_backend_set_sub_percentage (backend, sub);
 	return TRUE;
 }
 
@@ -814,9 +827,10 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	_package_ids = package_ids;
 	_package_current = 0;
+	_progress_percentage = 0;
 	pk_backend_set_percentage (backend, 0);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	_signal_timeout = g_timeout_add (2000, backend_update_packages_download_timeout, backend);
+	_signal_timeout = g_timeout_add (200, backend_update_packages_download_timeout, backend);
 }
 
 static gboolean
@@ -843,10 +857,12 @@ backend_update_system_timeout (gpointer data)
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
-		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
-				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-				    "An HTML widget for GTK+ 2.0");
-		_updated_gtkhtml = FALSE;
+		if (_use_blocked) {
+			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
+					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					    "An HTML widget for GTK+ 2.0");
+			_updated_gtkhtml = FALSE;
+		}
 	}
 	if (_progress_percentage == 40 && !_updated_powertop) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
@@ -867,8 +883,9 @@ backend_update_system_timeout (gpointer data)
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 	}
-	_progress_percentage += 10;
+	_progress_percentage += 1;
 	pk_backend_set_percentage (backend, _progress_percentage);
+	pk_backend_set_sub_percentage (backend, (_progress_percentage % 10) * 10);
 	return TRUE;
 }
 
@@ -882,7 +899,7 @@ backend_update_system (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, TRUE);
 	_progress_percentage = 0;
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
-	_signal_timeout = g_timeout_add (1000, backend_update_system_timeout, backend);
+	_signal_timeout = g_timeout_add (100, backend_update_system_timeout, backend);
 }
 
 /**
