@@ -784,6 +784,7 @@ pk_backend_package_emulate_finished (PkBackend *backend)
 {
 	PkInfoEnum info;
 	gchar *package_id;
+	gboolean ret = FALSE;
 
 	/* simultaneous handles this on it's own */
 	if (backend->priv->simultaneous)
@@ -808,8 +809,9 @@ pk_backend_package_emulate_finished (PkBackend *backend)
 		package_id = pk_package_id_to_string (backend->priv->last_package->id);
 		pk_backend_package (backend, PK_INFO_ENUM_FINISHED, package_id, backend->priv->last_package->summary);
 		g_free (package_id);
+		ret = TRUE;
 	}
-	return TRUE;
+	return ret;
 }
 
 /**
