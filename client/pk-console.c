@@ -162,6 +162,10 @@ pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 	gchar *info_pad = NULL;
 	gchar *text = NULL;
 
+	/* ignore finished */
+	if (obj->info == PK_INFO_ENUM_FINISHED)
+		goto out;
+
 	/* make these all the same length */
 	info_pad = pk_strpad (pk_info_enum_to_text (obj->info), 12);
 
