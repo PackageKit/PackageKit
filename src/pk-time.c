@@ -170,7 +170,7 @@ pk_time_get_remaining (PkTime *time)
 		item_prev = g_ptr_array_index (time->priv->array, i-1);
 		item = g_ptr_array_index (time->priv->array, i);
 		grad = pk_time_get_gradient (item, item_prev);
-		egg_debug ("gradient between %i/%i=%f", i-1, i, grad);
+//		egg_debug ("gradient between %i/%i=%f", i-1, i, grad);
 		if (grad < 0.00001 || grad > 100) {
 			egg_debug ("ignoring gradient: %f", grad);
 		} else {
