@@ -2516,6 +2516,9 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 			g_free (package_id);
 		}
 
+		/* set finished */
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+
 		/* we are done */
 		g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 
