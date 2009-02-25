@@ -84,6 +84,7 @@ A backend for PackageKit to enable SMART functionality.
 %package docs
 Summary: Documentation for PackageKit
 Group: Development/Libraries
+BuildArch: noarch
 Requires: %{name} = %{version}-%{release}
 
 %description docs
@@ -92,6 +93,7 @@ API docs for PackageKit.
 %package yum-plugin
 Summary: Tell PackageKit to check for updates when yum exits
 Group: System Environment/Base
+BuildArch: noarch
 Requires: yum >= 3.0
 Requires: PackageKit
 Obsoletes: yum-packagekit < %{version}-%{release}
@@ -123,6 +125,7 @@ QT libraries for accessing PackageKit.
 %package cron
 Summary: Cron job and related utilities for PackageKit
 Group: System Environment/Base
+BuildArch: noarch
 Requires: cronie
 Requires: %{name} = %{version}-%{release}
 
@@ -197,6 +200,7 @@ fonts from configured repositories using PackageKit.
 %package command-not-found
 Summary: Ask the user to install command line programs automatically
 Group: Development/Libraries
+BuildArch: noarch
 Requires: bash
 Requires: PackageKit-glib = %{version}-%{release}
 
@@ -207,6 +211,7 @@ using PackageKit.
 %package ruck
 Summary: rug-like interface that uses PackageKit
 Group: Development/Libraries
+BuildArch: noarch
 Requires: PackageKit = %{version}-%{release}
 
 %description ruck
