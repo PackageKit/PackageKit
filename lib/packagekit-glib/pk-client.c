@@ -4637,20 +4637,6 @@ pk_client_new (void)
 	return PK_CLIENT (client);
 }
 
-/**
- * init:
- *
- * Library constructor: Disable ptrace() and core dumping for applications
- * which use this library, so that local trojans cannot silently abuse PackageKit
- * privileges.
- */
-__attribute__ ((constructor))
-static void init()
-{
-	/* this is a bandaid */
-	prctl (PR_SET_DUMPABLE, 0);
-}
-
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
