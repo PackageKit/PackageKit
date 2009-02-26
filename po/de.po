@@ -1,6 +1,5 @@
 # German translation of policycoreutils.
 # Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
-#
 # Holger Wansing <linux@wansing-online.de>, 2006.
 # Timo Trinks <ttrinks@redhat.com>, 2006, 2007.
 # Michael Schönitzer <michael@schoenitzer.de>, 2007.
@@ -9,15 +8,17 @@
 # Thomas Spura <tomspur@fedoraproject.org>, 2008.
 # Daniela Kugelmann <dkugelma@redhat.com >, 2008.
 # Stefan Posdzich <cheekyboinc@foresightlinux.org>, 2008.
-#
+# Fabian Affolter <fab@fedoraproject.org>, 2009.
+# 
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.de\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-02-23 13:50+0000\n"
-"PO-Revision-Date: 2009-02-26 12:55+0100\n"
-"Last-Translator: Fabian Affolter <fab@fedoraproject.org>\n"
-"Language-Team: German <i18@redhat.com>\n"
+"PO-Revision-Date: 2009-02-26 13:00+0100\n"
+"Last-Translator: Jens-Uwe Peter <mrfloppy@fedoraproject.org>\n"
+"Language-Team: German <gnome-de@gnome.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
