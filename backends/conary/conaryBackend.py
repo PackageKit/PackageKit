@@ -22,18 +22,19 @@
 import sys
 import os
 import re
-
 from conary import errors
 from conary.deps import deps
 from conary import dbstore, queryrep, versions, updatecmd
 from conary.local import database
 from conary import trove
 from conary.conaryclient import cmdline
+from conary.lib import util
 
 from packagekit.backend import *
 from packagekit.package import *
 from packagekit.progress import PackagekitProgress
-from conaryCallback import UpdateCallback, GetUpdateCallback, RemoveCallback, UpdateSystemCallback
+from conaryCallback import UpdateCallback, GetUpdateCallback
+from conaryCallback import RemoveCallback, UpdateSystemCallback
 from conaryFilter import *
 from XMLCache import XMLCache as Cache
 from conaryInit import *
@@ -41,14 +42,11 @@ from conaryInit import *
 from conaryInit import init_conary_config, init_conary_client
 from conary import conarycfg, conaryclient
 from conarypk import ConaryPk
-
-pkpackage = PackagekitPackage()
-
 from pkConaryLog import *
 
-
-from conary.lib import util
+pkpackage = PackagekitPackage()
 sys.excepthook = util.genExcepthook()
+
 def ExceptionHandler(func):
     return func
     def display(error):
@@ -126,9 +124,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             installed = INFO_INSTALLED
         else:
             installed = INFO_AVAILABLE
-
         return installed
-           
+
     @ExceptionHandler
     def get_package_id(self, name, versionObj, flavor):
 
@@ -231,6 +228,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             restartDir = self.client.applyUpdateJob(updJob)
         except errors.InternalConaryError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE,"get-updates first and then update sytem")
+        except trove.TroveIntegrityError: 
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"run get-updates again")
         return updJob
 
     def _get_package_update(self, name, version, flavor):
@@ -478,9 +477,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         for package in package_ids.split(" "):
             name, version, flavor, installed = self._findPackage(package)
             if name:
-               # self._do_package_update(name, version, flavor)
-               cli = ConaryPk()
-               cli.update(name)
+                cli = ConaryPk()
+                cli.update(name)
             else:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'No available updates')
 

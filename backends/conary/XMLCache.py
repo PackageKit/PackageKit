@@ -1,5 +1,6 @@
 import os
-from xml.dom.minidom import parse
+from xml.dom.minidom import parse, parseString
+from xml.parsers.expat import ExpatError
 import urllib as url
 
 
@@ -7,7 +8,7 @@ from conary.lib import sha1helper
 from conary.lib import util
 
 from packagekit.backend import PackageKitBaseBackend
-from packagekit.enums import ERROR_NO_CACHE
+from packagekit.enums import ERROR_NO_CACHE,ERROR_REPO_CONFIGURATION_ERROR
 
 
 from pkConaryLog import log
@@ -71,8 +72,13 @@ class XMLRepo:
         try:
             return self._repo
         except AttributeError:
-            self._repo =   parse( open( self.xml_path + self.repo) )
-            return self._repo
+            try:
+                self._repo =   parse(open( self.xml_path + self.repo))
+                return self._repo
+            except ExpatError:
+                Pk = PackageKitBaseBackend("")
+                Pk.error(ERROR_REPO_CONFIGURATION_ERROR," The file %s not parsed submit a issue " % ( self.xml_path + self.repo, ) )
+       
 
     def _generatePackage(self, package_node ): 
         """ convert from package_node to dictionary """
@@ -104,7 +110,7 @@ class XMLRepo:
             for package in packages.childNodes:
                 pkg = self._generatePackage(package)
                 pkg["label"] = self.label
-                if name.lower() in pkg["name"]:
+                if name.lower() in pkg["name"].lower():
                     results.append(pkg['name'])
         return  [ self._getPackage(i) for i in set(results) ]
 
@@ -145,8 +151,15 @@ class XMLRepo:
                         for j in pkg[i]:
                             if name.lower() in j.lower():
                                 results.append(pkg['name'])
-                    if name.lower() in pkg[i]:
+                    
+                    if type(pkg[i]) == str:
+                        check = pkg[i].lower()
+                    else:
+                        check = pkg[i]
+                    if name.lower() in check:
                         results.append(pkg['name'])
+            
+
         return  [ self._getPackage(i) for i in set(results) ]
     def _getAllPackages(self):
         doc = self._open()
@@ -291,10 +304,11 @@ class XMLCache:
 
 if __name__ == '__main__':
   #  print ">>> name"
-   # print XMLCache().search('music', 'name' )
+    import sys
+    l= XMLCache().search(sys.argv[1],sys.argv[2] )
    # print ">> details"
    # l= XMLCache().search('Internet', 'group' )
 
-    #for v,p in enumerate(l):
-    #    print v,p["name"]
-    print  XMLCache().getGroup(['GTK', 'Graphics', 'Photography', 'Viewer'])
+    for v,p in enumerate(l):
+        print v,p["name"]
+    #print  XMLCache().getGroup(['GTK', 'Graphics', 'Photography', 'Viewer'])
