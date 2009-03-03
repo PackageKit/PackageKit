@@ -41,6 +41,8 @@ static gboolean _updated_kernel = FALSE;
 static gboolean _updated_powertop = FALSE;
 static gboolean _has_signature = FALSE;
 static gboolean _use_blocked = FALSE;
+static gboolean _use_eula = FALSE;
+static gboolean _use_gpg = FALSE;
 
 /**
  * backend_initialize:
@@ -209,11 +211,9 @@ backend_get_distro_upgrades (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_STABLE,
-				   "Fedora 9", "Fedora 9 is a Linux-based operating system "
-				   "that showcases the latest in free and open source software.");
+				   "fedora-9", "Fedora 9");
 	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
-				   "Fedora 10 RC1", "Fedora 10 RC1 is the first unstable version "
-				   "of Fedora for people to test.");
+				   "fedora-10-rc1", "Fedora 10 RC1");
 	pk_backend_finished (backend);
 }
 
@@ -428,7 +428,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	gboolean has_eula;
 
 	if (egg_strequal (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva")) {
-		if (!_has_signature) {
+		if (_use_gpg && !_has_signature) {
 			pk_backend_repo_signature_required (backend, package_ids[0], "updates",
 							    "http://example.com/gpgkey",
 							    "Test Key (Fedora) fedora@example.com",
@@ -442,7 +442,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 		}
 		eula_id = "eula_hughsie_dot_com";
 		has_eula = pk_backend_is_eula_valid (backend, eula_id);
-		if (!has_eula) {
+		if (_use_eula && !has_eula) {
 			license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
 					    "Captain: What happen ?\n"
 					    "Mechanic: Somebody set up us the bomb.\n\n"
@@ -487,7 +487,7 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	if (type == PK_SIGTYPE_ENUM_GPG &&
-	    egg_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
+	    /* egg_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") && */
 	    egg_strequal (key_id, "BB7576AC")) {
 		egg_debug ("installed signature %s for %s", key_id, package_id);
 		_has_signature = TRUE;
@@ -750,6 +750,12 @@ backend_update_packages_download_timeout (gpointer data)
 	guint sub;
 
 	if (_progress_percentage == 100) {
+		if (_use_blocked) {
+			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
+					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					    "An HTML widget for GTK+ 2.0");
+			_updated_gtkhtml = FALSE;
+		}
 		pk_backend_finished (backend);
 		return FALSE;
 	}
@@ -773,12 +779,7 @@ backend_update_packages_download_timeout (gpointer data)
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
 		pk_backend_set_sub_percentage (backend, 100);
-		if (_use_blocked) {
-			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
-					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-					    "An HTML widget for GTK+ 2.0");
-			_updated_gtkhtml = FALSE;
-		} else {
+		if (!_use_blocked) {
 			pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 					    "An HTML widget for GTK+ 2.0");
@@ -825,6 +826,50 @@ backend_update_packages_download_timeout (gpointer data)
 static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
+	const gchar *eula_id;
+	const gchar *license_agreement;
+	gboolean has_eula;
+	if (_use_gpg && !_has_signature) {
+		pk_backend_repo_signature_required (backend, package_ids[0], "updates",
+						    "http://example.com/gpgkey",
+						    "Test Key (Fedora) fedora@example.com",
+						    "BB7576AC",
+						    "D8CC 06C2 77EC 9C53 372F C199 B1EE 1799 F24F 1B08",
+						    "2007-10-04", PK_SIGTYPE_ENUM_GPG);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+				       "GPG signed package could not be verified");
+		pk_backend_finished (backend);
+		return;
+	}
+	eula_id = "eula_hughsie_dot_com";
+	has_eula = pk_backend_is_eula_valid (backend, eula_id);
+	if (_use_eula && !has_eula) {
+		license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
+				    "Captain: What happen ?\n"
+				    "Mechanic: Somebody set up us the bomb.\n\n"
+				    "Operator: We get signal.\n"
+				    "Captain: What !\n"
+				    "Operator: Main screen turn on.\n"
+				    "Captain: It's you !!\n"
+				    "CATS: How are you gentlemen !!\n"
+				    "CATS: All your base are belong to us.\n"
+				    "CATS: You are on the way to destruction.\n\n"
+				    "Captain: What you say !!\n"
+				    "CATS: You have no chance to survive make your time.\n"
+				    "CATS: Ha Ha Ha Ha ....\n\n"
+				    "Operator: Captain!! *\n"
+				    "Captain: Take off every 'ZIG' !!\n"
+				    "Captain: You know what you doing.\n"
+				    "Captain: Move 'ZIG'.\n"
+				    "Captain: For great justice.\n";
+		pk_backend_eula_required (backend, eula_id, package_ids[0],
+					  "CATS Inc.", license_agreement);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
+				       "licence not installed so cannot install");
+		pk_backend_finished (backend);
+		return;
+	}
+
 	_package_ids = package_ids;
 	_package_current = 0;
 	_progress_percentage = 0;

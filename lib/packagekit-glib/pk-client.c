@@ -1222,9 +1222,6 @@ pk_client_cancel (PkClient *client, GError **error)
 		return FALSE;
 	}
 
-	/* save this so we can re-issue it */
-	client->priv->role = PK_ROLE_ENUM_CANCEL;
-
 	/* hopefully do the operation first time */
 	ret = pk_client_cancel_action (client, &error_local);
 
