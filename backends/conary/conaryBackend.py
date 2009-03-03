@@ -338,6 +338,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             summary = package_id.split(";")
             data = summary[3].split("#")
             if data[1]:
+                log.info(summary[3].split("#")[1])
                 metadata = eval(summary[3].split("#")[1])
             else:
                 metadata = {}

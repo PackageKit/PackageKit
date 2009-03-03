@@ -86,9 +86,9 @@ class XMLRepo:
         cat = []
         for node in package_node.childNodes:
             if pkg.has_key('category'):
-                cat.append(str(node.childNodes[0].nodeValue))
+                cat.append(str(node.childNodes[0].nodeValue).replace(";","").replace("#",""))
             else:
-                pkg[node.nodeName.encode("UTF-8")] = str(node.childNodes[0].nodeValue.encode("UTF-8"))
+                pkg[node.nodeName.encode("UTF-8")] = str(node.childNodes[0].nodeValue.encode("UTF-8")).replace(";",' ').replace("#","")
         pkg["category"] = cat
         return pkg
 
