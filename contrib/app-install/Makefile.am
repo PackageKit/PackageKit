@@ -3,6 +3,7 @@ AUTOMAKE_OPTIONS = 1.7
 
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
+	$(GIO_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
@@ -32,7 +33,7 @@ pk_app_install_remove_SOURCES =				\
 	pk-app-install-remove.c				\
 	pk-app-install-common.h				\
 	$(NULL)
-pk_app_install_remove_LDADD = $(GLIB_LIBS) $(SQLITE_LIBS)
+pk_app_install_remove_LDADD = $(GIO_LIBS) $(GLIB_LIBS) $(SQLITE_LIBS)
 pk_app_install_remove_CFLAGS = $(WARNINGFLAGS_C)
 
 pk_app_install_add_SOURCES =				\
@@ -41,7 +42,7 @@ pk_app_install_add_SOURCES =				\
 	pk-app-install-add.c				\
 	pk-app-install-common.h				\
 	$(NULL)
-pk_app_install_add_LDADD = $(GLIB_LIBS) $(SQLITE_LIBS)
+pk_app_install_add_LDADD = $(GIO_LIBS) $(GLIB_LIBS) $(SQLITE_LIBS)
 pk_app_install_add_CFLAGS = $(WARNINGFLAGS_C)
 
 pk_app_install_generate_SOURCES =			\

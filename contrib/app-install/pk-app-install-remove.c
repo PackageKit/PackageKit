@@ -23,10 +23,14 @@
 
 #include <string.h>
 #include <glib/gi18n.h>
+#include <glib/gstdio.h>
 #include <sqlite3.h>
+#include <gio/gio.h>
 
 #include "pk-app-install-common.h"
 #include "egg-debug.h"
+
+const gchar *icon_sizes[] = { "22x22", "24x24", "32x32", "48x48", "scalable", NULL };
 
 /**
  * pk_app_install_remove_icons_sqlite_cb:
@@ -34,32 +38,46 @@
 static gint
 pk_app_install_remove_icons_sqlite_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
-	gint i;
+	guint i;
 	gchar *col;
 	gchar *value;
 	const gchar *application_id = NULL;
+	const gchar *icon_name = NULL;
 	gchar *path;
-	gchar *filename;
 	const gchar *icondir = (const gchar *) data;
+	GFile *file;
+	gboolean ret;
+	GError *error = NULL;
 
-	for (i=0; i<argc; i++) {
+	for (i=0; i<(guint)argc; i++) {
 		col = col_name[i];
 		value = argv[i];
 		if (g_strcmp0 (col, "application_id") == 0)
 			application_id = value;
+		else if (g_strcmp0 (col, "icon_name") == 0)
+			icon_name = value;
 	}
-	if (application_id == NULL)
+	if (application_id == NULL || icon_name == NULL)
 		goto out;
 
-	egg_warning ("application_id=%s", application_id);
-	filename = g_strdup_printf ("%s.png", application_id);
-	path = g_build_filename (icondir, "48x48", filename, NULL);
+	egg_debug ("removing icons for application: %s", application_id);
 
-//	g_unlink (path);
-	egg_warning ("path=%s", path);
-
-	g_free (filename);
-	g_free (path);
+	/* delete all icon sizes */
+	for (i=0; icon_sizes[i] != NULL; i++) {
+		path = g_build_filename (icondir, icon_sizes[i], icon_name, NULL);
+		ret = g_file_test (path, G_FILE_TEST_EXISTS);
+		if (ret) {
+			egg_debug ("removing file %s", path);
+			file = g_file_new_for_path (path);
+			ret = g_file_delete (file, NULL, &error);
+			if (!ret) {
+				egg_warning ("cannot delete %s: %s", path, error->message);
+				g_clear_error (&error);
+			}
+			g_object_unref (file);
+		}
+		g_free (path);
+	}
 out:
 	return 0;
 }
@@ -142,7 +160,7 @@ main (int argc, char *argv[])
 	}
 
 	/* remove icons */
-	statement = g_strdup_printf ("SELECT application_id FROM applications WHERE repo_id = '%s'", repo);
+	statement = g_strdup_printf ("SELECT application_id, icon_name FROM applications WHERE repo_id = '%s'", repo);
 	rc = sqlite3_exec (db, statement, pk_app_install_remove_icons_sqlite_cb, (void*) icondir, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {

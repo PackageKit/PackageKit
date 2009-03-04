@@ -33,6 +33,8 @@
 #define PK_APP_INSTALL_DEFAULT_DATABASE DATADIR "/app-install/cache/desktop.db"
 #endif
 
+#if 0
+
 /**
  * pk_app_install_create:
  **/
@@ -213,16 +215,7 @@ out:
 		sqlite3_close (db);
 	return ret;
 }
-
-/**
- * pk_app_install_add:
- **/
-static gboolean
-pk_app_install_add (const gchar *cache, const gchar *icondir, const gchar *repo, const gchar *source)
-{
-	egg_warning ("cache=%s, source=%s, repo=%s, icondir=%s", cache, source, repo, icondir);
-	return TRUE;
-}
+#endif
 
 /**
  * main:
@@ -233,29 +226,29 @@ main (int argc, char *argv[])
 	gboolean verbose = FALSE;
 	GOptionContext *context;
 	gint retval = 0;
-	gchar *action = NULL;
 	gchar *cache = NULL;
 	gchar *repo = NULL;
-	gchar *source = NULL;
+	gchar *applicationdir = NULL;
 	gchar *icondir = NULL;
+	gchar *outputdir = NULL;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 		  _("Show extra debugging information"), NULL },
-		{ "action", 'c', 0, G_OPTION_ARG_STRING, &action,
-		  /* TRANSLATORS: the action is non-localised */
-		  _("The action, one of 'create', 'add', or 'remove'"), NULL},
 		{ "cache", 'c', 0, G_OPTION_ARG_STRING, &cache,
 		  /* TRANSLATORS: if we are specifing a out-of-tree database */
 		  _("Main cache file to use (if not specififed, default is used)"), NULL},
-		{ "source", 's', 0, G_OPTION_ARG_STRING, &source,
-		  /* TRANSLATORS: the source database, typically used for adding */
+		{ "applicationdir", 's', 0, G_OPTION_ARG_STRING, &applicationdir,
+		  /* TRANSLATORS: the applicationdir database, typically used for adding */
 		  _("Source cache file to add to the main database"), NULL},
 		{ "icondir", 'i', 0, G_OPTION_ARG_STRING, &icondir,
 		  /* TRANSLATORS: the icon directory */
 		  _("Icon directory"), NULL},
+		{ "outputdir", 'i', 0, G_OPTION_ARG_STRING, &outputdir,
+		  /* TRANSLATORS: the output directory */
+		  _("Icon directory"), NULL},
 		{ "repo", 'n', 0, G_OPTION_ARG_STRING, &repo,
-		  /* TRANSLATORS: the repo of the software source, e.g. fedora */
+		  /* TRANSLATORS: the repo of the software applicationdir, e.g. fedora */
 		  _("Name of the remote repo"), NULL},
 		{ NULL}
 	};
@@ -274,72 +267,53 @@ main (int argc, char *argv[])
 
 	egg_debug_init (verbose);
 
-	egg_debug ("cache=%s, source=%s, repo=%s, icondir=%s", cache, source, repo, icondir);
-
 	/* use default */
 	if (cache == NULL) {
 		egg_debug ("cache not specified, using %s", PK_APP_INSTALL_DEFAULT_DATABASE);
 		cache = g_strdup (PK_APP_INSTALL_DEFAULT_DATABASE);
 	}
 
-	if (g_strcmp0 (action, "create") == 0) {
-		pk_app_install_create (cache);
-	} else if (g_strcmp0 (action, "add") == 0) {
-		if (repo == NULL) {
-			egg_warning ("A repo name is required");
-			retval = 1;
-			goto out;
-		}
-		if (source == NULL) {
-			egg_warning ("A source filename is required");
-			retval = 1;
-			goto out;
-		}
-		if (!g_file_test (source, G_FILE_TEST_EXISTS)) {
-			egg_warning ("The source filename '%s' could not be found", source);
-			retval = 1;
-			goto out;
-		}
-		if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
-			egg_warning ("The icon directory '%s' could not be found", icondir);
-			retval = 1;
-			goto out;
-		}
-		pk_app_install_add (cache, icondir, repo, source);
-	} else if (g_strcmp0 (action, "remove") == 0) {
-		if (repo == NULL) {
-			egg_warning ("A repo name is required");
-			retval = 1;
-			goto out;
-		}
-		if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
-			egg_warning ("The icon directory '%s' could not be found", icondir);
-			retval = 1;
-			goto out;
-		}
-		pk_app_install_remove (cache, icondir, repo);
-	} else if (g_strcmp0 (action, "generate") == 0) {
-		if (repo == NULL) {
-			egg_warning ("A repo name is required");
-			retval = 1;
-			goto out;
-		}
-		if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
-			egg_warning ("The icon directory '%s' could not be found", icondir);
-			retval = 1;
-			goto out;
-		}
-		pk_app_install_remove (cache, icondir, repo);
-	} else {
-		egg_warning ("An action is required");
+	if (repo == NULL) {
+		egg_warning ("A repo name is required");
 		retval = 1;
+		goto out;
 	}
+	if (applicationdir == NULL) {
+		egg_warning ("A applicationdir filename is required");
+		retval = 1;
+		goto out;
+	}
+	if (!g_file_test (applicationdir, G_FILE_TEST_EXISTS)) {
+		egg_warning ("The applicationdir filename '%s' could not be found", applicationdir);
+		retval = 1;
+		goto out;
+	}
+	if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
+		egg_warning ("The icon directory '%s' could not be found", icondir);
+		retval = 1;
+		goto out;
+	}
+	if (outputdir == NULL || !g_file_test (outputdir, G_FILE_TEST_IS_DIR)) {
+		egg_warning ("The icon output directory '%s' could not be found", outputdir);
+		retval = 1;
+		goto out;
+	}
+
+// generate the sub directories in the outputdir if they dont exist
+// get a list of files in applicationdir
+// for each file, extract SQL data
+// append the sql to a GString
+// copy the icons
+// write the GString to disk
+
+	egg_warning ("cache=%s, applicationdir=%s, repo=%s, icondir=%s, outputdir=%s", cache, applicationdir, repo, icondir, outputdir);
 
 out:
 	g_free (cache);
 	g_free (repo);
-	g_free (source);
+	g_free (applicationdir);
 	g_free (icondir);
+	g_free (outputdir);
 	return 0;
 }
 
