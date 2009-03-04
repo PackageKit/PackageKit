@@ -840,7 +840,7 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	code = pk_error_enum_from_text (code_text);
-	egg_debug ("emit error-code %i, %s", code, details);
+	egg_debug ("emit error-code %s, %s", pk_error_enum_to_text (code), details);
 	g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, code, details);
 }
 
