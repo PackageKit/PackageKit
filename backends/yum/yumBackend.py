@@ -650,6 +650,30 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
 
+    def _get_provides_query(self, provides_type, search):
+        # gets a list of provides
+
+        # old standard
+        if search.startswith("gstreamer0.10("):
+            return [ search ]
+
+        # new standard
+        if provides_type == PROVIDES_CODEC:
+            return [ "gstreamer0.10(%s)" % search ]
+        if provides_type == PROVIDES_FONT:
+            return [ "font(%s)" % search ]
+        if provides_type == PROVIDES_MIMETYPE:
+            return [ "mimehandler(%s)" % search ]
+        if provides_type == PROVIDES_ANY:
+            provides = []
+            provides.append(self._get_provides_query(PROVIDES_CODEC, search)[0])
+            provides.append(self._get_provides_query(PROVIDES_FONT, search)[0])
+            provides.append(self._get_provides_query(PROVIDES_MIMETYPE, search)[0])
+            return provides
+
+        # not supported
+        raise PkError(ERROR_NOT_SUPPORTED, "this backend does not support '%s' provides" % provides_type)
+
     def what_provides(self, filters, provides_type, search):
         '''
         Implement the {backend}-what-provides functionality
@@ -663,45 +687,36 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
 
-        # guess
-        if provides_type == PROVIDES_ANY and search.startswith(":"):
-            provides_type = PROVIDES_FONT
-
-        # old standard
-        if search.startswith("gstreamer0.10("):
-            provide = search
-        elif provides_type == PROVIDES_CODEC:
-            provide = "gstreamer0.10(%s)" % search
-        elif provides_type == PROVIDES_FONT:
-            provide = "font(%s)" % search
-        elif provides_type == PROVIDES_MIMETYPE:
-            provide = "mimehandler(%s)" % search
-        else:
-            self.error(ERROR_NOT_SUPPORTED, "this backend does not support %s provides" % provides_type, exit=False)
-            return
-
-        # Check installed for file
         try:
-            pkgs = self.yumbase.rpmdb.searchProvides(provide)
-        except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-        pkgfilter.add_installed(pkgs)
+            provides = self._get_provides_query(provides_type, search)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+        else:
+            # there may be multiple provide strings
+            for provide in provides:
+                # Check installed packages for provide
+                try:
+                    pkgs = self.yumbase.rpmdb.searchProvides(provide)
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                else:
+                    pkgfilter.add_installed(pkgs)
 
-        if not FILTER_INSTALLED in fltlist:
-            # Check available for file
-            try:
-                pkgs = self.yumbase.pkgSack.searchProvides(provide)
-            except yum.Errors.RepoError, e:
-                self.error(ERROR_NO_CACHE, _to_unicode(e), exit=False)
-                return
-            except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-            else:
-                pkgfilter.add_available(pkgs)
+                    if not FILTER_INSTALLED in fltlist:
+                        # Check available packages for provide
+                        try:
+                            pkgs = self.yumbase.pkgSack.searchProvides(provide)
+                        except yum.Errors.RepoError, e:
+                            self.error(ERROR_NO_CACHE, _to_unicode(e), exit=False)
+                            return
+                        except Exception, e:
+                            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                        else:
+                            pkgfilter.add_available(pkgs)
 
-        # we couldn't do this when generating the list
-        package_list = pkgfilter.post_process()
-        self._show_package_list(package_list)
+                    # we couldn't do this when generating the list
+                    package_list = pkgfilter.post_process()
+                    self._show_package_list(package_list)
 
     def get_categories(self):
         '''
