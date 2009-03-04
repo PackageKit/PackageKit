@@ -24,7 +24,9 @@
 #include <string.h>
 #include <glib/gi18n.h>
 #include <sqlite3.h>
+#include <gio/gio.h>
 
+#include "pk-app-install-common.h"
 #include "egg-debug.h"
 
 #if PK_BUILD_LOCAL
@@ -33,195 +35,73 @@
 #define PK_APP_INSTALL_DEFAULT_DATABASE DATADIR "/app-install/cache/desktop.db"
 #endif
 
-/**
- * pk_app_install_create:
- **/
-static gboolean
-pk_app_install_create (const gchar *cache)
-{
-	gboolean ret = TRUE;
-	gboolean create_file;
-	const gchar *statement;
-	sqlite3 *db = NULL;
-	gint rc;
-
-	/* if the database file was not installed (or was nuked) recreate it */
-	create_file = g_file_test (cache, G_FILE_TEST_EXISTS);
-	if (create_file == TRUE) {
-		egg_warning ("already exists");
-		goto out;
-	}
-
-	egg_debug ("exists: %i", create_file);
-
-	/* open database */
-	rc = sqlite3_open (cache, &db);
-	if (rc) {
-		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
-	}
-
-	/* don't sync */
-	statement = "PRAGMA synchronous=OFF";
-	rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-	if (rc) {
-		egg_warning ("Can't turn off sync: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
-	}
-
-	egg_debug ("create");
-	if (create_file == FALSE) {
-		statement = "CREATE TABLE general ("
-			    "application_id TEXT primary key,"
-			    "package_name TEXT,"
-			    "group_id TEXT,"
-			    "repo_name TEXT,"
-			    "application_name TEXT,"
-			    "application_summary TEXT);";
-		rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-		if (rc) {
-			egg_warning ("Can't create general table: %s\n", sqlite3_errmsg (db));
-			ret = FALSE;
-			goto out;
-		}
-		statement = "CREATE TABLE localised ("
-			    "application_id TEXT primary key,"
-			    "application_name TEXT,"
-			    "application_summary TEXT,"
-			    "locale TEXT);";
-		rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-		if (rc) {
-			egg_warning ("Can't create localised table: %s\n", sqlite3_errmsg (db));
-			ret = FALSE;
-			goto out;
-		}
-	}
-
-out:
-	if (db != NULL)
-		sqlite3_close (db);
-	return ret;
-}
+const gchar *icon_sizes[] = { "22x22", "24x24", "32x32", "48x48", "scalable", NULL };
 
 /**
- * pk_app_install_remove_icons_sqlite_cb:
+ * pk_app_install_add_get_number_sqlite_cb:
  **/
 static gint
-pk_app_install_remove_icons_sqlite_cb (void *data, gint argc, gchar **argv, gchar **col_name)
+pk_app_install_add_get_number_sqlite_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
-	gint i;
-	gchar *col;
-	gchar *value;
-	const gchar *application_id = NULL;
-	gchar *path;
-	gchar *filename;
-	const gchar *icondir = (const gchar *) data;
-
-	for (i=0; i<argc; i++) {
-		col = col_name[i];
-		value = argv[i];
-		if (g_strcmp0 (col, "application_id") == 0)
-			application_id = value;
-	}
-	if (application_id == NULL)
-		goto out;
-
-	egg_warning ("application_id=%s", application_id);
-	filename = g_strdup_printf ("%s.png", application_id);
-	path = g_build_filename (icondir, "48x48", filename, NULL);
-
-//	g_unlink (path);
-	egg_warning ("path=%s", path);
-
-	g_free (filename);
-	g_free (path);
-out:
+	guint *number = (guint *) data;
+	(*number)++;
 	return 0;
 }
 
 /**
- * pk_app_install_remove:
+ * pk_app_install_add_copy_icons_sqlite_cb:
  **/
-static gboolean
-pk_app_install_remove (const gchar *cache, const gchar *icondir, const gchar *repo)
+static gint
+pk_app_install_add_copy_icons_sqlite_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
-	gboolean ret = TRUE;
-	gchar *statement = NULL;
-	sqlite3 *db = NULL;
-	gchar *error_msg;
-	gint rc;
+	guint i;
+	gchar *col;
+	gchar *value;
+	const gchar *application_id = NULL;
+	const gchar *icon_name = NULL;
+	gchar *path;
+	gchar *dest;
+	GFile *file;
+	GFile *remote;
+	const gchar *icondir = (const gchar *) data;
+	gboolean ret;
+	GError *error = NULL;
 
-	/* open database */
-	rc = sqlite3_open (cache, &db);
-	if (rc) {
-		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
+	for (i=0; i<(guint)argc; i++) {
+		col = col_name[i];
+		value = argv[i];
+		if (g_strcmp0 (col, "application_id") == 0)
+			application_id = value;
+		else if (g_strcmp0 (col, "icon_name") == 0)
+			icon_name = value;
 	}
+	if (application_id == NULL || icon_name == NULL)
+		goto out;
 
-	/* remove icons */
-	if (icondir != NULL) {
-		statement = g_strdup_printf ("SELECT application_id FROM general WHERE repo_name = '%s'", repo);
-		rc = sqlite3_exec (db, statement, pk_app_install_remove_icons_sqlite_cb, (void*) icondir, &error_msg);
-		g_free (statement);
-		if (rc != SQLITE_OK) {
-			egg_warning ("SQL error: %s\n", error_msg);
-			sqlite3_free (error_msg);
-			return 0;
+	egg_debug ("removing icons for application: %s", application_id);
+
+	/* copy all icon sizes if they exist */
+	for (i=0; icon_sizes[i] != NULL; i++) {
+		path = g_build_filename (icondir, icon_sizes[i], icon_name, NULL);
+		ret = g_file_test (path, G_FILE_TEST_EXISTS);
+		if (ret) {
+			dest = g_build_filename (PK_APP_INSTALL_DEFAULT_ICONDIR, icon_sizes[i], icon_name, NULL);
+			egg_debug ("copying file %s to %s", path, dest);
+			file = g_file_new_for_path (path);
+			remote = g_file_new_for_path (dest);
+			ret = g_file_copy (file, remote, G_FILE_COPY_TARGET_DEFAULT_PERMS, NULL, NULL, NULL, &error);
+			if (!ret) {
+				egg_warning ("cannot copy %s: %s", path, error->message);
+				g_clear_error (&error);
+			}
+			g_object_unref (file);
+			g_object_unref (remote);
+			g_free (dest);
 		}
+		g_free (path);
 	}
-
-	/* delete from localised (localised has no repo_name, so key off general) */
-	statement = g_strdup_printf ("DELETE FROM localised WHERE EXISTS ( "
-				      "SELECT general.application_id FROM general WHERE "
-				      "general.application_id = general.application_id AND general.repo_name = '%s')", repo);
-//	statement = g_strdup_printf ("SELECT general.application_id FROM general WHERE general.application_id == general.application_id AND general.repo_name == '%s'", repo);
-	rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-	if (rc) {
-		egg_warning ("Can't remove rows: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
-	}
-	egg_debug ("%i removals from localised", sqlite3_changes (db));
-	g_free (statement);
-
-	/* delete from general */
-	statement = g_strdup_printf ("DELETE FROM general WHERE repo_name = '%s'", repo);
-	rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-	if (rc) {
-		egg_warning ("Can't remove rows: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
-	}
-	egg_debug ("%i removals from general", sqlite3_changes (db));
-	g_free (statement);
-
-	/* reclaim memory */
-	statement = g_strdup ("VACUUM");
-	rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-	if (rc) {
-		egg_warning ("Can't vacuum: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
-	}
-
 out:
-	g_free (statement);
-	if (db != NULL)
-		sqlite3_close (db);
-	return ret;
-}
-
-/**
- * pk_app_install_add:
- **/
-static gboolean
-pk_app_install_add (const gchar *cache, const gchar *icondir, const gchar *repo, const gchar *source)
-{
-	egg_warning ("cache=%s, source=%s, repo=%s, icondir=%s", cache, source, repo, icondir);
-	return TRUE;
+	return 0;
 }
 
 /**
@@ -233,18 +113,22 @@ main (int argc, char *argv[])
 	gboolean verbose = FALSE;
 	GOptionContext *context;
 	gint retval = 0;
-	gchar *action = NULL;
 	gchar *cache = NULL;
 	gchar *repo = NULL;
 	gchar *source = NULL;
 	gchar *icondir = NULL;
+	sqlite3 *db = NULL;
+	gchar *error_msg;
+	gint rc;
+	guint number = 0;
+	gchar *statement;
+	gchar *contents;
+	gboolean ret;
+	GError *error = NULL;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 		  _("Show extra debugging information"), NULL },
-		{ "action", 'c', 0, G_OPTION_ARG_STRING, &action,
-		  /* TRANSLATORS: the action is non-localised */
-		  _("The action, one of 'create', 'add', or 'remove'"), NULL},
 		{ "cache", 'c', 0, G_OPTION_ARG_STRING, &cache,
 		  /* TRANSLATORS: if we are specifing a out-of-tree database */
 		  _("Main cache file to use (if not specififed, default is used)"), NULL},
@@ -282,60 +166,85 @@ main (int argc, char *argv[])
 		cache = g_strdup (PK_APP_INSTALL_DEFAULT_DATABASE);
 	}
 
-	if (g_strcmp0 (action, "create") == 0) {
-		pk_app_install_create (cache);
-	} else if (g_strcmp0 (action, "add") == 0) {
-		if (repo == NULL) {
-			egg_warning ("A repo name is required");
-			retval = 1;
-			goto out;
-		}
-		if (source == NULL) {
-			egg_warning ("A source filename is required");
-			retval = 1;
-			goto out;
-		}
-		if (!g_file_test (source, G_FILE_TEST_EXISTS)) {
-			egg_warning ("The source filename '%s' could not be found", source);
-			retval = 1;
-			goto out;
-		}
-		if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
-			egg_warning ("The icon directory '%s' could not be found", icondir);
-			retval = 1;
-			goto out;
-		}
-		pk_app_install_add (cache, icondir, repo, source);
-	} else if (g_strcmp0 (action, "remove") == 0) {
-		if (repo == NULL) {
-			egg_warning ("A repo name is required");
-			retval = 1;
-			goto out;
-		}
-		if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
-			egg_warning ("The icon directory '%s' could not be found", icondir);
-			retval = 1;
-			goto out;
-		}
-		pk_app_install_remove (cache, icondir, repo);
-	} else if (g_strcmp0 (action, "generate") == 0) {
-		if (repo == NULL) {
-			egg_warning ("A repo name is required");
-			retval = 1;
-			goto out;
-		}
-		if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
-			egg_warning ("The icon directory '%s' could not be found", icondir);
-			retval = 1;
-			goto out;
-		}
-		pk_app_install_remove (cache, icondir, repo);
-	} else {
-		egg_warning ("An action is required");
+	if (repo == NULL) {
+		egg_warning ("A repo name is required");
 		retval = 1;
+		goto out;
+	}
+	if (source == NULL) {
+		egg_warning ("A source filename is required");
+		retval = 1;
+		goto out;
+	}
+	if (!g_file_test (source, G_FILE_TEST_EXISTS)) {
+		egg_warning ("The source filename '%s' could not be found", source);
+		retval = 1;
+		goto out;
+	}
+	if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
+		egg_warning ("The icon directory '%s' could not be found", icondir);
+		retval = 1;
+		goto out;
+	}
+
+	/* check that there are no existing entries from this repo */
+	rc = sqlite3_open (cache, &db);
+	if (rc) {
+		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (db));
+		retval = 1;
+		goto out;
+	}
+
+	/* check that there are no existing entries from this repo */
+	statement = g_strdup_printf ("SELECT application_id FROM applications WHERE repo_id = '%s'", repo);
+	rc = sqlite3_exec (db, statement, pk_app_install_add_get_number_sqlite_cb, (void*) &number, &error_msg);
+	g_free (statement);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		retval = 1;
+		goto out;
+	}
+
+	/* already have data for this repo */
+	if (number > 0) {
+		egg_warning ("There are already %i entries for repo_id=%s", number, repo);
+		goto out;
+	}
+
+	/* get all the sql from the source file */
+	ret = g_file_get_contents (source, &contents, NULL, &error);
+	if (!ret) {
+		egg_warning ("cannot read source file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* copy all the applications and translations into remote db */
+	rc = sqlite3_exec (db, contents, NULL, NULL, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		retval = 1;
+		goto out;
+	}
+	egg_debug ("%i additions to the database", sqlite3_changes (db));
+
+	/* copy all the icons */
+	statement = g_strdup_printf ("SELECT application_id, icon_name FROM applications WHERE repo_id = '%s'", repo);
+	rc = sqlite3_exec (db, statement, pk_app_install_add_copy_icons_sqlite_cb, (void*) icondir, &error_msg);
+	g_free (statement);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		retval = 1;
+		goto out;
 	}
 
 out:
+	if (db != NULL)
+		sqlite3_close (db);
+	g_free (contents);
 	g_free (cache);
 	g_free (repo);
 	g_free (source);
