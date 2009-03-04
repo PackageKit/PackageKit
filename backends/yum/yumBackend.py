@@ -1953,8 +1953,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         else:
             desc = ''
 
+        # if we are remote and in the cache, our size is zero
+        size = pkg.size
+        if pkg.repo.id != 'installed' and pkg.verifyLocalPkg():
+            size = 0
+
         group = self.comps.get_group(pkg.name)
-        self.details(package_id, pkg.license, group, desc, pkg.url, pkg.size)
+        self.details(package_id, pkg.license, group, desc, pkg.url, size)
 
     def get_files(self, package_ids):
         try:
