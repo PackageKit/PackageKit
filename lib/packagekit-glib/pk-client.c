@@ -4691,6 +4691,7 @@ pk_client_test (EggTest *test)
 	guint i;
 	gchar *file;
 	PkPackageList *list;
+	PkRoleEnum role;
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
@@ -4926,6 +4927,14 @@ pk_client_test (EggTest *test)
 		egg_test_failed (test, "error %s", error->message);
 		g_error_free (error);
 	}
+
+	/************************************************************/
+	egg_test_title (test, "ensure task still has correct role after cancel");
+	pk_client_get_role (client, &role, NULL, NULL);
+	if (role == PK_ROLE_ENUM_SEARCH_NAME)
+		egg_test_success (test, "did not cancel finished task");
+	else
+		egg_test_failed (test, "role was %s", pk_role_enum_to_text (role));
 
 	g_object_unref (client);
 	g_object_unref (client_copy);
