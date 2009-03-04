@@ -34,7 +34,7 @@ set( lib_SRCS
 QT4_AUTOMOC(${lib_SRCS})
 
 add_library(packagekit-qt SHARED ${lib_SRCS})
-set_target_properties( packagekit-qt PROPERTIES VERSION 2.0 SOVERSION 2 )
+set_target_properties( packagekit-qt PROPERTIES VERSION 4.1 SOVERSION 0 )
 
 target_link_libraries(packagekit-qt
   ${QT_QTCORE_LIBRARY}
