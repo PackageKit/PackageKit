@@ -2,13 +2,13 @@
 
 # Just a package on all versions of fedora that can provide the dependency.
 # If there are multiple packages then the user will be asked to choose
-InstallProvides(fedora)=audio/QCELP
+InstallProvides(fedora)=image/bmp
 
 # Just for Fedora 9, install two development files
 InstallPackages(fedora-9.90)=ocaml-json-wheel-devel
 
 # On any distro, install the package with this file
-InstallFiles=/usr/bin/kpowersave
+InstallFiles=/usr/bin/kate
 
 # For each architecture on Fedora 8, install one of the two different files
 InstallFiles(fedora-8-i686)=/usr/lib/pango/1.6.0/modules/pango-arabic-fc.so
