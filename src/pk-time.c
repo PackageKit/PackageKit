@@ -432,7 +432,7 @@ pk_time_test (EggTest *test)
 		value += 10;
 	}
 	value = pk_time_get_remaining (self);
-	if (value > 1199 && value < 1201)
+	if (value >= 1199 && value <= 1201)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got %i", value);
