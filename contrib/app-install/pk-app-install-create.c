@@ -101,7 +101,7 @@ main (int argc, char *argv[])
 		statement = "CREATE TABLE applications ("
 			    "application_id TEXT primary key,"
 			    "package_name TEXT,"
-			    "group_id TEXT,"
+			    "categories TEXT,"
 			    "repo_id TEXT,"
 			    "icon_name TEXT,"
 			    "application_name TEXT,"

@@ -24,198 +24,346 @@
 #include <string.h>
 #include <glib/gi18n.h>
 #include <sqlite3.h>
+#include <gio/gio.h>
+#include <packagekit-glib/packagekit.h>
 
+#include "pk-app-install-common.h"
 #include "egg-debug.h"
 
-#if PK_BUILD_LOCAL
-#define PK_APP_INSTALL_DEFAULT_DATABASE "./desktop.db"
-#else
-#define PK_APP_INSTALL_DEFAULT_DATABASE DATADIR "/app-install/cache/desktop.db"
-#endif
-
-#if 0
+static const gchar *icon_sizes[] = { "22x22", "24x24", "32x32", "48x48", "scalable", NULL };
+static PkDesktop *desktop;
 
 /**
- * pk_app_install_create:
+ * pk_app_install_generate_create_icon_directories:
  **/
 static gboolean
-pk_app_install_create (const gchar *cache)
+pk_app_install_generate_create_icon_directories (const gchar *directory)
 {
-	gboolean ret = TRUE;
-	gboolean create_file;
-	const gchar *statement;
-	sqlite3 *db = NULL;
-	gint rc;
-
-	/* if the database file was not installed (or was nuked) recreate it */
-	create_file = g_file_test (cache, G_FILE_TEST_EXISTS);
-	if (create_file == TRUE) {
-		egg_warning ("already exists");
-		goto out;
-	}
-
-	egg_debug ("exists: %i", create_file);
-
-	/* open database */
-	rc = sqlite3_open (cache, &db);
-	if (rc) {
-		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
-	}
-
-	/* don't sync */
-	statement = "PRAGMA synchronous=OFF";
-	rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-	if (rc) {
-		egg_warning ("Can't turn off sync: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
-	}
-
-	egg_debug ("create");
-	if (create_file == FALSE) {
-		statement = "CREATE TABLE general ("
-			    "application_id TEXT primary key,"
-			    "package_name TEXT,"
-			    "group_id TEXT,"
-			    "repo_name TEXT,"
-			    "application_name TEXT,"
-			    "application_summary TEXT);";
-		rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-		if (rc) {
-			egg_warning ("Can't create general table: %s\n", sqlite3_errmsg (db));
-			ret = FALSE;
-			goto out;
-		}
-		statement = "CREATE TABLE localised ("
-			    "application_id TEXT primary key,"
-			    "application_name TEXT,"
-			    "application_summary TEXT,"
-			    "locale TEXT);";
-		rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-		if (rc) {
-			egg_warning ("Can't create localised table: %s\n", sqlite3_errmsg (db));
-			ret = FALSE;
-			goto out;
-		}
-	}
-
-out:
-	if (db != NULL)
-		sqlite3_close (db);
-	return ret;
-}
-
-/**
- * pk_app_install_remove_icons_sqlite_cb:
- **/
-static gint
-pk_app_install_remove_icons_sqlite_cb (void *data, gint argc, gchar **argv, gchar **col_name)
-{
-	gint i;
-	gchar *col;
-	gchar *value;
-	const gchar *application_id = NULL;
+	gboolean ret;
+	GError *error = NULL;
+	GFile *file;
 	gchar *path;
-	gchar *filename;
-	const gchar *icondir = (const gchar *) data;
+	guint i;
 
-	for (i=0; i<argc; i++) {
-		col = col_name[i];
-		value = argv[i];
-		if (g_strcmp0 (col, "application_id") == 0)
-			application_id = value;
+	for (i=0; icon_sizes[i] != NULL; i++) {
+		path = g_build_filename (directory, icon_sizes[i], NULL);
+		ret = g_file_test (path, G_FILE_TEST_IS_DIR);
+		if (!ret) {
+			egg_debug ("creating %s", path);
+			file = g_file_new_for_path (path);
+			ret = g_file_make_directory (file, NULL, &error);
+			if (!ret) {
+				egg_warning ("cannot create %s: %s", path, error->message);
+				g_clear_error (&error);
+			}
+			g_object_unref (file);
+		}
+		g_free (path);
 	}
-	if (application_id == NULL)
-		goto out;
-
-	egg_warning ("application_id=%s", application_id);
-	filename = g_strdup_printf ("%s.png", application_id);
-	path = g_build_filename (icondir, "48x48", filename, NULL);
-
-//	g_unlink (path);
-	egg_warning ("path=%s", path);
-
-	g_free (filename);
-	g_free (path);
-out:
-	return 0;
+	return ret;
 }
 
 /**
- * pk_app_install_remove:
+ * pk_app_install_generate_get_desktop_files:
  **/
-static gboolean
-pk_app_install_remove (const gchar *cache, const gchar *icondir, const gchar *repo)
+static GPtrArray *
+pk_app_install_generate_get_desktop_files (const gchar *directory)
 {
-	gboolean ret = TRUE;
-	gchar *statement = NULL;
-	sqlite3 *db = NULL;
-	gchar *error_msg;
-	gint rc;
+	GPtrArray *files = NULL;
+	GError *error = NULL;
+	const gchar *filename;
+	GDir *dir;
 
-	/* open database */
-	rc = sqlite3_open (cache, &db);
-	if (rc) {
-		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
+	dir = g_dir_open (directory, 0, &error);
+	if (dir == NULL) {
+		egg_warning ("cannot open directory %s: %s", directory, error->message);
+		g_error_free (error);
 		goto out;
 	}
 
-	/* remove icons */
-	if (icondir != NULL) {
-		statement = g_strdup_printf ("SELECT application_id FROM general WHERE repo_name = '%s'", repo);
-		rc = sqlite3_exec (db, statement, pk_app_install_remove_icons_sqlite_cb, (void*) icondir, &error_msg);
-		g_free (statement);
-		if (rc != SQLITE_OK) {
-			egg_warning ("SQL error: %s\n", error_msg);
-			sqlite3_free (error_msg);
-			return 0;
+	files = g_ptr_array_new ();
+	filename = g_dir_read_name (dir);
+	while (filename != NULL) {
+		if (g_str_has_suffix (filename, ".desktop"))
+			g_ptr_array_add (files, g_build_filename (directory, filename, NULL));
+		filename = g_dir_read_name (dir);
+	}
+out:
+	g_dir_close (dir);
+	return files;
+}
+
+
+typedef struct {
+	gchar	*key;
+	gchar	*value;
+	gchar	*locale;
+} PkDesktopData;
+
+/**
+ * pk_app_install_generate_desktop_data_free:
+ **/
+static void
+pk_app_install_generate_desktop_data_free (PkDesktopData *data)
+{
+	g_free (data->key);
+	g_free (data->value);
+	g_free (data->locale);
+	g_free (data);
+}
+
+/**
+ * pk_app_install_generate_get_desktop_data:
+ **/
+static GPtrArray *
+pk_app_install_generate_get_desktop_data (const gchar *filename)
+{
+	gboolean ret;
+	GError *error = NULL;
+	GPtrArray *data = NULL;
+	gchar *contents = NULL;
+	gchar **lines;
+	gchar **parts;
+	guint i, len;
+	PkDesktopData *obj;
+
+	/* get all the contents */
+	ret = g_file_get_contents (filename, &contents, NULL, &error);
+	if (!ret) {
+		egg_warning ("cannot read source file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	data = g_ptr_array_new ();
+
+	/* split lines and extract data */
+	lines = g_strsplit (contents, "\n", -1);
+	for (i=0; lines[i] != NULL; i++) {
+		parts = g_strsplit_set (lines[i], "=[]", -1);
+		len = g_strv_length (parts);
+		if (len == 2) {
+			obj = g_new0 (PkDesktopData, 1);
+			obj->key = g_strdup (parts[0]);
+			obj->value = g_strdup (parts[1]);
+			g_ptr_array_add (data, obj);
+		} else if (len == 4) {
+			obj = g_new0 (PkDesktopData, 1);
+			obj->key = g_strdup (parts[0]);
+			obj->locale = g_strdup (parts[1]);
+			obj->value = g_strdup (parts[3]);
+			g_ptr_array_add (data, obj);
+		}
+		g_strfreev (parts);
+	}
+	g_strfreev (lines);
+out:
+	return data;
+}
+
+/**
+ * pk_app_install_generate_get_value_for_locale:
+ **/
+static gchar *
+pk_app_install_generate_get_value_for_locale (GPtrArray *data, const gchar *key, const gchar *locale)
+{
+	guint i;
+	gchar *value = NULL;
+	const PkDesktopData *obj;
+
+	/* find data matching key name and locale */
+	for (i=0; i<data->len; i++) {
+		obj = g_ptr_array_index (data, i);
+		if (g_strcmp0 (key, obj->key) == 0 && g_strcmp0 (locale, obj->locale) == 0) {
+			value = g_strdup (obj->value);
+			break;
 		}
 	}
-
-	/* delete from localised (localised has no repo_name, so key off general) */
-	statement = g_strdup_printf ("DELETE FROM localised WHERE EXISTS ( "
-				      "SELECT general.application_id FROM general WHERE "
-				      "general.application_id = general.application_id AND general.repo_name = '%s')", repo);
-//	statement = g_strdup_printf ("SELECT general.application_id FROM general WHERE general.application_id == general.application_id AND general.repo_name == '%s'", repo);
-	rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-	if (rc) {
-		egg_warning ("Can't remove rows: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
-	}
-	egg_debug ("%i removals from localised", sqlite3_changes (db));
-	g_free (statement);
-
-	/* delete from general */
-	statement = g_strdup_printf ("DELETE FROM general WHERE repo_name = '%s'", repo);
-	rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-	if (rc) {
-		egg_warning ("Can't remove rows: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
-	}
-	egg_debug ("%i removals from general", sqlite3_changes (db));
-	g_free (statement);
-
-	/* reclaim memory */
-	statement = g_strdup ("VACUUM");
-	rc = sqlite3_exec (db, statement, NULL, NULL, NULL);
-	if (rc) {
-		egg_warning ("Can't vacuum: %s\n", sqlite3_errmsg (db));
-		ret = FALSE;
-		goto out;
-	}
-
-out:
-	g_free (statement);
-	if (db != NULL)
-		sqlite3_close (db);
-	return ret;
+	return value;
 }
-#endif
+
+/**
+ * pk_app_install_generate_get_locales:
+ **/
+static GPtrArray *
+pk_app_install_generate_get_locales (GPtrArray *data)
+{
+	guint i, j;
+	GPtrArray *locales;
+	const PkDesktopData *obj;
+
+	/* find data matching key name and locale */
+	locales = g_ptr_array_new ();
+	for (i=0; i<data->len; i++) {
+		obj = g_ptr_array_index (data, i);
+
+		/* no point */
+		if (obj->locale == NULL)
+			continue;
+
+		/* is already in locale list */
+		for (j=0; j<locales->len; j++) {
+			if (g_strcmp0 (obj->locale, g_ptr_array_index (locales, j)) == 0)
+				break;
+		}
+		/* not already there */
+		if (j == locales->len)
+			g_ptr_array_add (locales, g_strdup (obj->locale));
+	}
+	return locales;
+}
+
+/**
+ * pk_app_install_generate_get_package_for_file:
+ **/
+static gchar *
+pk_app_install_generate_get_package_for_file (const gchar *filename)
+{
+	gchar *package;
+	GError *error = NULL;
+
+	/* get package providing file */
+	package = pk_desktop_get_package_for_file (desktop, filename, &error);
+	if (package == NULL) {
+		egg_warning ("failed to get package for %s: %s", filename, error->message);
+		g_error_free (error);
+	}
+	return package;
+}
+
+/**
+ * pk_app_install_generate_get_application_id:
+ **/
+static gchar *
+pk_app_install_generate_get_application_id (const gchar *filename)
+{
+	gchar *find;
+	gchar *application_id;
+
+	find = g_strrstr (filename, "/");
+	application_id = g_strdup (find+1);
+	find = g_strrstr (application_id, ".");
+	*find = '\0';
+	return application_id;
+}
+
+/**
+ * pk_app_install_generate_applications_sql:
+ **/
+static gchar *
+pk_app_install_generate_applications_sql (GPtrArray *data, const gchar *repo, const gchar *package, const gchar *application_id)
+{
+	GString *sql;
+	gchar *name = NULL;
+	gchar *comment = NULL;
+	gchar *icon_name = NULL;
+	gchar *categories = NULL;
+	gchar *escaped;
+
+	sql = g_string_new ("");
+	name = pk_app_install_generate_get_value_for_locale (data, "Name", NULL);
+	icon_name = pk_app_install_generate_get_value_for_locale (data, "Icon", NULL);
+	comment = pk_app_install_generate_get_value_for_locale (data, "Comment", NULL);
+	categories = pk_app_install_generate_get_value_for_locale (data, "Categories", NULL);
+
+	/* remove invalid icons */
+	if (icon_name != NULL &&
+	    (g_str_has_prefix (icon_name, "/") ||
+	     g_str_has_suffix (icon_name, ".png"))) {
+		g_free (icon_name);
+		icon_name = NULL;
+	}
+
+	egg_debug ("application_id=%s, name=%s, comment=%s, icon=%s, categories=%s", application_id, name, comment, icon_name, categories);
+
+	/* append the application data to the sql string */
+	escaped = sqlite3_mprintf ("INSERT INTO applications (application_id, package_name, categories, "
+				   "repo_id, icon_name, application_name, application_summary) "
+				   "VALUES (%Q, %Q, %Q, %Q, %Q, %Q, %Q);",
+				   application_id, package, categories, repo, icon_name, name, comment);
+	g_string_append_printf (sql, "%s\n", escaped);
+
+	sqlite3_free (escaped);
+	g_free (name);
+	g_free (comment);
+	g_free (icon_name);
+	g_free (categories);
+	return g_string_free (sql, FALSE);
+}
+
+/**
+ * pk_app_install_generate_translations_sql:
+ **/
+static gchar *
+pk_app_install_generate_translations_sql (GPtrArray *data, GPtrArray *locales, const gchar *application_id)
+{
+	GString *sql;
+	gchar *name = NULL;
+	gchar *comment = NULL;
+	gchar *escaped;
+	const gchar *locale;
+	guint i;
+
+	sql = g_string_new ("");
+	for (i=0; i<locales->len; i++) {
+		locale = g_ptr_array_index (locales, i);
+		name = pk_app_install_generate_get_value_for_locale (data, "Name", locale);
+		comment = pk_app_install_generate_get_value_for_locale (data, "Comment", locale);
+
+		/* append the application data to the sql string */
+		escaped = sqlite3_mprintf ("INSERT INTO translations (application_id, application_name, application_summary, locale) "
+					   "VALUES (%Q, %Q, %Q, %Q);", application_id, name, comment, locale);
+		g_string_append_printf (sql, "%s\n", escaped);
+
+		sqlite3_free (escaped);
+		g_free (name);
+		g_free (comment);
+	}
+
+	return g_string_free (sql, FALSE);
+}
+
+/**
+ * pk_app_install_generate_copy_icons:
+ **/
+static gboolean
+pk_app_install_generate_copy_icons (const gchar *directory, const gchar *icon_name)
+{
+	gboolean ret;
+	GError *error = NULL;
+	GFile *file;
+	GFile *remote;
+	gchar *dest;
+	gchar *iconpath;
+	gchar *icon_name_full;
+	guint i;
+
+	/* copy all icon sizes if they exist */
+	icon_name_full = g_strdup_printf ("%s.png", icon_name);
+	for (i=0; icon_sizes[i] != NULL; i++) {
+		iconpath = g_build_filename (PK_APP_INSTALL_DEFAULT_APPICONDIR, icon_sizes[i], "apps", icon_name_full, NULL);
+		ret = g_file_test (iconpath, G_FILE_TEST_EXISTS);
+		if (ret) {
+			dest = g_build_filename (directory, icon_sizes[i], icon_name_full, NULL);
+			egg_debug ("copying file %s to %s", iconpath, dest);
+			file = g_file_new_for_path (iconpath);
+			remote = g_file_new_for_path (dest);
+			ret = g_file_copy (file, remote, G_FILE_COPY_TARGET_DEFAULT_PERMS | G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &error);
+			if (!ret) {
+				egg_warning ("cannot copy %s: %s", dest, error->message);
+				g_clear_error (&error);
+			}
+			g_object_unref (file);
+			g_object_unref (remote);
+			g_free (dest);
+		} else {
+			egg_debug ("does not exist: %s, so not copying", iconpath);
+		}
+		g_free (iconpath);
+	}
+	g_free (icon_name_full);
+	return TRUE;
+}
 
 /**
  * main:
@@ -231,6 +379,13 @@ main (int argc, char *argv[])
 	gchar *applicationdir = NULL;
 	gchar *icondir = NULL;
 	gchar *outputdir = NULL;
+	gboolean ret;
+	GError *error = NULL;
+	const gchar *filename;
+	GString *string = NULL;
+	GPtrArray *files = NULL;
+	GPtrArray *data;
+	guint k;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -265,7 +420,15 @@ main (int argc, char *argv[])
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
+	g_type_init ();
 	egg_debug_init (verbose);
+	desktop = pk_desktop_new ();
+	ret = pk_desktop_open_database (desktop, &error);
+	if (!ret) {
+		egg_warning ("cannot open database: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* use default */
 	if (cache == NULL) {
@@ -273,47 +436,125 @@ main (int argc, char *argv[])
 		cache = g_strdup (PK_APP_INSTALL_DEFAULT_DATABASE);
 	}
 
+	/* things we require */
 	if (repo == NULL) {
 		egg_warning ("A repo name is required");
 		retval = 1;
 		goto out;
 	}
-	if (applicationdir == NULL) {
-		egg_warning ("A applicationdir filename is required");
+	if (outputdir == NULL) {
+		egg_warning ("A icon output directory is required");
 		retval = 1;
 		goto out;
 	}
-	if (!g_file_test (applicationdir, G_FILE_TEST_EXISTS)) {
+
+	/* use defaults */
+	if (applicationdir == NULL) {
+		egg_debug ("applicationdir not specified, using %s", PK_APP_INSTALL_DEFAULT_APPDIR);
+		applicationdir = g_strdup (PK_APP_INSTALL_DEFAULT_APPDIR);
+	}
+	if (icondir == NULL) {
+		egg_debug ("icondir not specified, using %s", PK_APP_INSTALL_DEFAULT_APPICONDIR);
+		icondir = g_strdup (PK_APP_INSTALL_DEFAULT_APPICONDIR);
+	}
+
+	/* check directories exist */
+	if (!g_file_test (applicationdir, G_FILE_TEST_IS_DIR)) {
 		egg_warning ("The applicationdir filename '%s' could not be found", applicationdir);
 		retval = 1;
 		goto out;
 	}
-	if (icondir == NULL || !g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
-		egg_warning ("The icon directory '%s' could not be found", icondir);
+	if (!g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
+		egg_warning ("The icondir filename '%s' could not be found", icondir);
 		retval = 1;
 		goto out;
 	}
-	if (outputdir == NULL || !g_file_test (outputdir, G_FILE_TEST_IS_DIR)) {
+	if (!g_file_test (outputdir, G_FILE_TEST_IS_DIR)) {
 		egg_warning ("The icon output directory '%s' could not be found", outputdir);
 		retval = 1;
 		goto out;
 	}
 
-// generate the sub directories in the outputdir if they dont exist
-// get a list of files in applicationdir
-// for each file, extract SQL data
-// append the sql to a GString
-// copy the icons
-// write the GString to disk
-
+	/* just dump them */
 	egg_warning ("cache=%s, applicationdir=%s, repo=%s, icondir=%s, outputdir=%s", cache, applicationdir, repo, icondir, outputdir);
 
+	/* generate the sub directories in the outputdir if they dont exist */
+	pk_app_install_generate_create_icon_directories (outputdir);
+
+	/* use this to dump the data */
+	string = g_string_new ("/* auto generated today */\n");
+
+	/* get a list of desktop files in applicationdir */
+	files = pk_app_install_generate_get_desktop_files (applicationdir);
+
+	for (k=0; k<files->len; k++) {
+		gchar *sql;
+		gchar *package;
+		gchar *application_id;
+		gchar *icon_name;
+		GPtrArray *locales;
+
+		filename = g_ptr_array_index (files, k);
+		egg_debug ("filename: %s", filename);
+
+		/* get package name */
+		package = pk_app_install_generate_get_package_for_file (filename);
+		if (package == NULL)
+			continue;
+
+		/* get app-id */
+		application_id = pk_app_install_generate_get_application_id (filename);
+
+		/* extract data */
+		data = pk_app_install_generate_get_desktop_data (filename);
+
+		/* form application SQL */
+		sql = pk_app_install_generate_applications_sql (data, repo, package, application_id);
+		g_string_append_printf (string, "%s", sql);
+
+		/* get list of locales in this file */
+		locales = pk_app_install_generate_get_locales (data);
+
+		/* form translations SQL */
+		sql = pk_app_install_generate_translations_sql (data, locales, application_id);
+		g_string_append_printf (string, "%s\n", sql);
+
+		/* copy icons */
+		icon_name = pk_app_install_generate_get_value_for_locale (data, "Icon", NULL);
+		if (icon_name != NULL)
+			pk_app_install_generate_copy_icons (outputdir, icon_name);
+
+		/* free temp data */
+		g_ptr_array_foreach (locales, (GFunc) g_free, NULL);
+		g_ptr_array_free (locales, TRUE);
+		g_ptr_array_foreach (data, (GFunc) pk_app_install_generate_desktop_data_free, NULL);
+		g_ptr_array_free (data, TRUE);
+		g_free (icon_name);
+		g_free (sql);
+		g_free (package);
+		g_free (application_id);
+	}
+
+	/* save to disk */
+	ret = g_file_set_contents (cache, string->str, -1, &error);
+	if (!ret) {
+		egg_warning ("cannot write data file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	egg_debug ("saved to %s", cache);
+
 out:
+	if (string != NULL)
+		g_string_free (string, TRUE);
+	g_ptr_array_foreach (files, (GFunc) g_free, NULL);
+	g_ptr_array_free (files, TRUE);
 	g_free (cache);
 	g_free (repo);
 	g_free (applicationdir);
 	g_free (icondir);
 	g_free (outputdir);
+	g_object_unref (desktop);
 	return 0;
 }
 

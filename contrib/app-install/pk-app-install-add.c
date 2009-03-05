@@ -29,13 +29,7 @@
 #include "pk-app-install-common.h"
 #include "egg-debug.h"
 
-#if PK_BUILD_LOCAL
-#define PK_APP_INSTALL_DEFAULT_DATABASE "./desktop.db"
-#else
-#define PK_APP_INSTALL_DEFAULT_DATABASE DATADIR "/app-install/cache/desktop.db"
-#endif
-
-const gchar *icon_sizes[] = { "22x22", "24x24", "32x32", "48x48", "scalable", NULL };
+static const gchar *icon_sizes[] = { "22x22", "24x24", "32x32", "48x48", "scalable", NULL };
 
 /**
  * pk_app_install_add_get_number_sqlite_cb:
@@ -65,6 +59,7 @@ pk_app_install_add_copy_icons_sqlite_cb (void *data, gint argc, gchar **argv, gc
 	GFile *remote;
 	const gchar *icondir = (const gchar *) data;
 	gboolean ret;
+	gchar *icon_name_full;
 	GError *error = NULL;
 
 	for (i=0; i<(guint)argc; i++) {
@@ -78,14 +73,15 @@ pk_app_install_add_copy_icons_sqlite_cb (void *data, gint argc, gchar **argv, gc
 	if (application_id == NULL || icon_name == NULL)
 		goto out;
 
-	egg_debug ("removing icons for application: %s", application_id);
+	egg_debug ("copying icon %s for application: %s", icon_name, application_id);
+	icon_name_full = g_strdup_printf ("%s.png", icon_name);
 
 	/* copy all icon sizes if they exist */
 	for (i=0; icon_sizes[i] != NULL; i++) {
-		path = g_build_filename (icondir, icon_sizes[i], icon_name, NULL);
+		path = g_build_filename (icondir, icon_sizes[i], icon_name_full, NULL);
 		ret = g_file_test (path, G_FILE_TEST_EXISTS);
 		if (ret) {
-			dest = g_build_filename (PK_APP_INSTALL_DEFAULT_ICONDIR, icon_sizes[i], icon_name, NULL);
+			dest = g_build_filename (PK_APP_INSTALL_DEFAULT_ICONDIR, icon_sizes[i], icon_name_full, NULL);
 			egg_debug ("copying file %s to %s", path, dest);
 			file = g_file_new_for_path (path);
 			remote = g_file_new_for_path (dest);
@@ -97,9 +93,12 @@ pk_app_install_add_copy_icons_sqlite_cb (void *data, gint argc, gchar **argv, gc
 			g_object_unref (file);
 			g_object_unref (remote);
 			g_free (dest);
+		} else {
+			egg_debug ("failed to find icon %s", path);
 		}
 		g_free (path);
 	}
+	g_free (icon_name_full);
 out:
 	return 0;
 }
@@ -122,7 +121,7 @@ main (int argc, char *argv[])
 	gint rc;
 	guint number = 0;
 	gchar *statement;
-	gchar *contents;
+	gchar *contents = NULL;
 	gboolean ret;
 	GError *error = NULL;
 
@@ -156,6 +155,7 @@ main (int argc, char *argv[])
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
+	g_type_init ();
 	egg_debug_init (verbose);
 
 	egg_debug ("cache=%s, source=%s, repo=%s, icondir=%s", cache, source, repo, icondir);
@@ -217,6 +217,14 @@ main (int argc, char *argv[])
 	if (!ret) {
 		egg_warning ("cannot read source file: %s", error->message);
 		g_error_free (error);
+		goto out;
+	}
+
+	/* don't sync */
+	rc = sqlite3_exec (db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
+	if (rc) {
+		egg_warning ("Can't turn off sync: %s\n", sqlite3_errmsg (db));
+		retval = 1;
 		goto out;
 	}
 

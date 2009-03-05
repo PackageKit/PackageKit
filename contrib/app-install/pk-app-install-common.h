@@ -22,12 +22,9 @@
 #ifndef __PK_APP_INSTALL_COMMON_H
 #define __PK_APP_INSTALL_COMMON_H
 
-#if PK_BUILD_LOCAL
-#define PK_APP_INSTALL_DEFAULT_DATABASE		"./desktop.db"
-#define PK_APP_INSTALL_DEFAULT_ICONDIR		"./icons"
-#else
-#define PK_APP_INSTALL_DEFAULT_DATABASE		DATADIR "/app-install/cache/desktop.db"
+#define PK_APP_INSTALL_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/app-install/desktop.db"
 #define PK_APP_INSTALL_DEFAULT_ICONDIR		DATADIR "/app-install/icons"
-#endif
+#define PK_APP_INSTALL_DEFAULT_APPICONDIR	DATADIR "/icons/hicolor/"
+#define PK_APP_INSTALL_DEFAULT_APPDIR		"/usr/share/applications"
 
 #endif /* __PK_APP_INSTALL_COMMON_H */
