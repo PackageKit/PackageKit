@@ -3,5 +3,9 @@
 *.o
 pk-app-install-create
 pk-app-install-remove
+pk-app-install-add
+pk-app-install-generate
 *.db
+*.sh
+dist
 

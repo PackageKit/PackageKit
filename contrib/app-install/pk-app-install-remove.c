@@ -159,6 +159,14 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+	/* don't sync */
+	rc = sqlite3_exec (db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
+	if (rc) {
+		egg_warning ("Can't turn off sync: %s\n", sqlite3_errmsg (db));
+		retval = 1;
+		goto out;
+	}
+
 	/* remove icons */
 	statement = g_strdup_printf ("SELECT application_id, icon_name FROM applications WHERE repo_id = '%s'", repo);
 	rc = sqlite3_exec (db, statement, pk_app_install_remove_icons_sqlite_cb, (void*) icondir, &error_msg);
