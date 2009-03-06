@@ -1,3 +1,85 @@
+Application installing:
+
+In the Linux desktop we have a very big problem: We focus very much on packages.
+Packages are interesting to programmers, but users care about *applications*.
+
+I'll explain the difference:
+
+* Packages can contain none, one or multiple applications
+* Applications only belong to one package
+
+Now, when a user wants to install an application, they have to research on
+Google what the package name is called (which is different on each distro) or
+hope that the application name is mentioned in the description of the package
+in the distro metadata.
+
+Now, I said as a desktop we have one big problem, well, we actually have two:
+We don't all speak English. Some of us speak no English at all.
+
+We want to be able to display package descriptions to the user in all languages,
+but we don't want to download 80x the metadata to do so. Most packaging systems
+only understand en_US anyway, and there certainly isn't the resources to
+translate every spec file or emerge instruction for each distro.
+To add to the problems, each package needs an icon, in various sizes so we
+can show the application icon rather than a generic box.
+
+>So we're sunk, right?
+
+No. In each package, there are desktop files that contain all the applications,
+with nice translations gently massaged and QA'd by upstream. It would be nice
+if we could search on that data. At the moment, this is impossible, unless we
+want to download every package in the archive, and extract the data from it.
+This is sort of how Ubuntu does gnome-app-install, and it seems to work fairly
+well. It is Ubuntu specific, but maybe we could work on that.
+
+>So, we cache all the desktop files, and push this out to the repo metadata?
+
+No. If you did that you make a lot of people very unhappy, as even compressed
+the metadata and icons make up over 80Mb. 
+
+>So we're sunk, right?
+
+No. What we can do is create sub-packages for each repo
+(e.g. rpmfusion-appdata) which ships a tarball of icons and a few hundred Kb
+of SQL. Every time the repo maintainer can be bothered (once a month?) the
+new data is generated, and a new package pushed out to the mirrors. If the
+repo maintainer can't be bothered to do that, then none of the new packages will
+show up in the application browser. It's optional.
+
+>This data clogs up my system right?
+
+Well, it's only a few tens of Mb if you want all the icons in most of the sizes,
+if you only choose the 48x48 option then it's much less. When you install the
+new $repo-appdata subpackage, it removes all the stale applications and re-adds
+the latest data. This happens in the vendor spec files as postinst scripts.
+
+>How do I query the data?
+
+It's a simple sqlite database in /var/lib/app-install/desktop.db -- the icons
+are located in /usr/share/app-install/icons/$size/*.png -- there's no installer
+yet using this, but expect a few before two long.
+
+>Great! Another Ubuntu v.s. Red Hat standards war!
+
+No. Roderick Greening and Sebastian Heinlein and myself together drafted
+the specification together, and made it generic enough for all the distros to
+use. It's totally expected that each distro will code a tool to extract the
+metadata, but that's because they are different in some ways.
+
+>So the maintainers have to install everything just to get the desktop files?!
+
+No. You can download and install a package to a prefix without the deps -- we
+don't need the binary to run, we just need the data. in this way we don't need
+to download -data subpackages, only the one with the desktop file in.
+
+>Can I add some more features to the spec?
+
+Yes, in a little while. We want to get version 1 of the spec finished, with it
+being used in a few distros. When we're comfortable this works correctly, we'll
+start working on version 2, and add stuff like popularity metrics and metadata
+about suggesting gnome-power-manager rather than kpowersave if you're running
+GNOME. There are lots of things we need to add for this to work really well.
+
 ./pk-app-install-create --verbose
 ./pk-app-install-generate --verbose --repo=fedora --outputdir=./dist/icons --cache=./dist/livna.sqldata
 ./pk-app-install-add --verbose --repo=fedora --icondir=./dist/icons --source=./dist/livna.sqldata

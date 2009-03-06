@@ -18,9 +18,7 @@ INCLUDES =						\
 
 PK_GLIB_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
 
-noinst_PROGRAMS = pk-app-install-add pk-app-install-generate
-
-sbin_PROGRAMS = pk-app-install-create pk-app-install-remove
+sbin_PROGRAMS = pk-app-install-create pk-app-install-remove pk-app-install-add pk-app-install-generate
 
 pk_app_install_create_SOURCES =				\
 	egg-debug.c					\
