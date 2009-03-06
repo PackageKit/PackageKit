@@ -1,5 +1,0 @@
-./pk-app-install-create --verbose
-./pk-app-install-generate --verbose --repo=fedora --outputdir=./dist/icons --cache=./dist/livna.sqldata
-./pk-app-install-add --verbose --repo=fedora --icondir=./dist/icons --source=./dist/livna.sqldata
-./pk-app-install-remove --verbose --repo=fedora --icondir=./dist/icons
-
