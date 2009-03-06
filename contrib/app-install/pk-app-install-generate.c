@@ -31,68 +31,6 @@
 #include "egg-debug.h"
 
 static const gchar *icon_sizes[] = { "22x22", "24x24", "32x32", "48x48", "scalable", NULL };
-static PkDesktop *desktop;
-
-/**
- * pk_app_install_generate_create_icon_directories:
- **/
-static gboolean
-pk_app_install_generate_create_icon_directories (const gchar *directory)
-{
-	gboolean ret;
-	GError *error = NULL;
-	GFile *file;
-	gchar *path;
-	guint i;
-
-	for (i=0; icon_sizes[i] != NULL; i++) {
-		path = g_build_filename (directory, icon_sizes[i], NULL);
-		ret = g_file_test (path, G_FILE_TEST_IS_DIR);
-		if (!ret) {
-			egg_debug ("creating %s", path);
-			file = g_file_new_for_path (path);
-			ret = g_file_make_directory (file, NULL, &error);
-			if (!ret) {
-				egg_warning ("cannot create %s: %s", path, error->message);
-				g_clear_error (&error);
-			}
-			g_object_unref (file);
-		}
-		g_free (path);
-	}
-	return ret;
-}
-
-/**
- * pk_app_install_generate_get_desktop_files:
- **/
-static GPtrArray *
-pk_app_install_generate_get_desktop_files (const gchar *directory)
-{
-	GPtrArray *files = NULL;
-	GError *error = NULL;
-	const gchar *filename;
-	GDir *dir;
-
-	dir = g_dir_open (directory, 0, &error);
-	if (dir == NULL) {
-		egg_warning ("cannot open directory %s: %s", directory, error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	files = g_ptr_array_new ();
-	filename = g_dir_read_name (dir);
-	while (filename != NULL) {
-		if (g_str_has_suffix (filename, ".desktop"))
-			g_ptr_array_add (files, g_build_filename (directory, filename, NULL));
-		filename = g_dir_read_name (dir);
-	}
-out:
-	g_dir_close (dir);
-	return files;
-}
-
 
 typedef struct {
 	gchar	*key;
@@ -110,6 +48,51 @@ pk_app_install_generate_desktop_data_free (PkDesktopData *data)
 	g_free (data->value);
 	g_free (data->locale);
 	g_free (data);
+}
+
+/**
+ * pk_app_install_generate_create_icon_directories:
+ **/
+static gboolean
+pk_app_install_generate_create_icon_directories (const gchar *directory)
+{
+	gboolean ret;
+	GError *error = NULL;
+	GFile *file;
+	gchar *path;
+	guint i;
+
+	/* create main directory */
+	ret = g_file_test (directory, G_FILE_TEST_IS_DIR);
+	if (!ret) {
+		file = g_file_new_for_path (directory);
+		ret = g_file_make_directory (file, NULL, &error);
+		g_object_unref (file);
+		if (!ret) {
+			egg_warning ("cannot create %s: %s", path, error->message);
+			g_error_free (error);
+			goto out;
+		}
+	}
+
+	/* make sub directories */
+	for (i=0; icon_sizes[i] != NULL; i++) {
+		path = g_build_filename (directory, icon_sizes[i], NULL);
+		ret = g_file_test (path, G_FILE_TEST_IS_DIR);
+		if (!ret) {
+			egg_debug ("creating %s", path);
+			file = g_file_new_for_path (path);
+			ret = g_file_make_directory (file, NULL, &error);
+			if (!ret) {
+				egg_warning ("cannot create %s: %s", path, error->message);
+				g_clear_error (&error);
+			}
+			g_object_unref (file);
+		}
+		g_free (path);
+	}
+out:
+	return ret;
 }
 
 /**
@@ -135,9 +118,8 @@ pk_app_install_generate_get_desktop_data (const gchar *filename)
 		goto out;
 	}
 
-	data = g_ptr_array_new ();
-
 	/* split lines and extract data */
+	data = g_ptr_array_new ();
 	lines = g_strsplit (contents, "\n", -1);
 	for (i=0; lines[i] != NULL; i++) {
 		parts = g_strsplit_set (lines[i], "=[]", -1);
@@ -157,6 +139,7 @@ pk_app_install_generate_get_desktop_data (const gchar *filename)
 		g_strfreev (parts);
 	}
 	g_strfreev (lines);
+	g_free (contents);
 out:
 	return data;
 }
@@ -211,24 +194,6 @@ pk_app_install_generate_get_locales (GPtrArray *data)
 			g_ptr_array_add (locales, g_strdup (obj->locale));
 	}
 	return locales;
-}
-
-/**
- * pk_app_install_generate_get_package_for_file:
- **/
-static gchar *
-pk_app_install_generate_get_package_for_file (const gchar *filename)
-{
-	gchar *package;
-	GError *error = NULL;
-
-	/* get package providing file */
-	package = pk_desktop_get_package_for_file (desktop, filename, &error);
-	if (package == NULL) {
-		egg_warning ("failed to get package for %s: %s", filename, error->message);
-		g_error_free (error);
-	}
-	return package;
 }
 
 /**
@@ -310,14 +275,16 @@ pk_app_install_generate_translations_sql (GPtrArray *data, GPtrArray *locales, c
 		name = pk_app_install_generate_get_value_for_locale (data, "Name", locale);
 		comment = pk_app_install_generate_get_value_for_locale (data, "Comment", locale);
 
-		/* append the application data to the sql string */
-		escaped = sqlite3_mprintf ("INSERT INTO translations (application_id, application_name, application_summary, locale) "
-					   "VALUES (%Q, %Q, %Q, %Q);", application_id, name, comment, locale);
-		g_string_append_printf (sql, "%s\n", escaped);
+		/* append the application data to the sql string if either not null */
+		if (name != NULL || comment != NULL) {
+			escaped = sqlite3_mprintf ("INSERT INTO translations (application_id, application_name, application_summary, locale) "
+						   "VALUES (%Q, %Q, %Q, %Q);", application_id, name, comment, locale);
+			g_string_append_printf (sql, "%s\n", escaped);
 
-		sqlite3_free (escaped);
-		g_free (name);
-		g_free (comment);
+			sqlite3_free (escaped);
+			g_free (name);
+			g_free (comment);
+		}
 	}
 
 	return g_string_free (sql, FALSE);
@@ -327,7 +294,7 @@ pk_app_install_generate_translations_sql (GPtrArray *data, GPtrArray *locales, c
  * pk_app_install_generate_copy_icons:
  **/
 static gboolean
-pk_app_install_generate_copy_icons (const gchar *directory, const gchar *icon_name)
+pk_app_install_generate_copy_icons (const gchar *root, const gchar *directory, const gchar *icon_name)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -339,9 +306,16 @@ pk_app_install_generate_copy_icons (const gchar *directory, const gchar *icon_na
 	guint i;
 
 	/* copy all icon sizes if they exist */
-	icon_name_full = g_strdup_printf ("%s.png", icon_name);
 	for (i=0; icon_sizes[i] != NULL; i++) {
-		iconpath = g_build_filename (PK_APP_INSTALL_DEFAULT_APPICONDIR, icon_sizes[i], "apps", icon_name_full, NULL);
+
+		/* get the icon name */
+		if (g_strcmp0 (icon_sizes[i], "scalable") == 0)
+			icon_name_full = g_strdup_printf ("%s.svg", icon_name);
+		else
+			icon_name_full = g_strdup_printf ("%s.png", icon_name);
+
+		/* build the icon path */
+		iconpath = g_build_filename (root, "/usr/share/icons/hicolor", icon_sizes[i], "apps", icon_name_full, NULL);
 		ret = g_file_test (iconpath, G_FILE_TEST_EXISTS);
 		if (ret) {
 			dest = g_build_filename (directory, icon_sizes[i], icon_name_full, NULL);
@@ -360,8 +334,8 @@ pk_app_install_generate_copy_icons (const gchar *directory, const gchar *icon_na
 			egg_debug ("does not exist: %s, so not copying", iconpath);
 		}
 		g_free (iconpath);
+		g_free (icon_name_full);
 	}
-	g_free (icon_name_full);
 	return TRUE;
 }
 
@@ -374,36 +348,37 @@ main (int argc, char *argv[])
 	gboolean verbose = FALSE;
 	GOptionContext *context;
 	gint retval = 0;
-	gchar *cache = NULL;
 	gchar *repo = NULL;
-	gchar *applicationdir = NULL;
-	gchar *icondir = NULL;
+	gchar *root = NULL;
+	gchar *desktopfile = NULL;
 	gchar *outputdir = NULL;
-	gboolean ret;
-	GError *error = NULL;
-	const gchar *filename;
+	gchar *icondir = NULL;
+	gchar *package = NULL;
 	GString *string = NULL;
-	GPtrArray *files = NULL;
-	GPtrArray *data;
-	guint k;
+	GPtrArray *data = NULL;
+	gchar *sql = NULL;
+	gchar *application_id = NULL;
+	gchar *icon_name = NULL;
+	GPtrArray *locales = NULL;
+	gchar *filename = NULL;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 		  _("Show extra debugging information"), NULL },
-		{ "cache", 'c', 0, G_OPTION_ARG_STRING, &cache,
-		  /* TRANSLATORS: if we are specifing a out-of-tree database */
-		  _("Main cache file to use (if not specififed, default is used)"), NULL},
-		{ "applicationdir", 's', 0, G_OPTION_ARG_STRING, &applicationdir,
-		  /* TRANSLATORS: the applicationdir database, typically used for adding */
+		{ "root", 's', 0, G_OPTION_ARG_STRING, &root,
+		  /* TRANSLATORS: the root database, typically used for adding */
 		  _("Source cache file to add to the main database"), NULL},
-		{ "icondir", 'i', 0, G_OPTION_ARG_STRING, &icondir,
+		{ "desktopfile", 'i', 0, G_OPTION_ARG_STRING, &desktopfile,
 		  /* TRANSLATORS: the icon directory */
 		  _("Icon directory"), NULL},
-		{ "outputdir", 'i', 0, G_OPTION_ARG_STRING, &outputdir,
+		{ "package", 'n', 0, G_OPTION_ARG_STRING, &package,
+		  /* TRANSLATORS: the repo of the software root, e.g. fedora */
+		  _("Name of the package"), NULL},
+		{ "outputdir", 'o', 0, G_OPTION_ARG_STRING, &outputdir,
 		  /* TRANSLATORS: the output directory */
 		  _("Icon directory"), NULL},
 		{ "repo", 'n', 0, G_OPTION_ARG_STRING, &repo,
-		  /* TRANSLATORS: the repo of the software applicationdir, e.g. fedora */
+		  /* TRANSLATORS: the repo of the software root, e.g. fedora */
 		  _("Name of the remote repo"), NULL},
 		{ NULL}
 	};
@@ -422,139 +397,116 @@ main (int argc, char *argv[])
 
 	g_type_init ();
 	egg_debug_init (verbose);
-	desktop = pk_desktop_new ();
-	ret = pk_desktop_open_database (desktop, &error);
-	if (!ret) {
-		egg_warning ("cannot open database: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
 
 	/* use default */
-	if (cache == NULL) {
-		egg_debug ("cache not specified, using %s", PK_APP_INSTALL_DEFAULT_DATABASE);
-		cache = g_strdup (PK_APP_INSTALL_DEFAULT_DATABASE);
-	}
 
 	/* things we require */
 	if (repo == NULL) {
-		egg_warning ("A repo name is required");
+		g_print ("A repo name is required\n");
 		retval = 1;
 		goto out;
 	}
 	if (outputdir == NULL) {
-		egg_warning ("A icon output directory is required");
+		g_print ("A output directory is required\n");
+		retval = 1;
+		goto out;
+	}
+	if (desktopfile == NULL) {
+		g_print ("A desktop file is required\n");
+		retval = 1;
+		goto out;
+	}
+	if (package == NULL) {
+		g_print ("A package name is required\n");
 		retval = 1;
 		goto out;
 	}
 
 	/* use defaults */
-	if (applicationdir == NULL) {
-		egg_debug ("applicationdir not specified, using %s", PK_APP_INSTALL_DEFAULT_APPDIR);
-		applicationdir = g_strdup (PK_APP_INSTALL_DEFAULT_APPDIR);
-	}
-	if (icondir == NULL) {
-		egg_debug ("icondir not specified, using %s", PK_APP_INSTALL_DEFAULT_APPICONDIR);
-		icondir = g_strdup (PK_APP_INSTALL_DEFAULT_APPICONDIR);
+	if (root == NULL) {
+		egg_debug ("root not specified, using /");
+		root = g_strdup ("/");
 	}
 
 	/* check directories exist */
-	if (!g_file_test (applicationdir, G_FILE_TEST_IS_DIR)) {
-		egg_warning ("The applicationdir filename '%s' could not be found", applicationdir);
-		retval = 1;
-		goto out;
-	}
-	if (!g_file_test (icondir, G_FILE_TEST_IS_DIR)) {
-		egg_warning ("The icondir filename '%s' could not be found", icondir);
+	if (!g_file_test (root, G_FILE_TEST_IS_DIR)) {
+		g_print ("The root filename '%s' could not be found\n", root);
 		retval = 1;
 		goto out;
 	}
 	if (!g_file_test (outputdir, G_FILE_TEST_IS_DIR)) {
-		egg_warning ("The icon output directory '%s' could not be found", outputdir);
+		g_print ("The icon output directory '%s' could not be found\n", outputdir);
 		retval = 1;
 		goto out;
 	}
 
-	/* just dump them */
-	egg_warning ("cache=%s, applicationdir=%s, repo=%s, icondir=%s, outputdir=%s", cache, applicationdir, repo, icondir, outputdir);
-
 	/* generate the sub directories in the outputdir if they dont exist */
-	pk_app_install_generate_create_icon_directories (outputdir);
+	icondir = g_build_filename (outputdir, "icons", NULL);
+	pk_app_install_generate_create_icon_directories (icondir);
 
 	/* use this to dump the data */
-	string = g_string_new ("/* auto generated today */\n");
+	string = g_string_new ("");
 
-	/* get a list of desktop files in applicationdir */
-	files = pk_app_install_generate_get_desktop_files (applicationdir);
+	filename = g_build_filename (root, "/usr/share/applications", desktopfile, NULL);
+	egg_debug ("filename: %s", filename);
 
-	for (k=0; k<files->len; k++) {
-		gchar *sql;
-		gchar *package;
-		gchar *application_id;
-		gchar *icon_name;
-		GPtrArray *locales;
+	/* get app-id */
+	application_id = pk_app_install_generate_get_application_id (filename);
 
-		filename = g_ptr_array_index (files, k);
-		egg_debug ("filename: %s", filename);
-
-		/* get package name */
-		package = pk_app_install_generate_get_package_for_file (filename);
-		if (package == NULL)
-			continue;
-
-		/* get app-id */
-		application_id = pk_app_install_generate_get_application_id (filename);
-
-		/* extract data */
-		data = pk_app_install_generate_get_desktop_data (filename);
-
-		/* form application SQL */
-		sql = pk_app_install_generate_applications_sql (data, repo, package, application_id);
-		g_string_append_printf (string, "%s", sql);
-
-		/* get list of locales in this file */
-		locales = pk_app_install_generate_get_locales (data);
-
-		/* form translations SQL */
-		sql = pk_app_install_generate_translations_sql (data, locales, application_id);
-		g_string_append_printf (string, "%s\n", sql);
-
-		/* copy icons */
-		icon_name = pk_app_install_generate_get_value_for_locale (data, "Icon", NULL);
-		if (icon_name != NULL)
-			pk_app_install_generate_copy_icons (outputdir, icon_name);
-
-		/* free temp data */
-		g_ptr_array_foreach (locales, (GFunc) g_free, NULL);
-		g_ptr_array_free (locales, TRUE);
-		g_ptr_array_foreach (data, (GFunc) pk_app_install_generate_desktop_data_free, NULL);
-		g_ptr_array_free (data, TRUE);
-		g_free (icon_name);
-		g_free (sql);
-		g_free (package);
-		g_free (application_id);
-	}
-
-	/* save to disk */
-	ret = g_file_set_contents (cache, string->str, -1, &error);
-	if (!ret) {
-		egg_warning ("cannot write data file: %s", error->message);
-		g_error_free (error);
+	/* extract data */
+	data = pk_app_install_generate_get_desktop_data (filename);
+	if (data == NULL) {
+		g_print ("Could not get desktop data from %s\n", filename);
+		retval = 1;
 		goto out;
 	}
-	egg_debug ("saved to %s", cache);
+
+	/* form application SQL */
+	sql = pk_app_install_generate_applications_sql (data, repo, package, application_id);
+	g_string_append_printf (string, "%s", sql);
+	g_free (sql);
+
+	/* get list of locales in this file */
+	locales = pk_app_install_generate_get_locales (data);
+	if (locales == NULL) {
+		g_print ("Could not get locale data from %s\n", filename);
+		retval = 1;
+		goto out;
+	}
+
+	/* form translations SQL */
+	sql = pk_app_install_generate_translations_sql (data, locales, application_id);
+	g_string_append_printf (string, "%s\n", sql);
+	g_free (sql);
+
+	/* copy icons */
+	icon_name = pk_app_install_generate_get_value_for_locale (data, "Icon", NULL);
+	if (icon_name != NULL && !g_str_has_suffix (icon_name, ".png"))
+		pk_app_install_generate_copy_icons (root, icondir, icon_name);
+
+	/* print to screen */
+	g_print ("%s", string->str);
 
 out:
 	if (string != NULL)
 		g_string_free (string, TRUE);
-	g_ptr_array_foreach (files, (GFunc) g_free, NULL);
-	g_ptr_array_free (files, TRUE);
-	g_free (cache);
-	g_free (repo);
-	g_free (applicationdir);
+	if (locales != NULL) {
+		g_ptr_array_foreach (locales, (GFunc) g_free, NULL);
+		g_ptr_array_free (locales, TRUE);
+	}
+	if (data != NULL) {
+		g_ptr_array_foreach (data, (GFunc) pk_app_install_generate_desktop_data_free, NULL);
+		g_ptr_array_free (data, TRUE);
+	}
 	g_free (icondir);
+	g_free (icon_name);
+	g_free (package);
+	g_free (filename);
+	g_free (application_id);
+	g_free (repo);
+	g_free (root);
+	g_free (desktopfile);
 	g_free (outputdir);
-	g_object_unref (desktop);
-	return 0;
+	return retval;
 }
 

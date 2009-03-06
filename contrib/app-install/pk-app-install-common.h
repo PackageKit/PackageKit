@@ -24,7 +24,5 @@
 
 #define PK_APP_INSTALL_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/app-install/desktop.db"
 #define PK_APP_INSTALL_DEFAULT_ICONDIR		DATADIR "/app-install/icons"
-#define PK_APP_INSTALL_DEFAULT_APPICONDIR	DATADIR "/icons/hicolor/"
-#define PK_APP_INSTALL_DEFAULT_APPDIR		"/usr/share/applications"
 
 #endif /* __PK_APP_INSTALL_COMMON_H */
