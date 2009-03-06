@@ -1,1 +1,0 @@
-../command-not-found/egg-debug.c
