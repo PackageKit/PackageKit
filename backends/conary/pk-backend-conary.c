@@ -321,8 +321,8 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 }
 
 PK_BACKEND_OPTIONS (
-	"Conary",				/* description */
-	"Ken VanDine <ken@vandine.org>",
+	"Conary with XMLCache",				/* description */
+	"Andres Vargas <zodman@foresightlinux.org>",
 						/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */

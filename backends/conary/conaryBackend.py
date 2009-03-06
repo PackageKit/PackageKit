@@ -280,8 +280,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-
-        log.info("======== resolve =========")
+        log.info(pklog)
+#        pklog.info("======== resolve =========")
         log.info("filters: %s package:%s " % (filters, package))
 
         cache = Cache()
@@ -454,8 +454,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info(">>>>>>>>>> get update >>>>>>>>>>>>")
         #self._get_update(applyList)
         log.info(">>>>>>>>>> DO Update >>>>>>>>>>>>")
-        self._do_update(applyList)
+        jobs = self._do_update(applyList)
         log.info(">>>>>>>>>>END DO Update >>>>>>>>>>>>")
+        log.info(jobs)
         self.client.setUpdateCallback(self.callback )
 
 #    @ExceptionHandler
@@ -750,7 +751,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             troveTuple.append(name)
             troveTuple.append(version)
             installed = self.check_installed(troveTuple)
-            self._show_package(name, version, flavor, INFO_NORMAL)
+            if name in self.rebootpkgs:
+                info = INFO_SECURITY
+            else:
+                info = INFO_NORMAL
+            self._show_package(name, version, flavor, info)
         log.info("============== end get_updates ========================")
         self.client.setUpdateCallback(self.callback)
 
