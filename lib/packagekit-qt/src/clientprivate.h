@@ -40,7 +40,6 @@ public:
 
 	DaemonProxy* daemon;
 	Client* c;
-	QSqlDatabase desktopDB; // Used to search in /var/lib/PackageKit/desktop-files.db
 
 	QString locale;
 
