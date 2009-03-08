@@ -1,5 +1,5 @@
-# Spanish translation of packagekit.
-# Copyright (C) 2009 THE PACKAGE'S COPYRIGHT HOLDER
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # Javier Alejandro Castro <javier.alejandro.castro@gmail.com>, 2008.
 #
@@ -8,12 +8,13 @@ msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-03-05 15:42+0000\n"
-"PO-Revision-Date: 2009-03-07 00:57-0600\n"
+"PO-Revision-Date: 2009-03-08 21:11-0300\n"
 "Last-Translator: Domingo Becker <domingobecker@gmail.com>\n"
-"Language-Team: Spanish <fedora-trans-es@redhat.com>\n"
+"Language-Team: Fedora Spanish <fedora-trans-es@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Spanish\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #: ../client/pk-console.c:234
@@ -31,11 +32,13 @@ msgid "Succeeded"
 msgstr "Existosa"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:238 ../client/pk-console.c:405
+#: ../client/pk-console.c:238
+#: ../client/pk-console.c:405
 msgid "True"
 msgstr "Verdadero"
 
-#: ../client/pk-console.c:238 ../client/pk-console.c:405
+#: ../client/pk-console.c:238
+#: ../client/pk-console.c:405
 msgid "False"
 msgstr "Falso"
 
@@ -93,7 +96,8 @@ msgstr "Tipo"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:301 ../client/pk-console.c:324
+#: ../client/pk-console.c:301
+#: ../client/pk-console.c:324
 msgid "Summary"
 msgstr "Resúmen"
 
@@ -187,7 +191,8 @@ msgstr "Emitido"
 msgid "Updated"
 msgstr "Actualizado"
 
-#: ../client/pk-console.c:476 ../client/pk-console.c:478
+#: ../client/pk-console.c:476
+#: ../client/pk-console.c:478
 msgid "Percentage"
 msgstr "Porcentaje"
 
@@ -238,16 +243,20 @@ msgid "The package %s could not be installed: %s"
 msgstr "El paquete %s no se pudo instalar: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:724 ../client/pk-console.c:751
-#: ../client/pk-console.c:847 ../client/pk-console.c:964
-#: ../client/pk-tools-common.c:62 ../client/pk-tools-common.c:81
+#: ../client/pk-console.c:724
+#: ../client/pk-console.c:751
+#: ../client/pk-console.c:847
+#: ../client/pk-console.c:964
+#: ../client/pk-tools-common.c:62
+#: ../client/pk-tools-common.c:81
 #: ../client/pk-tools-common.c:89
 #, c-format
 msgid "Internal error: %s"
 msgstr "Error interno: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:732 ../client/pk-console.c:1360
+#: ../client/pk-console.c:732
+#: ../client/pk-console.c:1360
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "Esta herramienta no pudo instalar los paquetes: %s"
@@ -265,7 +274,8 @@ msgid "This tool could not remove %s: %s"
 msgstr "Esta herramienta no pudo eliminar %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:838 ../client/pk-console.c:876
+#: ../client/pk-console.c:838
+#: ../client/pk-console.c:876
 #: ../client/pk-console.c:909
 #, c-format
 msgid "This tool could not remove the packages: %s"
@@ -290,9 +300,7 @@ msgstr "¡La eliminación de paquetes fue cancelada!"
 #: ../client/pk-console.c:941
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
-msgstr ""
-"Esta herramienta no pudo descargar el paquete %s debido a que no fue "
-"encontrado"
+msgstr "Esta herramienta no pudo descargar el paquete %s debido a que no fue encontrado"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:972
@@ -301,25 +309,29 @@ msgid "This tool could not download the packages: %s"
 msgstr "Esta herramienta no pudo descargar los paquetes: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:999 ../client/pk-console.c:1008
+#: ../client/pk-console.c:999
+#: ../client/pk-console.c:1008
 #, c-format
 msgid "This tool could not update %s: %s"
 msgstr "Esta herramienta no pudo actualizar %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1030 ../client/pk-console.c:1038
+#: ../client/pk-console.c:1030
+#: ../client/pk-console.c:1038
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
 msgstr "Esta herramienta no pudo obtener los requerimientos de %s: %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:1060 ../client/pk-console.c:1068
+#: ../client/pk-console.c:1060
+#: ../client/pk-console.c:1068
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
 msgstr "Esta herramienta no pudo obtener las dependencias de %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:1090 ../client/pk-console.c:1098
+#: ../client/pk-console.c:1090
+#: ../client/pk-console.c:1098
 #, c-format
 msgid "This tool could not get package details for %s: %s"
 msgstr "Esta herramienta no pudo obtener los detalles del paquete %s: %s"
@@ -343,13 +355,15 @@ msgid "File already exists: %s"
 msgstr "El archivo ya existe: %s"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1155 ../client/pk-console.c:1211
+#: ../client/pk-console.c:1155
+#: ../client/pk-console.c:1211
 #: ../client/pk-console.c:1286
 msgid "Getting package list"
 msgstr "Obteniendo la lista de paquetes"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1161 ../client/pk-console.c:1217
+#: ../client/pk-console.c:1161
+#: ../client/pk-console.c:1217
 #: ../client/pk-console.c:1292
 #, c-format
 msgid "This tool could not get package list: %s"
@@ -361,7 +375,8 @@ msgid "Failed to save to disk"
 msgstr "Falló al guardar en el disco"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1206 ../client/pk-console.c:1281
+#: ../client/pk-console.c:1206
+#: ../client/pk-console.c:1281
 #, c-format
 msgid "File does not exist: %s"
 msgstr "El archivo no existe: %s"
@@ -410,15 +425,13 @@ msgstr "Instalando paquetes"
 #: ../client/pk-console.c:1389
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
-msgstr ""
-"Esta herramienta no pudo encontrar los detalles de actualización de %s: %s"
+msgstr "Esta herramienta no pudo encontrar los detalles de actualización de %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
 #: ../client/pk-console.c:1397
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
-msgstr ""
-"Esta herramienta no pudo obtener los detalles de actualización de %s: %s"
+msgstr "Esta herramienta no pudo obtener los detalles de actualización de %s: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1443
@@ -487,18 +500,21 @@ msgstr "Subcomandos:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1757 ../client/pk-generate-pack.c:185
+#: ../client/pk-console.c:1757
+#: ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
 #: ../contrib/command-not-found/pk-command-not-found.c:510
 #: ../contrib/app-install/pk-app-install-add.c:130
 #: ../contrib/app-install/pk-app-install-create.c:48
 #: ../contrib/app-install/pk-app-install-generate.c:392
-#: ../contrib/app-install/pk-app-install-remove.c:105 ../src/pk-main.c:199
+#: ../contrib/app-install/pk-app-install-remove.c:105
+#: ../src/pk-main.c:199
 msgid "Show extra debugging information"
 msgstr "Mostrar información extra de depuración"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1760 ../client/pk-monitor.c:127
+#: ../client/pk-console.c:1760
+#: ../client/pk-monitor.c:127
 msgid "Show the program version and exit"
 msgstr "Mostrar la versión del programa y salir"
 
@@ -528,8 +544,10 @@ msgid "A search type is required, e.g. name"
 msgstr "Se necesita un tipo de búsqueda, por ejemplo, nombre"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1904 ../client/pk-console.c:1912
-#: ../client/pk-console.c:1920 ../client/pk-console.c:1928
+#: ../client/pk-console.c:1904
+#: ../client/pk-console.c:1912
+#: ../client/pk-console.c:1920
+#: ../client/pk-console.c:1928
 msgid "A search term is required"
 msgstr "Se necesita un término de búsqueda"
 
@@ -555,11 +573,8 @@ msgstr "Necesita dar un nombre de paquete a eliminar"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1963
-msgid ""
-"A destination directory and then the package names to download are required"
-msgstr ""
-"Debe especificar el directorio destino y luego los nombres paquetes a "
-"descargar"
+msgid "A destination directory and then the package names to download are required"
+msgstr "Debe especificar el directorio destino y luego los nombres paquetes a descargar"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1969
@@ -582,7 +597,8 @@ msgid "A package name to resolve is required"
 msgstr "Se necesita un nombre de paquete a resolver"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2009 ../client/pk-console.c:2017
+#: ../client/pk-console.c:2009
+#: ../client/pk-console.c:2017
 msgid "A repository name is required"
 msgstr "Se necesita un nombre de repositorio"
 
@@ -608,9 +624,12 @@ msgstr "Falló al obtener la hora de la última vez que se completó esta acció
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2059 ../client/pk-console.c:2070
-#: ../client/pk-console.c:2078 ../client/pk-console.c:2094
-#: ../client/pk-console.c:2102 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2059
+#: ../client/pk-console.c:2070
+#: ../client/pk-console.c:2078
+#: ../client/pk-console.c:2094
+#: ../client/pk-console.c:2102
+#: ../client/pk-generate-pack.c:241
 msgid "A package name is required"
 msgstr "Se necesita un nombre de paquete"
 
@@ -625,7 +644,8 @@ msgid "A list file name to create is required"
 msgstr "Se necesita un nombre de archivo de la lista"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2119 ../client/pk-console.c:2128
+#: ../client/pk-console.c:2119
+#: ../client/pk-console.c:2128
 msgid "A list file to open is required"
 msgstr "Se necesita un archivo de lista a abrir"
 
@@ -667,10 +687,8 @@ msgstr "Ponga el nombre del archivo de dependencias a excluir"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:191
-msgid ""
-"The output file or directory (the current directory is used if ommitted)"
-msgstr ""
-"El directorio o archivo de salida (el directorio actual se usará si se omite)"
+msgid "The output file or directory (the current directory is used if ommitted)"
+msgstr "El directorio o archivo de salida (el directorio actual se usará si se omite)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:194
@@ -699,16 +717,15 @@ msgstr "Se necesita un directorio o nombre de archivo de salida"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
+#: ../client/pk-generate-pack.c:267
+#: ../client/pk-generate-pack.c:273
 msgid "The package manager cannot perform this type of operation."
 msgstr "El administrador de paquetes no puede realizar este tipo de operación."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
 #: ../client/pk-generate-pack.c:285
 msgid "If specifying a file, the service pack name must end with"
-msgstr ""
-"Si especifica un archivo, el nombre del paquete de servicio debe finalizar "
-"con"
+msgstr "Si especifica un archivo, el nombre del paquete de servicio debe finalizar con"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:301
@@ -911,14 +928,14 @@ msgstr "Instalando..."
 #: ../contrib/app-install/pk-app-install-generate.c:395
 #: ../contrib/app-install/pk-app-install-remove.c:108
 msgid "Main cache file to use (if not specififed, default is used)"
-msgstr "Archivo caché principal para usar (si no se especifica, se usa el que esta por defecto)"
+msgstr "Archivo caché principal a usar (si no se especifica, se usará el predeterminado)"
 
 #. TRANSLATORS: the source database, typically used for adding
 #. TRANSLATORS: the applicationdir database, typically used for adding
 #: ../contrib/app-install/pk-app-install-add.c:136
 #: ../contrib/app-install/pk-app-install-generate.c:398
 msgid "Source cache file to add to the main database"
-msgstr "Archivo caché fuente para añadir a la base de datos principal"
+msgstr "Archivo caché fuente para agregar a la base de datos principal"
 
 #. TRANSLATORS: the icon directory
 #. TRANSLATORS: the output directory
@@ -928,7 +945,7 @@ msgstr "Archivo caché fuente para añadir a la base de datos principal"
 #: ../contrib/app-install/pk-app-install-generate.c:404
 #: ../contrib/app-install/pk-app-install-remove.c:111
 msgid "Icon directory"
-msgstr "Directorio de íconos"
+msgstr "Directorio de Iconos"
 
 #. TRANSLATORS: the repo of the software source, e.g. fedora
 #. TRANSLATORS: the repo of the software applicationdir, e.g. fedora
@@ -937,7 +954,7 @@ msgstr "Directorio de íconos"
 #: ../contrib/app-install/pk-app-install-generate.c:407
 #: ../contrib/app-install/pk-app-install-remove.c:114
 msgid "Name of the remote repo"
-msgstr "Nombre del repositorio remoto"
+msgstr "Nombre del repo remoto"
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/app-install/pk-app-install-add.c:153
@@ -945,12 +962,12 @@ msgstr "Nombre del repositorio remoto"
 #: ../contrib/app-install/pk-app-install-generate.c:418
 #: ../contrib/app-install/pk-app-install-remove.c:125
 msgid "PackageKit Application Database Installer"
-msgstr "Instalador de Base de Datos de Aplicaciones de PackageKit"
+msgstr "Instalador de la Base de Datos de Aplicaciones de PackageKit"
 
 #. TRANSLATORS: if we are specifing a out-of-tree database
 #: ../contrib/app-install/pk-app-install-create.c:51
 msgid "Main database file to use (if not specififed, default is used)"
-msgstr "Archivo de base de datos principal para usar (si no se especifica, se usa el por defecto)"
+msgstr "Base de datos principal a usar (si no se especifica se usará el predeterminado)"
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
@@ -981,12 +998,8 @@ msgstr "El usuario correcto no esta lanzando el ejecutable (usualmente root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system "
-"directory:"
-msgstr ""
-"El archivo org.freedesktop.PackageKit.conf no está instalado en el "
-"directorio del sistema:"
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgstr "El archivo org.freedesktop.PackageKit.conf no está instalado en el directorio del sistema:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:193
@@ -1036,43 +1049,30 @@ msgstr "Error intentando arrancar: %s\n"
 
 #~ msgid "You need to specify a search type, e.g. name"
 #~ msgstr "Debe especificar el tipo de búsqueda, por ejemplo, nombre"
-
 #~ msgid "You need to specify a search term"
 #~ msgstr "Debe especificar un término de búsqueda"
-
 #~ msgid "You need to specify a package or file to install"
 #~ msgstr "Debe especificar un paquete o archivo a instalar"
-
 #~ msgid "You need to specify a package to remove"
 #~ msgstr "Debe especificar un paquete a eliminar"
-
 #~ msgid "You need to specify a package name to resolve"
 #~ msgstr "Debe especificar un nombre de paquete a resolver"
-
 #~ msgid "You need to specify a repository name"
 #~ msgstr "Debe especificar un nombre de repositorio"
-
 #~ msgid "You need to specify a correct role"
 #~ msgstr "Debe especificar un rol correcto"
-
 #~ msgid "Failed to get last time"
 #~ msgstr "Fállo al obtener última hora"
-
 #~ msgid "You need to specify a package to find the details for"
 #~ msgstr "Debe especificar un paquete para el que buscar la descripción"
-
 #~ msgid "You need to specify a package to find the files for"
 #~ msgstr "Debe especificar un paquete para el que buscar los archivos"
-
 #~ msgid "You need to specify a list file to create"
 #~ msgstr "Debe especificar un archivo de lista a crear"
-
 #~ msgid "You need to specify a list file to open"
 #~ msgstr "Debe especificar un archivo de lista a abrir"
-
 #~ msgid "Accept EULA"
 #~ msgstr "Aceptar EULA"
-
 #~ msgid "Authentication is required to accept a EULA"
 #~ msgstr "Se requiere autenticación para aceptar una EULA"
 
@@ -1083,7 +1083,6 @@ msgstr "Error intentando arrancar: %s\n"
 #~ msgstr ""
 #~ "Se requiere autenticación para cambiar los parametros de fuente de "
 #~ "software"
-
 #~ msgid "Authentication is required to change software source parameters"
 #~ msgstr ""
 #~ "Se requiere autenticación para cambiar los parametros de fuente de "
@@ -1106,10 +1105,8 @@ msgstr "Error intentando arrancar: %s\n"
 #, fuzzy
 #~ msgid "Authentication is required to refresh the system sources"
 #~ msgstr "Se requiere autenticación para refrescar la lista de paquetes"
-
 #~ msgid "Authentication is required to remove packages"
 #~ msgstr "Se requiere autenticación para eliminar paquetes"
-
 #~ msgid "Authentication is required to rollback a transaction"
 #~ msgstr "Se requiere autenticación para deshacer una transaccion"
 
@@ -1118,10 +1115,8 @@ msgstr "Error intentando arrancar: %s\n"
 #~ "Authentication is required to set the network proxy used for downloading "
 #~ "packages"
 #~ msgstr "Se requiere autenticación para eliminar paquetes"
-
 #~ msgid "Authentication is required to update packages"
 #~ msgstr "Se requiere autenticación para actualizar paquetes"
-
 #~ msgid "Change software source parameters"
 #~ msgstr "Cambiar los parametros de fuente de software"
 
@@ -1132,150 +1127,114 @@ msgstr "Error intentando arrancar: %s\n"
 #, fuzzy
 #~ msgid "Install untrusted local file"
 #~ msgstr "Instalar archivo local"
-
 #~ msgid "Remove package"
 #~ msgstr "Eliminar paquete"
-
 #~ msgid "Rollback to a previous transaction"
 #~ msgstr "Deshacer hasta una transaccion previa"
 
 #, fuzzy
 #~ msgid "Update packages"
 #~ msgstr "Actualizar paquete"
-
 #~ msgid "This tool could not remove the packages: '%s'"
 #~ msgstr "Esta herramienta no pudo eliminar los paquetes: '%s'"
-
 #~ msgid "Install local file"
 #~ msgstr "Instalar archivo local"
-
 #~ msgid "Okay to import key?"
 #~ msgstr "¿De acuerto con importer la clave?"
-
 #~ msgid "Did not import key"
 #~ msgstr "No se importó la clave"
-
 #~ msgid "Do you agree?"
 #~ msgstr "¿Está de acuerdo?"
-
 #~ msgid "Could not find package to remove"
 #~ msgstr "No se pudo encontrar el paquete a eliminar"
-
 #~ msgid "Cancelled!"
 #~ msgstr "Cancelado!"
-
 #~ msgid "Could not find package to update"
 #~ msgstr "No se pudo encontrar el paquete a actualizar"
-
 #~ msgid "Could not find what packages require"
 #~ msgstr "No se pudo encontrar cuales paquetes requiere este paquete"
-
 #~ msgid "Could not find details for"
 #~ msgstr "No se pudieron obtener los detalles de "
-
 #~ msgid "Could not find a package match"
 #~ msgstr "No se pudo encontrar un paquete coincidente"
 
 #, fuzzy
 #~ msgid "Could not set database readonly"
 #~ msgstr "No se pudo abrir la base de datos: %s"
-
 #~ msgid "Could not open database: %s"
 #~ msgstr "No se pudo abrir la base de datos: %s"
-
 #~ msgid "You probably need to run this program as the root user"
 #~ msgstr "Probablemente necesita ejecutar este programa como el usuario root"
-
 #~ msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
 #~ msgstr ""
 #~ "<span color='#%06x' underline='single' size='larger'>Ejecutar %s</span>"
-
 #~ msgid "<big>%s</big>"
 #~ msgstr "<big>%s</big>"
-
 #~ msgid ""
 #~ "\n"
 #~ "<span color='#%06x' underline='single'>Run version %s now</span>"
 #~ msgstr ""
 #~ "\n"
 #~ "<span color='#%06x' underline='single'>Ejecutar versión %s ahora</span>"
-
 #~ msgid ""
 #~ "\n"
 #~ "<span color='#%06x' underline='single'>Run now</span>"
 #~ msgstr ""
 #~ "\n"
 #~ "<span color='#%06x' underline='single'>Ejecutar ahora</span>"
-
 #~ msgid ""
 #~ "\n"
 #~ "<span color='#%06x' underline='single'>Upgrade to version %s</span>"
 #~ msgstr ""
 #~ "\n"
 #~ "<span color='#%06x' underline='single'>Actualizar a la versión %s</span>"
-
 #~ msgid ""
 #~ "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
 #~ msgstr ""
 #~ "<span color='#%06x' underline='single' size='larger'>Instalar %s Ahora</"
 #~ "span>"
-
 #~ msgid ""
 #~ "\n"
 #~ "<small>Version: %s</small>"
 #~ msgstr ""
 #~ "\n"
 #~ "<small>Versión: %s</small>"
-
 #~ msgid "failed to download: invalid package_id and/or directory"
 #~ msgstr "falló la descarga: id de paquete inválido y/o directorio"
-
 #~ msgid "Could not find a valid metadata file"
 #~ msgstr "No se pudo encontrar un archivo de metadatos válido"
-
 #~ msgid "Okay to download the additional packages"
 #~ msgstr "Listo para descargar los paquetes adicionales"
-
 #~ msgid "You need to specify the pack name and packages to be packed\n"
 #~ msgstr "Debe especificar el nombre de grupo y los paquetes a agrupar\n"
-
 #~ msgid ""
 #~ "Invalid name for the service pack, Specify a name with .servicepack "
 #~ "extension\n"
 #~ msgstr ""
 #~ "Nombre inválido para el paquete de servicio. Especifique un nombre con la "
 #~ "extensión .servicepack\n"
-
 #~ msgid "Authentication is required to install a local file"
 #~ msgstr "Se requiere autenticación para instalar un archivo local"
-
 #~ msgid "Authentication is required to install a security signature"
 #~ msgstr "Se requiere autenticación para instalar una firma de seguridad"
-
 #~ msgid "Authentication is required to update all packages"
 #~ msgstr "Se requiere autenticación para actualizar todos los paquetes"
-
 #~ msgid "Install security signature"
 #~ msgstr "Instalar firma de seguridad"
-
 #~ msgid "Refresh package lists"
 #~ msgstr "Refrescar lista de paquetes"
-
 #~ msgid "Update all packages"
 #~ msgstr "Actualizar todos los paquetes"
-
 #~ msgid ""
 #~ "Could not find a package with that name to install, or package already "
 #~ "installed"
 #~ msgstr ""
 #~ "No se pudo encontrar un paquete con ese nombre para instalar, o el "
 #~ "paquete ya está instalado"
-
 #~ msgid "Could not find a package with that name to update"
 #~ msgstr "No se pudo encontrar un paquete con ese nombre para actualizar"
-
 #~ msgid "Could not find a description for this package"
 #~ msgstr "No se pudo encontrar una descripcion para este paquete"
-
 #~ msgid "You need to specify a package to find the description for"
 #~ msgstr "Debe especificar un paquete para el que buscar la descripción"
+
