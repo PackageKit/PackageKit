@@ -57,16 +57,16 @@ Client::Client(QObject* parent) : QObject(parent)
 	connect(d->daemon, SIGNAL(TransactionListChanged(const QStringList&)), d, SLOT(transactionListChanged(const QStringList&)));
 
 	// Set up database for desktop files
-	d->desktopDB = QSqlDatabase::addDatabase("QSQLITE");
-	d->desktopDB.setDatabaseName ("/var/lib/PackageKit/desktop-files.db");
-	if (!d->desktopDB.open()) {
+	QSqlDatabase db;
+	db = QSqlDatabase::addDatabase("QSQLITE");
+	db.setDatabaseName ("/var/lib/PackageKit/desktop-files.db");
+	if (!db.open()) {
 		qDebug() << "Failed to initialize the desktop files database";
 	}
 }
 
 Client::~Client()
 {
-	d->desktopDB.close();
 	delete d;
 }
 
@@ -677,12 +677,13 @@ Transaction* Client::searchName(const QString& search, Filter filter)
 
 Package* Client::searchFromDesktopFile(const QString& path)
 {
-	if (!d->desktopDB.isOpen()) {
+	QSqlDatabase db = QSqlDatabase::database();
+	if (!db.isOpen()) {
 		qDebug() << "Desktop files database is not open";
 		return NULL;
 	}
 
-	QSqlQuery q(d->desktopDB);
+	QSqlQuery q(db);
 	q.prepare("SELECT package FROM cache WHERE filename = :path");
 	q.bindValue(":path", path);
 	if(!q.exec()) {
