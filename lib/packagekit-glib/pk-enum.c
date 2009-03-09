@@ -224,6 +224,8 @@ static const PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_SOURCE,		"~source"},
 	{PK_FILTER_ENUM_COLLECTIONS,		"collections"},
 	{PK_FILTER_ENUM_NOT_COLLECTIONS,	"~collections"},
+	{PK_FILTER_ENUM_APPLICATION,		"application"},
+	{PK_FILTER_ENUM_NOT_APPLICATION,	"~application"},
 	{0, NULL}
 };
 
@@ -293,6 +295,7 @@ static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_OBSOLETING,		"obsoleting"},
 	{PK_INFO_ENUM_COLLECTION_INSTALLED,	"collection-installed"},
 	{PK_INFO_ENUM_COLLECTION_AVAILABLE,	"collection-available"},
+	{PK_INFO_ENUM_FINISHED,			"finished"},
 	{0, NULL}
 };
 

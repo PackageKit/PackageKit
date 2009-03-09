@@ -61,6 +61,8 @@ gboolean	 pk_backend_set_exit_code		(PkBackend	*backend,
 							 PkExitEnum	 exit);
 gboolean	 pk_backend_set_transaction_data	(PkBackend	*backend,
 							 const gchar	*data);
+gboolean	 pk_backend_set_simultaneous_mode	(PkBackend	*backend,
+							 gboolean	 simultaneous);
 gboolean	 pk_backend_set_locale			(PkBackend	*backend,
 							 const gchar	*code);
 

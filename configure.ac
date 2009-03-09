@@ -1,6 +1,6 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.4.4)
+AC_INIT(PackageKit, 0.4.5)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -87,6 +87,7 @@ if test "$GCC" = "yes"; then
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Waggregate-return"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wdeclaration-after-statement"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wshadow"
+	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wno-strict-aliasing"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Winline"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wmissing-parameter-type"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Woverride-init"
@@ -119,6 +120,7 @@ POLKIT_GRANT_REQUIRED=0.8
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
 QTGUI_REQUIRED=4.4.0
+QTSQL_REQUIRED=4.4.0
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -167,6 +169,11 @@ if test x$enable_qt = xyes; then
 	AC_SUBST(QTGUI_CFLAGS)
 	AC_SUBST(QTGUI_LIBS)
 
+
+	PKG_CHECK_MODULES(QTSQL, QtSql >= $QTSQL_REQUIRED)
+	AC_SUBST(QTSQL_CFLAGS)
+	AC_SUBST(QTSQL_LIBS)
+
 	PKG_CHECK_MODULES(CPPUNIT, cppunit)
 	AC_SUBST(CPPUNIT_CFLAGS)
 	AC_SUBST(CPPUNIT_LIBS)
@@ -179,7 +186,7 @@ AM_CONDITIONAL(PK_BUILD_QT, test $build_qt = "yes")
 dnl ---------------------------------------------------------------------------
 dnl - Build packageKit-sharp
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(managed, AS_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
+AC_ARG_ENABLE(managed, AC_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
 	      enable_managed=$enableval,enable_managed=false)
 if test x$enable_managed = xyes; then
 	PKG_CHECK_MODULES(GLIBSHARP, glib-sharp-2.0)
@@ -775,6 +782,7 @@ echo "
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
+        Application install:       ${enable_app_install}
         Pango module:              ${build_gtk_module}
         BASH Command not found:    ${build_command_not_found}
         RUCK client:               ${build_ruck}

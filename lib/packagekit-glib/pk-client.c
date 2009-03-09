@@ -891,7 +891,7 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	code = pk_error_enum_from_text (code_text);
-	egg_debug ("emit error-code %i, %s", code, details);
+	egg_debug ("emit error-code %s, %s", pk_error_enum_to_text (code), details);
 	g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, code, details);
 }
 
@@ -1221,9 +1221,6 @@ pk_client_cancel (PkClient *client, GError **error)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "unable to cancel client in finished handler");
 		return FALSE;
 	}
-
-	/* save this so we can re-issue it */
-	client->priv->role = PK_ROLE_ENUM_CANCEL;
 
 	/* hopefully do the operation first time */
 	ret = pk_client_cancel_action (client, &error_local);
@@ -2265,6 +2262,29 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 }
 
 /**
+ * pk_client_rollback_action:
+ **/
+static gboolean
+pk_client_rollback_action (PkClient *client, const gchar *transaction_id, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
+				 G_TYPE_STRING, transaction_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
+}
+
+/**
  * pk_client_rollback:
  * @client: a valid #PkClient instance
  * @transaction_id: a transaction_id structure
@@ -2279,6 +2299,7 @@ gboolean
 pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **error)
 {
 	gboolean ret;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -2299,15 +2320,33 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 	client->priv->role = PK_ROLE_ENUM_ROLLBACK;
 	client->priv->cached_transaction_id = g_strdup (transaction_id);
 
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		if (error != NULL)
-			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+	/* hopefully do the operation first time */
+	ret = pk_client_rollback_action (client, transaction_id, &error_local);
+
+	/* we were refused by policy */
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
+		/* try to get auth */
+		if (pk_client_error_auth_obtain (error_local)) {
+			/* clear old error */
+			g_clear_error (&error_local);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, &error_local);
+			if (!ret)
+				goto out;
+
+			/* retry the action now we have got auth */
+			ret = pk_client_rollback_action (client, transaction_id, &error_local);
+		}
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
-				 G_TYPE_STRING, transaction_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+out:
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
+	}
+
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -2316,7 +2355,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+
 	return ret;
 }
 
@@ -4371,6 +4410,7 @@ pk_client_reset (PkClient *client, GError **error)
 	g_free (client->priv->cached_directory);
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
+	g_object_unref (client->priv->package_list);
 
 	/* clear restart array */
 	g_ptr_array_foreach (client->priv->require_restart_list, (GFunc) pk_package_id_free, NULL);
@@ -4393,8 +4433,9 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 	client->priv->timeout = -1;
+	client->priv->package_list = pk_package_list_new ();
 
-	pk_obj_list_clear (PK_OBJ_LIST (client->priv->package_list));
+	/* TODO: make clean */
 	pk_obj_list_clear (client->priv->cached_data);
 	return TRUE;
 }
@@ -4593,20 +4634,6 @@ pk_client_new (void)
 	return PK_CLIENT (client);
 }
 
-/**
- * init:
- *
- * Library constructor: Disable ptrace() and core dumping for applications
- * which use this library, so that local trojans cannot silently abuse PackageKit
- * privileges.
- */
-__attribute__ ((constructor))
-static void init()
-{
-	/* this is a bandaid */
-	prctl (PR_SET_DUMPABLE, 0);
-}
-
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -4664,6 +4691,7 @@ pk_client_test (EggTest *test)
 	guint i;
 	gchar *file;
 	PkPackageList *list;
+	PkRoleEnum role;
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
@@ -4899,6 +4927,14 @@ pk_client_test (EggTest *test)
 		egg_test_failed (test, "error %s", error->message);
 		g_error_free (error);
 	}
+
+	/************************************************************/
+	egg_test_title (test, "ensure task still has correct role after cancel");
+	pk_client_get_role (client, &role, NULL, NULL);
+	if (role == PK_ROLE_ENUM_SEARCH_NAME)
+		egg_test_success (test, "did not cancel finished task");
+	else
+		egg_test_failed (test, "role was %s", pk_role_enum_to_text (role));
 
 	g_object_unref (client);
 	g_object_unref (client_copy);

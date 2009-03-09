@@ -76,7 +76,7 @@
         daemon debugging output can be observed.
       </para>
     </sect2>
-    <sect2 id="config-main-timeout">
+    <sect2 id="config-main-shutdown-timeout">
       <title>ShutdownTimeout</title>
       <para>
         This is the time that the daemon waits when idle before shutting down.
@@ -86,7 +86,13 @@
         although the daemon will start and stop less often.
       </para>
     </sect2>
-    <sect2 id="config-main-default">
+    <sect2 id="config-main-use-syslog">
+      <title>UseSyslog</title>
+      <para>
+        Syslog is used to audit and log actions wherever its available.
+      </para>
+    </sect2>
+    <sect2 id="config-main-default-backend">
       <title>DefaultBackend</title>
       <para>
         The default backend that the daemon should use.

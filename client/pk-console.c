@@ -162,6 +162,10 @@ pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 	gchar *info_pad = NULL;
 	gchar *text = NULL;
 
+	/* ignore finished */
+	if (obj->info == PK_INFO_ENUM_FINISHED)
+		goto out;
+
 	/* make these all the same length */
 	info_pad = pk_strpad (pk_info_enum_to_text (obj->info), 12);
 
@@ -1316,8 +1320,9 @@ pk_console_list_install (PkClient *client, const gchar *file, GError **error)
 	g_print ("%s:\n", _("To install"));
 	for (i=0; i<length; i++) {
 		obj = pk_package_list_get_obj (new, i);
-		g_print ("%i\t%s\n", i+1, obj->id->name);
+		g_print ("%s ", obj->id->name);
 	}
+	g_print ("\n");
 
 	/* resolve */
 	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
@@ -1325,12 +1330,12 @@ pk_console_list_install (PkClient *client, const gchar *file, GError **error)
 		obj = pk_package_list_get_obj (new, i);
 		/* TRANSLATORS: searching takes some time.... */
 		g_print ("%.0f%%\t%s %s...", (100.0f/length)*i, _("Searching for package: "), obj->id->name);
-		package_id = pk_console_perhaps_resolve (client, filters, obj->id->name, &error_local);
+		package_id = pk_console_perhaps_resolve (client, filters, obj->id->name, NULL);
 		if (package_id == NULL) {
 			/* TRANSLATORS: package was not found -- this is the end of a string ended in ... */
 			g_print (" %s\n", _("not found."));
 		} else {
-			g_print (" %s\n", package_id);
+			g_print (" %s\n", obj->id->version);
 			g_ptr_array_add (array, package_id);
 			/* no need to free */
 		}
@@ -1703,6 +1708,8 @@ pk_console_get_summary (void)
 		g_string_append_printf (string, "  %s\n", "get-update-detail [package]");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_PACKAGES))
 		g_string_append_printf (string, "  %s\n", "get-packages");
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_ROLLBACK))
+		g_string_append_printf (string, "  %s\n", "rollback");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REPO_LIST))
 		g_string_append_printf (string, "  %s\n", "repo-list");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPO_ENABLE))
@@ -1971,6 +1978,14 @@ main (int argc, char *argv[])
 		}
 		ret = pk_client_accept_eula (client_async, value, &error);
 		maybe_sync = FALSE;
+
+	} else if (strcmp (mode, "rollback") == 0) {
+		if (value == NULL) {
+			/* TRANSLATORS: geeky error, 99.9999% of users won't see this */
+			error = g_error_new (1, 0, "%s", _("A transaction identifier (tid) is required"));
+			goto out;
+		}
+		ret = pk_client_rollback (client_async, value, &error);
 
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {

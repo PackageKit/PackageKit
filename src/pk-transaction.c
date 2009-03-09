@@ -653,7 +653,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	else if (transaction->priv->emit_eula_required)
 		exit_enum = PK_EXIT_ENUM_EULA_REQUIRED;
 
-	/* invalidate some caches if we succeeded*/
+	/* invalidate some caches if we succeeded */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
 		pk_transaction_finish_invalidate_caches (transaction);
 
@@ -797,12 +797,13 @@ pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransa
 	}
 
 	/* add to package cache even if we already got a result */
-	info_text = pk_info_enum_to_text (obj->info);
-	pk_obj_list_add (PK_OBJ_LIST(transaction->priv->package_list), obj);
+	if (obj->info != PK_INFO_ENUM_FINISHED)
+		pk_obj_list_add (PK_OBJ_LIST(transaction->priv->package_list), obj);
 
 	/* emit */
 	g_free (transaction->priv->last_package_id);
 	transaction->priv->last_package_id = pk_package_id_to_string (obj->id);
+	info_text = pk_info_enum_to_text (obj->info);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0, info_text,
 		       transaction->priv->last_package_id, obj->summary);
 }
@@ -2514,6 +2515,9 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 				       info_text, package_id, obj->summary);
 			g_free (package_id);
 		}
+
+		/* set finished */
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 
 		/* we are done */
 		g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
