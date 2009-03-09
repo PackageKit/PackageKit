@@ -57,7 +57,7 @@ typedef gboolean (*PkObjListEqualFunc)		(gconstpointer		 data1,
 typedef gpointer (*PkObjListFromStringFunc)	(const gchar		*data);
 typedef gchar	*(*PkObjListToStringFunc)	(gconstpointer		 data);
 
-GType		 pk_obj_list_get_type		(void) G_GNUC_CONST;
+GType		 pk_obj_list_get_type		(void);
 PkObjList	*pk_obj_list_new		(void);
 
 void		 pk_obj_list_set_new		(PkObjList		*list,

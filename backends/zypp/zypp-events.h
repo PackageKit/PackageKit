@@ -273,7 +273,7 @@ struct RepoProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::P
 
 struct RepoReportReceiver : public zypp::callback::ReceiveReport<zypp::repo::RepoReport>, ZyppBackendReceiver
 {
-	virtual void start (const zypp::ProgressData &data)
+	virtual void start (const zypp::ProgressData &data, const zypp::RepoInfo)
 	{
 		egg_debug ("______________________ RepoReportReceiver::start()________________________");
 		reset_sub_percentage ();
@@ -286,7 +286,7 @@ struct RepoReportReceiver : public zypp::callback::ReceiveReport<zypp::repo::Rep
 		return true;
 	}
 
-	virtual void finish (const zypp::ProgressData &data)
+	virtual void finish (zypp::Repository source, const std::string &task, zypp::repo::RepoReport::Error error, const std::string &reason)
 	{
 		//fprintf (stderr, "\n\n----> RepoReportReceiver::finish()\n");
 	}
@@ -310,7 +310,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 		}
 	}
 
-	virtual bool progress (int value, const zypp::Url &file)
+	virtual bool progress (int value, const zypp::Url &file, double dbps_avg, double dbps_current)
 	{
 		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::progress(), %s:%d\n\n", _package_id == NULL ? "unknown" : _package_id, value);
 		if (_package_id != NULL)
@@ -386,14 +386,12 @@ struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestR
 
 struct MediaChangeReportReceiver : public zypp::callback::ReceiveReport<zypp::media::MediaChangeReport>, ZyppBackendReceiver
 {
-        virtual Action requestMedia (zypp::Url &url, unsigned mediaNr, zypp::media::MediaChangeReport::Error error, const std::string &probl)
-        {
-                pk_backend_error_code (_backend,
-                                PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
-                                probl.c_str ());
-                // We've to abort here, because there is currently no feasible way to inform the user to insert/change media
-                return ABORT;
-        }
+	virtual Action requestMedia (zypp::Url &url, unsigned mediaNr, const std::string &label, zypp::media::MediaChangeReport::Error error, const std::string &description, const std::vector<std::string> & devices, unsigned int &dev_current)
+	{
+		pk_backend_error_code (_backend, PK_ERROR_ENUM_REPO_NOT_AVAILABLE, description.c_str ());
+		// We've to abort here, because there is currently no feasible way to inform the user to insert/change media
+		return ABORT;
+	}
 };
 
 struct ProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::ProgressReport>, ZyppBackendReceiver

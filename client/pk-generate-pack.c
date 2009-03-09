@@ -31,6 +31,7 @@
 #include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
 
 #include "pk-tools-common.h"
 
@@ -49,12 +50,12 @@ pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
 
 	distro_id = pk_get_distro_id ();
 	if (name != NULL) {
-		filename = g_strdup_printf ("%s/%s-%s.servicepack", directory, name, distro_id);
+		filename = g_strdup_printf ("%s/%s-%s.%s", directory, name, distro_id, PK_SERVICE_PACK_FILE_EXTENSION);
 	} else {
 		iso_time = pk_iso8601_present ();
 		/* don't include the time, just use the date prefix */
 		iso_time[10] = '\0';
-		filename = g_strdup_printf ("%s/updates-%s-%s.servicepack", directory, iso_time, distro_id);
+		filename = g_strdup_printf ("%s/updates-%s-%s.%s", directory, iso_time, distro_id, PK_SERVICE_PACK_FILE_EXTENSION);
 	}
 	g_free (distro_id);
 	g_free (iso_time);
@@ -162,7 +163,6 @@ main (int argc, char *argv[])
 	GOptionContext *context;
 	gchar *options_help;
 	gboolean ret;
-	guint retval;
 	gchar *filename = NULL;
 	PkClient *client = NULL;
 	PkControl *control = NULL;
@@ -178,17 +178,22 @@ main (int argc, char *argv[])
 	gchar *package_list = NULL;
 	gchar *package = NULL;
 	gboolean updates = FALSE;
+	gint retval = 1;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 			_("Show extra debugging information"), NULL },
 		{ "with-package-list", 'l', 0, G_OPTION_ARG_STRING, &package_list,
+			/* TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target */
 			_("Set the file name of dependencies to be excluded"), NULL},
 		{ "output", 'o', 0, G_OPTION_ARG_STRING, &directory,
-			_("The output directory (the current directory is used if ommitted)"), NULL},
+			/* TRANSLATORS: the output location */
+			_("The output file or directory (the current directory is used if ommitted)"), NULL},
 		{ "package", 'p', 0, G_OPTION_ARG_STRING, &package,
+			/* TRANSLATORS: put a list of packages in the pack */
 			_("The package to be put into the service pack"), NULL},
 		{ "updates", 'u', 0, G_OPTION_ARG_NONE, &updates,
+			/* TRANSLATORS: put all pending updates in the pack */
 			_("Put all updates available in the service pack"), NULL},
 		{ NULL}
 	};
@@ -218,16 +223,32 @@ main (int argc, char *argv[])
 	if (package == NULL && !updates) {
 		/* TRANSLATORS: This is when the user fails to supply the correct arguments */
 		g_print ("%s\n", _("Neither --package or --updates option selected."));
-		g_print ("%s", options_help);
-		return 1;
+		retval = 1;
+		goto out;
 	}
 
 	/* both options selected */
 	if (package != NULL && updates) {
 		/* TRANSLATORS: This is when the user fails to supply just one argument */
 		g_print ("%s\n", _("Both options selected."));
-		g_print ("%s", options_help);
-		return 1;
+		retval = 1;
+		goto out;
+	}
+
+	/* no argument given to --package */
+	if (package != NULL && egg_strzero (package)) {
+		/* TRANSLATORS: This is when the user fails to supply the package name */
+		g_print ("%s\n", _("A package name is required"));
+		retval = 1;
+		goto out;
+	}
+
+	/* no argument given to --output */
+	if (directory != NULL && egg_strzero (directory)) {
+		/* TRANSLATORS: This is when the user fails to supply the output */
+		g_print ("%s\n", _("A output directory or file name is required"));
+		retval = 1;
+		goto out;
 	}
 
 	/* fall back to the system copy */
@@ -238,16 +259,35 @@ main (int argc, char *argv[])
 	if (directory == NULL)
 		directory = g_get_current_dir ();
 
-	/* are we dumb and can't check for depends? */
+	/* are we dumb and can't do some actions */
 	control = pk_control_new ();
 	roles = pk_control_get_actions (control, NULL);
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
-		g_print ("Please use a backend that supports GetDepends!\n");
+		/* TRANSLATORS: This is when the backend doesn't have the capability to get-depends */
+		g_print ("%s (GetDepends)\n", _("The package manager cannot perform this type of operation."));
+		retval = 1;
+		goto out;
+	}
+	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
+		/* TRANSLATORS: This is when the backend doesn't have the capability to download */
+		g_print ("%s (DownloadPackage)\n", _("The package manager cannot perform this type of operation."));
+		retval = 1;
 		goto out;
 	}
 
-	/* get fn */
-	filename = pk_generate_pack_get_filename (package, directory);
+	/* the user can speciify a complete path */
+	ret = g_file_test (directory, G_FILE_TEST_IS_DIR);
+	if (ret) {
+		filename = pk_generate_pack_get_filename (package, directory);
+	} else {
+		if (!g_str_has_suffix (directory, PK_SERVICE_PACK_FILE_EXTENSION)) {
+			/* TRANSLATORS: the user specified an absolute path, but didn't get the extension correct */
+			g_print ("%s .%s \n", _("If specifying a file, the service pack name must end with"), PK_SERVICE_PACK_FILE_EXTENSION);
+			retval = 1;
+			goto out;
+		}
+		filename = g_strdup (directory);
+	}
 
 	/* download packages to a temporary directory */
 	tempdir = g_build_filename (g_get_tmp_dir (), "pack", NULL);
@@ -262,6 +302,7 @@ main (int argc, char *argv[])
 		if (!overwrite) {
 			/* TRANSLATORS: This is when the pack was not overwritten */
 			g_print ("%s\n", _("The pack was not overwritten."));
+			retval = 1;
 			goto out;
 		}
 	}
@@ -274,6 +315,7 @@ main (int argc, char *argv[])
 	if (retval != 0) {
 		/* TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows */
 		g_print ("%s '%s'\n", _("Failed to create directory:"), tempdir);
+		retval = 1;
 		goto out;
 	}
 
@@ -283,6 +325,7 @@ main (int argc, char *argv[])
 	if (!ret) {
 		/* TRANSLATORS: This is when the list of packages from the remote computer cannot be opened */
 		g_print ("%s: '%s'\n", _("Failed to open package list."), package_list);
+		retval = 1;
 		goto out;
 	}
 
@@ -298,6 +341,7 @@ main (int argc, char *argv[])
 			/* TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows */
 			g_print (_("Failed to find package '%s': %s"), package, error->message);
 			g_error_free (error);
+			retval = 1;
 			goto out;
 		}
 	}
@@ -321,6 +365,7 @@ main (int argc, char *argv[])
 		/* TRANSLATORS: we succeeded in making the file */
 		g_print (_("Service pack created '%s'"), filename);
 		g_print ("\n");
+		retval = 0;
 	} else {
 		/* TRANSLATORS: we failed to make te file */
 		g_print (_("Failed to create '%s': %s"), filename, error->message);
@@ -338,12 +383,13 @@ out:
 		g_object_unref (client);
 	if (list != NULL)
 		g_object_unref (list);
+	if (control != NULL)
+		g_object_unref (control);
 	g_free (tempdir);
 	g_free (filename);
 	g_free (package_id);
 	g_free (directory);
 	g_free (package_list);
 	g_free (options_help);
-	g_object_unref (control);
-	return 0;
+	return retval;
 }

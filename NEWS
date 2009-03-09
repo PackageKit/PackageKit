@@ -1,3 +1,156 @@
+Version 0.4.4
+~~~~~~~~~~~~~
+Released: 2009-02-23
+
+Translations:
+ - Updated Swedish translation (Daniel Nylander)
+ - Updated Spanish translation (Domingo Becker)
+ - Updated German translation (Fabian Affolter)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Polish translation (Piotr Drąg)
+ - Updated Simplified Chinese translation (zhourongrong)
+
+New Features:
+ - Add a new method GetDaemonState to the main interface to help debugging on
+   live systems (Richard Hughes)
+ - Print the daemon state when using pkmon in verbose mode (Richard Hughes)
+ - Add a draft standard for application install metadata handling (Richard Hughes)
+ - Add a pk-app-install binary for manipulating the sqlite cache (Richard Hughes)
+ - PackageKit-Qt: Sync API for RequireRestart (Adrien BUSTANY)
+ - PackageKit-Qt: Add support for application filter (Adrien BUSTANY)
+ - PackageKit-Qt: Add a searchFromDesktopFile method  (Adrien BUSTANY)
+
+Bugfixes:
+ - Updated documentation with UseSyslog parameter (Balaji)
+ - Fix for the updates and obsoletes delimiter (Daniel Nicoletti)
+ - Make the dbus policy more fine grained (Sebastian Heinlein)
+ - Fix compile failure with gcc-4.4.0 and old versions of glib2 (Richard Hughes)
+ - If we fail to exit from the dispatcher, make sure we cleanup the poll as the
+   child check isn't going to be run (Richard Hughes)
+ - The QT lib now depends on QtSql, so add this to the configure (Richard Hughes)
+ - Fix up resolve in pkcon and from libpackagekit-glib (Richard Hughes)
+ - Don't dereference a NULL pointer in pk_console_resolve() which can be done
+   using pkcon list-install (Richard Hughes)
+ - Don't use an local error in pkcon list-install else we'll fail to free it,
+   and it's non-fatal (Richard Hughes)
+ - PackageKit-Qt: Handle daemon errors more gracefully (Adrien BUSTANY)
+ - PackageKit-Qt: Add a getLastError method to get the last daemon error (Adrien BUSTANY)
+ - PackageKit-Qt: Add missing implementation for uid and cmdline (Adrien BUSTANY)
+ - Packagekit-Qt: Fix to make what provides work (Daniel Nicoletti)
+
+Backends:
+ - alpm: Added experimental support for progress indication (Valeriy Lyasotskiy)
+ - alpm: Updated alpm backend status in status matrix (Valeriy Lyasotskiy)
+ - apt: Allow the properties and introspection interface of the backend
+        to everyone (Sebastian Heinlein)
+ - apt: Use the merged debfile module of python-apt (Sebastian Heinlein)
+ - apt: Fix an API change in debfile (Sebastian Heinlein)
+ - apt: Install the main Python module into the packagekit package and use a command
+        wrapper to improve the start time (*.pyc) (Sebastian Heinlein)
+ - apt: Remove code which is now merged with python-apt (Sebastian Heinlein)
+ - apt: Add script to extract information from app-install desktop files (Sebastian Heinlein)
+ - conary: Fix get-updates command (Andres Vargas)
+ - conary: Fix the group search (Andres Vargas)
+ - conary: Change the error signal for groups not found (Andres Vargas)
+ - conary: Add a percent progress on install packages (Andres Vargas)
+ - conary: Remove the subpercent signal only percent signal (Andres Vargas)
+ - conary: Add subpercent for minitasks (Andres Vargas)
+ - conary: Tuning the percent update (Andres Vargas)
+ - conary: Fix step feeling for percent download (Andres Vargas)
+ - conary: Add percent to update/remove/get-updates/update-system (Andres Vargas)
+ - conary: Add a exception for run get-updates first and then update (Andres Vargas)
+ - conary: update-system do a stepdown percent (Andres Vargas)
+ - conary: Fix the search ~installed filter (Andres Vargas)
+ - conary: Add more classify groups (Andres Vargas)
+ - conary: Implement the conaryEnums for classify category in groups fix the
+           backend for search groups (Andres Vargas)
+ - conary: Add more log info to callbacks fix get-files (Andres Vargas)
+ - conary: Fix get-files from many troves (Andres Vargas)
+ - dummy: Use the correct delimiter for the obsoletes in the kernel package (Richard Hughes)
+ - dummy: Add update detail for the blocked package, and raise an error
+          if we can't find a match (Richard Hughes)
+ - dummy: Add a simple rollback action (Richard Hughes)
+ - poldek: Build fix (Patryk Zawadzki)
+ - poldek: For NOT_INSTALLED filter return only available packages that are NOT
+           installed (Marcin Banasiak)
+ - yum: Adds an auto_close attribute to the rpmdb object (Seth Vidal)
+ - yum: Add support for the new font and mimehandler provides (Richard Hughes)
+ - yum: Don't backtrace with an internal error when the filename is not
+        unicode. Fixes rh#480440 (Richard Hughes)
+ - zypp: Fix up virtual callback methods (Scott Reeves)
+
+Version 0.4.3
+~~~~~~~~~~~~~
+Released: 2009-02-02
+
+Translations:
+ - Updated Finnish translation (Ville-Pekka Vainio)
+ - Updated Catalan translation (Xavier Conde)
+
+New Features:
+ - Add new packagekit-sharp binding (Stephane Delcroix)
+ - Allow the user to specify a complete output file name with pkgenpack (Richard Hughes)
+
+Bugfixes:
+ - Repair pkcon resolve argument parsing (Martin Pitt)
+ - Remove dep on python-sqlite2 and use internal python sqlite. Fixes rh#481270 (Richard Hughes)
+ - Dist the website in the tarball correctly, and install in the -docs subpackage (Richard Hughes)
+ - Fix up a translation in pkcon when we fail to get the time since action (Richard Hughes)
+ - Add an option to configure so we can specify a different directory. Fixes fd#19884 (Richard Hughes)
+ - Remove bare send_interface lines in the DBus rules (Scott Reeves)
+ - Add _get_info, get_id and _get_summary for PkPackageObj (Stephane Delcroix)
+ - Removed -Wswitch-enum from compiler switches (Valeriy Lyasotskiy)
+ - Don't print an internal error if we don't pass an argument to --package (Utsav Handa)
+
+Backends:
+ - alpm: Change source code to be more standards compliant (Valeriy Lyasotskiy)
+ - smart: Don't filter *-testing channels as development (Anders F Bjorklund)
+ - yum: Get some useful text when yum passes us an invalid message. Fixes fd#19781 (Richard Hughes)
+ - zypp: Remove GROUP_ENUM_UNKNOWN as engine returns empty if included in list (Scott Reeves)
+
+Version 0.4.2
+~~~~~~~~~~~~~
+Released: 2009-01-19
+
+Translations:
+ - Added British translation (Tim Waugh)
+ - Updated Slovak translation (Pavol Šimo)
+ - Updated Greek translation (Jennie Petoumenou)
+ - Updated Polish translation (Piotr Drąg)
+
+New Features:
+ - Use the detail field as a package_id so we can propogate useful information
+   to clients (Richard Hughes)
+ - Add an entry to the config file to turn on time estimation, and enable it
+   by default (Richard Hughes)
+ - Remove the udev helper from PackageKit now the core functionality is in
+   udev itself (Richard Hughes)
+
+Bugfixes:
+ - If a script is still running and PkSpawn is asked to unload, be more careful
+   about disconnecting timers (Richard Hughes)
+ - Ensure we call the backend finalise method when the daemon times out (Richard Hughes)
+ - Ensure we send the correct network state with the new changed codepath (Richard Hughes)
+ - Don't leak directory on commit-failed error path (Richard Hughes)
+ - Set the setup signal after we've connected the backend to the transaction so
+   it is emitted for clients (Richard Hughes)
+ - Don't emit allow-cancel over and over if it is the same state as before (Richard Hughes)
+ - A *-testing repo is not a development repo, so should not be filtered by
+   default. Fixes rh#480135 (Richard Hughes)
+ - Remove the obsolete specific vendor_url for each PolicyKit authorisation
+   and rely on the packagekit homepage. Fixes novell#450349 (Richard Hughes)
+ - Only try to exit the spawned backend if it is running, which removes an error
+   warning if it is already closed (Richard Hughes)
+ - Clear the backend store in pk_backend_reset() as we can't guarantee the
+   ordering for cancelled jobs (Richard Hughes)
+ - Fix compile of the browser plugin with newer versions of xulrunner (Richard Hughes)
+
+Backends:
+ - dummy: Output a load of messages we can play with in GUI tools (Richard Hughes)
+ - yum: Get the yum lock before we start setting up comps (Richard Hughes)
+ - yum: Set the allow cancel flag when we are waiting for yum to release its lock (Richard Hughes)
+ - yum: Fixed a bug that prevents installing a local file that isn't in the repos (Trever Fischer)
+
 Version 0.4.1
 ~~~~~~~~~~~~~
 Released: 2009-01-08

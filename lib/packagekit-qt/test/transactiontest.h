@@ -13,6 +13,7 @@ class TransactionTest : public QObject, public CppUnit::TestFixture
 
 	CPPUNIT_TEST_SUITE(TransactionTest);
 	CPPUNIT_TEST(searchName);
+	CPPUNIT_TEST(searchDesktop);
 	CPPUNIT_TEST(resolveAndInstallAndRemove);
 	CPPUNIT_TEST(refreshCache);
 	CPPUNIT_TEST(getDistroUpgrades);
@@ -24,6 +25,7 @@ public:
 	~TransactionTest();
 
 	void searchName();
+	void searchDesktop();
 	void resolveAndInstallAndRemove();
 	void refreshCache();
 	void getDistroUpgrades();
@@ -34,6 +36,8 @@ public slots:
 	void resolveAndInstallAndRemove_cb(PackageKit::Package* p);
 	void getDistroUpgrades_cb();
 	void getRepos_cb(const QString& repoName, const QString& repoDetail, bool enabled);
+
+	void error();
 
 private:
 	bool success;

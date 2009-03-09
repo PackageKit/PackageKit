@@ -65,8 +65,8 @@ typedef enum
 
 
 GQuark		 pk_engine_error_quark			(void);
-GType		 pk_engine_error_get_type		(void) G_GNUC_CONST;
-GType		 pk_engine_get_type		  	(void) G_GNUC_CONST;
+GType		 pk_engine_error_get_type		(void);
+GType		 pk_engine_get_type		  	(void);
 PkEngine	*pk_engine_new				(void);
 
 /* general */
@@ -92,6 +92,9 @@ gboolean	 pk_engine_get_mime_types		(PkEngine	*engine,
 void		 pk_engine_get_tid			(PkEngine	*engine,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_engine_get_network_state		(PkEngine	*engine,
+							 gchar		**state,
+							 GError		**error);
+gboolean	 pk_engine_get_daemon_state		(PkEngine	*engine,
 							 gchar		**state,
 							 GError		**error);
 gboolean	 pk_engine_get_time_since_action	(PkEngine	*engine,

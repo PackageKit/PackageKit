@@ -256,6 +256,27 @@
     </method>
 
     <!--*****************************************************************************************-->
+    <method name="GetDaemonState">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets the debugging state from the daemon.
+            No secure state will be shown, and all information is for reference only.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="state" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The state of the dameon at this specific moment.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
     <method name="SetProxy">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>

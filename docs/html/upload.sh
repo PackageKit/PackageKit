@@ -23,4 +23,9 @@ docbook2pdf ../../man/pkcon.xml --output ./files
 docbook2pdf ../../man/pkmon.xml --output ./files
 docbook2pdf ../../man/pkgenpack.xml --output ./files
 scp files/* $USER@$SERVER:/$LOCATION/files/
+scp ../../contrib/PackageKit.catalog $USER@$SERVER:/$LOCATION/files/
+docbook2html ../../../gnome-packagekit/docs/dbus/org.freedesktop.PackageKit.ref.xml
+mv r1.html api-reference-session.html
+scp api-reference-session.html $USER@$SERVER:/$LOCATION/gtk-doc/
+rm api-reference-session.html
 

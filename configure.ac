@@ -1,6 +1,6 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.4.2)
+AC_INIT(PackageKit, 0.4.5)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -20,7 +20,7 @@ DEVELOPMENT_RELEASE=yes
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=11
-LT_REVISION=1
+LT_REVISION=3
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -87,8 +87,8 @@ if test "$GCC" = "yes"; then
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Waggregate-return"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wdeclaration-after-statement"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wshadow"
+	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wno-strict-aliasing"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Winline"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wswitch-enum"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wmissing-parameter-type"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Woverride-init"
 else
@@ -120,6 +120,7 @@ POLKIT_GRANT_REQUIRED=0.8
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
 QTGUI_REQUIRED=4.4.0
+QTSQL_REQUIRED=4.4.0
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -168,6 +169,11 @@ if test x$enable_qt = xyes; then
 	AC_SUBST(QTGUI_CFLAGS)
 	AC_SUBST(QTGUI_LIBS)
 
+
+	PKG_CHECK_MODULES(QTSQL, QtSql >= $QTSQL_REQUIRED)
+	AC_SUBST(QTSQL_CFLAGS)
+	AC_SUBST(QTSQL_LIBS)
+
 	PKG_CHECK_MODULES(CPPUNIT, cppunit)
 	AC_SUBST(CPPUNIT_CFLAGS)
 	AC_SUBST(CPPUNIT_LIBS)
@@ -176,6 +182,31 @@ else
 	build_qt=no
 fi
 AM_CONDITIONAL(PK_BUILD_QT, test $build_qt = "yes")
+
+dnl ---------------------------------------------------------------------------
+dnl - Build packageKit-sharp
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(managed, AC_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
+	      enable_managed=$enableval,enable_managed=false)
+if test x$enable_managed = xyes; then
+	PKG_CHECK_MODULES(GLIBSHARP, glib-sharp-2.0)
+	AC_SUBST(GLIBSHARP_CFLAGS)
+	AC_SUBST(GLIBSHARP_LIBS)
+
+	AC_PATH_PROG(MCS, mcs)
+	CS="C#"
+	if test ! -x "$MCS"; then
+		AC_PATH_PROG(MCS, gmcs)
+		if test ! -x "$MCS"; then
+			AC_MSG_ERROR([No $CS compiler found])
+		fi
+	fi
+
+	build_managed=yes
+else
+	build_managed=no
+fi
+AM_CONDITIONAL(PK_BUILD_MANAGED, test $build_managed = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - libarchive
@@ -326,14 +357,25 @@ if test x$enable_browser_plugin = xyes; then
 		LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
 
 		AC_CHECK_FUNCS(gdk_app_launch_context_new)
+		AC_CHECK_HEADER(npfunctions.h, xulrunner_plugin_new=yes, xulrunner_plugin_new=no)
 
 		CPPFLAGS="$packagekit_save_CPPFLAGS"
 		LDFLAGS="$packagekit_save_LDFLAGS"
+
+		# Are we specifying a different mozilla plugin directory?
+		AC_ARG_WITH(mozilla-plugin-dir, [AC_HELP_STRING([--with-mozilla-plugin-dir=<dir>], [where to put the mozilla plugin])])
+		if ! test -z "$with_mozilla_plugin_dir" ; then
+			MOZILLA_PLUGIN_DIR="$with_mozilla_plugin_dir"
+		else
+			MOZILLA_PLUGIN_DIR="$LIBDIR/mozilla/plugins"
+		fi
+		AC_SUBST(MOZILLA_PLUGIN_DIR)
 	fi
 else
 	build_browser_plugin=no
 fi
 AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
+AM_CONDITIONAL(PK_XULRUNNER_PLUGIN_NEW, test $xulrunner_plugin_new = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Able to build gstreamer plugin
@@ -404,20 +446,20 @@ AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_y
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
 
 # export to Makefile.am's
-AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes], [using ALPM backend])
-AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$enable_apt = xyes], [using APT backend])
-AM_CONDITIONAL(BACKEND_TYPE_APTCC, [test x$enable_aptcc = xyes], [using APTcc backend])
-AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$enable_box = xyes], [using BOX backend])
-AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$enable_conary = xyes], [using CONARY backend])
-AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes], [using dummy backend])
-AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes], [using OPKG backend])
-AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes], [using PiSi backend])
-AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes], [using poldek backend])
-AM_CONDITIONAL(BACKEND_TYPE_RAZOR, [test x$enable_razor = xyes], [using Razor backend])
-AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART backend])
-AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes], [using URPMI backend])
-AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
-AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes], [using Zypp backend])
+AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$enable_apt = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_APTCC, [test x$enable_aptcc = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$enable_box = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$enable_conary = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_RAZOR, [test x$enable_razor = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes])
 
 if test x$enable_gcov = xyes; then
 	## so that config.h changes when you toggle gcov support
@@ -529,8 +571,8 @@ else
 	AC_MSG_ERROR([No valid security framework specified])
 fi
 
-AM_CONDITIONAL(SECURITY_TYPE_DUMMY, [test x$with_security_framework = xdummy], [using dummy security framework])
-AM_CONDITIONAL(SECURITY_TYPE_POLKIT, [test x$with_security_framework = xpolkit], [using PolicyKit security framework])
+AM_CONDITIONAL(SECURITY_TYPE_DUMMY, [test x$with_security_framework = xdummy])
+AM_CONDITIONAL(SECURITY_TYPE_POLKIT, [test x$with_security_framework = xpolkit])
 
 dnl ---------------------------------------------------------------------------
 dnl - Compile time default choice of backend
@@ -664,6 +706,7 @@ man/Makefile
 docs/Makefile
 docs/html/Makefile
 docs/html/img/Makefile
+docs/html/img/thumbnails/Makefile
 docs/html/videos/Makefile
 docs/api/Makefile
 docs/api/dbus/Makefile
@@ -672,7 +715,6 @@ contrib/Makefile
 contrib/browser-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
-contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
 contrib/ruck/Makefile
@@ -710,6 +752,8 @@ lib/packagekit-qt/Makefile
 lib/packagekit-qt/modules/Makefile
 lib/packagekit-qt/src/Makefile
 lib/packagekit-qt/test/Makefile
+lib/packagekit-sharp/Makefile
+lib/packagekit-sharp/samples/Makefile
 lib/python/Makefile
 lib/python/packagekit/Makefile
 policy/Makefile
@@ -738,10 +782,12 @@ echo "
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
+        Application install:       ${enable_app_install}
         Pango module:              ${build_gtk_module}
         BASH Command not found:    ${build_command_not_found}
         RUCK client:               ${build_ruck}
         QT library:                ${build_qt}
+	Managed bindings:          ${build_managed}
 
         Backends:
         ALPM backend:              ${enable_alpm}

@@ -36,6 +36,7 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
+#include "pk-conf.h"
 #include "pk-network.h"
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
@@ -87,7 +88,9 @@ struct _PkBackendPrivate
 	gboolean		 set_error;
 	gboolean		 set_signature;
 	gboolean		 set_eula;
+	gboolean		 simultaneous;
 	gboolean		 has_sent_package;
+	gboolean		 use_time;
 	PkNetwork		*network;
 	PkStore			*store;
 	PkPackageObj		*last_package;
@@ -652,10 +655,9 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 		remaining = pk_time_get_remaining (backend->priv->time);
 		egg_debug ("this will now take ~%i seconds", remaining);
 
-#ifdef PK_IS_DEVELOPER
-		/* Until the predicted time is more sane... */
-		backend->priv->last_remaining = remaining;
-#endif
+		/* value cached from config file */
+		if (backend->priv->use_time)
+			backend->priv->last_remaining = remaining;
 	}
 
 	/* emit the progress changed signal */
@@ -775,6 +777,70 @@ pk_backend_get_status (PkBackend *backend)
 }
 
 /**
+ * pk_backend_package_emulate_finished:
+ **/
+static gboolean
+pk_backend_package_emulate_finished (PkBackend *backend)
+{
+	PkInfoEnum info;
+	gchar *package_id;
+	gboolean ret = FALSE;
+
+	/* simultaneous handles this on it's own */
+	if (backend->priv->simultaneous)
+		return FALSE;
+
+	/* first package in transaction */
+	if (backend->priv->last_package == NULL)
+		return FALSE;
+
+	/* already finished */
+	if (backend->priv->last_package->info == PK_INFO_ENUM_FINISHED)
+		return FALSE;
+
+	/* only makes sense for some values */
+	info = backend->priv->last_package->info;
+	if (info == PK_INFO_ENUM_DOWNLOADING ||
+	    info == PK_INFO_ENUM_UPDATING ||
+	    info == PK_INFO_ENUM_INSTALLING ||
+	    info == PK_INFO_ENUM_REMOVING ||
+	    info == PK_INFO_ENUM_CLEANUP ||
+	    info == PK_INFO_ENUM_OBSOLETING) {
+		package_id = pk_package_id_to_string (backend->priv->last_package->id);
+		pk_backend_package (backend, PK_INFO_ENUM_FINISHED, package_id, backend->priv->last_package->summary);
+		g_free (package_id);
+		ret = TRUE;
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_package_emulate_finished_for_package:
+ **/
+static gboolean
+pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkPackageObj *obj)
+{
+	/* simultaneous handles this on it's own */
+	if (backend->priv->simultaneous)
+		return FALSE;
+
+	/* first package in transaction */
+	if (backend->priv->last_package == NULL)
+		return FALSE;
+
+	/* sending finished already */
+	if (obj->info == PK_INFO_ENUM_FINISHED)
+		return FALSE;
+
+	/* same package, just info change */
+	if (pk_package_id_equal (backend->priv->last_package->id, obj->id))
+		return FALSE;
+
+	/* emit the old package as finished */
+	return pk_backend_package_emulate_finished (backend);
+}
+
+/**
  * pk_backend_package:
  **/
 gboolean
@@ -809,6 +875,9 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 		goto out;
 	}
 
+	/* simulate the finish here when required */
+	pk_backend_package_emulate_finished_for_package (backend, obj);
+
 	/* update the 'last' package */
 	pk_package_obj_free (backend->priv->last_package);
 	backend->priv->last_package = pk_package_obj_copy (obj);
@@ -820,19 +889,22 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 		goto out;
 	}
 
-	/* we automatically set the transaction status for some infos */
-	if (info == PK_INFO_ENUM_DOWNLOADING)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	else if (info == PK_INFO_ENUM_UPDATING)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	else if (info == PK_INFO_ENUM_INSTALLING)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-	else if (info == PK_INFO_ENUM_REMOVING)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
-	else if (info == PK_INFO_ENUM_CLEANUP)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_CLEANUP);
-	else if (info == PK_INFO_ENUM_OBSOLETING)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_OBSOLETE);
+	/* we automatically set the transaction status for some PkInfoEnums if running
+	 * in non-simultaneous transaction mode */
+	if (!backend->priv->simultaneous) {
+		if (info == PK_INFO_ENUM_DOWNLOADING)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+		else if (info == PK_INFO_ENUM_UPDATING)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
+		else if (info == PK_INFO_ENUM_INSTALLING)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
+		else if (info == PK_INFO_ENUM_REMOVING)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
+		else if (info == PK_INFO_ENUM_CLEANUP)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_CLEANUP);
+		else if (info == PK_INFO_ENUM_OBSOLETING)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_OBSOLETE);
+	}
 
 	/* we've sent a package for this transaction */
 	backend->priv->has_sent_package = TRUE;
@@ -928,21 +1000,30 @@ pk_backend_get_progress (PkBackend *backend,
  * pk_backend_require_restart:
  **/
 gboolean
-pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *details)
+pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *package_id)
 {
+	gboolean ret = FALSE;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: require-restart %s", pk_restart_enum_to_text (restart));
-		return FALSE;
+		goto out;
 	}
 
-	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), details);
-	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
+	/* check we are valid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		egg_warning ("package_id invalid and cannot be processed: %s", package_id);
+		goto out;
+	}
 
-	return TRUE;
+	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
+	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, package_id);
+out:
+	return ret;
 }
 
 /**
@@ -991,6 +1072,21 @@ pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 
 	egg_debug ("emit change-transaction-data %s", data);
 	g_signal_emit (backend, signals [PK_BACKEND_CHANGE_TRANSACTION_DATA], 0, data);
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_simultaneous_mode:
+ **/
+gboolean
+pk_backend_set_simultaneous_mode (PkBackend *backend, gboolean simultaneous)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	backend->priv->simultaneous = simultaneous;
+	if (simultaneous)
+		egg_warning ("simultaneous mode is not well tested, use with caution");
 	return TRUE;
 }
 
@@ -1337,6 +1433,12 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 		return FALSE;
 	}
 
+	/* same as last state? */
+	if (backend->priv->allow_cancel == allow_cancel) {
+		egg_debug ("ignoring same allow-cancel state");
+		return TRUE;
+	}
+
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
 		backend->priv->allow_cancel = allow_cancel;
@@ -1431,9 +1533,6 @@ pk_backend_finished_delay (gpointer data)
 	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
 
-	/* clear all state */
-	pk_store_reset (backend->priv->store);
-
 	egg_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
 	backend->priv->signal_finished = 0;
@@ -1499,6 +1598,9 @@ pk_backend_finished (PkBackend *backend)
 				    "Backends should send status <value> signals for %s!", role_text);
 		egg_warning ("GUI will remain unchanged!");
 	}
+
+	/* emulate the last finished package if not done already */
+	pk_backend_package_emulate_finished (backend);
 
 	/* make any UI insensitive */
 	pk_backend_set_allow_cancel (backend, FALSE);
@@ -1857,6 +1959,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->last_remaining = 0;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	pk_store_reset (backend->priv->store);
 	pk_time_reset (backend->priv->time);
 
 	return TRUE;
@@ -1868,6 +1971,8 @@ pk_backend_reset (PkBackend *backend)
 static void
 pk_backend_init (PkBackend *backend)
 {
+	PkConf *conf;
+
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
@@ -1882,6 +1987,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->signal_finished = 0;
 	backend->priv->signal_error_timeout = 0;
 	backend->priv->during_initialize = FALSE;
+	backend->priv->simultaneous = FALSE;
 	backend->priv->store = pk_store_new ();
 	backend->priv->time = pk_time_new ();
 	backend->priv->network = pk_network_new ();
@@ -1891,6 +1997,11 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->file_monitor = pk_file_monitor_new ();
 	g_signal_connect (backend->priv->file_monitor, "file-changed",
 			  G_CALLBACK (pk_backend_file_monitor_changed_cb), backend);
+
+	/* do we use time estimation? */
+	conf = pk_conf_new ();
+	backend->priv->use_time = pk_conf_get_bool (conf, "UseRemainingTimeEstimation");
+	g_object_unref (conf);
 
 	pk_backend_reset (backend);
 }

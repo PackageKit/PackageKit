@@ -61,6 +61,8 @@ gboolean	 pk_backend_set_exit_code		(PkBackend	*backend,
 							 PkExitEnum	 exit);
 gboolean	 pk_backend_set_transaction_data	(PkBackend	*backend,
 							 const gchar	*data);
+gboolean	 pk_backend_set_simultaneous_mode	(PkBackend	*backend,
+							 gboolean	 simultaneous);
 gboolean	 pk_backend_set_locale			(PkBackend	*backend,
 							 const gchar	*code);
 
@@ -104,7 +106,7 @@ gboolean	 pk_backend_update_detail		(PkBackend	*backend,
 							 const gchar	*updated);
 gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 							 PkRestartEnum	 restart,
-							 const gchar	*details);
+							 const gchar	*package_id);
 gboolean	 pk_backend_message			(PkBackend	*backend,
 							 PkMessageEnum	 message,
 							 const gchar	*details, ...);

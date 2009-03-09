@@ -653,7 +653,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	else if (transaction->priv->emit_eula_required)
 		exit_enum = PK_EXIT_ENUM_EULA_REQUIRED;
 
-	/* invalidate some caches if we succeeded*/
+	/* invalidate some caches if we succeeded */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
 		pk_transaction_finish_invalidate_caches (transaction);
 
@@ -797,12 +797,13 @@ pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransa
 	}
 
 	/* add to package cache even if we already got a result */
-	info_text = pk_info_enum_to_text (obj->info);
-	pk_obj_list_add (PK_OBJ_LIST(transaction->priv->package_list), obj);
+	if (obj->info != PK_INFO_ENUM_FINISHED)
+		pk_obj_list_add (PK_OBJ_LIST(transaction->priv->package_list), obj);
 
 	/* emit */
 	g_free (transaction->priv->last_package_id);
 	transaction->priv->last_package_id = pk_package_id_to_string (obj->id);
+	info_text = pk_info_enum_to_text (obj->info);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0, info_text,
 		       transaction->priv->last_package_id, obj->summary);
 }
@@ -886,7 +887,7 @@ pk_transaction_eula_required_cb (PkBackend *backend, const gchar *eula_id, const
  * pk_transaction_require_restart_cb:
  **/
 static void
-pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const gchar *details, PkTransaction *transaction)
+pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const gchar *package_id, PkTransaction *transaction)
 {
 	const gchar *restart_text;
 
@@ -894,8 +895,8 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, co
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	restart_text = pk_restart_enum_to_text (restart);
-	egg_debug ("emitting require-restart %s, '%s'", restart_text, details);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_REQUIRE_RESTART], 0, restart_text, details);
+	egg_debug ("emitting require-restart %s, '%s'", restart_text, package_id);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_REQUIRE_RESTART], 0, restart_text, package_id);
 }
 
 /**
@@ -996,9 +997,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
-
-	/* we are no longer waiting, we are setting up */
-	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
+	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_text (priv->role));
 
 	/* connect up the signals */
 	transaction->priv->signal_allow_cancel =
@@ -1054,6 +1053,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->running = TRUE;
 	transaction->priv->has_been_run = TRUE;
 	transaction->priv->allow_cancel = FALSE;
+
+	/* we are no longer waiting, we are setting up */
+	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
 
 	/* set all possible arguments for backend */
 	store = pk_backend_get_store (priv->backend);
@@ -1550,10 +1552,10 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->cancel == NULL) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-	                             "Cancel not yet supported by backend");
-	        pk_transaction_dbus_return_error (context, error);
-	        return;
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "Cancel not yet supported by backend");
+		pk_transaction_dbus_return_error (context, error);
+		return;
 	}
 
 	/* if it's finished, cancelling will have no action regardless of uid */
@@ -1564,25 +1566,25 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 
 	/* check to see if we have an action */
 	if (transaction->priv->role == PK_ROLE_ENUM_UNKNOWN) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_ROLE, "No role");
-	        pk_transaction_dbus_return_error (context, error);
-	        return;
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_ROLE, "No role");
+		pk_transaction_dbus_return_error (context, error);
+		return;
 	}
 
 	/* check if it's safe to kill */
 	if (!transaction->priv->allow_cancel) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
-	                             "Tried to cancel a transaction that is not safe to kill");
-	        pk_transaction_dbus_return_error (context, error);
-	        return;
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
+				     "Tried to cancel a transaction that is not safe to kill");
+		pk_transaction_dbus_return_error (context, error);
+		return;
 	}
 
 	/* check if we saved the uid */
 	if (transaction->priv->uid == PK_SECURITY_UID_INVALID) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
-	                             "No context from caller to get UID from");
-	        pk_transaction_dbus_return_error (context, error);
-	        return;
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
+				     "No context from caller to get UID from");
+		pk_transaction_dbus_return_error (context, error);
+		return;
 	}
 
 	/* get the UID of the caller */
@@ -1594,9 +1596,9 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 
 	/* check we got a valid value */
 	if (uid == PK_SECURITY_UID_INVALID) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE, "unable to get uid of caller");
-	        pk_transaction_dbus_return_error (context, error);
-	        return;
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE, "unable to get uid of caller");
+		pk_transaction_dbus_return_error (context, error);
+		return;
 	}
 
 	/* check the caller uid with the originator uid */
@@ -1645,7 +1647,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
-	gchar *directory;
+	gchar *directory = NULL;
 	gint retval;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -1655,11 +1657,11 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->download_packages == NULL) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-	                             "DownloadPackages not yet supported by backend");
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "DownloadPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
-	        pk_transaction_dbus_return_error (context, error);
-	        return;
+		pk_transaction_dbus_return_error (context, error);
+		goto out;
 	}
 
 	/* check if the sender is the same */
@@ -1667,18 +1669,18 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	if (!ret) {
 		/* don't release tid */
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-	        package_ids_temp = pk_package_ids_to_text (package_ids);
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-	                             "The package id's '%s' are not valid", package_ids_temp);
-	        g_free (package_ids_temp);
-	        pk_transaction_dbus_return_error (context, error);
-	        return;
+		package_ids_temp = pk_package_ids_to_text (package_ids);
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
+		pk_transaction_dbus_return_error (context, error);
+		goto out;
 	}
 
 	/* create cache directory */
@@ -1687,10 +1689,10 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	/* rwxrwxr-x */
 	retval = g_mkdir (directory, 0775);
 	if (retval != 0) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
-	                             "cannot create %s", directory);
-	        pk_transaction_dbus_return_error (context, error);
-	        return;
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
+				     "cannot create %s", directory);
+		pk_transaction_dbus_return_error (context, error);
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -1701,15 +1703,17 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-	        error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-	                             "Could not commit to a transaction object");
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-	        return;
+		pk_transaction_dbus_return_error (context, error);
+		goto out;
 	}
 
-	g_free (directory);
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
+out:
+	g_free (directory);
 }
 
 /**
@@ -2512,6 +2516,9 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 			g_free (package_id);
 		}
 
+		/* set finished */
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+
 		/* we are done */
 		g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 
@@ -2864,8 +2871,8 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
  **/
 void
 pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
-			        gboolean allow_deps, gboolean autoremove,
-			        DBusGMethodInvocation *context)
+				gboolean allow_deps, gboolean autoremove,
+				DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
@@ -3009,7 +3016,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 void
 pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 			      const gchar *parameter, const gchar *value,
-		              DBusGMethodInvocation *context)
+			      DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;

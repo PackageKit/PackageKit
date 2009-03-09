@@ -1468,6 +1468,8 @@
             <doc:para>
               The size of the package in bytes. This should be the size of the entire package file,
               not the size of the files installed on the system.
+              If the package is not installed, and already downloaded and
+              present in the package manager cache, then this value should be set to zero.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1915,11 +1917,11 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="details" direction="out">
+      <arg type="s" name="package_id" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              Optional details about the restart
+              The package ID that caused the restart notifier.
             </doc:para>
           </doc:summary>
         </doc:doc>

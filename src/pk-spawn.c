@@ -56,7 +56,7 @@ static void     pk_spawn_finalize	(GObject       *object);
 
 #define PK_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SPAWN, PkSpawnPrivate))
 #define PK_SPAWN_POLL_DELAY	50 /* ms */
-#define PK_SPAWN_SIGKILL_DELAY	500 /* ms */
+#define PK_SPAWN_SIGKILL_DELAY	2500 /* ms */
 
 struct PkSpawnPrivate
 {
@@ -145,6 +145,27 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 }
 
 /**
+ * pk_spawn_exit_type_enum_to_text:
+ **/
+static const gchar *
+pk_spawn_exit_type_enum_to_text (PkSpawnExitType type)
+{
+	if (type == PK_SPAWN_EXIT_TYPE_SUCCESS)
+		return "success";
+	if (type == PK_SPAWN_EXIT_TYPE_FAILED)
+		return "failed";
+	if (type == PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED)
+		return "dispatcher-changed";
+	if (type == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT)
+		return "dispatcher-exit";
+	if (type == PK_SPAWN_EXIT_TYPE_SIGQUIT)
+		return "sigquit";
+	if (type == PK_SPAWN_EXIT_TYPE_SIGKILL)
+		return "sigkill";
+	return "unknown";
+}
+
+/**
  * pk_spawn_check_child:
  **/
 static gboolean
@@ -220,7 +241,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT;
 
 	/* don't emit if we just closed an invalid dispatcher */
-	egg_debug ("emitting exit %i", spawn->priv->exit);
+	egg_debug ("emitting exit %s", pk_spawn_exit_type_enum_to_text (spawn->priv->exit));
 	g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
 
 	return FALSE;
@@ -258,6 +279,18 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 }
 
 /**
+ * pk_spawn_is_running:
+ *
+ * Is this instance controlling a script?
+ *
+ **/
+gboolean
+pk_spawn_is_running (PkSpawn *spawn)
+{
+	return (spawn->priv->child_pid != -1);
+}
+
+/**
  * pk_spawn_kill:
  *
  * We send SIGQUIT and after a few ms SIGKILL
@@ -269,6 +302,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	gint retval;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
+	g_return_val_if_fail (spawn->priv->kill_id == 0, FALSE);
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
@@ -328,7 +362,7 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 	/* write to the waiting process */
 	wrote = write (spawn->priv->stdin_fd, buffer, length);
 	if (wrote != length) {
-		egg_warning ("wrote %i/%i bytes on fd %i", wrote, length, spawn->priv->stdin_fd);
+		egg_warning ("wrote %i/%i bytes on fd %i (%s)", wrote, length, spawn->priv->stdin_fd, strerror (errno));
 		ret = FALSE;
 	}
 out:
@@ -374,7 +408,8 @@ pk_spawn_exit (PkSpawn *spawn)
 	} while (ret && count++ < 50);
 
 	/* the script exited okay */
-	ret = TRUE;
+	if (count < 50)
+		ret = TRUE;
 out:
 	spawn->priv->is_sending_exit = FALSE;
 	return ret;
@@ -441,7 +476,15 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 		/* kill off existing instance */
 		egg_debug ("changing dispatcher (exit old instance)");
 		spawn->priv->is_changing_dispatcher = TRUE;
-		pk_spawn_exit (spawn);
+		ret = pk_spawn_exit (spawn);
+		if (!ret) {
+			egg_warning ("failed to exit previous instance");
+			/* remove poll, as we can't reply on pk_spawn_check_child() */
+			if (spawn->priv->poll_id != 0) {
+				g_source_remove (spawn->priv->poll_id);
+				spawn->priv->poll_id = 0;
+			}
+		}
 		spawn->priv->is_changing_dispatcher = FALSE;
 	}
 
@@ -575,16 +618,25 @@ pk_spawn_finalize (GObject *object)
 	g_return_if_fail (spawn->priv != NULL);
 
 	/* disconnect the poll in case we were cancelled before completion */
-	if (spawn->priv->poll_id != 0)
+	if (spawn->priv->poll_id != 0) {
 		g_source_remove (spawn->priv->poll_id);
+		spawn->priv->poll_id = 0;
+	}
 
 	/* disconnect the SIGKILL check */
-	if (spawn->priv->kill_id != 0)
+	if (spawn->priv->kill_id != 0) {
 		g_source_remove (spawn->priv->kill_id);
+		spawn->priv->kill_id = 0;
+	}
 
 	/* still running? */
-	if (spawn->priv->stdin_fd != -1)
+	if (spawn->priv->stdin_fd != -1) {
+		egg_warning ("killing as still running");
 		pk_spawn_kill (spawn);
+		/* just hope the script responded to SIGQUIT */
+		if (spawn->priv->kill_id != 0)
+			g_source_remove (spawn->priv->kill_id);
+	}
 
 	/* free the buffers */
 	g_string_free (spawn->priv->stdout_buf, TRUE);
@@ -801,8 +853,8 @@ pk_spawn_test (EggTest *test)
 	egg_test_loop_check (test);
 
 	/************************************************************/
-	egg_test_title (test, "make sure finished in SIGKILL");
-	if (mexit == PK_SPAWN_EXIT_TYPE_SIGKILL)
+	egg_test_title (test, "make sure finished in SIGQUIT");
+	if (mexit == PK_SPAWN_EXIT_TYPE_SIGQUIT)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "finish %i!", mexit);

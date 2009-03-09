@@ -91,12 +91,10 @@ pk_network_get_network_state (PkNetwork *network)
 {
 	g_return_val_if_fail (PK_IS_NETWORK (network), PK_NETWORK_ENUM_UNKNOWN);
 	/* use the correct backend */
-	if (network->priv->use_nm) {
+	if (network->priv->use_nm)
 		return pk_network_nm_get_network_state (network->priv->net_nm);
-	}
-	if (network->priv->use_unix) {
+	if (network->priv->use_unix)
 		return pk_network_unix_get_network_state (network->priv->net_unix);
-	}
 	return PK_NETWORK_ENUM_ONLINE;
 }
 
@@ -106,16 +104,12 @@ pk_network_get_network_state (PkNetwork *network)
 static void
 pk_network_nm_network_changed_cb (PkNetworkNm *net_nm, gboolean online, PkNetwork *network)
 {
-	PkNetworkEnum ret;
+	PkNetworkEnum state;
+
 	g_return_if_fail (PK_IS_NETWORK (network));
-	if (network->priv->use_nm) {
-		if (online) {
-			ret = PK_NETWORK_ENUM_ONLINE;
-		} else {
-			ret = PK_NETWORK_ENUM_OFFLINE;
-		}
-		g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, ret);
-	}
+
+	state = pk_network_get_network_state (network);
+	g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, state);
 }
 
 /**
@@ -125,9 +119,8 @@ static void
 pk_network_unix_network_changed_cb (PkNetworkUnix *net_unix, gboolean online, PkNetwork *network)
 {
 	g_return_if_fail (PK_IS_NETWORK (network));
-	if (network->priv->use_unix) {
+	if (network->priv->use_unix)
 		g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, online);
-	}
 }
 
 /**

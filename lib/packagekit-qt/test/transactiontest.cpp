@@ -5,6 +5,7 @@ using namespace PackageKit;
 TransactionTest::TransactionTest(QObject* parent) : QObject(parent) 
 {
 	currentPackage = NULL;
+	connect (PackageKit::Client::instance(), SIGNAL(daemonError(PackageKit::Client::DaemonError)), this, SLOT(error()));
 }
 
 TransactionTest::~TransactionTest()
@@ -21,6 +22,14 @@ void TransactionTest::searchName()
 	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("searchName", success);
+}
+
+void TransactionTest::searchDesktop()
+{
+	success = FALSE;
+	Package* p = PackageKit::Client::instance()->searchFromDesktopFile("/usr/share/applications/nautilus-cd-burner.desktop");
+	qDebug() << "searchDesktop";
+	CPPUNIT_ASSERT_MESSAGE("searchDesktop", p);
 }
 
 void TransactionTest::resolveAndInstallAndRemove()
@@ -118,6 +127,11 @@ void TransactionTest::getRepos_cb(const QString& repoName, const QString& repoDe
 {
 	qDebug() << "Repository" << repoName << " (" << repoDetail << ") is" << (enabled ? "enabled" : "disabled");
 	success = TRUE;
+}
+
+void TransactionTest::error ()
+{
+	qDebug() << "Aieeeeee";
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TransactionTest);

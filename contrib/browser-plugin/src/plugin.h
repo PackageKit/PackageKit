@@ -54,7 +54,7 @@ public:
 	NPBool isInitialized() {return mInitialized;}
 	NPError GetValue(NPPVariable variable, void *value);
 	NPError SetWindow(NPWindow* aWindow);
-	uint16 HandleEvent(void *event);
+	uint16_t HandleEvent(void *event);
 
 	void refresh();
 

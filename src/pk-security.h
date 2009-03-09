@@ -55,7 +55,7 @@ typedef struct
 
 typedef struct PkSecurityCaller_ PkSecurityCaller;
 
-GType		 pk_security_get_type		(void) G_GNUC_CONST;
+GType		 pk_security_get_type		(void);
 PkSecurity	*pk_security_new		(void);
 
 PkSecurityCaller *pk_security_caller_new_from_sender	(PkSecurity		*security,

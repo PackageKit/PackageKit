@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+import pprint as p
 import logging as log
 import pdb
 log.basicConfig(level=log.DEBUG,
@@ -7,3 +7,8 @@ log.basicConfig(level=log.DEBUG,
      filename='/tmp/conarybackend.log',
                     filemode='a'
     )
+
+
+def pprint(str):
+    log.info(str)
+#    log.info( p.pprint( str, width= 10) )

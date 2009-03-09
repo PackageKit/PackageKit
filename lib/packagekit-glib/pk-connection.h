@@ -54,7 +54,7 @@ struct _PkConnectionClass
 						 gboolean	 connected);
 };
 
-GType		 pk_connection_get_type		(void) G_GNUC_CONST;
+GType		 pk_connection_get_type		(void);
 PkConnection	*pk_connection_new		(void);
 
 gboolean	 pk_connection_valid		(PkConnection	*connection);

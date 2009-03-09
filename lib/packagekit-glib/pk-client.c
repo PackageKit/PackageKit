@@ -91,6 +91,7 @@ struct _PkClientPrivate
 	PkConnection		*pconnection;
 	gulong			 pconnection_signal_id;
 	PkRestartEnum		 require_restart;
+	GPtrArray		*require_restart_list;
 	PkStatusEnum		 last_status;
 	PkRoleEnum		 role;
 	gboolean		 cached_force;
@@ -455,6 +456,23 @@ pk_client_get_require_restart (PkClient *client)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	return client->priv->require_restart;
+}
+
+/**
+ * pk_client_get_require_restart_list:
+ * @client: a valid #PkClient instance
+ *
+ * This method allows a client program to discover what packages
+ * caused different require restarts.
+ *
+ * Return value: a #PkRestartEnum value, e.g. PK_RESTART_ENUM_SYSTEM
+ **/
+const GPtrArray	*
+pk_client_get_require_restart_list (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	return client->priv->require_restart_list;
 }
 
 /**
@@ -873,7 +891,7 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	code = pk_error_enum_from_text (code_text);
-	egg_debug ("emit error-code %i, %s", code, details);
+	egg_debug ("emit error-code %s, %s", pk_error_enum_to_text (code), details);
 	g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, code, details);
 }
 
@@ -944,15 +962,21 @@ pk_client_caller_active_changed_cb (DBusGProxy  *proxy,
 static void
 pk_client_require_restart_cb (DBusGProxy  *proxy,
 			      const gchar *restart_text,
-			      const gchar *details,
+			      const gchar *package_id,
 			      PkClient    *client)
 {
 	PkRestartEnum restart;
+	PkPackageId *id;
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	restart = pk_restart_enum_from_text (restart_text);
-	egg_debug ("emit require-restart %i, %s", restart, details);
-	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, details);
+	id = pk_package_id_new_from_string (package_id);
+
+	/* save this in the array (is freed from array) */
+	g_ptr_array_add (client->priv->require_restart_list, id);
+
+	egg_debug ("emit require-restart %i, %s", restart, package_id);
+	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, id);
 	if (restart > client->priv->require_restart) {
 		client->priv->require_restart = restart;
 		egg_debug ("restart status now %s", pk_restart_enum_to_text (restart));
@@ -1197,9 +1221,6 @@ pk_client_cancel (PkClient *client, GError **error)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "unable to cancel client in finished handler");
 		return FALSE;
 	}
-
-	/* save this so we can re-issue it */
-	client->priv->role = PK_ROLE_ENUM_CANCEL;
 
 	/* hopefully do the operation first time */
 	ret = pk_client_cancel_action (client, &error_local);
@@ -1788,7 +1809,7 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
  * pk_client_get_depends:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for depends
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1863,7 +1884,7 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 /**
  * pk_client_download_packages:
  * @client: a valid #PkClient instance
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @directory: the location where packages are to be downloaded
  * @error: a %GError to put the error code and message in, or %NULL
  * Get the packages that depend this one, i.e. child->parent.
@@ -2024,7 +2045,7 @@ pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
  * pk_client_get_requires:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for requires
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -2171,7 +2192,7 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 /**
  * pk_client_get_update_detail:
  * @client: a valid #PkClient instance
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get details about the specific update, for instance any CVE urls and
@@ -2241,6 +2262,29 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 }
 
 /**
+ * pk_client_rollback_action:
+ **/
+static gboolean
+pk_client_rollback_action (PkClient *client, const gchar *transaction_id, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
+				 G_TYPE_STRING, transaction_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
+}
+
+/**
  * pk_client_rollback:
  * @client: a valid #PkClient instance
  * @transaction_id: a transaction_id structure
@@ -2255,6 +2299,7 @@ gboolean
 pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **error)
 {
 	gboolean ret;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -2275,15 +2320,33 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 	client->priv->role = PK_ROLE_ENUM_ROLLBACK;
 	client->priv->cached_transaction_id = g_strdup (transaction_id);
 
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		if (error != NULL)
-			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+	/* hopefully do the operation first time */
+	ret = pk_client_rollback_action (client, transaction_id, &error_local);
+
+	/* we were refused by policy */
+	if (!ret && pk_client_error_refused_by_policy (error_local)) {
+		/* try to get auth */
+		if (pk_client_error_auth_obtain (error_local)) {
+			/* clear old error */
+			g_clear_error (&error_local);
+
+			/* get a new tid */
+			ret = pk_client_allocate_transaction_id (client, &error_local);
+			if (!ret)
+				goto out;
+
+			/* retry the action now we have got auth */
+			ret = pk_client_rollback_action (client, transaction_id, &error_local);
+		}
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
-				 G_TYPE_STRING, transaction_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+out:
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_local);
+		g_propagate_error (error, error_local);
+	}
+
 	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -2292,7 +2355,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+
 	return ret;
 }
 
@@ -2363,7 +2426,7 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 /**
  * pk_client_get_details:
  * @client: a valid #PkClient instance
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get details of a package, so more information can be obtained for GUI
@@ -2492,7 +2555,7 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 /**
  * pk_client_get_files:
  * @client: a valid #PkClient instance
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get the file list (i.e. a list of files installed) for the specified package.
@@ -2586,7 +2649,7 @@ pk_client_remove_packages_action (PkClient *client, gchar **package_ids,
 /**
  * pk_client_remove_packages:
  * @client: a valid #PkClient instance
- * @package_ids: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @allow_deps: if other dependant packages are allowed to be removed from the computer
  * @autoremove: if other packages installed at the same time should be tried to remove
  * @error: a %GError to put the error code and message in, or %NULL
@@ -2802,7 +2865,7 @@ pk_client_install_package_action (PkClient *client, gchar **package_ids, GError 
 /**
  * pk_client_install_packages:
  * @client: a valid #PkClient instance
- * @package_ids: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Install a package of the newest and most correct version.
@@ -2916,7 +2979,7 @@ pk_client_install_signature_action (PkClient *client, PkSigTypeEnum type, const 
 /**
  * pk_client_install_signature:
  * @client: a valid #PkClient instance
- * @package_id: a signature_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_id: a signature_id structure such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Install a signature of the newest and most correct version.
@@ -3018,7 +3081,7 @@ pk_client_update_packages_action (PkClient *client, gchar **package_ids, GError 
 /**
  * pk_client_update_packages:
  * @client: a valid #PkClient instance
- * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Update specific packages to the newest available versions.
@@ -3972,9 +4035,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::package:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @info: the #PkInfoEnum of the package, e.g. PK_INFO_ENUM_INSTALLED
-	 * @package_id: the package_id of the package
-	 * @summary: the summary of the package
+	 * @obj: a pointer to a PkPackageObj structure describing the package
 	 *
 	 * The ::package signal is emitted when the update list may have
 	 * changed and the client program may have to update some UI.
@@ -3988,12 +4049,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::transaction:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @tid: the ID of the transaction
-	 * @timespec: the iso8601 date and time the transaction completed
-	 * @succeeded: if the transaction succeeded
-	 * @role: the #PkRoleEnum of the transaction, e.g. PK_ROLE_ENUM_REFRESH_CACHE
-	 * @duration: the duration in milliseconds of the transaction
-	 * @data: the data of the transaction, typiically a list of package_id's
+	 * @obj: a pointer to a PkTransactionObj structure describing the transaction
 	 *
 	 * The ::transaction is emitted when the method GetOldTransactions() is
 	 * called, and the values are being replayed from a database.
@@ -4007,9 +4063,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::distro_upgrade:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @type: A valid upgrade %PkUpdateStateEnum type
-	 * @name: The short name of the distribution, e.g. <literal>Fedora Core 10 RC1</literal>
-	 * @summary: The multi-line description of the release.
+	 * @obj: a pointer to a PkDistroUpgradeObj structure describing the upgrade
 	 *
 	 * The ::distro_upgrade signal is emitted when the method GetDistroUpgrades() is
 	 * called, and the upgrade options are being sent.
@@ -4023,7 +4077,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::update-detail:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @details: a pointer to a PkUpdateDetailsObj strusture descibing the update
+	 * @obj: a pointer to a PkUpdateDetailsObj structure describing the update
 	 *
 	 * The ::update-detail signal is emitted when GetUpdateDetail() is
 	 * called on a set of package_id's.
@@ -4037,7 +4091,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::details:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @detail: a pointer to a PkDetailObj strusture descibing the package
+	 * @obj: a pointer to a PkDetailObj structure describing the package in detail
 	 *
 	 * The ::details signal is emitted when GetDetails() is called.
 	 **/
@@ -4144,8 +4198,8 @@ pk_client_class_init (PkClientClass *klass)
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, require_restart),
-			      NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+			      NULL, NULL, g_cclosure_marshal_VOID__UINT_POINTER,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_POINTER);
 	/**
 	 * PkClient::message:
 	 * @client: the #PkClient instance that emitted the signal
@@ -4195,7 +4249,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::category:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @details: a pointer to a PkCategoryObj structure describing the category
+	 * @obj: a pointer to a PkCategoryObj structure describing the category
 	 *
 	 * The ::category signal is emitted when GetCategories() is called.
 	 **/
@@ -4356,6 +4410,11 @@ pk_client_reset (PkClient *client, GError **error)
 	g_free (client->priv->cached_directory);
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
+	g_object_unref (client->priv->package_list);
+
+	/* clear restart array */
+	g_ptr_array_foreach (client->priv->require_restart_list, (GFunc) pk_package_id_free, NULL);
+	g_ptr_array_set_size (client->priv->require_restart_list, 0);
 
 	/* we need to do this now we have multiple paths */
 	pk_client_disconnect_proxy (client);
@@ -4374,8 +4433,9 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 	client->priv->timeout = -1;
+	client->priv->package_list = pk_package_list_new ();
 
-	pk_obj_list_clear (PK_OBJ_LIST (client->priv->package_list));
+	/* TODO: make clean */
 	pk_obj_list_clear (client->priv->cached_data);
 	return TRUE;
 }
@@ -4399,6 +4459,7 @@ pk_client_init (PkClient *client)
 	client->priv->is_finished = FALSE;
 	client->priv->is_finishing = FALSE;
 	client->priv->package_list = pk_package_list_new ();
+	client->priv->require_restart_list = g_ptr_array_new ();
 	client->priv->cached_data = pk_obj_list_new ();
 	client->priv->cached_package_id = NULL;
 	client->priv->cached_package_ids = NULL;
@@ -4533,6 +4594,10 @@ pk_client_finalize (GObject *object)
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
 
+	/* clear restart array */
+	g_ptr_array_foreach (client->priv->require_restart_list, (GFunc) pk_package_id_free, NULL);
+	g_ptr_array_free (client->priv->require_restart_list, TRUE);
+
 	/* clear the loop, if we were using it */
 	if (client->priv->synchronous)
 		g_main_loop_quit (client->priv->loop);
@@ -4567,20 +4632,6 @@ pk_client_new (void)
 	PkClient *client;
 	client = g_object_new (PK_TYPE_CLIENT, NULL);
 	return PK_CLIENT (client);
-}
-
-/**
- * init:
- *
- * Library constructor: Disable ptrace() and core dumping for applications
- * which use this library, so that local trojans cannot silently abuse PackageKit
- * privileges.
- */
-__attribute__ ((constructor))
-static void init()
-{
-	/* this is a bandaid */
-	prctl (PR_SET_DUMPABLE, 0);
 }
 
 /***************************************************************************
@@ -4640,6 +4691,7 @@ pk_client_test (EggTest *test)
 	guint i;
 	gchar *file;
 	PkPackageList *list;
+	PkRoleEnum role;
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
@@ -4875,6 +4927,14 @@ pk_client_test (EggTest *test)
 		egg_test_failed (test, "error %s", error->message);
 		g_error_free (error);
 	}
+
+	/************************************************************/
+	egg_test_title (test, "ensure task still has correct role after cancel");
+	pk_client_get_role (client, &role, NULL, NULL);
+	if (role == PK_ROLE_ENUM_SEARCH_NAME)
+		egg_test_success (test, "did not cancel finished task");
+	else
+		egg_test_failed (test, "role was %s", pk_role_enum_to_text (role));
 
 	g_object_unref (client);
 	g_object_unref (client_copy);

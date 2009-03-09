@@ -32,6 +32,9 @@
 
 #include "egg-debug.h"
 
+static PkControl *control = NULL;
+static gboolean verbose = FALSE;
+
 /**
  * pk_monitor_task_list_changed_cb:
  **/
@@ -41,6 +44,7 @@ pk_monitor_task_list_changed_cb (PkTaskList *tlist, gpointer data)
 	guint i;
 	PkTaskListItem *item;
 	guint length;
+	gchar *state;
 
 	length = pk_task_list_get_size (tlist);
 	g_print ("Tasks:\n");
@@ -53,13 +57,20 @@ pk_monitor_task_list_changed_cb (PkTaskList *tlist, gpointer data)
 		g_print ("#%i\t%s\t%s (%s)\t%s\n", i+1, item->tid, pk_role_enum_to_text (item->role),
 			 pk_status_enum_to_text (item->status), item->text);
 	}
+
+	/* only print state when verbose */
+	if (verbose) {
+		state = pk_control_get_daemon_state (control, NULL);
+		g_print ("%s", state);
+		g_free (state);
+	}
 }
 
 /**
  * pk_monitor_repo_list_changed_cb:
  **/
 static void
-pk_monitor_repo_list_changed_cb (PkControl *control, gpointer data)
+pk_monitor_repo_list_changed_cb (PkControl *_control, gpointer data)
 {
 	g_print ("repo-list-changed\n");
 }
@@ -68,7 +79,7 @@ pk_monitor_repo_list_changed_cb (PkControl *control, gpointer data)
  * pk_monitor_updates_changed_cb:
  **/
 static void
-pk_monitor_updates_changed_cb (PkControl *control, gpointer data)
+pk_monitor_updates_changed_cb (PkControl *_control, gpointer data)
 {
 	g_print ("updates-changed\n");
 }
@@ -86,7 +97,7 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointe
  * pk_monitor_locked_cb:
  **/
 static void
-pk_monitor_locked_cb (PkControl *control, gboolean is_locked, gpointer data)
+pk_monitor_locked_cb (PkControl *_control, gboolean is_locked, gpointer data)
 {
 	if (is_locked)
 		g_print ("locked\n");
@@ -101,13 +112,12 @@ int
 main (int argc, char *argv[])
 {
 	PkTaskList *tlist;
-	PkControl *control;
 	gboolean ret;
 	GMainLoop *loop;
 	PkConnection *pconnection;
 	gboolean connected;
-	gboolean verbose = FALSE;
 	gboolean program_version = FALSE;
+	gchar *state;
 	GOptionContext *context;
 
 	const GOptionEntry options[] = {
@@ -129,6 +139,7 @@ main (int argc, char *argv[])
 	g_type_init ();
 
 	context = g_option_context_new (NULL);
+	/* TRANSLATORS: this is a program that monitors PackageKit */
 	g_option_context_set_summary (context, _("PackageKit Monitor"));
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_parse (context, &argc, &argv, NULL);
@@ -169,6 +180,13 @@ main (int argc, char *argv[])
 	if (!ret)
 		g_error ("cannot refresh transaction list");
 	pk_task_list_print (tlist);
+
+	/* only print state when verbose */
+	if (verbose) {
+		state = pk_control_get_daemon_state (control, NULL);
+		g_print ("%s", state);
+		g_free (state);
+	}
 
 	/* spin */
 	g_main_loop_run (loop);

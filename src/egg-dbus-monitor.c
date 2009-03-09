@@ -203,14 +203,12 @@ egg_dbus_monitor_reset (EggDbusMonitor *monitor)
 		egg_debug ("not already assigned!");
 		return FALSE;
 	}
-	if (monitor->priv->service != NULL) {
-		g_free (monitor->priv->service);
-		monitor->priv->service = NULL;
-	}
 	if (monitor->priv->proxy != NULL) {
 		g_object_unref (monitor->priv->proxy);
 		monitor->priv->proxy = NULL;
 	}
+	g_free (monitor->priv->service);
+	monitor->priv->service = NULL;
 	return TRUE;
 }
 

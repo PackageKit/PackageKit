@@ -51,7 +51,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkTransactionListClass;
 
-GType		 pk_transaction_list_get_type	  	(void) G_GNUC_CONST;
+GType		 pk_transaction_list_get_type	  	(void);
 PkTransactionList *pk_transaction_list_new		(void);
 
 gboolean	 pk_transaction_list_create		(PkTransactionList	*tlist,
@@ -65,6 +65,8 @@ gboolean	 pk_transaction_list_commit		(PkTransactionList	*tlist,
 gboolean	 pk_transaction_list_role_present	(PkTransactionList	*tlist,
 							 PkRoleEnum		 role);
 gchar		**pk_transaction_list_get_array		(PkTransactionList	*tlist)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		*pk_transaction_list_get_state		(PkTransactionList	*tlist)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
 

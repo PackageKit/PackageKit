@@ -1,19 +1,20 @@
 # Swedish translation for packagekit.
-# Copyright (C) 2008 Free Software Foundation, Inc.
+# Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 # This file is distributed under the same license as the packagekit package.
-# Daniel Nylander <po@danielnylander.se>, 2008.
+# Daniel Nylander <po@danielnylander.se>, 2008, 2009.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-11-24 01:31+0000\n"
-"PO-Revision-Date: 2008-12-01 23:32+0100\n"
+"PO-Revision-Date: 2009-02-11 11:39+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:287
@@ -102,7 +103,7 @@ msgstr "Paketborttagningen avbröts!"
 #: ../client/pk-console.c:846
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
-msgstr "Detta verktyg kunde inte hämta paketet \"%s\" eftersom det inte hittades"
+msgstr "Detta verktyg kunde inte hämta paketet %s eftersom det inte hittades"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:877
@@ -129,7 +130,7 @@ msgstr "Detta verktyg kunde inte få tag på kraven för %s: %s"
 #: ../client/pk-console.c:973
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
-msgstr "Detta verktyg kunde inte få tag på beroenden för %s: %s"
+msgstr "Detta verktyg kunde inte få tag på beroenden för detta %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #: ../client/pk-console.c:995
@@ -169,7 +170,7 @@ msgstr "Hämtar paketlista"
 #: ../client/pk-console.c:1197
 #, c-format
 msgid "This tool could not get package list: %s"
-msgstr "Detta verktyg kunde inte få tag på paketlista: %s"
+msgstr "Detta verktyg kunde inte få tag på paketlistan: %s"
 
 #. TRANSLATORS: There was an error saving the list
 #: ../client/pk-console.c:1077
@@ -216,7 +217,7 @@ msgstr "hittades inte."
 #. TRANSLATORS: We didn't find any packages to install
 #: ../client/pk-console.c:1251
 msgid "No packages can be found to install"
-msgstr "Inga paket för installation hittades"
+msgstr "Inga paket hittades för installation"
 
 #. TRANSLATORS: installing new packages from package list
 #: ../client/pk-console.c:1257
@@ -327,7 +328,7 @@ msgstr "Detta verktyg kunde inte ansluta till systemets DBUS."
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1776
 msgid "The filter specified was invalid"
-msgstr "Filtret som angavs var ogiltigt"
+msgstr "Angivet filter var ogiltigt"
 
 #: ../client/pk-console.c:1793
 msgid "You need to specify a search type, e.g. name"
@@ -383,7 +384,7 @@ msgstr "Du måste ange ett förrådsnamn"
 
 #: ../client/pk-console.c:1899
 msgid "You need to specify a repo name/parameter and value"
-msgstr "Du måste ange ett förrådsnamn/-parameter och värde"
+msgstr "Du måste ange ett förrådsnamn/parameter och värde"
 
 #: ../client/pk-console.c:1912
 msgid "You need to specify an action, e.g. 'update-system'"
@@ -618,7 +619,7 @@ msgstr "Detta kan inträffa av två anledningar:"
 
 #: ../src/pk-main.c:88
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Det är inte korrekt användare (vanligtvis root) som startar programmet"
+msgstr "Den korrekta användaren startar inte den körbara filen (vanligtvis root)"
 
 #: ../src/pk-main.c:89
 msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
@@ -630,7 +631,7 @@ msgstr "Paketingsbakände att använda, t.ex. dummy"
 
 #: ../src/pk-main.c:189
 msgid "Daemonize and detach from the terminal"
-msgstr "Bli demon och koppla loss från terminalen"
+msgstr "Demonisera och koppla loss från terminalen"
 
 #: ../src/pk-main.c:193
 msgid "Disable the idle timer"

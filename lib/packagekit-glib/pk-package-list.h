@@ -55,7 +55,7 @@ struct _PkPackageListClass
 	PkObjListClass		parent_class;
 };
 
-GType			 pk_package_list_get_type	(void) G_GNUC_CONST;
+GType			 pk_package_list_get_type	(void);
 PkPackageList		*pk_package_list_new		(void);
 gboolean		 pk_package_list_add		(PkPackageList		*plist,
 							 PkInfoEnum		 info,

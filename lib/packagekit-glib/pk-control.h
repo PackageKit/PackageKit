@@ -59,7 +59,7 @@ typedef struct _PkControlClass		PkControlClass;
 typedef enum
 {
 	PK_CONTROL_ERROR_FAILED,
-	PK_CONTROL_ERROR_CANNOT_START_DAEMON,
+	PK_CONTROL_ERROR_CANNOT_START_DAEMON
 } PkControlError;
 
 struct _PkControl
@@ -88,7 +88,7 @@ struct _PkControlClass
 };
 
 GQuark		 pk_control_error_quark			(void);
-GType		 pk_control_get_type		  	(void) G_GNUC_CONST;
+GType		 pk_control_get_type		  	(void);
 PkControl	*pk_control_new				(void);
 
 gboolean	 pk_control_allocate_transaction_id	(PkControl	*control,
@@ -105,6 +105,8 @@ PkBitfield	 pk_control_get_filters			(PkControl	*control,
 PkBitfield	 pk_control_get_groups			(PkControl	*control,
 							 GError		**error);
 gchar		**pk_control_get_mime_types		(PkControl	*control,
+							 GError		**error);
+gchar		*pk_control_get_daemon_state		(PkControl	*control,
 							 GError		**error);
 PkNetworkEnum	 pk_control_get_network_state		(PkControl	*control,
 							 GError		**error);
