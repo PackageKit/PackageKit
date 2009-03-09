@@ -329,29 +329,65 @@ backend_get_distro_upgrades (PkBackend *backend)
 	pk_backend_finished (backend);
 }
 
+static gboolean
+backend_get_files_thread (PkBackend *backend)
+{
+	gchar **package_ids;
+	PkPackageId *pi;
+
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	if (package_ids == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_backend_finished (backend);
+		return false;
+	}
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
+	}
+
+	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+		pi = pk_package_id_new_from_string (package_ids[i]);
+		if (pi == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+			pk_backend_finished (backend);
+			delete m_apt;
+			return false;
+		}
+
+		pkgCache::PkgIterator Pkg = m_apt->cacheFile->FindPkg(pi->name);
+		if (Pkg.end() == true)
+		{
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
+			pk_package_id_free (pi);
+			pk_backend_finished (backend);
+			delete m_apt;
+			return false;
+		}
+
+		emit_files (backend, pi);
+
+		pk_package_id_free (pi);
+	}
+
+	delete m_apt;
+
+	pk_backend_finished (backend);
+	return true;
+}
+
 /**
  * backend_get_files:
  */
 static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
-	guint i;
-	guint len;
-	const gchar *package_id;
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-
-	len = g_strv_length (package_ids);
-	for (i=0; i<len; i++) {
-		package_id = package_ids[i];
-		if (egg_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora"))
-			pk_backend_files (backend, package_id, "/usr/share/man/man1/boo;/usr/bin/xchat-gnome");
-		else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed"))
-			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
-		else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora"))
-			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/bin/ck-xinit-session");
-	}
-	pk_backend_finished (backend);
+	pk_backend_thread_create (backend, backend_get_files_thread);
 }
 
 /**
@@ -692,15 +728,6 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 }
 
 /**
- * backend_rollback:
- */
-static void
-backend_rollback (PkBackend *backend, const gchar *transaction_id)
-{
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_remove_packages:
  */
 static void
@@ -725,23 +752,49 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 	pk_backend_finished (backend);
 }
 
+static gboolean
+backend_search_file_thread (PkBackend *backend)
+{
+	const gchar *search;
+	PkBitfield filters;
+
+	search = pk_backend_get_string (backend, "search");
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
+	}
+
+	vector<string> packages = search_file (backend, search);
+	for(vector<string>::iterator i = packages.begin();
+	    i != packages.end(); ++i)
+	{
+		pkgCache::PkgIterator Pkg = m_apt->cacheFile->FindPkg(i->c_str());
+		if (Pkg.end() == true)
+		{
+			continue;
+		}
+		emit_package (backend, m_apt->packageRecords, filters, Pkg, Pkg.VersionList());
+	}
+
+	delete m_apt;
+
+	pk_backend_finished (backend);
+	return true;
+}
+
 /**
  * backend_search_file:
  */
 static void
 backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_allow_cancel (backend, TRUE);
-	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
-		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-				    "vips-doc;7.12.4-2.fc8;noarch;linva",
-				    "The vips documentation package");
-	else
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-				    "vips-doc;7.12.4-2.fc8;noarch;linva",
-				    "The vips documentation package");
-	pk_backend_finished (backend);
+	pk_backend_thread_create (backend, backend_search_file_thread);
 }
 
 static gboolean
@@ -842,7 +895,7 @@ backend_search_name_thread (PkBackend *backend)
 	unsigned NumPatterns = 1;
 
 	// To be able to search the descriptions too
-	bool NamesOnly = false;
+// 	bool NamesOnly = false;
 
 	// Make sure there is at least one argument
 	//    if (NumPatterns < 1)
@@ -1295,7 +1348,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_repo_enable,				/* repo_enable */
 	backend_repo_set_data,				/* repo_set_data */
 	backend_resolve,				/* resolve */
-	backend_rollback,				/* rollback */
+	NULL,						/* rollback */
 	backend_search_details,				/* search_details */
 	backend_search_file,				/* search_file */
 	backend_search_group,				/* search_group */

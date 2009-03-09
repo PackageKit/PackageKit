@@ -26,6 +26,10 @@
 #include <apt-pkg/sourcelist.h>
 #include <apt-pkg/error.h>
 
+#include <fstream>
+#include <dirent.h>
+
+
 aptcc::aptcc()
 	:
 	packageRecords(0),
@@ -250,4 +254,87 @@ if (Dep.TargetPkg().VersionList().end() == false) {
 }
       }
 
+}
+
+// used to emit files it reads the info directly from the files
+vector<string> search_file (PkBackend *backend, const string &file_name)
+{
+	vector<string> packageList;
+
+	// Compile the regex pattern
+	unsigned NumPatterns = 1;
+	regex_t *Patterns = new regex_t[NumPatterns];
+	memset(Patterns, 0, sizeof(*Patterns) * NumPatterns);
+	for (unsigned I = 0; I != NumPatterns; I++)
+	{
+		if (regcomp(&Patterns[I], file_name.c_str(), REG_EXTENDED | REG_ICASE |
+			    REG_NOSUB) != 0)
+		{
+			egg_debug("Regex compilation error");
+			for (; I != 0; I--) {
+				regfree(&Patterns[1]);
+			}
+			return vector<string>();
+		}
+
+	}
+
+	DIR *dp;
+	struct dirent *dirp;
+	if (!(dp = opendir("/var/lib/dpkg/info/"))) {
+		egg_debug ("Error opening /var/lib/dpkg/info/\n");
+		return vector<string>();
+	}
+
+	string line;
+	while ((dirp = readdir(dp)) != NULL) {
+		if (ends_with(dirp->d_name, ".list")) {
+			string f = "/var/lib/dpkg/info/" + string(dirp->d_name);
+			ifstream in(f.c_str());
+			if (!in != 0) {
+				continue;
+			}
+			while (!in.eof()) {
+				getline(in, line);
+				if (regexec(&Patterns[0], line.c_str(), 0, 0, 0) == 0) {
+					string file(dirp->d_name);
+					packageList.push_back(file.erase(file.size() - 5, file.size()));
+					break;
+				}
+			}
+		}
+	}
+	closedir(dp);
+	return packageList;
+}
+
+// used to emit files it reads the info directly from the files
+void emit_files (PkBackend *backend, const PkPackageId *pi)
+{
+	static string filelist;
+	string line;
+
+	filelist.erase(filelist.begin(), filelist.end());
+
+	string f = "/var/lib/dpkg/info/" + string(pi->name) + ".list";
+	if (FileExists(f)) {
+		ifstream in(f.c_str());
+		if (!in != 0) {
+			return;
+		}
+		while (in.eof() == false && filelist.empty()) {
+			getline(in, line);
+			filelist += line;
+		}
+		while (in.eof() == false) {
+			getline(in, line);
+			if (!line.empty()) {
+				filelist += ";" + line;
+			}
+		}
+
+		if (!filelist.empty()) {
+			pk_backend_files (backend, pk_package_id_to_string(pi), filelist.c_str());
+		}
+	}
 }

@@ -30,7 +30,10 @@
 #include <packagekit-glib/packagekit.h>
 #include <pk-backend.h>
 
+#include <list>
 #include <string>
+
+using namespace std;
 
 /**
 *  Emits a package if it match the filters
@@ -50,6 +53,16 @@ void emit_details (PkBackend *backend, pkgRecords *records,
 void emit_requires (PkBackend *backend, pkgRecords *records, PkBitfield filters,
 		   const pkgCache::PkgIterator &pkg,
 		   const pkgCache::VerIterator &ver);
+
+/**
+*  Emits files of packages
+*/
+void emit_files (PkBackend *backend, const PkPackageId *pi);
+
+/**
+*  returns a list of packages names
+*/
+vector<string> search_file (PkBackend *backend, const string &file_name);
 
 class aptcc
 {
