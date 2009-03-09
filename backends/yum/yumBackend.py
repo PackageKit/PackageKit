@@ -1789,7 +1789,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except exceptions.IOError, e:
             self.error(ERROR_NOT_SUPPORTED, _to_unicode(e))
         md = self.updateMetadata
-        for pkg in pkgs:
+        for pkg in unique(pkgs):
             if pkgfilter.pre_process(pkg):
                 # Get info about package in updates info
                 notice = md.get_notice((pkg.name, pkg.version, pkg.release))
