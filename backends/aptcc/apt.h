@@ -22,16 +22,11 @@
 #ifndef APT_H
 #define APT_H
 
-#include <apt-pkg/depcache.h>
 #include <apt-pkg/pkgrecords.h>
 #include <apt-pkg/pkgcachegen.h>
 #include <apt-pkg/policy.h>
 
-#include <packagekit-glib/packagekit.h>
 #include <pk-backend.h>
-
-#include <list>
-#include <string>
 
 using namespace std;
 
