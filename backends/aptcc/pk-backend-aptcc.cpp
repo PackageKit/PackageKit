@@ -33,6 +33,7 @@
 
 #include "apt.h"
 #include "apt-utils.h"
+#include "matcher.h"
 
 #include <config.h>
 
@@ -40,7 +41,6 @@
 #include <iostream>
 #include <unistd.h>
 #include <errno.h>
-#include <regex.h>
 #include <stdio.h>
 
 #include <iomanip>
@@ -311,22 +311,6 @@ static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_get_details_thread);
-}
-
-/**
- * backend_get_distro_upgrades:
- */
-static void
-backend_get_distro_upgrades (PkBackend *backend)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_STABLE,
-				   "Fedora 9", "Fedora 9 is a Linux-based operating system "
-				   "that showcases the latest in free and open source software.");
-	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
-				   "Fedora 10 RC1", "Fedora 10 RC1 is the first unstable version "
-				   "of Fedora for people to test.");
-	pk_backend_finished (backend);
 }
 
 static gboolean
@@ -738,20 +722,6 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	pk_backend_finished (backend);
 }
 
-/**
- * backend_search_details:
- */
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_allow_cancel (backend, TRUE);
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-			    "vips-doc;7.12.4-2.fc8;noarch;linva",
-			    "The vips \"documentation\" package.");
-	pk_backend_finished (backend);
-}
-
 static gboolean
 backend_search_file_thread (PkBackend *backend)
 {
@@ -763,26 +733,29 @@ backend_search_file_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc();
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
-		egg_debug ("Failed to create apt cache");
-		delete m_apt;
-		return false;
-	}
-
-	vector<string> packages = search_file (backend, search);
-	for(vector<string>::iterator i = packages.begin();
-	    i != packages.end(); ++i)
-	{
-		pkgCache::PkgIterator Pkg = m_apt->cacheFile->FindPkg(i->c_str());
-		if (Pkg.end() == true)
-		{
-			continue;
+	// as we can only search for installed files lets avoid the opposite
+	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		aptcc *m_apt = new aptcc();
+		if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+			egg_debug ("Failed to create apt cache");
+			delete m_apt;
+			return false;
 		}
-		emit_package (backend, m_apt->packageRecords, filters, Pkg, Pkg.VersionList());
-	}
 
-	delete m_apt;
+		vector<string> packages = search_file (backend, search);
+		for(vector<string>::iterator i = packages.begin();
+		    i != packages.end(); ++i)
+		{
+			pkgCache::PkgIterator Pkg = m_apt->cacheFile->FindPkg(i->c_str());
+			if (Pkg.end() == true)
+			{
+				continue;
+			}
+			emit_package (backend, m_apt->packageRecords, filters, Pkg, Pkg.VersionList());
+		}
+
+		delete m_apt;
+	}
 
 	pk_backend_finished (backend);
 	return true;
@@ -873,7 +846,7 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *pkGro
 }
 
 static gboolean
-backend_search_name_thread (PkBackend *backend)
+backend_search_package_thread (PkBackend *backend)
 {
 	const gchar *search;
 	PkBitfield filters;
@@ -885,81 +858,113 @@ backend_search_name_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
+	matcher *m_matcher = new matcher(string(search));
+	if (m_matcher->hasError()) {
+		egg_debug("Regex compilation error");
+		delete m_matcher;
+		return false;
+	}
+
 	aptcc *m_apt = new aptcc();
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
+		delete m_matcher;
 		delete m_apt;
 		return false;
 	}
 
-	unsigned NumPatterns = 1;
-
-	// To be able to search the descriptions too
-// 	bool NamesOnly = false;
-
-	// Make sure there is at least one argument
-	//    if (NumPatterns < 1)
-	//       return _error->Error(_("You must give exactly one pattern"));
-
-	// Compile the regex pattern
-	regex_t *Patterns = new regex_t[NumPatterns];
-	memset(Patterns, 0, sizeof(*Patterns) * NumPatterns);
-	for (unsigned I = 0; I != NumPatterns; I++)
-	{
-		if (regcomp(&Patterns[I], search, REG_EXTENDED | REG_ICASE |
-			    REG_NOSUB) != 0)
-		{
-			egg_debug("Regex compilation error");
-			for (; I != 0; I--)
-				regfree(&Patterns[1]);
-			delete m_apt;
-			return false;
-		}
-		
-	}
-
 	if (_error->PendingError() == true)
 	{
-		for (unsigned I = 0; I != 1; I++)
-			regfree(&Patterns[I]);
+		delete m_matcher;
 		delete m_apt;
 		return false;
 	}
 
 	pkgDepCache::Policy Plcy;
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
-	for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
-		// Ignore packages that exist only due to dependencies.
-		if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
-			continue;
-		}
-		// TODO add suport for search in multiples words like "doc aptitude"
-	// 	    for(vector<pkg_matcher *>::iterator m=matchers.begin();
-	// 		m!=matchers.end(); ++m)
-	// 		{
-	// 		pkg_match_result *r = get_match(*m, pkg,
-	// 						*apt_cache_file,
-	// 						*apt_package_records);
-	//
-	// 		if(r != NULL)
-	// 		    output.push_back(pair<pkgCache::PkgIterator, pkg_match_result *>(pkg, r));
-	// 		}
-		if (regexec(&Patterns[0],pkg.Name(), 0, 0, 0) == 0) {
-			// Don't insert virtual packages instead add what it provides
-			pkgCache::VerIterator ver = m_apt->find_ver(pkg);
-			if (ver.end() == false) {
-				output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
-			} else {
-				// iterate over the provides list
-				for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
-					ver = m_apt->find_ver(Prv.OwnerPkg());
+	if (pk_backend_get_bool (backend, "search_details")) {
+		for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
+			// Ignore packages that exist only due to dependencies.
+			if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
+				continue;
+			}
 
-					// check to see if the provided package isn't virtual too
-					if (ver.end() == false)
+			if (m_matcher->matches(pkg.Name())) {
+				// Don't insert virtual packages instead add what it provides
+				pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+				if (ver.end() == false) {
+					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+				} else {
+					// iterate over the provides list
+					for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
+						ver = m_apt->find_ver(Prv.OwnerPkg());
+
+						// check to see if the provided package isn't virtual too
+						if (ver.end() == false)
+						{
+							// we add the package now because we will need to
+							// remove duplicates later anyway
+							output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
+						}
+					}
+				}
+			} else {
+				// Don't insert virtual packages instead add what it provides
+				pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+				if (ver.end() == false) {
+					if (m_matcher->matches(get_default_short_description(ver, m_apt->packageRecords))
+					    || m_matcher->matches(get_default_long_description(ver, m_apt->packageRecords))
+					    || m_matcher->matches(get_short_description(ver, m_apt->packageRecords))
+					    || m_matcher->matches(get_long_description(ver, m_apt->packageRecords)))
 					{
-						// we add the package now because we will need to
-						// remove duplicates later anyway
-						output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
+						output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+					}
+				} else {
+					// iterate over the provides list
+					for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
+						ver = m_apt->find_ver(Prv.OwnerPkg());
+
+						// check to see if the provided package isn't virtual too
+						if (ver.end() == false)
+						{
+							// we add the package now because we will need to
+							// remove duplicates later anyway
+							if (m_matcher->matches(get_default_short_description(ver, m_apt->packageRecords))
+							    || m_matcher->matches(get_default_long_description(ver, m_apt->packageRecords))
+							    || m_matcher->matches(get_short_description(ver, m_apt->packageRecords))
+							    || m_matcher->matches(get_long_description(ver, m_apt->packageRecords)))
+							{
+								output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
+							}
+						}
+					}
+				}
+			}
+		}
+	} else {
+		for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
+			// Ignore packages that exist only due to dependencies.
+			if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
+				continue;
+			}
+
+			if (m_matcher->matches(pkg.Name())) {
+				// Don't insert virtual packages instead add what it provides
+				pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+				if (ver.end() == false) {
+					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+				} else {
+					// iterate over the provides list
+					for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
+						ver = m_apt->find_ver(Prv.OwnerPkg());
+
+						// check to see if the provided package isn't virtual too
+						if (ver.end() == false)
+						{
+							// we add the package now because we will need to
+							// remove duplicates later anyway
+							output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
+						}
 					}
 				}
 			}
@@ -977,9 +982,7 @@ backend_search_name_thread (PkBackend *backend)
 		emit_package (backend, m_apt->packageRecords, filters, i->first, i->second);
 	}
 
-	for (unsigned I = 0; I != NumPatterns; I++)
-		regfree(&Patterns[I]);
-
+	delete m_matcher;
 	delete m_apt;
 
 	pk_backend_set_percentage (backend, 100);
@@ -992,8 +995,20 @@ backend_search_name_thread (PkBackend *backend)
  */
 static void
 backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
-{;
-	pk_backend_thread_create (backend, backend_search_name_thread);
+{
+	pk_backend_set_bool (backend, "search_details", false);
+	pk_backend_thread_create (backend, backend_search_package_thread);
+}
+
+
+/**
+ * backend_search_details:
+ */
+static void
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	pk_backend_set_bool (backend, "search_details", true);
+	pk_backend_thread_create (backend, backend_search_package_thread);
 }
 
 /**
@@ -1333,7 +1348,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,						/* get_categories */
 	backend_get_depends,				/* get_depends */
 	backend_get_details,				/* get_details */
-	backend_get_distro_upgrades,			/* get_distro_upgrades */
+	NULL,						/* get_distro_upgrades */
 	backend_get_files,				/* get_files */
 	backend_get_packages,				/* get_packages */
 	backend_get_repo_list,				/* get_repo_list */

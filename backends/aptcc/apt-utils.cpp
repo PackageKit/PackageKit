@@ -21,25 +21,35 @@
 
 #include "apt-utils.h"
 
-#include <apt-pkg/pkgrecords.h>
-
 static int descrBufferSize = 4096;
 static char *descrBuffer = new char[descrBufferSize];
 
-string get_short_description(const pkgCache::VerIterator &ver,
-                                   pkgRecords *records)
+static char *debParser(string descr);
+
+string get_default_short_description(const pkgCache::VerIterator &ver,
+                                     pkgRecords *records)
 {
 	if(ver.end() || ver.FileList().end() || records == NULL)
 		return string();
 
+	pkgCache::VerFileIterator vf = ver.FileList();
+
+	if (vf.end()) {
+		return string();
+	} else {
+		return records->Lookup(vf).ShortDesc();
+	}
+}
+
+string get_short_description(const pkgCache::VerIterator &ver,
+			     pkgRecords *records)
+{
 // #ifndef HAVE_DDTP
-// 	pkgCache::VerFileIterator vf = ver.FileList();
-//
-// 	if(vf.end())
-// 		return string();
-// 	else
-// 		return records->Lookup(vf).ShortDesc();
+// 	return get_default_short_description(ver, records);
 // #else
+	if(ver.end() || ver.FileList().end() || records == NULL)
+		return string();
+
 	pkgCache::DescIterator d = ver.TranslatedDescription();
 
 	if(d.end())
@@ -57,60 +67,15 @@ string get_short_description(const pkgCache::VerIterator &ver,
 // #endif
 }
 
-// TODO try to find out how aptitude makes continuos lines keep that way
-static char *debParser(string descr)
-{
-   unsigned int i;
-   string::size_type nlpos=0;
-
-   nlpos = descr.find('\n');
-   // delete first line
-   if (nlpos != string::npos)
-      descr.erase(0, nlpos + 2);        // del "\n " too
-
-   while (nlpos < descr.length()) {
-      nlpos = descr.find('\n', nlpos);
-      if (nlpos == string::npos)
-         break;
-
-      i = nlpos;
-      // del char after '\n' (always " ")
-      i++;
-      descr.erase(i, 1);
-
-      // delete lines likes this: " .", makeing it a \n
-      if (descr[i] == '.') {
-         descr.erase(i, 1);
-         nlpos++;
-         continue;
-      }
-      // skip ws
-      while (descr[++i] == ' ');
-
-//      // not a list, erase nl
-//       if(!(descr[i] == '*' || descr[i] == '-' || descr[i] == 'o'))
-//      descr.erase(nlpos,1);
-
-      nlpos++;
-   }
-   strcpy(descrBuffer, descr.c_str());
-   return descrBuffer;
-}
-
 string get_long_description(const pkgCache::VerIterator &ver,
 				  pkgRecords *records)
 {
+// #ifndef HAVE_DDTP
+// 	return get_default_long_description(ver, records);
+// #else
 	if(ver.end() || ver.FileList().end() || records == NULL)
 		return string();
 
-// #ifndef HAVE_DDTP
-// 	pkgCache::VerFileIterator vf = ver.FileList();
-// 
-// 	if(vf.end())
-// 		return string();
-// 	else
-// 		return records->Lookup(vf).LongDesc();
-// #else
 	pkgCache::DescIterator d = ver.TranslatedDescription();
 
 	if(d.end())
@@ -121,8 +86,82 @@ string get_long_description(const pkgCache::VerIterator &ver,
 	if(df.end())
 		return string();
 	else
-		return debParser(records->Lookup(df).LongDesc());
+		return records->Lookup(df).LongDesc();
 // #endif
+}
+
+string get_long_description_parsed(const pkgCache::VerIterator &ver,
+				   pkgRecords *records)
+{
+	return debParser(get_long_description(ver, records));
+}
+
+string get_default_long_description(const pkgCache::VerIterator &ver,
+				    pkgRecords *records)
+{
+	if(ver.end() || ver.FileList().end() || records == NULL)
+		return string();
+
+	pkgCache::VerFileIterator vf = ver.FileList();
+
+	if(vf.end())
+		return string();
+	else
+		return records->Lookup(vf).LongDesc();
+}
+
+string get_name(const pkgCache::VerIterator &ver,
+		pkgRecords *records)
+{
+	if(ver.end() || ver.FileList().end() || records == NULL)
+		return string();
+
+	pkgCache::VerFileIterator vf = ver.FileList();
+
+	if(vf.end())
+		return string();
+	else
+		return records->Lookup(vf).Name();
+}
+
+// TODO try to find out how aptitude makes continuos lines keep that way
+static char *debParser(string descr)
+{
+	unsigned int i;
+	string::size_type nlpos=0;
+
+	nlpos = descr.find('\n');
+	// delete first line
+	if (nlpos != string::npos)
+	    descr.erase(0, nlpos + 2);        // del "\n " too
+
+	while (nlpos < descr.length()) {
+	    nlpos = descr.find('\n', nlpos);
+	    if (nlpos == string::npos)
+		break;
+
+	    i = nlpos;
+	    // del char after '\n' (always " ")
+	    i++;
+	    descr.erase(i, 1);
+
+	    // delete lines likes this: " .", makeing it a \n
+	    if (descr[i] == '.') {
+		descr.erase(i, 1);
+		nlpos++;
+		continue;
+	    }
+	    // skip ws
+	    while (descr[++i] == ' ');
+
+	//      // not a list, erase nl
+	//       if(!(descr[i] == '*' || descr[i] == '-' || descr[i] == 'o'))
+	//      descr.erase(nlpos,1);
+
+	    nlpos++;
+	}
+	strcpy(descrBuffer, descr.c_str());
+	return descrBuffer;
 }
 
 PkGroupEnum

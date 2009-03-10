@@ -20,15 +20,12 @@
 
 #include "apt.h"
 #include "apt-utils.h"
+#include "matcher.h"
 
-#include <pk-backend.h>
-
-#include <apt-pkg/sourcelist.h>
 #include <apt-pkg/error.h>
 
 #include <fstream>
 #include <dirent.h>
-
 
 aptcc::aptcc()
 	:
@@ -231,7 +228,7 @@ void emit_details (PkBackend *backend, pkgRecords *records,
 			    package_id,
 			    "GPL2",
 			    get_enum_group(section),
-			    get_long_description(ver, records).c_str(),
+			    get_long_description_parsed(ver, records).c_str(),
 			    homepage.c_str(), ver->Size);
 }
 
@@ -261,22 +258,11 @@ vector<string> search_file (PkBackend *backend, const string &file_name)
 {
 	vector<string> packageList;
 
-	// Compile the regex pattern
-	unsigned NumPatterns = 1;
-	regex_t *Patterns = new regex_t[NumPatterns];
-	memset(Patterns, 0, sizeof(*Patterns) * NumPatterns);
-	for (unsigned I = 0; I != NumPatterns; I++)
-	{
-		if (regcomp(&Patterns[I], file_name.c_str(), REG_EXTENDED | REG_ICASE |
-			    REG_NOSUB) != 0)
-		{
-			egg_debug("Regex compilation error");
-			for (; I != 0; I--) {
-				regfree(&Patterns[1]);
-			}
-			return vector<string>();
-		}
-
+	matcher *m_matcher = new matcher(string(file_name));
+	if (m_matcher->hasError()) {
+		egg_debug("Regex compilation error");
+		delete m_matcher;
+		return vector<string>();
 	}
 
 	DIR *dp;
@@ -296,7 +282,7 @@ vector<string> search_file (PkBackend *backend, const string &file_name)
 			}
 			while (!in.eof()) {
 				getline(in, line);
-				if (regexec(&Patterns[0], line.c_str(), 0, 0, 0) == 0) {
+				if (m_matcher->matches(line)) {
 					string file(dirp->d_name);
 					packageList.push_back(file.erase(file.size() - 5, file.size()));
 					break;
