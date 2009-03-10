@@ -1,3 +1,44 @@
+Version 0.4.5
+~~~~~~~~~~~~~
+Released: 2009-03-09
+
+Translations:
+ - Updated Punjabi translation (A S Alam)
+ - Updated Spanish translation (Domingo Becker)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated German translation (Jens-Uwe Peter)
+ - Updated Spanish translation (Jorge A Gallegos)
+ - Updated Polish translation (Piotr Drąg)
+ - Updated Marathi Translations (Sandeep Sheshrao Shedmake)
+ - Updated Catalan translation (Xavier Conde)
+
+New Features:
+ - Enable ptrace() on libpackagekit, it was always a bandaid (Richard Hughes)
+ - python: add a PkError exception class to better handle nested errors (Richard Hughes)
+ - Clarify the spec that a Details::size value of zero of a non-installed file
+   indicates it's in cache and doesn't need to be downloaded (Richard Hughes)
+ - Remove the app-install feature, it's now it's own project (Richard Hughes)
+ - Allow backends to enable simultaneous mode to do actions in parallel (Richard Hughes)
+ - Updated QPackageKit soname version to 0.4.1 (Daniel Nicoletti)
+ - Made package methods const and added an operator== to package (Daniel Nicoletti)
+
+Bugfixes:
+ - When we reset a PkClient, get a new reference to a PkPackageList (Richard Hughes)
+ - Ensure we set PK_STATUS_ENUM_FINISHED when we return cached updates (Richard Hughes)
+ - glib: When we cancel a transaction, don't overwrite the role as Cancel (Richard Hughes)
+ - Fix the self test by using actual provides in the catalog file (Richard Hughes)
+
+Backends:
+ - apt: Update the postinst script to store desktop file information in the desktop.db (Sebastian Heinlein)
+ - conary: Fix some typos for search methods (Andres Vargas)
+ - conary: Fix the unicode decode (Andres Vargas)
+ - conary: Remove chars what break the backend (Andres Vargas)
+ - dummy: Add other package details for updates (Richard Hughes)
+ - dummy: Make the gpg and eula prompts configurable (Richard Hughes)
+ - yum: Do proper error handling to avoid exiting the script on correctable errors (Richard Hughes)
+ - yum: Support the 'any' provide search (Richard Hughes)
+ - yum: Output a Details::size value of zero if the file is in cache (Richard Hughes)
+
 Version 0.4.4
 ~~~~~~~~~~~~~
 Released: 2009-02-23
