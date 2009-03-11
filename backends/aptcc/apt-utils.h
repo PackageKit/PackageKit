@@ -58,11 +58,6 @@ public:
 	}
 };
 
-/** \returnthe package name
- */
-string get_name(const pkgCache::VerIterator &ver,
-		pkgRecords *records);
-
 /** \return a short description string corresponding to the given
  *  version.
  */
