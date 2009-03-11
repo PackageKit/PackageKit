@@ -92,7 +92,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	egg_debug ("APTcc being destroied");
+	egg_debug ("APTcc being destroyed");
 	if (apt_source_list)
 	{
 		delete apt_source_list;
