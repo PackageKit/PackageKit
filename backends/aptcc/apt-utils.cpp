@@ -116,22 +116,6 @@ string get_default_long_description(const pkgCache::VerIterator &ver,
 	}
 }
 
-string get_name(const pkgCache::VerIterator &ver,
-		pkgRecords *records)
-{
-	if (ver.end() || ver.FileList().end() || records == NULL) {
-		return string();
-	}
-
-	pkgCache::VerFileIterator vf = ver.FileList();
-
-	if (vf.end()) {
-		return string();
-	} else {
-		return records->Lookup(vf).Name();
-	}
-}
-
 // TODO try to find out how aptitude makes continuos lines keep that way
 static char *debParser(string descr)
 {

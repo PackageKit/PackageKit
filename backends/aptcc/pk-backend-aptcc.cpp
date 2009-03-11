@@ -929,7 +929,8 @@ backend_search_package_thread (PkBackend *backend)
 						{
 							// we add the package now because we will need to
 							// remove duplicates later anyway
-							if (m_matcher->matches(get_default_short_description(ver, m_apt->packageRecords))
+							if (m_matcher->matches(Prv.OwnerPkg().Name())
+							    || m_matcher->matches(get_default_short_description(ver, m_apt->packageRecords))
 							    || m_matcher->matches(get_default_long_description(ver, m_apt->packageRecords))
 							    || m_matcher->matches(get_short_description(ver, m_apt->packageRecords))
 							    || m_matcher->matches(get_long_description(ver, m_apt->packageRecords)))
