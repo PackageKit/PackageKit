@@ -58,17 +58,41 @@ public:
 	}
 };
 
+/** \returnthe package name
+ */
+string get_name(const pkgCache::VerIterator &ver,
+		pkgRecords *records);
+
+/** \return a short description string corresponding to the given
+ *  version.
+ */
+string get_default_short_description(const pkgCache::VerIterator &ver,
+				     pkgRecords *records);
+
 /** \return a short description string corresponding to the given
  *  version.
  */
 string get_short_description(const pkgCache::VerIterator &ver,
-                                   pkgRecords *records);
+			     pkgRecords *records);
+
+
+/** \return a short description string corresponding to the given
+ *  version.
+ */
+string get_default_long_description(const pkgCache::VerIterator &ver,
+				    pkgRecords *records);
 
 /** \return a short description string corresponding to the given
  *  version.
  */
 string get_long_description(const pkgCache::VerIterator &ver,
-                                  pkgRecords *records);
+			    pkgRecords *records);
+
+/** \return a short description string corresponding to the given
+ *  version.
+ */
+string get_long_description_parsed(const pkgCache::VerIterator &ver,
+				   pkgRecords *records);
 
 /**
   * Return the PkEnumGroup of the give group string.
