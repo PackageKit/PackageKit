@@ -29,8 +29,9 @@ static char *debParser(string descr);
 string get_default_short_description(const pkgCache::VerIterator &ver,
                                      pkgRecords *records)
 {
-	if(ver.end() || ver.FileList().end() || records == NULL)
+	if(ver.end() || ver.FileList().end() || records == NULL) {
 		return string();
+	}
 
 	pkgCache::VerFileIterator vf = ver.FileList();
 
@@ -47,23 +48,23 @@ string get_short_description(const pkgCache::VerIterator &ver,
 // #ifndef HAVE_DDTP
 // 	return get_default_short_description(ver, records);
 // #else
-	if(ver.end() || ver.FileList().end() || records == NULL)
+	if (ver.end() || ver.FileList().end() || records == NULL) {
 		return string();
+	}
 
 	pkgCache::DescIterator d = ver.TranslatedDescription();
 
-	if(d.end())
+	if (d.end()) {
 		return string();
+	}
 
 	pkgCache::DescFileIterator df = d.FileList();
 
-	if(df.end())
+	if (df.end()) {
 		return string();
-	else
-		// apt "helpfully" cw::util::transcodes the description for us, instead of
-		// providing direct access to it.  So I need to assume that the
-		// description is encoded in the current locale.
+	} else {
 		return records->Lookup(df).ShortDesc();
+	}
 // #endif
 }
 
@@ -73,20 +74,23 @@ string get_long_description(const pkgCache::VerIterator &ver,
 // #ifndef HAVE_DDTP
 // 	return get_default_long_description(ver, records);
 // #else
-	if(ver.end() || ver.FileList().end() || records == NULL)
+	if (ver.end() || ver.FileList().end() || records == NULL) {
 		return string();
+	}
 
 	pkgCache::DescIterator d = ver.TranslatedDescription();
 
-	if(d.end())
+	if (d.end()) {
 		return string();
+	}
 
 	pkgCache::DescFileIterator df = d.FileList();
 
-	if(df.end())
+	if (df.end()) {
 		return string();
-	else
+	} else {
 		return records->Lookup(df).LongDesc();
+	}
 // #endif
 }
 
@@ -99,29 +103,33 @@ string get_long_description_parsed(const pkgCache::VerIterator &ver,
 string get_default_long_description(const pkgCache::VerIterator &ver,
 				    pkgRecords *records)
 {
-	if(ver.end() || ver.FileList().end() || records == NULL)
+	if(ver.end() || ver.FileList().end() || records == NULL) {
 		return string();
+	}
 
 	pkgCache::VerFileIterator vf = ver.FileList();
 
-	if(vf.end())
+	if (vf.end()) {
 		return string();
-	else
+	} else {
 		return records->Lookup(vf).LongDesc();
+	}
 }
 
 string get_name(const pkgCache::VerIterator &ver,
 		pkgRecords *records)
 {
-	if(ver.end() || ver.FileList().end() || records == NULL)
+	if (ver.end() || ver.FileList().end() || records == NULL) {
 		return string();
+	}
 
 	pkgCache::VerFileIterator vf = ver.FileList();
 
-	if(vf.end())
+	if (vf.end()) {
 		return string();
-	else
+	} else {
 		return records->Lookup(vf).Name();
+	}
 }
 
 // TODO try to find out how aptitude makes continuos lines keep that way
@@ -132,33 +140,35 @@ static char *debParser(string descr)
 
 	nlpos = descr.find('\n');
 	// delete first line
-	if (nlpos != string::npos)
-	    descr.erase(0, nlpos + 2);        // del "\n " too
+	if (nlpos != string::npos) {
+		descr.erase(0, nlpos + 2);        // del "\n " too
+	}
 
 	while (nlpos < descr.length()) {
-	    nlpos = descr.find('\n', nlpos);
-	    if (nlpos == string::npos)
-		break;
+		nlpos = descr.find('\n', nlpos);
+		if (nlpos == string::npos) {
+			break;
+		}
 
-	    i = nlpos;
-	    // del char after '\n' (always " ")
-	    i++;
-	    descr.erase(i, 1);
-
-	    // delete lines likes this: " .", makeing it a \n
-	    if (descr[i] == '.') {
+		i = nlpos;
+		// del char after '\n' (always " ")
+		i++;
 		descr.erase(i, 1);
+
+		// delete lines likes this: " .", makeing it a \n
+		if (descr[i] == '.') {
+			descr.erase(i, 1);
+			nlpos++;
+			continue;
+		}
+		// skip ws
+		while (descr[++i] == ' ');
+
+// 		// not a list, erase nl
+// 		if(!(descr[i] == '*' || descr[i] == '-' || descr[i] == 'o'))
+// 			descr.erase(nlpos,1);
+
 		nlpos++;
-		continue;
-	    }
-	    // skip ws
-	    while (descr[++i] == ' ');
-
-	//      // not a list, erase nl
-	//       if(!(descr[i] == '*' || descr[i] == '-' || descr[i] == 'o'))
-	//      descr.erase(nlpos,1);
-
-	    nlpos++;
 	}
 	strcpy(descrBuffer, descr.c_str());
 	return descrBuffer;
@@ -234,7 +244,7 @@ get_enum_group (string group)
 	} else if (group.compare ("x11") == 0) {
 		return PK_GROUP_ENUM_DESKTOP_OTHER;
 	} else if (group.compare ("alien") == 0) {
-		return PK_GROUP_ENUM_UNKNOWN;//FIXME alien is a unknown group?
+		return PK_GROUP_ENUM_UNKNOWN;//FIXME alien is an unknown group?
 	} else if (group.compare ("translations") == 0) {
 		return PK_GROUP_ENUM_LOCALIZATION;
 	} else if (group.compare ("metapackages") == 0) {

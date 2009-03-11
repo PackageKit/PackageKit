@@ -23,7 +23,9 @@
 #define MATCHER_H
 
 #include <regex.h>
+
 #include <vector>
+#include <map>
 #include <string>
 
 using namespace std;
@@ -35,6 +37,7 @@ public:
 	~matcher();
 
 	bool matches(const string &s);
+	bool matchesFile(const string &s, map<int, bool> &matchers_used);
 	bool hasError() const;
 
 private:

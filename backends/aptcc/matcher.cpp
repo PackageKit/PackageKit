@@ -64,6 +64,27 @@ bool matcher::matches(const string &s)
 	return m_matches.size() == matchesCount;
 }
 
+// This matcher is to be used for files
+// pass a map so it can remember which patter was alread used
+bool matcher::matchesFile(const string &s, map<int, bool> &matchers_used)
+{
+	int matchesCount = 0;
+	for (vector<regex_t>::iterator i = m_matches.begin();
+	     i != m_matches.end(); ++i)
+	for (int i = 0; i < m_matches.size(); i++)
+	{
+		bool not_used = true;
+		if (matchers_used.find(i) != matchers_used.end()) {
+			not_used = true;
+		}
+
+		if (not_used && string_matches(s.c_str(), m_matches.at(i))) {
+			matchers_used[i] = true;
+		}
+	}
+	return m_matches.size() == matchers_used.size();
+}
+
 bool matcher::parse_pattern(string::const_iterator &start,
 			    const std::string::const_iterator &end)
 {
