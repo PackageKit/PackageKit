@@ -188,7 +188,6 @@ backend_cancel (PkBackend *backend)
 		/* emulate that it takes us a few ms to cancel */
 		g_timeout_add (1500, backend_cancel_timeout, backend);
 	}
-	printf("CANCEL\n");
 	_cancel = true;
 }
 
@@ -781,6 +780,8 @@ backend_search_group_thread (PkBackend *backend)
 
 	group = pk_backend_get_string (backend, "search");
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, TRUE);
 
 	if (group == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
@@ -802,6 +803,9 @@ backend_search_group_thread (PkBackend *backend)
 
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
+		if (_cancel) {
+			break;
+		}
 		// Ignore packages that exist only due to dependencies.
 		if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
 			continue;
@@ -829,6 +833,9 @@ backend_search_group_thread (PkBackend *backend)
 	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
 	    i != output.end(); ++i)
 	{
+		if (_cancel) {
+			break;
+		}
 		emit_package (backend, m_apt->packageRecords, filters, i->first, i->second);
 	}
 
@@ -1271,6 +1278,9 @@ backend_get_packages_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, TRUE);
+
 	aptcc *m_apt = new aptcc();
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
@@ -1283,14 +1293,18 @@ backend_get_packages_thread (PkBackend *backend)
 	for(pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin();
 	    !pkg.end(); ++pkg)
 	{
+		if (_cancel) {
+			break;
+		}
 		// Ignore packages that exist only due to dependencies.
 		if(pkg.VersionList().end() && pkg.ProvidesList().end())
 			continue;
 
 		// Don't insert virtual packages as they don't have all kinds of info
 		pkgCache::VerIterator ver = m_apt->find_ver(pkg);
-		if (ver.end() == false)
+		if (ver.end() == false) {
 			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+		}
 	}
 
 	sort(output.begin(), output.end(), compare());
@@ -1299,6 +1313,9 @@ backend_get_packages_thread (PkBackend *backend)
 	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
 	    i != output.end(); ++i)
 	{
+		if (_cancel) {
+			break;
+		}
 		emit_package (backend, m_apt->packageRecords, filters, i->first, i->second);
 	}
 
