@@ -42,29 +42,30 @@ bool aptcc::init(const char *locale, pkgSourceList &apt_source_list)
 	setlocale(LC_ALL, locale);
 	pkgMakeStatusCache(apt_source_list, Progress, &Map, true);
 	cacheFile = new pkgCache(Map);
-	if(_error->PendingError())
+	if (_error->PendingError()) {
 		return false;
+	}
 
 	// Create the text record parser
 	packageRecords = new pkgRecords (*cacheFile);
 
 	// create depcache
 	pkgPolicy Plcy(cacheFile);
-	if(_error->PendingError()) {
+	if (_error->PendingError()) {
 		return false;
 	}
 
-	if(!ReadPinFile(Plcy)) {
+	if (!ReadPinFile(Plcy)) {
 		return false;
 	}
 
 	DCache = new pkgDepCache(cacheFile, &Plcy);
-	if(_error->PendingError()) {
+	if (_error->PendingError()) {
 		return false;
 	}
 
 	DCache->Init(&Progress);
-	if(_error->PendingError()) {
+	if (_error->PendingError()) {
 		return false;
 	}
 }
@@ -103,7 +104,7 @@ pkgCache::VerIterator aptcc::find_ver(pkgCache::PkgIterator pkg)
 	pkgCache::VerIterator candver=(*DCache)[pkg].CandidateVerIter(*DCache);
 	if(!candver.end())
 	{
-	    return candver;
+		return candver;
 	}
 
 	// return the version list as a last resource
@@ -146,56 +147,64 @@ void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
 			if (!ends_with(pkgName, "-dev") &&
 			    !ends_with(pkgName, "-dbg") &&
 			    section.compare("devel") &&
-			    section.compare("libdevel"))
+			    section.compare("libdevel")) {
 				return;
+			}
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
 			std::string pkgName = pkg.Name();
 			if (ends_with(pkgName, "-dev") ||
 			    ends_with(pkgName, "-dbg") ||
 			    !section.compare("devel") ||
-			    !section.compare("libdevel"))
+			    !section.compare("libdevel")) {
 				return;
+			}
 		}
 
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI)) {
 			// if ver.end() means unknow
 			// strcmp will be true when it's different than x11
 			if (section.compare("x11") && section.compare("gnome") &&
-			    section.compare("kde") && section.compare("graphics"))
+			    section.compare("kde") && section.compare("graphics")) {
 				return;
+			}
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI)) {
 			if (!section.compare("x11") || !section.compare("gnome") ||
-			    !section.compare("kde") || !section.compare("graphics"))
+			    !section.compare("kde") || !section.compare("graphics")) {
 				return;
+			}
 		}
 
 		// TODO add Ubuntu handling
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_FREE)) {
-			if (!repo_section.compare("contrib") || !repo_section.compare("non-free"))
+			if (!repo_section.compare("contrib") || !repo_section.compare("non-free")) {
 				return;
+			}
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_FREE)) {
-			if (repo_section.compare("contrib") && repo_section.compare("non-free"))
+			if (repo_section.compare("contrib") && repo_section.compare("non-free")) {
 				return;
+			}
 		}
 
 		// TODO test this one..
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_COLLECTIONS)) {
-			if (!repo_section.compare("metapackages"))
+			if (!repo_section.compare("metapackages")) {
 				return;
+			}
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_COLLECTIONS)) {
-			if (repo_section.compare("metapackages"))
+			if (repo_section.compare("metapackages")) {
 				return;
+			}
 		}
 
 	}
 	pkgCache::VerFileIterator vf = ver.FileList();
 
 	gchar *package_id;
-	package_id = pk_package_id_build ( pkg.Name(),
-					ver.VerStr(),
-					ver.Arch() ? ver.Arch() : "N/A", // _("N/A")
-					vf.File().Archive() ? vf.File().Archive() : "<NULL>");//  _("<NULL>")
-	pk_backend_package (backend, state, package_id, get_short_description(ver, records).c_str() );
+	package_id = pk_package_id_build(pkg.Name(),
+					 ver.VerStr(),
+					 ver.Arch(),
+					 vf.File().Archive());
+	pk_backend_package(backend, state, package_id, get_short_description(ver, records).c_str());
 }
 
 // used to emit packages it collects all the needed info
@@ -215,21 +224,23 @@ void emit_details (PkBackend *backend, pkgRecords *records,
 	std::string homepage;
 // TODO support this
 // #ifdef APT_HAS_HOMEPAGE
-	if(rec.Homepage() != "")
+	if(rec.Homepage() != "") {
 		homepage = rec.Homepage();
+	}
 // #endif
 
 	gchar *package_id;
-	package_id = pk_package_id_build ( pkg.Name(),
-					ver.VerStr(),
-					ver.Arch() ? ver.Arch() : "N/A", // _("N/A")
-					vf.File().Archive() ? vf.File().Archive() : "<NULL>");//  _("<NULL>")
-	pk_backend_details (backend,
-			    package_id,
-			    "GPL2",
-			    get_enum_group(section),
-			    get_long_description_parsed(ver, records).c_str(),
-			    homepage.c_str(), ver->Size);
+	package_id = pk_package_id_build(pkg.Name(),
+					 ver.VerStr(),
+					 ver.Arch(),
+					 vf.File().Archive());
+	pk_backend_details(backend,
+			   package_id,
+			   "unknown",
+			   get_enum_group(section),
+			   get_long_description_parsed(ver, records).c_str(),
+			   homepage.c_str(),
+			   ver->Size);
 }
 
 // used to emit packages it collects all the needed info
@@ -280,10 +291,12 @@ vector<string> search_file (PkBackend *backend, const string &file_name)
 			if (!in != 0) {
 				continue;
 			}
+			map<int, bool> matchers_used;
 			while (!in.eof()) {
 				getline(in, line);
-				if (m_matcher->matches(line)) {
+				if (m_matcher->matchesFile(line, matchers_used)) {
 					string file(dirp->d_name);
+					printf("matchers_used: %d", matchers_used.size());
 					packageList.push_back(file.erase(file.size() - 5, file.size()));
 					break;
 				}
