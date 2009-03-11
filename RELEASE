@@ -22,7 +22,7 @@ git push --tags git+ssh://hughsient@git.freedesktop.org/git/packagekit
 5. Commit changes in gnome-packagekit git:
 
 git commit -a -m "Release version 0.4.5"
-git-tag GNOME_PACKAGEKIT_0_4_5
+git tag GNOME_PACKAGEKIT_0_4_5
 git push --tags
 git push
 
