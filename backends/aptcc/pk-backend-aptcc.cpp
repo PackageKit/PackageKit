@@ -50,6 +50,7 @@ using namespace std;
 #include <pk-backend.h>
 
 /* static bodges */
+static gboolean _cancel = FALSE;
 static guint _progress_percentage = 0;
 static gulong _signal_timeout = 0;
 static gchar **_package_ids;
@@ -187,6 +188,8 @@ backend_cancel (PkBackend *backend)
 		/* emulate that it takes us a few ms to cancel */
 		g_timeout_add (1500, backend_cancel_timeout, backend);
 	}
+	printf("CANCEL\n");
+	_cancel = true;
 }
 
 static gboolean
@@ -855,6 +858,7 @@ backend_search_package_thread (PkBackend *backend)
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	_cancel = false;
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -884,6 +888,9 @@ backend_search_package_thread (PkBackend *backend)
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	if (pk_backend_get_bool (backend, "search_details")) {
 		for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
+			if (_cancel) {
+				break;
+			}
 			// Ignore packages that exist only due to dependencies.
 			if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
 				continue;
@@ -944,6 +951,9 @@ backend_search_package_thread (PkBackend *backend)
 		}
 	} else {
 		for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
+			if (_cancel) {
+				break;
+			}
 			// Ignore packages that exist only due to dependencies.
 			if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
 				continue;
@@ -980,6 +990,9 @@ backend_search_package_thread (PkBackend *backend)
 	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
 	    i != output.end(); ++i)
 	{
+		if (_cancel) {
+			break;
+		}
 		emit_package (backend, m_apt->packageRecords, filters, i->first, i->second);
 	}
 
