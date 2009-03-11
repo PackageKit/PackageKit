@@ -1,5 +1,6 @@
 helperdir = $(datadir)/PackageKit/helpers/yum
 dist_helper_DATA = 			\
+	yum-comps-groups.conf		\
 	yumBackend.py			\
 	yumComps.py			\
 	yumFilter.py

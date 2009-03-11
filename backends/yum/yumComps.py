@@ -23,180 +23,6 @@ import sqlite3
 import os
 import yum
 
-groupMap = {
-'desktops;gnome-desktop'                      : GROUP_DESKTOP_GNOME,
-'desktops;window-managers'                    : GROUP_DESKTOP_OTHER,
-'desktops;sugar-desktop'                      : GROUP_DESKTOP_OTHER,
-'desktops;lxde-desktop'                       : GROUP_DESKTOP_OTHER,
-'desktops;kde-desktop'                        : GROUP_DESKTOP_KDE,
-'desktops;xfce-desktop'                       : GROUP_DESKTOP_XFCE,
-'apps;authoring-and-publishing'               : GROUP_PUBLISHING,
-'apps;office'                                 : GROUP_OFFICE,
-'apps;sound-and-video'                        : GROUP_MULTIMEDIA,
-'apps;editors'                                : GROUP_OFFICE,
-'apps;engineering-and-scientific'             : GROUP_OTHER,
-'apps;games'                                  : GROUP_GAMES,
-'apps;graphics'                               : GROUP_GRAPHICS,
-'apps;text-internet'                          : GROUP_INTERNET,
-'apps;graphical-internet'                     : GROUP_INTERNET,
-'apps;education'                              : GROUP_EDUCATION,
-'development;haskell'                         : GROUP_PROGRAMMING,
-'development;kde-software-development'        : GROUP_PROGRAMMING,
-'development;gnome-software-development'      : GROUP_PROGRAMMING,
-'development;development-tools'               : GROUP_PROGRAMMING,
-'development;eclipse'                         : GROUP_PROGRAMMING,
-'development;development-libs'                : GROUP_PROGRAMMING,
-'development;x-software-development'          : GROUP_PROGRAMMING,
-'development;web-development'                 : GROUP_PROGRAMMING,
-'development;legacy-software-development'     : GROUP_PROGRAMMING,
-'development;ruby'                            : GROUP_PROGRAMMING,
-'development;java-development'                : GROUP_PROGRAMMING,
-'development;xfce-software-development'       : GROUP_PROGRAMMING,
-'development;fedora-packager'                 : GROUP_PROGRAMMING,
-'servers;clustering'                          : GROUP_SERVERS,
-'servers;dns-server'                          : GROUP_SERVERS,
-'servers;server-cfg'                          : GROUP_SERVERS,
-'servers;news-server'                         : GROUP_SERVERS,
-'servers;web-server'                          : GROUP_SERVERS,
-'servers;smb-server'                          : GROUP_SERVERS,
-'servers;sql-server'                          : GROUP_SERVERS,
-'servers;ftp-server'                          : GROUP_SERVERS,
-'servers;printing'                            : GROUP_SERVERS,
-'servers;mysql'                               : GROUP_SERVERS,
-'servers;mail-server'                         : GROUP_SERVERS,
-'servers;network-server'                      : GROUP_SERVERS,
-'servers;legacy-network-server'               : GROUP_SERVERS,
-'base-system;input-methods'                   : GROUP_LOCALIZATION,
-'base-system;java'                            : GROUP_SYSTEM,
-'base-system;base-x'                          : GROUP_SYSTEM,
-'base-system;system-tools'                    : GROUP_ADMIN_TOOLS,
-'base-system;fonts'                           : GROUP_FONTS,
-'base-system;hardware-support'                : GROUP_SYSTEM,
-'base-system;dial-up'                         : GROUP_SYSTEM,
-'base-system;admin-tools'                     : GROUP_ADMIN_TOOLS,
-'base-system;legacy-software-support'         : GROUP_LEGACY,
-'base-system;base'                            : GROUP_SYSTEM,
-'base-system;virtualization'                  : GROUP_VIRTUALIZATION,
-'base-system;legacy-fonts'                    : GROUP_FONTS,
-'language-support;khmer-support'              : GROUP_LOCALIZATION,
-'language-support;persian-support'            : GROUP_LOCALIZATION,
-'language-support;georgian-support'           : GROUP_LOCALIZATION,
-'language-support;malay-support'              : GROUP_LOCALIZATION,
-'language-support;tonga-support'              : GROUP_LOCALIZATION,
-'language-support;portuguese-support'         : GROUP_LOCALIZATION,
-'language-support;japanese-support'           : GROUP_LOCALIZATION,
-'language-support;hungarian-support'          : GROUP_LOCALIZATION,
-'language-support;somali-support'             : GROUP_LOCALIZATION,
-'language-support;punjabi-support'            : GROUP_LOCALIZATION,
-'language-support;bhutanese-support'          : GROUP_LOCALIZATION,
-'language-support;british-support'            : GROUP_LOCALIZATION,
-'language-support;korean-support'             : GROUP_LOCALIZATION,
-'language-support;lao-support'                : GROUP_LOCALIZATION,
-'language-support;inuktitut-support'          : GROUP_LOCALIZATION,
-'language-support;german-support'             : GROUP_LOCALIZATION,
-'language-support;hindi-support'              : GROUP_LOCALIZATION,
-'language-support;faeroese-support'           : GROUP_LOCALIZATION,
-'language-support;swedish-support'            : GROUP_LOCALIZATION,
-'language-support;tsonga-support'             : GROUP_LOCALIZATION,
-'language-support;russian-support'            : GROUP_LOCALIZATION,
-'language-support;serbian-support'            : GROUP_LOCALIZATION,
-'language-support;latvian-support'            : GROUP_LOCALIZATION,
-'language-support;samoan-support'             : GROUP_LOCALIZATION,
-'language-support;sinhala-support'            : GROUP_LOCALIZATION,
-'language-support;catalan-support'            : GROUP_LOCALIZATION,
-'language-support;lithuanian-support'         : GROUP_LOCALIZATION,
-'language-support;turkish-support'            : GROUP_LOCALIZATION,
-'language-support;arabic-support'             : GROUP_LOCALIZATION,
-'language-support;vietnamese-support'         : GROUP_LOCALIZATION,
-'language-support;mongolian-support'          : GROUP_LOCALIZATION,
-'language-support;tswana-support'             : GROUP_LOCALIZATION,
-'language-support;irish-support'              : GROUP_LOCALIZATION,
-'language-support;italian-support'            : GROUP_LOCALIZATION,
-'language-support;slovak-support'             : GROUP_LOCALIZATION,
-'language-support;slovenian-support'          : GROUP_LOCALIZATION,
-'language-support;belarusian-support'         : GROUP_LOCALIZATION,
-'language-support;northern-sotho-support'     : GROUP_LOCALIZATION,
-'language-support;kannada-support'            : GROUP_LOCALIZATION,
-'language-support;malayalam-support'          : GROUP_LOCALIZATION,
-'language-support;swati-support'              : GROUP_LOCALIZATION,
-'language-support;breton-support'             : GROUP_LOCALIZATION,
-'language-support;romanian-support'           : GROUP_LOCALIZATION,
-'language-support;greek-support'              : GROUP_LOCALIZATION,
-'language-support;tagalog-support'            : GROUP_LOCALIZATION,
-'language-support;zulu-support'               : GROUP_LOCALIZATION,
-'language-support;tibetan-support'            : GROUP_LOCALIZATION,
-'language-support;danish-support'             : GROUP_LOCALIZATION,
-'language-support;afrikaans-support'          : GROUP_LOCALIZATION,
-'language-support;southern-sotho-support'     : GROUP_LOCALIZATION,
-'language-support;bosnian-support'            : GROUP_LOCALIZATION,
-'language-support;brazilian-support'          : GROUP_LOCALIZATION,
-'language-support;basque-support'             : GROUP_LOCALIZATION,
-'language-support;welsh-support'              : GROUP_LOCALIZATION,
-'language-support;thai-support'               : GROUP_LOCALIZATION,
-'language-support;telugu-support'             : GROUP_LOCALIZATION,
-'language-support;low-saxon-support'          : GROUP_LOCALIZATION,
-'language-support;urdu-support'               : GROUP_LOCALIZATION,
-'language-support;tamil-support'              : GROUP_LOCALIZATION,
-'language-support;indonesian-support'         : GROUP_LOCALIZATION,
-'language-support;gujarati-support'           : GROUP_LOCALIZATION,
-'language-support;xhosa-support'              : GROUP_LOCALIZATION,
-'language-support;chinese-support'            : GROUP_LOCALIZATION,
-'language-support;czech-support'              : GROUP_LOCALIZATION,
-'language-support;venda-support'              : GROUP_LOCALIZATION,
-'language-support;bulgarian-support'          : GROUP_LOCALIZATION,
-'language-support;albanian-support'           : GROUP_LOCALIZATION,
-'language-support;galician-support'           : GROUP_LOCALIZATION,
-'language-support;armenian-support'           : GROUP_LOCALIZATION,
-'language-support;dutch-support'              : GROUP_LOCALIZATION,
-'language-support;oriya-support'              : GROUP_LOCALIZATION,
-'language-support;maori-support'              : GROUP_LOCALIZATION,
-'language-support;nepali-support'             : GROUP_LOCALIZATION,
-'language-support;icelandic-support'          : GROUP_LOCALIZATION,
-'language-support;ukrainian-support'          : GROUP_LOCALIZATION,
-'language-support;assamese-support'           : GROUP_LOCALIZATION,
-'language-support;bengali-support'            : GROUP_LOCALIZATION,
-'language-support;spanish-support'            : GROUP_LOCALIZATION,
-'language-support;hebrew-support'             : GROUP_LOCALIZATION,
-'language-support;estonian-support'           : GROUP_LOCALIZATION,
-'language-support;french-support'             : GROUP_LOCALIZATION,
-'language-support;croatian-support'           : GROUP_LOCALIZATION,
-'language-support;filipino-support'           : GROUP_LOCALIZATION,
-'language-support;finnish-support'            : GROUP_LOCALIZATION,
-'language-support;norwegian-support'          : GROUP_LOCALIZATION,
-'language-support;southern-ndebele-support'   : GROUP_LOCALIZATION,
-'language-support;polish-support'             : GROUP_LOCALIZATION,
-'language-support;gaelic-support'             : GROUP_LOCALIZATION,
-'language-support;marathi-support'            : GROUP_LOCALIZATION,
-'language-support;ethiopic-support'           : GROUP_LOCALIZATION,
-'language-support;esperanto-support'          : GROUP_LOCALIZATION,
-'language-support;northern-sami-support'      : GROUP_LOCALIZATION,
-'language-support;macedonian-support'         : GROUP_LOCALIZATION,
-'language-support;walloon-support'            : GROUP_LOCALIZATION,
-'language-support;kashubian-support'          : GROUP_LOCALIZATION,
-'language-support;kashmiri-support'           : GROUP_LOCALIZATION,
-'language-support;konkani-support'            : GROUP_LOCALIZATION,
-'language-support;tajik-support'              : GROUP_LOCALIZATION,
-'language-support;sindhi-support'             : GROUP_LOCALIZATION,
-'language-support;uzbek-support'              : GROUP_LOCALIZATION,
-'language-support;burmese-support'            : GROUP_LOCALIZATION,
-'language-support;maithili-support'           : GROUP_LOCALIZATION,
-'rpmfusion_free;kde-desktop'                  : GROUP_DESKTOP_KDE,
-'rpmfusion_free;misc-libs'                    : GROUP_OTHER,
-'rpmfusion_free;games'                        : GROUP_GAMES,
-'rpmfusion_free;misc-tools'                   : GROUP_LOCALIZATION,
-'rpmfusion_free;hardware-support'             : GROUP_ADMIN_TOOLS,
-'rpmfusion_free;sound-and-video'              : GROUP_MULTIMEDIA,
-'rpmfusion_free;base'                         : GROUP_SYSTEM,
-'rpmfusion_free;gnome-desktop'                : GROUP_DESKTOP_GNOME,
-'rpmfusion_free;internet'                     : GROUP_INTERNET,
-'rpmfusion_free;system-tools'                 : GROUP_SYSTEM,
-'rpmfusion_nonfree;games'                     : GROUP_GAMES,
-'rpmfusion_nonfree;hardware-support'          : GROUP_SYSTEM,
-'rpmfusion_nonfree;misc-tools'                : GROUP_SYSTEM,
-'rpmfusion_nonfree;emulators'                 : GROUP_OTHER,
-'rpmfusion_nonfree;base'                      : GROUP_SYSTEM
-}
-
 __DB_VER__ = '1'
 class yumComps:
 
@@ -207,6 +33,26 @@ class yumComps:
         if not db:
             db = '/var/cache/PackageKit/groups.sqlite'
         self.db = db
+
+        # load the group map
+        self.groupMap = {}
+        mapping = open('/usr/share/PackageKit/helpers/yum/yum-comps-groups.conf', 'r')
+        lines = mapping.readlines()
+        for line in lines:
+            line = line.replace('\n', '')
+
+            # blank line
+            if len(line) == 0:
+                continue
+
+            # fonts=base-system;fonts,base-system;legacy-fonts
+            split = line.split('=')
+            if len(split) < 2:
+                continue
+
+            entries = split[1].split(',')
+            for entry in entries:
+                self.groupMap[entry] = split[0]
 
     def connect(self):
         ''' connect to database '''
@@ -244,11 +90,12 @@ class yumComps:
             self.cursor = self.connection.cursor()
         except Exception, e:
             print e
-        self.cursor.execute('CREATE TABLE groups (name TEXT, category TEXT, groupid TEXT, group_enum TEXT, pkgtype Text);')
-        self.cursor.execute('CREATE TABLE version (version TEXT);')
-        self.cursor.execute('INSERT INTO version values(?);', __DB_VER__)
-        self.connection.commit()
-        self.refresh()
+        else:
+            self.cursor.execute('CREATE TABLE groups (name TEXT, category TEXT, groupid TEXT, group_enum TEXT, pkgtype Text);')
+            self.cursor.execute('CREATE TABLE version (version TEXT);')
+            self.cursor.execute('INSERT INTO version values(?);', __DB_VER__)
+            self.connection.commit()
+            self.refresh()
 
     def _add_db(self, name, category, groupid, pkgroup, pkgtype):
         ''' add an item into the database '''
@@ -290,8 +137,8 @@ class yumComps:
             group_id = "%s;%s" % (cat_id, group_name)
 
             group_enum = GROUP_OTHER
-            if groupMap.has_key(group_id):
-                group_enum = groupMap[group_id]
+            if self.groupMap.has_key(group_id):
+                group_enum = self.groupMap[group_id]
             else:
                 print 'unknown group enum', group_id
 
@@ -366,7 +213,7 @@ class yumComps:
 
 def main():
     _yb = yum.YumBase()
-    _db = "/var/cache/yum/packagekit-groups.sqlite"
+    _db = "/var/cache/PackageKit/groups.sqlite"
     comps = yumComps(_yb, _db)
     comps.connect()
     print "pk group system"
