@@ -328,6 +328,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
         package_list = []
+        keys = key.split(' ')
 
         # get collection objects
         if FILTER_NOT_COLLECTIONS not in fltlist:
@@ -338,7 +339,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             installed = []
             available = []
             try:
-                res = self.yumbase.searchGenerator(searchlist, [key])
+                res = self.yumbase.searchGenerator(searchlist, keys)
                 for (pkg, inst) in res:
                     if pkg.repo.id == 'installed':
                         installed.append(pkg)
