@@ -280,6 +280,7 @@ vector<string> search_file (PkBackend *backend, const string &file_name)
 	struct dirent *dirp;
 	if (!(dp = opendir("/var/lib/dpkg/info/"))) {
 		egg_debug ("Error opening /var/lib/dpkg/info/\n");
+		delete m_matcher;
 		return vector<string>();
 	}
 
@@ -304,6 +305,7 @@ vector<string> search_file (PkBackend *backend, const string &file_name)
 		}
 	}
 	closedir(dp);
+	delete m_matcher;
 	return packageList;
 }
 
