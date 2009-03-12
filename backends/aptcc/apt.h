@@ -31,20 +31,6 @@
 using namespace std;
 
 /**
-*  Emits details
-*/
-void emit_details (PkBackend *backend, pkgRecords *records,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver);
-
-/**
-*  Emits required packages
-*/
-void emit_requires (PkBackend *backend, pkgRecords *records, PkBitfield filters,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver);
-
-/**
 *  Emits files of packages
 */
 void emit_files (PkBackend *backend, const PkPackageId *pi);
@@ -85,6 +71,12 @@ public:
 			  PkBitfield filters,
 			  const pkgCache::PkgIterator &pkg,
 			  const pkgCache::VerIterator &ver);
+
+	/**
+	 *  Emits details
+	 */
+	void emit_details(PkBackend *backend,
+			  const pkgCache::PkgIterator &pkg);
 
 	pkgRecords    *packageRecords;
 	pkgCache      *cacheFile;

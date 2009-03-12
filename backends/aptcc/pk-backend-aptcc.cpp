@@ -335,8 +335,7 @@ backend_get_details_thread (PkBackend *backend)
 			return false;
 		}
 
-		pkgCache::VerIterator ver = m_apt->find_ver(pkg);
-		emit_details (backend, m_apt->packageRecords, pkg, ver);
+		m_apt->emit_details(backend, pkg);
 
 		pk_package_id_free (pi);
 	}

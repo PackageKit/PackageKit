@@ -212,10 +212,10 @@ void aptcc::emit_package(PkBackend *backend,
 }
 
 // used to emit packages it collects all the needed info
-void emit_details (PkBackend *backend, pkgRecords *records,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver)
+void aptcc::emit_details(PkBackend *backend,
+			 const pkgCache::PkgIterator &pkg)
 {
+	pkgCache::VerIterator ver = find_ver(pkg);
 	std::string section = ver.Section();
 
 	size_t found;
@@ -223,7 +223,7 @@ void emit_details (PkBackend *backend, pkgRecords *records,
 	section = section.substr(found + 1);
 
 	pkgCache::VerFileIterator vf = ver.FileList();
-	pkgRecords::Parser &rec = records->Lookup(vf);
+	pkgRecords::Parser &rec = packageRecords->Lookup(vf);
 
 	std::string homepage;
 // TODO support this
@@ -242,7 +242,7 @@ void emit_details (PkBackend *backend, pkgRecords *records,
 			   package_id,
 			   "unknown",
 			   get_enum_group(section),
-			   get_long_description_parsed(ver, records).c_str(),
+			   get_long_description_parsed(ver, packageRecords).c_str(),
 			   homepage.c_str(),
 			   ver->Size);
 }
