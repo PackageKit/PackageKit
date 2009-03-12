@@ -112,9 +112,10 @@ pkgCache::VerIterator aptcc::find_ver(pkgCache::PkgIterator pkg)
 }
 
 // used to emit packages it collects all the needed info
-void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver)
+void aptcc::emit_package(PkBackend *backend,
+			 PkBitfield filters,
+			 const pkgCache::PkgIterator &pkg,
+			 const pkgCache::VerIterator &ver)
 {
 	PkInfoEnum state;
 	if (pkg->CurrentState == pkgCache::State::Installed) {
@@ -204,7 +205,10 @@ void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
 					 ver.VerStr(),
 					 ver.Arch(),
 					 vf.File().Archive());
-	pk_backend_package(backend, state, package_id, get_short_description(ver, records).c_str());
+	pk_backend_package(backend,
+			   state,
+			   package_id,
+			   get_short_description(ver, packageRecords).c_str());
 }
 
 // used to emit packages it collects all the needed info
@@ -243,29 +247,67 @@ void emit_details (PkBackend *backend, pkgRecords *records,
 			   ver->Size);
 }
 
-// used to emit packages it collects all the needed info
-void emit_requires (PkBackend *backend, pkgRecords *records, PkBitfield filters,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver)
+vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > aptcc::get_depends (pkgCache::PkgIterator pkg,
+										bool recursive,
+										bool &_cancel)
 {
-
-//       cout << "Dependencies: " << endl;
-      for (pkgCache::VerIterator Cur = pkg.VersionList(); Cur.end() != true; Cur++)
-      {
-// 	 cout << Cur.VerStr() << " - ";
-//TODO check depends type
-	 for (pkgCache::DepIterator Dep = Cur.DependsList(); Dep.end() != true; Dep++)
-// 	    cout << Dep.TargetPkg().Name() << " (" << (int)Dep->CompareOp << " " << DeNull(Dep.TargetVer()) << ") ";
-// 	 cout << endl;
-if (Dep.TargetPkg().VersionList().end() == false) {
-	    emit_package (backend, records, filters, Dep.TargetPkg(), Dep.TargetPkg().VersionList());
+	pkgCache::DepIterator dep = find_ver(pkg).DependsList();
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+	while (!dep.end()) {
+		if (_cancel) {
+			break;
+		}
+		pkgCache::VerIterator ver = find_ver(dep.TargetPkg());
+		// Ignore packages that exist only due to dependencies.
+		if (ver.end()) {
+			dep++;
+			continue;
+		} else if (dep->Type == pkgCache::Dep::Depends) {
+			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(dep.TargetPkg(), ver));
+// 			if (recursive) {
+// 				get_depends(ver.DependsList(), recursive);
+// 			}
+		}
+		dep++;
+	}
+	return output;
 }
-      }
 
+vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > aptcc::get_requires (pkgCache::PkgIterator pkg,
+										 bool recursive,
+										 bool &_cancel)
+{
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+	for (pkgCache::PkgIterator parentPkg = cacheFile->PkgBegin(); !parentPkg.end(); ++parentPkg) {
+		if (_cancel) {
+			break;
+		}
+		// Ignore packages that exist only due to dependencies.
+		if (parentPkg.VersionList().end() && parentPkg.ProvidesList().end()) {
+			continue;
+		}
+
+		// Don't insert virtual packages instead add what it provides
+		pkgCache::VerIterator ver = find_ver(parentPkg);
+		if (ver.end() == false) {
+			vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > deps;
+			deps = get_depends(parentPkg, false, _cancel);
+			for (vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=deps.begin();
+			    i != deps.end();
+			    ++i)
+			{
+				if (i->first == pkg) {
+					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(parentPkg, ver));
+					break;
+				}
+			}
+		}
+	}
+	return output;
 }
 
 // used to emit files it reads the info directly from the files
-vector<string> search_file (PkBackend *backend, const string &file_name)
+vector<string> search_file (PkBackend *backend, const string &file_name, bool &_cancel)
 {
 	vector<string> packageList;
 
@@ -286,6 +328,9 @@ vector<string> search_file (PkBackend *backend, const string &file_name)
 
 	string line;
 	while ((dirp = readdir(dp)) != NULL) {
+		if (_cancel) {
+			break;
+		}
 		if (ends_with(dirp->d_name, ".list")) {
 			string f = "/var/lib/dpkg/info/" + string(dirp->d_name);
 			ifstream in(f.c_str());
