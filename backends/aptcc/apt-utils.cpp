@@ -233,8 +233,6 @@ get_enum_group (string group)
 		return PK_GROUP_ENUM_LOCALIZATION;
 	} else if (group.compare ("metapackages") == 0) {
 		return PK_GROUP_ENUM_COLLECTIONS;
-	} else if (group.compare ("unknown") == 0) {
-		return PK_GROUP_ENUM_UNKNOWN;
 	} else {
 		return PK_GROUP_ENUM_UNKNOWN;
 	}

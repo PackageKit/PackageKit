@@ -50,20 +50,20 @@ using namespace std;
 #include <pk-backend.h>
 
 /* static bodges */
-static gboolean _cancel = FALSE;
+static bool _cancel = false;
 static guint _progress_percentage = 0;
 static gulong _signal_timeout = 0;
 static gchar **_package_ids;
 static const gchar *_search;
 static guint _package_current = 0;
-static gboolean _repo_enabled_local = FALSE;
-static gboolean _repo_enabled_fedora = TRUE;
-static gboolean _repo_enabled_devel = TRUE;
-static gboolean _repo_enabled_livna = TRUE;
-static gboolean _updated_gtkhtml = FALSE;
-static gboolean _updated_kernel = FALSE;
-static gboolean _updated_powertop = FALSE;
-static gboolean _has_signature = FALSE;
+static gboolean _repo_enabled_local = false;
+static gboolean _repo_enabled_fedora = true;
+static gboolean _repo_enabled_devel = true;
+static gboolean _repo_enabled_livna = true;
+static gboolean _updated_gtkhtml = false;
+static gboolean _updated_kernel = false;
+static gboolean _updated_powertop = false;
+static gboolean _has_signature = false;
 
 static pkgSourceList *apt_source_list = 0;
 
@@ -129,7 +129,6 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_SCIENCE,
 		PK_GROUP_ENUM_SYSTEM,
 		PK_GROUP_ENUM_COLLECTIONS,
-		PK_GROUP_ENUM_UNKNOWN,
 		-1);
 }
 
@@ -172,7 +171,7 @@ backend_cancel_timeout (gpointer data)
 	pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 			       "The task was stopped successfully");
 	pk_backend_finished (backend);
-	return FALSE;
+	return false;
 }
 
 /**
@@ -192,13 +191,15 @@ backend_cancel (PkBackend *backend)
 }
 
 static gboolean
-backend_get_depends_thread (PkBackend *backend)
+backend_get_depends_or_requires_thread (PkBackend *backend)
 {
 	gchar **package_ids;
 	PkBitfield filters;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, true);
 	PkPackageId *pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
@@ -215,7 +216,13 @@ backend_get_depends_thread (PkBackend *backend)
 		return false;
 	}
 
+	bool depends = pk_backend_get_bool(backend, "get_depends");
+
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+		if (_cancel) {
+			break;
+		}
 		pi = pk_package_id_new_from_string (package_ids[i]);
 		if (pi == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
@@ -224,8 +231,8 @@ backend_get_depends_thread (PkBackend *backend)
 			return false;
 		}
 
-		pkgCache::PkgIterator Pkg = m_apt->cacheFile->FindPkg(pi->name);
-		if (Pkg.end() == true)
+		pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(pi->name);
+		if (pkg.end() == true)
 		{
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
 			pk_package_id_free (pi);
@@ -234,9 +241,31 @@ backend_get_depends_thread (PkBackend *backend)
 			return false;
 		}
 
-		emit_requires (backend, m_apt->packageRecords, filters, Pkg, Pkg.VersionList());
+		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > pkgOutput;
+		if (depends) {
+			pkgOutput = m_apt->get_depends(pkg, false, _cancel);
+		} else {
+			pkgOutput = m_apt->get_requires(pkg, false, _cancel);
+		}
+		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it;
+		it = pkgOutput.begin();
+		output.insert(output.end(), it, pkgOutput.end());
 
 		pk_package_id_free (pi);
+	}
+
+	sort(output.begin(), output.end(), compare());
+	output.erase(unique(output.begin(), output.end(), result_equality()),
+		     output.end());
+
+	// It's faster to emmit the packages here than in the matching part
+	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
+	    i != output.end(); ++i)
+	{
+		if (_cancel) {
+			break;
+		}
+		m_apt->emit_package(backend, filters, i->first, i->second);
 	}
 
 	delete m_apt;
@@ -251,7 +280,18 @@ backend_get_depends_thread (PkBackend *backend)
 static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
-	pk_backend_thread_create (backend, backend_get_depends_thread);
+	pk_backend_set_bool (backend, "get_depends", true);
+	pk_backend_thread_create (backend, backend_get_depends_or_requires_thread);
+}
+
+/**
+ * backend_get_requires:
+ */
+static void
+backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+{
+	pk_backend_set_bool (backend, "get_depends", false);
+	pk_backend_thread_create (backend, backend_get_depends_or_requires_thread);
 }
 
 static gboolean
@@ -285,8 +325,8 @@ backend_get_details_thread (PkBackend *backend)
 			return false;
 		}
 
-		pkgCache::PkgIterator Pkg = m_apt->cacheFile->FindPkg(pi->name);
-		if (Pkg.end() == true)
+		pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(pi->name);
+		if (pkg.end() == true)
 		{
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
 			pk_package_id_free (pi);
@@ -295,7 +335,8 @@ backend_get_details_thread (PkBackend *backend)
 			return false;
 		}
 
-		emit_details (backend, m_apt->packageRecords, Pkg, Pkg.VersionList());
+		pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+		emit_details (backend, m_apt->packageRecords, pkg, ver);
 
 		pk_package_id_free (pi);
 	}
@@ -377,20 +418,6 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_requires:
- */
-static void
-backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "glib2;2.14.0;i386;fedora", "The GLib library");
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_get_update_detail_timeout:
  **/
 static gboolean
@@ -439,7 +466,7 @@ backend_get_update_detail_timeout (gpointer data)
 	}
 	pk_backend_finished (backend);
 	_signal_timeout = 0;
-	return FALSE;
+	return false;
 }
 
 /**
@@ -483,7 +510,7 @@ backend_get_updates_timeout (gpointer data)
 	}
 	pk_backend_finished (backend);
 	_signal_timeout = 0;
-	return FALSE;
+	return false;
 }
 
 /**
@@ -511,10 +538,10 @@ backend_install_timeout (gpointer data)
 
 	if (_progress_percentage == 100) {
 		pk_backend_finished (backend);
-		return FALSE;
+		return false;
 	}
 	if (_progress_percentage == 30) {
-		pk_backend_set_allow_cancel (backend, FALSE);
+		pk_backend_set_allow_cancel (backend, false);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
@@ -537,7 +564,7 @@ backend_install_timeout (gpointer data)
 	}
 	_progress_percentage += 1;
 	pk_backend_set_percentage (backend, _progress_percentage);
-	return TRUE;
+	return true;
 }
 
 /**
@@ -593,7 +620,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 		}
 	}
 
-	pk_backend_set_allow_cancel (backend, TRUE);
+	pk_backend_set_allow_cancel (backend, true);
 	_progress_percentage = 0;
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
@@ -613,7 +640,7 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 	    egg_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
 	    egg_strequal (key_id, "BB7576AC")) {
 		egg_debug ("installed signature %s for %s", key_id, package_id);
-		_has_signature = TRUE;
+		_has_signature = true;
 	} else {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
 				       "GPG key %s not recognised for package_id %s",
@@ -630,7 +657,7 @@ backend_install_files_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	pk_backend_finished (backend);
-	return FALSE;
+	return false;
 }
 
 /**
@@ -653,13 +680,13 @@ backend_refresh_cache_timeout (gpointer data)
 	PkBackend *backend = (PkBackend *) data;
 	if (_progress_percentage == 100) {
 		pk_backend_finished (backend);
-		return FALSE;
+		return false;
 	}
 	if (_progress_percentage == 80)
-		pk_backend_set_allow_cancel (backend, FALSE);
+		pk_backend_set_allow_cancel (backend, false);
 	_progress_percentage += 10;
 	pk_backend_set_percentage (backend, _progress_percentage);
-	return TRUE;
+	return true;
 }
 
 /**
@@ -671,11 +698,11 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	_progress_percentage = 0;
 
 	/* reset */
-	_updated_gtkhtml = FALSE;
-	_updated_kernel = FALSE;
-	_updated_powertop = FALSE;
+	_updated_gtkhtml = false;
+	_updated_kernel = false;
+	_updated_powertop = false;
 
-	pk_backend_set_allow_cancel (backend, TRUE);
+	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	_signal_timeout = g_timeout_add (500, backend_refresh_cache_timeout, backend);
 }
@@ -734,6 +761,8 @@ backend_search_file_thread (PkBackend *backend)
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, true);
 
 	// as we can only search for installed files lets avoid the opposite
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
@@ -744,16 +773,20 @@ backend_search_file_thread (PkBackend *backend)
 			return false;
 		}
 
-		vector<string> packages = search_file (backend, search);
+		vector<string> packages = search_file (backend, search, _cancel);
 		for(vector<string>::iterator i = packages.begin();
 		    i != packages.end(); ++i)
 		{
-			pkgCache::PkgIterator Pkg = m_apt->cacheFile->FindPkg(i->c_str());
-			if (Pkg.end() == true)
+			if (_cancel) {
+			    break;
+			}
+			pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(i->c_str());
+			pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+			if (ver.end() == true)
 			{
 				continue;
 			}
-			emit_package (backend, m_apt->packageRecords, filters, Pkg, Pkg.VersionList());
+			m_apt->emit_package(backend, filters, pkg, ver);
 		}
 
 		delete m_apt;
@@ -781,7 +814,7 @@ backend_search_group_thread (PkBackend *backend)
 	group = pk_backend_get_string (backend, "search");
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	_cancel = false;
-	pk_backend_set_allow_cancel (backend, TRUE);
+	pk_backend_set_allow_cancel (backend, true);
 
 	if (group == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
@@ -836,7 +869,7 @@ backend_search_group_thread (PkBackend *backend)
 		if (_cancel) {
 			break;
 		}
-		emit_package (backend, m_apt->packageRecords, filters, i->first, i->second);
+		m_apt->emit_package(backend, filters, i->first, i->second);
 	}
 
 	delete m_apt;
@@ -866,7 +899,7 @@ backend_search_package_thread (PkBackend *backend)
 	
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	_cancel = false;
-	pk_backend_set_allow_cancel (backend, TRUE);
+	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	matcher *m_matcher = new matcher(string(search));
@@ -1000,7 +1033,7 @@ backend_search_package_thread (PkBackend *backend)
 		if (_cancel) {
 			break;
 		}
-		emit_package (backend, m_apt->packageRecords, filters, i->first, i->second);
+		m_apt->emit_package(backend, filters, i->first, i->second);
 	}
 
 	delete m_matcher;
@@ -1046,16 +1079,16 @@ backend_update_packages_update_timeout (gpointer data)
 	/* emit the next package */
 	if (egg_strequal (package, "powertop;1.8-1.fc8;i386;fedora")) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package, "Power consumption monitor");
-		_updated_powertop = TRUE;
+		_updated_powertop = true;
 	}
 	if (egg_strequal (package, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package,
 				    "The Linux kernel (the core of the Linux operating system)");
-		_updated_kernel = TRUE;
+		_updated_kernel = true;
 	}
 	if (egg_strequal (package, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package, "An HTML widget for GTK+ 2.0");
-		_updated_gtkhtml = TRUE;
+		_updated_gtkhtml = true;
 	}
 
 	/* are we done? */
@@ -1065,9 +1098,9 @@ backend_update_packages_update_timeout (gpointer data)
 		pk_backend_set_percentage (backend, 100);
 		pk_backend_finished (backend);
 		_signal_timeout = 0;
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1090,9 +1123,9 @@ backend_update_packages_download_timeout (gpointer data)
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 		pk_backend_set_percentage (backend, 50);
 		_signal_timeout = g_timeout_add (2000, backend_update_packages_update_timeout, backend);
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1114,7 +1147,7 @@ backend_update_system_timeout (gpointer data)
 	PkBackend *backend = (PkBackend *) data;
 	if (_progress_percentage == 100) {
 		pk_backend_finished (backend);
-		return FALSE;
+		return false;
 	}
 	if (_progress_percentage == 0 && !_updated_powertop) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
@@ -1130,21 +1163,21 @@ backend_update_system_timeout (gpointer data)
 		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
-		_updated_gtkhtml = FALSE;
+		_updated_gtkhtml = false;
 	}
 	if (_progress_percentage == 40 && !_updated_powertop) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-		pk_backend_set_allow_cancel (backend, FALSE);
+		pk_backend_set_allow_cancel (backend, false);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "powertop;1.8-1.fc8;i386;fedora",
 				    "Power consumption monitor");
-		_updated_powertop = TRUE;
+		_updated_powertop = true;
 	}
 	if (_progress_percentage == 60 && !_updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
-		_updated_kernel = TRUE;
+		_updated_kernel = true;
 	}
 	if (_progress_percentage == 80 && !_updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
@@ -1153,7 +1186,7 @@ backend_update_system_timeout (gpointer data)
 	}
 	_progress_percentage += 10;
 	pk_backend_set_percentage (backend, _progress_percentage);
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1163,7 +1196,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	pk_backend_set_allow_cancel (backend, TRUE);
+	pk_backend_set_allow_cancel (backend, true);
 	_progress_percentage = 0;
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
 	_signal_timeout = g_timeout_add (1000, backend_update_system_timeout, backend);
@@ -1249,11 +1282,11 @@ backend_what_provides_timeout (gpointer data)
 					    "Scribus is an desktop open source page layout program");
 		}
 		pk_backend_finished (backend);
-		return FALSE;
+		return false;
 	}
 	_progress_percentage += 10;
 	pk_backend_set_percentage (backend, _progress_percentage);
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1266,7 +1299,7 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	_search = search;
 	_signal_timeout = g_timeout_add (200, backend_what_provides_timeout, backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
-	pk_backend_set_allow_cancel (backend, TRUE);
+	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_percentage (backend, _progress_percentage);
 }
 
@@ -1279,7 +1312,7 @@ backend_get_packages_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	_cancel = false;
-	pk_backend_set_allow_cancel (backend, TRUE);
+	pk_backend_set_allow_cancel (backend, true);
 
 	aptcc *m_apt = new aptcc();
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
@@ -1316,7 +1349,7 @@ backend_get_packages_thread (PkBackend *backend)
 		if (_cancel) {
 			break;
 		}
-		emit_package (backend, m_apt->packageRecords, filters, i->first, i->second);
+		m_apt->emit_package(backend, filters, i->first, i->second);
 	}
 
 	delete m_apt;
