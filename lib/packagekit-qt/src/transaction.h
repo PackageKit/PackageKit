@@ -85,11 +85,6 @@ public:
 	bool callerActive();
 
 	/**
-	 * Cancels the transaction
-	 */
-	void cancel();
-
-	/**
 	 * Returns the last package processed by the transaction
 	 *
 	 * This is mostly used when getting an already existing Transaction, to
@@ -242,6 +237,12 @@ public:
 		Killed, /* when we forced the cancel, but had to sigkill */
 		UnknownExitStatus = -1
 	} ExitStatus;
+
+public Q_SLOTS:
+	/**
+	 * Cancels the transaction
+	 */
+	void cancel();
 
 Q_SIGNALS:
 	/**
