@@ -43,7 +43,7 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
     #3
     def requestingChangeSet(self):
         log.info("Callback UpdateSystem........ STATUS_REQUEST changeset ")
-        self.backend.status(STATUS_DOWNLOAD)
+        self.backend.status(STATUS_REQUEST)
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
         if not self.disablepercent:
@@ -136,7 +136,8 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
     def creatingDatabaseTransaction(self, troveNum, troveCount):
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
-        self.preparingUpdate(troveNum, troveCount, add=troveCount)
+        self.backend.status(STATUS_COMMIT)
+        #self.preparingUpdate(troveNum, troveCount, add=troveCount)
 
     def committingTransaction(self):
         #self.backend.status('Committing Transaction')
@@ -327,13 +328,18 @@ class UpdateCallback(callbacks.UpdateCallback):
         newVersion, newFlavor = job[2]
         #log.info("JOB>>>>>>>> %s " % str(job) )
         if oldVersion and newVersion:
-            log.info("Callback ........ STATUS_UPDATE preparing Update ")
+            log.info("pU.. status Update")
             self.backend.status(STATUS_UPDATE)
             package_id = self.backend.get_package_id(name, newVersion, newFlavor)
             self.backend.package(package_id, INFO_UPDATING, '')
+        elif oldVersion and not newVersion:
+            self.backend.status(STATUS_REMOVE)
+            log.info("pU.. status remove")
+            package_id = self.backend.get_package_id(name, oldVersion, oldFlavor)
+            self.backend.package(package_id, INFO_REMOVING, '')
         elif not oldVersion and newVersion:
-            log.info("Callback ........ STATUS_INSTALL preparing Update")
-            self.backend.status(STATUS_INSTALL)
+            #self.backend.status(STATUS_INSTALL)
+            log.info("pU.. status install")
             package_id = self.backend.get_package_id(name, newVersion, newFlavor)
             self.backend.package(package_id, INFO_INSTALLING, '')
         log.info(self.progress.percent)
@@ -342,7 +348,8 @@ class UpdateCallback(callbacks.UpdateCallback):
         log.info("callback. .......... creating Database Transactions")
         self.backend.percentage(self.progress.percent)
         log.info(self.progress.percent)
-        self.preparingUpdate(troveNum, troveCount, add=troveCount)
+        self.backend.status(STATUS_COMMIT)
+     #   self.preparingUpdate(troveNum, troveCount, add=troveCount)
 
     # 9
     def committingTransaction(self):

@@ -203,8 +203,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _get_update(self, applyList, cache=True):
         from conary.conaryclient.update import NoNewTrovesError
         updJob = self.client.newUpdateJob()
+        log.info("get_ Job")
         try:
+            log.info("prepare updateJOb")
             suggMap = self.client.prepareUpdateJob(updJob, applyList)
+            log.info("end prepare updateJOB")
         except NoNewTrovesError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "No new apps were found")
         if cache:
@@ -280,8 +283,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        log.info(pklog)
-#        pklog.info("======== resolve =========")
         log.info("filters: %s package:%s " % (filters, package))
 
         cache = Cache()
@@ -462,7 +463,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 #    @ExceptionHandler
     def refresh_cache(self):
         #log.debug("refresh-cache command ")
-        self.percentage()
+    #    self.percentage()
         self.status(STATUS_REFRESH_CACHE)
         cache = Cache()
         cache.refresh()
@@ -726,6 +727,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info(i[0])
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         log.info("_get_update ....")
+        self.status(STATUS_RUNNING)
         updJob, suggMap = self._get_update(applyList)
         log.info("_get_update ....end.")
 
