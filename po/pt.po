@@ -11,6 +11,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: Portuguese\n"
 "X-Poedit-Country: PORTUGAL\n"
+"X-Poedit-Basepath: /home/ruigo/src/PackageKit/po/\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #: ../client/pk-console.c:234
@@ -40,7 +41,6 @@ msgstr "Falso"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #: ../client/pk-console.c:240
-#, fuzzy
 msgid "Role"
 msgstr "Função"
 
@@ -110,9 +110,8 @@ msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
 #: ../client/pk-console.c:318
-#, fuzzy
 msgid "Parent"
-msgstr "Parent"
+msgstr "Pai"
 
 #. TRANSLATORS: this is the name of the parent group
 #: ../client/pk-console.c:321
@@ -201,17 +200,17 @@ msgstr "Desconhecido"
 #. TRANSLATORS: a package requires the system to be restarted
 #: ../client/pk-console.c:529
 msgid "System restart required by:"
-msgstr ""
+msgstr "Reinicialização do sistema requerida por:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:532
 msgid "Session restart required:"
-msgstr ""
+msgstr "Reinicialização da sessão requerida:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:535
 msgid "Application restart required by:"
-msgstr ""
+msgstr "Reinicialização da aplicação requerida por:"
 
 #. TRANSLATORS: a package needs to restart they system
 #: ../client/pk-console.c:572
@@ -494,7 +493,7 @@ msgstr ""
 #. these are commands we can use with pkcon
 #: ../client/pk-console.c:1665
 msgid "Subcommands:"
-msgstr ""
+msgstr "Sub-comandos:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
@@ -515,7 +514,7 @@ msgstr "Mostrar a versão da aplicação e terminar"
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: ../client/pk-console.c:1763
 msgid "Set the filter, e.g. installed"
-msgstr "Defina o filtro, exemplo, instalado"
+msgstr "Configurar o filtro, exemplo, instalado"
 
 #. TRANSLATORS: command line argument, work asynchronously
 #: ../client/pk-console.c:1766
@@ -547,9 +546,8 @@ msgstr ""
 
 #. TRANSLATORS: the search type was provided, but invalid
 #: ../client/pk-console.c:1934
-#, fuzzy
 msgid "Invalid search type"
-msgstr "Tipo de túnel inválido $TYPE"
+msgstr "Tipo de pesquisa inválida"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:1940
@@ -594,9 +592,8 @@ msgstr ""
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:2009
 #: ../client/pk-console.c:2017
-#, fuzzy
 msgid "A repository name is required"
-msgstr "Nome de folha é obrigatório"
+msgstr "É obrigatório um nome de repositório"
 
 #. TRANSLATORS: The user didn't provide any data
 #: ../client/pk-console.c:2025
@@ -626,9 +623,8 @@ msgstr ""
 #: ../client/pk-console.c:2094
 #: ../client/pk-console.c:2102
 #: ../client/pk-generate-pack.c:241
-#, fuzzy
 msgid "A package name is required"
-msgstr "Nome de folha é obrigatório"
+msgstr "É obrigatório um nome de pacote"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:2086
@@ -648,9 +644,9 @@ msgstr ""
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:2181
-#, fuzzy, c-format
+#, c-format
 msgid "Option '%s' is not supported"
-msgstr "Não é suportada uma imagem de uma imagem."
+msgstr "A opção '%s' não é suportada"
 
 #. TRANSLATORS: User does not have permission to do this
 #: ../client/pk-console.c:2194
@@ -746,15 +742,14 @@ msgstr ""
 
 #. TRANSLATORS: The package name is being matched up to available packages
 #: ../client/pk-generate-pack.c:338
-#, fuzzy
 msgid "Finding package name."
-msgstr "Não foi disponibilizado o nome do pacote."
+msgstr "A procurar o nome do pacote."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
 #: ../client/pk-generate-pack.c:342
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to find package '%s': %s"
-msgstr "Não foi possível encontrar o programa seleccionado."
+msgstr "Não foi possível encontrar o pacote '%s': %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
 #: ../client/pk-generate-pack.c:359
@@ -769,21 +764,19 @@ msgstr ""
 
 #. TRANSLATORS: we failed to make te file
 #: ../client/pk-generate-pack.c:371
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to create '%s': %s"
-msgstr "não foi possível criar o %s: %s\n"
+msgstr "Não foi possível criar '%s': %s"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: ../client/pk-monitor.c:143
-#, fuzzy
 msgid "PackageKit Monitor"
-msgstr "Monitor de Rede"
+msgstr "Monitorizar o PackageKit"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:118
-#, fuzzy
 msgid "The package could not be found"
-msgstr "O executável '%1' não foi encontrado."
+msgstr "O pacote não foi encontrado"
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
 #: ../client/pk-tools-common.c:130
@@ -796,9 +789,9 @@ msgid "Please choose the correct package: "
 msgstr ""
 
 #: ../client/pk-tools-common.c:162
-#, fuzzy, c-format
+#, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Por favor insira um mês de 1 a 12"
+msgstr "Por favor insira um número de 1 a %i: "
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:361
@@ -807,9 +800,8 @@ msgstr ""
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: ../contrib/command-not-found/pk-command-not-found.c:485
-#, fuzzy
 msgid "Failed to launch:"
-msgstr "Incapaz de iniciar %s: %s"
+msgstr "Incapaz de iniciar:"
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/command-not-found/pk-command-not-found.c:526
@@ -818,29 +810,25 @@ msgstr ""
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
 #: ../contrib/command-not-found/pk-command-not-found.c:548
-#, fuzzy
 msgid "Command not found."
 msgstr "Comando não encontrado."
 
 #. TRANSLATORS: tell the user what we think the command is
 #: ../contrib/command-not-found/pk-command-not-found.c:555
-#, fuzzy
 msgid "Similar command is:"
-msgstr "Comando é insensível"
+msgstr "Comando semelhante é:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 #: ../contrib/command-not-found/pk-command-not-found.c:564
-#, fuzzy
 msgid "Run similar command:"
-msgstr "Executar um comando definido"
+msgstr "Executar um comando semelhante:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 #: ../contrib/command-not-found/pk-command-not-found.c:576
 #: ../contrib/command-not-found/pk-command-not-found.c:585
-#, fuzzy
 msgid "Similar commands are:"
-msgstr "Existem %d mensagens semelhantes."
+msgstr "Comandos semelhantes são:"
 
 #. TRANSLATORS: ask the user to choose a file to run
 #: ../contrib/command-not-found/pk-command-not-found.c:592
@@ -876,9 +864,8 @@ msgstr ""
 
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/src/contents.cpp:298
-#, fuzzy
 msgid "Getting package information..."
-msgstr "A obter a informação de %s em \"%s\""
+msgstr "A obter informação de pacotes..."
 
 #. TRANSLATORS: run an applicaiton
 #: ../contrib/browser-plugin/src/contents.cpp:304
@@ -930,18 +917,16 @@ msgid "Installing..."
 msgstr "A instalar..."
 
 #: ../data/packagekit-catalog.xml.in.h:1
-#, fuzzy
 msgid "PackageKit Catalog"
-msgstr "A carregar o catálogo "
+msgstr "Catálogo do PackageKit"
 
 #: ../data/packagekit-package-list.xml.in.h:1
-#, fuzzy
 msgid "PackageKit Package List"
-msgstr "Reiniciar Lista de Pacotes"
+msgstr "Lista de Pacotes do PackageKit"
 
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr ""
+msgstr "PackageKit Service Pack"
 
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
@@ -951,7 +936,7 @@ msgstr ""
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
 msgid "This can happen for two reasons:"
-msgstr ""
+msgstr "Isto pode acontecer por duas razões:"
 
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
