@@ -215,17 +215,17 @@ msgstr "Reinicialização da aplicação requerida por:"
 #. TRANSLATORS: a package needs to restart they system
 #: ../client/pk-console.c:572
 msgid "Please restart the computer to complete the update."
-msgstr ""
+msgstr "Por favor, reinicie o computador para completar a actualização."
 
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:575
 msgid "Please logout and login to complete the update."
-msgstr ""
+msgstr "Por favor, termine e volte a iniciar a sessão para completar a actualização."
 
 #. TRANSLATORS: a package needs to restart the application
 #: ../client/pk-console.c:578
 msgid "Please restart the application as it is being used."
-msgstr ""
+msgstr "Por favor, reinicie a aplicação para completar a actualização."
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:691
@@ -237,7 +237,7 @@ msgstr "O pacote %s já está instalado"
 #: ../client/pk-console.c:699
 #, c-format
 msgid "The package %s could not be installed: %s"
-msgstr ""
+msgstr "Não foi possível instalar o pacote %s: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
 #: ../client/pk-console.c:724
@@ -256,19 +256,19 @@ msgstr "Erro interno: %s"
 #: ../client/pk-console.c:1360
 #, c-format
 msgid "This tool could not install the packages: %s"
-msgstr ""
+msgstr "Esta ferramenta não conseguiu instalar os pacotes: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
 #: ../client/pk-console.c:759
 #, c-format
 msgid "This tool could not install the files: %s"
-msgstr ""
+msgstr "Esta ferramenta não conseguiu instalar os ficheiros: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
 #: ../client/pk-console.c:815
 #, c-format
 msgid "This tool could not remove %s: %s"
-msgstr ""
+msgstr "Esta ferramenta não conseguiu remover %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:838
@@ -276,7 +276,7 @@ msgstr ""
 #: ../client/pk-console.c:909
 #, c-format
 msgid "This tool could not remove the packages: %s"
-msgstr ""
+msgstr "Esta ferramenta não conseguiu remover os pacotes: %s"
 
 #. TRANSLATORS: When removing, we might have to remove other dependencies
 #: ../client/pk-console.c:888
@@ -297,7 +297,7 @@ msgstr ""
 #: ../client/pk-console.c:941
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
-msgstr ""
+msgstr "Esta ferramenta não conseguiu transferir o pacote %s pois não o conseguiu encontrar"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:972
@@ -391,7 +391,7 @@ msgstr "Pacotes para remover"
 #. TRANSLATORS: We didn't find any differences
 #: ../client/pk-console.c:1314
 msgid "No new packages need to be installed"
-msgstr ""
+msgstr "Não existem pacotes novos para instalar"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1320
@@ -411,7 +411,7 @@ msgstr "não encontrado."
 #. TRANSLATORS: We didn't find any packages to install
 #: ../client/pk-console.c:1347
 msgid "No packages can be found to install"
-msgstr ""
+msgstr "Não foram encontrados pacotes para instalar"
 
 #. TRANSLATORS: installing new packages from package list
 #: ../client/pk-console.c:1353
@@ -422,13 +422,13 @@ msgstr "A instalar pacotes"
 #: ../client/pk-console.c:1389
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
-msgstr ""
+msgstr "Esta ferramenta não conseguiu encontrar os detalhes de actualização para %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
 #: ../client/pk-console.c:1397
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
-msgstr ""
+msgstr "Esta ferramenta não conseguiu obter os detalhes de actualização para %s: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1443
@@ -453,7 +453,7 @@ msgstr "Sem ficheiros"
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
 #: ../client/pk-console.c:1522
 msgid "Repository signature required"
-msgstr ""
+msgstr "A assinatura do repositório é necessária"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1532
@@ -468,12 +468,12 @@ msgstr "A assinatura não foi aceite."
 #. TRANSLATORS: This a request for a EULA
 #: ../client/pk-console.c:1570
 msgid "End user license agreement required"
-msgstr ""
+msgstr "O acordo de licenciamento com o utilizador final é necessário"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
 #: ../client/pk-console.c:1577
 msgid "Do you agree to this license?"
-msgstr ""
+msgstr "Concorda com esta licença?"
 
 #. TRANSLATORS: This is where the user declined the license
 #: ../client/pk-console.c:1581
@@ -534,7 +534,7 @@ msgstr ""
 #. TRANSLATORS: a search type can be name, details, file, etc
 #: ../client/pk-console.c:1898
 msgid "A search type is required, e.g. name"
-msgstr ""
+msgstr "Um tipo de pesquisa é necessário. Por exemplo, nome"
 
 #. TRANSLATORS: the user needs to provide a search term
 #: ../client/pk-console.c:1904
@@ -542,7 +542,7 @@ msgstr ""
 #: ../client/pk-console.c:1920
 #: ../client/pk-console.c:1928
 msgid "A search term is required"
-msgstr ""
+msgstr "Um termo de pesquisa é necessário"
 
 #. TRANSLATORS: the search type was provided, but invalid
 #: ../client/pk-console.c:1934
@@ -552,17 +552,17 @@ msgstr "Tipo de pesquisa inválida"
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:1940
 msgid "A package name or filename to install is required"
-msgstr ""
+msgstr "É necessário um nome de pacote ou nome de ficheiro a instalar"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1948
 msgid "A type, key_id and package_id are required"
-msgstr ""
+msgstr "São necessários um tipo, id de chave e id de pacote"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:1956
 msgid "A package name to remove is required"
-msgstr ""
+msgstr "É necessário um nome de pacote para remover"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1963
@@ -786,7 +786,7 @@ msgstr ""
 #. TRANSLATORS: This finds out which package in the list to use
 #: ../client/pk-tools-common.c:137
 msgid "Please choose the correct package: "
-msgstr ""
+msgstr "Por favor, escolha o pacote correcto:"
 
 #: ../client/pk-tools-common.c:162
 #, c-format
@@ -796,7 +796,7 @@ msgstr "Por favor insira um número de 1 a %i: "
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:361
 msgid "Failed to search for file"
-msgstr ""
+msgstr "Não foi possível encontrar o ficheiro"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: ../contrib/command-not-found/pk-command-not-found.c:485
@@ -806,7 +806,7 @@ msgstr "Incapaz de iniciar:"
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/command-not-found/pk-command-not-found.c:526
 msgid "PackageKit Command Not Found"
-msgstr ""
+msgstr "Comando PackageKit não encontrado"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
 #: ../contrib/command-not-found/pk-command-not-found.c:548
@@ -833,12 +833,12 @@ msgstr "Comandos semelhantes são:"
 #. TRANSLATORS: ask the user to choose a file to run
 #: ../contrib/command-not-found/pk-command-not-found.c:592
 msgid "Please choose a command to run"
-msgstr ""
+msgstr "Por favor, escolha um comando para executar"
 
 #. TRANSLATORS: tell the user what package provides the command
 #: ../contrib/command-not-found/pk-command-not-found.c:607
 msgid "The package providing this file is:"
-msgstr ""
+msgstr "O pacote que fornece este ficheiro é o:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
 #: ../contrib/command-not-found/pk-command-not-found.c:612
@@ -860,7 +860,7 @@ msgstr ""
 #. TRANSLATORS: ask the user to choose a file to install
 #: ../contrib/command-not-found/pk-command-not-found.c:650
 msgid "Please choose a package to install"
-msgstr ""
+msgstr "Por favor, escolha um pacote para instalar"
 
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/src/contents.cpp:298
@@ -909,7 +909,7 @@ msgstr "Versão"
 #. TRANSLATORS: noting found, so can't install
 #: ../contrib/browser-plugin/src/contents.cpp:344
 msgid "No packages found for your system"
-msgstr ""
+msgstr "Não foram encontrados pacotes para o seu sistema"
 
 #. TRANSLATORS: package is being installed
 #: ../contrib/browser-plugin/src/contents.cpp:349
@@ -971,7 +971,7 @@ msgstr "Mostrar a versão e terminar"
 #. TRANSLATORS: exit after we've started up, used for user profiling
 #: ../src/pk-main.c:208
 msgid "Exit after a small delay"
-msgstr ""
+msgstr "Sair depois de uma pequena pausa"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: ../src/pk-main.c:211
@@ -986,7 +986,7 @@ msgstr "Serviço PackageKit"
 #. TRANSLATORS: fatal error, dbus is not running
 #: ../src/pk-main.c:263
 msgid "Cannot connect to the system bus"
-msgstr ""
+msgstr "Não foi possível ligar ao barramento do sistema"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
