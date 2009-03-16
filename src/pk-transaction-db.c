@@ -521,6 +521,9 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		return;
 	}
 
+	/* we don't need to keep doing fsync */
+	sqlite3_exec (tdb->priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
+
 	/* check transactions */
 	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM transactions LIMIT 1", NULL, NULL, &error_msg);
 	if (rc != SQLITE_OK) {
