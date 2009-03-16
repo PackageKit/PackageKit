@@ -104,3 +104,11 @@ UpdateCheckProcesses=true
 # default=true
 CheckTestingRepos=true
 
+# Use update cache when possible to avoid using the backend
+#
+# NOTE: Don't disable this unless you're trying to find bugs in packagekitd
+# and you want your backend to service every request.
+#
+# default=true
+UseUpdateCache=true
+
