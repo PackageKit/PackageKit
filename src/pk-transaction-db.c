@@ -198,36 +198,11 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 {
 	gchar *error_msg = NULL;
 	gint rc;
-	const gchar *statement;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
-
-	/* can we handle the error? */
-	if (rc != SQLITE_OK) {
-		/* add column uid (since 0.3.11) */
-		if (g_strcmp0 (error_msg, "no such column: uid") == 0) {
-			egg_debug ("SQL: creating column uid");
-			sqlite3_free (error_msg);
-			statement = "ALTER TABLE transactions ADD COLUMN uid INTEGER DEFAULT 0;";
-			rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
-		}
-		/* add column cmdline (since 0.3.11) */
-		if (g_strcmp0 (error_msg, "no such column: cmdline") == 0) {
-			egg_debug ("SQL: creating column cmdline");
-			sqlite3_free (error_msg);
-			statement = "ALTER TABLE transactions ADD COLUMN cmdline TEXT;";
-			rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
-		}
-	}
-
-	/* retry command */
-	if (rc == SQLITE_OK)
-		rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
-
-	/* can't handle this, or error handle failed */
 	if (rc != SQLITE_OK) {
 		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
@@ -516,43 +491,19 @@ pk_transaction_db_empty (PkTransactionDb *tdb)
 }
 
 /**
- * pk_transaction_db_create_table_last_action:
- **/
-static gboolean
-pk_transaction_db_create_table_last_action (PkTransactionDb *tdb)
-{
-	const gchar *role_text;
-	const gchar *statement;
-	gchar *statement2;
-	gchar *timespec;
-	guint i;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
-	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
-
-	timespec = pk_iso8601_present ();
-	statement = "CREATE TABLE last_action (role TEXT primary key, timespec TEXT);";
-	sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
-	for (i=0; i<PK_ROLE_ENUM_UNKNOWN; i++) {
-		role_text = pk_role_enum_to_text (i);
-		/* reset to now if the role does not exist */
-		statement2 = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
-		sqlite3_exec (tdb->priv->db, statement2, NULL, NULL, NULL);
-		g_free (statement2);
-	}
-	g_free (timespec);
-	return TRUE;
-}
-
-/**
  * pk_transaction_db_init:
  **/
 static void
 pk_transaction_db_init (PkTransactionDb *tdb)
 {
-	gboolean create_file;
+	gboolean file_exists;
 	const gchar *statement;
 	gint rc;
+	gchar *error_msg = NULL;
+	const gchar *role_text;
+	gchar *statement2;
+	gchar *timespec;
+	guint i;
 
 	g_return_if_fail (PK_IS_TRANSACTION_DB (tdb));
 
@@ -560,32 +511,63 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	tdb->priv->db = NULL;
 
 	/* if the database file was not installed (or was nuked) recreate it */
-	create_file = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
+	file_exists = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
 
 	egg_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
 	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
-	if (rc) {
+	if (rc != SQLITE_OK) {
 		egg_error ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
 		sqlite3_close (tdb->priv->db);
 		return;
-	} else {
-		if (create_file == FALSE) {
-			statement = "CREATE TABLE transactions ("
-				    "transaction_id TEXT primary key,"
-				    "timespec TEXT,"
-				    "duration INTEGER,"
-				    "succeeded INTEGER DEFAULT 0,"
-				    "role TEXT,"
-				    "data TEXT,"
-				    "description TEXT,"
-				    "uid INTEGER DEFAULT 0,"
-				    "cmdline TEXT);";
-			sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
-		}
 	}
 
-	/* we might be running an old database, recreate */
-	pk_transaction_db_create_table_last_action (tdb);
+	/* check transactions */
+	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM transactions LIMIT 1", NULL, NULL, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_debug ("creating table to repair: %s", error_msg);
+		sqlite3_free (error_msg);
+		statement = "CREATE TABLE transactions ("
+			    "transaction_id TEXT primary key,"
+			    "timespec TEXT,"
+			    "duration INTEGER,"
+			    "succeeded INTEGER DEFAULT 0,"
+			    "role TEXT,"
+			    "data TEXT,"
+			    "description TEXT,"
+			    "uid INTEGER DEFAULT 0,"
+			    "cmdline TEXT);";
+		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+	}
+
+	/* check transactions has enough data (since 0.3.11) */
+	rc = sqlite3_exec (tdb->priv->db, "SELECT uid, cmdline FROM transactions LIMIT 1", NULL, NULL, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_debug ("altering table to repair: %s", error_msg);
+		sqlite3_free (error_msg);
+		statement = "ALTER TABLE transactions ADD COLUMN uid INTEGER DEFAULT 0;";
+		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+		statement = "ALTER TABLE transactions ADD COLUMN cmdline TEXT;";
+		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+	}
+
+	/* check last_action (since 0.3.10) */
+	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM last_action LIMIT 1", NULL, NULL, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_debug ("adding last action details: %s", error_msg);
+		statement = "CREATE TABLE last_action (role TEXT primary key, timespec TEXT);";
+		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+
+		/* create values for now */
+		timespec = pk_iso8601_present ();
+		for (i=0; i<PK_ROLE_ENUM_UNKNOWN; i++) {
+			role_text = pk_role_enum_to_text (i);
+			/* reset to now if the role does not exist */
+			statement2 = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
+			sqlite3_exec (tdb->priv->db, statement2, NULL, NULL, NULL);
+			g_free (statement2);
+		}
+		g_free (timespec);
+	}
 }
 
 /**
@@ -632,6 +614,7 @@ pk_transaction_db_test (EggTest *test)
 	PkTransactionDb *db;
 	guint value;
 	gboolean ret;
+	guint ms;
 
 	if (!egg_test_start (test, "PkTransactionDb"))
 		return;
@@ -647,7 +630,24 @@ pk_transaction_db_test (EggTest *test)
 	g_unlink (PK_TRANSACTION_DB_FILE);
 #endif
 
+	/************************************************************/
+	egg_test_title (test, "check we created quickly");
 	db = pk_transaction_db_new ();
+	ms = egg_test_elapsed (test);
+	if (ms < 1500)
+		egg_test_success (test, "acceptable time %ims", ms);
+	else
+		egg_test_failed (test, "took a long time: %ims", ms);
+	g_object_unref (db);
+
+	/************************************************************/
+	egg_test_title (test, "check we opened quickly");
+	db = pk_transaction_db_new ();
+	ms = egg_test_elapsed (test);
+	if (ms < 100)
+		egg_test_success (test, "acceptable time %ims", ms);
+	else
+		egg_test_failed (test, "took a long time: %ims", ms);
 
 	/************************************************************/
 	egg_test_title (test, "set the correct time");
