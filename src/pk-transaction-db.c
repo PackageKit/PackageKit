@@ -827,7 +827,7 @@ pk_transaction_db_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "do the deferred write");
-	while (g_main_context_pending (NULL)
+	while (g_main_context_pending (NULL))
 		g_main_context_iteration (NULL, TRUE);
 	ms = egg_test_elapsed (test);
 	if (ms > 1)
