@@ -1356,7 +1356,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	if (backend->priv->finished) {
 		egg_warning ("consistency error");
 		egg_debug_backtrace ();
-		return FALSE;
+		goto out;
 	}
 
 	/* warn the backend developer that they've done something worng
@@ -1368,6 +1368,8 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
 
 	pk_backend_finished (backend);
+out:
+	backend->priv->signal_error_timeout = 0;
 	return FALSE;
 }
 
@@ -1941,8 +1943,10 @@ pk_backend_reset (PkBackend *backend)
 	}
 
 	/* if we set an error code notifier, clear */
-	if (backend->priv->signal_error_timeout != 0)
+	if (backend->priv->signal_error_timeout != 0) {
 		g_source_remove (backend->priv->signal_error_timeout);
+		backend->priv->signal_error_timeout = 0;
+	}
 
 	pk_package_obj_free (backend->priv->last_package);
 	backend->priv->set_error = FALSE;
