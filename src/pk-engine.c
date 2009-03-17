@@ -50,7 +50,6 @@
 #include "pk-backend-internal.h"
 #include "pk-engine.h"
 #include "pk-transaction.h"
-#include "pk-transaction-id.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction-list.h"
 #include "pk-inhibit.h"
@@ -261,7 +260,7 @@ pk_engine_get_tid (PkEngine *engine, DBusGMethodInvocation *context)
 
 	egg_debug ("GetTid method called");
 	sender = dbus_g_method_get_sender (context);
-	new_tid = pk_transaction_id_generate ();
+	new_tid = pk_transaction_db_generate_id (engine->priv->transaction_db);
 
 	ret = pk_transaction_list_create (engine->priv->transaction_list, new_tid, sender);
 	egg_debug ("sending tid: '%s'", new_tid);

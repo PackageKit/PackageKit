@@ -75,6 +75,8 @@ gboolean	 pk_transaction_db_action_time_reset	(PkTransactionDb	*tdb,
 							 PkRoleEnum		 role);
 guint		 pk_transaction_db_action_time_since	(PkTransactionDb	*tdb,
 							 PkRoleEnum		 role);
+gchar		*pk_transaction_db_generate_id		(PkTransactionDb	*tdb)
+							 G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
 

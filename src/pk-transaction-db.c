@@ -47,15 +47,19 @@ static void     pk_transaction_db_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_DB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_DB, PkTransactionDbPrivate))
 
+#define PK_TRANSACTION_DB_ID_FILE_OBSOLETE	LOCALSTATEDIR "/lib/PackageKit/job_count.dat"
+
 #if PK_BUILD_LOCAL
-#define PK_TRANSACTION_DB_FILE		"./transactions.db"
+#define PK_TRANSACTION_DB_FILE			"./transactions.db"
 #else
-#define PK_TRANSACTION_DB_FILE		PK_DB_DIR "/transactions.db"
+#define PK_TRANSACTION_DB_FILE			PK_DB_DIR "/transactions.db"
 #endif
 
 struct PkTransactionDbPrivate
 {
 	sqlite3			*db;
+	guint			 job_count;
+	guint			 database_save_id;
 };
 
 enum {
@@ -109,10 +113,10 @@ pk_transaction_db_item_free (PkTransactionDbItem *item)
 }
 
 /**
- * pk_transaction_sqlite_callback:
+ * pk_transaction_sqlite_transaction_cb:
  **/
 static gint
-pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col_name)
+pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
 	PkTransactionDbItem item;
 	PkTransactionDb *tdb = PK_TRANSACTION_DB (data);
@@ -202,7 +206,7 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
-	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
+	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_transaction_cb, tdb, &error_msg);
 	if (rc != SQLITE_OK) {
 		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
@@ -456,6 +460,123 @@ pk_transaction_db_print (PkTransactionDb *tdb)
 }
 
 /**
+ * pk_transaction_db_empty:
+ **/
+gboolean
+pk_transaction_db_empty (PkTransactionDb *tdb)
+{
+	const gchar *statement;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
+
+	statement = "TRUNCATE TABLE transactions;";
+	sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+	return TRUE;
+}
+
+/**
+ * pk_transaction_sqlite_job_id_cb:
+ **/
+static gint
+pk_transaction_sqlite_job_id_cb (void *data, gint argc, gchar **argv, gchar **col_name)
+{
+	PkTransactionDb *tdb = PK_TRANSACTION_DB (data);
+	if (argc != 1) {
+		egg_warning ("wrong number of replies: %i", argc);
+		goto out;
+	}
+	egg_strtouint (argv[0], &tdb->priv->job_count);
+out:
+	return 0;
+}
+
+
+/**
+ * pk_transaction_db_get_random_hex_string:
+ **/
+static gchar *
+pk_transaction_db_get_random_hex_string (guint length)
+{
+	GRand *gen;
+	gint32 num;
+	gchar *string;
+	guint i;
+
+	gen = g_rand_new ();
+
+	/* allocate a string with the correct size */
+	string = g_strnfill (length, 'x');
+	for (i=0; i<length; i++) {
+		num = g_rand_int_range (gen, (gint32) 'a', (gint32) 'f');
+		/* assign a random number as a char */
+		string[i] = (gchar) num;
+	}
+	g_rand_free (gen);
+	return string;
+}
+
+/**
+ * pk_transaction_db_defer_write_job_count_cb:
+ **/
+static gboolean
+pk_transaction_db_defer_write_job_count_cb (PkTransactionDb *tdb)
+{
+	gchar *statement = NULL;
+	gchar *error_msg = NULL;
+	gint rc;
+
+	/* force fsync as we don't want to repeat this number */
+	sqlite3_exec (tdb->priv->db, "PRAGMA synchronous=ON", NULL, NULL, NULL);
+
+	/* save the job count */
+	egg_debug ("doing deferred write syncronous");
+	statement = g_strdup_printf ("UPDATE config SET value = '%i' WHERE key = 'job_count'", tdb->priv->job_count);
+	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_error ("failed to set job id: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		goto out;
+	}
+
+	/* turn off fsync */
+	sqlite3_exec (tdb->priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
+
+	/* allow this to happen again */
+	tdb->priv->database_save_id = 0;
+out:
+	g_free (statement);
+	return FALSE;
+}
+
+/**
+ * pk_transaction_db_generate_id:
+ **/
+gchar *
+pk_transaction_db_generate_id (PkTransactionDb *tdb)
+{
+	gchar *rand_str = NULL;
+	gchar *tid = NULL;
+
+	/* increment */
+	tdb->priv->job_count++;
+	egg_debug ("job count now %i", tdb->priv->job_count);
+
+	/* we don't need to wait for the database write, just do this the
+	 * next time we are idle (but ensure we do this on shutdown) */
+	if (tdb->priv->database_save_id == 0) {
+		egg_debug ("deferring low priority write until idle");
+		tdb->priv->database_save_id = g_idle_add_full (G_PRIORITY_LOW, (GSourceFunc) pk_transaction_db_defer_write_job_count_cb, tdb, NULL);
+	}
+
+	/* make the tid */
+	rand_str = pk_transaction_db_get_random_hex_string (8);
+	tid = g_strdup_printf ("/%i_%s_data", tdb->priv->job_count, rand_str);
+	g_free (rand_str);
+	return tid;
+}
+
+/**
  * pk_transaction_db_class_init:
  * @klass: The PkTransactionDbClass
  **/
@@ -475,43 +596,25 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 }
 
 /**
- * pk_transaction_db_empty:
- **/
-gboolean
-pk_transaction_db_empty (PkTransactionDb *tdb)
-{
-	const gchar *statement;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
-	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
-
-	statement = "TRUNCATE TABLE transactions;";
-	sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
-	return TRUE;
-}
-
-/**
  * pk_transaction_db_init:
  **/
 static void
 pk_transaction_db_init (PkTransactionDb *tdb)
 {
-	gboolean file_exists;
 	const gchar *statement;
 	gint rc;
 	gchar *error_msg = NULL;
 	const gchar *role_text;
-	gchar *statement2;
+	gchar *text;
 	gchar *timespec;
+	gboolean ret;
 	guint i;
 
 	g_return_if_fail (PK_IS_TRANSACTION_DB (tdb));
 
 	tdb->priv = PK_TRANSACTION_DB_GET_PRIVATE (tdb);
 	tdb->priv->db = NULL;
-
-	/* if the database file was not installed (or was nuked) recreate it */
-	file_exists = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
+	tdb->priv->database_save_id = 0;
 
 	egg_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
 	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
@@ -530,7 +633,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		egg_debug ("creating table to repair: %s", error_msg);
 		sqlite3_free (error_msg);
 		statement = "CREATE TABLE transactions ("
-			    "transaction_id TEXT primary key,"
+			    "transaction_id TEXT PRIMARY KEY,"
 			    "timespec TEXT,"
 			    "duration INTEGER,"
 			    "succeeded INTEGER DEFAULT 0,"
@@ -557,7 +660,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM last_action LIMIT 1", NULL, NULL, &error_msg);
 	if (rc != SQLITE_OK) {
 		egg_debug ("adding last action details: %s", error_msg);
-		statement = "CREATE TABLE last_action (role TEXT primary key, timespec TEXT);";
+		statement = "CREATE TABLE last_action (role TEXT PRIMARY KEY, timespec TEXT);";
 		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 
 		/* create values for now */
@@ -565,11 +668,44 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		for (i=0; i<PK_ROLE_ENUM_UNKNOWN; i++) {
 			role_text = pk_role_enum_to_text (i);
 			/* reset to now if the role does not exist */
-			statement2 = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
-			sqlite3_exec (tdb->priv->db, statement2, NULL, NULL, NULL);
-			g_free (statement2);
+			text = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
+			sqlite3_exec (tdb->priv->db, text, NULL, NULL, NULL);
+			g_free (text);
 		}
 		g_free (timespec);
+	}
+
+	/* check config (since 0.4.6) */
+	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM config LIMIT 1", NULL, NULL, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_debug ("adding config: %s", error_msg);
+		statement = "CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT);";
+		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+
+		/* save creation version */
+		text = g_strdup_printf ("INSERT INTO config (key, value) VALUES ('version', '%s')", PACKAGE_VERSION);
+		sqlite3_exec (tdb->priv->db, text, NULL, NULL, NULL);
+		g_free (text);
+
+		/* get the old job count from the text file (this is a legacy file) */
+		ret = g_file_get_contents (PK_TRANSACTION_DB_ID_FILE_OBSOLETE, &text, NULL, NULL);
+		if (ret)
+			egg_strtouint (text, &tdb->priv->job_count);
+		g_free (text);
+
+		/* save job id */
+		text = g_strdup_printf ("INSERT INTO config (key, value) VALUES ('job_count', '%i')", tdb->priv->job_count);
+		sqlite3_exec (tdb->priv->db, text, NULL, NULL, NULL);
+		g_free (text);
+	} else {
+		/* get the job count */
+		statement = "SELECT value FROM config WHERE key = 'job_count'";
+		rc = sqlite3_exec (tdb->priv->db, statement, pk_transaction_sqlite_job_id_cb, tdb, &error_msg);
+		if (rc != SQLITE_OK) {
+			egg_warning ("failed to get job id: %s\n", error_msg);
+			sqlite3_free (error_msg);
+		}
+		egg_debug ("job count is now at %i", tdb->priv->job_count);
 	}
 }
 
@@ -584,6 +720,12 @@ pk_transaction_db_finalize (GObject *object)
 	g_return_if_fail (PK_IS_TRANSACTION_DB (object));
 	tdb = PK_TRANSACTION_DB (object);
 	g_return_if_fail (tdb->priv != NULL);
+
+	/* if we shutdown with a deferred database write, then enforce it here */
+	if (tdb->priv->database_save_id != 0) {
+		pk_transaction_db_defer_write_job_count_cb (tdb);
+		g_source_remove (tdb->priv->database_save_id);
+	}
 
 	/* close the database */
 	sqlite3_close (tdb->priv->db);
@@ -616,6 +758,7 @@ pk_transaction_db_test (EggTest *test)
 {
 	PkTransactionDb *db;
 	guint value;
+	gchar *tid;
 	gboolean ret;
 	guint ms;
 
@@ -652,6 +795,28 @@ pk_transaction_db_test (EggTest *test)
 	else
 		egg_test_failed (test, "took a long time: %ims", ms);
 
+	/************************************************************
+	 ****************          IDENT           ******************
+	 ************************************************************/
+	egg_test_title (test, "get an tid object");
+	tid = pk_transaction_db_generate_id (db);
+	ms = egg_test_elapsed (test);
+	if (ms < 5)
+		egg_test_success (test, "acceptable time %ims", ms);
+	else
+		egg_test_failed (test, "took a long time: %ims", ms);
+	g_free (tid);
+
+	/************************************************************/
+	egg_test_title (test, "get an tid object (no wait)");
+	tid = pk_transaction_db_generate_id (db);
+	ms = egg_test_elapsed (test);
+	if (ms < 5)
+		egg_test_success (test, "acceptable time %ims", ms);
+	else
+		egg_test_failed (test, "took a long time: %ims", ms);
+	g_free (tid);
+
 	/************************************************************/
 	egg_test_title (test, "set the correct time");
 	ret = pk_transaction_db_action_time_reset (db, PK_ROLE_ENUM_REFRESH_CACHE);
@@ -659,6 +824,15 @@ pk_transaction_db_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed to reset value");
+
+	/************************************************************/
+	egg_test_title (test, "do the deferred write");
+	g_main_context_iteration (NULL, TRUE);
+	ms = egg_test_elapsed (test);
+	if (ms > 1)
+		egg_test_success (test, "acceptable time %ims", ms);
+	else
+		egg_test_failed (test, "took too short time: %ims", ms);
 
 	g_usleep (2*1000*1000);
 
