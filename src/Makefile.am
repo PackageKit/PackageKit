@@ -94,8 +94,6 @@ shared_SOURCES =					\
 	pk-backend-dbus.c				\
 	pk-transaction-db.h				\
 	pk-transaction-db.c				\
-	pk-transaction-id.h				\
-	pk-transaction-id.c				\
 	pk-transaction-list.c				\
 	pk-transaction-list.h				\
 	$(NULL)
