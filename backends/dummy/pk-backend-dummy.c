@@ -291,7 +291,10 @@ backend_get_update_detail_timeout (gpointer data)
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
 						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
 						  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
-						  PK_RESTART_ENUM_SYSTEM, "Update to newest version",
+						  PK_RESTART_ENUM_SYSTEM,
+						  "Update to newest upstream version.\n"
+						  "* This should fix many driver bugs when using nouveau\n"
+						  " * This also introduces the new `frobnicator` driver for *vibrating* rabbit hardware.",
 						  "", PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
 		} else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
 			pk_backend_update_detail (backend, package_id,
