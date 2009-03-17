@@ -131,15 +131,13 @@ pk_print_line (const gchar *func, const gchar *file, const int line, const gchar
 	gchar *str_time;
 	gchar *header;
 	time_t the_time;
-	GThread *thread;
 
 	time (&the_time);
 	str_time = g_new0 (gchar, 255);
 	strftime (str_time, 254, "%H:%M:%S", localtime (&the_time));
-	thread = g_thread_self ();
 
 	/* generate header text */
-	header = g_strdup_printf ("TI:%s\tTH:%p\tFI:%s\tFN:%s,%d", str_time, thread, file, func, line);
+	header = g_strdup_printf ("TI:%s\tFI:%s\tFN:%s,%d", str_time, file, func, line);
 	g_free (str_time);
 
 	/* always in light green */

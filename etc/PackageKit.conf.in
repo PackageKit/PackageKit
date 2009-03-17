@@ -96,11 +96,19 @@ UpdatePackageList=true
 # default=true
 UpdateCheckProcesses=true
 
-# Check for updates in testing repositories when we chack for updates
+# Check for updates in testing repositories when we check for updates
 #
 # NOTE: Don't enable this if you do not want testing updates to be checked
 # as this will increase the network bandwidth used.
 #
 # default=true
 CheckTestingRepos=true
+
+# Use update cache when possible to avoid using the backend
+#
+# NOTE: Don't disable this unless you're trying to find bugs in packagekitd
+# and you want your backend to service every request.
+#
+# default=true
+UseUpdateCache=true
 
