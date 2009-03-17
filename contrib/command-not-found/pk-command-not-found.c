@@ -31,6 +31,8 @@
 
 #include "pk-tools-common.h"
 
+#define PK_MAX_PATH_LEN 1023
+
 typedef enum {
 	PK_CNF_POLICY_RUN,
 	PK_CNF_POLICY_INSTALL,
@@ -260,8 +262,8 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 	const gchar *cmdt;
 	const gchar *cmdt2;
 	guint i, j;
-	gchar buffer_bin[1024];
-	gchar buffer_sbin[1024];
+	gchar buffer_bin[PK_MAX_PATH_LEN+1];
+	gchar buffer_sbin[PK_MAX_PATH_LEN+1];
 	gboolean ret;
 
 	array = g_ptr_array_new ();
@@ -291,15 +293,21 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 			g_ptr_array_add (unique, (gpointer) cmdt);
 	}
 
-	/* seed path, we don't want to be doing g_strdup_printf in the fast path */
-	strncpy (buffer_bin, "/usr/bin/", 1023);
-	strncpy (buffer_sbin, "/usr/sbin/", 1023);
+	/* ITS4: ignore, source is constant size */
+	strncpy (buffer_bin, "/usr/bin/", PK_MAX_PATH_LEN);
+
+	/* ITS4: ignore, source is constant size */
+	strncpy (buffer_sbin, "/usr/sbin/", PK_MAX_PATH_LEN);
 
 	/* remove any that exist (fast path) */
 	for (i=0; i<unique->len; i++) {
 		cmdt = g_ptr_array_index (unique, i);
-		strncpy (&buffer_bin[9], cmdt, 1023-9);
-		strncpy (&buffer_sbin[10], cmdt, 1023-10);
+
+		/* ITS4: ignore, size is checked */
+		strncpy (&buffer_bin[9], cmdt, PK_MAX_PATH_LEN-9);
+
+		/* ITS4: ignore, size is checked */
+		strncpy (&buffer_sbin[10], cmdt, PK_MAX_PATH_LEN-10);
 
 		/* does file exist in bindir (common case) */
 		ret = g_file_test (buffer_bin, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_EXECUTABLE);
