@@ -6,7 +6,7 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-time=0.30
+time=0.5
 
 echo -e "percentage\t0"
 echo -e "percentage\t10"
