@@ -274,7 +274,6 @@ void aptcc::get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator
 		}
 		dep++;
 	}
-// 	return output;
 }
 
 void aptcc::get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
