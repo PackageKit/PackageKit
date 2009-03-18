@@ -464,6 +464,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def refresh_cache(self):
         #log.debug("refresh-cache command ")
     #    self.percentage()
+
         self.status(STATUS_REFRESH_CACHE)
         cache = Cache()
         cache.refresh()
@@ -674,8 +675,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 longDesc = metadata["longDesc"] 
             else:
                 longDesc = ""
-
-            url = "http://www.foresightlinux.org/packages/%s.html" % name
+            if "url" in metadata:
+                url = metadata["url"]
+            else:
+                url = "http://www.foresightlinux.org/packages/%s.html" % name
 
             categories  = ""
             if metadata.has_key("category"):
