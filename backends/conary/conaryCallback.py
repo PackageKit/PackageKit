@@ -36,7 +36,7 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
         self.smallUpdate = False
         self.error = []
         self.progress = PackagekitProgress()
-        self.progress.set_steps([ 50 ]  )
+        self.progress.set_steps([ 30,60 ]  )
         self.disablepercent = False
         self.dostep = True
     #1
@@ -44,24 +44,25 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
     def requestingChangeSet(self):
         log.info("Callback UpdateSystem........ STATUS_REQUEST changeset ")
         self.backend.status(STATUS_REQUEST)
-        self.backend.percentage(self.progress.percent)
-        log.info(self.progress.percent)
-        if not self.disablepercent:
-            self.progress.step()
+#        self.backend.percentage(self.progress.percent)
+ #       log.info(self.progress.percent)
     #2
     def downloadingChangeSet(self, got, need):
+        self.backend.status(STATUS_DOWNLOAD)
         log.info("Callback UpdateSystem........ STATUS_DOWNLOAD  Changeset %.2f percent %.2f/%.2f Mbytes" % ( got*100/float(need), got/MEGA,need/MEGA) )
-        if not self.disablepercent:
-            self.progress.set_subpercent( got*100 / float(need) )
+        self.progress.set_subpercent( got*100 / float(need) )
         self.backend.percentage( self.progress.percent )
         log.info( "%s percent" % self.progress.percent)
+        if got == need:
+            log.info("Do a step ========0")
+            self.progress.step()
 
     #4
     def resolvingDependencies(self):
         log.info("Callback UpdateSystem........ STATUS_DEP_RESOLVE ")
         self.backend.percentage(self.progress.percent)
         self.backend.status(STATUS_DEP_RESOLVE)
-        self.progress.step()
+
     #5  >> request> download
     def setChangesetHunk(self, num, total):
         log.info("callback. .......... set Changeset HUnk %s/%s" % (num, total ) )
@@ -69,6 +70,7 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
             p = num*100/float(total)
         else:
             p = 0
+        log.info("Do a supercent ========sub")
         self.progress.set_subpercent(p)
         self.disablepercent = True
         self.backend.percentage(self.progress.percent)
@@ -79,13 +81,13 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
     def setUpdateHunk(self, hunk, hunkCount):
         log.info("callback. .......... set update HUnk %s/%s" % ( hunk, hunkCount))
         if self.dostep:
-            self.progress.step()
             self.disablepercent = True
             self.dostep = False
 
 
         if hunk < hunkCount:
             p = hunk*100/float(hunkCount)
+            log.info("Do a supercent ========sub")
             self.progress.set_subpercent( p )
         else:
             self.smallUpdate = True

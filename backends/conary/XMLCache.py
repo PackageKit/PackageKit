@@ -204,11 +204,13 @@ class XMLCache:
 
     def checkCachedUpdateJob(self, applyList):
         jobPath = self._getJobCachePath(applyList)
+        log.info("CheckjobPath %s" % jobPath)
         if os.path.exists(jobPath):
             return jobPath
     
     def cacheUpdateJob(self, applyList, updJob):
         jobPath = self._getJobCachePath(applyList)
+        log.info("jobPath %s" % jobPath)
         if os.path.exists(jobPath):
             util.rmtree(jobPath)
         os.mkdir(jobPath)

@@ -225,7 +225,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             except IOError, err:
                 updJob = None
         else:
-            updJob = self._get_update(applyList, cache=False)
+            updJob,suggMap = self._get_update(applyList, cache=False)
         self.allow_cancel(False)
         try:
             restartDir = self.client.applyUpdateJob(updJob)
@@ -449,7 +449,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_UPDATE)
         self.client.setUpdateCallback( UpdateSystemCallback(self, self.cfg) )
         updateItems = self.client.fullUpdateItemList()
-        pprint(updateItems)
+        [ log.info(i) for i,ver,flav in updateItems]
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
 
         log.info(">>>>>>>>>> get update >>>>>>>>>>>>")
