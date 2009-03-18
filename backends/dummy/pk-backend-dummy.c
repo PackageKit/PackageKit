@@ -242,6 +242,8 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
 		else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora"))
 			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/bin/ck-xinit-session");
+		else
+			pk_backend_files (backend, package_id, "/usr/share/gnome-power-manager;/usr/bin/ck-xinit-session");
 	}
 	pk_backend_finished (backend);
 }
