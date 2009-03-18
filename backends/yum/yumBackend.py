@@ -2327,6 +2327,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             update = self._get_updated(pkg)
             obsolete = self._get_obsoleted(pkg.name)
             desc, urls, reboot, changelog, state, issued, updated = self._get_update_extras(pkg)
+
+            # extract the changelog for the local package
+            if len(changelog) == 0:
+                changes = pkg.returnChangelog()
+                for change in changes:
+                    changelog += _format_str('*' + time.ctime(change[0]) + '* ' + change[1] + '\n' + _to_unicode(change[2].replace("\t", " ")) + '\n\n')
+
             cve_url = _format_list(urls['cve'])
             bz_url = _format_list(urls['bugzilla'])
             vendor_url = _format_list(urls['vendor'])
