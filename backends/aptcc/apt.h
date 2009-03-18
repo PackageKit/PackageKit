@@ -53,16 +53,18 @@ public:
 	/**
 	 *  Get depends
 	 */
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > get_depends(pkgCache::PkgIterator pkg,
-										bool recursive,
-										bool &_cancel);
+	void get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			 pkgCache::PkgIterator pkg,
+			 bool recursive,
+			 bool &_cancel);
 
 	/**
 	 *  Get requires
 	 */
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > get_requires(pkgCache::PkgIterator pkg,
-										 bool recursive,
-										 bool &_cancel);
+	void get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			  pkgCache::PkgIterator pkg,
+			  bool recursive,
+			  bool &_cancel);
 
 	/**
 	 *  Emits a package if it match the filters

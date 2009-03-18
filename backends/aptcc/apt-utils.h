@@ -95,6 +95,12 @@ string get_long_description_parsed(const pkgCache::VerIterator &ver,
 PkGroupEnum get_enum_group (string group);
 
 /**
+  * Return if the given vector contain a package
+  */
+bool contains(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packages,
+	      const pkgCache::PkgIterator pkg);
+
+/**
   * Return if the given string ends with the other
   */
 bool ends_with (const string &str, const char *end);

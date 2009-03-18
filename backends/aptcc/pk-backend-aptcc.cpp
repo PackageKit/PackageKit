@@ -195,9 +195,11 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 {
 	gchar **package_ids;
 	PkBitfield filters;
+	bool recursive;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	recursive = pk_backend_get_bool (backend, "recursive");
 	_cancel = false;
 	pk_backend_set_allow_cancel (backend, true);
 	PkPackageId *pi = pk_package_id_new_from_string (package_ids[0]);
@@ -218,6 +220,10 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 
 	bool depends = pk_backend_get_bool(backend, "get_depends");
 
+	if (recursive)
+	printf("RECURSIVE ----------------------------");
+	else
+	printf("NOT RECURSIVE ----------------------------");
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
 		if (_cancel) {
@@ -241,15 +247,11 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 			return false;
 		}
 
-		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > pkgOutput;
 		if (depends) {
-			pkgOutput = m_apt->get_depends(pkg, false, _cancel);
+			m_apt->get_depends(output, pkg, recursive, _cancel);
 		} else {
-			pkgOutput = m_apt->get_requires(pkg, false, _cancel);
+			m_apt->get_requires(output, pkg, recursive, _cancel);
 		}
-		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it;
-		it = pkgOutput.begin();
-		output.insert(output.end(), it, pkgOutput.end());
 
 		pk_package_id_free (pi);
 	}
@@ -281,6 +283,7 @@ static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_bool (backend, "get_depends", true);
+	pk_backend_set_bool (backend, "recursive", recursive);
 	pk_backend_thread_create (backend, backend_get_depends_or_requires_thread);
 }
 
@@ -291,6 +294,7 @@ static void
 backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_bool (backend, "get_depends", false);
+	pk_backend_set_bool (backend, "recursive", recursive);
 	pk_backend_thread_create (backend, backend_get_depends_or_requires_thread);
 }
 
