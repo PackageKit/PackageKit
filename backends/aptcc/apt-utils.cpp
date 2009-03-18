@@ -238,6 +238,19 @@ get_enum_group (string group)
 	}
 }
 
+bool contains(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packages,
+	      const pkgCache::PkgIterator pkg)
+{
+	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it = packages.begin();
+	    it != packages.end(); ++it)
+	{
+		if (it->first == pkg) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool ends_with (const string &str, const char *end)
 {
 	size_t endSize = strlen(end);

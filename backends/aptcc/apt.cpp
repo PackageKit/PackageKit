@@ -247,12 +247,12 @@ void aptcc::emit_details(PkBackend *backend,
 			   ver->Size);
 }
 
-vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > aptcc::get_depends (pkgCache::PkgIterator pkg,
-										bool recursive,
-										bool &_cancel)
+void aptcc::get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			pkgCache::PkgIterator pkg,
+			bool recursive,
+			bool &_cancel)
 {
 	pkgCache::DepIterator dep = find_ver(pkg).DependsList();
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	while (!dep.end()) {
 		if (_cancel) {
 			break;
@@ -263,21 +263,25 @@ vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > aptcc::get_depends (
 			dep++;
 			continue;
 		} else if (dep->Type == pkgCache::Dep::Depends) {
-			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(dep.TargetPkg(), ver));
-// 			if (recursive) {
-// 				get_depends(ver.DependsList(), recursive);
-// 			}
+			if (recursive) {
+				if (!contains(output, dep.TargetPkg())) {
+					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(dep.TargetPkg(), ver));
+					get_depends(output, dep.TargetPkg(), recursive, _cancel);
+				}
+			} else {
+				output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(dep.TargetPkg(), ver));
+			}
 		}
 		dep++;
 	}
-	return output;
+// 	return output;
 }
 
-vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > aptcc::get_requires (pkgCache::PkgIterator pkg,
-										 bool recursive,
-										 bool &_cancel)
+void aptcc::get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			pkgCache::PkgIterator pkg,
+			bool recursive,
+			bool &_cancel)
 {
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	for (pkgCache::PkgIterator parentPkg = cacheFile->PkgBegin(); !parentPkg.end(); ++parentPkg) {
 		if (_cancel) {
 			break;
@@ -291,19 +295,25 @@ vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > aptcc::get_requires 
 		pkgCache::VerIterator ver = find_ver(parentPkg);
 		if (ver.end() == false) {
 			vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > deps;
-			deps = get_depends(parentPkg, false, _cancel);
+			get_depends(deps, parentPkg, false, _cancel);
 			for (vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=deps.begin();
 			    i != deps.end();
 			    ++i)
 			{
 				if (i->first == pkg) {
-					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(parentPkg, ver));
+					if (recursive) {
+						if (!contains(output, parentPkg)) {
+							output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(parentPkg, ver));
+							get_requires(output, parentPkg, recursive, _cancel);
+						}
+					} else {
+						output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(parentPkg, ver));
+					}
 					break;
 				}
 			}
 		}
 	}
-	return output;
 }
 
 // used to emit files it reads the info directly from the files
