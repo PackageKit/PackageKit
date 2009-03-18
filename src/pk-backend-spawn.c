@@ -214,15 +214,14 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			goto out;
 		}
 		update_state_enum = pk_update_state_enum_from_text (sections[10]);
-		text = g_strdup (sections[8]);
 		/* convert ; to \n as we can't emit them on stdout */
-		g_strdelimit (text, ";", '\n');
+		g_strdelimit (sections[8], ";", '\n');
+		g_strdelimit (sections[9], ";", '\n');
 		pk_backend_update_detail (backend_spawn->priv->backend, sections[1],
 					  sections[2], sections[3], sections[4],
-					  sections[5], sections[6], restart, text,
+					  sections[5], sections[6], restart, sections[8],
 					  sections[9], update_state_enum,
 					  sections[11], sections[12]);
-		g_free (text);
 	} else if (egg_strequal (command, "percentage")) {
 		if (size != 2) {
 			egg_warning ("invalid command '%s'", command);
