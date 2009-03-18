@@ -835,7 +835,7 @@ pk_spawn_test (EggTest *test)
 	/************************************************************
 	 **********           Killing tests               ***********
 	 ************************************************************/
-	egg_test_title (test, "make sure run correct helper, and kill it");
+	egg_test_title (test, "make sure run correct helper, and kill it using SIGKILL");
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	path = egg_test_get_data_file ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
@@ -853,8 +853,8 @@ pk_spawn_test (EggTest *test)
 	egg_test_loop_check (test);
 
 	/************************************************************/
-	egg_test_title (test, "make sure finished in SIGQUIT");
-	if (mexit == PK_SPAWN_EXIT_TYPE_SIGQUIT)
+	egg_test_title (test, "make sure finished in SIGKILL");
+	if (mexit == PK_SPAWN_EXIT_TYPE_SIGKILL)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "finish %i!", mexit);
@@ -863,7 +863,7 @@ pk_spawn_test (EggTest *test)
 	new_spawn_object (test, &spawn);
 
 	/************************************************************/
-	egg_test_title (test, "make sure run correct helper, and quit it");
+	egg_test_title (test, "make sure run correct helper, and SIGQUIT it");
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	path = egg_test_get_data_file ("pk-spawn-test-sigquit.sh");
 	argv = g_strsplit (path, " ", 0);

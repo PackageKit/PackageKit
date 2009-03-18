@@ -203,8 +203,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _get_update(self, applyList, cache=True):
         from conary.conaryclient.update import NoNewTrovesError
         updJob = self.client.newUpdateJob()
+        log.info("get_ Job")
         try:
+            log.info("prepare updateJOb")
             suggMap = self.client.prepareUpdateJob(updJob, applyList)
+            log.info("end prepare updateJOB")
         except NoNewTrovesError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "No new apps were found")
         if cache:
@@ -222,7 +225,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             except IOError, err:
                 updJob = None
         else:
-            updJob = self._get_update(applyList, cache=False)
+            updJob,suggMap = self._get_update(applyList, cache=False)
         self.allow_cancel(False)
         try:
             restartDir = self.client.applyUpdateJob(updJob)
@@ -280,8 +283,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-
-        log.info("======== resolve =========")
         log.info("filters: %s package:%s " % (filters, package))
 
         cache = Cache()
@@ -448,20 +449,22 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_UPDATE)
         self.client.setUpdateCallback( UpdateSystemCallback(self, self.cfg) )
         updateItems = self.client.fullUpdateItemList()
-        pprint(updateItems)
+        [ log.info(i) for i,ver,flav in updateItems]
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
 
         log.info(">>>>>>>>>> get update >>>>>>>>>>>>")
         #self._get_update(applyList)
         log.info(">>>>>>>>>> DO Update >>>>>>>>>>>>")
-        self._do_update(applyList)
+        jobs = self._do_update(applyList)
         log.info(">>>>>>>>>>END DO Update >>>>>>>>>>>>")
+        log.info(jobs)
         self.client.setUpdateCallback(self.callback )
 
 #    @ExceptionHandler
     def refresh_cache(self):
         #log.debug("refresh-cache command ")
-        self.percentage()
+    #    self.percentage()
+
         self.status(STATUS_REFRESH_CACHE)
         cache = Cache()
         cache.refresh()
@@ -672,8 +675,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 longDesc = metadata["longDesc"] 
             else:
                 longDesc = ""
-
-            url = "http://www.foresightlinux.org/packages/%s.html" % name
+            if "url" in metadata:
+                url = metadata["url"]
+            else:
+                url = "http://www.foresightlinux.org/packages/%s.html" % name
 
             categories  = ""
             if metadata.has_key("category"):
@@ -725,6 +730,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info(i[0])
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         log.info("_get_update ....")
+        self.status(STATUS_RUNNING)
         updJob, suggMap = self._get_update(applyList)
         log.info("_get_update ....end.")
 
@@ -750,7 +756,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             troveTuple.append(name)
             troveTuple.append(version)
             installed = self.check_installed(troveTuple)
-            self._show_package(name, version, flavor, INFO_NORMAL)
+            if name in self.rebootpkgs:
+                info = INFO_SECURITY
+            else:
+                info = INFO_NORMAL
+            self._show_package(name, version, flavor, info)
         log.info("============== end get_updates ========================")
         self.client.setUpdateCallback(self.callback)
 

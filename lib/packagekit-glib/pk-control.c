@@ -753,7 +753,7 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **array, PkCont
 		g_strfreev (control->priv->array);
 	control->priv->array = g_strdupv (array);
 	egg_debug ("emit transaction-list-changed");
-	g_signal_emit (control , signals [PK_CONTROL_LIST_CHANGED], 0);
+	g_signal_emit (control, signals [PK_CONTROL_LIST_CHANGED], 0);
 }
 
 /**
