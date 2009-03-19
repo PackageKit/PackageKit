@@ -168,8 +168,7 @@ backend_cancel_timeout (gpointer data)
 	_signal_timeout = 0;
 
 	/* now mark as finished */
-	pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-			       "The task was stopped successfully");
+	pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "The task was stopped successfully");
 	pk_backend_finished (backend);
 	return false;
 }
@@ -188,6 +187,7 @@ backend_cancel (PkBackend *backend)
 		g_timeout_add (1500, backend_cancel_timeout, backend);
 	}
 	_cancel = true;
+        pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
 }
 
 static gboolean
@@ -710,37 +710,60 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	_signal_timeout = g_timeout_add (500, backend_refresh_cache_timeout, backend);
 }
 
+
+static gboolean
+backend_resolve_thread (PkBackend *backend)
+{
+	gchar **package_ids;
+	PkBitfield filters;
+
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, true);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
+	}
+
+	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+		if (_cancel) {
+			break;
+		}
+
+		pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(package_ids[i]);
+		// Ignore packages that could not be found or that exist only due to dependencies.
+		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
+		{
+			continue;
+		}
+
+		pkgCache::VerIterator ver;
+		ver = m_apt->find_ver(pkg);
+		// check to see if the provided package isn't virtual too
+		if (ver.end() == false)
+		{
+			m_apt->emit_package(backend, filters, pkg, ver);
+		}
+	}
+
+	delete m_apt;
+
+	pk_backend_finished (backend);
+	return true;
+}
+
 /**
  * backend_resolve:
  */
 static void
 backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
-	guint i;
-	guint len;
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-
-	/* each one has a different detail for testing */
-	len = g_strv_length (packages);
-	for (i=0; i<len; i++) {
-		if (egg_strequal (packages[i], "vips-doc"))
-			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-					    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
-		else if (egg_strequal (packages[i], "glib2"))
-			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-					    "glib2;2.14.0;i386;fedora", "The GLib library");
-		else if (egg_strequal (packages[i], "powertop"))
-			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
-					    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
-		else if (egg_strequal (packages[i], "kernel"))
-			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
-					    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
-		else if (egg_strequal (packages[i], "gtkhtml2"))
-			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
-					    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
-	}
-	pk_backend_finished (backend);
+	pk_backend_thread_create (backend, backend_resolve_thread);
 }
 
 /**
