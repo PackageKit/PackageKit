@@ -780,6 +780,7 @@ backend_update_packages_download_timeout (gpointer data)
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 		pk_backend_set_sub_percentage (backend, 0);
+		pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 	}
 	if (_progress_percentage == 30 && !_updated_gtkhtml) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS, "A newer package preupgrade is available in fedora-updates-testing");
