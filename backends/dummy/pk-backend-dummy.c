@@ -43,6 +43,7 @@ static gboolean _has_signature = FALSE;
 static gboolean _use_blocked = FALSE;
 static gboolean _use_eula = FALSE;
 static gboolean _use_gpg = FALSE;
+static gboolean _use_distro_upgrade = FALSE;
 
 /**
  * backend_initialize:
@@ -210,10 +211,13 @@ static void
 backend_get_distro_upgrades (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	if (!_use_distro_upgrade)
+		goto out;
 	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_STABLE,
 				   "fedora-9", "Fedora 9");
 	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
 				   "fedora-10-rc1", "Fedora 10 RC1");
+out:
 	pk_backend_finished (backend);
 }
 

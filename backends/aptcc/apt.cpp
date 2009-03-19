@@ -112,9 +112,10 @@ pkgCache::VerIterator aptcc::find_ver(pkgCache::PkgIterator pkg)
 }
 
 // used to emit packages it collects all the needed info
-void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver)
+void aptcc::emit_package(PkBackend *backend,
+			 PkBitfield filters,
+			 const pkgCache::PkgIterator &pkg,
+			 const pkgCache::VerIterator &ver)
 {
 	PkInfoEnum state;
 	if (pkg->CurrentState == pkgCache::State::Installed) {
@@ -204,14 +205,17 @@ void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
 					 ver.VerStr(),
 					 ver.Arch(),
 					 vf.File().Archive());
-	pk_backend_package(backend, state, package_id, get_short_description(ver, records).c_str());
+	pk_backend_package(backend,
+			   state,
+			   package_id,
+			   get_short_description(ver, packageRecords).c_str());
 }
 
 // used to emit packages it collects all the needed info
-void emit_details (PkBackend *backend, pkgRecords *records,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver)
+void aptcc::emit_details(PkBackend *backend,
+			 const pkgCache::PkgIterator &pkg)
 {
+	pkgCache::VerIterator ver = find_ver(pkg);
 	std::string section = ver.Section();
 
 	size_t found;
@@ -219,7 +223,7 @@ void emit_details (PkBackend *backend, pkgRecords *records,
 	section = section.substr(found + 1);
 
 	pkgCache::VerFileIterator vf = ver.FileList();
-	pkgRecords::Parser &rec = records->Lookup(vf);
+	pkgRecords::Parser &rec = packageRecords->Lookup(vf);
 
 	std::string homepage;
 // TODO support this
@@ -238,34 +242,81 @@ void emit_details (PkBackend *backend, pkgRecords *records,
 			   package_id,
 			   "unknown",
 			   get_enum_group(section),
-			   get_long_description_parsed(ver, records).c_str(),
+			   get_long_description_parsed(ver, packageRecords).c_str(),
 			   homepage.c_str(),
 			   ver->Size);
 }
 
-// used to emit packages it collects all the needed info
-void emit_requires (PkBackend *backend, pkgRecords *records, PkBitfield filters,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver)
+void aptcc::get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			pkgCache::PkgIterator pkg,
+			bool recursive,
+			bool &_cancel)
 {
-
-//       cout << "Dependencies: " << endl;
-      for (pkgCache::VerIterator Cur = pkg.VersionList(); Cur.end() != true; Cur++)
-      {
-// 	 cout << Cur.VerStr() << " - ";
-//TODO check depends type
-	 for (pkgCache::DepIterator Dep = Cur.DependsList(); Dep.end() != true; Dep++)
-// 	    cout << Dep.TargetPkg().Name() << " (" << (int)Dep->CompareOp << " " << DeNull(Dep.TargetVer()) << ") ";
-// 	 cout << endl;
-if (Dep.TargetPkg().VersionList().end() == false) {
-	    emit_package (backend, records, filters, Dep.TargetPkg(), Dep.TargetPkg().VersionList());
+	pkgCache::DepIterator dep = find_ver(pkg).DependsList();
+	while (!dep.end()) {
+		if (_cancel) {
+			break;
+		}
+		pkgCache::VerIterator ver = find_ver(dep.TargetPkg());
+		// Ignore packages that exist only due to dependencies.
+		if (ver.end()) {
+			dep++;
+			continue;
+		} else if (dep->Type == pkgCache::Dep::Depends) {
+			if (recursive) {
+				if (!contains(output, dep.TargetPkg())) {
+					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(dep.TargetPkg(), ver));
+					get_depends(output, dep.TargetPkg(), recursive, _cancel);
+				}
+			} else {
+				output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(dep.TargetPkg(), ver));
+			}
+		}
+		dep++;
+	}
 }
-      }
 
+void aptcc::get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			pkgCache::PkgIterator pkg,
+			bool recursive,
+			bool &_cancel)
+{
+	for (pkgCache::PkgIterator parentPkg = cacheFile->PkgBegin(); !parentPkg.end(); ++parentPkg) {
+		if (_cancel) {
+			break;
+		}
+		// Ignore packages that exist only due to dependencies.
+		if (parentPkg.VersionList().end() && parentPkg.ProvidesList().end()) {
+			continue;
+		}
+
+		// Don't insert virtual packages instead add what it provides
+		pkgCache::VerIterator ver = find_ver(parentPkg);
+		if (ver.end() == false) {
+			vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > deps;
+			get_depends(deps, parentPkg, false, _cancel);
+			for (vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=deps.begin();
+			    i != deps.end();
+			    ++i)
+			{
+				if (i->first == pkg) {
+					if (recursive) {
+						if (!contains(output, parentPkg)) {
+							output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(parentPkg, ver));
+							get_requires(output, parentPkg, recursive, _cancel);
+						}
+					} else {
+						output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(parentPkg, ver));
+					}
+					break;
+				}
+			}
+		}
+	}
 }
 
 // used to emit files it reads the info directly from the files
-vector<string> search_file (PkBackend *backend, const string &file_name)
+vector<string> search_file (PkBackend *backend, const string &file_name, bool &_cancel)
 {
 	vector<string> packageList;
 
@@ -280,11 +331,15 @@ vector<string> search_file (PkBackend *backend, const string &file_name)
 	struct dirent *dirp;
 	if (!(dp = opendir("/var/lib/dpkg/info/"))) {
 		egg_debug ("Error opening /var/lib/dpkg/info/\n");
+		delete m_matcher;
 		return vector<string>();
 	}
 
 	string line;
 	while ((dirp = readdir(dp)) != NULL) {
+		if (_cancel) {
+			break;
+		}
 		if (ends_with(dirp->d_name, ".list")) {
 			string f = "/var/lib/dpkg/info/" + string(dirp->d_name);
 			ifstream in(f.c_str());
@@ -304,6 +359,7 @@ vector<string> search_file (PkBackend *backend, const string &file_name)
 		}
 	}
 	closedir(dp);
+	delete m_matcher;
 	return packageList;
 }
 

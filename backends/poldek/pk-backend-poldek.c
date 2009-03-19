@@ -2116,8 +2116,29 @@ backend_download_packages_thread (PkBackend *backend)
 	pd->bytesget = 0;
 	pd->bytesdownload = poldek_get_bytes_to_download (ts, pkgs);
 
-	if (!packages_fetch (poldek_get_pmctx (ts->ctx), pkgs, destdir, 1)) {
-		/* something goes wrong */
+	if (packages_fetch (poldek_get_pmctx (ts->ctx), pkgs, destdir, 1)) {
+		GString *filelist = NULL;
+		gchar *result = NULL;
+
+		filelist = g_string_new ("");
+
+		/* emit the file list we downloaded */
+		for (i = 0; i < n_array_size (pkgs); i++) {
+			struct pkg *pkg = n_array_nth (pkgs, i);
+			gchar buf[256];
+
+			if (i > 0)
+			    g_string_append_c (filelist, ';');
+
+			g_string_append_printf (filelist, "%s/%s", destdir,
+						pkg_filename (pkg, buf, sizeof(buf)));
+		}
+
+		result = g_string_free (filelist, FALSE);
+
+		pk_backend_files (backend, NULL, result);
+
+		g_free (result);
 	}
 
 	poldek_ts_free (ts);

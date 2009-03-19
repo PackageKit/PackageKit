@@ -195,6 +195,18 @@ egg_test_end (EggTest *test)
 		test->hang_loop_id = 0;
 	}
 
+	/* remove all the test callbacks */
+	while (g_source_remove_by_user_data (test))
+		g_print ("WARNING: removed callback for test module");
+
+	/* check we don't have any pending iterations */
+	if (g_main_context_pending (NULL)) {
+		g_print ("WARNING: Pending event in context! Running to completion... ");
+		while (g_main_context_pending (NULL))
+			g_main_context_iteration (NULL, TRUE);
+		g_print ("Done!\n");
+	}
+
 	test->started = FALSE;
 	g_free (test->type);
 }

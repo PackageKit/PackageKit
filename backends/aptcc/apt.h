@@ -31,25 +31,6 @@
 using namespace std;
 
 /**
-*  Emits a package if it match the filters
-*/
-void emit_package (PkBackend *backend, pkgRecords *records, PkBitfield filters,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver);
-/**
-*  Emits details
-*/
-void emit_details (PkBackend *backend, pkgRecords *records,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver);
-/**
-*  Emits required packages
-*/
-void emit_requires (PkBackend *backend, pkgRecords *records, PkBitfield filters,
-		   const pkgCache::PkgIterator &pkg,
-		   const pkgCache::VerIterator &ver);
-
-/**
 *  Emits files of packages
 */
 void emit_files (PkBackend *backend, const PkPackageId *pi);
@@ -57,7 +38,7 @@ void emit_files (PkBackend *backend, const PkPackageId *pi);
 /**
 *  returns a list of packages names
 */
-vector<string> search_file (PkBackend *backend, const string &file_name);
+vector<string> search_file (PkBackend *backend, const string &file_name, bool &_cancel);
 
 class aptcc
 {
@@ -68,6 +49,36 @@ public:
 	bool init(const char *locale, pkgSourceList &apt_source_list);
 
 	pkgCache::VerIterator find_ver(pkgCache::PkgIterator pkg);
+
+	/**
+	 *  Get depends
+	 */
+	void get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			 pkgCache::PkgIterator pkg,
+			 bool recursive,
+			 bool &_cancel);
+
+	/**
+	 *  Get requires
+	 */
+	void get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			  pkgCache::PkgIterator pkg,
+			  bool recursive,
+			  bool &_cancel);
+
+	/**
+	 *  Emits a package if it match the filters
+	 */
+	void emit_package(PkBackend *backend,
+			  PkBitfield filters,
+			  const pkgCache::PkgIterator &pkg,
+			  const pkgCache::VerIterator &ver);
+
+	/**
+	 *  Emits details
+	 */
+	void emit_details(PkBackend *backend,
+			  const pkgCache::PkgIterator &pkg);
 
 	pkgRecords    *packageRecords;
 	pkgCache      *cacheFile;

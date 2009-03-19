@@ -42,7 +42,6 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-#include "pk-transaction-id.h"
 #include "pk-transaction-list.h"
 #include "org.freedesktop.PackageKit.Transaction.h"
 
@@ -791,6 +790,9 @@ pk_transaction_list_new (void)
 #include "egg-test.h"
 #include "pk-backend-internal.h"
 #include "pk-cache.h"
+#include "pk-transaction-db.h"
+
+static PkTransactionDb *db = NULL;
 
 /**
  * pk_transaction_list_test_finished_cb:
@@ -821,7 +823,7 @@ pk_transaction_list_test_get_item (PkTransactionList *tlist)
 	gchar *tid;
 
 	/* get tid */
-	tid = pk_transaction_id_generate ();
+	tid = pk_transaction_db_generate_id (db);
 
 	/* create PkTransaction instance */
 	pk_transaction_list_create (tlist, tid, ":0");
@@ -851,6 +853,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/* we get a cache object to reproduce the engine having it ref'd */
 	cache = pk_cache_new ();
+	db = pk_transaction_db_new ();
 
 	/************************************************************/
 	egg_test_title (test, "get a transaction list object");
@@ -859,7 +862,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "make sure we get a valid tid");
-	tid = pk_transaction_id_generate ();
+	tid = pk_transaction_db_generate_id (db);
 	if (tid != NULL)
 		egg_test_success (test, "got tid %s", tid);
 	else
@@ -935,7 +938,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/* get a new tid */
 	g_free (tid);
-	tid = pk_transaction_id_generate ();
+	tid = pk_transaction_db_generate_id (db);
 
 	/************************************************************/
 	egg_test_title (test, "create another item");
@@ -1340,6 +1343,7 @@ pk_transaction_list_test (EggTest *test)
 	g_object_unref (tlist);
 	g_object_unref (backend);
 	g_object_unref (cache);
+	g_object_unref (db);
 
 	egg_test_end (test);
 }
