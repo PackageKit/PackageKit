@@ -272,6 +272,26 @@ backend_get_update_detail_timeout (gpointer data)
 	guint len;
 	const gchar *package_id;
 	PkBackend *backend = (PkBackend *) data;
+	const gchar *changelog;
+
+	/* dummy */
+	changelog = "**Thu Mar 12 2009** Adam Jackson <ajax@redhat.com> 1.6.0-13\n"
+		    "- xselinux-1.6.0-selinux-nlfd.patch: Acquire the netlink socket from selinux,\n"
+		    "  check it ourselves rather than having libselinux bang on it all the time.\n"
+		    "\n"
+		    "**Wed Mar 11 2009** Adam Jackson <ajax@redhat.com> 1.6.0-10\n"
+		    "- xserver-1.6.0-selinux-less.patch: Don't init selinux unless the policy\n"
+		    "  says to be an object manager.\n"
+		    "\n"
+		    "**Wed Mar 11 2009** Adam Jackson <ajax@redhat.com> 1.6.0-11\n"
+		    "- xserver-1.6.0-less-acpi-brokenness.patch: Don't build the (broken)\n"
+		    "  ACPI code.\n"
+		    "\n"
+		    "**Wed Mar 11 2009** Adam Jackson <ajax@redhat.com> 1.6.0-12\n"
+		    "- Requires: pixman >= 0.14.0\n"
+		    "\n"
+		    "**Fri Mar  6 2009** Adam Jackson <ajax@redhat.com> 1.6.0-8\n"
+		    "- xserver-1.6.0-primary.patch: Really, only look at VGA devices. (#488869)\n";
 
 	/* each one has a different detail for testing */
 	len = g_strv_length (_package_ids);
@@ -283,7 +303,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
 						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source",
-						  "", PK_UPDATE_STATE_ENUM_STABLE, "2008-07-31", NULL);
+						  changelog, PK_UPDATE_STATE_ENUM_STABLE, "2008-07-31", NULL);
 		} else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
 			pk_backend_update_detail (backend, package_id,
 						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed"
@@ -297,7 +317,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  "Update to newest upstream version.\n"
 						  "* This should fix many driver bugs when using nouveau\n"
 						  " * This also introduces the new `frobnicator` driver for *vibrating* rabbit hardware.",
-						  "", PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
+						  changelog, PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
 		} else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
 			pk_backend_update_detail (backend, package_id,
 						  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
@@ -308,14 +328,14 @@ backend_get_update_detail_timeout (gpointer data)
 						  "* support this new thing\n"
 						  "* something else\n"
 						  "- and that new thing",
-						  "", PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
+						  changelog, PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
 
 		} else if (egg_strequal (package_id, "vino;2.24.2.fc9;i386;fedora")) {
 			pk_backend_update_detail (backend, package_id,
 						  "vino;2.24.1.fc9;i386;fedora", "",
 						  "", "", NULL, PK_RESTART_ENUM_NONE,
 						  "Cannot get update as update conflics with vncviewer",
-						  "", PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
+						  changelog, PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
 		} else {
 			/* signal to UI */
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "the package update detail was not found for %s", package_id);
