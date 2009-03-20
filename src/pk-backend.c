@@ -88,6 +88,7 @@ struct _PkBackendPrivate
 	gboolean		 set_error;
 	gboolean		 set_signature;
 	gboolean		 set_eula;
+	gboolean		 simultaneous;
 	gboolean		 has_sent_package;
 	gboolean		 use_time;
 	PkNetwork		*network;
@@ -776,6 +777,70 @@ pk_backend_get_status (PkBackend *backend)
 }
 
 /**
+ * pk_backend_package_emulate_finished:
+ **/
+static gboolean
+pk_backend_package_emulate_finished (PkBackend *backend)
+{
+	PkInfoEnum info;
+	gchar *package_id;
+	gboolean ret = FALSE;
+
+	/* simultaneous handles this on it's own */
+	if (backend->priv->simultaneous)
+		return FALSE;
+
+	/* first package in transaction */
+	if (backend->priv->last_package == NULL)
+		return FALSE;
+
+	/* already finished */
+	if (backend->priv->last_package->info == PK_INFO_ENUM_FINISHED)
+		return FALSE;
+
+	/* only makes sense for some values */
+	info = backend->priv->last_package->info;
+	if (info == PK_INFO_ENUM_DOWNLOADING ||
+	    info == PK_INFO_ENUM_UPDATING ||
+	    info == PK_INFO_ENUM_INSTALLING ||
+	    info == PK_INFO_ENUM_REMOVING ||
+	    info == PK_INFO_ENUM_CLEANUP ||
+	    info == PK_INFO_ENUM_OBSOLETING) {
+		package_id = pk_package_id_to_string (backend->priv->last_package->id);
+		pk_backend_package (backend, PK_INFO_ENUM_FINISHED, package_id, backend->priv->last_package->summary);
+		g_free (package_id);
+		ret = TRUE;
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_package_emulate_finished_for_package:
+ **/
+static gboolean
+pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkPackageObj *obj)
+{
+	/* simultaneous handles this on it's own */
+	if (backend->priv->simultaneous)
+		return FALSE;
+
+	/* first package in transaction */
+	if (backend->priv->last_package == NULL)
+		return FALSE;
+
+	/* sending finished already */
+	if (obj->info == PK_INFO_ENUM_FINISHED)
+		return FALSE;
+
+	/* same package, just info change */
+	if (pk_package_id_equal (backend->priv->last_package->id, obj->id))
+		return FALSE;
+
+	/* emit the old package as finished */
+	return pk_backend_package_emulate_finished (backend);
+}
+
+/**
  * pk_backend_package:
  **/
 gboolean
@@ -810,6 +875,9 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 		goto out;
 	}
 
+	/* simulate the finish here when required */
+	pk_backend_package_emulate_finished_for_package (backend, obj);
+
 	/* update the 'last' package */
 	pk_package_obj_free (backend->priv->last_package);
 	backend->priv->last_package = pk_package_obj_copy (obj);
@@ -821,19 +889,22 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 		goto out;
 	}
 
-	/* we automatically set the transaction status for some infos */
-	if (info == PK_INFO_ENUM_DOWNLOADING)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	else if (info == PK_INFO_ENUM_UPDATING)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	else if (info == PK_INFO_ENUM_INSTALLING)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-	else if (info == PK_INFO_ENUM_REMOVING)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
-	else if (info == PK_INFO_ENUM_CLEANUP)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_CLEANUP);
-	else if (info == PK_INFO_ENUM_OBSOLETING)
-		pk_backend_set_status (backend, PK_STATUS_ENUM_OBSOLETE);
+	/* we automatically set the transaction status for some PkInfoEnums if running
+	 * in non-simultaneous transaction mode */
+	if (!backend->priv->simultaneous) {
+		if (info == PK_INFO_ENUM_DOWNLOADING)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+		else if (info == PK_INFO_ENUM_UPDATING)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
+		else if (info == PK_INFO_ENUM_INSTALLING)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
+		else if (info == PK_INFO_ENUM_REMOVING)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
+		else if (info == PK_INFO_ENUM_CLEANUP)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_CLEANUP);
+		else if (info == PK_INFO_ENUM_OBSOLETING)
+			pk_backend_set_status (backend, PK_STATUS_ENUM_OBSOLETE);
+	}
 
 	/* we've sent a package for this transaction */
 	backend->priv->has_sent_package = TRUE;
@@ -1001,6 +1072,21 @@ pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 
 	egg_debug ("emit change-transaction-data %s", data);
 	g_signal_emit (backend, signals [PK_BACKEND_CHANGE_TRANSACTION_DATA], 0, data);
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_simultaneous_mode:
+ **/
+gboolean
+pk_backend_set_simultaneous_mode (PkBackend *backend, gboolean simultaneous)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	backend->priv->simultaneous = simultaneous;
+	if (simultaneous)
+		egg_warning ("simultaneous mode is not well tested, use with caution");
 	return TRUE;
 }
 
@@ -1270,7 +1356,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	if (backend->priv->finished) {
 		egg_warning ("consistency error");
 		egg_debug_backtrace ();
-		return FALSE;
+		goto out;
 	}
 
 	/* warn the backend developer that they've done something worng
@@ -1282,6 +1368,8 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
 
 	pk_backend_finished (backend);
+out:
+	backend->priv->signal_error_timeout = 0;
 	return FALSE;
 }
 
@@ -1512,6 +1600,9 @@ pk_backend_finished (PkBackend *backend)
 				    "Backends should send status <value> signals for %s!", role_text);
 		egg_warning ("GUI will remain unchanged!");
 	}
+
+	/* emulate the last finished package if not done already */
+	pk_backend_package_emulate_finished (backend);
 
 	/* make any UI insensitive */
 	pk_backend_set_allow_cancel (backend, FALSE);
@@ -1852,8 +1943,10 @@ pk_backend_reset (PkBackend *backend)
 	}
 
 	/* if we set an error code notifier, clear */
-	if (backend->priv->signal_error_timeout != 0)
+	if (backend->priv->signal_error_timeout != 0) {
 		g_source_remove (backend->priv->signal_error_timeout);
+		backend->priv->signal_error_timeout = 0;
+	}
 
 	pk_package_obj_free (backend->priv->last_package);
 	backend->priv->set_error = FALSE;
@@ -1898,6 +1991,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->signal_finished = 0;
 	backend->priv->signal_error_timeout = 0;
 	backend->priv->during_initialize = FALSE;
+	backend->priv->simultaneous = FALSE;
 	backend->priv->store = pk_store_new ();
 	backend->priv->time = pk_time_new ();
 	backend->priv->network = pk_network_new ();

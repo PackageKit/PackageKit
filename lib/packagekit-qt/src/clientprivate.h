@@ -22,6 +22,7 @@
 #define CLIENTPRIVATE_H
 
 #include <QtCore>
+#include <QtSql>
 #include "client.h"
 
 namespace PackageKit {

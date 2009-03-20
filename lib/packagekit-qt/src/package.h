@@ -53,32 +53,32 @@ public:
 	 *
 	 * A PID (package ID) uniquely identifies a package among all software repositories
 	 */
-	QString id();
+	QString id() const;
 
 	/**
 	 * Returns the package name, for example vim
 	 */
-	QString name();
+	QString name() const;
 
 	/**
 	 * Returns the package version, for example 7.0
 	 */
-	QString version();
+	QString version() const;
 
 	/**
 	 * Returns the package's architecture, for example x86_64
 	 */
-	QString arch();
+	QString arch() const;
 
 	/**
 	 * Holds additionnal data about the package set by the backend
 	 */
-	QString data();
+	QString data() const;
 
 	/**
 	 * Returns the package's summary. You can get more details by using Client::getDetails
 	 */
-	QString summary();
+	QString summary() const;
 
 	/**
 	 * Describes the state of a package
@@ -104,7 +104,7 @@ public:
 	/**
 	 * Returns the package's state
 	 */
-	State state();
+	State state() const;
 
 	/**
 	 * Describes a package's license
@@ -254,32 +254,32 @@ public:
 			 * Returns the package these details are linked to
 			 * \return the Package object to which these details are related
 			 */
-			Package* package();
+			Package* package() const;
 
 			/**
 			 * Returns the package's license
 			 */
-			Package::License license();
+			Package::License license() const;
 
 			/**
 			 * Returns the package's group (for example Multimedia, Editors...)
 			 */
-			Client::Group group();
+			Client::Group group() const;
 
 			/**
 			 * Returns the package's long description
 			 */
-			QString description();
+			QString description() const;
 
 			/**
 			 * Returns the software's homepage url
 			 */
-			QString url();
+			QString url() const;
 
 			/**
 			 * Returns the package's size
 			 */
-			qulonglong size();
+			qulonglong size() const;
 		private:
 			friend class Package;
 			friend class TransactionPrivate;
@@ -293,7 +293,7 @@ public:
 	 * \sa Client::getDetails
 	 * \sa Package::details
 	 */
-	bool hasDetails();
+	bool hasDetails() const;
 
 	/**
 	 * \brief Returns the package's extended details
@@ -302,12 +302,15 @@ public:
 	 * \return a pointer to a Package::Details class containing the package's details
 	 * \sa Client::getDetails
 	 */
-	Details* details();
+	Details* details() const;
+
+	bool operator==(const Package *package) const;
 
 private:
 	friend class Transaction;
 	friend class TransactionPrivate;
 	friend class Details;
+	friend class Client;
 	Package(const QString& packageId, const QString& state = QString(), const QString& summary = QString());
 	void setDetails(Details* det);
 	class Private;

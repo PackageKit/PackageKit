@@ -40,6 +40,10 @@ static gboolean _updated_gtkhtml = FALSE;
 static gboolean _updated_kernel = FALSE;
 static gboolean _updated_powertop = FALSE;
 static gboolean _has_signature = FALSE;
+static gboolean _use_blocked = FALSE;
+static gboolean _use_eula = FALSE;
+static gboolean _use_gpg = FALSE;
+static gboolean _use_distro_upgrade = FALSE;
 
 /**
  * backend_initialize:
@@ -150,16 +154,53 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
+	guint i;
+	guint len;
+	const gchar *package_id;
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_details (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
-"Scribus is an desktop *open source* page layöut program with "
-"the aim of producing commercial grade output in **PDF** and "
-"**Postscript**, primarily, though not exclusively for Linux.\n"
-"\n"
-"While the goals of the program are for ease of use and simple easy to "
-"understand tools, Scribus offers support for professional publishing "
-"features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
-"import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager", 11214665);
+
+	/* each one has a different detail for testing */
+	len = g_strv_length (package_ids);
+	for (i=0; i<len; i++) {
+		package_id = package_ids[i];
+		if (egg_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora")) {
+			pk_backend_details (backend, "powertop;1.8-1.fc8;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
+					    "PowerTOP is a tool that finds the software component(s) that make your "
+					    "computer use more power than necessary while it is idle.", "http://live.gnome.org/powertop", 101*1024);
+		} else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
+			pk_backend_details (backend, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
+					    "The kernel package contains the Linux kernel (vmlinuz), the core of any "
+					    "Linux operating system.  The kernel handles the basic functions of the "
+					    "operating system: memory allocation, process allocation, device input "
+					    "and output, etc.", "http://www.kernel.org", 33*1024*1024);
+		} else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
+			pk_backend_details (backend, "gtkhtml2;2.19.1-4.fc8;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
+					    "GtkHTML2 (sometimes called libgtkhtml) is a widget for displaying html "
+					    "pages.", "http://live.gnome.org/gtkhtml", 133*1024);
+		} else if (egg_strequal (package_id, "vino;2.24.2.fc9;i386;fedora")) {
+			pk_backend_details (backend, "vino;2.24.2.fc9;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
+					    "Vino is a VNC server for GNOME. It allows remote users to "
+					    "connect to a running GNOME session using VNC.", "http://live.gnome.org/powertop", 3*1024*1024);
+		} else if (egg_strequal (package_id, "gnome-power-manager;2.6.19;i386;fedora")) {
+			pk_backend_details (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
+					    "GNOME Power Manager uses the information and facilities provided by HAL "
+					    "displaying icons and handling user callbacks in an interactive GNOME session.\n"
+					    "GNOME Power Preferences allows authorised users to set policy and "
+					    "change preferences.", "http://projects.gnome.org/gnome-power-manager/", 13*1024*1024);
+		//TODO: add other packages
+		} else {
+			pk_backend_details (backend, "scribus;1.3.4-1.fc8;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
+					    "Scribus is an desktop *open source* page layöut program with "
+					    "the aim of producing commercial grade output in **PDF** and "
+					    "**Postscript**, primarily, though not exclusively for Linux.\n"
+					    "\n"
+					    "While the goals of the program are for ease of use and simple easy to "
+					    "understand tools, Scribus offers support for professional publishing "
+					    "features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
+					    "import/export and creation of color separations.", "http://live.gnome.org/scribus", 44*1024*1024);
+		}
+	}
 	pk_backend_finished (backend);
 }
 
@@ -170,12 +211,13 @@ static void
 backend_get_distro_upgrades (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	if (!_use_distro_upgrade)
+		goto out;
 	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_STABLE,
-				   "Fedora 9", "Fedora 9 is a Linux-based operating system "
-				   "that showcases the latest in free and open source software.");
+				   "fedora-9", "Fedora 9");
 	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
-				   "Fedora 10 RC1", "Fedora 10 RC1 is the first unstable version "
-				   "of Fedora for people to test.");
+				   "fedora-10-rc1", "Fedora 10 RC1");
+out:
 	pk_backend_finished (backend);
 }
 
@@ -200,6 +242,8 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
 		else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora"))
 			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/bin/ck-xinit-session");
+		else
+			pk_backend_files (backend, package_id, "/usr/share/gnome-power-manager;/usr/bin/ck-xinit-session");
 	}
 	pk_backend_finished (backend);
 }
@@ -228,6 +272,26 @@ backend_get_update_detail_timeout (gpointer data)
 	guint len;
 	const gchar *package_id;
 	PkBackend *backend = (PkBackend *) data;
+	const gchar *changelog;
+
+	/* dummy */
+	changelog = "**Thu Mar 12 2009** Adam Jackson <ajax@redhat.com> 1.6.0-13\n"
+		    "- xselinux-1.6.0-selinux-nlfd.patch: Acquire the netlink socket from selinux,\n"
+		    "  check it ourselves rather than having libselinux bang on it all the time.\n"
+		    "\n"
+		    "**Wed Mar 11 2009** Adam Jackson <ajax@redhat.com> 1.6.0-10\n"
+		    "- xserver-1.6.0-selinux-less.patch: Don't init selinux unless the policy\n"
+		    "  says to be an object manager.\n"
+		    "\n"
+		    "**Wed Mar 11 2009** Adam Jackson <ajax@redhat.com> 1.6.0-11\n"
+		    "- xserver-1.6.0-less-acpi-brokenness.patch: Don't build the (broken)\n"
+		    "  ACPI code.\n"
+		    "\n"
+		    "**Wed Mar 11 2009** Adam Jackson <ajax@redhat.com> 1.6.0-12\n"
+		    "- Requires: pixman >= 0.14.0\n"
+		    "\n"
+		    "**Fri Mar  6 2009** Adam Jackson <ajax@redhat.com> 1.6.0-8\n"
+		    "- xserver-1.6.0-primary.patch: Really, only look at VGA devices. (#488869)\n";
 
 	/* each one has a different detail for testing */
 	len = g_strv_length (_package_ids);
@@ -239,7 +303,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
 						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source",
-						  "", PK_UPDATE_STATE_ENUM_STABLE, "2008-07-31", NULL);
+						  changelog, PK_UPDATE_STATE_ENUM_STABLE, "2008-07-31", NULL);
 		} else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
 			pk_backend_update_detail (backend, package_id,
 						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed"
@@ -249,8 +313,11 @@ backend_get_update_detail_timeout (gpointer data)
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
 						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
 						  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
-						  PK_RESTART_ENUM_SYSTEM, "Update to newest version",
-						  "", PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
+						  PK_RESTART_ENUM_SYSTEM,
+						  "Update to newest upstream version.\n"
+						  "* This should fix many driver bugs when using nouveau\n"
+						  " * This also introduces the new `frobnicator` driver for *vibrating* rabbit hardware.",
+						  changelog, PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
 		} else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
 			pk_backend_update_detail (backend, package_id,
 						  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
@@ -261,20 +328,14 @@ backend_get_update_detail_timeout (gpointer data)
 						  "* support this new thing\n"
 						  "* something else\n"
 						  "- and that new thing",
-						  "", PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
+						  changelog, PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
 
 		} else if (egg_strequal (package_id, "vino;2.24.2.fc9;i386;fedora")) {
 			pk_backend_update_detail (backend, package_id,
 						  "vino;2.24.1.fc9;i386;fedora", "",
 						  "", "", NULL, PK_RESTART_ENUM_NONE,
 						  "Cannot get update as update conflics with vncviewer",
-						  "", PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
-
-
-		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
-				    "",
-				    "Remote desktop server for the desktop");
-
+						  changelog, PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
 		} else {
 			/* signal to UI */
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "the package update detail was not found for %s", package_id);
@@ -304,10 +365,12 @@ backend_get_updates_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 
-	if (!_updated_powertop && !_updated_kernel && !_updated_gtkhtml) {
-		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
-				    "vino;2.24.2.fc9;i386;fedora",
-				    "Remote desktop server for the desktop");
+	if (_use_blocked) {
+		if (!_updated_powertop && !_updated_kernel && !_updated_gtkhtml) {
+			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
+					    "vino;2.24.2.fc9;i386;fedora",
+					    "Remote desktop server for the desktop");
+		}
 	}
 	if (!_updated_powertop) {
 		pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
@@ -394,7 +457,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	gboolean has_eula;
 
 	if (egg_strequal (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva")) {
-		if (!_has_signature) {
+		if (_use_gpg && !_has_signature) {
 			pk_backend_repo_signature_required (backend, package_ids[0], "updates",
 							    "http://example.com/gpgkey",
 							    "Test Key (Fedora) fedora@example.com",
@@ -408,7 +471,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 		}
 		eula_id = "eula_hughsie_dot_com";
 		has_eula = pk_backend_is_eula_valid (backend, eula_id);
-		if (!has_eula) {
+		if (_use_eula && !has_eula) {
 			license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
 					    "Captain: What happen ?\n"
 					    "Mechanic: Somebody set up us the bomb.\n\n"
@@ -453,7 +516,7 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	if (type == PK_SIGTYPE_ENUM_GPG &&
-	    egg_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
+	    /* egg_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") && */
 	    egg_strequal (key_id, "BB7576AC")) {
 		egg_debug ("installed signature %s for %s", key_id, package_id);
 		_has_signature = TRUE;
@@ -557,12 +620,47 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 }
 
 /**
+ * backend_rollback_timeout:
+ */
+static gboolean
+backend_rollback_timeout (gpointer data)
+{
+	PkBackend *backend = (PkBackend *) data;
+	if (_progress_percentage == 0) {
+		_updated_gtkhtml = FALSE;
+		_updated_kernel = FALSE;
+		_updated_powertop = FALSE;
+		pk_backend_set_status (backend, PK_STATUS_ENUM_ROLLBACK);
+	}
+	if (_progress_percentage == 20)
+		pk_backend_set_allow_cancel (backend, FALSE);
+	if (_progress_percentage == 100) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+	_progress_percentage += 10;
+	pk_backend_set_percentage (backend, _progress_percentage);
+	return TRUE;
+}
+
+
+/**
  * backend_rollback:
  */
 static void
 backend_rollback (PkBackend *backend, const gchar *transaction_id)
 {
-	pk_backend_finished (backend);
+	/* allow testing error condition */
+	if (egg_strequal (transaction_id, "/397_eeecadad_data")) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "invalid transaction_id");
+		pk_backend_finished (backend);
+		return;
+	}
+	_progress_percentage = 0;
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_set_allow_cancel (backend, TRUE);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	_signal_timeout = g_timeout_add (2000, backend_rollback_timeout, backend);
 }
 
 /**
@@ -672,65 +770,83 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 }
 
 /**
- * backend_update_packages_update_timeout:
- **/
-static gboolean
-backend_update_packages_update_timeout (gpointer data)
-{
-	guint len;
-	PkBackend *backend = (PkBackend *) data;
-	const gchar *package;
-
-	package = _package_ids[_package_current];
-	/* emit the next package */
-	if (egg_strequal (package, "powertop;1.8-1.fc8;i386;fedora")) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package, "Power consumption monitor");
-		_updated_powertop = TRUE;
-	}
-	if (egg_strequal (package, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package,
-				    "The Linux kernel (the core of the Linux operating system)");
-		_updated_kernel = TRUE;
-	}
-	if (egg_strequal (package, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package, "An HTML widget for GTK+ 2.0");
-		_updated_gtkhtml = TRUE;
-	}
-
-	/* are we done? */
-	_package_current++;
-	len = pk_package_ids_size (_package_ids);
-	if (_package_current + 1 > len) {
-		pk_backend_set_percentage (backend, 100);
-		pk_backend_finished (backend);
-		_signal_timeout = 0;
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/**
  * backend_update_packages_download_timeout:
  **/
 static gboolean
 backend_update_packages_download_timeout (gpointer data)
 {
-	guint len;
 	PkBackend *backend = (PkBackend *) data;
+	guint sub;
 
-	/* emit the next package */
-	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, _package_ids[_package_current], "The same thing");
-
-	/* are we done? */
-	_package_current++;
-	len = pk_package_ids_size (_package_ids);
-	if (_package_current + 1 > len) {
-		_package_current = 0;
-		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-		pk_backend_set_percentage (backend, 50);
-		_signal_timeout = g_timeout_add (2000, backend_update_packages_update_timeout, backend);
+	if (_progress_percentage == 100) {
+		if (_use_blocked) {
+			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
+					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					    "An HTML widget for GTK+ 2.0");
+			_updated_gtkhtml = FALSE;
+		}
+		pk_backend_finished (backend);
 		return FALSE;
 	}
+	if (_progress_percentage == 0 && !_updated_powertop) {
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+				    "powertop;1.8-1.fc8;i386;fedora",
+				    "Power consumption monitor");
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	if (_progress_percentage == 20 && !_updated_kernel) {
+		pk_backend_set_sub_percentage (backend, 100);
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+				    "The Linux kernel (the core of the Linux operating system)");
+		pk_backend_set_sub_percentage (backend, 0);
+		pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
+	}
+	if (_progress_percentage == 30 && !_updated_gtkhtml) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS, "A newer package preupgrade is available in fedora-updates-testing");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
+		pk_backend_set_sub_percentage (backend, 100);
+		if (!_use_blocked) {
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					    "An HTML widget for GTK+ 2.0");
+			_updated_gtkhtml = TRUE;
+		}
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	if (_progress_percentage == 40 && !_updated_powertop) {
+		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
+		pk_backend_set_allow_cancel (backend, FALSE);
+		pk_backend_set_sub_percentage (backend, 100);
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+				    "powertop;1.8-1.fc8;i386;fedora",
+				    "Power consumption monitor");
+		_updated_powertop = TRUE;
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	if (_progress_percentage == 60 && !_updated_kernel) {
+		pk_backend_set_sub_percentage (backend, 100);
+		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+				    "The Linux kernel (the core of the Linux operating system)");
+		_updated_kernel = TRUE;
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	if (_progress_percentage == 80 && !_updated_kernel) {
+		pk_backend_set_sub_percentage (backend, 100);
+		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
+				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+				    "The Linux kernel (the core of the Linux operating system)");
+		pk_backend_set_sub_percentage (backend, 0);
+	}
+	_progress_percentage += 1;
+	pk_backend_set_percentage (backend, _progress_percentage);
+	sub = (_progress_percentage % 10) * 10;
+	if (sub != 0)
+		pk_backend_set_sub_percentage (backend, sub);
 	return TRUE;
 }
 
@@ -740,11 +856,56 @@ backend_update_packages_download_timeout (gpointer data)
 static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
+	const gchar *eula_id;
+	const gchar *license_agreement;
+	gboolean has_eula;
+	if (_use_gpg && !_has_signature) {
+		pk_backend_repo_signature_required (backend, package_ids[0], "updates",
+						    "http://example.com/gpgkey",
+						    "Test Key (Fedora) fedora@example.com",
+						    "BB7576AC",
+						    "D8CC 06C2 77EC 9C53 372F C199 B1EE 1799 F24F 1B08",
+						    "2007-10-04", PK_SIGTYPE_ENUM_GPG);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+				       "GPG signed package could not be verified");
+		pk_backend_finished (backend);
+		return;
+	}
+	eula_id = "eula_hughsie_dot_com";
+	has_eula = pk_backend_is_eula_valid (backend, eula_id);
+	if (_use_eula && !has_eula) {
+		license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
+				    "Captain: What happen ?\n"
+				    "Mechanic: Somebody set up us the bomb.\n\n"
+				    "Operator: We get signal.\n"
+				    "Captain: What !\n"
+				    "Operator: Main screen turn on.\n"
+				    "Captain: It's you !!\n"
+				    "CATS: How are you gentlemen !!\n"
+				    "CATS: All your base are belong to us.\n"
+				    "CATS: You are on the way to destruction.\n\n"
+				    "Captain: What you say !!\n"
+				    "CATS: You have no chance to survive make your time.\n"
+				    "CATS: Ha Ha Ha Ha ....\n\n"
+				    "Operator: Captain!! *\n"
+				    "Captain: Take off every 'ZIG' !!\n"
+				    "Captain: You know what you doing.\n"
+				    "Captain: Move 'ZIG'.\n"
+				    "Captain: For great justice.\n";
+		pk_backend_eula_required (backend, eula_id, package_ids[0],
+					  "CATS Inc.", license_agreement);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
+				       "licence not installed so cannot install");
+		pk_backend_finished (backend);
+		return;
+	}
+
 	_package_ids = package_ids;
 	_package_current = 0;
+	_progress_percentage = 0;
 	pk_backend_set_percentage (backend, 0);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	_signal_timeout = g_timeout_add (2000, backend_update_packages_download_timeout, backend);
+	_signal_timeout = g_timeout_add (200, backend_update_packages_download_timeout, backend);
 }
 
 static gboolean
@@ -771,10 +932,12 @@ backend_update_system_timeout (gpointer data)
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
-		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
-				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-				    "An HTML widget for GTK+ 2.0");
-		_updated_gtkhtml = FALSE;
+		if (_use_blocked) {
+			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
+					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					    "An HTML widget for GTK+ 2.0");
+			_updated_gtkhtml = FALSE;
+		}
 	}
 	if (_progress_percentage == 40 && !_updated_powertop) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
@@ -795,8 +958,9 @@ backend_update_system_timeout (gpointer data)
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 	}
-	_progress_percentage += 10;
+	_progress_percentage += 1;
 	pk_backend_set_percentage (backend, _progress_percentage);
+	pk_backend_set_sub_percentage (backend, (_progress_percentage % 10) * 10);
 	return TRUE;
 }
 
@@ -810,7 +974,7 @@ backend_update_system (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, TRUE);
 	_progress_percentage = 0;
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
-	_signal_timeout = g_timeout_add (1000, backend_update_system_timeout, backend);
+	_signal_timeout = g_timeout_add (100, backend_update_system_timeout, backend);
 }
 
 /**

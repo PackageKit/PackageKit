@@ -1,3 +1,125 @@
+Version 0.4.5
+~~~~~~~~~~~~~
+Released: 2009-03-09
+
+Translations:
+ - Updated Punjabi translation (A S Alam)
+ - Updated Spanish translation (Domingo Becker)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated German translation (Jens-Uwe Peter)
+ - Updated Spanish translation (Jorge A Gallegos)
+ - Updated Polish translation (Piotr Drąg)
+ - Updated Marathi Translations (Sandeep Sheshrao Shedmake)
+ - Updated Catalan translation (Xavier Conde)
+
+New Features:
+ - Enable ptrace() on libpackagekit, it was always a bandaid (Richard Hughes)
+ - python: add a PkError exception class to better handle nested errors (Richard Hughes)
+ - Clarify the spec that a Details::size value of zero of a non-installed file
+   indicates it's in cache and doesn't need to be downloaded (Richard Hughes)
+ - Remove the app-install feature, it's now it's own project (Richard Hughes)
+ - Allow backends to enable simultaneous mode to do actions in parallel (Richard Hughes)
+ - Updated QPackageKit soname version to 0.4.1 (Daniel Nicoletti)
+ - Made package methods const and added an operator== to package (Daniel Nicoletti)
+
+Bugfixes:
+ - When we reset a PkClient, get a new reference to a PkPackageList (Richard Hughes)
+ - Ensure we set PK_STATUS_ENUM_FINISHED when we return cached updates (Richard Hughes)
+ - glib: When we cancel a transaction, don't overwrite the role as Cancel (Richard Hughes)
+ - Fix the self test by using actual provides in the catalog file (Richard Hughes)
+
+Backends:
+ - apt: Update the postinst script to store desktop file information in the desktop.db (Sebastian Heinlein)
+ - conary: Fix some typos for search methods (Andres Vargas)
+ - conary: Fix the unicode decode (Andres Vargas)
+ - conary: Remove chars what break the backend (Andres Vargas)
+ - dummy: Add other package details for updates (Richard Hughes)
+ - dummy: Make the gpg and eula prompts configurable (Richard Hughes)
+ - yum: Do proper error handling to avoid exiting the script on correctable errors (Richard Hughes)
+ - yum: Support the 'any' provide search (Richard Hughes)
+ - yum: Output a Details::size value of zero if the file is in cache (Richard Hughes)
+
+Version 0.4.4
+~~~~~~~~~~~~~
+Released: 2009-02-23
+
+Translations:
+ - Updated Swedish translation (Daniel Nylander)
+ - Updated Spanish translation (Domingo Becker)
+ - Updated German translation (Fabian Affolter)
+ - Updated Brazilian Portuguese translation (Igor Pires Soares)
+ - Updated Polish translation (Piotr Drąg)
+ - Updated Simplified Chinese translation (zhourongrong)
+
+New Features:
+ - Add a new method GetDaemonState to the main interface to help debugging on
+   live systems (Richard Hughes)
+ - Print the daemon state when using pkmon in verbose mode (Richard Hughes)
+ - Add a draft standard for application install metadata handling (Richard Hughes)
+ - Add a pk-app-install binary for manipulating the sqlite cache (Richard Hughes)
+ - PackageKit-Qt: Sync API for RequireRestart (Adrien BUSTANY)
+ - PackageKit-Qt: Add support for application filter (Adrien BUSTANY)
+ - PackageKit-Qt: Add a searchFromDesktopFile method  (Adrien BUSTANY)
+
+Bugfixes:
+ - Updated documentation with UseSyslog parameter (Balaji)
+ - Fix for the updates and obsoletes delimiter (Daniel Nicoletti)
+ - Make the dbus policy more fine grained (Sebastian Heinlein)
+ - Fix compile failure with gcc-4.4.0 and old versions of glib2 (Richard Hughes)
+ - If we fail to exit from the dispatcher, make sure we cleanup the poll as the
+   child check isn't going to be run (Richard Hughes)
+ - The QT lib now depends on QtSql, so add this to the configure (Richard Hughes)
+ - Fix up resolve in pkcon and from libpackagekit-glib (Richard Hughes)
+ - Don't dereference a NULL pointer in pk_console_resolve() which can be done
+   using pkcon list-install (Richard Hughes)
+ - Don't use an local error in pkcon list-install else we'll fail to free it,
+   and it's non-fatal (Richard Hughes)
+ - PackageKit-Qt: Handle daemon errors more gracefully (Adrien BUSTANY)
+ - PackageKit-Qt: Add a getLastError method to get the last daemon error (Adrien BUSTANY)
+ - PackageKit-Qt: Add missing implementation for uid and cmdline (Adrien BUSTANY)
+ - Packagekit-Qt: Fix to make what provides work (Daniel Nicoletti)
+
+Backends:
+ - alpm: Added experimental support for progress indication (Valeriy Lyasotskiy)
+ - alpm: Updated alpm backend status in status matrix (Valeriy Lyasotskiy)
+ - apt: Allow the properties and introspection interface of the backend
+        to everyone (Sebastian Heinlein)
+ - apt: Use the merged debfile module of python-apt (Sebastian Heinlein)
+ - apt: Fix an API change in debfile (Sebastian Heinlein)
+ - apt: Install the main Python module into the packagekit package and use a command
+        wrapper to improve the start time (*.pyc) (Sebastian Heinlein)
+ - apt: Remove code which is now merged with python-apt (Sebastian Heinlein)
+ - apt: Add script to extract information from app-install desktop files (Sebastian Heinlein)
+ - conary: Fix get-updates command (Andres Vargas)
+ - conary: Fix the group search (Andres Vargas)
+ - conary: Change the error signal for groups not found (Andres Vargas)
+ - conary: Add a percent progress on install packages (Andres Vargas)
+ - conary: Remove the subpercent signal only percent signal (Andres Vargas)
+ - conary: Add subpercent for minitasks (Andres Vargas)
+ - conary: Tuning the percent update (Andres Vargas)
+ - conary: Fix step feeling for percent download (Andres Vargas)
+ - conary: Add percent to update/remove/get-updates/update-system (Andres Vargas)
+ - conary: Add a exception for run get-updates first and then update (Andres Vargas)
+ - conary: update-system do a stepdown percent (Andres Vargas)
+ - conary: Fix the search ~installed filter (Andres Vargas)
+ - conary: Add more classify groups (Andres Vargas)
+ - conary: Implement the conaryEnums for classify category in groups fix the
+           backend for search groups (Andres Vargas)
+ - conary: Add more log info to callbacks fix get-files (Andres Vargas)
+ - conary: Fix get-files from many troves (Andres Vargas)
+ - dummy: Use the correct delimiter for the obsoletes in the kernel package (Richard Hughes)
+ - dummy: Add update detail for the blocked package, and raise an error
+          if we can't find a match (Richard Hughes)
+ - dummy: Add a simple rollback action (Richard Hughes)
+ - poldek: Build fix (Patryk Zawadzki)
+ - poldek: For NOT_INSTALLED filter return only available packages that are NOT
+           installed (Marcin Banasiak)
+ - yum: Adds an auto_close attribute to the rpmdb object (Seth Vidal)
+ - yum: Add support for the new font and mimehandler provides (Richard Hughes)
+ - yum: Don't backtrace with an internal error when the filename is not
+        unicode. Fixes rh#480440 (Richard Hughes)
+ - zypp: Fix up virtual callback methods (Scott Reeves)
+
 Version 0.4.3
 ~~~~~~~~~~~~~
 Released: 2009-02-02

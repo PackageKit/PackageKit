@@ -84,6 +84,7 @@ A backend for PackageKit to enable SMART functionality.
 %package docs
 Summary: Documentation for PackageKit
 Group: Development/Libraries
+#BuildArch: noarch
 Requires: %{name} = %{version}-%{release}
 
 %description docs

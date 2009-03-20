@@ -168,7 +168,7 @@ pk_time_get_remaining (PkTime *self)
 		item_prev = g_ptr_array_index (self->priv->array, i-1);
 		item = g_ptr_array_index (self->priv->array, i);
 		grad = pk_time_get_gradient (item, item_prev);
-		egg_debug ("gradient between %i/%i=%f", i-1, i, grad);
+//		egg_debug ("gradient between %i/%i=%f", i-1, i, grad);
 		if (grad < 0.00001 || grad > 100) {
 			egg_debug ("ignoring gradient: %f", grad);
 		} else {
@@ -432,7 +432,7 @@ pk_time_test (EggTest *test)
 		value += 10;
 	}
 	value = pk_time_get_remaining (self);
-	if (value > 1199 && value < 1201)
+	if (value >= 1199 && value <= 1201)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got %i", value);

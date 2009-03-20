@@ -30,11 +30,18 @@ this out of band is that we do not need to using PackageKit for lots of small
 searches, and can query on the native DE groups using a fast .
 
 * This specification is designed around a single sqlite database
-* Applications must ship a 48x48 PNG format icon if one is provided.
+* Applications must ship a 48x48 icon if one is provided.
   Other sizes can optionally provided, although this is not recommended.
 * Applications should not ship extra data in the database. Functionality will
   be increased in future versions of the standard and the database format will
   be expanded.
+
+The interchange format is native SQL, rather than a compressed database.
+This is so the information can be verified, rather than just shipping a
+'binary blob' of a database file. This file is usually very well compressed in
+packages or tar.gz archives.
+
+This also allows using a database such as MySQL or postgresql if required.
 
 == Future ==
 
@@ -77,29 +84,37 @@ This is used, for instance:
 
 == Schema ==
 
-TABLE localised:
+TABLE translations:
 STRING application_id (name of the desktop file, with no extension)
 STRING application_name (Name in desktop file, in locale)
 STRING application_summary (Comment in desktop file, in locale)
-STRING repo_name (for adding and removal)
 STRING locale
 
-TABLE general
+TABLE applications:
 STRING application_id (name of the desktop file, with no extension)
-STRING package_name (to save on expensive SearchFile's)
-STRING icon_name (without path or extension)
-STRING group (Categories from desktop file, _not_ PK groups or PK categories)
-STRING repo_name (for adding and removal)
+STRING package_name (the package name, e.g. 'nautilus')
+STRING categories (Categories from desktop file, _not_ PK groups or PK categories)
+STRING repo_id (for adding and removal)
+STRING icon_name (local filename with extension, e.g. "totem-pl.png". This is required so that local theme can override upstream icon)
 STRING application_name (Name in desktop file)
 STRING application_summary (Comment in desktop file)
 
 == Possible Commands ==
-pk-app-install-merge-cache --name=livna --source=/var/cache/yum/livna-apps.db --cache=/usr/share/app-install/cache/desktop.db
-pk-app-install-remove-cache --name=livna --cache=/usr/share/app-install/cache/desktop.db
-* need to do the latter then former in a spec file on upgrade
+pk-app-install-create --cache=/usr/share/app-install/cache/desktop.db
+pk-app-install-add --repo=livna --source=./livna/desktop.db --icondir=./livna/icons --cache=/usr/share/app-install/cache/desktop.db
+pk-app-install-remove --repo=livna --icondir=/usr/share/app-install/icons --cache=/usr/share/app-install/cache/desktop.db
+
+What to do in packages:
+PackageKit(install):	pk-app-install-create
+livna-release(install):	pk-app-install-add --repo=livna --source=/usr/share/livna-release/desktop.sqldata --icondir=/usr/share/livna-release/icons
+livna-release(removal):	pk-app-install-remove --repo=livna
+livna-release(upgrade): pk-app-install-remove --repo=livna
+livna-release(upgrade): pk-app-install-add --repo=livna --source=/usr/share/livna-release/desktop.sqldata --icondir=/usr/share/livna-release/icons
 
 all distro specific stuff to live in backends/, but typically:
 yum-app-install-generate --name=livna --cache=~/livna-apps.db
+pk-app-install-generate --repo=livna --applicationdir=/usr/share/applications --icondir=/usr/share/icons --outputdir=./icons --cache=./desktop.sqldata
+
 
 == Open questions ===
 

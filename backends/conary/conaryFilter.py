@@ -45,9 +45,10 @@ class ConaryFilter(PackagekitFilter):
         '''
         Return if the packages are installed
         '''
+        if type(pkg) == tuple:
+            pkg = pkg[0]
         conary_cli = ConaryPk()
         result = conary_cli.query(pkg)
-            
         if result:
             return True
         else:

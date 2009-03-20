@@ -1468,6 +1468,8 @@
             <doc:para>
               The size of the package in bytes. This should be the size of the entire package file,
               not the size of the files installed on the system.
+              If the package is not installed, and already downloaded and
+              present in the package manager cache, then this value should be set to zero.
             </doc:para>
           </doc:summary>
         </doc:doc>

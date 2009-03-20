@@ -9,8 +9,12 @@ libpk_backend_apt_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 dbusinstancedir = $(LIBEXECDIR)
 dbusinstance_DATA =                                     \
-        aptDBUSBackend.py                               \
-        debfile.py					\
+	pk-backend-apt.py				\
+        $(NULL)
+
+packagekitpythondir = ${PYTHON_PACKAGE_DIR}
+packagekitpython_PYTHON =  				\
+        aptbackend.py					\
         $(NULL)
 
 EXTRA_DIST =                                            \

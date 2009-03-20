@@ -34,6 +34,13 @@ FILENAME_DELIM = '|'
 
 # Classes
 
+class PkError(Exception):
+    def __init__(self, code, details):
+        self.code = code
+        self.details = details
+    def __str__(self):
+        return repr("%s: %s" % (self.code, self.details))
+
 class PackageKitBaseBackend:
 
     def __init__(self, cmds):

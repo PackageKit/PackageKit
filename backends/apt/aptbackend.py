@@ -40,6 +40,7 @@ import urllib2
 import warnings
 
 import apt
+import apt.debfile
 import apt_pkg
 import dbus
 import dbus.glib
@@ -50,7 +51,6 @@ import gobject
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded, serialize
 from packagekit.enums import *
 
-import debfile
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 
@@ -196,60 +196,12 @@ class PackageKitCache(apt.cache.Cache):
             yield self._dict[pkgname]
         raise StopIteration
 
-    def isVirtualPackage(self, name):
-        """ 
-        Return True if the package of the given name is a virtual package
-        """
-        try:
-            virtual_pkg = self._cache[name]
-        except KeyError:
-            return False
-        if len(virtual_pkg.VersionList) == 0:
-            return True
-        return False
-
-    def getProvidingPackages(self, virtual):
-        """
-        Return a list of packages which provide the virtual package of the
-        specified name
-        """
-        providers = []
-        try:
-            vp = self._cache[virtual]
-            if len(vp.VersionList) != 0:
-                return providers
-        except KeyError:
-            return providers
-        for pkg in self:
-            v = self._depcache.GetCandidateVer(pkg._pkg)
-            if v == None:
-                continue
-            for p in v.ProvidesList:
-                #print virtual
-                #print p[0]
-                if virtual == p[0]:
-                    # we found a pkg that provides this virtual
-                    # pkg, check if the proivdes is any good
-                    providers.append(pkg)
-                    #cand = self._cache[pkg.name]
-                    #candver = self._cache._depcache.GetCandidateVer(cand._pkg)
-                    #instver = cand._pkg.CurrentVer
-                    #res = apt_pkg.CheckDep(candver.VerStr,oper,ver)
-                    #if res == True:
-                    #    self._dbg(1,"we can use %s" % pkg.name)
-                    #    or_found = True
-                    #    break
-        return providers
-
-    def clear(self):
-        """ Unmark all changes """
-        self._depcache.Init()
-
 
 class DpkgInstallProgress(apt.progress.InstallProgress):
     """
     Class to initiate and monitor installation of local package files with dpkg
     """
+    #FIXME: Use the merged DpkgInstallProgress of python-apt
     def recover(self):
         """
         Run "dpkg --configure -a"
@@ -1258,9 +1210,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Collect all dependencies which need to be installed
         self.StatusChanged(STATUS_DEP_RESOLVE)
         for path in full_paths:
-            deb = debfile.DebPackage(path, self._cache)
+            deb = apt.debfile.DebPackage(path, self._cache)
             packages.append(deb)
-            if not deb.checkDeb():
+            if not deb.check():
                 self.ErrorCode(ERROR_UNKNOWN, deb._failureString)
                 self.Finished(EXIT_FAILED)
                 return
@@ -1273,14 +1225,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                "before: %s" % remove)
                 self.Finished(EXIT_FAILED)
                 return
-            if deb.compareToVersionInCache() == debfile.VERSION_OUTDATED:
+            if deb.compare_to_version_in_cache() == \
+               apt.debfile.VERSION_OUTDATED:
                 self.Message(MESSAGE_NEWER_PACKAGE_EXISTS, 
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
         if len(self._cache.getChanges()) > 0 and not \
            self._commit_changes((10,25), (25,50)): 
             return False
-       # Install the Debian package files
+        # Install the Debian package files
         d = PackageKitDpkgInstallProgress(self)
         try:
             d.startUpdate()

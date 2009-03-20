@@ -22,18 +22,19 @@
 import sys
 import os
 import re
-
 from conary import errors
 from conary.deps import deps
 from conary import dbstore, queryrep, versions, updatecmd
 from conary.local import database
 from conary import trove
 from conary.conaryclient import cmdline
+from conary.lib import util
 
 from packagekit.backend import *
 from packagekit.package import *
 from packagekit.progress import PackagekitProgress
-from conaryCallback import UpdateCallback
+from conaryCallback import UpdateCallback, GetUpdateCallback
+from conaryCallback import RemoveCallback, UpdateSystemCallback
 from conaryFilter import *
 from XMLCache import XMLCache as Cache
 from conaryInit import *
@@ -41,14 +42,11 @@ from conaryInit import *
 from conaryInit import init_conary_config, init_conary_client
 from conary import conarycfg, conaryclient
 from conarypk import ConaryPk
-
-pkpackage = PackagekitPackage()
-
 from pkConaryLog import *
 
-
-from conary.lib import util
+pkpackage = PackagekitPackage()
 sys.excepthook = util.genExcepthook()
+
 def ExceptionHandler(func):
     return func
     def display(error):
@@ -126,9 +124,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             installed = INFO_INSTALLED
         else:
             installed = INFO_AVAILABLE
-
         return installed
-           
+
     @ExceptionHandler
     def get_package_id(self, name, versionObj, flavor):
 
@@ -180,8 +177,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.debug((searchlist, where))
 
         troveTupleList = cache.search(searchlist, where )
-        log.info("XMLCACHE results:")
-        log.info(troveTupleList)
 
         if len(troveTupleList) > 0 :
             for i in troveTupleList:
@@ -190,7 +185,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             log.info("NOT FOUND %s " % searchlist )
             pk = ConaryPk()
-            troveTupleList = pk.query( searchlist)
+            troveTupleList = pk.query(searchlist)
             log.info(troveTupleList)
             if not troveTupleList:
                 error = {}
@@ -208,8 +203,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _get_update(self, applyList, cache=True):
         from conary.conaryclient.update import NoNewTrovesError
         updJob = self.client.newUpdateJob()
+        log.info("get_ Job")
         try:
+            log.info("prepare updateJOb")
             suggMap = self.client.prepareUpdateJob(updJob, applyList)
+            log.info("end prepare updateJOB")
         except NoNewTrovesError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "No new apps were found")
         if cache:
@@ -227,10 +225,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             except IOError, err:
                 updJob = None
         else:
-            updJob = self._get_update(applyList, cache=False)
+            updJob,suggMap = self._get_update(applyList, cache=False)
         self.allow_cancel(False)
-
-        restartDir = self.client.applyUpdateJob(updJob)
+        try:
+            restartDir = self.client.applyUpdateJob(updJob)
+        except errors.InternalConaryError:
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"get-updates first and then update sytem")
+        except trove.TroveIntegrityError: 
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"run get-updates again")
         return updJob
 
     def _get_package_update(self, name, version, flavor):
@@ -257,10 +259,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             version = pkg["version"]
             trove = name, None , cli.flavor
             specList.append( trove  )
-        log.info(specList)
         trovesList = cli.repos.findTroves(cli.default_label, specList, allowMissing=True )
-        log.info(trovesList)
-
         pkgFilter = ConaryFilter(filters)
         troves = trovesList.values()
         for trovelst in troves:
@@ -284,8 +283,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-
-        log.info("======== resolve =========")
         log.info("filters: %s package:%s " % (filters, package))
 
         cache = Cache()
@@ -295,6 +292,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         solved = False
         if pkg_dict is None:
             # verifica si esta en repositorios
+            log.info("doing a rq")
             troveTuple = conary_cli.query(package[0])
             if not troveTuple:
                 self.error(ERROR_INTERNAL_ERROR, "Package Not found")
@@ -341,6 +339,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             summary = package_id.split(";")
             data = summary[3].split("#")
             if data[1]:
+                log.info(summary[3].split("#")[1])
                 metadata = eval(summary[3].split("#")[1])
             else:
                 metadata = {}
@@ -447,17 +446,25 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     @ExceptionHandler
     def update_system(self):
         self.allow_cancel(True)
+        self.status(STATUS_UPDATE)
+        self.client.setUpdateCallback( UpdateSystemCallback(self, self.cfg) )
         updateItems = self.client.fullUpdateItemList()
-        pprint(updateItems)
+        [ log.info(i) for i,ver,flav in updateItems]
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
-        pprint(applyList)
-        upJob, suggMap = self._get_update(applyList)
-        updJob, suggMap = self._do_update(applyList)
+
+        log.info(">>>>>>>>>> get update >>>>>>>>>>>>")
+        #self._get_update(applyList)
+        log.info(">>>>>>>>>> DO Update >>>>>>>>>>>>")
+        jobs = self._do_update(applyList)
+        log.info(">>>>>>>>>>END DO Update >>>>>>>>>>>>")
+        log.info(jobs)
+        self.client.setUpdateCallback(self.callback )
 
 #    @ExceptionHandler
     def refresh_cache(self):
         #log.debug("refresh-cache command ")
-        self.percentage()
+    #    self.percentage()
+
         self.status(STATUS_REFRESH_CACHE)
         cache = Cache()
         cache.refresh()
@@ -474,9 +481,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         for package in package_ids.split(" "):
             name, version, flavor, installed = self._findPackage(package)
             if name:
-               # self._do_package_update(name, version, flavor)
-               cli = ConaryPk()
-               cli.update(name)
+                cli = ConaryPk()
+                cli.update(name)
             else:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'No available updates')
 
@@ -505,7 +511,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                         'Package already installed')
 
-                self.status(INFO_INSTALLING)
+                self.status(STATUS_INSTALL)
                 log.info(">>> Prepare Update")
                 self._get_package_update(name, version, flavor)
                 log.info(">>> end Prepare Update")
@@ -523,6 +529,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_RUNNING)
         log.info("========== Remove Packages ============ ")
         log.info( allowDeps ) 
+        self.client.setUpdateCallback(RemoveCallback(self, self.cfg))
+        errors = ""
         #for package_id in package_ids.split('%'):
         for package_id in package_ids:
             name, version, flavor, installed = self._findPackage(package_id)
@@ -531,11 +539,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     self.error(ERROR_PACKAGE_NOT_INSTALLED, 'The package %s is not installed' % name)
 
                 name = '-%s' % name
-                self.status(INFO_REMOVING)
+                self.status(STATUS_REMOVE)
                 self._get_package_update(name, version, flavor)
+                callback = self.client.getUpdateCallback()
+                if callback.error:
+                    self.error(ERROR_DEP_RESOLUTION_FAILED,', '.join(callback.error))
+                        
                 self._do_package_update(name, version, flavor)
             else:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'The package was not found')
+        self.client.setUpdateCallback(self.callback)
 
     def _get_metadata(self, package_id, field):
         '''
@@ -662,8 +675,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 longDesc = metadata["longDesc"] 
             else:
                 longDesc = ""
-
-            url = "http://www.foresightlinux.org/packages/%s.html" % name
+            if "url" in metadata:
+                url = metadata["url"]
+            else:
+                url = "http://www.foresightlinux.org/packages/%s.html" % name
 
             categories  = ""
             if metadata.has_key("category"):
@@ -704,15 +719,18 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_INFO)
+        getUpdateC= GetUpdateCallback(self,self.cfg)
+        self.client.setUpdateCallback(getUpdateC)
+        log.info("callback changed")
         log.info("============== get_updates ========================")
         cli = ConaryPk()
         updateItems =cli.cli.fullUpdateItemList()
 #        updateItems = cli.cli.getUpdateItemList()
         for i in updateItems:
             log.info(i[0])
-        log.info("============== end get_updates ========================")
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         log.info("_get_update ....")
+        self.status(STATUS_RUNNING)
         updJob, suggMap = self._get_update(applyList)
         log.info("_get_update ....end.")
 
@@ -738,8 +756,13 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             troveTuple.append(name)
             troveTuple.append(version)
             installed = self.check_installed(troveTuple)
-            self._show_package(name, version, flavor, INFO_NORMAL)
-        
+            if name in self.rebootpkgs:
+                info = INFO_SECURITY
+            else:
+                info = INFO_NORMAL
+            self._show_package(name, version, flavor, info)
+        log.info("============== end get_updates ========================")
+        self.client.setUpdateCallback(self.callback)
 
     def _findPackage(self, package_id):
         '''
@@ -782,7 +805,7 @@ from pkConaryLog import pdb
 def main():
     backend = PackageKitConaryBackend('')
     log.info("======== argv =========== ")
-    log.info(sys.argv[1:])
+    log.info(sys.argv)
     backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":

@@ -18,6 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#include <QtSql>
+
 #include "client.h"
 #include "clientprivate.h"
 
@@ -53,10 +55,19 @@ Client::Client(QObject* parent) : QObject(parent)
 	connect(d->daemon, SIGNAL(RepoListChanged()), this, SIGNAL(repoListChanged()));
 	connect(d->daemon, SIGNAL(RestartSchedule()), this, SIGNAL(restartScheduled()));
 	connect(d->daemon, SIGNAL(TransactionListChanged(const QStringList&)), d, SLOT(transactionListChanged(const QStringList&)));
+
+	// Set up database for desktop files
+	QSqlDatabase db;
+	db = QSqlDatabase::addDatabase("QSQLITE");
+	db.setDatabaseName ("/var/lib/PackageKit/desktop-files.db");
+	if (!db.open()) {
+		qDebug() << "Failed to initialize the desktop files database";
+	}
 }
 
 Client::~Client()
 {
+	delete d;
 }
 
 Client::Actions Client::getActions()
@@ -662,6 +673,28 @@ Transaction* Client::searchName(const QString& search, Filters filters)
 Transaction* Client::searchName(const QString& search, Filter filter)
 {
 	return Client::searchName(search, Filters() << filter);
+}
+
+Package* Client::searchFromDesktopFile(const QString& path)
+{
+	QSqlDatabase db = QSqlDatabase::database();
+	if (!db.isOpen()) {
+		qDebug() << "Desktop files database is not open";
+		return NULL;
+	}
+
+	QSqlQuery q(db);
+	q.prepare("SELECT package FROM cache WHERE filename = :path");
+	q.bindValue(":path", path);
+	if(!q.exec()) {
+		qDebug() << "Error while running query " << q.executedQuery();
+		return NULL;
+	}
+
+	if (!q.next()) return NULL; // Return NULL if no results
+
+	return new Package(q.value(0).toString());
+
 }
 
 Transaction* Client::updatePackages(const QList<Package*>& packages)

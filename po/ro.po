@@ -1,116 +1,104 @@
-# German translation of policycoreutils.
-# Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
-# Holger Wansing <linux@wansing-online.de>, 2006.
-# Timo Trinks <ttrinks@redhat.com>, 2006, 2007.
-# Michael Schönitzer <michael@schoenitzer.de>, 2007.
-# Fabian Affolter <fab@fedoraproject.org>, 2008.
-# Timo Trinks <ttrinks@redhat.com>, 2008.
-# Thomas Spura <tomspur@fedoraproject.org>, 2008.
-# Daniela Kugelmann <dkugelma@redhat.com >, 2008.
-# Stefan Posdzich <cheekyboinc@foresightlinux.org>, 2008.
-# Fabian Affolter <fab@fedoraproject.org>, 2009.
-# 
-# 
 msgid ""
 msgstr ""
-"Project-Id-Version: packagekit.master.de\n"
+"Project-Id-Version: Fedora 10\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-02-23 13:50+0000\n"
-"PO-Revision-Date: 2009-02-26 13:00+0100\n"
-"Last-Translator: Jens-Uwe Peter <mrfloppy@fedoraproject.org>\n"
-"Language-Team: German <gnome-de@gnome.org>\n"
+"POT-Creation-Date: 2009-02-25 01:44+0000\n"
+"PO-Revision-Date: 2009-03-17 22:36+0200\n"
+"Last-Translator: alexxed <alexxed@gmail.com>\n"
+"Language-Team: Romanian <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);"
+"Plural-Forms:  nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
+"20)) ? 1 : 2;\n"
+"X-Generator: Narro 0.9.4 on http://tradu.softwareliber.ro\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #: ../client/pk-console.c:230
 msgid "Transaction"
-msgstr "Transaktion"
+msgstr "Tranzacție"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: ../client/pk-console.c:232
 msgid "System time"
-msgstr "Systemzeit"
+msgstr "Ora sistemului"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: ../client/pk-console.c:234
 msgid "Succeeded"
-msgstr "Erfolgreich"
+msgstr "Reușit"
 
 #. TRANSLATORS: if the repo is enabled
 #: ../client/pk-console.c:234 ../client/pk-console.c:401
 msgid "True"
-msgstr "Wahr"
+msgstr "Adevărat"
 
 #: ../client/pk-console.c:234 ../client/pk-console.c:401
 msgid "False"
-msgstr "Falsch"
+msgstr "Fals"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #: ../client/pk-console.c:236
 msgid "Role"
-msgstr "Rolle"
+msgstr "Rol"
 
 #. TRANSLATORS: this is The duration of the transaction
 #: ../client/pk-console.c:241
 msgid "Duration"
-msgstr "Dauer"
+msgstr "Durată"
 
 #: ../client/pk-console.c:241
 msgid "(seconds)"
-msgstr "(Sekunden)"
+msgstr "(secunde)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #: ../client/pk-console.c:245
-#, fuzzy
 msgid "Command line"
-msgstr "Befehl fehlgeschlagen"
+msgstr "Linia de comandă"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 #: ../client/pk-console.c:247
 msgid "User ID"
-msgstr "Benutzer-ID"
+msgstr "ID utilizator"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 #: ../client/pk-console.c:254
 msgid "Username"
-msgstr "Benutzername"
+msgstr "Nume de utilizator"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: ../client/pk-console.c:258
 msgid "Real name"
-msgstr "Echter Name"
+msgstr "Nume real"
 
 #: ../client/pk-console.c:266
 msgid "Affected packages:"
-msgstr "Beteiligte Pakete:"
+msgstr "Pachete afectate:"
 
 #: ../client/pk-console.c:268
 msgid "Affected packages: None"
-msgstr "Beteilige Pakete: Keine"
+msgstr "Pachete afectate: niciunul"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: ../client/pk-console.c:293
 msgid "Distribution"
-msgstr "Distribution"
+msgstr "Distribuție"
 
 #. TRANSLATORS: this is type of update, stable or testing
 #: ../client/pk-console.c:295
 msgid "Type"
-msgstr "Typ"
+msgstr "Tip"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
 #: ../client/pk-console.c:297 ../client/pk-console.c:320
 msgid "Summary"
-msgstr "Zusammenfassung"
+msgstr "Sumar"
 
 #. TRANSLATORS: this is the group category name
 #: ../client/pk-console.c:309
 msgid "Category"
-msgstr "Kategorie"
+msgstr "Categorie"
 
 #. TRANSLATORS: this is group identifier
 #: ../client/pk-console.c:311
@@ -120,44 +108,42 @@ msgstr "ID"
 #. TRANSLATORS: this is the parent group
 #: ../client/pk-console.c:314
 msgid "Parent"
-msgstr "Elternteil"
+msgstr "Părinte"
 
 #. TRANSLATORS: this is the name of the parent group
 #: ../client/pk-console.c:317
 msgid "Name"
-msgstr "Name"
+msgstr "Nume"
 
 #. TRANSLATORS: this is preferred icon for the group
 #: ../client/pk-console.c:323
 msgid "Icon"
-msgstr "Symbol"
+msgstr "Iconiță"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:338
 msgid "Details about the update:"
-msgstr "Details über die Aktualisierung"
+msgstr "Detalii despre actualizare:"
 
 #. TRANSLATORS: details about the update, package name and version
 #: ../client/pk-console.c:340
-#, fuzzy
 msgid "Package"
-msgstr "Paket-Dateien"
+msgstr "Pachet"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
 #: ../client/pk-console.c:343
-#, fuzzy
 msgid "Updates"
-msgstr "Details werden aktualisiert"
+msgstr "Actualizări"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
 #: ../client/pk-console.c:347
 msgid "Obsoletes"
-msgstr "Veraltete"
+msgstr "Înlocuiește"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #: ../client/pk-console.c:351
 msgid "Vendor"
-msgstr "Hersteller"
+msgstr "Vânzător"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 #: ../client/pk-console.c:355
@@ -172,87 +158,84 @@ msgstr "CVE"
 #. TRANSLATORS: details about the update, if the package requires a restart
 #: ../client/pk-console.c:363
 msgid "Restart"
-msgstr "Neustart"
+msgstr "Repornește"
 
 #. TRANSLATORS: details about the update, any description of the update
 #: ../client/pk-console.c:367
-#, fuzzy
 msgid "Update text"
-msgstr "Details werden aktualisiert"
+msgstr "Textul actualizării"
 
 #. TRANSLATORS: details about the update, the changelog for the package
 #: ../client/pk-console.c:371
 msgid "Changes"
-msgstr "Änderungen"
+msgstr "Schimbări"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
 #: ../client/pk-console.c:375
 msgid "State"
-msgstr "Status"
+msgstr "Stare"
 
 #. TRANSLATORS: details about the update, date the update was issued
 #: ../client/pk-console.c:380
 msgid "Issued"
-msgstr "Veröffentlicht"
+msgstr "Emis"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #: ../client/pk-console.c:385
-#, fuzzy
 msgid "Updated"
-msgstr "Details werden aktualisiert"
+msgstr "Actualizat"
 
 #: ../client/pk-console.c:472 ../client/pk-console.c:474
 msgid "Percentage"
-msgstr "Prozentsatz"
+msgstr "Procentaj"
 
 #: ../client/pk-console.c:474
 msgid "Unknown"
-msgstr "Unbekannt"
+msgstr "Necunoscut"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #: ../client/pk-console.c:525
-#, fuzzy
 msgid "System restart required by:"
-msgstr "Ein Neustart ist erforderlich"
+msgstr "Repornirea sistemului este cerută de:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:528
-#, fuzzy
 msgid "Session restart required:"
-msgstr "Ein Neustart ist erforderlich"
+msgstr "Este necesară repornirea sesiunii:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:531
-#, fuzzy
 msgid "Application restart required by:"
-msgstr "Ein Programm-Neustart wird benötigt"
+msgstr "Repornirea aplicației este cerută de:"
 
 #. TRANSLATORS: a package needs to restart they system
 #: ../client/pk-console.c:568
 msgid "Please restart the computer to complete the update."
-msgstr "Bitte starten Sie den Computer neu, um das Update abzuschließen."
+msgstr "Vă rugăm să reporniți calculatorul pentru a completa actualizarea."
 
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:571
 msgid "Please logout and login to complete the update."
-msgstr "Bitte erneut einloggen um das Update abzuschließen."
+msgstr ""
+"Vă rugăm să ieșiți din cont și să vă autentificați din nou pentru a completa "
+"actualizarea."
 
 #. TRANSLATORS: a package needs to restart the application
 #: ../client/pk-console.c:574
 msgid "Please restart the application as it is being used."
-msgstr "Starten Sie die Anwendung neu, da sie benutzt wird."
+msgstr "Vă rugăm să reporniți aplicația deoarece este folosită."
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:687
 #, c-format
 msgid "The package %s is already installed"
-msgstr "Das Paket %s ist bereits installiert"
+msgstr "Pachetul %s este deja instalat"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:695
 #, c-format
 msgid "The package %s could not be installed: %s"
-msgstr "Das Paket %s konnte nicht installiert werden: %s"
+msgstr "Pachetul %s nu a putut fi instalat: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
 #: ../client/pk-console.c:720 ../client/pk-console.c:747
@@ -261,242 +244,243 @@ msgstr "Das Paket %s konnte nicht installiert werden: %s"
 #: ../client/pk-tools-common.c:89
 #, c-format
 msgid "Internal error: %s"
-msgstr "Interner Fehler: %s"
+msgstr "Eroare internă: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
 #: ../client/pk-console.c:728 ../client/pk-console.c:1356
 #, c-format
 msgid "This tool could not install the packages: %s"
-msgstr "Konnte folgende Pakete nicht installieren: %s"
+msgstr "Această unealtă nu poate instala pachetele: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
 #: ../client/pk-console.c:755
 #, c-format
 msgid "This tool could not install the files: %s"
-msgstr "Die Dateien konnten nicht installieren werden: %s"
+msgstr "Această unealtă nu a putut instala fișierele: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
 #: ../client/pk-console.c:811
 #, c-format
 msgid "This tool could not remove %s: %s"
-msgstr "Dieses Werkzeug konnte %s nicht entfernen: %s"
+msgstr "Această unealtă nu a putut elimina %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:834 ../client/pk-console.c:872
 #: ../client/pk-console.c:905
 #, c-format
 msgid "This tool could not remove the packages: %s"
-msgstr "Konnte folgende Pakete nicht entfernen: %s"
+msgstr "Această unealtă nu a putut elimina pachetele: %s"
 
 #. TRANSLATORS: When removing, we might have to remove other dependencies
 #: ../client/pk-console.c:884
 msgid "The following packages have to be removed:"
-msgstr "Die folgenden Pakete müssen entfernt werden:"
+msgstr "Următoarele pachete trebuie eliminate:"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
 #: ../client/pk-console.c:891
 msgid "Proceed removing additional packages?"
-msgstr "Sollen die zusätzlichen Pakete entfernt werden?"
+msgstr "Continuați cu eliminarea pachetelor adiționale?"
 
 #. TRANSLATORS: We did not remove any packages
 #: ../client/pk-console.c:896
 msgid "The package removal was canceled!"
-msgstr "Die Entfernung der Pakete wurde abgebrochen!"
+msgstr "Eliminarea pachetelor a fost anulată!"
 
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:937
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
-msgstr "Dieses Werkzeug konnte das Paket %s nicht finden und herunterladen"
+msgstr ""
+"Această unealtă nu a putut descărca pachetul %s pentru că nu a putut fi găsit"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:968
 #, c-format
 msgid "This tool could not download the packages: %s"
-msgstr "Konnte folgende Pakete nicht herunterladen: %s"
+msgstr "Această unealtă nu a putut descărca pachetele: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:995 ../client/pk-console.c:1004
 #, c-format
 msgid "This tool could not update %s: %s"
-msgstr "Dieses Werkzeug konnte %s nicht aktualisieren: %s"
+msgstr "Această unealtă nu a putut actualiza %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1026 ../client/pk-console.c:1034
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
-msgstr "Dieses Werkzeug konnte die Voraussetzungen %s nicht beziehen: %s"
+msgstr "Această unealtă nu a putut obține cerințele pentru %s: %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #: ../client/pk-console.c:1056 ../client/pk-console.c:1064
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
-msgstr "Dieses Werkzeug konnte keine Abhängigkeiten für %s beziehen: %s"
+msgstr "Această unealtă nu a putut obține dependențele pentru %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #: ../client/pk-console.c:1086 ../client/pk-console.c:1094
 #, c-format
 msgid "This tool could not get package details for %s: %s"
-msgstr "Dieses Werkzeug konnte die Paketdetails für %s beziehen: %s"
+msgstr "Această unealtă nu a putut obține detaliile pachetului %s: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1116
 #, c-format
 msgid "This tool could not find the files for %s: %s"
-msgstr "Dieses Werkzeug konnte keine Dateien für %s finden: %s"
+msgstr "Această unealtă nu a putut găsi fișierele pentru %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1124
 #, c-format
 msgid "This tool could not get the file list for %s: %s"
-msgstr "Dieses Werkzeug konnte die Datei-Liste für %s nicht erstellen: %s"
+msgstr "Această unealtă nu a putut obține lista fișierelor pentru %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
 #: ../client/pk-console.c:1146
 #, c-format
 msgid "File already exists: %s"
-msgstr "Datei bereits vorhanden: %s"
+msgstr "Fișierul există deja: %s"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1151 ../client/pk-console.c:1207
 #: ../client/pk-console.c:1282
 msgid "Getting package list"
-msgstr "Beziehe Paket-Liste"
+msgstr "Se obține lista pachetelor"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
 #: ../client/pk-console.c:1157 ../client/pk-console.c:1213
 #: ../client/pk-console.c:1288
 #, c-format
 msgid "This tool could not get package list: %s"
-msgstr "Konnte folgende Pakete nicht beziehen: %s"
+msgstr "Această unealtă nu a putut obține lista pachetelor: %s"
 
 #. TRANSLATORS: There was an error saving the list
 #: ../client/pk-console.c:1168
 msgid "Failed to save to disk"
-msgstr "Speicher auf die Festplatte fehlgeschlagen"
+msgstr "Eșec la salvarea pe disc"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
 #: ../client/pk-console.c:1202 ../client/pk-console.c:1277
 #, c-format
 msgid "File does not exist: %s"
-msgstr "Datei nicht vorhanden: %s"
+msgstr "Fișierul nu există: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
 #: ../client/pk-console.c:1234
 msgid "Packages to add"
-msgstr "Paket zum Hinzufügen"
+msgstr "Pachete de adăugat"
 
 #. TRANSLATORS: header to a list of packages removed
 #: ../client/pk-console.c:1242
 msgid "Packages to remove"
-msgstr "Pakete zum Entfernen"
+msgstr "Pachete de eliminat"
 
 #. TRANSLATORS: We didn't find any differences
 #: ../client/pk-console.c:1310
 msgid "No new packages need to be installed"
-msgstr "Keine neuen Pakete müssen installiert werden"
+msgstr "Nu e nevoie să fie instalat niciun pachet nou"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1316
 msgid "To install"
-msgstr "ZUm Installieren"
+msgstr "De instalat"
 
 #. TRANSLATORS: searching takes some time....
 #: ../client/pk-console.c:1328
 msgid "Searching for package: "
-msgstr "Suche nach Paket:"
+msgstr "Se caută pachetul: "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
 #: ../client/pk-console.c:1332
 msgid "not found."
-msgstr "nicht gefunden."
+msgstr "negăsit."
 
 #. TRANSLATORS: We didn't find any packages to install
 #: ../client/pk-console.c:1343
 msgid "No packages can be found to install"
-msgstr "Keine Pakete zum Installieren gefunden"
+msgstr "Nu s-a găsit niciun pachet pentru a fi instalat"
 
 #. TRANSLATORS: installing new packages from package list
 #: ../client/pk-console.c:1349
 msgid "Installing packages"
-msgstr "Installiere Pakete"
+msgstr "Instalare pachete"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1385
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
-msgstr "Dieses Werkzeug konnte für %s keine Aktualisierungsdetails finden: %s"
+msgstr "Această unealtă nu poate găsi detaliile actualizării pentru %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
 #: ../client/pk-console.c:1393
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
-msgstr "Dieses Werkzeug konnte keine Aktualisierungsdetails für %s finden: %s"
+msgstr "Această unealtă nu a putut obține detaliile actualizării pentru %s: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1439
 msgid "Error:"
-msgstr "Fehler:"
+msgstr "Eroare:"
 
 #. TRANSLATORS: This a list of details about the package
 #: ../client/pk-console.c:1453
 msgid "Package description"
-msgstr "Paketbeschreibung"
+msgstr "Descriere pachet"
 
 #. TRANSLATORS: This a list files contained in the package
 #: ../client/pk-console.c:1487
 msgid "Package files"
-msgstr "Paket-Dateien"
+msgstr "Fișierele din pachet"
 
 #. TRANSLATORS: This where the package has no files
 #: ../client/pk-console.c:1495
 msgid "No files"
-msgstr "Keine Dateien"
+msgstr "Niciun fișier"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
 #: ../client/pk-console.c:1518
 msgid "Repository signature required"
-msgstr "Signatur der Paketquellen benötigt"
+msgstr "E necesară semnătura depozitului"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1528
 msgid "Do you accept this signature?"
-msgstr "Akzeptieren Sie diese Signatur?"
+msgstr "Acceptați această semnătură?"
 
 #. TRANSLATORS: This is where the user declined the security key
 #: ../client/pk-console.c:1532
 msgid "The signature was not accepted."
-msgstr "Diese Signatur wurde nicht akzeptiert."
+msgstr "Semnătura nu a fost acceptată."
 
 #. TRANSLATORS: This a request for a EULA
 #: ../client/pk-console.c:1566
 msgid "End user license agreement required"
-msgstr "Endbenutzer Lizenzvereinbarung benötigt"
+msgstr "E nevoie de acordul de licențiere cu utilizatorul"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
 #: ../client/pk-console.c:1573
 msgid "Do you agree to this license?"
-msgstr "Sind Sie mit dieser Lizenz einverstanden?"
+msgstr "Sunteți de acord cu această licență?"
 
 #. TRANSLATORS: This is where the user declined the license
 #: ../client/pk-console.c:1577
 msgid "The license was refused."
-msgstr "Die Lizenz wurde zurückgewiesen."
+msgstr "Licența a fost refuzată."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
 #: ../client/pk-console.c:1606
 msgid "The daemon crashed mid-transaction!"
-msgstr "Der Dämon stürzte während der Transaktion ab!"
+msgstr "Demonul a eșuat în mijlocul tranzacției!"
 
 #. TRANSLATORS: This is the header to the --help menu
 #: ../client/pk-console.c:1659
 msgid "PackageKit Console Interface"
-msgstr "PackageKit-Konsolen-Interface"
+msgstr "Interfață PackageKit pentru consolă"
 
 #. these are commands we can use with pkcon
 #: ../client/pk-console.c:1661
 msgid "Subcommands:"
-msgstr "Unterbefehle:"
+msgstr "Subcomenzi:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
@@ -508,519 +492,489 @@ msgstr "Unterbefehle:"
 #: ../contrib/app-install/pk-app-install-generate.c:244
 #: ../contrib/app-install/pk-app-install-remove.c:87 ../src/pk-main.c:199
 msgid "Show extra debugging information"
-msgstr "Zeige extra Debug-Informationen"
+msgstr "Afișează informații suplimentare pentru depanare"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1756 ../client/pk-monitor.c:127
 msgid "Show the program version and exit"
-msgstr "Zeige Programm-Version und beende"
+msgstr "Afișează versiunea programului și ieși"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: ../client/pk-console.c:1759
 msgid "Set the filter, e.g. installed"
-msgstr "Setze den Filter, z.B. installiert"
+msgstr "Definește filtrul, ex. instalat"
 
 #. TRANSLATORS: command line argument, work asynchronously
 #: ../client/pk-console.c:1762
 msgid "Exit without waiting for actions to complete"
-msgstr "Beende, ohne auf Beendigung der Aktionen zu warten"
+msgstr "Ieși fără a aștepta finalizarea acțiunilor"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
 #: ../client/pk-console.c:1789
 msgid "This tool could not connect to system DBUS."
-msgstr "Dieses Werkzeug konnte nicht zum System-DBUS verbinden."
+msgstr "Această unealtă nu se poate conecta la magistrala sistemului (DBUS)."
 
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1876
 msgid "The filter specified was invalid"
-msgstr "Der angegebene Filter war ungültig"
+msgstr "Filtrul specificat a fost nevalid"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
 #: ../client/pk-console.c:1894
 msgid "A search type is required, e.g. name"
-msgstr "Ein Suchtyp ist nötig, z.B. Name"
+msgstr "E necesar un tip de căutare, de ex: nume"
 
 #. TRANSLATORS: the user needs to provide a search term
 #: ../client/pk-console.c:1900 ../client/pk-console.c:1908
 #: ../client/pk-console.c:1916 ../client/pk-console.c:1924
-#, fuzzy
 msgid "A search term is required"
-msgstr "Ein Neustart ist erforderlich"
+msgstr "E necesar un termen de căutare"
 
 #. TRANSLATORS: the search type was provided, but invalid
 #: ../client/pk-console.c:1930
 msgid "Invalid search type"
-msgstr "Ungültiger Suchtyp"
+msgstr "Tip de căutare invalid"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:1936
 msgid "A package name or filename to install is required"
-msgstr "Ein Paket- oder Dateiname ist zur Installation nötig"
+msgstr "E necesar un nume de pachet sau de fișier pentru a-l instala"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1944
-#, fuzzy
 msgid "A type, key_id and package_id are required"
-msgstr "Sie müssen einen Typ, Schlüssel_id und Paket_id auswählen"
+msgstr ""
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:1952
-#, fuzzy
 msgid "A package name to remove is required"
-msgstr "Ein Programm-Neustart wird benötigt"
+msgstr "E necesar un nume de pachet pentru a-l elimina"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1959
-#, fuzzy
 msgid ""
 "A destination directory and then the package names to download are required"
 msgstr ""
-"Sie müssen ein Zielverzeichnis und dann die Pakete zum herunterladen angeben"
+"Sunt necesare un director de destinație și numele pachetelor de descărcat"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1965
 msgid "Directory not found"
-msgstr "Verzeichnis nicht gefunden"
+msgstr "Director negăsit"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1972
-#, fuzzy
 msgid "A licence identifier (eula-id) is required"
-msgstr "Sie müssen eine Lizenz (eula-id) angeben"
+msgstr "E necesar un identificator de licență (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1981
-#, fuzzy
 msgid "A transaction identifier (tid) is required"
-msgstr "Ein Programm-Neustart wird benötigt"
+msgstr "E necesar un identificator de tranzacție (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
 #: ../client/pk-console.c:1997
-#, fuzzy
 msgid "A package name to resolve is required"
-msgstr "Ein Programm-Neustart wird benötigt"
+msgstr ""
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:2005 ../client/pk-console.c:2013
-#, fuzzy
 msgid "A repository name is required"
-msgstr "Signatur der Paketquellen benötigt"
+msgstr ""
 
 #. TRANSLATORS: The user didn't provide any data
 #: ../client/pk-console.c:2021
-#, fuzzy
 msgid "A repo name, parameter and value are required"
-msgstr "Sie müssen einen Repositorynamen/Parameter und Wert angeben"
+msgstr ""
 
 #. TRANSLATORS: The user didn't specify what action to use
 #: ../client/pk-console.c:2034
-#, fuzzy
 msgid "An action, e.g. 'update-system' is required"
-msgstr "Ein Programm-Neustart wird benötigt"
+msgstr ""
 
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:2040
-#, fuzzy
 msgid "A correct role is required"
-msgstr "Ein Programm-Neustart wird benötigt"
+msgstr ""
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
 #: ../client/pk-console.c:2046
 msgid "Failed to get the time since this action was last completed"
-msgstr "Es war nicht möglich, die Zeit seit der letzten Fertigstellung festzustellen"
+msgstr ""
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
 #: ../client/pk-console.c:2055 ../client/pk-console.c:2066
 #: ../client/pk-console.c:2074 ../client/pk-console.c:2090
 #: ../client/pk-console.c:2098 ../client/pk-generate-pack.c:241
-#, fuzzy
 msgid "A package name is required"
-msgstr "Ein Programm-Neustart wird benötigt"
+msgstr ""
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:2082
-#, fuzzy
 msgid "A package provide string is required"
-msgstr "Ein Programm-Neustart wird benötigt"
+msgstr ""
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
 #: ../client/pk-console.c:2106
-#, fuzzy
 msgid "A list file name to create is required"
-msgstr "Ein Neustart ist erforderlich"
+msgstr ""
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
 #: ../client/pk-console.c:2115 ../client/pk-console.c:2124
-#, fuzzy
 msgid "A list file to open is required"
-msgstr "Ein Aus- und Einloggen ist erforderlich"
+msgstr ""
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:2177
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "Option '%s' wird nicht unterstützt"
+msgstr ""
 
 #. TRANSLATORS: User does not have permission to do this
 #: ../client/pk-console.c:2190
-#, fuzzy
 msgid "Incorrect privileges for this operation"
-msgstr "Sie haben nicht die notwendigen Privilegien für diese Operation"
+msgstr "Drepturi insuficiente pentru această operație"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 #: ../client/pk-console.c:2193
 msgid "Command failed"
-msgstr "Befehl fehlgeschlagen"
+msgstr "Comandă eșuată"
 
 #. TRANSLATORS: This is the state of the transaction
 #: ../client/pk-generate-pack.c:101
 msgid "Downloading"
-msgstr "Lade herunter"
+msgstr "Descărcare"
 
 #. TRANSLATORS: This is when the main packages are being downloaded
 #: ../client/pk-generate-pack.c:121
 msgid "Downloading packages"
-msgstr "Lade Pakete herunter"
+msgstr "Descărcare pachete"
 
 #. TRANSLATORS: This is when the dependency packages are being downloaded
 #: ../client/pk-generate-pack.c:126
 msgid "Downloading dependencies"
-msgstr "Lade Abhängihkeiten herunter"
+msgstr "Se descarcă dependențele"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
 #: ../client/pk-generate-pack.c:188
 msgid "Set the file name of dependencies to be excluded"
-msgstr "Setze den Dateiname der Abhängigkeiten, die ausgeschlossen werden"
+msgstr "Setați numele fișierelor dependențelor ce urmează a fi excluse"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:191
-#, fuzzy
-msgid ""
-"The output file or directory (the current directory is used if ommitted)"
-msgstr "Das Ausgabe-Verzeichnis ()"
+msgid "The output file or directory (the current directory is used if ommitted)"
+msgstr ""
+"Directorul sau fișierul de ieșire (se folosește directorul curent dacă nu se "
+"specifică)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:194
-#, fuzzy
 msgid "The package to be put into the service pack"
-msgstr "Das Paket in das Service-Pack integrieren"
+msgstr "Pachetul va fi pus într-un pachet de servicii"
 
 #. TRANSLATORS: put all pending updates in the pack
 #: ../client/pk-generate-pack.c:197
 msgid "Put all updates available in the service pack"
-msgstr "Füge alle Aktualisierungen dem Service-Pack hinzu"
+msgstr "Pune toate actualizările disponibile în pachetul de servicii"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:225
 msgid "Neither --package or --updates option selected."
-msgstr "Weder --package noch --updates wurden als Option gewählt."
+msgstr "Nu s-a selectat nici --package nici --updates."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
 #: ../client/pk-generate-pack.c:233
 msgid "Both options selected."
-msgstr "Beide Optionen ausgewählt."
+msgstr "Ambele opțiuni sunt selectate."
 
 #. TRANSLATORS: This is when the user fails to supply the output
 #: ../client/pk-generate-pack.c:249
-#, fuzzy
 msgid "A output directory or file name is required"
-msgstr "Ein Aus- und Einloggen ist erforderlich"
+msgstr "E necesar un director sau un nume de fișier pentru ieșire"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
 #: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
 msgid "The package manager cannot perform this type of operation."
-msgstr "Der Paket-Verwalter kann diesen Typ von Aufgabe nicht ausführen."
+msgstr "Gestionarul de pachete nu poate efectua acest tip de operație."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
 #: ../client/pk-generate-pack.c:285
 msgid "If specifying a file, the service pack name must end with"
-msgstr "Wenn Sie eine Datei angeben, muss der Service-Pack-Name Enden mit"
+msgstr ""
+"Dacă se specifică un fișier, numele pachetului de servicii trebuie să se "
+"termine cu"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:301
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr ""
-"Ein Pack mit dem selben Namen existiert bereits, möchten Sie es "
-"überschreiben?"
+msgstr "Un pachet cu același nume există deja, doriți să-l suprascrieți?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:304
 msgid "The pack was not overwritten."
-msgstr "Das Pack wurde nicht überschrieben."
+msgstr "Pachetul nu a fost suprascris."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
 #: ../client/pk-generate-pack.c:317
 msgid "Failed to create directory:"
-msgstr "Verzeichnis konnte nicht erstellt werden:"
+msgstr "Eșec la crearea directorului:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
 #: ../client/pk-generate-pack.c:327
 msgid "Failed to open package list."
-msgstr "Konnte Paketliste nicht öffnen."
+msgstr ""
 
 #. TRANSLATORS: The package name is being matched up to available packages
 #: ../client/pk-generate-pack.c:338
 msgid "Finding package name."
-msgstr "Suche Paketname."
+msgstr ""
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
 #: ../client/pk-generate-pack.c:342
 #, c-format
 msgid "Failed to find package '%s': %s"
-msgstr "Paket '%s' konnte nicht gefunden werden: %s"
+msgstr ""
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
 #: ../client/pk-generate-pack.c:359
 msgid "Creating service pack..."
-msgstr "Erstelle Servicepack..."
+msgstr ""
 
 #. TRANSLATORS: we succeeded in making the file
 #: ../client/pk-generate-pack.c:366
 #, c-format
 msgid "Service pack created '%s'"
-msgstr "Servicepack erstellt '%s'"
+msgstr ""
 
 #. TRANSLATORS: we failed to make te file
 #: ../client/pk-generate-pack.c:371
 #, c-format
 msgid "Failed to create '%s': %s"
-msgstr "Erzeugen von '%s' fehlgeschlagen: %s"
+msgstr ""
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: ../client/pk-monitor.c:143
 msgid "PackageKit Monitor"
-msgstr "PackageKit-Monitor"
+msgstr "Monitor PackageKit"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:118
 msgid "The package could not be found"
-msgstr "Das Paket konnte nicht gefunden werden"
+msgstr ""
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
 #: ../client/pk-tools-common.c:130
 msgid "More than one package matches:"
-msgstr "Es passen mehr als ein Pakete:"
+msgstr ""
 
 #. TRANSLATORS: This finds out which package in the list to use
 #: ../client/pk-tools-common.c:137
 msgid "Please choose the correct package: "
-msgstr "Bitte wählen Sie das korrekte Paket: "
+msgstr ""
 
 #: ../client/pk-tools-common.c:162
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Bitte geben Sie eine Zahl zwischen 1 und %i ein: "
+msgstr "Vă rugăm să introduceți un număr între 1 și %i: "
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:361
-#, fuzzy
 msgid "Failed to search for file"
-msgstr "Speicher auf die Festplatte fehlgeschlagen"
+msgstr ""
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: ../contrib/command-not-found/pk-command-not-found.c:485
-#, fuzzy
 msgid "Failed to launch:"
-msgstr "Die letzte Zeit konnte nicht herausgefunden werden"
+msgstr ""
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/command-not-found/pk-command-not-found.c:526
-#, fuzzy
 msgid "PackageKit Command Not Found"
-msgstr "PackageKit-Monitor"
+msgstr ""
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
 #: ../contrib/command-not-found/pk-command-not-found.c:548
-#, fuzzy
 msgid "Command not found."
-msgstr "nicht gefunden."
+msgstr ""
 
 #. TRANSLATORS: tell the user what we think the command is
 #: ../contrib/command-not-found/pk-command-not-found.c:555
-#, fuzzy
 msgid "Similar command is:"
-msgstr "Unterbefehle:"
+msgstr ""
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 #: ../contrib/command-not-found/pk-command-not-found.c:564
 msgid "Run similar command:"
-msgstr "Ähnlichen Befehl ausführen:"
+msgstr ""
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 #: ../contrib/command-not-found/pk-command-not-found.c:576
 #: ../contrib/command-not-found/pk-command-not-found.c:585
-#, fuzzy
 msgid "Similar commands are:"
-msgstr "Unterbefehle:"
+msgstr ""
 
 #. TRANSLATORS: ask the user to choose a file to run
 #: ../contrib/command-not-found/pk-command-not-found.c:592
 msgid "Please choose a command to run"
-msgstr "Bitte wählen Sie einen Befehl zum Ausfüühren"
+msgstr ""
 
 #. TRANSLATORS: tell the user what package provides the command
 #: ../contrib/command-not-found/pk-command-not-found.c:607
-#, fuzzy
 msgid "The package providing this file is:"
-msgstr "Das Paket %s ist bereits installiert"
+msgstr ""
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
 #: ../contrib/command-not-found/pk-command-not-found.c:612
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Installiere das Paket '%s', das den Befehl '%s' anbietet?"
+msgstr ""
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:633
 msgid "Packages providing this file are:"
-msgstr "Pakete, die diese Datei anbieten sind:"
+msgstr ""
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:642
 msgid "Suitable packages are:"
-msgstr "Passende Pakete sind:"
+msgstr ""
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
 #: ../contrib/command-not-found/pk-command-not-found.c:650
-#, fuzzy
 msgid "Please choose a package to install"
-msgstr "Bitte wählen Sie das korrekte Paket: "
+msgstr ""
 
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/src/contents.cpp:298
 msgid "Getting package information..."
-msgstr "Bekomme Paket-Informationen..."
+msgstr "Se obțin informațiile despre pachet..."
 
 #. TRANSLATORS: run an applicaiton
 #: ../contrib/browser-plugin/src/contents.cpp:304
 #, c-format
 msgid "Run %s"
-msgstr "Starte %s"
+msgstr "Rulează %s"
 
 #. TRANSLATORS: show the installed version of a package
 #: ../contrib/browser-plugin/src/contents.cpp:310
 msgid "Installed version"
-msgstr "Installierte Version"
+msgstr "Versiune instalată"
 
 #. TRANSLATORS: run the application now
 #: ../contrib/browser-plugin/src/contents.cpp:318
 #, c-format
 msgid "Run version %s now"
-msgstr "Starte Version %s jetzt"
+msgstr "Rulează versiunea %s acum"
 
 #. TRANSLATORS: run the application now
 #: ../contrib/browser-plugin/src/contents.cpp:324
 msgid "Run now"
-msgstr "Starte jetzt"
+msgstr "Rulează acum"
 
 #. TRANSLATORS: update to a new version of the package
 #: ../contrib/browser-plugin/src/contents.cpp:330
 #, c-format
 msgid "Update to version %s"
-msgstr "Aktualisiere auf Version %s"
+msgstr "Actualizează la versiunea %s"
 
 #. TRANSLATORS: To install a package
 #: ../contrib/browser-plugin/src/contents.cpp:336
 #, c-format
 msgid "Install %s now"
-msgstr "Installiere %s jetzt"
+msgstr "Instalează %s acum"
 
 #. TRANSLATORS: the version of the package
 #: ../contrib/browser-plugin/src/contents.cpp:339
 msgid "Version"
-msgstr "Version"
+msgstr "Versiune"
 
 #. TRANSLATORS: noting found, so can't install
 #: ../contrib/browser-plugin/src/contents.cpp:344
 msgid "No packages found for your system"
-msgstr "Keine Pakete für Ihr System gefunden"
+msgstr "Nu s-a găsit niciun pachet pentru sistemul dumneavoastră"
 
 #. TRANSLATORS: package is being installed
 #: ../contrib/browser-plugin/src/contents.cpp:349
 msgid "Installing..."
-msgstr "Installiere..."
+msgstr "Instalare..."
 
 #. TRANSLATORS: the action is non-localised
 #: ../contrib/app-install/pk-app-install-add.c:247
 #: ../contrib/app-install/pk-app-install-generate.c:247
 msgid "The action, one of 'create', 'add', or 'remove'"
-msgstr "Aktion ('create', 'add' oder 'remove')"
+msgstr ""
 
 #. TRANSLATORS: if we are specifing a out-of-tree database
 #: ../contrib/app-install/pk-app-install-add.c:250
 #: ../contrib/app-install/pk-app-install-generate.c:250
 #: ../contrib/app-install/pk-app-install-remove.c:90
 msgid "Main cache file to use (if not specififed, default is used)"
-msgstr "Hauptzwischenspeicher-Datei (wenn nicht genannt, wird die Standarddatei benutzt)"
-""
+msgstr ""
 
 #. TRANSLATORS: the source database, typically used for adding
 #: ../contrib/app-install/pk-app-install-add.c:253
 #: ../contrib/app-install/pk-app-install-generate.c:253
-#, fuzzy
 msgid "Source cache file to add to the main database"
-msgstr "Quellen-Zwischenspeicher, der zur Hauptdatenbank hinzugefügt werden soll"
+msgstr ""
 
 #. TRANSLATORS: the icon directory
 #: ../contrib/app-install/pk-app-install-add.c:256
 #: ../contrib/app-install/pk-app-install-generate.c:256
 #: ../contrib/app-install/pk-app-install-remove.c:93
 msgid "Icon directory"
-msgstr "Symbol-Verzeichnis"
+msgstr "Director pentru iconițe"
 
 #. TRANSLATORS: the repo of the software source, e.g. fedora
 #: ../contrib/app-install/pk-app-install-add.c:259
 #: ../contrib/app-install/pk-app-install-generate.c:259
 #: ../contrib/app-install/pk-app-install-remove.c:96
 msgid "Name of the remote repo"
-msgstr "Name der entfernten Quelle"
+msgstr "Numele depozitului de la distanță"
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/app-install/pk-app-install-add.c:270
 #: ../contrib/app-install/pk-app-install-create.c:62
 #: ../contrib/app-install/pk-app-install-generate.c:270
 #: ../contrib/app-install/pk-app-install-remove.c:107
-#, fuzzy
 msgid "PackageKit Application Database Installer"
-msgstr "PackageKit-Konsolen-Interface"
+msgstr ""
 
 #. TRANSLATORS: if we are specifing a out-of-tree database
 #: ../contrib/app-install/pk-app-install-create.c:51
-#, fuzzy
 msgid "Main database file to use (if not specififed, default is used)"
-msgstr "Hauptdatenbank-Datei (wenn nicht genannt, wird die Standard-Datei benutzt)"
+msgstr ""
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
-msgstr "PackageKit Katalog"
+msgstr "Catalog PackageKit"
 
 #: ../data/packagekit-package-list.xml.in.h:1
 msgid "PackageKit Package List"
-msgstr "PackageKit-Paketliste"
+msgstr "Listă de pachete PackageKit"
 
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr "PackageKit Service-Pack"
+msgstr "Pachet de servicii PackageKit"
 
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
-msgstr "Startfehler wegen Sicherheitseinstellungen auf diesem Rechner"
+msgstr ""
+"Pornirea a eșuat din cauza politicilor de securitate ale acestei mașini."
 
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
 msgid "This can happen for two reasons:"
-msgstr "Dies kann aus zwei Gründen passieren:"
+msgstr "Aceasta se poate întâmpla din două motive:"
 
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr ""
-"Der korrekte Benutzer führt nicht das Programm aus (normalerweise root)"
+msgstr "Utilizatorul corect nu lansează executabilul (de obicei root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
@@ -1028,194 +982,49 @@ msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system "
 "directory:"
 msgstr ""
-"Die org.freedesktop.PackageKit.conf-Datei ist nicht auf Ihrem Rechner im "
-"system-Verzeichnis:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:193
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "Verwende Packaging-Backend z.B. dummy"
+msgstr "Unealta de procesat pachete, de ex: yum, apt"
 
 #. TRANSLATORS: if we should run in the background
 #: ../src/pk-main.c:196
 msgid "Daemonize and detach from the terminal"
-msgstr "Dämonisiere und löse vom Terminal ab"
+msgstr "Transformă în demon și detașează de terminal"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: ../src/pk-main.c:202
 msgid "Disable the idle timer"
-msgstr "Deaktiviere Idle-Timer"
+msgstr "Dezactivează cronometrul de inactivitate"
 
 #. TRANSLATORS: show version
 #: ../src/pk-main.c:205
 msgid "Show version and exit"
-msgstr "Zeige Version und beende"
+msgstr "Afișează versiunea și ieși"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 #: ../src/pk-main.c:208
 msgid "Exit after a small delay"
-msgstr "Beende nach kurzer Verzögerung"
+msgstr "Ieși după o mică întârziere"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: ../src/pk-main.c:211
-#, fuzzy
 msgid "Exit after the engine has loaded"
-msgstr "Beende, nachdem der Kern geladen wurde"
+msgstr "Ieși după ce motorul a fost încărcat"
 
 #. TRANSLATORS: describing the service that is running
 #: ../src/pk-main.c:226
 msgid "PackageKit service"
-msgstr "PackageKit-Dienst"
+msgstr "Serviciul PackageKit"
 
 #. TRANSLATORS: fatal error, dbus is not running
 #: ../src/pk-main.c:263
 msgid "Cannot connect to the system bus"
-msgstr "Konnte nicht zum System-Bus verbinden"
+msgstr "Nu se poate face conexiunea cu magistrala sistemului"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
 msgid "Error trying to start: %s\n"
-msgstr "Fehler beim Starten von: %s\n"
-
-#~ msgid "You need to specify a search type, e.g. name"
-#~ msgstr "Sie müssen einen Suchtyp angeben, z.B. einen Namen"
-
-#~ msgid "You need to specify a search term"
-#~ msgstr "Sie müssen einen Suchwert angeben"
-
-#~ msgid "You need to specify a package or file to install"
-#~ msgstr "Sie müssen ein Paket oder eine Datei zum installieren angeben"
-
-#~ msgid "You need to specify a package to remove"
-#~ msgstr "Sie müssen ein Paket zum Löschen angeben"
-
-#~ msgid "You need to specify a package name to resolve"
-#~ msgstr "Sie müssen einen Paketnamen zum Auflösen angeben"
-
-#~ msgid "You need to specify a repository name"
-#~ msgstr "Sie müssen einen Repository-Namen angeben"
-
-#~ msgid "You need to specify an action, e.g. 'update-system'"
-#~ msgstr "Sie müssen eine Aktion angeben, z.B. 'update-system'"
-
-#~ msgid "You need to specify a correct role"
-#~ msgstr "Sie müssen eine korrekte Rolle angeben"
-
-#~ msgid "You need to specify a package to find the details for"
-#~ msgstr "Sie müssen ein Paket, für das nach Details gesucht wird, angeben"
-
-#~ msgid "You need to specify a package to find the files for"
-#~ msgstr "Sie müssen ein Paket, für das nach Dateien gesucht wird, angeben"
-
-#~ msgid "You need to specify a list file to create"
-#~ msgstr "Sie müssen eine Dateiliste zum Erzeugen angeben"
-
-#~ msgid "You need to specify a list file to open"
-#~ msgstr "Sie müssen eine Dateiliste zum Öffnen angeben"
-
-#~ msgid "This tool could not remove the packages: '%s'"
-#~ msgstr "Dieser Werkzeug konnte das Paket nicht entfernen: '%s'"
-
-#~ msgid "Could not find package to remove"
-#~ msgstr "Packet zum Löschen konnte nicht gefunden werden"
-
-#~ msgid "Cancelled!"
-#~ msgstr "Abbruch!"
-
-#~ msgid "Could not find package to download"
-#~ msgstr "Das Packet zum Herunterladen konnte nicht gefunden werden"
-
-#~ msgid "Could not find package to update"
-#~ msgstr "Das Packet zum Aktualisieren konnte nicht gefunden werden"
-
-#~ msgid "Could not find what packages require"
-#~ msgstr "Konnte nicht herausfinden, was die Packete benötigen"
-
-#~ msgid "Could not find details for"
-#~ msgstr "Konnte keine Details finden für"
-
-#~ msgid "Okay to import key?"
-#~ msgstr "Soll der Schlüssel importiert werden?"
-
-#~ msgid "Did not import key"
-#~ msgstr "Schlüssel wurde nicht importiert"
-
-#~ msgid "Did not agree to licence, task will fail"
-#~ msgstr "Sie stimmten der Lizenz nicht zu, die Aufgabe wird fehlschlagen"
-
-#~ msgid "Could not find a package match"
-#~ msgstr "Es konnte kein Packet gefunden werden"
-
-#~ msgid "failed to download: invalid package_id and/or directory"
-#~ msgstr ""
-#~ "Herunterladen fehlgeschlagen: Ungültige package_id und/oder ungültiges "
-#~ "Verzeichnis"
-
-#~ msgid "Could not find a valid metadata file"
-#~ msgstr "Eine gültige Metadata–Datei konnte nicht gefunden werden"
-
-#~ msgid "Okay to download the additional packages"
-#~ msgstr "Möchten Sie die zusätzlichen Packete herunterladen"
-
-#~ msgid "You need to specify the pack name and packages to be packed\n"
-#~ msgstr "Sie müssen einen Packnamen und Packete zum Packen angeben\n"
-
-#~ msgid ""
-#~ "Invalid name for the service pack, Specify a name with .servicepack "
-#~ "extension\n"
-#~ msgstr ""
-#~ "Ungültiger Name für ein Service Pack, geben Sie einen Namen an mit ."
-#~ "servicepack als Endung\n"
-
-#~ msgid "Could not set database readonly"
-#~ msgstr "Datenbank konnte nicht nur-lesbar gesetzt werden"
-
-#~ msgid "Could not open database: %s"
-#~ msgstr "Datenbank %s konnte nicht geöffnet werden"
-
-#~ msgid "You probably need to run this program as the root user"
-#~ msgstr "Sie sollten dieses Programm vermutlich als Benutzer root ausführen"
-
-#~ msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
-#~ msgstr ""
-#~ "<span color='#%06x' underline='single' size='larger'>%s wird ausgeführt</"
-#~ "span>"
-
-#~ msgid "<big>%s</big>"
-#~ msgstr "<big>%s</big>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Run version %s now</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Version %s wird jetzt ausgeführt</"
-#~ "span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Run now</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Wird jetzt ausgeführt</span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Upgrade to version %s</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Aktualisiere zu Version %s</span>"
-
-#~ msgid ""
-#~ "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
-#~ msgstr ""
-#~ "<span color='#%06x' underline='single' size='larger'>%s wird jetzt "
-#~ "installiert</span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<small>Version: %s</small>"
-#~ msgstr ""
-#~ "\n"
-#~ "<small>Version: %s</small>"
+msgstr "Eroare la încercarea de a porni: %s\n"

@@ -61,32 +61,32 @@ Package::Details::~Details()
 	delete d;
 }
 
-Package* Package::Details::package()
+Package* Package::Details::package() const
 {
 	return d->package;
 }
 
-Package::License Package::Details::license()
+Package::License Package::Details::license() const
 {
 	return d->license;
 }
 
-Client::Group Package::Details::group()
+Client::Group Package::Details::group() const
 {
 	return d->group;
 }
 
-QString Package::Details::description()
+QString Package::Details::description() const
 {
 	return d->description;
 }
 
-QString Package::Details::url()
+QString Package::Details::url() const
 {
 	return d->url;
 }
 
-qulonglong Package::Details::size()
+qulonglong Package::Details::size() const
 {
 	return d->size;
 }
@@ -136,47 +136,47 @@ Package::~Package()
 		delete d->details;
 }
 
-QString Package::id()
+QString Package::id() const
 {
 	return d->id;
 }
 
-QString Package::name()
+QString Package::name() const
 {
 	return d->name;
 }
 
-QString Package::version()
+QString Package::version() const
 {
 	return d->version;
 }
 
-QString Package::arch()
+QString Package::arch() const
 {
 	return d->arch;
 }
 
-QString Package::data()
+QString Package::data() const
 {
 	return d->data;
 }
 
-QString Package::summary()
+QString Package::summary() const
 {
 	return d->summary;
 }
 
-Package::State Package::state()
+Package::State Package::state() const
 {
 	return d->state;
 }
 
-bool Package::hasDetails()
+bool Package::hasDetails() const
 {
 	return (d->details != NULL);
 }
 
-Package::Details* Package::details()
+Package::Details* Package::details() const
 {
 	return d->details;
 }
@@ -184,6 +184,11 @@ Package::Details* Package::details()
 void Package::setDetails(Package::Details* det)
 {
 	d->details = det;
+}
+
+bool Package::operator==(const Package *package) const
+{
+	return d->id == package->id();
 }
 
 #include "package.moc"
