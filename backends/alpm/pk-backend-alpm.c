@@ -93,7 +93,7 @@ pkg_from_package_id_str (const gchar *package_id_str)
 		alpm_list_t *iterator;
 		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
 			repo = alpm_list_getdata (iterator);
-			if (egg_strequal (alpm_db_get_name (repo), pk_package_id_get_data (pkg_id)) == 0)
+			if (egg_strequal (alpm_db_get_name (repo), pk_package_id_get_data (pkg_id)))
 				break;
 		}
 	}
@@ -219,7 +219,6 @@ cb_trans_progress (pmtransprog_t event, const char *pkgname, int percent, int ho
 		int trans_percent;
 
 		egg_debug ("alpm: transaction percentage for %s is %i", pkgname, percent);
-		egg_debug ("alpm: current is %i", current);
 		trans_percent = (int) ((float) ((current - 1) * 100 + percent)) / ((float) (howmany * 100)) * 100;
 		pk_backend_set_sub_percentage ((PkBackend *) backend_instance, percent);
 		pk_backend_set_percentage ((PkBackend *) backend_instance, trans_percent);
@@ -702,7 +701,7 @@ backend_cancel (PkBackend *backend)
 }
 
 /**
- * backend_download_packages:
+ * backend_download_packages_thread:
  */
 static gboolean
 backend_download_packages_thread (PkBackend *backend)
