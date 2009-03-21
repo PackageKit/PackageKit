@@ -2334,7 +2334,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 for change in changes:
                     gmtime = time.gmtime(change[0])
                     time_str = "%i-%i-%i" % (gmtime[0], gmtime[1], gmtime[2])
-                    changelog += _format_str('**' + time_str + '** ' + change[1] + '\n' + _to_unicode(change[2].replace("\t", " ")) + '\n\n')
+                    changelog += _format_str('**' + time_str + '** ' + _to_unicode(change[1]) + '\n' + _to_unicode(change[2].replace("\t", " ")) + '\n\n')
 
             cve_url = _format_list(urls['cve'])
             bz_url = _format_list(urls['bugzilla'])
