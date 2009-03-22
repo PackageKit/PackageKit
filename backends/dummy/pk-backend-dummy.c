@@ -937,6 +937,11 @@ backend_update_system_timeout (gpointer data)
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 					    "An HTML widget for GTK+ 2.0");
 			_updated_gtkhtml = FALSE;
+		} else {
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					    "An HTML widget for GTK+ 2.0");
+			_updated_gtkhtml = TRUE;
 		}
 	}
 	if (_progress_percentage == 40 && !_updated_powertop) {
