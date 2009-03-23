@@ -2330,11 +2330,37 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
             # extract the changelog for the local package
             if len(changelog) == 0:
+
+                # get the current installed version of the package
+                instpkg = None
+                try:
+                    instpkgs = self.yumbase.rpmdb.searchNevra(name=pkg.name)
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                if len(instpkgs) == 1:
+                    instpkg = instpkgs[0]
+
+                # get each element of the ChangeLog
                 changes = pkg.returnChangelog()
                 for change in changes:
                     gmtime = time.gmtime(change[0])
                     time_str = "%i-%i-%i" % (gmtime[0], gmtime[1], gmtime[2])
-                    changelog += _format_str('**' + time_str + '** ' + _to_unicode(change[1]) + '\n' + _to_unicode(change[2].replace("\t", " ")) + '\n\n')
+                    header = _to_unicode(change[1])
+
+                    # format "Seth Vidal <skvidal at fedoraproject.org> - 3:3.2.20-1"
+                    user_version = header.split(' - ')
+                    if len(user_version) < 2:
+                        # format "Behdad Esfahbod <besfahbo@redhat.com> 2.3.9-1"
+                        user_version = header.rsplit(' ', 1)
+
+                    # is older than what we have already?
+                    if instpkg and user_version[1].find('-') != -1:
+                        evr = _getEVR(user_version[1])
+                        rc = rpmUtils.miscutils.compareEVR((instpkg.epoch, instpkg.version, instpkg.release.split('.')[0]), evr)
+                        if rc >= 0:
+                            break
+
+                    changelog += _format_str('**' + time_str + '** ' + user_version[0] + ' ' + user_version[1] + '\n' + _to_unicode(change[2].replace("\t", " ")) + '\n\n')
 
             cve_url = _format_list(urls['cve'])
             bz_url = _format_list(urls['bugzilla'])
