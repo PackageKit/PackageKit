@@ -6,7 +6,7 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-command_not_found_handler () {
+command_not_found_handle () {
 	/usr/libexec/pk-command-not-found $1 || return 127
 }
 
