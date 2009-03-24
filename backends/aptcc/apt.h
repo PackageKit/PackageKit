@@ -22,11 +22,18 @@
 #ifndef APT_H
 #define APT_H
 
+#include <libintl.h>
+#define _(String) gettext (String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #include <apt-pkg/pkgrecords.h>
 #include <apt-pkg/pkgcachegen.h>
 #include <apt-pkg/policy.h>
 
 #include <pk-backend.h>
+
+#include <set>
 
 using namespace std;
 
@@ -42,13 +49,21 @@ vector<string> search_file (PkBackend *backend, const string &file_name, bool &_
 
 class aptcc
 {
+//     typedef int user_tag_reference;
 public:
 	aptcc();
 	~aptcc();
 
 	bool init(const char *locale, pkgSourceList &apt_source_list);
 
-	pkgCache::VerIterator find_ver(pkgCache::PkgIterator pkg);
+	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
+	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
+	bool is_held(const pkgCache::PkgIterator &pkg);
+
+	/**
+	 *  get the state cache of the package
+	 */
+	pkgDepCache::StateCache get_state(const pkgCache::PkgIterator &pkg);
 
 	/**
 	 *  Get depends
@@ -72,7 +87,8 @@ public:
 	void emit_package(PkBackend *backend,
 			  PkBitfield filters,
 			  const pkgCache::PkgIterator &pkg,
-			  const pkgCache::VerIterator &ver);
+			  const pkgCache::VerIterator &ver,
+			  PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
 	/**
 	 *  Emits details
@@ -80,13 +96,42 @@ public:
 	void emit_details(PkBackend *backend,
 			  const pkgCache::PkgIterator &pkg);
 
+	/**
+	 *  Emits update detail
+	 */
+	void emit_update_detail(PkBackend *backend,
+				const pkgCache::PkgIterator &pkg);
+
+	/** Marks all upgradable and non-held packages for upgrade.
+	 *
+	 *  \param with_autoinst if \b true, the dependencies of packages
+	 *  begin upgraded will automatically be installed.
+	 *
+	 *  \param ignore_selections if \b false, all upgradable packages
+	 *  that are not held back will be upgraded; otherwise, packages
+	 *  that are going to be removed will be ignored.
+	 *
+	 *  \param undo an undo group with which the actions taken by this
+	 *  routine will be registered, or \b NULL.
+	 */
+	void mark_all_upgradable(bool with_autoinst,
+				 bool ignore_removed/*,
+				 undo_group *undo*/);
+
 	pkgRecords    *packageRecords;
 	pkgCache      *cacheFile;
+	pkgDepCache   *DCache;
+
 private:
 	MMap          *Map;
 
 	OpProgress    Progress;
-	pkgDepCache   *DCache;
+	pkgPolicy *Policy;
+
+	/** This flag is \b true iff the persistent state has changed (ie, we
+	 *  need to save the cache).
+	 */
+	bool dirty;
 };
 
 #endif

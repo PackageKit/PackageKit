@@ -238,6 +238,67 @@ get_enum_group (string group)
 	}
 }
 
+pkg_action_state find_pkg_state(pkgCache::PkgIterator pkg,
+				aptcc &cache)
+{
+  pkgDepCache::StateCache state = cache.get_state(pkg);
+//   pkg_action_state &extstate = cache.get_ext_state(pkg);
+
+  if(state.InstBroken())
+    return pkg_broken;
+  else if(state.Delete())
+    {
+//       if(extstate.remove_reason==aptitudeDepCache::manual)
+// 	return pkg_remove;
+//       else if(extstate.remove_reason==aptitudeDepCache::unused)
+// 	return pkg_unused_remove;
+//       else
+// 	return pkg_auto_remove;
+    }
+  else if(state.Install())
+    {
+      if(!pkg.CurrentVer().end())
+	{
+	  if(state.iFlags&pkgDepCache::ReInstall)
+	    return pkg_reinstall;
+	  else if(state.Downgrade())
+	    return pkg_downgrade;
+	  else if(state.Upgrade())
+	    return pkg_upgrade;
+	  else
+	    // FOO!  Should I abort here?
+	    return pkg_install;
+	}
+      else if(state.Flags & pkgCache::Flag::Auto)
+	return pkg_auto_install;
+      else
+	return pkg_install;
+    }
+
+  else if(state.Status==1 &&
+	  state.Keep())
+    {
+      if(!(state.Flags & pkgDepCache::AutoKept))
+	return pkg_hold;
+      else
+	return pkg_auto_hold;
+    }
+
+  else if(state.iFlags&pkgDepCache::ReInstall)
+    return pkg_reinstall;
+  // States where --configure fixes things.
+  else if(pkg->CurrentState == pkgCache::State::UnPacked ||
+	  pkg->CurrentState == pkgCache::State::HalfConfigured
+#ifdef APT_HAS_TRIGGERS
+	  || pkg->CurrentState == pkgCache::State::TriggersAwaited
+	  || pkg->CurrentState == pkgCache::State::TriggersPending
+#endif
+	  )
+    return pkg_unconfigured;
+
+  return pkg_unchanged;
+}
+
 bool contains(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packages,
 	      const pkgCache::PkgIterator pkg)
 {
