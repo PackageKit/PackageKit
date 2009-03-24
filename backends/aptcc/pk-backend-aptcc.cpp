@@ -31,9 +31,12 @@
 #include <apt-pkg/strutl.h>
 #include <apt-pkg/pkgrecords.h>
 
+#include <apt-pkg/algorithms.h>
+
 #include "apt.h"
 #include "apt-utils.h"
 #include "matcher.h"
+#include "aptcc_show_broken.h"
 
 #include <config.h>
 
@@ -77,7 +80,7 @@ backend_initialize (PkBackend *backend)
 	egg_debug ("APTcc Initializing");
 
 	if (pkgInitConfig(*_config) == false ||
-	    pkgInitSystem(*_config,_system) == false)
+	    pkgInitSystem(*_config, _system) == false)
 	{
 		egg_debug ("ERROR initializing backend");
 	}
@@ -220,10 +223,6 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 
 	bool depends = pk_backend_get_bool(backend, "get_depends");
 
-	if (recursive)
-	printf("RECURSIVE ----------------------------");
-	else
-	printf("NOT RECURSIVE ----------------------------");
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
 		if (_cancel) {
@@ -299,67 +298,6 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 }
 
 static gboolean
-backend_get_details_thread (PkBackend *backend)
-{
-	gchar **package_ids;
-	PkPackageId *pi;
-
-	package_ids = pk_backend_get_strv (backend, "package_ids");
-	if (package_ids == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished (backend);
-		return false;
-	}
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-
-	aptcc *m_apt = new aptcc();
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
-		egg_debug ("Failed to create apt cache");
-		delete m_apt;
-		return false;
-	}
-	
-	for (uint i = 0; i < g_strv_length(package_ids); i++) {
-		pi = pk_package_id_new_from_string (package_ids[i]);
-		if (pi == NULL) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-			pk_backend_finished (backend);
-			delete m_apt;
-			return false;
-		}
-
-		pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(pi->name);
-		if (pkg.end() == true)
-		{
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
-			pk_package_id_free (pi);
-			pk_backend_finished (backend);
-			delete m_apt;
-			return false;
-		}
-
-		m_apt->emit_details(backend, pkg);
-
-		pk_package_id_free (pi);
-	}
-
-	delete m_apt;
-	
-	pk_backend_finished (backend);
-	return true;
-}
-
-/**
- * backend_get_details:
- */
-static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_thread_create (backend, backend_get_details_thread);
-}
-
-static gboolean
 backend_get_files_thread (PkBackend *backend)
 {
 	gchar **package_ids;
@@ -420,6 +358,63 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 	pk_backend_thread_create (backend, backend_get_files_thread);
 }
 
+static gboolean
+backend_get_details_thread (PkBackend *backend)
+{
+	gchar **package_ids;
+	PkPackageId *pi;
+
+	bool updateDetail = pk_backend_get_bool (backend, "updateDetail");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	if (package_ids == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_backend_finished (backend);
+		return false;
+	}
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
+	}
+
+	
+	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+		pi = pk_package_id_new_from_string (package_ids[i]);
+		if (pi == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+			pk_backend_finished (backend);
+			delete m_apt;
+			return false;
+		}
+
+		pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(pi->name);
+		if (pkg.end() == true)
+		{
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
+			pk_package_id_free (pi);
+			pk_backend_finished (backend);
+			delete m_apt;
+			return false;
+		}
+
+		if (updateDetail) {
+			m_apt->emit_update_detail(backend, pkg);
+		} else {
+			m_apt->emit_details(backend, pkg);
+		}
+
+		pk_package_id_free (pi);
+	}
+
+	delete m_apt;
+
+	pk_backend_finished (backend);
+	return true;
+}
 /**
  * backend_get_update_detail_timeout:
  **/
@@ -478,42 +473,215 @@ backend_get_update_detail_timeout (gpointer data)
 static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	_package_ids = package_ids;
-	_signal_timeout = g_timeout_add (500, backend_get_update_detail_timeout, backend);
+	pk_backend_set_bool (backend, "updateDetail", true);
+	pk_backend_thread_create (backend, backend_get_details_thread);
+// 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+// 	_package_ids = package_ids;
+// 	_signal_timeout = g_timeout_add (500, backend_get_update_detail_timeout, backend);
 }
 
 /**
- * backend_get_updates_timeout:
- **/
-static gboolean
-backend_get_updates_timeout (gpointer data)
+ * backend_get_details:
+ */
+static void
+backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	PkBackend *backend = (PkBackend *) data;
+	pk_backend_set_bool (backend, "updateDetail", false);
+	pk_backend_thread_create (backend, backend_get_details_thread);
+}
 
-	if (!_updated_powertop && !_updated_kernel && !_updated_gtkhtml) {
-		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
-				    "vino;2.24.2.fc9;i386;fedora",
-				    "Remote desktop server for the desktop");
+static gboolean
+backend_get_updates_thread (PkBackend *backend)
+{
+	PkBitfield filters;
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, true);
+
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
 	}
-	if (!_updated_powertop) {
-		pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
-				    "powertop;1.8-1.fc8;i386;fedora",
-				    "Power consumption monitor");
+
+	pkgset to_install, to_hold, to_remove, to_purge;
+	// Build to_install to avoid a big printout
+	for(pkgCache::PkgIterator i=m_apt->cacheFile->PkgBegin(); !i.end(); ++i)
+	{
+		pkgDepCache::StateCache state= m_apt->get_state(i);
+
+		if(!i.CurrentVer().end() &&
+		    state.Upgradable() && !m_apt->is_held(i)) {
+		    to_install.insert(i);
+		}
 	}
-	if (!_updated_kernel) {
-		pk_backend_package (backend, PK_INFO_ENUM_SECURITY,
-				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
-				    "The Linux kernel (the core of the Linux operating system)");
+
+	// First try the built-in resolver; if it fails (which it shouldn't
+	// if an upgrade is possible), cancel all changes and try apt's
+	// resolver.
+// 	m_apt->mark_all_upgradable(false, true);
+
+	if (pkgAllUpgrade(*m_apt->DCache) == false)
+	{
+		show_broken(backend, m_apt);
+		egg_debug ("Internal error, AllUpgrade broke stuff");
+		delete m_apt;
+		return false;
 	}
-	if (!_updated_gtkhtml) {
-		pk_backend_package (backend, PK_INFO_ENUM_SECURITY,
-				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-				    "An HTML widget for GTK+ 2.0");
+
+// //   if(!aptitude::cmdline::safe_resolve_deps(verbose, no_new_installs, true))
+// //     {
+//       {
+// 	aptcc::action_group action_group(*m_apt);
+// 
+// 	// Reset all the package states.
+// 	for(pkgCache::PkgIterator i=m_apt->DCache->PkgBegin();
+// 	    !i.end(); ++i)
+// 	  m_apt->mark_keep(i, false, false, NULL);
+//       }
+// 
+//       // Use the apt 'upgrade' algorithm as a fallback against, e.g.,
+//       // bugs in the aptitude resolver.
+//       if(!m_apt->all_upgrade(false, NULL))
+// 	{
+// // 	  show_broken();
+// 
+// 	  _error->DumpErrors();
+// 	  return -1;
+// 	}
+// //     }
+
+	pkgvector lists[num_pkg_action_states];
+	pkgvector recommended, suggested;
+	pkgvector extra_install, extra_remove;
+	unsigned long Upgrade=0, Downgrade=0, Install=0, ReInstall=0;
+
+	for(pkgCache::PkgIterator pkg=m_apt->cacheFile->PkgBegin();
+	    !pkg.end(); ++pkg)
+	{
+		if((*m_apt->DCache)[pkg].NewInstall()) {
+			++Install;
+		} else if((*m_apt->DCache)[pkg].Upgrade()) {
+			++Upgrade;
+		} else if((*m_apt->DCache)[pkg].Downgrade()) {
+			++Downgrade;
+		} else if(!(*m_apt->DCache)[pkg].Delete() &&
+			((*m_apt->DCache)[pkg].iFlags & pkgDepCache::ReInstall)) {
+			++ReInstall;
+		}
+
+		pkg_action_state state=find_pkg_state(pkg, *m_apt);
+
+		switch(state)
+		    {
+		    case pkg_auto_install:
+		    case pkg_install:
+		    case pkg_upgrade:
+		    if(to_install.find(pkg)==to_install.end())
+			extra_install.push_back(pkg);
+		    break;
+		    case pkg_auto_remove:
+		    case pkg_unused_remove:
+		    case pkg_remove:
+		    if(to_remove.find(pkg)==to_remove.end())
+			extra_remove.push_back(pkg);
+		    break;
+		    case pkg_unchanged:
+		    if(pkg.CurrentVer().end())
+			{
+	    // 	      if(package_recommended(pkg))
+	    // 		recommended.push_back(pkg);
+	    // 	      else if(package_suggested(pkg))
+	    // 		suggested.push_back(pkg);
+			}
+		    default:
+		    break;
+		    }
+
+		switch(state)
+		{
+		case pkg_auto_install:
+			lists[pkg_install].push_back(pkg);
+			break;
+		case pkg_unused_remove:
+		case pkg_auto_remove:
+			lists[pkg_remove].push_back(pkg);
+			break;
+		case pkg_auto_hold:
+			if(to_install.find(pkg) != to_install.end()) {
+			    lists[pkg_hold].push_back(pkg);
+			}
+			break;
+		case pkg_hold:
+			if(to_install.find(pkg) != to_install.end()) {
+			    lists[pkg_hold].push_back(pkg);
+			}
+			break;
+		case pkg_unchanged:
+			break;
+		default:
+			lists[state].push_back(pkg);
+		}
 	}
+
+// printf("upgrade: %lu\n", Upgrade);
+// printf("install: %lu\n", Install);
+// printf("to_install: %lu\n", to_install.size());
+// printf("to_hold: %lu\n", lists[pkg_hold].size());
+
+	for(int i=0; i < num_pkg_action_states; ++i)
+	{
+		PkInfoEnum state;
+		switch(i)
+		{
+		case pkg_hold:
+			state = PK_INFO_ENUM_BLOCKED;
+			break;
+		case pkg_upgrade:
+			state = PK_INFO_ENUM_NORMAL;
+			break;
+		default:
+			continue;
+		}
+
+		if(!lists[i].empty())
+		{
+			vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+			for (pkgvector::iterator it = lists[i].begin(); it != lists[i].end(); ++it)
+			{
+				if (_cancel) {
+				    break;
+				}
+				pkgCache::VerIterator ver = m_apt->find_candidate_ver(*it);
+				if (ver.end() == false)
+				{
+					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(*it, ver));
+				}
+			}
+
+			sort(output.begin(), output.end(), compare());
+			output.erase(unique(output.begin(), output.end(), result_equality()),
+				    output.end());
+
+			// It's faster to emmit the packages here than in the matching part
+			for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it = output.begin();
+			    it != output.end(); ++it)
+			{
+				if (_cancel) {
+					break;
+				}
+				m_apt->emit_package(backend, filters, it->first, it->second, state);
+			}
+		}
+	}
+
+	delete m_apt;
 	pk_backend_finished (backend);
-	_signal_timeout = 0;
-	return false;
+	return true;
 }
 
 /**
@@ -522,15 +690,7 @@ backend_get_updates_timeout (gpointer data)
 static void
 backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	/* check network state */
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	_signal_timeout = g_timeout_add (1000, backend_get_updates_timeout, backend);
+	pk_backend_thread_create (backend, backend_get_updates_thread);
 }
 
 static gboolean
@@ -629,27 +789,6 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
 	_signal_timeout = g_timeout_add (100, backend_install_timeout, backend);
-}
-
-/**
- * backend_install_signature:
- */
-static void
-backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
-			   const gchar *key_id, const gchar *package_id)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-	if (type == PK_SIGTYPE_ENUM_GPG &&
-	    egg_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
-	    egg_strequal (key_id, "BB7576AC")) {
-		egg_debug ("installed signature %s for %s", key_id, package_id);
-		_has_signature = true;
-	} else {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
-				       "GPG key %s not recognised for package_id %s",
-				       key_id, package_id);
-	}
-	pk_backend_finished (backend);
 }
 
 /**
@@ -1273,17 +1412,6 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 }
 
 /**
- * backend_repo_set_data:
- */
-static void
-backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
-	egg_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_what_provides_timeout:
  */
 static gboolean
@@ -1447,11 +1575,11 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_updates,				/* get_updates */
 	backend_install_files,				/* install_files */
 	backend_install_packages,			/* install_packages */
-	backend_install_signature,			/* install_signature */
+	NULL,						/* install_signature */
 	backend_refresh_cache,				/* refresh_cache */
 	backend_remove_packages,			/* remove_packages */
 	backend_repo_enable,				/* repo_enable */
-	backend_repo_set_data,				/* repo_set_data */
+	NULL,						/* repo_set_data */
 	backend_resolve,				/* resolve */
 	NULL,						/* rollback */
 	backend_search_details,				/* search_details */
@@ -1462,4 +1590,3 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_update_system,				/* update_system */
 	backend_what_provides				/* what_provides */
 );
-
