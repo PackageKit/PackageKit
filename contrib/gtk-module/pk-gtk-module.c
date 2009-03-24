@@ -328,3 +328,16 @@ gtk_module_init (gint *argc G_GNUC_UNUSED,
 {
 	install_pango_font_map ();
 }
+
+const char *g_module_check_init (GModule *module);
+
+const char *
+g_module_check_init (GModule *module)
+{
+	/* make the GTK+ module resident
+	 * without doing this, killing gnome-settings-daemon brings down every
+	 * single application in the session, since the module doesn't clean up
+	 * when being unloaded */
+	g_module_make_resident (module);
+	return NULL;
+}

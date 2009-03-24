@@ -1,10 +1,8 @@
 PackageKit Release Notes
 
-1. Write NEWS entries for PackageKit and gnome-packagekit in the same
-   format as usual. Ignore any trivial commits.
+1. Write NEWS entries for PackageKit in the same format as usual.
 
 git shortlog PACKAGEKIT_0_4_5.. | grep -v trivial | grep -v Merge > NEWS.new
-git shortlog GNOME_PACKAGEKIT_0_4_5.. | grep -v trivial | grep -v Merge > NEWS.new
 
 2. Add download date to docs/html/pk-download.html, save file.
 
@@ -19,38 +17,29 @@ git push
 git push git+ssh://hughsient@git.freedesktop.org/git/packagekit
 git push --tags git+ssh://hughsient@git.freedesktop.org/git/packagekit
 
-5. Commit changes in gnome-packagekit git:
+5. run 'make dist-gzip'
 
-git commit -a -m "Release version 0.4.6"
-git tag GNOME_PACKAGEKIT_0_4_6
-git push --tags
-git push
-
-6. run 'make dist-gzip' in both the PackageKit and gnome-packagekit dirs.
-
-7. Upload both tarballs to:
+6. Upload tarball to:
 
 scp *.tar.gz packagekit.org:/srv/www/html/releases/
 
-8. Do post release version bump in configure.ac
+7. Do post release version bump in configure.ac
 
-9. Commit changes in both projects:
+8. Commit trivial changes:
 
 git commit -a -m "trivial: post release version bump"
 git push
 
-10. Upload new html sources
+9. Upload new html sources
 
-11. Send an email to packagekit@lists.freedesktop.org
+10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-Subject: PackageKit and gnome-packagekit 0.4.6 released!
+Subject: PackageKit 0.4.6 released!
 
-Today I released PackageKit and gnome-packagekit 0.4.6.
+Today I released PackageKit 0.4.6.
 
 PackageKit release notes: http://cgit.freedesktop.org/packagekit/tree/NEWS
-
-gnome-packagekit release notes: http://cgit.freedesktop.org/~hughsient/gnome-packagekit/tree/NEWS
 
 Tarballs available here: http://www.packagekit.org/releases/
 

@@ -3,24 +3,25 @@
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Amanpreet Singh Alam <aalam@users.sf.net>, 2008, 2009.
+# A S Alam <aalam@users.sf.net>, 2009.
 msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-03-03 11:42+0000\n"
-"PO-Revision-Date: 2009-03-04 06:37+0530\n"
-"Last-Translator: Amanpreet Singh Alam <aalam@users.sf.net>\n"
-"Language-Team: Punjabi <punjabi-users@lists.sf.net>\n"
+"PO-Revision-Date: 2009-03-20 21:29+0000\n"
+"Last-Translator: A S Alam <aalam@users.sf.net>\n"
+"Language-Team: Punjabi/Panjabi <punjab-l10n@list.sf.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
+"X-Generator: Lokalize 0.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #: ../client/pk-console.c:234
 msgid "Transaction"
-msgstr "ਸੰਚਾਰ"
+msgstr "ਟਰਾਂਸੈਕਸ਼ਨ"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: ../client/pk-console.c:236
@@ -86,12 +87,12 @@ msgstr "ਪ੍ਰਭਾਵਿਤ ਪੈਕੇਜ: ਕੋਈ ਨਹੀਂ"
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: ../client/pk-console.c:297
 msgid "Distribution"
-msgstr "ਵੰਡ"
+msgstr "ਡਿਸਟਰੀਬਿਊਸ਼ਨ"
 
 #. TRANSLATORS: this is type of update, stable or testing
 #: ../client/pk-console.c:299
 msgid "Type"
-msgstr "ਕਿਸਮ"
+msgstr "ਟਾਈਪ"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
@@ -102,7 +103,7 @@ msgstr "ਸੰਖੇਪ"
 #. TRANSLATORS: this is the group category name
 #: ../client/pk-console.c:313
 msgid "Category"
-msgstr "ਸ੍ਰੇਣੀ"
+msgstr "ਕੈਟਾਗਰੀ"
 
 #. TRANSLATORS: this is group identifier
 #: ../client/pk-console.c:315
@@ -167,7 +168,7 @@ msgstr "ਮੁੜ-ਚਾਲੂ"
 #. TRANSLATORS: details about the update, any description of the update
 #: ../client/pk-console.c:371
 msgid "Update text"
-msgstr "ਅੱਪਡੇਟ ਪਾਠ"
+msgstr "ਅੱਪਡੇਟ ਟੈਕਸਟ"
 
 #. TRANSLATORS: details about the update, the changelog for the package
 #: ../client/pk-console.c:375
@@ -471,7 +472,7 @@ msgstr "ਲਾਈਸੈਂਸ ਤੋਂ ਇਨਕਾਰ ਕੀਤਾ।"
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
 #: ../client/pk-console.c:1610
 msgid "The daemon crashed mid-transaction!"
-msgstr "ਡੈਮਨ ਅਧੂਰੀ ਟਰਾਂਜ਼ਿਸ਼ਨ ਵਿੱਚ ਨਸ਼ਟ ਹੋ ਗਈ!"
+msgstr "ਡੈਮਨ ਅਧੂਰੀ ਟਰਾਂਸੈਕਸ਼ਨ ਕਰੈਸ਼ ਹੋ ਗਈ!"
 
 #. TRANSLATORS: This is the header to the --help menu
 #: ../client/pk-console.c:1663
@@ -772,7 +773,7 @@ msgstr "ਠੀਕ ਪੈਕੇਜ ਚੁਣੋ ਜੀ:"
 #: ../client/pk-tools-common.c:162
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "1 ਤੋਂ %i ਤੱਕ ਨੰਬਰ ਦਿਓ ਜੀ:"
+msgstr "੧ ਤੋਂ %i ਤੱਕ ਨੰਬਰ ਦਿਓ ਜੀ:"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:361
@@ -945,7 +946,7 @@ msgstr "ਵਰਤਣ ਲਈ ਮੁੱਖ ਡਾਟਾਬੇਸ ਫਾਇਲ (ਜ
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
-msgstr "ਪੈਕੇਜਕਿੱਟ ਸੂਚੀ"
+msgstr "ਪੈਕੇਜਕਿੱਟ ਕੈਟਾਲਾਗ"
 
 #: ../data/packagekit-package-list.xml.in.h:1
 msgid "PackageKit Package List"
@@ -1022,4 +1023,5 @@ msgstr "ਸਿਸਟਮ ਬੱਸ ਨਾਲ ਕੁਨੈਕਟ ਨਹੀਂ ਕ�
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਗਲਤੀ: %s\n"
+
 
