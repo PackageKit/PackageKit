@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-03-11 21:41+0000\n"
+"POT-Creation-Date: 2009-03-25 11:09+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Rui Gouveia <rui.gouveia@globaltek.pt>\n"
 "Language-Team: pt <fedora-trans-pt@redhat.com>\n"
@@ -368,6 +368,7 @@ msgstr "Esta ferramenta não conseguiu obter a lista de pacotes: %s"
 
 #. TRANSLATORS: There was an error saving the list
 #: ../client/pk-console.c:1172
+#, c-format
 msgid "Failed to save to disk"
 msgstr "A gravação para disco falhou"
 
@@ -390,6 +391,7 @@ msgstr "Pacotes para remover"
 
 #. TRANSLATORS: We didn't find any differences
 #: ../client/pk-console.c:1314
+#, c-format
 msgid "No new packages need to be installed"
 msgstr "Não existem pacotes novos para instalar"
 
@@ -410,6 +412,7 @@ msgstr "não encontrado."
 
 #. TRANSLATORS: We didn't find any packages to install
 #: ../client/pk-console.c:1347
+#, c-format
 msgid "No packages can be found to install"
 msgstr "Não foram encontrados pacotes para instalar"
 
@@ -500,7 +503,7 @@ msgstr "Sub-comandos:"
 #: ../client/pk-console.c:1757
 #: ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
-#: ../contrib/command-not-found/pk-command-not-found.c:510
+#: ../contrib/command-not-found/pk-command-not-found.c:518
 #: ../src/pk-main.c:199
 msgid "Show extra debugging information"
 msgstr "Mostrar informação de depuração adicional"
@@ -775,6 +778,7 @@ msgstr "Monitorizar o PackageKit"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:118
+#, c-format
 msgid "The package could not be found"
 msgstr "O pacote não foi encontrado"
 
@@ -794,71 +798,71 @@ msgid "Please enter a number from 1 to %i: "
 msgstr "Por favor insira um número de 1 a %i: "
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:361
+#: ../contrib/command-not-found/pk-command-not-found.c:369
 msgid "Failed to search for file"
 msgstr "Não foi possível encontrar o ficheiro"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:485
+#: ../contrib/command-not-found/pk-command-not-found.c:493
 msgid "Failed to launch:"
 msgstr "Incapaz de iniciar:"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:526
+#: ../contrib/command-not-found/pk-command-not-found.c:534
 msgid "PackageKit Command Not Found"
 msgstr "Comando PackageKit não encontrado"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:548
+#: ../contrib/command-not-found/pk-command-not-found.c:556
 msgid "Command not found."
 msgstr "Comando não encontrado."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:555
+#: ../contrib/command-not-found/pk-command-not-found.c:563
 msgid "Similar command is:"
 msgstr "Comando semelhante é:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:564
+#: ../contrib/command-not-found/pk-command-not-found.c:572
 msgid "Run similar command:"
 msgstr "Executar um comando semelhante:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:576
-#: ../contrib/command-not-found/pk-command-not-found.c:585
+#: ../contrib/command-not-found/pk-command-not-found.c:584
+#: ../contrib/command-not-found/pk-command-not-found.c:593
 msgid "Similar commands are:"
 msgstr "Comandos semelhantes são:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:592
+#: ../contrib/command-not-found/pk-command-not-found.c:600
 msgid "Please choose a command to run"
 msgstr "Por favor, escolha um comando para executar"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:607
+#: ../contrib/command-not-found/pk-command-not-found.c:615
 msgid "The package providing this file is:"
 msgstr "O pacote que fornece este ficheiro é o:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:612
+#: ../contrib/command-not-found/pk-command-not-found.c:620
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Instalar pacote '%s' para disponibilizar comando '%s'?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:633
+#: ../contrib/command-not-found/pk-command-not-found.c:641
 msgid "Packages providing this file are:"
 msgstr "Os pacotes que disponibilizam este ficheiro são:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:642
+#: ../contrib/command-not-found/pk-command-not-found.c:650
 msgid "Suitable packages are:"
 msgstr "Pacotes adequados são:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:650
+#: ../contrib/command-not-found/pk-command-not-found.c:658
 msgid "Please choose a package to install"
 msgstr "Por favor, escolha um pacote para instalar"
 
@@ -927,6 +931,94 @@ msgstr "Lista de Pacotes do PackageKit"
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
 msgstr "PackageKit Service Pack"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "Aceitar Acordo de Licenciamento para Utilizadores Finais (EULA)"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "Autenticação é necessária para aceitar a EULA"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Autenticação é necessária para cancelar uma tarefa que não foi iniciada por si"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid "Authentication is required to change software source parameters"
+msgstr "Autenticação é necessária para alterar parâmetros do código fonte"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to consider a key used for signing packages as trusted"
+msgstr "Autenticação é necessária para considerar segura uma chave utilizada para assinar pacotes"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install a signed package"
+msgstr "Autenticação é necessária para instalar um pacote assinado"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to install an untrusted package"
+msgstr "Autenticação é necessária para instalar um pacote não confiável"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to refresh the system sources"
+msgstr "Autenticação é necessária para actualizar as fontes do sistema"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to remove packages"
+msgstr "Autenticação é necessária para remover pacotes"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid "Authentication is required to rollback a transaction"
+msgstr "Autenticação é necessária para voltar atrás uma transacção"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to set the network proxy used for downloading packages"
+msgstr "Autenticação é necessária para configurar o proxy de rede utilizado para transferir pacotes"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Authentication is required to update packages"
+msgstr "Autenticação é necessária para actualizar pacotes"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Cancel foreign task"
+msgstr "Cancelar tarefa externa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Change software source parameters"
+msgstr "Alterar parâmetros do código fonte"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Install signed package"
+msgstr "Instalar pacote assinado"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Install untrusted local file"
+msgstr "Instalar ficheiro local não confiável"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Refresh system sources"
+msgstr "Actualizar fontes do sistema"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Remove package"
+msgstr "Remover pacote"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Rollback to a previous transaction"
+msgstr "Voltar a uma transacção anterior"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Set network proxy"
+msgstr "Configurar o proxy da rede"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:21
+msgid "Trust a key used for signing packages"
+msgstr "Confiar numa chave utilizada para assinar pacotes"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:22
+msgid "Update packages"
+msgstr "Actualizar pacotes"
 
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
