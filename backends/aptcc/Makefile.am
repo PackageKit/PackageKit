@@ -6,7 +6,8 @@ libpk_backend_aptcc_la_SOURCES = pk-backend-aptcc.cpp \
                                  matcher.cpp \
 				 aptcc_show_broken.cpp \
 				 acqprogress.cpp \
-				 aptcc_show_error.cpp
+				 aptcc_show_error.cpp \
+				 pkg_acqfile.cpp
 libpk_backend_aptcc_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_backend_aptcc_la_LDFLAGS = -module -avoid-version $(APTCC_LIBS)
 libpk_backend_aptcc_la_CFLAGS = $(PK_PLUGIN_CFLAGS)
@@ -16,4 +17,5 @@ EXTRA_DIST = apt.h \
              matcher.h \
 	     aptcc_show_broken.h \
 	     acqprogress.h \
-	     aptcc_show_error.h
+	     aptcc_show_error.h \
+	     pkg_acqfile.h
