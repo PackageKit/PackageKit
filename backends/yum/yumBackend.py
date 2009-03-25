@@ -1955,6 +1955,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # some RPM's (especially from google) have no description
         if desc:
             desc = desc.replace('\n', ';')
+            desc = desc.replace('\t', ' ')
         else:
             desc = ''
 
