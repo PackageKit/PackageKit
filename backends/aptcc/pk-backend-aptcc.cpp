@@ -30,13 +30,17 @@
 #include <apt-pkg/cmndline.h>
 #include <apt-pkg/strutl.h>
 #include <apt-pkg/pkgrecords.h>
+#include <apt-pkg/acquire-item.h>
 
 #include <apt-pkg/algorithms.h>
+#include <apt-pkg/cachefile.h>
 
 #include "apt.h"
 #include "apt-utils.h"
 #include "matcher.h"
 #include "aptcc_show_broken.h"
+#include "acqprogress.h"
+#include "aptcc_show_error.h"
 
 #include <config.h>
 
@@ -792,12 +796,12 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_refresh_cache_timeout:
+ * backend_install_files_timeout:
  */
 static gboolean
 backend_install_files_timeout (gpointer data)
 {
-	PkBackend *backend = (PkBackend *) data;
+ PkBackend *backend = (PkBackend *) data;
 	pk_backend_finished (backend);
 	return false;
 }
@@ -814,20 +818,82 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 }
 
 /**
- * backend_refresh_cache_timeout:
+ * backend_refresh_cache_thread:
  */
 static gboolean
-backend_refresh_cache_timeout (gpointer data)
+backend_refresh_cache_thread (PkBackend *backend)
 {
-	PkBackend *backend = (PkBackend *) data;
-	if (_progress_percentage == 100) {
-		pk_backend_finished (backend);
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, true);
+
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
 		return false;
 	}
-	if (_progress_percentage == 80)
-		pk_backend_set_allow_cancel (backend, false);
-	_progress_percentage += 10;
-	pk_backend_set_percentage (backend, _progress_percentage);
+
+	// Lock the list directory
+	FileFd Lock;
+	if (_config->FindB("Debug::NoLocking", false) == false)
+	{
+		Lock.Fd(GetLock(_config->FindDir("Dir::State::Lists") + "lock"));
+		if (_error->PendingError() == true) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_GET_LOCK, "Unable to lock the list directory");
+			delete m_apt;
+			return false;
+	// 	 return _error->Error(_("Unable to lock the list directory"));
+		}
+	}
+	// Create the progress
+	AcqPackageKitStatus Stat(backend, _cancel, _config->FindI("quiet",0));
+
+	// Just print out the uris an exit if the --print-uris flag was used
+	if (_config->FindB("APT::Get::Print-URIs") == true)
+	{
+		// get a fetcher
+		pkgAcquire Fetcher(&Stat);
+
+		// Populate it with the source selection and get all Indexes
+		// (GetAll=true)
+		if (apt_source_list->GetIndexes(&Fetcher, true) == false) {
+			delete m_apt;
+			return false;
+		}
+
+		pkgAcquire::UriIterator I = Fetcher.UriBegin();
+		for (; I != Fetcher.UriEnd(); I++) {
+			cout << '\'' << I->URI << "' " << flNotDir(I->Owner->DestFile) << ' ' <<
+			    I->Owner->FileSize << ' ' << I->Owner->HashSum() << endl;
+		}
+		delete m_apt;
+		return true;
+	}
+
+	// do the work
+	if (_config->FindB("APT::Get::Download",true) == true) {
+		ListUpdate(Stat, *apt_source_list);
+	}
+
+	// Rebuild the cache.
+	pkgCacheFile Cache;
+	OpTextProgress Prog(*_config);
+	if (Cache.BuildCaches(Prog, true) == false) {
+		if (_error->PendingError() == true) {
+			show_errors(backend, PK_ERROR_ENUM_CANNOT_GET_LOCK);
+		}
+		delete m_apt;
+		return false;
+	}
+
+	// missing gpg signature would appear here
+	// TODO we need a better enum
+	if (_error->PendingError() == false && _error->empty() == false) {
+		show_errors(backend);
+	}
+
+	pk_backend_finished (backend);
+	delete m_apt;
 	return true;
 }
 
@@ -837,16 +903,7 @@ backend_refresh_cache_timeout (gpointer data)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	_progress_percentage = 0;
-
-	/* reset */
-	_updated_gtkhtml = false;
-	_updated_kernel = false;
-	_updated_powertop = false;
-
-	pk_backend_set_allow_cancel (backend, true);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	_signal_timeout = g_timeout_add (500, backend_refresh_cache_timeout, backend);
+	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
 
 
