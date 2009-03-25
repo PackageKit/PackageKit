@@ -47,16 +47,6 @@ using namespace std;
 
 /* static bodges */
 static bool _cancel = false;
-static guint _progress_percentage = 0;
-static gulong _signal_timeout = 0;
-static gchar **_package_ids;
-static const gchar *_search;
-static guint _package_current = 0;
-static gboolean _updated_gtkhtml = false;
-static gboolean _updated_kernel = false;
-static gboolean _updated_powertop = false;
-static gboolean _has_signature = false;
-
 static pkgSourceList *apt_source_list = 0;
 
 /**
@@ -65,7 +55,6 @@ static pkgSourceList *apt_source_list = 0;
 static void
 backend_initialize (PkBackend *backend)
 {
-	_progress_percentage = 0;
 	egg_debug ("APTcc Initializing");
 
 	if (pkgInitConfig(*_config) == false ||
@@ -135,7 +124,7 @@ backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_INSTALLED,
 		PK_FILTER_ENUM_DEVELOPMENT,
 		PK_FILTER_ENUM_FREE,
-		PK_FILTER_ENUM_COLLECTIONS,
+// 		PK_FILTER_ENUM_COLLECTIONS,//FIXME see if this apply
 		-1);
 }
 
@@ -149,35 +138,11 @@ backend_get_mime_types (PkBackend *backend)
 }
 
 /**
- * backend_cancel_timeout:
- */
-static gboolean
-backend_cancel_timeout (gpointer data)
-{
-	PkBackend *backend = (PkBackend *) data;
-
-	/* we can now cancel again */
-	_signal_timeout = 0;
-
-	/* now mark as finished */
-	pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "The task was stopped successfully");
-	pk_backend_finished (backend);
-	return false;
-}
-
-/**
  * backend_cancel:
  */
 static void
 backend_cancel (PkBackend *backend)
 {
-	/* cancel the timeout */
-	if (_signal_timeout != 0) {
-		g_source_remove (_signal_timeout);
-
-		/* emulate that it takes us a few ms to cancel */
-		g_timeout_add (1500, backend_cancel_timeout, backend);
-	}
 	_cancel = true;
         pk_backend_set_status(backend, PK_STATUS_ENUM_CANCEL);
 }
@@ -628,126 +593,6 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 	pk_backend_thread_create (backend, backend_get_updates_thread);
 }
 
-static gboolean
-backend_install_timeout (gpointer data)
-{
-	PkBackend *backend = (PkBackend *) data;
-	guint sub_percent;
-
-	if (_progress_percentage == 100) {
-		pk_backend_finished (backend);
-		return false;
-	}
-	if (_progress_percentage == 30) {
-		pk_backend_set_allow_cancel (backend, false);
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
-				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-				    "An HTML widget for GTK+ 2.0");
-		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-	}
-	if (_progress_percentage == 50) {
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
-				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
-				    "Devel files for gtkhtml");
-		/* this duplicate package should be ignored */
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
-				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora", NULL);
-		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-	}
-	if (_progress_percentage > 30 && _progress_percentage < 50) {
-		sub_percent = ((gfloat) (_progress_percentage - 30.0f) / 20.0f) * 100.0f;
-		pk_backend_set_sub_percentage (backend, sub_percent);
-	} else {
-		pk_backend_set_sub_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	}
-	_progress_percentage += 1;
-	pk_backend_set_percentage (backend, _progress_percentage);
-	return true;
-}
-
-/**
- * backend_install_packages:
- */
-static void
-backend_install_packages (PkBackend *backend, gchar **package_ids)
-{
-	const gchar *license_agreement;
-	const gchar *eula_id;
-	gboolean has_eula;
-
-	if (egg_strequal (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva")) {
-		if (!_has_signature) {
-			pk_backend_repo_signature_required (backend, package_ids[0], "updates",
-							    "http://example.com/gpgkey",
-							    "Test Key (Fedora) fedora@example.com",
-							    "BB7576AC",
-							    "D8CC 06C2 77EC 9C53 372F C199 B1EE 1799 F24F 1B08",
-							    "2007-10-04", PK_SIGTYPE_ENUM_GPG);
-			pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
-					       "GPG signed package could not be verified");
-			pk_backend_finished (backend);
-			return;
-		}
-		eula_id = "eula_hughsie_dot_com";
-		has_eula = pk_backend_is_eula_valid (backend, eula_id);
-		if (!has_eula) {
-			license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
-					    "Captain: What happen ?\n"
-					    "Mechanic: Somebody set up us the bomb.\n\n"
-					    "Operator: We get signal.\n"
-					    "Captain: What !\n"
-					    "Operator: Main screen turn on.\n"
-					    "Captain: It's you !!\n"
-					    "CATS: How are you gentlemen !!\n"
-					    "CATS: All your base are belong to us.\n"
-					    "CATS: You are on the way to destruction.\n\n"
-					    "Captain: What you say !!\n"
-					    "CATS: You have no chance to survive make your time.\n"
-					    "CATS: Ha Ha Ha Ha ....\n\n"
-					    "Operator: Captain!! *\n"
-					    "Captain: Take off every 'ZIG' !!\n"
-					    "Captain: You know what you doing.\n"
-					    "Captain: Move 'ZIG'.\n"
-					    "Captain: For great justice.\n";
-			pk_backend_eula_required (backend, eula_id, package_ids[0],
-						  "CATS Inc.", license_agreement);
-			pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
-					       "licence not installed so cannot install");
-			pk_backend_finished (backend);
-			return;
-		}
-	}
-
-	pk_backend_set_allow_cancel (backend, true);
-	_progress_percentage = 0;
-	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
-			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-			    "An HTML widget for GTK+ 2.0");
-	_signal_timeout = g_timeout_add (100, backend_install_timeout, backend);
-}
-
-/**
- * backend_install_files_timeout:
- */
-static gboolean
-backend_install_files_timeout (gpointer data)
-{
- PkBackend *backend = (PkBackend *) data;
-	pk_backend_finished (backend);
-	return false;
-}
-
-/**
- * backend_install_files:
- */
-static void
-backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-	pk_backend_set_percentage (backend, 101);
-	_signal_timeout = g_timeout_add (2000, backend_install_files_timeout, backend);
-}
-
 /**
  * backend_download_packages_thread:
  */
@@ -1001,17 +846,6 @@ static void
 backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	pk_backend_thread_create (backend, backend_resolve_thread);
-}
-
-/**
- * backend_remove_packages:
- */
-static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
-	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
-	pk_backend_finished (backend);
 }
 
 static gboolean
@@ -1329,143 +1163,6 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 }
 
 /**
- * backend_update_packages_update_timeout:
- **/
-static gboolean
-backend_update_packages_update_timeout (gpointer data)
-{
-	guint len;
-	PkBackend *backend = (PkBackend *) data;
-	const gchar *package;
-
-	package = _package_ids[_package_current];
-	/* emit the next package */
-	if (egg_strequal (package, "powertop;1.8-1.fc8;i386;fedora")) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package, "Power consumption monitor");
-		_updated_powertop = true;
-	}
-	if (egg_strequal (package, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package,
-				    "The Linux kernel (the core of the Linux operating system)");
-		_updated_kernel = true;
-	}
-	if (egg_strequal (package, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, package, "An HTML widget for GTK+ 2.0");
-		_updated_gtkhtml = true;
-	}
-
-	/* are we done? */
-	_package_current++;
-	len = pk_package_ids_size (_package_ids);
-	if (_package_current + 1 > len) {
-		pk_backend_set_percentage (backend, 100);
-		pk_backend_finished (backend);
-		_signal_timeout = 0;
-		return false;
-	}
-	return true;
-}
-
-/**
- * backend_update_packages_download_timeout:
- **/
-static gboolean
-backend_update_packages_download_timeout (gpointer data)
-{
-	guint len;
-	PkBackend *backend = (PkBackend *) data;
-
-	/* emit the next package */
-	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, _package_ids[_package_current], "The same thing");
-
-	/* are we done? */
-	_package_current++;
-	len = pk_package_ids_size (_package_ids);
-	if (_package_current + 1 > len) {
-		_package_current = 0;
-		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-		pk_backend_set_percentage (backend, 50);
-		_signal_timeout = g_timeout_add (2000, backend_update_packages_update_timeout, backend);
-		return false;
-	}
-	return true;
-}
-
-/**
- * backend_update_packages:
- */
-static void
-backend_update_packages (PkBackend *backend, gchar **package_ids)
-{
-	_package_ids = package_ids;
-	_package_current = 0;
-	pk_backend_set_percentage (backend, 0);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	_signal_timeout = g_timeout_add (2000, backend_update_packages_download_timeout, backend);
-}
-
-static gboolean
-backend_update_system_timeout (gpointer data)
-{
-	PkBackend *backend = (PkBackend *) data;
-	if (_progress_percentage == 100) {
-		pk_backend_finished (backend);
-		return false;
-	}
-	if (_progress_percentage == 0 && !_updated_powertop) {
-		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
-				    "powertop;1.8-1.fc8;i386;fedora",
-				    "Power consumption monitor");
-	}
-	if (_progress_percentage == 20 && !_updated_kernel) {
-		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
-				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
-				    "The Linux kernel (the core of the Linux operating system)");
-	}
-	if (_progress_percentage == 30 && !_updated_gtkhtml) {
-		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
-				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-				    "An HTML widget for GTK+ 2.0");
-		_updated_gtkhtml = false;
-	}
-	if (_progress_percentage == 40 && !_updated_powertop) {
-		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-		pk_backend_set_allow_cancel (backend, false);
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
-				    "powertop;1.8-1.fc8;i386;fedora",
-				    "Power consumption monitor");
-		_updated_powertop = true;
-	}
-	if (_progress_percentage == 60 && !_updated_kernel) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
-				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
-				    "The Linux kernel (the core of the Linux operating system)");
-		_updated_kernel = true;
-	}
-	if (_progress_percentage == 80 && !_updated_kernel) {
-		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
-				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
-				    "The Linux kernel (the core of the Linux operating system)");
-	}
-	_progress_percentage += 10;
-	pk_backend_set_percentage (backend, _progress_percentage);
-	return true;
-}
-
-/**
- * backend_update_system:
- */
-static void
-backend_update_system (PkBackend *backend)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	pk_backend_set_allow_cancel (backend, true);
-	_progress_percentage = 0;
-	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
-	_signal_timeout = g_timeout_add (1000, backend_update_system_timeout, backend);
-}
-
-/**
  * backend_get_repo_list:
  */
 static void
@@ -1672,11 +1369,11 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_requires,				/* get_requires */
 	backend_get_update_detail,			/* get_update_detail */
 	backend_get_updates,				/* get_updates */
-	backend_install_files,				/* install_files */
-	backend_install_packages,			/* install_packages */
+	NULL,						/* install_files */
+	NULL,						/* install_packages */
 	NULL,						/* install_signature */
 	backend_refresh_cache,				/* refresh_cache */
-	backend_remove_packages,			/* remove_packages */
+	NULL,						/* remove_packages */
 	backend_repo_enable,				/* repo_enable */
 	NULL,						/* repo_set_data */
 	backend_resolve,				/* resolve */
@@ -1685,7 +1382,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_search_file,				/* search_file */
 	backend_search_group,				/* search_group */
 	backend_search_name,				/* search_name */
-	backend_update_packages,			/* update_packages */
-	backend_update_system,				/* update_system */
+	NULL,						/* update_packages */
+	NULL,						/* update_system */
 	NULL						/* what_provides */
 );
