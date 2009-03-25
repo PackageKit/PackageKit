@@ -203,11 +203,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _get_update(self, applyList, cache=True):
         from conary.conaryclient.update import NoNewTrovesError
         updJob = self.client.newUpdateJob()
-        log.info("get_ Job")
         try:
-            log.info("prepare updateJOb")
+            log.info("prepare updateJOb...............")
             suggMap = self.client.prepareUpdateJob(updJob, applyList)
-            log.info("end prepare updateJOB")
+            log.info("end prepare updateJOB..............")
         except NoNewTrovesError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "No new apps were found")
         if cache:
@@ -692,6 +691,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     def _show_package(self, name, version, flavor, status):
         '''  Show info about package'''
+        log.info(name)
         package_id = self.get_package_id(name, version, flavor)
         summary = package_id.split(";")
         if summary[3].split("#")[1]:
@@ -724,10 +724,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info("callback changed")
         log.info("============== get_updates ========================")
         cli = ConaryPk()
+        log.info("get fullUpdateItemList")
         updateItems =cli.cli.fullUpdateItemList()
 #        updateItems = cli.cli.getUpdateItemList()
-        for i in updateItems:
-            log.info(i[0])
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         log.info("_get_update ....")
         self.status(STATUS_RUNNING)
@@ -735,12 +734,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info("_get_update ....end.")
 
         jobLists = updJob.getJobs()
-        log.info("get Jobs")
+        log.info("getting JobLists...........")
 
-        totalJobs = len(jobLists)
         for num, job in enumerate(jobLists):
-            status = '2'
-            log.info( (num, job)  )
             name = job[0][0]
 
             # On an erase display the old version/flavor information.
@@ -751,11 +747,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             flavor = job[0][2][1]
             if flavor is None:
                 flavor = job[0][1][1]
-
-            troveTuple = []
-            troveTuple.append(name)
-            troveTuple.append(version)
-            installed = self.check_installed(troveTuple)
             if name in self.rebootpkgs:
                 info = INFO_SECURITY
             else:
