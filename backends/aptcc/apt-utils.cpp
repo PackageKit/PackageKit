@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 200 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (C) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
  *
  * Licensed under the GNU General Public License Version 2
  *
