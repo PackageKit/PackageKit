@@ -212,8 +212,12 @@ class XMLCache:
         jobPath = self._getJobCachePath(applyList)
         log.info("jobPath %s" % jobPath)
         if os.path.exists(jobPath):
+            log.info("deleting the JobPath %s "% jobPath)
             util.rmtree(jobPath)
+            log.info("end deleting the JobPath %s "% jobPath)
+        log.info("making the logPath ")
         os.mkdir(jobPath)
+        log.info("freeze JobPath")
         updJob.freeze(jobPath)
 
     def convertTroveToDict(self, troveTupleList):
