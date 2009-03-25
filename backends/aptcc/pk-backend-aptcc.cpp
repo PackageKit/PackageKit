@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -19,19 +20,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <gmodule.h>
-#include <glib.h>
 #include <string>
-#include <packagekit-glib/packagekit.h>
 
 #include <apt-pkg/error.h>
 #include <apt-pkg/init.h>
-#include <apt-pkg/sourcelist.h>
-#include <apt-pkg/cmndline.h>
-#include <apt-pkg/strutl.h>
-#include <apt-pkg/pkgrecords.h>
-#include <apt-pkg/acquire-item.h>
-
 #include <apt-pkg/algorithms.h>
 #include <apt-pkg/cachefile.h>
 
@@ -42,20 +34,16 @@
 #include "acqprogress.h"
 #include "aptcc_show_error.h"
 #include "pkg_acqfile.h"
+#include "rsources.h"
 
 #include <config.h>
 
 #include <locale.h>
-#include <iostream>
-#include <unistd.h>
+// #include <unistd.h>
 #include <errno.h>
 #include <stdio.h>
 
-#include <iomanip>
-
 using namespace std;
-
-#include <pk-backend.h>
 
 /* static bodges */
 static bool _cancel = false;
@@ -64,10 +52,6 @@ static gulong _signal_timeout = 0;
 static gchar **_package_ids;
 static const gchar *_search;
 static guint _package_current = 0;
-static gboolean _repo_enabled_local = false;
-static gboolean _repo_enabled_fedora = true;
-static gboolean _repo_enabled_devel = true;
-static gboolean _repo_enabled_livna = true;
 static gboolean _updated_gtkhtml = false;
 static gboolean _updated_kernel = false;
 static gboolean _updated_powertop = false;
@@ -195,7 +179,7 @@ backend_cancel (PkBackend *backend)
 		g_timeout_add (1500, backend_cancel_timeout, backend);
 	}
 	_cancel = true;
-        pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
+        pk_backend_set_status(backend, PK_STATUS_ENUM_CANCEL);
 }
 
 static gboolean
@@ -420,57 +404,6 @@ backend_get_details_thread (PkBackend *backend)
 	pk_backend_finished (backend);
 	return true;
 }
-/**
- * backend_get_update_detail_timeout:
- **/
-static gboolean
-backend_get_update_detail_timeout (gpointer data)
-{
-	guint i;
-	guint len;
-	const gchar *package_id;
-	PkBackend *backend = (PkBackend *) data;
-
-	/* each one has a different detail for testing */
-	len = g_strv_length (_package_ids);
-	for (i=0; i<len; i++) {
-		package_id = _package_ids[i];
-		if (egg_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora")) {
-			pk_backend_update_detail (backend, package_id,
-						  "powertop;1.7-1.fc8;i386;installed", "",
-						  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
-						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
-						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source",
-						  "", PK_UPDATE_STATE_ENUM_STABLE, "2008-07-31", NULL);
-		}
-		if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
-			pk_backend_update_detail (backend, package_id,
-						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed^"
-						  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
-						  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
-						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
-						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
-						  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
-						  PK_RESTART_ENUM_SYSTEM, "Update to newest version",
-						  "", PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
-		}
-		if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
-			pk_backend_update_detail (backend, package_id,
-						  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
-						  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
-						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
-						  NULL, PK_RESTART_ENUM_SESSION,
-						  "Update to latest whizz bang version\n"
-						  "* support this new thing\n"
-						  "* something else\n"
-						  "- and that new thing",
-						  "", PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
-		}
-	}
-	pk_backend_finished (backend);
-	_signal_timeout = 0;
-	return false;
-}
 
 /**
  * backend_get_update_detail:
@@ -480,9 +413,6 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_bool (backend, "updateDetail", true);
 	pk_backend_thread_create (backend, backend_get_details_thread);
-// 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-// 	_package_ids = package_ids;
-// 	_signal_timeout = g_timeout_add (500, backend_get_update_detail_timeout, backend);
 }
 
 /**
@@ -1541,15 +1471,56 @@ backend_update_system (PkBackend *backend)
 static void
 backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
+	bool notDevelopment;
+	notDevelopment = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_repo_detail (backend, "fedora",
-				"Fedora - 9", _repo_enabled_fedora);
-	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
-		pk_backend_repo_detail (backend, "development",
-					"Fedora - Development", _repo_enabled_devel);
+
+	SourcesList _lst;
+	if (_lst.ReadSources() == false) {
+		_error->
+		    Warning(_("Ignoring invalid record(s) in sources.list file!"));
+	    //return false;
 	}
-	pk_backend_repo_detail (backend, "livna-development",
-				"Livna for Fedora Core 8 - i386 - Development Tree", _repo_enabled_livna);
+
+	if (_lst.ReadVendors() == false) {
+		_error->Error(_("Cannot read vendors.list file"));
+		show_errors(backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING);
+		return;
+	}
+
+	for (SourcesListIter it = _lst.SourceRecords.begin();
+        it != _lst.SourceRecords.end(); it++)
+	{
+		if ((*it)->Type & SourcesList::Comment) {
+		    continue;
+		}
+
+		string Sections;
+		for (unsigned int J = 0; J < (*it)->NumSections; J++) {
+			Sections += (*it)->Sections[J];
+			Sections += " ";
+		}
+
+		if (notDevelopment &&
+			((*it)->Type & SourcesList::DebSrc ||
+			 (*it)->Type & SourcesList::RpmSrc ||
+			 (*it)->Type & SourcesList::RpmSrcDir ||
+			 (*it)->Type & SourcesList::RepomdSrc))
+		{
+			continue;
+		}
+
+		string repo;
+		repo = (*it)->GetType();
+		repo.append(" " + (*it)->VendorID);
+		repo.append(" " + (*it)->URI);
+		repo.append(" " + (*it)->Dist);
+		repo.append(" " + Sections);
+		pk_backend_repo_detail(backend,
+				       repo.c_str(),
+				       repo.c_str(),
+				       !((*it)->Type & SourcesList::Disabled));
+	}
 	pk_backend_finished (backend);
 }
 
@@ -1561,68 +1532,60 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 
-	if (egg_strequal (rid, "local")) {
-		egg_debug ("local repo: %i", enabled);
-		_repo_enabled_local = enabled;
-	} else if (egg_strequal (rid, "development")) {
-		egg_debug ("devel repo: %i", enabled);
-		_repo_enabled_devel = enabled;
-	} else if (egg_strequal (rid, "fedora")) {
-		egg_debug ("fedora repo: %i", enabled);
-		_repo_enabled_fedora = enabled;
-	} else if (egg_strequal (rid, "livna-development")) {
-		egg_debug ("livna repo: %i", enabled);
-		_repo_enabled_livna = enabled;
-	} else {
-		egg_warning ("unknown repo: %s", rid);
+	SourcesList _lst;
+	if (_lst.ReadSources() == false) {
+		_error->
+		    Warning(_("Ignoring invalid record(s) in sources.list file!"));
+	}
+
+	if (_lst.ReadVendors() == false) {
+		_error->Error(_("Cannot read vendors.list file"));
+		show_errors(backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING);
+		return;
+	}
+
+	bool found = false;
+	for (SourcesListIter it = _lst.SourceRecords.begin();
+        it != _lst.SourceRecords.end(); it++)
+	{
+		if ((*it)->Type & SourcesList::Comment) {
+		    continue;
+		}
+
+		string Sections;
+		for (unsigned int J = 0; J < (*it)->NumSections; J++) {
+			Sections += (*it)->Sections[J];
+			Sections += " ";
+		}
+
+		string repo;
+		repo = (*it)->GetType();
+		repo.append(" " + (*it)->VendorID);
+		repo.append(" " + (*it)->URI);
+		repo.append(" " + (*it)->Dist);
+		repo.append(" " + Sections);
+		if (repo.compare(rid) == 0) {
+// 			printf("Found: %s, repo %s.\n", rid, repo.c_str());
+			if (enabled) {
+				(*it)->Type = (*it)->Type & ~SourcesList::Disabled;
+			} else {
+				(*it)->Type |= SourcesList::Disabled;
+			}
+			found = true;
+			break;
+		} else {
+// 			printf("Not found: %s, repo %s.\n", rid, repo.c_str());
+		}
+	}
+
+	if (!found) {
+		_error->Error(_("Could not found the repositorie"));
+		show_errors(backend, PK_ERROR_ENUM_REPO_NOT_AVAILABLE);
+	} else if (!_lst.UpdateSources()) {
+		_error->Error(_("Could not update sources file"));
+		show_errors(backend, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG);
 	}
 	pk_backend_finished (backend);
-}
-
-/**
- * backend_what_provides_timeout:
- */
-static gboolean
-backend_what_provides_timeout (gpointer data)
-{
-	PkBackend *backend = (PkBackend *) data;
-	if (_progress_percentage == 100) {
-		if (egg_strequal (_search, "gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)")) {
-			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-					    "gstreamer-plugins-bad;0.10.3-5.lvn;i386;available",
-					    "GStreamer streaming media framework \"bad\" plug-ins");
-		} else if (egg_strequal (_search, "gstreamer0.10(decoder-video/x-wma)(wmaversion=3)")) {
-			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-					    "gstreamer-plugins-flumpegdemux;0.10.15-5.lvn;i386;available",
-					    "MPEG demuxer for GStreamer");
-		} else {
-			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-					    "evince;0.9.3-5.fc8;i386;installed",
-					    "PDF Document viewer");
-			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-					    "scribus;1.3.4-1.fc8;i386;fedora",
-					    "Scribus is an desktop open source page layout program");
-		}
-		pk_backend_finished (backend);
-		return false;
-	}
-	_progress_percentage += 10;
-	pk_backend_set_percentage (backend, _progress_percentage);
-	return true;
-}
-
-/**
- * backend_what_provides:
- */
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
-{
-	_progress_percentage = 0;
-	_search = search;
-	_signal_timeout = g_timeout_add (200, backend_what_provides_timeout, backend);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
-	pk_backend_set_allow_cancel (backend, true);
-	pk_backend_set_percentage (backend, _progress_percentage);
 }
 
 static gboolean
@@ -1724,5 +1687,5 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_search_name,				/* search_name */
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
-	backend_what_provides				/* what_provides */
+	NULL						/* what_provides */
 );
