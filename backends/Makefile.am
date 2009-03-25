@@ -8,6 +8,10 @@ if BACKEND_TYPE_APT
 SUBDIRS += apt
 endif
 
+if BACKEND_TYPE_APTCC
+SUBDIRS += aptcc
+endif
+
 if BACKEND_TYPE_BOX
 SUBDIRS += box
 endif
