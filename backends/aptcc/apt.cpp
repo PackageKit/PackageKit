@@ -380,11 +380,12 @@ void aptcc::emit_update_detail(PkBackend *backend,
 
 	pkgCache::VerFileIterator vf = candver.FileList();
 	pkgRecords::Parser &rec = packageRecords->Lookup(vf);
+	string archive(vf.File().Archive());
 	gchar *package_id;
 	package_id = pk_package_id_build(pkg.Name(),
 					 candver.VerStr(),
 					 candver.Arch(),
-					 vf.File().Archive());
+					 archive.c_str());
 
 	pkgCache::VerIterator currver = find_ver(pkg);
 	pkgCache::VerFileIterator currvf = currver.FileList();
@@ -395,12 +396,12 @@ void aptcc::emit_update_detail(PkBackend *backend,
 						 currvf.File().Archive());
 
 	PkUpdateStateEnum updateState = PK_UPDATE_STATE_ENUM_UNKNOWN;
-	if (vf.File().Archive() == "stable") {
+	if (archive.compare("stable") == 0) {
 		updateState = PK_UPDATE_STATE_ENUM_STABLE;
-	} else if (vf.File().Archive() == "testing") {
+	} else if (archive.compare("testing") == 0) {
 		updateState = PK_UPDATE_STATE_ENUM_TESTING;
-	} else if (vf.File().Archive() == "unstable" ||
-		   vf.File().Archive() == "experimental")
+	} else if (archive.compare("unstable")  == 0 ||
+		   archive.compare("experimental") == 0)
 	{
 		updateState = PK_UPDATE_STATE_ENUM_UNSTABLE;
 	}
