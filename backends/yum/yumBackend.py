@@ -2329,6 +2329,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
         for package in package_ids:
             pkg, inst = self._findPackage(package)
+            if pkg == None:
+                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % package)
+                continue
             update = self._get_updated(pkg)
             obsolete = self._get_obsoleted(pkg.name)
             desc, urls, reboot, changelog, state, issued, updated = self._get_update_extras(pkg)
@@ -2359,7 +2362,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     if instpkg:
                         evr = _getEVR(version[1])
                         if evr == ('0', '0', '0'):
-                            self.message(MESSAGE_BACKEND_ERROR, "Could not parse header '%s', expected Firstname Lastname <email@account.com> - version-release" % header)
+                            changelog += ";*Could not parse header:* '%s', *expected*: 'Firstname Lastname <email@account.com> - version-release';" % header
                         rc = rpmUtils.miscutils.compareEVR((instpkg.epoch, instpkg.version, instpkg.release.split('.')[0]), evr)
                         if rc >= 0:
                             break
