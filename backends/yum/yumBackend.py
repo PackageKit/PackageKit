@@ -127,7 +127,11 @@ def _getEVR(idver):
         idver = idver[cpos+1:]
     else:
         epoch = '0'
-    (version, release) = tuple(idver.split('-'))
+    try:
+        (version, release) = tuple(idver.split('-'))
+    except ValueError, e:
+        version = '0'
+        release = '0'
     return epoch, version, release
 
 def _text_to_boolean(text):
@@ -1951,6 +1955,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # some RPM's (especially from google) have no description
         if desc:
             desc = desc.replace('\n', ';')
+            desc = desc.replace('\t', ' ')
         else:
             desc = ''
 
@@ -2324,17 +2329,45 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
         for package in package_ids:
             pkg, inst = self._findPackage(package)
+            if pkg == None:
+                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % package)
+                continue
             update = self._get_updated(pkg)
             obsolete = self._get_obsoleted(pkg.name)
             desc, urls, reboot, changelog, state, issued, updated = self._get_update_extras(pkg)
 
             # extract the changelog for the local package
             if len(changelog) == 0:
+
+                # get the current installed version of the package
+                instpkg = None
+                try:
+                    instpkgs = self.yumbase.rpmdb.searchNevra(name=pkg.name)
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                if len(instpkgs) == 1:
+                    instpkg = instpkgs[0]
+
+                # get each element of the ChangeLog
                 changes = pkg.returnChangelog()
                 for change in changes:
                     gmtime = time.gmtime(change[0])
                     time_str = "%i-%i-%i" % (gmtime[0], gmtime[1], gmtime[2])
-                    changelog += _format_str('**' + time_str + '** ' + _to_unicode(change[1]) + '\n' + _to_unicode(change[2].replace("\t", " ")) + '\n\n')
+                    header = _to_unicode(change[1])
+
+                    # format "Seth Vidal <skvidal at fedoraproject.org> - 3:3.2.20-1"
+                    version = header.rsplit(' ', 1)
+
+                    # is older than what we have already?
+                    if instpkg:
+                        evr = _getEVR(version[1])
+                        if evr == ('0', '0', '0'):
+                            changelog += ";*Could not parse header:* '%s', *expected*: 'Firstname Lastname <email@account.com> - version-release';" % header
+                        rc = rpmUtils.miscutils.compareEVR((instpkg.epoch, instpkg.version, instpkg.release.split('.')[0]), evr)
+                        if rc >= 0:
+                            break
+
+                    changelog += _format_str('**' + time_str + '** ' + version[0] + ' ' + version[1] + '\n' + _to_unicode(change[2].replace("\t", " ")) + '\n\n')
 
             cve_url = _format_list(urls['cve'])
             bz_url = _format_list(urls['bugzilla'])
