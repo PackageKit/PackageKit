@@ -127,7 +127,11 @@ def _getEVR(idver):
         idver = idver[cpos+1:]
     else:
         epoch = '0'
-    (version, release) = tuple(idver.split('-'))
+    try:
+        (version, release) = tuple(idver.split('-'))
+    except ValueError, e:
+        version = '0'
+        release = '0'
     return epoch, version, release
 
 def _text_to_boolean(text):
