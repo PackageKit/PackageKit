@@ -2353,19 +2353,18 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     header = _to_unicode(change[1])
 
                     # format "Seth Vidal <skvidal at fedoraproject.org> - 3:3.2.20-1"
-                    user_version = header.split(' - ')
-                    if len(user_version) < 2:
-                        # format "Behdad Esfahbod <besfahbo@redhat.com> 2.3.9-1"
-                        user_version = header.rsplit(' ', 1)
+                    version = header.rsplit(' ', 1)
 
                     # is older than what we have already?
-                    if instpkg and user_version[1].find('-') != -1:
-                        evr = _getEVR(user_version[1])
+                    if instpkg:
+                        evr = _getEVR(version[1])
+                        if evr == ('0', '0', '0'):
+                            self.message(MESSAGE_BACKEND_ERROR, "Could not parse header '%s', expected Firstname Lastname <email@account.com> - version-release" % header)
                         rc = rpmUtils.miscutils.compareEVR((instpkg.epoch, instpkg.version, instpkg.release.split('.')[0]), evr)
                         if rc >= 0:
                             break
 
-                    changelog += _format_str('**' + time_str + '** ' + user_version[0] + ' ' + user_version[1] + '\n' + _to_unicode(change[2].replace("\t", " ")) + '\n\n')
+                    changelog += _format_str('**' + time_str + '** ' + version[0] + ' ' + version[1] + '\n' + _to_unicode(change[2].replace("\t", " ")) + '\n\n')
 
             cve_url = _format_list(urls['cve'])
             bz_url = _format_list(urls['bugzilla'])
