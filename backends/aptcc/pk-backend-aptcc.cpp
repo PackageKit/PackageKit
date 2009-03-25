@@ -41,6 +41,7 @@
 #include "aptcc_show_broken.h"
 #include "acqprogress.h"
 #include "aptcc_show_error.h"
+#include "pkg_acqfile.h"
 
 #include <config.h>
 
@@ -818,6 +819,115 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 }
 
 /**
+ * backend_download_packages_thread:
+ */
+static gboolean
+backend_download_packages_thread (PkBackend *backend)
+{
+	gchar **package_ids;
+	string directory;
+
+	package_ids = pk_backend_get_strv(backend, "package_ids");
+	directory = _config->FindDir("Dir::Cache::archives") + "partial/";
+
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, true);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	aptcc *m_apt = new aptcc();
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		return false;
+	}
+
+	// Create the progress
+	AcqPackageKitStatus Stat(backend, _cancel, _config->FindI("quiet",0));
+
+	// get a fetcher
+	pkgAcquire fetcher(&Stat);
+	string filelist;
+	PkPackageId *pi;
+
+	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+		pi = pk_package_id_new_from_string (package_ids[i]);
+		if (pi == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+			pk_backend_finished (backend);
+			delete m_apt;
+			return false;
+		}
+
+		if (_cancel) {
+			break;
+		}
+
+		pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(pi->name);
+		// Ignore packages that could not be found or that exist only due to dependencies.
+		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
+		{
+			_error->Error(_("Can't find a package named \"%s\""), pi->name);
+			pk_package_id_free(pi);
+			continue;
+		}
+
+		pkgCache::VerIterator ver;
+		ver = m_apt->find_ver(pkg);
+		// check to see if the provided package isn't virtual too
+		if (ver.end())
+		{
+			pk_package_id_free(pi);
+			continue;
+		}
+
+		if(!ver.Downloadable()) {
+			_error->Error(_("No downloadable files for %s version %s; perhaps it is a local or obsolete package?"),
+				    pi->name, ver.VerStr());
+		}
+
+		string storeFileName;
+		get_archive(&fetcher, apt_source_list, m_apt->packageRecords,
+			    ver, directory, storeFileName);
+		string destFile = directory + "/" + flNotDir(storeFileName);
+		if (filelist.empty()) {
+			filelist = destFile;
+		} else {
+			filelist.append(";" + destFile);
+		}
+		pk_package_id_free(pi);
+	}
+
+	pk_backend_set_status(backend, PK_STATUS_ENUM_DOWNLOAD);
+	if(fetcher.Run() != pkgAcquire::Continue)
+	// We failed or were cancelled
+	{
+		_error->DumpErrors();
+		delete m_apt;
+		if (_cancel) {
+			pk_backend_finished(backend);
+			return true;
+		}
+		return false;
+	}
+
+	// send the filelist
+	pk_backend_files(backend, NULL, filelist.c_str());
+
+	delete m_apt;
+	pk_backend_finished (backend);
+	return true;
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	pk_backend_thread_create (backend, backend_download_packages_thread);
+}
+
+/**
  * backend_refresh_cache_thread:
  */
 static gboolean
@@ -825,6 +935,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 {
 	_cancel = false;
 	pk_backend_set_allow_cancel (backend, true);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
 	aptcc *m_apt = new aptcc();
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
@@ -1576,38 +1687,6 @@ static void
 backend_get_packages (PkBackend *backend, PkBitfield filter)
 {
 	pk_backend_thread_create (backend, backend_get_packages_thread);
-}
-
-/**
- * backend_download_packages:
- */
-static void
-backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
-{
-	gchar *filename1;
-	gchar *filename2;
-	gchar *filelist;
-	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-
-	filename1 = g_build_filename (directory, "powertop-1.8-1.fc8.rpm", NULL);
-	g_file_set_contents (filename1, "hello dave", -1, NULL);
-	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
-			    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
-
-	filename2 = g_build_filename (directory, "gtk2-2.11.6-6.fc8.rpm", NULL);
-	g_file_set_contents (filename2, "hello brian", -1, NULL);
-	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
-			    "gtk2;2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
-
-	/* send the filelist */
-	filelist = g_strjoin (";", filename1, filename2, NULL);
-	pk_backend_files (backend, NULL, filelist);
-
-	g_free (filename1);
-	g_free (filename2);
-	g_free (filelist);
-
-	pk_backend_finished (backend);
 }
 
 extern "C" PK_BACKEND_OPTIONS (
