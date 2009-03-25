@@ -1628,6 +1628,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if desc:
             desc = desc.replace('\n\n', ';')
             desc = desc.replace('\n', ' ')
+            desc = desc.replace('\t', ' ')
         else:
             desc = ''
 
