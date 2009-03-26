@@ -49,7 +49,7 @@ class ConaryPk:
     def get_labels_from_config(self):
         labels = []
         for i in self.default_label:
-            if "foresight.rpath.org" in i.asString():
+            if "foresight.rpath.org" or "conary.rpath.com" in i.asString():
                 labels.append(i.asString())
         return labels
 

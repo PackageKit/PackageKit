@@ -203,13 +203,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         except DepResolutionFailure as error :
             log.info(error.getErrorMessage())
             deps =  error.cannotResolve
-            dep_package = [ i[0] for i in deps ]
-            pkgs = []
-            for i in dep_package:
-                trove =  self.client.db.getTrove( i[0], i[1], i[2])
-                pkgs.append( str(trove.getSourceName()).replace(":source",""))
-
-            self.error(ERROR_DEP_RESOLUTION_FAILED,  "The package not can update/remove because depends of:  %s" % " ,".join(set(pkgs)))
+            dep_package = [ str(i[0][0]).split(":")[0] for i in deps ]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,  "This package depends of:  %s" % " ,".join(set(dep_package)))
         if cache:
             Cache().cacheUpdateJob(applyList, updJob)
         return updJob, suggMap
