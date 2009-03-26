@@ -145,7 +145,8 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
         log.info(self.progress.percent)
         self.backend.status(STATUS_COMMIT)
         #self.preparingUpdate(troveNum, troveCount, add=troveCount)
-        log.info("callback UpdateSystem........creatingDatabaseTransactions")
+        log.info("Callback UpdateSystem........ CreateingDatabaseTransaction %.2f / %.2f " % ( troveNum, troveCount ) )
+        #self.progress.set_subpercent( got*100 / float(need) )
 
     def committingTransaction(self):
         log.info('callback UpdateSystem......Committing Transaction')
