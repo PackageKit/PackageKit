@@ -28,7 +28,7 @@ def mapGroup(categorieList):
     where = {}
     if  not categorieList:
         return where
-    log.info(categorieList)
+    #log.info(categorieList)
     for cat in categorieList:
         for group,categories in groupMap.items():
             if cat in categories:
@@ -55,13 +55,22 @@ class XMLRepo:
         
     def search(self, search, where ):
         if where == "name":
-            return self._searchNamePackage(search)
+            r = self._searchNamePackage(search)
         elif where == "details":
-            return self._searchDetailsPackage(search)
+            r = self._searchDetailsPackage(search)
         elif where == "group":
-            return self._searchGroupPackage(search)
+            r = self._searchGroupPackage(search)
         else:
-            return self._searchPackage(search)
+            r = self._searchPackage(search)
+
+        names = set( [i["name"] for i in r] )
+        results = []
+        for i in r:
+            if i["name"] in names:
+                results.append(i)
+                names.remove(i["name"])
+        return results
+            
 
     def _setRepo(self,repo):  
         self.repo = repo
@@ -111,8 +120,8 @@ class XMLRepo:
                 pkg = self._generatePackage(package)
                 pkg["label"] = self.label
                 if name.lower() in pkg["name"].lower():
-                    results.append(pkg['name'])
-        return  [ self._getPackage(i) for i in set(results) ]
+                    results.append(pkg)
+        return  results
 
     def _searchGroupPackage(self, name):
         doc = self._open()
@@ -121,19 +130,12 @@ class XMLRepo:
             for package in packages.childNodes:
                 pkg = self._generatePackage(package)
                 pkg["label"] = self.label
-                """
-                if not pkg.has_key("category"):
-                    continue
-                for j in pkg["category"]:
-                    if name.lower() in j.lower():
-                        results_name.append(pkg['name'])
-                """
                 if pkg.has_key("category"):
                     group = getGroup(pkg["category"])
                     if name.lower() == group:
-                        results_name.append(pkg["name"])
-            log.info(results_name)
-        return [ self._getPackage(i) for i in set(results_name) ]
+                        results_name.append(pkg)
+            #log.info(results_name)
+        return results_name
 
     def _searchDetailsPackage(self, name):
         return self._searchPackage(name)
@@ -150,17 +152,16 @@ class XMLRepo:
                     if i =='category':
                         for j in pkg[i]:
                             if name.lower() in j.lower():
-                                results.append(pkg['name'])
+                                results.append(pkg)
                     
                     if type(pkg[i]) == str:
                         check = pkg[i].lower()
                     else:
                         check = pkg[i]
                     if name.lower() in check:
-                        results.append(pkg['name'])
+                        results.append(pkg)
             
-
-        return  [ self._getPackage(i) for i in set(results) ]
+        return results
     def _getAllPackages(self):
         doc = self._open()
         results = []

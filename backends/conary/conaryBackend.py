@@ -51,7 +51,7 @@ sys.excepthook = util.genExcepthook()
 def ExceptionHandler(func):
     return func
     def display(error):
-        return str(error).replace('\n', ' ')
+        return str(error).replace('\n', ' ').replace("\t",'')
     def wrapper(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
@@ -139,11 +139,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         arch = self._get_arch(flavor)
         #data = versionObj.asString() + "#"
         data = ""
-        if "shortDesc" in pkg:
-            data = pkg['shortDesc'].decode("UTF")
-            if data == "." or data == "":
-                data = name.replace("-",' ').capitalize()
-            
+        if pkg:
+            if "shortDesc" in pkg:
+                data = pkg['shortDesc'].decode("UTF")
+                if data == "." or data == "":
+                    data = name.replace("-",' ').capitalize()
+                
         return pkpackage.get_package_id(name, version, arch, data)
 
     @ExceptionHandler
@@ -170,19 +171,21 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_UNKNOWN, "DORK---- search where not found")
         cache = Cache()
         log.debug((searchlist, where))
+        log.info("searching  on cache... ")
+        pkgList = cache.search(searchlist, where )
+        log.info("end searching on cache... ")
 
-        troveTupleList = cache.search(searchlist, where )
-
-        if len(troveTupleList) > 0 :
-            for i in troveTupleList:
-                log.info("FOUND!!!!!! %s " % i["name"] )
-            log.info("FOUND (%s) elements " % len(troveTupleList) )
+        if len(pkgList) > 0 :
+            #for i in troveTupleList:
+            #    log.info("FOUND!!!!!! %s " % i["name"] )
+            log.info("FOUND (%s) elements " % len(pkgList) )
+            troveTupleList = pkgList
         else:
             log.info("NOT FOUND %s " % searchlist )
             troveTupleList = self.conary.query(searchlist)
             log.info(troveTupleList)
             if troveTupleList:
-                troveTupleList = cache.convertTroveToDict( troveTupleList ) 
+                troveTupleList = cache.convertTroveToDict( pkgList ) 
                 log.info("convert")
                 log.info(troveTupleList)
 
@@ -197,8 +200,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info("end prepare updateJOB..............")
         except NoNewTrovesError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "No new apps were found")
-        except  DepResolutionFailure:
-            self.error(ERROR_DEP_RESOLUTION_FAILED, "Unable to resolve dependencies: %s" % DepResolutionFailure.getFailures() )
+        except DepResolutionFailure as error :
+            log.info(error.getErrorMessage())
+            deps =  error.cannotResolve
+            dep_package = [ i[0] for i in deps ]
+            pkgs = []
+            for i in dep_package:
+                trove =  self.client.db.getTrove( i[0], i[1], i[2])
+                pkgs.append( str(trove.getSourceName()).replace(":source",""))
+
+            self.error(ERROR_DEP_RESOLUTION_FAILED,  "The package not can update/remove because depends of:  %s" % " ,".join(set(pkgs)))
         if cache:
             Cache().cacheUpdateJob(applyList, updJob)
         return updJob, suggMap
@@ -241,19 +252,20 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _resolve_list(self, filters, pkgsList ):
         log.info("======= _resolve_list =====")
         specList = []
-        cli = self.client
+        app_found = []
         for pkg in pkgsList:
             name = pkg["name"]
-            repo = pkg["label"]
-            version = pkg["version"]
-            trove = name, None , cli.flavor
+            trove = name, None , None
+            app_found.append(name)
             specList.append( trove  )
-        trovesList = cli.repos.findTroves(cli.default_label, specList, allowMissing=True )
+        trovesList = self.client.db.findTroves( None ,specList, allowMissing = True )
+        log.info("Packages installed .... %s " % len(trovesList))
         pkgFilter = ConaryFilter(filters)
         troves = trovesList.values()
         for trovelst in troves:
+            log.info(trovelst)
             t = trovelst[0]
-            installed = pkgFilter._pkg_is_installed( t[0] )
+            installed = True
             if installed:
                 pkgFilter.add_installed( trovelst )
             else:
@@ -283,7 +295,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info("doing a rq")
             troveTuple = self.conary.query(package[0])
             if not troveTuple:
-                return None
+                return 
                 #self.error(ERROR_INTERNAL_ERROR, "Package Not found")
                 #log.info("PackageNot found on resolve")
 
