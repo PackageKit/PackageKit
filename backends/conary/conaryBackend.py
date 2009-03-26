@@ -150,7 +150,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     @ExceptionHandler
     def get_package_from_id(self, package_id):
         """ package_id(string) =
-        "dpaster;0.1-3-1;x86;/foresight.rpath.org@fl:2-qa/0.1-3-1#{'version': '0.1-3-1', 'category': [], 'name': 'dpaster', 'label': 'foresight.rpath.org@fl:2-qa'}"
+        "dpaster;0.1-3-1;x86;Summary"
         """
         log.info("=========== get package from package_id ======================")
         name, verString, archString, data =  pkpackage.get_package_from_id(package_id)
@@ -250,24 +250,36 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         app_found = []
         for pkg in pkgsList:
             name = pkg["name"]
-            trove = name, None , None
+            log.info(name)
+            trove = name, None , None 
             app_found.append(name)
             specList.append( trove  )
-        trovesList = self.client.db.findTroves( None ,specList, allowMissing = True )
+        trovesList = self.client.db.findTroves( None ,specList, allowMissing = True)
         log.info("Packages installed .... %s " % len(trovesList))
         pkgFilter = ConaryFilter(filters)
-        troves = trovesList.values()
-        for trovelst in troves:
-            log.info(trovelst)
-            t = trovelst[0]
-            installed = True
-            if installed:
-                pkgFilter.add_installed( trovelst )
-            else:
-                pkgFilter.add_available( trovelst )
+        #troves = trovesList.values()
+        for trove in specList:
+            if trove in trovesList:
+                t = trovesList[trove]
+                log.info(t)
+                pkgFilter.add_installed( t )
+                app_found.remove(t[0][0])
+
+        log.info("Packages availables ........ %s " % len(app_found) )
+        specList = []
+        for i in set(app_found):
+            trove = i, None, self.conary.flavor
+            specList.append(trove)
+        trovelist = self.client.repos.findTroves(self.conary.default_label, specList, allowMissing=True)
+
+        for trove in specList:
+            t = trovelist[trove]
+            log.info(t)
+            pkgFilter.add_available( t )
 
        
         package_list = pkgFilter.post_process()
+
         self._show_package_list(package_list)
  
     @ExceptionHandler
@@ -335,18 +347,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             summary = package_id.split(";")
             meta = summary[3]
             log.info("====== show the package  %s" % name )
-            """
-            data = summary[3].split("#")
-            if data[1]:
-                log.info(summary[3].split("#")[1])
-                metadata = eval(summary[3].split("#")[1])
-            else:
-                metadata = {}
-            if metadata.has_key("shortDesc"):
-                meta = metadata["shortDesc"]
-            else:
-                meta = " "
-            """
             self.package(package_id, status, meta )
 
     @ExceptionHandler
