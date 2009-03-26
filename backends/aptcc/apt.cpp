@@ -31,13 +31,14 @@
 #include <dirent.h>
 #include <assert.h>
 
-aptcc::aptcc()
+aptcc::aptcc(PkBackend *backend)
 	:
 	packageRecords(0),
 	cacheFile(0),
 	Map(0),
 	DCache(0),
-	Policy(0)
+	Policy(0),
+	m_backend(backend)
 {
 }
 
@@ -229,11 +230,10 @@ void aptcc::mark_all_upgradable(bool with_autoinst,
 }
 
 // used to emit packages it collects all the needed info
-void aptcc::emit_package(PkBackend *backend,
-			PkBitfield filters,
-			const pkgCache::PkgIterator &pkg,
-			const pkgCache::VerIterator &ver,
-			PkInfoEnum state)
+void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
+			 const pkgCache::VerIterator &ver,
+			 PkBitfield filters,
+			 PkInfoEnum state)
 {
 	// check the state enum to see if it was not set.
 	if (state == PK_INFO_ENUM_UNKNOWN) {
@@ -322,18 +322,17 @@ void aptcc::emit_package(PkBackend *backend,
 
 	gchar *package_id;
 	package_id = pk_package_id_build(pkg.Name(),
-					ver.VerStr(),
-					ver.Arch(),
-					vf.File().Archive());
-	pk_backend_package(backend,
-			state,
-			package_id,
-			get_short_description(ver, packageRecords).c_str());
+					 ver.VerStr(),
+					 ver.Arch(),
+					 vf.File().Archive());
+	pk_backend_package(m_backend,
+			   state,
+			   package_id,
+			   get_short_description(ver, packageRecords).c_str());
 }
 
 // used to emit packages it collects all the needed info
-void aptcc::emit_details(PkBackend *backend,
-			const pkgCache::PkgIterator &pkg)
+void aptcc::emit_details(const pkgCache::PkgIterator &pkg)
 {
 	pkgCache::VerIterator ver = find_ver(pkg);
 	std::string section = ver.Section();
@@ -358,18 +357,17 @@ void aptcc::emit_details(PkBackend *backend,
 					ver.VerStr(),
 					ver.Arch(),
 					vf.File().Archive());
-	pk_backend_details(backend,
-			package_id,
-			"unknown",
-			get_enum_group(section),
-			get_long_description_parsed(ver, packageRecords).c_str(),
-			homepage.c_str(),
-			ver->Size);
+	pk_backend_details(m_backend,
+			   package_id,
+			   "unknown",
+			   get_enum_group(section),
+			   get_long_description_parsed(ver, packageRecords).c_str(),
+			   homepage.c_str(),
+			   ver->Size);
 }
 
 // used to emit packages it collects all the needed info
-void aptcc::emit_update_detail(PkBackend *backend,
-			    const pkgCache::PkgIterator &pkg)
+void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
 {
 	pkgCache::VerIterator candver = find_candidate_ver(pkg);
 
@@ -400,20 +398,20 @@ void aptcc::emit_update_detail(PkBackend *backend,
 	{
 		updateState = PK_UPDATE_STATE_ENUM_UNSTABLE;
 	}
-	pk_backend_update_detail(backend,
-				package_id,
-				current_package_id,//const gchar *updates
-				"",//const gchar *obsoletes
-				"",//const gchar *vendor_url
-				"",//const gchar *bugzilla_url
-				"",//const gchar *cve_url
-				PK_RESTART_ENUM_NONE,//PkRestartEnum restart
-				"",//const gchar *update_text
-				"",//const gchar *changelog
-				updateState,//PkUpdateStateEnum state
-				"",//const gchar *issued_text
-				""//const gchar *updated_text
-				);
+	pk_backend_update_detail(m_backend,
+				 package_id,
+				 current_package_id,//const gchar *updates
+				 "",//const gchar *obsoletes
+				 "",//const gchar *vendor_url
+				 "",//const gchar *bugzilla_url
+				 "",//const gchar *cve_url
+				 PK_RESTART_ENUM_NONE,//PkRestartEnum restart
+				 "",//const gchar *update_text
+				 "",//const gchar *changelog
+				 updateState,//PkUpdateStateEnum state
+				 "",//const gchar *issued_text
+				 ""//const gchar *updated_text
+				 );
 }
 
 void aptcc::get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,

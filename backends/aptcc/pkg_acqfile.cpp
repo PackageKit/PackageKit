@@ -97,8 +97,8 @@ bool get_archive(pkgAcquire *Owner, pkgSourceList *Sources,
 		const string PkgFile = Parse.FileName();
 		const string MD5     = Parse.MD5Hash();
 		if (PkgFile.empty() == true) {
-			return _error->Error(/*_*/("The package index files are corrupted. No Filename: "
-					    "field for package %s."),
+			return _error->Error("The package index files are corrupted. No Filename: "
+					    "field for package %s.",
 					    Version.ParentPkg().Name());
 		}
 
