@@ -171,6 +171,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -184,8 +185,8 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 		pi = pk_package_id_new_from_string (package_ids[i]);
 		if (pi == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-			pk_backend_finished (backend);
 			delete m_apt;
+			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -194,8 +195,8 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 		{
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
 			pk_package_id_free (pi);
-			pk_backend_finished (backend);
 			delete m_apt;
+			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -269,6 +270,7 @@ backend_get_files_thread (PkBackend *backend)
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -276,8 +278,8 @@ backend_get_files_thread (PkBackend *backend)
 		pi = pk_package_id_new_from_string (package_ids[i]);
 		if (pi == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-			pk_backend_finished (backend);
 			delete m_apt;
+			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -286,8 +288,8 @@ backend_get_files_thread (PkBackend *backend)
 		{
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
 			pk_package_id_free (pi);
-			pk_backend_finished (backend);
 			delete m_apt;
+			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -331,6 +333,7 @@ backend_get_details_thread (PkBackend *backend)
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -339,8 +342,8 @@ backend_get_details_thread (PkBackend *backend)
 		pi = pk_package_id_new_from_string (package_ids[i]);
 		if (pi == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-			pk_backend_finished (backend);
 			delete m_apt;
+			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -349,8 +352,8 @@ backend_get_details_thread (PkBackend *backend)
 		{
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
 			pk_package_id_free (pi);
-			pk_backend_finished (backend);
 			delete m_apt;
+			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -404,6 +407,7 @@ backend_get_updates_thread (PkBackend *backend)
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -429,6 +433,7 @@ backend_get_updates_thread (PkBackend *backend)
 		show_broken(backend, m_apt);
 		egg_debug ("Internal error, AllUpgrade broke stuff");
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -612,6 +617,7 @@ backend_download_packages_thread (PkBackend *backend)
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -627,8 +633,8 @@ backend_download_packages_thread (PkBackend *backend)
 		pi = pk_package_id_new_from_string (package_ids[i]);
 		if (pi == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-			pk_backend_finished (backend);
 			delete m_apt;
+			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -675,16 +681,13 @@ backend_download_packages_thread (PkBackend *backend)
 	}
 
 	pk_backend_set_status(backend, PK_STATUS_ENUM_DOWNLOAD);
-	if(fetcher.Run() != pkgAcquire::Continue)
+	if (fetcher.Run() != pkgAcquire::Continue)
 	// We failed or were cancelled
 	{
-		_error->DumpErrors();
+		show_errors(backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
 		delete m_apt;
-		if (_cancel) {
-			pk_backend_finished(backend);
-			return true;
-		}
-		return false;
+		pk_backend_finished (backend);
+		return _cancel;
 	}
 
 	// send the filelist
@@ -720,6 +723,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -731,6 +735,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 		if (_error->PendingError() == true) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_GET_LOCK, "Unable to lock the list directory");
 			delete m_apt;
+			pk_backend_finished (backend);
 			return false;
 	// 	 return _error->Error(_("Unable to lock the list directory"));
 		}
@@ -748,6 +753,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 		// (GetAll=true)
 		if (apt_source_list->GetIndexes(&Fetcher, true) == false) {
 			delete m_apt;
+			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -757,6 +763,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 			    I->Owner->FileSize << ' ' << I->Owner->HashSum() << endl;
 		}
 		delete m_apt;
+		pk_backend_finished (backend);
 		return true;
 	}
 
@@ -773,6 +780,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 			show_errors(backend, PK_ERROR_ENUM_CANNOT_GET_LOCK);
 		}
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -813,6 +821,7 @@ backend_resolve_thread (PkBackend *backend)
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -871,6 +880,7 @@ backend_search_file_thread (PkBackend *backend)
 		if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 			egg_debug ("Failed to create apt cache");
 			delete m_apt;
+			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -932,6 +942,7 @@ backend_search_group_thread (PkBackend *backend)
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -1007,6 +1018,7 @@ backend_search_package_thread (PkBackend *backend)
 	if (m_matcher->hasError()) {
 		egg_debug("Regex compilation error");
 		delete m_matcher;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -1015,6 +1027,7 @@ backend_search_package_thread (PkBackend *backend)
 		egg_debug ("Failed to create apt cache");
 		delete m_matcher;
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -1022,6 +1035,7 @@ backend_search_package_thread (PkBackend *backend)
 	{
 		delete m_matcher;
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -1200,6 +1214,7 @@ backend_repo_manager_thread (PkBackend *backend)
 	if (_lst.ReadVendors() == false) {
 		_error->Error("Cannot read vendors.list file");
 		show_errors(backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING);
+		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -1305,6 +1320,7 @@ backend_get_packages_thread (PkBackend *backend)
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
+		pk_backend_finished (backend);
 		return false;
 	}
 
