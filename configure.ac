@@ -432,6 +432,7 @@ AC_ARG_ENABLE(gprof, AS_HELP_STRING([--enable-gprof],[compile with gprof support
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
 AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
+AC_ARG_ENABLE(aptcc, AS_HELP_STRING([--enable-aptcc],[use the APTcc backend]),enable_aptcc=$enableval,enable_aptcc=no)
 AC_ARG_ENABLE(box, AS_HELP_STRING([--enable-box],[use the BOX backend]),enable_box=$enableval,enable_box=no)
 AC_ARG_ENABLE(conary, AS_HELP_STRING([--enable-conary],[use the CONARY backend]),enable_conary=$enableval,enable_conary=no)
 AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
@@ -447,6 +448,7 @@ AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enabl
 # export to Makefile.am's
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$enable_apt = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_APTCC, [test x$enable_aptcc = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$enable_box = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$enable_conary = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes])
@@ -578,7 +580,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,box,conary,dummy,razor,smart,urpmi,yum,pisi,zypp,opkg (dummy)]))
+                           alpm,apt,aptcc,box,conary,dummy,razor,smart,urpmi,yum,pisi,zypp,opkg (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -621,6 +623,31 @@ if test x$enable_apt = xyes; then
 		     AC_DEFINE(HAVE_PYTHON_SOFTWARE_PROPERTIES, 1,
 			       "Python software properties is available"),
 		     AC_MSG_WARN([Repository handling not supported]))
+fi
+
+if test x$enable_aptcc = xyes; then
+	dnl Use C++
+	AC_LANG([C++])
+
+	AC_CHECK_LIB(apt-pkg, main, , [AC_MSG_ERROR([Can't find the APT libraries -- please install libapt-pkg-dev])])
+	AC_CHECK_HEADER(apt-pkg/init.h, , [AC_MSG_ERROR([Can't find the APT header files -- please install libapt-pkg-dev])])
+	AC_SUBST(APTCC_CFLAGS)
+	AC_SUBST(APTCC_LIBS)
+
+	AC_MSG_CHECKING([whether apt includes the automatic dependency removal patch (required)])
+
+	AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[#include <apt-pkg/depcache.h>]],
+					  [[extern pkgDepCache::ActionGroup d;]]),
+			  AC_MSG_RESULT([yes]),
+			  AC_MSG_FAILURE([need libapt-pkg 0.7 or later]))
+
+	AC_MSG_CHECKING([whether apt supports ddtp]) 
+
+	AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[#include <apt-pkg/pkgcache.h>]],
+					  [[pkgCache::DescIterator d;]]),
+			  AC_MSG_RESULT([yes])
+			  AC_DEFINE([HAVE_DDTP], [], [Set to true if apt is DDTP-enabled]),
+			  AC_MSG_RESULT([no]))
 fi
 
 if test x$enable_box = xyes; then
@@ -695,6 +722,7 @@ contrib/ruck/src/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile
+backends/aptcc/Makefile
 backends/box/Makefile
 backends/conary/Makefile
 backends/dummy/Makefile
@@ -764,6 +792,7 @@ echo "
         Backends:
         ALPM backend:              ${enable_alpm}
         APT backend:               ${enable_apt}
+        APTcc backend:             ${enable_aptcc}
         BOX backend:               ${enable_box}
         CONARY backend:            ${enable_conary}
         dummy backend:             ${enable_dummy}
