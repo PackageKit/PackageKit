@@ -14,8 +14,6 @@
 #include <apt-pkg/strutl.h>
 #include <apt-pkg/error.h>
 
-// #include <apti18n.h>
-
 #include <stdio.h>
 #include <signal.h>
 #include <iostream>
@@ -26,8 +24,13 @@ using namespace std;
 // AcqPackageKitStatus::AcqPackageKitStatus - Constructor				/*{{{*/
 // ---------------------------------------------------------------------
 /* */
-AcqPackageKitStatus::AcqPackageKitStatus(PkBackend *backend, bool &cancelled, unsigned int Quiet) :
-	m_backend(backend), _cancelled(cancelled), Quiet(Quiet)
+AcqPackageKitStatus::AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &cancelled, unsigned int Quiet) :
+	m_apt(apt),
+	m_backend(backend),
+	_cancelled(cancelled),
+	Quiet(Quiet),
+	last_percent(0),
+	last_sub_percent(0)
 {
 }
 									/*}}}*/
@@ -162,7 +165,15 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
    // Put in the percent done
    sprintf(S,"%ld%%", percent_done);
 //    printf("-----------------%ld\n", percent_done);
-    pk_backend_set_percentage(m_backend, percent_done);
+    if (last_percent != percent_done) {
+	    if (last_percent < percent_done) {
+		    pk_backend_set_percentage(m_backend, percent_done);
+	    } else {
+		    pk_backend_set_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+		    pk_backend_set_percentage(m_backend, percent_done);
+	    }
+	    last_percent = percent_done;
+    }
    bool Shown = false;
    for (pkgAcquire::Worker *I = Owner->WorkersBegin(); I != 0;
 	I = Owner->WorkerStep(I))
@@ -183,6 +194,8 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 
       Shown = true;
 
+//    printf("==================%s=\n", I->CurrentItem->ShortDesc.c_str());
+   emit_package(I->CurrentItem->ShortDesc);
       // Add in the short description
       if (I->CurrentItem->Owner->ID != 0)
 	 snprintf(S,End-S," [%lu %s",I->CurrentItem->Owner->ID,
@@ -220,10 +233,21 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 	    snprintf(S,End-S,"/%sB %lu%%",SizeToStr(I->TotalSize).c_str(),
 		     sub_percent);
 
-		pk_backend_set_sub_percentage(m_backend, sub_percent);
+		if (last_sub_percent != sub_percent) {
+			if (last_sub_percent < sub_percent) {
+				pk_backend_set_sub_percentage(m_backend, sub_percent);
+			} else {
+				pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+				pk_backend_set_sub_percentage(m_backend, sub_percent);
+			}
+			last_sub_percent = sub_percent;
+		}
 // 		printf("====================%lu\n", sub_percent);
       } else {
-		pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+		if (last_sub_percent != PK_BACKEND_PERCENTAGE_INVALID) {
+			pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+			last_sub_percent = PK_BACKEND_PERCENTAGE_INVALID;
+		}
       }
       S += strlen(S);
       snprintf(S,End-S,"]");
@@ -296,3 +320,29 @@ bool AcqPackageKitStatus::MediaChange(string Media,string Drive)
    return bStatus;
 }
 									/*}}}*/
+
+void AcqPackageKitStatus::addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator> packagePair)
+{
+	packages.push_back(packagePair);
+}
+
+void AcqPackageKitStatus::emit_package(const string &name)
+{
+	if (name.compare(last_package_name) != 0 && packages.size()) {
+		// find the package
+		for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it = packages.begin();
+			    it != packages.end(); ++it)
+		{
+			if (_cancelled) {
+				break;
+			}
+
+			// try to see if any package matches
+			if (name.compare(it->first.Name()) == 0) {
+				m_apt->emit_package(it->first, it->second);
+				last_package_name = name;
+				break;
+			}
+		}
+	}
+}

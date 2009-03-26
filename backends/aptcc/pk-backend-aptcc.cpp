@@ -167,7 +167,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc();
+	aptcc *m_apt = new aptcc(backend);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -219,7 +219,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 		if (_cancel) {
 			break;
 		}
-		m_apt->emit_package(backend, filters, i->first, i->second);
+		m_apt->emit_package(i->first, i->second, filters);
 	}
 
 	delete m_apt;
@@ -265,7 +265,7 @@ backend_get_files_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc();
+	aptcc *m_apt = new aptcc(backend);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -327,7 +327,7 @@ backend_get_details_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc();
+	aptcc *m_apt = new aptcc(backend);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -355,9 +355,9 @@ backend_get_details_thread (PkBackend *backend)
 		}
 
 		if (updateDetail) {
-			m_apt->emit_update_detail(backend, pkg);
+			m_apt->emit_update_detail(pkg);
 		} else {
-			m_apt->emit_details(backend, pkg);
+			m_apt->emit_details(pkg);
 		}
 
 		pk_package_id_free (pi);
@@ -400,7 +400,7 @@ backend_get_updates_thread (PkBackend *backend)
 	_cancel = false;
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc();
+	aptcc *m_apt = new aptcc(backend);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -573,7 +573,7 @@ backend_get_updates_thread (PkBackend *backend)
 				if (_cancel) {
 					break;
 				}
-				m_apt->emit_package(backend, filters, it->first, it->second, state);
+				m_apt->emit_package(it->first, it->second, filters, state);
 			}
 		}
 	}
@@ -608,7 +608,7 @@ backend_download_packages_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc();
+	aptcc *m_apt = new aptcc(backend);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -616,7 +616,7 @@ backend_download_packages_thread (PkBackend *backend)
 	}
 
 	// Create the progress
-	AcqPackageKitStatus Stat(backend, _cancel, _config->FindI("quiet",0));
+	AcqPackageKitStatus Stat(m_apt, backend, _cancel, _config->FindI("quiet",0));
 
 	// get a fetcher
 	pkgAcquire fetcher(&Stat);
@@ -660,8 +660,11 @@ backend_download_packages_thread (PkBackend *backend)
 		}
 
 		string storeFileName;
-		get_archive(&fetcher, apt_source_list, m_apt->packageRecords,
-			    ver, directory, storeFileName);
+		if (get_archive(&fetcher, apt_source_list, m_apt->packageRecords,
+			    ver, directory, storeFileName))
+		{
+			Stat.addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+		}
 		string destFile = directory + "/" + flNotDir(storeFileName);
 		if (filelist.empty()) {
 			filelist = destFile;
@@ -711,7 +714,9 @@ backend_refresh_cache_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
-	aptcc *m_apt = new aptcc();
+	// we re-read it here since it might have changed
+	apt_source_list->ReadMainList();
+	aptcc *m_apt = new aptcc(backend);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -731,7 +736,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 		}
 	}
 	// Create the progress
-	AcqPackageKitStatus Stat(backend, _cancel, _config->FindI("quiet",0));
+	AcqPackageKitStatus Stat(m_apt, backend, _cancel, _config->FindI("quiet",0));
 
 	// Just print out the uris an exit if the --print-uris flag was used
 	if (_config->FindB("APT::Get::Print-URIs") == true)
@@ -804,7 +809,7 @@ backend_resolve_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc();
+	aptcc *m_apt = new aptcc(backend);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -828,7 +833,7 @@ backend_resolve_thread (PkBackend *backend)
 		// check to see if the provided package isn't virtual too
 		if (ver.end() == false)
 		{
-			m_apt->emit_package(backend, filters, pkg, ver);
+			m_apt->emit_package(pkg, ver, filters);
 		}
 	}
 
@@ -862,7 +867,7 @@ backend_search_file_thread (PkBackend *backend)
 
 	// as we can only search for installed files lets avoid the opposite
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-		aptcc *m_apt = new aptcc();
+		aptcc *m_apt = new aptcc(backend);
 		if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 			egg_debug ("Failed to create apt cache");
 			delete m_apt;
@@ -882,7 +887,7 @@ backend_search_file_thread (PkBackend *backend)
 			{
 				continue;
 			}
-			m_apt->emit_package(backend, filters, pkg, ver);
+			m_apt->emit_package(pkg, ver, filters);
 		}
 
 		delete m_apt;
@@ -923,7 +928,7 @@ backend_search_group_thread (PkBackend *backend)
 
 	PkGroupEnum pkGroup = pk_group_enum_from_text (group);
 
-	aptcc *m_apt = new aptcc();
+	aptcc *m_apt = new aptcc(backend);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -965,7 +970,7 @@ backend_search_group_thread (PkBackend *backend)
 		if (_cancel) {
 			break;
 		}
-		m_apt->emit_package(backend, filters, i->first, i->second);
+		m_apt->emit_package(i->first, i->second, filters);
 	}
 
 	delete m_apt;
@@ -1005,7 +1010,7 @@ backend_search_package_thread (PkBackend *backend)
 		return false;
 	}
 
-	aptcc *m_apt = new aptcc();
+	aptcc *m_apt = new aptcc(backend);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_matcher;
@@ -1129,7 +1134,7 @@ backend_search_package_thread (PkBackend *backend)
 		if (_cancel) {
 			break;
 		}
-		m_apt->emit_package(backend, filters, i->first, i->second);
+		m_apt->emit_package(i->first, i->second, filters);
 	}
 
 	delete m_matcher;
@@ -1146,8 +1151,8 @@ backend_search_package_thread (PkBackend *backend)
 static void
 backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
-	pk_backend_set_bool (backend, "search_details", false);
-	pk_backend_thread_create (backend, backend_search_package_thread);
+	pk_backend_set_bool(backend, "search_details", false);
+	pk_backend_thread_create(backend, backend_search_package_thread);
 }
 
 
@@ -1157,19 +1162,33 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 static void
 backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
-	pk_backend_set_bool (backend, "search_details", true);
-	pk_backend_thread_create (backend, backend_search_package_thread);
+	pk_backend_set_bool(backend, "search_details", true);
+	pk_backend_thread_create(backend, backend_search_package_thread);
 }
 
-/**
- * backend_get_repo_list:
- */
-static void
-backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+static gboolean
+backend_repo_manager_thread (PkBackend *backend)
 {
+	// list
+	PkBitfield filters;
 	bool notDevelopment;
-	notDevelopment = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	// enable
+	const gchar *repo_id;
+	bool enabled;
+	bool found = false;
+	// generic
+	const char *const salt = "$1$/iSaq7rB$EoUw5jJPPvAPECNaaWzMK/";
+	bool list = pk_backend_get_bool(backend, "list");
+
+	if (list) {
+		pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+		filters = (PkBitfield) pk_backend_get_uint(backend, "filters");
+		notDevelopment = pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT);
+	} else {
+		pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
+		repo_id = pk_backend_get_string(backend, "repo_id");
+		enabled = pk_backend_get_bool(backend, "enabled");
+	}
 
 	SourcesList _lst;
 	if (_lst.ReadSources() == false) {
@@ -1181,7 +1200,7 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 	if (_lst.ReadVendors() == false) {
 		_error->Error("Cannot read vendors.list file");
 		show_errors(backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING);
-		return;
+		return false;
 	}
 
 	for (SourcesListIter it = _lst.SourceRecords.begin();
@@ -1208,16 +1227,57 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 
 		string repo;
 		repo = (*it)->GetType();
-		repo.append(" " + (*it)->VendorID);
-		repo.append(" " + (*it)->URI);
-		repo.append(" " + (*it)->Dist);
-		repo.append(" " + Sections);
-		pk_backend_repo_detail(backend,
-				    repo.c_str(),
-				    repo.c_str(),
-				    !((*it)->Type & SourcesList::Disabled));
+		repo += " " + (*it)->VendorID;
+		repo += " " + (*it)->URI;
+		repo += " " + (*it)->Dist;
+		repo += " " + Sections;
+		gchar *hash;
+		const gchar allowedChars[] =
+		    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		hash = crypt(repo.c_str(), salt);
+		g_strcanon(hash, allowedChars, 'D');
+		string repoId(hash);
+
+		if (list) {
+			pk_backend_repo_detail(backend,
+					    repoId.c_str(),
+					    repo.c_str(),
+					    !((*it)->Type & SourcesList::Disabled));
+		} else {
+			if (repoId.compare(repo_id) == 0) {
+				if (enabled) {
+					(*it)->Type = (*it)->Type & ~SourcesList::Disabled;
+				} else {
+					(*it)->Type |= SourcesList::Disabled;
+				}
+				found = true;
+				break;
+			}
+		}
+	}
+
+	if (!list) {
+		if (!found) {
+			_error->Error("Could not found the repositorie");
+			show_errors(backend, PK_ERROR_ENUM_REPO_NOT_AVAILABLE);
+		} else if (!_lst.UpdateSources()) {
+			_error->Error("Could not update sources file");
+			show_errors(backend, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG);
+		}
+		apt_source_list->ReadMainList();
 	}
 	pk_backend_finished (backend);
+	return true;
+}
+
+/**
+ * backend_get_repo_list:
+ */
+static void
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+{
+	pk_backend_set_bool(backend, "list", true);
+	pk_backend_thread_create(backend, backend_repo_manager_thread);
 }
 
 /**
@@ -1226,62 +1286,8 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
-
-	SourcesList _lst;
-	if (_lst.ReadSources() == false) {
-		_error->
-		    Warning("Ignoring invalid record(s) in sources.list file!");
-	}
-
-	if (_lst.ReadVendors() == false) {
-		_error->Error("Cannot read vendors.list file");
-		show_errors(backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING);
-		return;
-	}
-
-	bool found = false;
-	for (SourcesListIter it = _lst.SourceRecords.begin();
-	it != _lst.SourceRecords.end(); it++)
-	{
-		if ((*it)->Type & SourcesList::Comment) {
-		    continue;
-		}
-
-		string Sections;
-		for (unsigned int J = 0; J < (*it)->NumSections; J++) {
-			Sections += (*it)->Sections[J];
-			Sections += " ";
-		}
-
-		string repo;
-		repo = (*it)->GetType();
-		repo.append(" " + (*it)->VendorID);
-		repo.append(" " + (*it)->URI);
-		repo.append(" " + (*it)->Dist);
-		repo.append(" " + Sections);
-		if (repo.compare(rid) == 0) {
-// 			printf("Found: %s, repo %s.\n", rid, repo.c_str());
-			if (enabled) {
-				(*it)->Type = (*it)->Type & ~SourcesList::Disabled;
-			} else {
-				(*it)->Type |= SourcesList::Disabled;
-			}
-			found = true;
-			break;
-		} else {
-// 			printf("Not found: %s, repo %s.\n", rid, repo.c_str());
-		}
-	}
-
-	if (!found) {
-		_error->Error("Could not found the repositorie");
-		show_errors(backend, PK_ERROR_ENUM_REPO_NOT_AVAILABLE);
-	} else if (!_lst.UpdateSources()) {
-		_error->Error("Could not update sources file");
-		show_errors(backend, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG);
-	}
-	pk_backend_finished (backend);
+	pk_backend_set_bool(backend, "list", false);
+	pk_backend_thread_create(backend, backend_repo_manager_thread);
 }
 
 static gboolean
@@ -1295,7 +1301,7 @@ backend_get_packages_thread (PkBackend *backend)
 	_cancel = false;
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc();
+	aptcc *m_apt = new aptcc(backend);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -1330,7 +1336,7 @@ backend_get_packages_thread (PkBackend *backend)
 		if (_cancel) {
 			break;
 		}
-		m_apt->emit_package(backend, filters, i->first, i->second);
+		m_apt->emit_package(i->first, i->second, filters);
 	}
 
 	delete m_apt;
