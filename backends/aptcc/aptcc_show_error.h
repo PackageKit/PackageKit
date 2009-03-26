@@ -16,11 +16,11 @@
  * Call the Packagekit error dialog
  */
 bool show_errors(PkBackend *backend,
-		 PkErrorCodeEnum errorCode = PK_ERROR_ENUM_UNKNOWN);
+		PkErrorCodeEnum errorCode = PK_ERROR_ENUM_UNKNOWN);
 
 /**
  * Call the Packagekit message dialog
  */
 bool show_warnings(PkBackend *backend,
-		   PkMessageEnum message = PK_MESSAGE_ENUM_UNKNOWN);
+		PkMessageEnum message = PK_MESSAGE_ENUM_UNKNOWN);
 #endif // APTCC_SHOW_ERROR

@@ -39,14 +39,14 @@
 
 // Mostly copied from pkgAcqArchive.
 bool get_archive(pkgAcquire *Owner, pkgSourceList *Sources,
-		 pkgRecords *Recs, pkgCache::VerIterator const &Version,
-		 string directory, string &StoreFilename)
+		pkgRecords *Recs, pkgCache::VerIterator const &Version,
+		string directory, string &StoreFilename)
 {
 	pkgCache::VerFileIterator Vf=Version.FileList();
 
 	if (Version.Arch() == 0) {
-		return _error->Error(/*_*/("I wasn't able to locate a file for the %s package. "
-				    "This might mean you need to manually fix this package. (due to missing arch)"),
+		return _error->Error("I wasn't able to locate a file for the %s package. "
+				    "This might mean you need to manually fix this package. (due to missing arch)",
 				    Version.ParentPkg().Name());
 	}
 

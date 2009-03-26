@@ -1,7 +1,7 @@
 /* rsource.cc - access the sources.list file
  * 
  * Copyright (c) 1999 Patrick Cole <z@amused.net>
- *           (c) 2002 Synaptic development team          
+ *           (c) 2002 Synaptic development team
  * 
  * Author: Patrick Cole <z@amused.net>
  *         Michael Vogt <mvo@debian.org>
