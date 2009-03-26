@@ -257,6 +257,7 @@ class XMLCache:
     def _fetchXML(self ):
         con = ConaryPk()
         labels = con.get_labels_from_config()
+        log.info(labels)
         for i in labels:
             label = i + '.xml'
             filename = self.xml_path + label
