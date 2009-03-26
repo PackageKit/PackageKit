@@ -26,5 +26,5 @@
  *  the cwd (and copies from file:/ URLs).
  */
 bool get_archive(pkgAcquire *Owner, pkgSourceList *Sources,
-		 pkgRecords *Recs, pkgCache::VerIterator const &Version,
-		 std::string directory, std::string &StoreFilename);
+		pkgRecords *Recs, pkgCache::VerIterator const &Version,
+		std::string directory, std::string &StoreFilename);

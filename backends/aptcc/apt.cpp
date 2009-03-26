@@ -51,7 +51,7 @@ bool aptcc::init(const char *locale, pkgSourceList &apt_source_list)
 		return false;
 		//_("The package lists or status file could not be parsed or opened.")
 	}
-	
+
 	cacheFile = new pkgCache(Map);
 	if (_error->PendingError()) {
 		return false;
@@ -146,17 +146,17 @@ bool aptcc::is_held(const pkgCache::PkgIterator &pkg)
 //       pkgTagFile tagfile(&state_file);
 //       pkgTagSection section;
 
-  pkgCache::VerIterator candver = find_candidate_ver(pkg);
+	pkgCache::VerIterator candver = find_candidate_ver(pkg);
 
-  return !pkg.CurrentVer().end() &&
-    (pkg->SelectedState == pkgCache::State::Hold ||
-     (!candver.end() && false/*candver.VerStr() == state.forbidver*/));
-     // TODO add forbid ver support
+	return !pkg.CurrentVer().end() &&
+	    (pkg->SelectedState == pkgCache::State::Hold ||
+	    (!candver.end() && false/*candver.VerStr() == state.forbidver*/));
+	// TODO add forbid ver support
 }
 
 void aptcc::mark_all_upgradable(bool with_autoinst,
-					   bool ignore_removed/*,
-					   undo_group *undo*/)
+					bool ignore_removed/*,
+					undo_group *undo*/)
 {
 //   if(read_only && !read_only_permission())
 //     {
@@ -170,75 +170,70 @@ void aptcc::mark_all_upgradable(bool with_autoinst,
 // //   action_group group(*this, NULL);
 
 
-  for(int iter=0; iter==0 || (iter==1 && with_autoinst); ++iter)
-    {
-      // Do this twice, only turning auto-install on the second time.
-      // A reason for this is the following scenario:
-      //
-      // Packages A and B are installed at 1.0.  Package C is not installed.
-      // Version 2.0 of each package is available.
-      //
-      // Version 2.0 of A depends on "C (= 2.0) | B (= 2.0)".
-      //
-      // Upgrading A if B is not upgraded will cause this dependency to
-      // break.  Auto-install will then cheerfully fulfill it by installing
-      // C.
-      //
-      // A real-life example of this is xemacs21, xemacs21-mule, and
-      // xemacs21-nomule; aptitude would keep trying to install the mule
-      // version on upgrades.
-      bool do_autoinstall=(iter==1);
+	for(int iter=0; iter==0 || (iter==1 && with_autoinst); ++iter) {
+		// Do this twice, only turning auto-install on the second time.
+		// A reason for this is the following scenario:
+		//
+		// Packages A and B are installed at 1.0.  Package C is not installed.
+		// Version 2.0 of each package is available.
+		//
+		// Version 2.0 of A depends on "C (= 2.0) | B (= 2.0)".
+		//
+		// Upgrading A if B is not upgraded will cause this dependency to
+		// break.  Auto-install will then cheerfully fulfill it by installing
+		// C.
+		//
+		// A real-life example of this is xemacs21, xemacs21-mule, and
+		// xemacs21-nomule; aptitude would keep trying to install the mule
+		// version on upgrades.
+		bool do_autoinstall=(iter==1);
 
-      for(pkgCache::PkgIterator i=DCache->PkgBegin(); !i.end(); i++)
-	{
-	  pkgDepCache::StateCache state = get_state(i);
-// 	  aptitude_state &estate = get_ext_state(i);
+		for(pkgCache::PkgIterator i=DCache->PkgBegin(); !i.end(); i++) {
+			pkgDepCache::StateCache state = get_state(i);
+// 			aptitude_state &estate = get_ext_state(i);
 
-	  if(i.CurrentVer().end())
-	    continue;
+			if(i.CurrentVer().end()){
+				continue;
+			}
 
-	  bool do_upgrade = false;
+			bool do_upgrade = false;
 
-	  if(!ignore_removed)
-	    do_upgrade = state.Status > 0 && !is_held(i);
-	  else
-	    {
-	      switch(i->SelectedState)
-		{
-		  // This case shouldn't really happen:
-		  // if this shouldn't happen i guess we don't
-		  // even need to worry? am i right?
-// 		case pkgCache::State::Unknown:
-// 		  estate.selection_state=pkgCache::State::Install;
+			if(!ignore_removed) {
+			    do_upgrade = state.Status > 0 && !is_held(i);
+			} else {
+				switch(i->SelectedState) {
+				    // This case shouldn't really happen:
+				    // if this shouldn't happen i guess we don't
+				    // even need to worry? am i right?
+		    // 		case pkgCache::State::Unknown:
+		    // 		  estate.selection_state=pkgCache::State::Install;
 
-		  // Fall through
-		case pkgCache::State::Install:
-		  if(state.Status > 0 && !is_held(i))
-		    do_upgrade = true;
-		  break;
-		default:
-		  break;
+				    // Fall through
+				case pkgCache::State::Install:
+					if(state.Status > 0 && !is_held(i)) {
+						do_upgrade = true;
+					}
+					break;
+				default:
+					break;
+				}
+			}
+
+			if(do_upgrade) {
+		// 	      pre_package_state_changed();
+			    dirty = true;
+			    DCache->MarkInstall(i, do_autoinstall);
+			}
 		}
-	    }
-
-	  if(do_upgrade)
-	    {
-// 	      pre_package_state_changed();
-	      dirty = true;
-    printf("do_upgrade: %s\n", i.Name());
-
-	      DCache->MarkInstall(i, do_autoinstall);
-	    }
 	}
-    }
 }
 
 // used to emit packages it collects all the needed info
 void aptcc::emit_package(PkBackend *backend,
-			 PkBitfield filters,
-			 const pkgCache::PkgIterator &pkg,
-			 const pkgCache::VerIterator &ver,
-			 PkInfoEnum state)
+			PkBitfield filters,
+			const pkgCache::PkgIterator &pkg,
+			const pkgCache::VerIterator &ver,
+			PkInfoEnum state)
 {
 	// check the state enum to see if it was not set.
 	if (state == PK_INFO_ENUM_UNKNOWN) {
@@ -327,18 +322,18 @@ void aptcc::emit_package(PkBackend *backend,
 
 	gchar *package_id;
 	package_id = pk_package_id_build(pkg.Name(),
-					 ver.VerStr(),
-					 ver.Arch(),
-					 vf.File().Archive());
+					ver.VerStr(),
+					ver.Arch(),
+					vf.File().Archive());
 	pk_backend_package(backend,
-			   state,
-			   package_id,
-			   get_short_description(ver, packageRecords).c_str());
+			state,
+			package_id,
+			get_short_description(ver, packageRecords).c_str());
 }
 
 // used to emit packages it collects all the needed info
 void aptcc::emit_details(PkBackend *backend,
-			 const pkgCache::PkgIterator &pkg)
+			const pkgCache::PkgIterator &pkg)
 {
 	pkgCache::VerIterator ver = find_ver(pkg);
 	std::string section = ver.Section();
@@ -360,21 +355,21 @@ void aptcc::emit_details(PkBackend *backend,
 
 	gchar *package_id;
 	package_id = pk_package_id_build(pkg.Name(),
-					 ver.VerStr(),
-					 ver.Arch(),
-					 vf.File().Archive());
+					ver.VerStr(),
+					ver.Arch(),
+					vf.File().Archive());
 	pk_backend_details(backend,
-			   package_id,
-			   "unknown",
-			   get_enum_group(section),
-			   get_long_description_parsed(ver, packageRecords).c_str(),
-			   homepage.c_str(),
-			   ver->Size);
+			package_id,
+			"unknown",
+			get_enum_group(section),
+			get_long_description_parsed(ver, packageRecords).c_str(),
+			homepage.c_str(),
+			ver->Size);
 }
 
 // used to emit packages it collects all the needed info
 void aptcc::emit_update_detail(PkBackend *backend,
-			       const pkgCache::PkgIterator &pkg)
+			    const pkgCache::PkgIterator &pkg)
 {
 	pkgCache::VerIterator candver = find_candidate_ver(pkg);
 
@@ -383,17 +378,17 @@ void aptcc::emit_update_detail(PkBackend *backend,
 	string archive(vf.File().Archive());
 	gchar *package_id;
 	package_id = pk_package_id_build(pkg.Name(),
-					 candver.VerStr(),
-					 candver.Arch(),
-					 archive.c_str());
+					candver.VerStr(),
+					candver.Arch(),
+					archive.c_str());
 
 	pkgCache::VerIterator currver = find_ver(pkg);
 	pkgCache::VerFileIterator currvf = currver.FileList();
 	gchar *current_package_id;
 	current_package_id = pk_package_id_build(pkg.Name(),
-						 currver.VerStr(),
-						 currver.Arch(),
-						 currvf.File().Archive());
+						currver.VerStr(),
+						currver.Arch(),
+						currvf.File().Archive());
 
 	PkUpdateStateEnum updateState = PK_UPDATE_STATE_ENUM_UNKNOWN;
 	if (archive.compare("stable") == 0) {
@@ -401,24 +396,24 @@ void aptcc::emit_update_detail(PkBackend *backend,
 	} else if (archive.compare("testing") == 0) {
 		updateState = PK_UPDATE_STATE_ENUM_TESTING;
 	} else if (archive.compare("unstable")  == 0 ||
-		   archive.compare("experimental") == 0)
+		archive.compare("experimental") == 0)
 	{
 		updateState = PK_UPDATE_STATE_ENUM_UNSTABLE;
 	}
 	pk_backend_update_detail(backend,
-				 package_id,
-				 current_package_id,//const gchar *updates
-				 "",//const gchar *obsoletes
-				 "",//const gchar *vendor_url
-				 "",//const gchar *bugzilla_url
-				 "",//const gchar *cve_url
-				 PK_RESTART_ENUM_NONE,//PkRestartEnum restart
-				 "",//const gchar *update_text
-				 "",//const gchar *changelog
-				 updateState,//PkUpdateStateEnum state
-				 "",//const gchar *issued_text
-				 ""//const gchar *updated_text
-				 );
+				package_id,
+				current_package_id,//const gchar *updates
+				"",//const gchar *obsoletes
+				"",//const gchar *vendor_url
+				"",//const gchar *bugzilla_url
+				"",//const gchar *cve_url
+				PK_RESTART_ENUM_NONE,//PkRestartEnum restart
+				"",//const gchar *update_text
+				"",//const gchar *changelog
+				updateState,//PkUpdateStateEnum state
+				"",//const gchar *issued_text
+				""//const gchar *updated_text
+				);
 }
 
 void aptcc::get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,

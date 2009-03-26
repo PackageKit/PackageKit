@@ -39,7 +39,6 @@
 #include <config.h>
 
 #include <locale.h>
-// #include <unistd.h>
 #include <errno.h>
 #include <stdio.h>
 
@@ -144,7 +143,7 @@ static void
 backend_cancel (PkBackend *backend)
 {
 	_cancel = true;
-        pk_backend_set_status(backend, PK_STATUS_ENUM_CANCEL);
+	pk_backend_set_status(backend, PK_STATUS_ENUM_CANCEL);
 }
 
 static gboolean
@@ -211,7 +210,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 
 	sort(output.begin(), output.end(), compare());
 	output.erase(unique(output.begin(), output.end(), result_equality()),
-		     output.end());
+		    output.end());
 
 	// It's faster to emmit the packages here than in the matching part
 	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
@@ -335,7 +334,7 @@ backend_get_details_thread (PkBackend *backend)
 		return false;
 	}
 
-	
+
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
 		pi = pk_package_id_new_from_string (package_ids[i]);
 		if (pi == NULL) {
@@ -437,19 +436,19 @@ backend_get_updates_thread (PkBackend *backend)
 // //     {
 //       {
 // 	aptcc::action_group action_group(*m_apt);
-// 
+//
 // 	// Reset all the package states.
 // 	for(pkgCache::PkgIterator i=m_apt->DCache->PkgBegin();
 // 	    !i.end(); ++i)
 // 	  m_apt->mark_keep(i, false, false, NULL);
 //       }
-// 
+//
 //       // Use the apt 'upgrade' algorithm as a fallback against, e.g.,
 //       // bugs in the aptitude resolver.
 //       if(!m_apt->all_upgrade(false, NULL))
 // 	{
 // // 	  show_broken();
-// 
+//
 // 	  _error->DumpErrors();
 // 	  return -1;
 // 	}
@@ -993,7 +992,7 @@ backend_search_package_thread (PkBackend *backend)
 
 	search = pk_backend_get_string (backend, "search");
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
-	
+
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	_cancel = false;
 	pk_backend_set_allow_cancel (backend, true);
@@ -1121,7 +1120,7 @@ backend_search_package_thread (PkBackend *backend)
 
 	sort(output.begin(), output.end(), compare());
 	output.erase(unique(output.begin(), output.end(), result_equality()),
-		       output.end());
+		    output.end());
 
 	// It's faster to emmit the packages here than in the matching part
 	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
@@ -1186,7 +1185,7 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 	}
 
 	for (SourcesListIter it = _lst.SourceRecords.begin();
-        it != _lst.SourceRecords.end(); it++)
+	it != _lst.SourceRecords.end(); it++)
 	{
 		if ((*it)->Type & SourcesList::Comment) {
 		    continue;
@@ -1200,9 +1199,9 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 
 		if (notDevelopment &&
 			((*it)->Type & SourcesList::DebSrc ||
-			 (*it)->Type & SourcesList::RpmSrc ||
-			 (*it)->Type & SourcesList::RpmSrcDir ||
-			 (*it)->Type & SourcesList::RepomdSrc))
+			(*it)->Type & SourcesList::RpmSrc ||
+			(*it)->Type & SourcesList::RpmSrcDir ||
+			(*it)->Type & SourcesList::RepomdSrc))
 		{
 			continue;
 		}
@@ -1214,9 +1213,9 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 		repo.append(" " + (*it)->Dist);
 		repo.append(" " + Sections);
 		pk_backend_repo_detail(backend,
-				       repo.c_str(),
-				       repo.c_str(),
-				       !((*it)->Type & SourcesList::Disabled));
+				    repo.c_str(),
+				    repo.c_str(),
+				    !((*it)->Type & SourcesList::Disabled));
 	}
 	pk_backend_finished (backend);
 }
@@ -1243,7 +1242,7 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 
 	bool found = false;
 	for (SourcesListIter it = _lst.SourceRecords.begin();
-        it != _lst.SourceRecords.end(); it++)
+	it != _lst.SourceRecords.end(); it++)
 	{
 		if ((*it)->Type & SourcesList::Comment) {
 		    continue;
@@ -1341,8 +1340,8 @@ backend_get_packages_thread (PkBackend *backend)
 }
 
 /**
-  * backend_get_packages:
-  */
+ * backend_get_packages:
+ */
 static void
 backend_get_packages (PkBackend *backend, PkBitfield filter)
 {

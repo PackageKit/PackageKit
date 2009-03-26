@@ -4,7 +4,7 @@
 /* ######################################################################
 
    Acquire Progress - Command line progress meter 
-   
+
    ##################################################################### */
 									/*}}}*/
 // Include files							/*{{{*/
@@ -15,7 +15,7 @@
 #include <apt-pkg/error.h>
 
 // #include <apti18n.h>
-    
+
 #include <stdio.h>
 #include <signal.h>
 #include <iostream>
@@ -36,7 +36,7 @@ AcqPackageKitStatus::AcqPackageKitStatus(PkBackend *backend, bool &cancelled, un
 /* */
 void AcqPackageKitStatus::Start()
 {
-   pkgAcquireStatus::Start(); 
+   pkgAcquireStatus::Start();
    BlankLine[0] = 0;
    ID = 1;
 };
@@ -50,8 +50,8 @@ void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
       return;
 
    if (Quiet <= 0)
-      cout << '\r' << BlankLine << '\r';   
-   
+      cout << '\r' << BlankLine << '\r';
+
    cout << /*_*/("Hit ") << Itm.Description;
    if (Itm.Owner->FileSize != 0)
       cout << " [" << SizeToStr(Itm.Owner->FileSize) << "B]";
@@ -67,15 +67,15 @@ void AcqPackageKitStatus::Fetch(pkgAcquire::ItemDesc &Itm)
    Update = true;
    if (Itm.Owner->Complete == true)
       return;
-   
+
    Itm.Owner->ID = ID++;
-   
+
    if (Quiet > 1)
       return;
 
    if (Quiet <= 0)
       cout << '\r' << BlankLine << '\r';
-   
+
    cout << /*_*/("Get:") << Itm.Owner->ID << ' ' << Itm.Description;
    if (Itm.Owner->FileSize != 0)
       cout << " [" << SizeToStr(Itm.Owner->FileSize) << "B]";
@@ -101,10 +101,10 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
    // Ignore certain kinds of transient failures (bad code)
    if (Itm.Owner->Status == pkgAcquire::Item::StatIdle)
       return;
-      
+
    if (Quiet <= 0)
       cout << '\r' << BlankLine << '\r';
-   
+
    if (Itm.Owner->Status == pkgAcquire::Item::StatDone)
    {
       cout << /*_*/("Ign ") << Itm.Description << endl;
@@ -114,7 +114,7 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
       cout << /*_*/("Err ") << Itm.Description << endl;
       cout << "  " << Itm.Owner->ErrorText << endl;
    }
-   
+
    Update = true;
 };
 									/*}}}*/
@@ -147,11 +147,11 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 {
    if (Quiet > 0)
       return true;
-   
+
    pkgAcquireStatus::Pulse(Owner);
-   
+
    enum {Long = 0,Medium,Short} Mode = Long;
-   
+
    char Buffer[sizeof(BlankLine)];
    char *End = Buffer + sizeof(Buffer);
    char *S = Buffer;
@@ -168,7 +168,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 	I = Owner->WorkerStep(I))
    {
       S += strlen(S);
-      
+
       // There is no item running 
       if (I->CurrentItem == 0)
       {
@@ -182,7 +182,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
       }
 
       Shown = true;
-      
+
       // Add in the short description
       if (I->CurrentItem->Owner->ID != 0)
 	 snprintf(S,End-S," [%lu %s",I->CurrentItem->Owner->ID,
@@ -197,7 +197,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 	 snprintf(S,End-S," %s",I->CurrentItem->Owner->Mode);
 	 S += strlen(S);
       }
-            
+
       // Add the current progress
       if (Mode == Long)
 	 snprintf(S,End-S," %lu",I->CurrentSize);
@@ -207,7 +207,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 	    snprintf(S,End-S," %sB",SizeToStr(I->CurrentSize).c_str());
       }
       S += strlen(S);
-      
+
       // Add the total size and percent
       if (I->TotalSize > 0 && I->CurrentItem->Owner->Complete == false)
       {
@@ -232,16 +232,16 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
    // Show something..
    if (Shown == false)
       snprintf(S,End-S,/*_*/(" [Working]"));
-      
+
    /* Put in the ETA and cps meter, block off signals to prevent strangeness
       during resizing */
    sigset_t Sigs,OldSigs;
    sigemptyset(&Sigs);
    sigaddset(&Sigs,SIGWINCH);
    sigprocmask(SIG_BLOCK,&Sigs,&OldSigs);
-   
+
    if (CurrentCPS != 0)
-   {      
+   {
       char Tmp[300];
       unsigned long ETA = (unsigned long)((TotalBytes - CurrentBytes)/CurrentCPS);
       sprintf(Tmp," %sB/s %s",SizeToStr(CurrentCPS).c_str(),TimeToStr(ETA).c_str());
@@ -251,7 +251,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 //       {	 
 // 	 memset(Buffer + Len,' ',ScreenWidth - Len);
 // 	 strcpy(Buffer + ScreenWidth - LenT,Tmp);
-//       }      
+//       }
    }
    Buffer[/*ScreenWidth*/1024] = 0;
    BlankLine[/*ScreenWidth*/1024] = 0;
@@ -264,7 +264,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
       cout << '\r' << BlankLine << '\r' << Buffer << flush;
    memset(BlankLine,' ',strlen(Buffer));
    BlankLine[strlen(Buffer)] = 0;
-   
+
    Update = false;
 
    return !_cancelled;;
@@ -277,9 +277,9 @@ bool AcqPackageKitStatus::MediaChange(string Media,string Drive)
 {
    if (Quiet <= 0)
       cout << '\r' << BlankLine << '\r';
-   ioprintf(cout,/*_*/("Media change: please insert the disc labeled\n"
+   ioprintf(cout,"Media change: please insert the disc labeled\n"
 		   " '%s'\n"
-		   "in the drive '%s' and press enter\n"),
+		   "in the drive '%s' and press enter\n",
 	    Media.c_str(),Drive.c_str());
 
    char C = 0;
