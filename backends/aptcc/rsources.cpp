@@ -1,7 +1,7 @@
 /* rsource.cc - access the sources.list file
  * 
  * Copyright (c) 1999 Patrick Cole <z@amused.net>
- *           (c) 2002 Synaptic development team          
+ *           (c) 2002 Synaptic development team
  * 
  * Author: Patrick Cole <z@amused.net>
  *         Michael Vogt <mvo@debian.org>
@@ -66,7 +66,7 @@ bool SourcesList::ReadSourcePart(string listpath)
 
    // cannot open file
    if (!ifs != 0)
-      return _error->Error(_("Can't read %s"), listpath.c_str());
+      return _error->Error("Can't read %s", listpath.c_str());
 
    while (ifs.eof() == false) {
       p = buf;
@@ -120,7 +120,7 @@ bool SourcesList::ReadSourcePart(string listpath)
             string s = "#" + string(buf);
             rec.Comment = s;
             record_ok = false;
-            //return _error->Error(_("Syntax error in line %s"), buf);
+            //return _error->Error("Syntax error in line %s", buf);
          }
       }
 #ifndef HAVE_RPM
@@ -128,7 +128,7 @@ bool SourcesList::ReadSourcePart(string listpath)
       if (rec.Dist.empty() == false && rec.Dist[rec.Dist.size() - 1] == '/') {
          // make sure there's no section
          if (ParseQuoteWord(p, Section) == true)
-            return _error->Error(_("Syntax error in line %s"), buf);
+            return _error->Error("Syntax error in line %s", buf);
 
          rec.Dist = SubstVar(rec.Dist, "$(ARCH)",
                              _config->Find("APT::Architecture"));
@@ -174,7 +174,7 @@ bool SourcesList::ReadSourceDir(string Dir)
 
    DIR *D = opendir(Dir.c_str());
    if (D == 0)
-      return _error->Errno("opendir", _("Unable to read %s"), Dir.c_str());
+      return _error->Errno("opendir", "Unable to read %s", Dir.c_str());
 
    vector<string> List;
    for (struct dirent * Ent = readdir(D); Ent != 0; Ent = readdir(D)) {
@@ -466,7 +466,7 @@ bool SourcesList::ReadVendors()
 
       if (Vendor.FingerPrint.empty() == true ||
           Vendor.Description.empty() == true) {
-         _error->Error(_("Vendor block %s is invalid"),
+         _error->Error("Vendor block %s is invalid",
                        Vendor.VendorID.c_str());
          continue;
       }

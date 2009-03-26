@@ -9,8 +9,10 @@
 #include "apt-utils.h"
 
 #include <stdio.h>
-#include <string.h>
+#include <string>
 #include <sstream>
+
+using namespace std;
 
 /** Shows broken dependencies for a single package */
 static string show_broken_deps(aptcc *m_apt, pkgCache::PkgIterator pkg)
@@ -77,26 +79,26 @@ static string show_broken_deps(aptcc *m_apt, pkgCache::PkgIterator pkg)
 					{
 						char buffer[1024];
 						if ((*m_apt->DCache)[target].Install()) {
-							sprintf(buffer, _("but %s is to be installed."),
+							sprintf(buffer, "but %s is to be installed.",
 							    ver.VerStr());
 						} else if ((*m_apt->DCache)[target].Upgradable()) {
-							sprintf(buffer, _("but %s is installed and it is kept back."),
+							sprintf(buffer, "but %s is installed and it is kept back.",
 							    target.CurrentVer().VerStr());
 						} else {
-							sprintf(buffer, _("but %s is installed."),
+							sprintf(buffer, "but %s is installed.",
 							    target.CurrentVer().VerStr());
 						}
 						output << buffer;
 					} else {
-					    output << _("but it is not installable");
+					    output << "but it is not installable";
 					}
 				} else {
 				    // FIXME: do something sensible here!
-				    output << _(" which is a virtual package.");
+				    output << " which is a virtual package.";
 				}
 
 				if (first != dep) {
-				    output << _(" or");
+				    output << " or";
 				}
 
 				output << endl;
@@ -122,7 +124,7 @@ bool show_broken(PkBackend *backend, aptcc *m_apt)
 	if (!broken.empty())
 	    {
 		stringstream out;
-		out << _("The following packages have unmet dependencies:") << endl;
+		out << "The following packages have unmet dependencies:" << endl;
 
 		for (pkgvector::iterator pkg = broken.begin(); pkg != broken.end(); ++pkg) {
 			out << show_broken_deps(m_apt, *pkg);

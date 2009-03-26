@@ -22,11 +22,6 @@
 #ifndef APT_H
 #define APT_H
 
-#include <libintl.h>
-#define _(String) gettext (String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
 #include <apt-pkg/pkgrecords.h>
 #include <apt-pkg/pkgcachegen.h>
 #include <apt-pkg/policy.h>
@@ -51,7 +46,7 @@ class aptcc
 {
 //     typedef int user_tag_reference;
 public:
-	aptcc();
+	aptcc(PkBackend *backend);
 	~aptcc();
 
 	bool init(const char *locale, pkgSourceList &apt_source_list);
@@ -84,23 +79,20 @@ public:
 	/**
 	 *  Emits a package if it match the filters
 	 */
-	void emit_package(PkBackend *backend,
-			  PkBitfield filters,
-			  const pkgCache::PkgIterator &pkg,
+	void emit_package(const pkgCache::PkgIterator &pkg,
 			  const pkgCache::VerIterator &ver,
+			  PkBitfield filters = PK_FILTER_ENUM_NONE,
 			  PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
 	/**
 	 *  Emits details
 	 */
-	void emit_details(PkBackend *backend,
-			  const pkgCache::PkgIterator &pkg);
+	void emit_details(const pkgCache::PkgIterator &pkg);
 
 	/**
 	 *  Emits update detail
 	 */
-	void emit_update_detail(PkBackend *backend,
-				const pkgCache::PkgIterator &pkg);
+	void emit_update_detail(const pkgCache::PkgIterator &pkg);
 
 	/** Marks all upgradable and non-held packages for upgrade.
 	 *
@@ -127,6 +119,7 @@ private:
 
 	OpProgress    Progress;
 	pkgPolicy *Policy;
+	PkBackend *m_backend;
 
 	/** This flag is \b true iff the persistent state has changed (ie, we
 	 *  need to save the cache).

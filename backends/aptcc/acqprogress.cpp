@@ -4,7 +4,7 @@
 /* ######################################################################
 
    Acquire Progress - Command line progress meter 
-   
+
    ##################################################################### */
 									/*}}}*/
 // Include files							/*{{{*/
@@ -14,8 +14,6 @@
 #include <apt-pkg/strutl.h>
 #include <apt-pkg/error.h>
 
-// #include <apti18n.h>
-    
 #include <stdio.h>
 #include <signal.h>
 #include <iostream>
@@ -26,8 +24,13 @@ using namespace std;
 // AcqPackageKitStatus::AcqPackageKitStatus - Constructor				/*{{{*/
 // ---------------------------------------------------------------------
 /* */
-AcqPackageKitStatus::AcqPackageKitStatus(PkBackend *backend, bool &cancelled, unsigned int Quiet) :
-	m_backend(backend), _cancelled(cancelled), Quiet(Quiet)
+AcqPackageKitStatus::AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &cancelled, unsigned int Quiet) :
+	m_apt(apt),
+	m_backend(backend),
+	_cancelled(cancelled),
+	Quiet(Quiet),
+	last_percent(0),
+	last_sub_percent(0)
 {
 }
 									/*}}}*/
@@ -36,7 +39,7 @@ AcqPackageKitStatus::AcqPackageKitStatus(PkBackend *backend, bool &cancelled, un
 /* */
 void AcqPackageKitStatus::Start()
 {
-   pkgAcquireStatus::Start(); 
+   pkgAcquireStatus::Start();
    BlankLine[0] = 0;
    ID = 1;
 };
@@ -50,8 +53,8 @@ void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
       return;
 
    if (Quiet <= 0)
-      cout << '\r' << BlankLine << '\r';   
-   
+      cout << '\r' << BlankLine << '\r';
+
    cout << /*_*/("Hit ") << Itm.Description;
    if (Itm.Owner->FileSize != 0)
       cout << " [" << SizeToStr(Itm.Owner->FileSize) << "B]";
@@ -67,15 +70,15 @@ void AcqPackageKitStatus::Fetch(pkgAcquire::ItemDesc &Itm)
    Update = true;
    if (Itm.Owner->Complete == true)
       return;
-   
+
    Itm.Owner->ID = ID++;
-   
+
    if (Quiet > 1)
       return;
 
    if (Quiet <= 0)
       cout << '\r' << BlankLine << '\r';
-   
+
    cout << /*_*/("Get:") << Itm.Owner->ID << ' ' << Itm.Description;
    if (Itm.Owner->FileSize != 0)
       cout << " [" << SizeToStr(Itm.Owner->FileSize) << "B]";
@@ -101,10 +104,10 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
    // Ignore certain kinds of transient failures (bad code)
    if (Itm.Owner->Status == pkgAcquire::Item::StatIdle)
       return;
-      
+
    if (Quiet <= 0)
       cout << '\r' << BlankLine << '\r';
-   
+
    if (Itm.Owner->Status == pkgAcquire::Item::StatDone)
    {
       cout << /*_*/("Ign ") << Itm.Description << endl;
@@ -114,7 +117,7 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
       cout << /*_*/("Err ") << Itm.Description << endl;
       cout << "  " << Itm.Owner->ErrorText << endl;
    }
-   
+
    Update = true;
 };
 									/*}}}*/
@@ -147,11 +150,11 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 {
    if (Quiet > 0)
       return true;
-   
+
    pkgAcquireStatus::Pulse(Owner);
-   
+
    enum {Long = 0,Medium,Short} Mode = Long;
-   
+
    char Buffer[sizeof(BlankLine)];
    char *End = Buffer + sizeof(Buffer);
    char *S = Buffer;
@@ -162,13 +165,21 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
    // Put in the percent done
    sprintf(S,"%ld%%", percent_done);
 //    printf("-----------------%ld\n", percent_done);
-    pk_backend_set_percentage(m_backend, percent_done);
+    if (last_percent != percent_done) {
+	    if (last_percent < percent_done) {
+		    pk_backend_set_percentage(m_backend, percent_done);
+	    } else {
+		    pk_backend_set_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+		    pk_backend_set_percentage(m_backend, percent_done);
+	    }
+	    last_percent = percent_done;
+    }
    bool Shown = false;
    for (pkgAcquire::Worker *I = Owner->WorkersBegin(); I != 0;
 	I = Owner->WorkerStep(I))
    {
       S += strlen(S);
-      
+
       // There is no item running 
       if (I->CurrentItem == 0)
       {
@@ -182,7 +193,9 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
       }
 
       Shown = true;
-      
+
+//    printf("==================%s=\n", I->CurrentItem->ShortDesc.c_str());
+   emit_package(I->CurrentItem->ShortDesc);
       // Add in the short description
       if (I->CurrentItem->Owner->ID != 0)
 	 snprintf(S,End-S," [%lu %s",I->CurrentItem->Owner->ID,
@@ -197,7 +210,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 	 snprintf(S,End-S," %s",I->CurrentItem->Owner->Mode);
 	 S += strlen(S);
       }
-            
+
       // Add the current progress
       if (Mode == Long)
 	 snprintf(S,End-S," %lu",I->CurrentSize);
@@ -207,7 +220,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 	    snprintf(S,End-S," %sB",SizeToStr(I->CurrentSize).c_str());
       }
       S += strlen(S);
-      
+
       // Add the total size and percent
       if (I->TotalSize > 0 && I->CurrentItem->Owner->Complete == false)
       {
@@ -220,10 +233,21 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 	    snprintf(S,End-S,"/%sB %lu%%",SizeToStr(I->TotalSize).c_str(),
 		     sub_percent);
 
-		pk_backend_set_sub_percentage(m_backend, sub_percent);
+		if (last_sub_percent != sub_percent) {
+			if (last_sub_percent < sub_percent) {
+				pk_backend_set_sub_percentage(m_backend, sub_percent);
+			} else {
+				pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+				pk_backend_set_sub_percentage(m_backend, sub_percent);
+			}
+			last_sub_percent = sub_percent;
+		}
 // 		printf("====================%lu\n", sub_percent);
       } else {
-		pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+		if (last_sub_percent != PK_BACKEND_PERCENTAGE_INVALID) {
+			pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+			last_sub_percent = PK_BACKEND_PERCENTAGE_INVALID;
+		}
       }
       S += strlen(S);
       snprintf(S,End-S,"]");
@@ -232,16 +256,16 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
    // Show something..
    if (Shown == false)
       snprintf(S,End-S,/*_*/(" [Working]"));
-      
+
    /* Put in the ETA and cps meter, block off signals to prevent strangeness
       during resizing */
    sigset_t Sigs,OldSigs;
    sigemptyset(&Sigs);
    sigaddset(&Sigs,SIGWINCH);
    sigprocmask(SIG_BLOCK,&Sigs,&OldSigs);
-   
+
    if (CurrentCPS != 0)
-   {      
+   {
       char Tmp[300];
       unsigned long ETA = (unsigned long)((TotalBytes - CurrentBytes)/CurrentCPS);
       sprintf(Tmp," %sB/s %s",SizeToStr(CurrentCPS).c_str(),TimeToStr(ETA).c_str());
@@ -251,7 +275,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 //       {	 
 // 	 memset(Buffer + Len,' ',ScreenWidth - Len);
 // 	 strcpy(Buffer + ScreenWidth - LenT,Tmp);
-//       }      
+//       }
    }
    Buffer[/*ScreenWidth*/1024] = 0;
    BlankLine[/*ScreenWidth*/1024] = 0;
@@ -264,7 +288,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
       cout << '\r' << BlankLine << '\r' << Buffer << flush;
    memset(BlankLine,' ',strlen(Buffer));
    BlankLine[strlen(Buffer)] = 0;
-   
+
    Update = false;
 
    return !_cancelled;;
@@ -277,9 +301,9 @@ bool AcqPackageKitStatus::MediaChange(string Media,string Drive)
 {
    if (Quiet <= 0)
       cout << '\r' << BlankLine << '\r';
-   ioprintf(cout,/*_*/("Media change: please insert the disc labeled\n"
+   ioprintf(cout,"Media change: please insert the disc labeled\n"
 		   " '%s'\n"
-		   "in the drive '%s' and press enter\n"),
+		   "in the drive '%s' and press enter\n",
 	    Media.c_str(),Drive.c_str());
 
    char C = 0;
@@ -296,3 +320,29 @@ bool AcqPackageKitStatus::MediaChange(string Media,string Drive)
    return bStatus;
 }
 									/*}}}*/
+
+void AcqPackageKitStatus::addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator> packagePair)
+{
+	packages.push_back(packagePair);
+}
+
+void AcqPackageKitStatus::emit_package(const string &name)
+{
+	if (name.compare(last_package_name) != 0 && packages.size()) {
+		// find the package
+		for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it = packages.begin();
+			    it != packages.end(); ++it)
+		{
+			if (_cancelled) {
+				break;
+			}
+
+			// try to see if any package matches
+			if (name.compare(it->first.Name()) == 0) {
+				m_apt->emit_package(it->first, it->second);
+				last_package_name = name;
+				break;
+			}
+		}
+	}
+}

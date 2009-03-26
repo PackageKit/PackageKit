@@ -4,7 +4,7 @@
 /* ######################################################################
 
    Acquire Progress - Command line progress meter 
-   
+
    ##################################################################### */
 									/*}}}*/
 #ifndef ACQPROGRESS_H
@@ -13,6 +13,8 @@
 #include <apt-pkg/acquire.h>
 #include <pk-backend.h>
 
+#include "apt.h"
+
 class AcqPackageKitStatus : public pkgAcquireStatus
 {
 	PkBackend *m_backend;
@@ -20,6 +22,15 @@ class AcqPackageKitStatus : public pkgAcquireStatus
 	unsigned long ID;
 	unsigned long Quiet;
 	bool &_cancelled;
+
+	unsigned long last_percent;
+	unsigned long last_sub_percent;
+	string last_package_name;
+	aptcc *m_apt;
+
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packages;
+
+	void emit_package(const string &name);
 
 public:
 	virtual bool MediaChange(string Media,string Drive);
@@ -32,7 +43,9 @@ public:
 
 	bool Pulse(pkgAcquire *Owner);
 
-	AcqPackageKitStatus(PkBackend *backend, bool &cancelled, unsigned int Quiet);
+	void addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator> packagePair);
+
+	AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &cancelled, unsigned int Quiet);
 };
 
 #endif
