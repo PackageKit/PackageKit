@@ -641,7 +641,7 @@ backend_download_packages_thread (PkBackend *backend)
 		// Ignore packages that could not be found or that exist only due to dependencies.
 		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
 		{
-			_error->Error(_("Can't find a package named \"%s\""), pi->name);
+			_error->Error("Can't find a package named \"%s\"", pi->name);
 			pk_package_id_free(pi);
 			continue;
 		}
@@ -656,7 +656,7 @@ backend_download_packages_thread (PkBackend *backend)
 		}
 
 		if(!ver.Downloadable()) {
-			_error->Error(_("No downloadable files for %s version %s; perhaps it is a local or obsolete package?"),
+			_error->Error("No downloadable files for %s version %s; perhaps it is a local or obsolete package?",
 				    pi->name, ver.VerStr());
 		}
 
@@ -1175,12 +1175,12 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 	SourcesList _lst;
 	if (_lst.ReadSources() == false) {
 		_error->
-		    Warning(_("Ignoring invalid record(s) in sources.list file!"));
+		    Warning("Ignoring invalid record(s) in sources.list file!");
 	    //return false;
 	}
 
 	if (_lst.ReadVendors() == false) {
-		_error->Error(_("Cannot read vendors.list file"));
+		_error->Error("Cannot read vendors.list file");
 		show_errors(backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING);
 		return;
 	}
@@ -1232,11 +1232,11 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 	SourcesList _lst;
 	if (_lst.ReadSources() == false) {
 		_error->
-		    Warning(_("Ignoring invalid record(s) in sources.list file!"));
+		    Warning("Ignoring invalid record(s) in sources.list file!");
 	}
 
 	if (_lst.ReadVendors() == false) {
-		_error->Error(_("Cannot read vendors.list file"));
+		_error->Error("Cannot read vendors.list file");
 		show_errors(backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING);
 		return;
 	}
@@ -1276,10 +1276,10 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 	}
 
 	if (!found) {
-		_error->Error(_("Could not found the repositorie"));
+		_error->Error("Could not found the repositorie");
 		show_errors(backend, PK_ERROR_ENUM_REPO_NOT_AVAILABLE);
 	} else if (!_lst.UpdateSources()) {
-		_error->Error(_("Could not update sources file"));
+		_error->Error("Could not update sources file");
 		show_errors(backend, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG);
 	}
 	pk_backend_finished (backend);
