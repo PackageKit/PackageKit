@@ -148,15 +148,10 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 	pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-update-detail", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
-
 /**
  * backend_install_packages:
- */
+*/
 
-/*
-python conaryBackend.py update-packages "gimp;2.4.6-0.2-1;x86;/foresight.rpath.org@fl:devel//2-qa/1222042924.132:2.4.6-0.2-1,1#x86"
-
- */
 static void
 backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
