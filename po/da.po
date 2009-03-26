@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-03-25 14:20+0000\n"
-"PO-Revision-Date: 2009-03-26 01:47+0100\n"
+"PO-Revision-Date: 2009-03-26 11:20+0100\n"
 "Last-Translator: Kris Thomsen <lakristho@gmail.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "MIME-Version: 1.0\n"
@@ -28,7 +28,7 @@ msgstr "Systemtid"
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: ../client/pk-console.c:238
 msgid "Succeeded"
-msgstr "Færdiggjort"
+msgstr "Gennemført"
 
 #. TRANSLATORS: if the repo is enabled
 #: ../client/pk-console.c:238 ../client/pk-console.c:405
@@ -110,7 +110,7 @@ msgstr "Id"
 #. TRANSLATORS: this is the parent group
 #: ../client/pk-console.c:318
 msgid "Parent"
-msgstr "Forælder"
+msgstr "Overliggende"
 
 #. TRANSLATORS: this is the name of the parent group
 #: ../client/pk-console.c:321
@@ -198,17 +198,17 @@ msgstr "Ukendt"
 #. TRANSLATORS: a package requires the system to be restarted
 #: ../client/pk-console.c:529
 msgid "System restart required by:"
-msgstr "Systemgenstart behøves af:"
+msgstr "Systemgenstart kræves af:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:532
 msgid "Session restart required:"
-msgstr "Sessionsgenstart behøves:"
+msgstr "Sessionsgenstart kræves:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:535
 msgid "Application restart required by:"
-msgstr "Programgenstart behøves af:"
+msgstr "Programgenstart kræves af:"
 
 #. TRANSLATORS: a package needs to restart they system
 #: ../client/pk-console.c:572
@@ -223,7 +223,7 @@ msgstr "Log venligst ud og ind igen for at fuldføre opdateringen."
 #. TRANSLATORS: a package needs to restart the application
 #: ../client/pk-console.c:578
 msgid "Please restart the application as it is being used."
-msgstr "Genstart venligst programmet, hvis det kører."
+msgstr "Genstart venligst programmet, da det er i brug."
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:691
@@ -274,7 +274,7 @@ msgstr "Dette værktøj kunne ikke fjerne pakkerne: %s"
 #. TRANSLATORS: When removing, we might have to remove other dependencies
 #: ../client/pk-console.c:888
 msgid "The following packages have to be removed:"
-msgstr "Følgende pakker skal fjernes:"
+msgstr "Følgende pakker er nødt til at blive fjernet:"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
 #: ../client/pk-console.c:895
@@ -290,7 +290,7 @@ msgstr "Fjernelsen af pakker blev annulleret!"
 #: ../client/pk-console.c:941
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
-msgstr "Dette værktøj kunne ikke hente pakken %s fordi det ikke kunne findes"
+msgstr "Dette værktøj kunne ikke hente pakken %s fordi den ikke kunne findes"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:972
@@ -308,50 +308,50 @@ msgstr "Dette værktøj kunne ikke opdatere %s: %s"
 #: ../client/pk-console.c:1030 ../client/pk-console.c:1038
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
-msgstr "Dette værktøj kunne ikke modtage kravene for %s: %s"
+msgstr "Dette værktøj kunne ikke hente kravene for %s: %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #: ../client/pk-console.c:1060 ../client/pk-console.c:1068
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
-msgstr "Dette værktøj kunne ikke modtage afhængighederne for %s: %s"
+msgstr "Dette værktøj kunne ikke hente afhængighederne for %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #: ../client/pk-console.c:1090 ../client/pk-console.c:1098
 #, c-format
 msgid "This tool could not get package details for %s: %s"
-msgstr "Dette værktøj kunne ikke modtage pakkedetaljer for %s: %s"
+msgstr "Dette værktøj kunne ikke hente pakkedetaljer for %s: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1120
 #, c-format
 msgid "This tool could not find the files for %s: %s"
-msgstr "Dette værktøj kunne ikke finde filerne for %s: %s"
+msgstr "Dette værktøj kunne ikke finde filerne til %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1128
 #, c-format
 msgid "This tool could not get the file list for %s: %s"
-msgstr "Dette værktøj kunne ikke modtage fillisten for %s: %s"
+msgstr "Dette værktøj kunne ikke hente fillisten for %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
 #: ../client/pk-console.c:1150
 #, c-format
 msgid "File already exists: %s"
-msgstr "Fil eksisterer allerede: %s"
+msgstr "Fil findes allerede: %s"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1155 ../client/pk-console.c:1211
 #: ../client/pk-console.c:1286
 msgid "Getting package list"
-msgstr "Modtager pakkeliste"
+msgstr "Henter pakkeliste"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
 #: ../client/pk-console.c:1161 ../client/pk-console.c:1217
 #: ../client/pk-console.c:1292
 #, c-format
 msgid "This tool could not get package list: %s"
-msgstr "Dette værktøj kunne ikke modtage pakkeliste: %s"
+msgstr "Dette værktøj kunne ikke hente pakkeliste: %s"
 
 #. TRANSLATORS: There was an error saving the list
 #: ../client/pk-console.c:1172
@@ -363,7 +363,7 @@ msgstr "Kunne ikke gemme på disk"
 #: ../client/pk-console.c:1206 ../client/pk-console.c:1281
 #, c-format
 msgid "File does not exist: %s"
-msgstr "Fil eksisterer ikke: %s"
+msgstr "Fil findes ikke: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
 #: ../client/pk-console.c:1238
@@ -417,7 +417,7 @@ msgstr "Dette værktøj kunne ikke finde opdateringsdetaljer for %s: %s"
 #: ../client/pk-console.c:1397
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
-msgstr "Dette værktøj kunne ikke modtage opdateringsdetaljer for %s: %s"
+msgstr "Dette værktøj kunne ikke hente opdateringsdetaljer for %s: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1443
@@ -442,7 +442,7 @@ msgstr "Ingen filer"
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
 #: ../client/pk-console.c:1522
 msgid "Repository signature required"
-msgstr "Signatur til pakkearkiv nødvendigt"
+msgstr "Signatur til pakkearkiv kræves"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1532
@@ -457,7 +457,7 @@ msgstr "Signaturen blev ikke accepteret."
 #. TRANSLATORS: This a request for a EULA
 #: ../client/pk-console.c:1570
 msgid "End user license agreement required"
-msgstr "Slutbruger licensaftale krævet"
+msgstr "Slutbruger licensaftale kræves"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
 #: ../client/pk-console.c:1577
@@ -521,13 +521,13 @@ msgstr "Filteret det blev angivet er ugyldigt"
 #. TRANSLATORS: a search type can be name, details, file, etc
 #: ../client/pk-console.c:1898
 msgid "A search type is required, e.g. name"
-msgstr "En søgetype er krævet, f.eks. navn"
+msgstr "En søgetype kræves, f.eks. navn"
 
 #. TRANSLATORS: the user needs to provide a search term
 #: ../client/pk-console.c:1904 ../client/pk-console.c:1912
 #: ../client/pk-console.c:1920 ../client/pk-console.c:1928
 msgid "A search term is required"
-msgstr "En søgeterm er krævet"
+msgstr "En søgeterm kræves"
 
 #. TRANSLATORS: the search type was provided, but invalid
 #: ../client/pk-console.c:1934
@@ -537,24 +537,24 @@ msgstr "Ugyldig søgetype"
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:1940
 msgid "A package name or filename to install is required"
-msgstr "Et pakkenavn eller filnavn at installere er krævet"
+msgstr "Et pakkenavn eller filnavn at installere kræves"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1948
 msgid "A type, key_id and package_id are required"
-msgstr "En type, nøgle_id og pakke_id er krævet"
+msgstr "En type, nøgle_id og pakke_id kræves"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:1956
 msgid "A package name to remove is required"
-msgstr "Et pakkenavn til fjernelse er krævet"
+msgstr "Et pakkenavn til fjernelse kræves"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1963
 msgid ""
 "A destination directory and then the package names to download are required"
 msgstr ""
-"En destinationsmappe og derefter pakkenavnene til hentning er krævet"
+"En destinationsmappe og derefter pakkenavnene til hentning kræves"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1969
@@ -564,42 +564,42 @@ msgstr "Mappe ikke fundet"
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1976
 msgid "A licence identifier (eula-id) is required"
-msgstr "En licensgenkender (eula-id) er krævet"
+msgstr "En licensgenkender (eula-id) kræves"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1985
 msgid "A transaction identifier (tid) is required"
-msgstr "En overførselsgenkender (tid) er krævet"
+msgstr "En overførselsgenkender (tid) kræves"
 
 #. TRANSLATORS: The user did not specify a package name
 #: ../client/pk-console.c:2001
 msgid "A package name to resolve is required"
-msgstr "Et pakkenavn til at løse er krævet"
+msgstr "Et pakkenavn til at løse kræves"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:2009 ../client/pk-console.c:2017
 msgid "A repository name is required"
-msgstr "Et pakkearkivnavn er krævet"
+msgstr "Et pakkearkivnavn kræves"
 
 #. TRANSLATORS: The user didn't provide any data
 #: ../client/pk-console.c:2025
 msgid "A repo name, parameter and value are required"
-msgstr "Et pakkearkivnavn, parameter og værdi er krævet"
+msgstr "Et pakkearkivnavn, parameter og værdi kræves"
 
 #. TRANSLATORS: The user didn't specify what action to use
 #: ../client/pk-console.c:2038
 msgid "An action, e.g. 'update-system' is required"
-msgstr "En handling, f.eks. \"update-system\" er krævet"
+msgstr "En handling, f.eks. \"update-system\" kræves"
 
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:2044
 msgid "A correct role is required"
-msgstr "En korrekt rolle er krævet"
+msgstr "En korrekt rolle kræves"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
 #: ../client/pk-console.c:2050
 msgid "Failed to get the time since this action was last completed"
-msgstr "Kunne ikke modtage tid siden denne handling sidst blev gennemført"
+msgstr "Kunne ikke hente tid siden denne handling sidst blev gennemført"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
@@ -607,22 +607,22 @@ msgstr "Kunne ikke modtage tid siden denne handling sidst blev gennemført"
 #: ../client/pk-console.c:2078 ../client/pk-console.c:2094
 #: ../client/pk-console.c:2102 ../client/pk-generate-pack.c:241
 msgid "A package name is required"
-msgstr "Et pakkenavn er krævet"
+msgstr "Et pakkenavn kræves"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:2086
 msgid "A package provide string is required"
-msgstr "En pakke udbydningsstreng er krævet"
+msgstr "En pakke udbydningsstreng kræves"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
 #: ../client/pk-console.c:2110
 msgid "A list file name to create is required"
-msgstr "Et listefilnavn til at oprette er krævet"
+msgstr "Et listefilnavn til at oprette kræves"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
 #: ../client/pk-console.c:2119 ../client/pk-console.c:2128
 msgid "A list file to open is required"
-msgstr "En listefil til at åbne er krævet"
+msgstr "En listefil til at åbne kræves"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:2181
@@ -648,12 +648,12 @@ msgstr "Hentning"
 #. TRANSLATORS: This is when the main packages are being downloaded
 #: ../client/pk-generate-pack.c:121
 msgid "Downloading packages"
-msgstr "Hentning af pakker"
+msgstr "Henter pakker"
 
 #. TRANSLATORS: This is when the dependency packages are being downloaded
 #: ../client/pk-generate-pack.c:126
 msgid "Downloading dependencies"
-msgstr "Hentning af afhængigheder"
+msgstr "Henter afhængigheder"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
 #: ../client/pk-generate-pack.c:188
@@ -670,33 +670,33 @@ msgstr ""
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:194
 msgid "The package to be put into the service pack"
-msgstr "Pakken der skal puttes i servicepakken"
+msgstr "Pakken der skal indsættes i servicepakken"
 
 #. TRANSLATORS: put all pending updates in the pack
 #: ../client/pk-generate-pack.c:197
 msgid "Put all updates available in the service pack"
-msgstr "Put alle tilgængelige opdateringer i servicepakken"
+msgstr "Indsæt alle tilgængelige opdateringer i servicepakken"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:225
 msgid "Neither --package or --updates option selected."
-msgstr "Hverken --package eller --updates flagene er markeret."
+msgstr "Hverken --package eller --updates tilvalg er valgt."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
 #: ../client/pk-generate-pack.c:233
 msgid "Both options selected."
-msgstr "Begge flag markeret."
+msgstr "Begge tilvalg valgt."
 
 #. TRANSLATORS: This is when the user fails to supply the output
 #: ../client/pk-generate-pack.c:249
 msgid "A output directory or file name is required"
-msgstr "En uddatamappe eller filnavn er krævet"
+msgstr "En uddatamappe eller filnavn kræves"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
 #: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
 msgid "The package manager cannot perform this type of operation."
-msgstr "Pakkehåndteringen kan ikke udføre denne type af handling."
+msgstr "Pakkehåndteringen kan ikke udføre denne type handling."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
 #: ../client/pk-generate-pack.c:285
@@ -706,7 +706,7 @@ msgstr "Hvis du angiver en fil, skal servicepakken slutte med"
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:301
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "En pakke med samme navn eksisterer allerede, vil du overskrive den?"
+msgstr "En pakke med samme navn findes allerede, vil du overskrive den?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:304
@@ -765,7 +765,7 @@ msgstr "Pakken kunne ikke findes"
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
 #: ../client/pk-tools-common.c:130
 msgid "More than one package matches:"
-msgstr "Mere end én pakke matchede:"
+msgstr "Mere end én pakke passede:"
 
 #. TRANSLATORS: This finds out which package in the list to use
 #: ../client/pk-tools-common.c:137
@@ -790,7 +790,7 @@ msgstr "Kunne ikke starte:"
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/command-not-found/pk-command-not-found.c:534
 msgid "PackageKit Command Not Found"
-msgstr "PackageKit kommando ikke fundet"
+msgstr "PackageKit-kommando ikke fundet"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
 #: ../contrib/command-not-found/pk-command-not-found.c:556
@@ -849,7 +849,7 @@ msgstr "Vælg venligst en pakke at installere"
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/src/contents.cpp:298
 msgid "Getting package information..."
-msgstr "Modtager information om pakke..."
+msgstr "henter information om pakke..."
 
 #. TRANSLATORS: run an applicaiton
 #: ../contrib/browser-plugin/src/contents.cpp:304
@@ -902,7 +902,7 @@ msgstr "Installerer..."
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
-msgstr "PackageKit katalog"
+msgstr "PackageKit-katalog"
 
 #: ../data/packagekit-package-list.xml.in.h:1
 msgid "PackageKit Package List"
@@ -910,7 +910,7 @@ msgstr "PackageKit pakkeliste"
 
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr "PackageKit servicepakke"
+msgstr "PackageKit-servicepakke"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:1
 msgid "Accept EULA"
@@ -918,56 +918,56 @@ msgstr "Acceptér EULA"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:2
 msgid "Authentication is required to accept a EULA"
-msgstr "Godkendelse er krævet for at acceptere en EULA"
+msgstr "Godkendelse kræves for at acceptere en EULA"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:3
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
 msgstr ""
-"Godkendelse er krævet for at annullere en opgave, der ikke er startet af dig selv"
+"Godkendelse kræves for at annullere en opgave, der ikke er startet af dig selv"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
 msgid "Authentication is required to change software source parameters"
-msgstr "Godkendelse er krævet for at ændre softeware kildeparametre"
+msgstr "Godkendelse kræves for at ændre softewarekildeparametre"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:5
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
 msgstr ""
-"Godkendelse er krævet for at overveje en nøgle brugt til signering af pakker "
+"Godkendelse kræves for at overveje en nøgle brugt til signering af pakker "
 "som pålidelig"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
 msgid "Authentication is required to install a signed package"
-msgstr "Godkendelse er krævet for at installere en signeret pakke"
+msgstr "Godkendelse kræves for at installere en signeret pakke"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Authentication is required to install an untrusted package"
-msgstr "Godkendelse er krævet for at installere en upålidelig pakke"
+msgstr "Godkendelse kræves for at installere en upålidelig pakke"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
 msgid "Authentication is required to refresh the system sources"
-msgstr "Godkendelse er krævet for at opdatere systemkilderne"
+msgstr "Godkendelse kræves for at opdatere systemkilderne"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
 msgid "Authentication is required to remove packages"
-msgstr "Godkendelse er krævet for at fjerne pakker"
+msgstr "Godkendelse kræves for at fjerne pakker"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to rollback a transaction"
-msgstr "Godkendelse er krævet for at sætte en transaktion tilbage"
+msgstr "Godkendelse kræves for at rulle en transaktion tilbage"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
 msgstr ""
-"Godkendelse er krævet for at sætte netværksproxyen brugt til hentning af pakker" 
+"Godkendelse kræves for at sætte netværksproxyen brugt til hentning af pakker" 
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid "Authentication is required to update packages"
-msgstr "Godkendelse er krævet for at opdatere pakker"
+msgstr "Godkendelse kræves for at opdatere pakker"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Cancel foreign task"
@@ -975,7 +975,7 @@ msgstr "Annullér fremmed opgave"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Change software source parameters"
-msgstr "Ændr software kildeparametre"
+msgstr "Ændr softwarekildeparametre"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Install signed package"
@@ -995,7 +995,7 @@ msgstr "Fjern pakke"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid "Rollback to a previous transaction"
-msgstr "Sæt tilbage til en tidligere overførsel"
+msgstr "Rul tilbage til en tidligere overførsel"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Set network proxy"
@@ -1035,7 +1035,7 @@ msgstr ""
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:193
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "Pakkebagende som bruges, f.eks. dummy"
+msgstr "Pakkemotor som bruges, f.eks. dummy"
 
 #. TRANSLATORS: if we should run in the background
 #: ../src/pk-main.c:196
@@ -1060,12 +1060,12 @@ msgstr "Afslut efter kort pause"
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: ../src/pk-main.c:211
 msgid "Exit after the engine has loaded"
-msgstr "Aflsut efter motoren er indlæst"
+msgstr "Afslut efter motoren er indlæst"
 
 #. TRANSLATORS: describing the service that is running
 #: ../src/pk-main.c:226
 msgid "PackageKit service"
-msgstr "PackageKit tjeneste"
+msgstr "PackageKit-tjeneste"
 
 #. TRANSLATORS: fatal error, dbus is not running
 #: ../src/pk-main.c:263
