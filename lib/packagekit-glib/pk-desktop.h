@@ -42,7 +42,7 @@ G_BEGIN_DECLS
  *
  * The default location for the database
  */
-#define PK_DESKTOP_DEFAULT_DATABASE		"/var/lib/PackageKit/desktop-files.db"
+#define PK_DESKTOP_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/PackageKit/desktop-files.db"
 
 /**
  * PK_DESKTOP_DEFAULT_APPLICATION_DIR:
