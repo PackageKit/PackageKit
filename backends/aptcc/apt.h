@@ -46,7 +46,7 @@ class aptcc
 {
 //     typedef int user_tag_reference;
 public:
-	aptcc(PkBackend *backend);
+	aptcc(PkBackend *backend, bool &cancel);
 	~aptcc();
 
 	bool init(const char *locale, pkgSourceList &apt_source_list);
@@ -65,16 +65,14 @@ public:
 	 */
 	void get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
 			 pkgCache::PkgIterator pkg,
-			 bool recursive,
-			 bool &_cancel);
+			 bool recursive);
 
 	/**
 	 *  Get requires
 	 */
 	void get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
 			  pkgCache::PkgIterator pkg,
-			  bool recursive,
-			  bool &_cancel);
+			  bool recursive);
 
 	/**
 	 *  Emits a package if it match the filters
@@ -83,6 +81,9 @@ public:
 			  const pkgCache::VerIterator &ver,
 			  PkBitfield filters = PK_FILTER_ENUM_NONE,
 			  PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
+
+	void emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			   PkBitfield filters = PK_FILTER_ENUM_NONE);
 
 	/**
 	 *  Emits details
@@ -111,15 +112,15 @@ public:
 				 undo_group *undo*/);
 
 	pkgRecords    *packageRecords;
-	pkgCache      *cacheFile;
-	pkgDepCache   *DCache;
+	pkgCache      *packageCache;
+	pkgDepCache   *packageDepCache;
 
 private:
-	MMap          *Map;
-
-	OpProgress    Progress;
-	pkgPolicy *Policy;
-	PkBackend *m_backend;
+	MMap       *Map;
+	OpProgress Progress;
+	pkgPolicy  *Policy;
+	PkBackend  *m_backend;
+	bool &_cancel;
 
 	/** This flag is \b true iff the persistent state has changed (ie, we
 	 *  need to save the cache).

@@ -167,7 +167,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc(backend);
+	aptcc *m_apt = new aptcc(backend, _cancel);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -190,7 +190,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 			return false;
 		}
 
-		pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(pi->name);
+		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(pi->name);
 		if (pkg.end() == true)
 		{
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
@@ -201,9 +201,9 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 		}
 
 		if (depends) {
-			m_apt->get_depends(output, pkg, recursive, _cancel);
+			m_apt->get_depends(output, pkg, recursive);
 		} else {
-			m_apt->get_requires(output, pkg, recursive, _cancel);
+			m_apt->get_requires(output, pkg, recursive);
 		}
 
 		pk_package_id_free (pi);
@@ -214,14 +214,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 		    output.end());
 
 	// It's faster to emmit the packages here than in the matching part
-	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
-	    i != output.end(); ++i)
-	{
-		if (_cancel) {
-			break;
-		}
-		m_apt->emit_package(i->first, i->second, filters);
-	}
+	m_apt->emit_packages(output, filters);
 
 	delete m_apt;
 
@@ -266,7 +259,7 @@ backend_get_files_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc(backend);
+	aptcc *m_apt = new aptcc(backend, _cancel);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -283,7 +276,7 @@ backend_get_files_thread (PkBackend *backend)
 			return false;
 		}
 
-		pkgCache::PkgIterator Pkg = m_apt->cacheFile->FindPkg(pi->name);
+		pkgCache::PkgIterator Pkg = m_apt->packageCache->FindPkg(pi->name);
 		if (Pkg.end() == true)
 		{
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
@@ -329,7 +322,7 @@ backend_get_details_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc(backend);
+	aptcc *m_apt = new aptcc(backend, _cancel);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -347,7 +340,7 @@ backend_get_details_thread (PkBackend *backend)
 			return false;
 		}
 
-		pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(pi->name);
+		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(pi->name);
 		if (pkg.end() == true)
 		{
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
@@ -393,6 +386,46 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 static gboolean
+backend_update_system_thread (PkBackend *backend)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, true);
+
+	aptcc *m_apt = new aptcc(backend, _cancel);
+	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		pk_backend_finished (backend);
+		return false;
+	}
+
+	if (pkgAllUpgrade(*m_apt->packageDepCache) == false)
+	{
+		show_broken(backend, m_apt);
+		egg_debug ("Internal error, AllUpgrade broke stuff");
+		delete m_apt;
+		pk_backend_finished (backend);
+		return false;
+	}
+
+// 	bool res = InstallPackages(Cache,true);
+	delete m_apt;
+	pk_backend_finished (backend);
+	return true;
+}
+
+/**
+ * backend_update_system:
+ */
+static void
+backend_update_system (PkBackend *backend)
+{
+	pk_backend_thread_create (backend, backend_update_system_thread);
+}
+
+static gboolean
 backend_get_updates_thread (PkBackend *backend)
 {
 	PkBitfield filters;
@@ -403,7 +436,7 @@ backend_get_updates_thread (PkBackend *backend)
 	_cancel = false;
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend);
+	aptcc *m_apt = new aptcc(backend, _cancel);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -413,7 +446,7 @@ backend_get_updates_thread (PkBackend *backend)
 
 	pkgset to_install, to_hold, to_remove, to_purge;
 	// Build to_install to avoid a big printout
-	for(pkgCache::PkgIterator i=m_apt->cacheFile->PkgBegin(); !i.end(); ++i)
+	for(pkgCache::PkgIterator i=m_apt->packageCache->PkgBegin(); !i.end(); ++i)
 	{
 		pkgDepCache::StateCache state= m_apt->get_state(i);
 
@@ -428,7 +461,7 @@ backend_get_updates_thread (PkBackend *backend)
 	// resolver.
 // 	m_apt->mark_all_upgradable(false, true);
 
-	if (pkgAllUpgrade(*m_apt->DCache) == false)
+	if (pkgAllUpgrade(*m_apt->packageDepCache) == false)
 	{
 		show_broken(backend, m_apt);
 		egg_debug ("Internal error, AllUpgrade broke stuff");
@@ -443,7 +476,7 @@ backend_get_updates_thread (PkBackend *backend)
 // 	aptcc::action_group action_group(*m_apt);
 //
 // 	// Reset all the package states.
-// 	for(pkgCache::PkgIterator i=m_apt->DCache->PkgBegin();
+// 	for(pkgCache::PkgIterator i=m_apt->packageDepCache->PkgBegin();
 // 	    !i.end(); ++i)
 // 	  m_apt->mark_keep(i, false, false, NULL);
 //       }
@@ -464,17 +497,17 @@ backend_get_updates_thread (PkBackend *backend)
 	pkgvector extra_install, extra_remove;
 	unsigned long Upgrade=0, Downgrade=0, Install=0, ReInstall=0;
 
-	for(pkgCache::PkgIterator pkg=m_apt->cacheFile->PkgBegin();
+	for(pkgCache::PkgIterator pkg=m_apt->packageCache->PkgBegin();
 	    !pkg.end(); ++pkg)
 	{
-		if((*m_apt->DCache)[pkg].NewInstall()) {
+		if((*m_apt->packageDepCache)[pkg].NewInstall()) {
 			++Install;
-		} else if((*m_apt->DCache)[pkg].Upgrade()) {
+		} else if((*m_apt->packageDepCache)[pkg].Upgrade()) {
 			++Upgrade;
-		} else if((*m_apt->DCache)[pkg].Downgrade()) {
+		} else if((*m_apt->packageDepCache)[pkg].Downgrade()) {
 			++Downgrade;
-		} else if(!(*m_apt->DCache)[pkg].Delete() &&
-			((*m_apt->DCache)[pkg].iFlags & pkgDepCache::ReInstall)) {
+		} else if(!(*m_apt->packageDepCache)[pkg].Delete() &&
+			((*m_apt->packageDepCache)[pkg].iFlags & pkgDepCache::ReInstall)) {
 			++ReInstall;
 		}
 
@@ -613,7 +646,7 @@ backend_download_packages_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc(backend);
+	aptcc *m_apt = new aptcc(backend, _cancel);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -642,7 +675,7 @@ backend_download_packages_thread (PkBackend *backend)
 			break;
 		}
 
-		pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(pi->name);
+		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(pi->name);
 		// Ignore packages that could not be found or that exist only due to dependencies.
 		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
 		{
@@ -719,7 +752,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 
 	// we re-read it here since it might have changed
 	apt_source_list->ReadMainList();
-	aptcc *m_apt = new aptcc(backend);
+	aptcc *m_apt = new aptcc(backend, _cancel);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -742,30 +775,6 @@ backend_refresh_cache_thread (PkBackend *backend)
 	}
 	// Create the progress
 	AcqPackageKitStatus Stat(m_apt, backend, _cancel, _config->FindI("quiet",0));
-
-	// Just print out the uris an exit if the --print-uris flag was used
-	if (_config->FindB("APT::Get::Print-URIs") == true)
-	{
-		// get a fetcher
-		pkgAcquire Fetcher(&Stat);
-
-		// Populate it with the source selection and get all Indexes
-		// (GetAll=true)
-		if (apt_source_list->GetIndexes(&Fetcher, true) == false) {
-			delete m_apt;
-			pk_backend_finished (backend);
-			return false;
-		}
-
-		pkgAcquire::UriIterator I = Fetcher.UriBegin();
-		for (; I != Fetcher.UriEnd(); I++) {
-			cout << '\'' << I->URI << "' " << flNotDir(I->Owner->DestFile) << ' ' <<
-			    I->Owner->FileSize << ' ' << I->Owner->HashSum() << endl;
-		}
-		delete m_apt;
-		pk_backend_finished (backend);
-		return true;
-	}
 
 	// do the work
 	if (_config->FindB("APT::Get::Download",true) == true) {
@@ -817,7 +826,7 @@ backend_resolve_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc(backend);
+	aptcc *m_apt = new aptcc(backend, _cancel);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -830,7 +839,7 @@ backend_resolve_thread (PkBackend *backend)
 			break;
 		}
 
-		pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(package_ids[i]);
+		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(package_ids[i]);
 		// Ignore packages that could not be found or that exist only due to dependencies.
 		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
 		{
@@ -876,7 +885,7 @@ backend_search_file_thread (PkBackend *backend)
 
 	// as we can only search for installed files lets avoid the opposite
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-		aptcc *m_apt = new aptcc(backend);
+		aptcc *m_apt = new aptcc(backend, _cancel);
 		if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 			egg_debug ("Failed to create apt cache");
 			delete m_apt;
@@ -891,7 +900,7 @@ backend_search_file_thread (PkBackend *backend)
 			if (_cancel) {
 			    break;
 			}
-			pkgCache::PkgIterator pkg = m_apt->cacheFile->FindPkg(i->c_str());
+			pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(i->c_str());
 			pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 			if (ver.end() == true)
 			{
@@ -938,7 +947,7 @@ backend_search_group_thread (PkBackend *backend)
 
 	PkGroupEnum pkGroup = pk_group_enum_from_text (group);
 
-	aptcc *m_apt = new aptcc(backend);
+	aptcc *m_apt = new aptcc(backend, _cancel);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -947,7 +956,7 @@ backend_search_group_thread (PkBackend *backend)
 	}
 
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
-	for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
+	for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin(); !pkg.end(); ++pkg) {
 		if (_cancel) {
 			break;
 		}
@@ -975,14 +984,7 @@ backend_search_group_thread (PkBackend *backend)
 	sort(output.begin(), output.end(), compare());
 
 	// It's faster to emmit the packages here rather than in the matching part
-	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
-	    i != output.end(); ++i)
-	{
-		if (_cancel) {
-			break;
-		}
-		m_apt->emit_package(i->first, i->second, filters);
-	}
+	m_apt->emit_packages(output, filters);
 
 	delete m_apt;
 
@@ -1022,7 +1024,7 @@ backend_search_package_thread (PkBackend *backend)
 		return false;
 	}
 
-	aptcc *m_apt = new aptcc(backend);
+	aptcc *m_apt = new aptcc(backend, _cancel);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_matcher;
@@ -1042,7 +1044,7 @@ backend_search_package_thread (PkBackend *backend)
 	pkgDepCache::Policy Plcy;
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	if (pk_backend_get_bool (backend, "search_details")) {
-		for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
+		for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin(); !pkg.end(); ++pkg) {
 			if (_cancel) {
 				break;
 			}
@@ -1105,7 +1107,7 @@ backend_search_package_thread (PkBackend *backend)
 			}
 		}
 	} else {
-		for (pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin(); !pkg.end(); ++pkg) {
+		for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin(); !pkg.end(); ++pkg) {
 			if (_cancel) {
 				break;
 			}
@@ -1142,14 +1144,7 @@ backend_search_package_thread (PkBackend *backend)
 		    output.end());
 
 	// It's faster to emmit the packages here than in the matching part
-	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
-	    i != output.end(); ++i)
-	{
-		if (_cancel) {
-			break;
-		}
-		m_apt->emit_package(i->first, i->second, filters);
-	}
+	m_apt->emit_packages(output, filters);
 
 	delete m_matcher;
 	delete m_apt;
@@ -1316,7 +1311,7 @@ backend_get_packages_thread (PkBackend *backend)
 	_cancel = false;
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend);
+	aptcc *m_apt = new aptcc(backend, _cancel);
 	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
@@ -1325,8 +1320,8 @@ backend_get_packages_thread (PkBackend *backend)
 	}
 
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
-	output.reserve(m_apt->cacheFile->HeaderP->PackageCount);
-	for(pkgCache::PkgIterator pkg = m_apt->cacheFile->PkgBegin();
+	output.reserve(m_apt->packageCache->HeaderP->PackageCount);
+	for(pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin();
 	    !pkg.end(); ++pkg)
 	{
 		if (_cancel) {
@@ -1346,14 +1341,7 @@ backend_get_packages_thread (PkBackend *backend)
 	sort(output.begin(), output.end(), compare());
 
 	// It's faster to emmit the packages rather here than in the matching part
-	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
-	    i != output.end(); ++i)
-	{
-		if (_cancel) {
-			break;
-		}
-		m_apt->emit_package(i->first, i->second, filters);
-	}
+	m_apt->emit_packages(output, filters);
 
 	delete m_apt;
 
@@ -1404,6 +1392,6 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_search_group,				/* search_group */
 	backend_search_name,				/* search_name */
 	NULL,						/* update_packages */
-	NULL,						/* update_system */
+	backend_update_system,				/* update_system */
 	NULL						/* what_provides */
 );
