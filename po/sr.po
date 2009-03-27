@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-03-27 14:10+0000\n"
-"PO-Revision-Date: 2009-03-27 14:53-0400\n"
+"PO-Revision-Date: 2009-03-27 14:57-0400\n"
 "Last-Translator: Igor Miletic (Игор Милетић) <grejigl-gnomeprevod@yahoo.ca>\n"
 "Language-Team: Serbian <fedora-trans-sr@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -1013,9 +1013,8 @@ msgid "Trust a key used for signing packages"
 msgstr "Веруј кључу коришћеном за потписивање пакета"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:22
-#, fuzzy
 msgid "Update packages"
-msgstr "Надогради пакет"
+msgstr "Ажурирај пакете"
 
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
