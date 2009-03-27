@@ -16,6 +16,7 @@ INCLUDES = \
 	-DEGG_VERBOSE="\"PK_VERBOSE\""				\
 	-DEGG_LOGGING="\"PK_LOGGING\""				\
 	-DEGG_CONSOLE="\"PK_CONSOLE\""				\
+	-DLOCALSTATEDIR=\""$(localstatedir)"\" 			\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
