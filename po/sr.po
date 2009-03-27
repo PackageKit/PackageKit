@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-03-27 14:10+0000\n"
+"POT-Creation-Date: 2009-03-27 19:07+0000\n"
 "PO-Revision-Date: 2009-03-27 14:57-0400\n"
 "Last-Translator: Igor Miletic (Игор Милетић) <grejigl-gnomeprevod@yahoo.ca>\n"
 "Language-Team: Serbian <fedora-trans-sr@redhat.com>\n"
@@ -130,7 +130,7 @@ msgstr "Икона"
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:342
 msgid "Details about the update:"
-msgstr "Више о надоградњи"
+msgstr "Више о надградњи:"
 
 #. TRANSLATORS: details about the update, package name and version
 #: ../client/pk-console.c:344
@@ -140,12 +140,12 @@ msgstr "Пакет"
 #. TRANSLATORS: details about the update, any packages that this update updates
 #: ../client/pk-console.c:347
 msgid "Updates"
-msgstr "Ажурирања"
+msgstr "Ажурира"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
 #: ../client/pk-console.c:351
 msgid "Obsoletes"
-msgstr "Преважиђени"
+msgstr "Превазилази"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #: ../client/pk-console.c:355
@@ -165,7 +165,7 @@ msgstr "CVE"
 #. TRANSLATORS: details about the update, if the package requires a restart
 #: ../client/pk-console.c:367
 msgid "Restart"
-msgstr "Поново покрени"
+msgstr "Поновно покретање"
 
 #. TRANSLATORS: details about the update, any description of the update
 #: ../client/pk-console.c:371
@@ -208,7 +208,7 @@ msgstr "Поновно покретање система захтева паке
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:532
 msgid "Session restart required:"
-msgstr "Неопходно је поновно покретање система:"
+msgstr "Неопходно је поновно покретање сесије:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:535
@@ -218,17 +218,17 @@ msgstr "Поновно покретање програма захтева пак
 #. TRANSLATORS: a package needs to restart they system
 #: ../client/pk-console.c:572
 msgid "Please restart the computer to complete the update."
-msgstr "Неопходно је поновно покретање система"
+msgstr "Неопходно је поновно покретање система ради завршетка ажурирања."
 
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:575
 msgid "Please logout and login to complete the update."
-msgstr "Неопходно је одјављивање и поновна пријава"
+msgstr "Неопходно је одјављивање и поновна пријава ради завршетка ажурирања."
 
 #. TRANSLATORS: a package needs to restart the application
 #: ../client/pk-console.c:578
 msgid "Please restart the application as it is being used."
-msgstr "Неопходно је поновно покретање програма"
+msgstr "Неопходно је поновно покретање програма пошто је у употреби."
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:691
@@ -249,7 +249,7 @@ msgstr "Пакет %s се није могао инсталирати: %s"
 #: ../client/pk-tools-common.c:89
 #, c-format
 msgid "Internal error: %s"
-msgstr "Унутрашњa грешка: %s"
+msgstr "Унутрашња грешка: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
 #: ../client/pk-console.c:732 ../client/pk-console.c:1360
@@ -593,7 +593,7 @@ msgstr "Морате навести име, параметар и вреднос
 #. TRANSLATORS: The user didn't specify what action to use
 #: ../client/pk-console.c:2038
 msgid "An action, e.g. 'update-system' is required"
-msgstr "Морате навести радњу, нпр. „ажурирање система“ (update-system)"
+msgstr "Морате навести радњу, нпр. „update-system“ (ажурирање система)"
 
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:2044
@@ -675,7 +675,7 @@ msgstr ""
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:194
 msgid "The package to be put into the service pack"
-msgstr "Пакети који ће бити стављени у срвисни скуп"
+msgstr "Пакети који ће бити стављени у сервисни скуп"
 
 #. TRANSLATORS: put all pending updates in the pack
 #: ../client/pk-generate-pack.c:197
@@ -721,12 +721,12 @@ msgstr "Скуп није преснимљен."
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
 #: ../client/pk-generate-pack.c:317
 msgid "Failed to create directory:"
-msgstr "Неуспело прављење директоријума"
+msgstr "Неуспело прављење директоријума:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
 #: ../client/pk-generate-pack.c:327
 msgid "Failed to open package list."
-msgstr "Нуеспешно отварање списка пакета."
+msgstr "Неуспешно отварање списка пакета."
 
 #. TRANSLATORS: The package name is being matched up to available packages
 #: ../client/pk-generate-pack.c:338
@@ -748,7 +748,7 @@ msgstr "Правим сервисну групу..."
 #: ../client/pk-generate-pack.c:366
 #, c-format
 msgid "Service pack created '%s'"
-msgstr "Сервисна група је направљена.„%s“"
+msgstr "Сервисна група је направљена „%s“"
 
 #. TRANSLATORS: we failed to make te file
 #: ../client/pk-generate-pack.c:371
@@ -780,7 +780,7 @@ msgstr "Изаберите жељени пакет: "
 #: ../client/pk-tools-common.c:162
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Унеси број између 1 и %i: "
+msgstr "Унесите број између 1 и %i: "
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:369
@@ -849,7 +849,7 @@ msgstr "Прикладни пакети су:"
 #. TRANSLATORS: ask the user to choose a file to install
 #: ../contrib/command-not-found/pk-command-not-found.c:658
 msgid "Please choose a package to install"
-msgstr "Изаберите пакет за инсталирацију"
+msgstr "Изаберите пакет за инсталацију"
 
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/src/contents.cpp:298
@@ -911,7 +911,7 @@ msgstr "ПакетКит каталог"
 
 #: ../data/packagekit-package-list.xml.in.h:1
 msgid "PackageKit Package List"
-msgstr "ПакетКит спиак пакета"
+msgstr "ПакетКит списак пакета"
 
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
@@ -923,13 +923,13 @@ msgstr "Прихвати лиценцу"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:2
 msgid "Authentication is required to accept a EULA"
-msgstr "Неопходна је аутентификација за прихватње лиценце"
+msgstr "Неопходна је аутентификација за прихватање лиценце"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:3
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
 msgstr ""
-"Неопходна је аутентификација за отказивање посла којег нисте Ви покренули"
+"Неопходна је аутентификација за отказивање посла којег нисте ви покренули"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
 msgid "Authentication is required to change software source parameters"
@@ -941,7 +941,7 @@ msgid ""
 "trusted"
 msgstr ""
 "Неопходна је аутентификација да бисе кључ коришћен за потписивање пакета "
-"сматрао веродостојним."
+"сматрао веродостојним"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
 msgid "Authentication is required to install a signed package"
@@ -950,7 +950,7 @@ msgstr "Неопходна је аутентификација за инстал
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Authentication is required to install an untrusted package"
 msgstr ""
-"Неопходна је аутентификација за инсталацију пакета из непровереног извора."
+"Неопходна је аутентификација за инсталацију пакета из непровереног извора"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
 msgid "Authentication is required to refresh the system sources"
@@ -1090,7 +1090,7 @@ msgstr "Грешка при покретању: %s\n"
 #~ msgstr "Морате навести врсту претраге, нпр. име"
 
 #~ msgid "You need to specify a search term"
-#~ msgstr "Морате навести тремин за претрагу"
+#~ msgstr "Морате навести термин за претрагу"
 
 #~ msgid "You need to specify a package or file to install"
 #~ msgstr "Морате навести пакет или датотеку за инсталацију"
@@ -1179,10 +1179,10 @@ msgstr "Грешка при покретању: %s\n"
 #~ "Неопходна је аутентификација за инсталирање сигурносног дигиталног потписа"
 
 #~ msgid "Authentication is required to update all packages"
-#~ msgstr "Неопходна је аутентификација за надоградњу свих пакета"
+#~ msgstr "Неопходна је аутентификација за надградњу свих пакета"
 
 #~ msgid "Update all packages"
-#~ msgstr "Надогради све пакете"
+#~ msgstr "Надгради све пакете"
 
 #~ msgid ""
 #~ "Could not find a package with that name to install, or package already "
@@ -1190,7 +1190,7 @@ msgstr "Грешка при покретању: %s\n"
 #~ msgstr "Не могу да пронађем тражени пакет или је пакет већ инсталиран"
 
 #~ msgid "Could not find a package with that name to update"
-#~ msgstr "Не могу да пронађем тражени пакет за надоградњу"
+#~ msgstr "Не могу да пронађем тражени пакет за надградњу"
 
 #~ msgid "Could not find a description for this package"
 #~ msgstr "Не могу да прибавим опис за овај пакет"
