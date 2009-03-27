@@ -1,5 +1,6 @@
 import os
-from xml.dom.minidom import parse, parseString
+import cElementTree
+#from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
 import urllib as url
 
@@ -15,6 +16,7 @@ from pkConaryLog import log
 from conarypk import ConaryPk
 from conaryEnums import groupMap
 
+#{{{ FuNCS
 def getGroup( categorieList ):
     where = mapGroup( categorieList )
     if where.values():
@@ -37,7 +39,7 @@ def mapGroup(categorieList):
                 else:
                     where[group] = 1
     return where
-
+#}}}
 class XMLRepo:
     xml_path = ""
     repository = ""
@@ -52,6 +54,9 @@ class XMLRepo:
             return trove
         else:
             return None
+
+    def resolve_list(self, searchList):
+        return [self._getPackage(pkg) for pkg in searchList ]
         
     def search(self, search, where ):
         if where == "name":
@@ -75,14 +80,15 @@ class XMLRepo:
     def _setRepo(self,repo):  
         self.repo = repo
         doc = self._open()
-        self.label = str( doc.childNodes[0].getAttribute("label") )
+        self.label = str( doc.get("label") )
 
     def _open(self):
         try:
             return self._repo
         except AttributeError:
             try:
-                self._repo =   parse(open( self.xml_path + self.repo))
+                r = self.xml_path +self.repo
+                self._repo =   cElementTree.parse(r).getroot()
                 return self._repo
             except ExpatError:
                 Pk = PackageKitBaseBackend("")
@@ -91,85 +97,75 @@ class XMLRepo:
 
     def _generatePackage(self, package_node ): 
         """ convert from package_node to dictionary """
-        pkg = {}
-        cat = []
-        for node in package_node.childNodes:
-            if pkg.has_key('category'):
-                cat.append(str(node.childNodes[0].nodeValue).replace(";","").replace("#",""))
-            else:
-                pkg[node.nodeName.encode("UTF-8")] = str(node.childNodes[0].nodeValue.encode("UTF-8")).replace(";",' ').replace("#","")
-        pkg["category"] = cat
+        cat = [ cat for cat in package_node.findall("category") ]
+        pkg = dict( 
+            name= package_node.find("name").text,
+            label = self.label,
+            version = package_node.find("version").text,
+            shortDesc = getattr( package_node.find("shortDesc"), "text", ""),
+            longDesc = getattr(package_node.find("longDesc"),"text",""),
+            url = getattr( package_node.find("url"),"text","") ,
+            category = [ i.text for i in cat ]
+        ) 
         return pkg
 
     def _getPackage(self, name):
         doc = self._open()
-        results = []
-        for packages in doc.childNodes:
-            for package in packages.childNodes:
-                pkg = self._generatePackage(package)
-                pkg["label"] = self.label
-                if name == pkg["name"]:
-                    return pkg
-        return None
+        for package in  doc.findall("Package"):
+            if package.find("name").text == name:
+                return self._generatePackage(package)
 
     def _searchNamePackage(self, name):
         doc = self._open()
         results = []
-        for packages in doc.childNodes:
-            for package in packages.childNodes:
-                pkg = self._generatePackage(package)
-                pkg["label"] = self.label
-                if name.lower() in pkg["name"].lower():
-                    results.append(pkg)
-        return  results
+        for package in doc.findall("Package"):
+            if name.lower() in str(package.find("name").text).lower():
+                results.append(self._generatePackage(package))
+        return results
 
     def _searchGroupPackage(self, name):
         doc = self._open()
-        results_name = []
-        for packages in doc.childNodes:
-            for package in packages.childNodes:
-                pkg = self._generatePackage(package)
-                pkg["label"] = self.label
-                if pkg.has_key("category"):
-                    group = getGroup(pkg["category"])
-                    if name.lower() == group:
-                        results_name.append(pkg)
-            #log.info(results_name)
-        return results_name
+        results_group = []
+        for package in doc.findall("Package"):
+            pkg = self._generatePackage(package)
+            if pkg.has_key("category"):
+                group = getGroup(pkg["category"])
+                if name.lower() == group:
+                    results_group.append(pkg)
+        return results_group
+
 
     def _searchDetailsPackage(self, name):
         return self._searchPackage(name)
+
     def _searchPackage(self, name):
         doc = self._open()
         results = []
-        for packages in doc.childNodes:
-            for package in packages.childNodes:
-                pkg = self._generatePackage(package)
-                pkg["label"] = self.label
-                for i in pkg.keys():
-                    if i  == "label":
-                        continue
-                    if i =='category':
-                        for j in pkg[i]:
-                            if name.lower() in j.lower():
-                                results.append(pkg)
-                    
-                    if type(pkg[i]) == str:
-                        check = pkg[i].lower()
-                    else:
-                        check = pkg[i]
-                    if name.lower() in check:
-                        results.append(pkg)
+        for package in doc.findall("Package"):
+            # categoria
+            pkg = self._generatePackage(package)
+            for i in pkg.keys():
+                if i  == "label":
+                    continue
+                if i =='category':
+                    for j in pkg[i]:
+                        if name.lower() in j.lower():
+                            results.append(pkg)
+                
+                if type(pkg[i]) == str:
+                    check = pkg[i].lower()
+                else:
+                    check = pkg[i]
+                if name.lower() in check:
+                    results.append(pkg)
             
         return results
     def _getAllPackages(self):
         doc = self._open()
         results = []
-        for packages in doc.childNodes:
-            for package in packages.childNodes:
-                pkg = self._generatePackage(package)
-                pkg["label"] = self.label
-                results.append(pkg)
+        for packages in doc.findall("Packages"):
+            pkg = self._generatePackage(package)
+            results.append(pkg)
         return results
 
 
@@ -308,11 +304,11 @@ class XMLCache:
         categories.sort()
         return set( categories )
         
-        
 
 if __name__ == '__main__':
   #  print ">>> name"
     import sys
+    #print XMLCache().resolve("gimp")
     l= XMLCache().search(sys.argv[1],sys.argv[2] )
    # print ">> details"
    # l= XMLCache().search('Internet', 'group' )
