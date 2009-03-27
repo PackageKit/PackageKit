@@ -22,7 +22,7 @@ static string show_broken_deps(aptcc *m_apt, pkgCache::PkgIterator pkg)
 	stringstream output;
 
 	pkgCache::VerIterator ver;
-	ver = (*m_apt->DCache)[pkg].InstVerIter(*m_apt->DCache);
+	ver = (*m_apt->packageDepCache)[pkg].InstVerIter(*m_apt->packageDepCache);
 
 	output << "  " << pkg.Name() << ":";
 	for (pkgCache::DepIterator dep=ver.DependsList(); !dep.end(); ++dep)
@@ -35,7 +35,7 @@ static string show_broken_deps(aptcc *m_apt, pkgCache::PkgIterator pkg)
 
 		// Yep, it's broken.
 		if (dep.IsCritical() &&
-		    !((*m_apt->DCache)[dep]&pkgDepCache::DepGInstall))
+		    !((*m_apt->packageDepCache)[dep]&pkgDepCache::DepGInstall))
 		{
 			bool is_first_of_or=true;
 			// Iterate over the OR group, print out the information.
@@ -73,15 +73,15 @@ static string show_broken_deps(aptcc *m_apt, pkgCache::PkgIterator pkg)
 				{
 					output << " ";
 
-					pkgCache::VerIterator ver=(*m_apt->DCache)[target].InstVerIter(*m_apt->DCache);
+					pkgCache::VerIterator ver=(*m_apt->packageDepCache)[target].InstVerIter(*m_apt->packageDepCache);
 
 					if (!ver.end()) // ok, it's installable.
 					{
 						char buffer[1024];
-						if ((*m_apt->DCache)[target].Install()) {
+						if ((*m_apt->packageDepCache)[target].Install()) {
 							sprintf(buffer, "but %s is to be installed.",
 							    ver.VerStr());
-						} else if ((*m_apt->DCache)[target].Upgradable()) {
+						} else if ((*m_apt->packageDepCache)[target].Upgradable()) {
 							sprintf(buffer, "but %s is installed and it is kept back.",
 							    target.CurrentVer().VerStr());
 						} else {
@@ -114,10 +114,10 @@ static string show_broken_deps(aptcc *m_apt, pkgCache::PkgIterator pkg)
 bool show_broken(PkBackend *backend, aptcc *m_apt)
 {
 	pkgvector broken;
-	for (pkgCache::PkgIterator i = m_apt->DCache->PkgBegin();
+	for (pkgCache::PkgIterator i = m_apt->packageDepCache->PkgBegin();
 	    !i.end(); ++i)
 	{
-		if((*m_apt->DCache)[i].InstBroken())
+		if((*m_apt->packageDepCache)[i].InstBroken())
 			broken.push_back(i);
 	}
 

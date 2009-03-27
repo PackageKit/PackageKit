@@ -98,7 +98,7 @@ string get_long_description_parsed(const pkgCache::VerIterator &ver,
 /**
   * Return the PkEnumGroup of the give group string.
   */
-PkGroupEnum get_enum_group (string group);
+PkGroupEnum get_enum_group(string group);
 
 enum pkg_action_state {pkg_unchanged=-1,
 		       pkg_broken,
@@ -126,6 +126,6 @@ bool contains(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packag
 /**
   * Return if the given string ends with the other
   */
-bool ends_with (const string &str, const char *end);
+bool ends_with(const string &str, const char *end);
 
 #endif
