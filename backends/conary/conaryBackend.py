@@ -1,6 +1,5 @@
 #!/usr/bin/python
-# {{{
-# Licensed under the GNU General Public License Version 2
+#{{{ Licensed under the GNU General Public License Version 2
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +19,7 @@
 # Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
 # Copyright (C) 2008 Andres Vargas <zodman@foresightlinux.org>
 # }}}
-
+#{{{ LIBS
 import sys
 import os
 import re
@@ -44,10 +43,10 @@ from conaryInit import *
 from conary import conarycfg, conaryclient
 from conarypk import ConaryPk
 from pkConaryLog import *
-
+#}}}
 pkpackage = PackagekitPackage()
 sys.excepthook = util.genExcepthook()
-
+#{{{ FUNCTIONS
 def ExceptionHandler(func):
     return func
     def display(error):
@@ -85,7 +84,7 @@ def _format_list(lst):
         return ";".join(lst)
     else:
         return ""
-
+#}}}
 class PackageKitConaryBackend(PackageKitBaseBackend):
     # Packages there require a reboot
     rebootpkgs = ("kernel", "glibc", "hal", "dbus")
@@ -132,10 +131,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def get_package_id(self, name, versionObj, flavor):
 
         version = versionObj.trailingRevision()
-
-
         cache = Cache()
-        pkg  = cache.resolve(name)
+        pkg = cache.resolve(name)
+        #pkg["shortDesc"] = "."
         arch = self._get_arch(flavor)
         #data = versionObj.asString() + "#"
         data = ""
@@ -261,7 +259,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         for trove in specList:
             if trove in trovesList:
                 t = trovesList[trove]
-                log.info(t)
+                #log.info(t[0][0])
                 pkgFilter.add_installed( t )
                 app_found.remove(t[0][0])
 
@@ -271,11 +269,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             trove = i, None, self.conary.flavor
             specList.append(trove)
         trovelist = self.client.repos.findTroves(self.conary.default_label, specList, allowMissing=True)
-
         for trove in specList:
-            t = trovelist[trove]
-            log.info(t)
-            pkgFilter.add_available( t )
+            if trove in trovelist:
+                t = trovelist[trove]
+                #log.info(t[0][0])
+                pkgFilter.add_available( t )
 
        
         package_list = pkgFilter.post_process()
@@ -335,7 +333,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             HOW its showed on packageKit
             @lst(list(tuple) = [ ( troveTuple, status ) ]
         """
-        for troveTuple, status in lst:
+        for (count, (troveTuple, status)) in enumerate(lst):
             # take the basic info
             name = troveTuple[0]
             version = troveTuple[1]
@@ -346,7 +344,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             # split the list for get Determine info
             summary = package_id.split(";")
             meta = summary[3]
-            log.info("====== show the package  %s" % name )
+            log.info("====== show the package (%s) %s- %s" %( count, name, status) )
             self.package(package_id, status, meta )
 
     @ExceptionHandler
