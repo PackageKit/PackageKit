@@ -25,14 +25,29 @@ from packagekit.filter import *
 import re
 from pkConaryLog import log
 from conarypk import ConaryPk
+from conaryBackend import _get_arch
 
 class ConaryFilter(PackagekitFilter):
+
+    def check_installed(self):
+        if not "~installed" in self.fltlist:
+            return True
+        else:
+            return False
+    def check_available(self):
+        if not "installed" in self.fltlist:
+            return True
+        else:
+            return False
 
     def _pkg_get_unique(self, pkg):
         '''
         Return a unique string for the package
         '''
-        return "%s-%s.%s" % (pkg[0], pkg[1], pkg[2])
+        name,version,flavor = pkg.get("trove")
+        ver = version.trailingRevision()
+        fl = _get_arch(flavor)
+        return "%s-%s.%s" % (name,ver,fl)
 
     def _pkg_is_devel(self, pkg):
         '''
@@ -41,12 +56,22 @@ class ConaryFilter(PackagekitFilter):
         regex = re.compile(r'(:devel)')
         return regex.search(pkg.name)
 
+    def _do_installed_filtering(self, flt, pkg):
+        #is_installed = self._pkg_is_installed(pkg)
+        if flt == FILTER_INSTALLED:
+            want_installed = True
+        else:
+            want_installed = False
+        return want_installed
     def _pkg_is_installed(self, pkg):
         '''
         Return if the packages are installed
         '''
+        log.info(pkg)
         if type(pkg) == tuple:
             pkg = pkg[0]
+        elif type(pkg) == dict:
+            pkg,ver,flav = pkg.get("trove")
         conary_cli = ConaryPk()
         result = conary_cli.query(pkg)
         if result:
