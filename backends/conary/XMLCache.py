@@ -65,6 +65,9 @@ class XMLRepo:
             return self._searchDetailsPackage(search)
         elif where == "group":
             return self._searchGroupPackage(search)
+        elif where == "all":
+            log.info("searching all .............")
+            return self._getAllPackages()
         return []
 
     def _setRepo(self,repo):  
@@ -162,7 +165,7 @@ class XMLRepo:
     def _getAllPackages(self):
         doc = self._open()
         results = []
-        for packages in doc.findall("Packages"):
+        for package in doc.findall("Package"):
             pkg = self._generatePackage(package)
             results.append(pkg)
         return results
@@ -248,6 +251,7 @@ class XMLCache:
             for i in results:
                 repositories_result.append(i)
         return self.list_set( repositories_result)
+
     def resolve_list(self, search_list ):
         r = []
         for repo in self.repos:
@@ -258,15 +262,15 @@ class XMLCache:
 
     def list_set(self, repositories_result ):
         names = set( [i["name"] for i in repositories_result] )
-        log.info("names>>>>>>>>>>>>>>>>>>>>><")
-        log.info(names)
+        #log.info("names>>>>>>>>>>>>>>>>>>>>><")
+        #log.info(names)
         results = []
         for i in repositories_result:
-            log.info(i["name"])
+           # log.info(i["name"])
             if i["name"] in names:
                 results.append(i)
                 names.remove(i["name"])
-        log.debug([i["name"] for i in results ] )
+        #log.debug([i["name"] for i in results ] )
         return results
 
     def _fetchXML(self ):

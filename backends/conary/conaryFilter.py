@@ -30,12 +30,14 @@ from conaryBackend import _get_arch
 class ConaryFilter(PackagekitFilter):
 
     def check_installed(self):
-        if not "~installed" in self.fltlist:
+        if  "installed" or "none" in self.fltlist:
+            log.debug("check_installed")
             return True
         else:
             return False
     def check_available(self):
-        if not "installed" in self.fltlist:
+        if "~installed" or "none" in self.fltlist:
+            log.debug("check_available")
             return True
         else:
             return False
@@ -49,34 +51,13 @@ class ConaryFilter(PackagekitFilter):
         fl = _get_arch(flavor)
         return "%s-%s.%s" % (name,ver,fl)
 
-    def _pkg_is_devel(self, pkg):
-        '''
-        Return if the package is development.
-        '''
-        regex = re.compile(r'(:devel)')
-        return regex.search(pkg.name)
-
-    def _do_installed_filtering(self, flt, pkg):
-        #is_installed = self._pkg_is_installed(pkg)
-        if flt == FILTER_INSTALLED:
-            want_installed = True
-        else:
-            want_installed = False
-        return want_installed
     def _pkg_is_installed(self, pkg):
         '''
         Return if the packages are installed
         '''
-        log.info(pkg)
-        if type(pkg) == tuple:
-            pkg = pkg[0]
-        elif type(pkg) == dict:
-            pkg,ver,flav = pkg.get("trove")
-        conary_cli = ConaryPk()
-        result = conary_cli.query(pkg)
-        if result:
+        unique = self._pkg_get_unique(pkg)
+        if unique in self.installed_unique :
             return True
         else:
             return False
-
 
