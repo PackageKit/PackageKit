@@ -189,11 +189,13 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             return trove
         else:
             return cli.query(name)
+
     def _search_package( self, name ):
         for i,pkg in enumerate(self.packages):
             if pkg["trove"][0] == name:
                 return i,pkg
         return None,None
+
     def _edit_package(self, trove, pkgDict, status):
         for i,pkg in enumerate(self.packages):
             if pkg["trove"] == trove:
@@ -739,6 +741,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             # Package size goes here, but I don't know how to find that for conary packages.
             #
             #LICENSE_UNKNOWN = "unknown"
+            pkg_id = package_id.split(";")
+            pkg_id[3] = pkgDict["label"]
+            package_id = ";".join(pkg_id)
             self.details(package_id, LICENSE_UNKNOWN, categories, longDesc, url, 0)
 
     def _show_package(self, name, version, flavor, status):
