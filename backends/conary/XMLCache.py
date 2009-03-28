@@ -56,26 +56,16 @@ class XMLRepo:
             return None
 
     def resolve_list(self, searchList):
-        return [self._getPackage(pkg) for pkg in searchList ]
+        return self._getPackages(searchList)
         
     def search(self, search, where ):
         if where == "name":
-            r = self._searchNamePackage(search)
+            return self._searchNamePackage(search)
         elif where == "details":
-            r = self._searchDetailsPackage(search)
+            return self._searchDetailsPackage(search)
         elif where == "group":
-            r = self._searchGroupPackage(search)
-        else:
-            r = self._searchPackage(search)
-
-        names = set( [i["name"] for i in r] )
-        results = []
-        for i in r:
-            if i["name"] in names:
-                results.append(i)
-                names.remove(i["name"])
-        return results
-            
+            return self._searchGroupPackage(search)
+        return []
 
     def _setRepo(self,repo):  
         self.repo = repo
@@ -112,8 +102,17 @@ class XMLRepo:
     def _getPackage(self, name):
         doc = self._open()
         for package in  doc.findall("Package"):
-            if package.find("name").text == name:
+            if package.find("name").text in name:
                 return self._generatePackage(package)
+
+    def _getPackages(self, name_list ):
+        doc = self._open()
+        r = []
+        for package in  doc.findall("Package"):
+            if package.find("name").text in name_list:
+                pkg = self._generatePackage(package)
+                r.append(pkg)
+        return r
 
     def _searchNamePackage(self, name):
         doc = self._open()
@@ -248,7 +247,27 @@ class XMLCache:
             results = repo.search(search , where )
             for i in results:
                 repositories_result.append(i)
-        return repositories_result
+        return self.list_set( repositories_result)
+    def resolve_list(self, search_list ):
+        r = []
+        for repo in self.repos:
+            res = repo.resolve_list( search_list )
+            for i in res:
+                r.append( i)
+        return self.list_set( r )
+
+    def list_set(self, repositories_result ):
+        names = set( [i["name"] for i in repositories_result] )
+        log.info("names>>>>>>>>>>>>>>>>>>>>><")
+        log.info(names)
+        results = []
+        for i in repositories_result:
+            log.info(i["name"])
+            if i["name"] in names:
+                results.append(i)
+                names.remove(i["name"])
+        log.debug([i["name"] for i in results ] )
+        return results
 
     def _fetchXML(self ):
         con = ConaryPk()
@@ -309,7 +328,7 @@ if __name__ == '__main__':
   #  print ">>> name"
     import sys
     #print XMLCache().resolve("gimp")
-    l= XMLCache().search(sys.argv[1],sys.argv[2] )
+    l= XMLCache().resolve_list(sys.argv[1:])
    # print ">> details"
    # l= XMLCache().search('Internet', 'group' )
 
