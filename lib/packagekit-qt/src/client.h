@@ -102,7 +102,6 @@ public:
 		ActionSearchFile,
 		ActionSearchGroup,
 		ActionSearchName,
-		ActionServicePack,
 		ActionUpdatePackages,
 		ActionUpdateSystem,
 		ActionWhatProvides,
@@ -110,6 +109,7 @@ public:
 		ActionDownloadPackages,
 		ActionGetDistroUpgrades,
 		ActionGetCategories,
+		ActionGetOldTransactions,
 		UnkownAction = -1
 	} Action;
 	typedef QSet<Action> Actions;
@@ -231,9 +231,9 @@ public:
 	typedef enum {
 		Offline,
 		Online,
-		Mobile,
-		Wifi,
 		Wired,
+		Wifi,
+		Mobile,
 		UnknownNetworkState = -1
 	} NetworkState;
 
@@ -311,6 +311,7 @@ public:
 		ProvidesCodec,
 		ProvidesMimetype,
 		ProvidesFont,
+		HardwareDriver,
 		UnknownProvidesType = -1
 	} ProvidesType;
 
@@ -361,6 +362,9 @@ public:
 		AllPackagesAlreadyInstalled,
 		FileNotFound,
 		NoMoreMirrorsToTry,
+		NoDistroUpgradeData,
+		IncompatibleArchitecture,
+		NoSpaceOnDevice,
 		UnknownErrorType = -1
 	} ErrorType;
 
@@ -368,9 +372,18 @@ public:
 	 * Describes a message's type
 	 */
 	typedef enum {
-		Warning,
-		Notice,
-		Daemon,
+		BrokenMirror,
+		ConnectionRefused,
+		ParameterInvalid,
+		PriorityInvalid,
+		BackendError,
+// 		DaemonError, //TODO another enum problem..
+		CacheBeingRebuilt,
+		UntrustedPackage,
+		NewerPackageExists,
+		CouldNotFindPackage,
+		ConfigFilesChanged,
+// 		PackageAlreadyInstalled,// TODO i dunno what to do
 		UnknownMessageType = -1
 	} MessageType;
 
