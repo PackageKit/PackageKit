@@ -336,10 +336,11 @@ void AcqPackageKitStatus::emit_package(const string &name)
 			if (_cancelled) {
 				break;
 			}
-
 			// try to see if any package matches
 			if (name.compare(it->first.Name()) == 0) {
-				m_apt->emit_package(it->first, it->second);
+				m_apt->emit_package(it->first,
+						    it->second,
+						    PK_INFO_ENUM_UNKNOWN, PK_INFO_ENUM_DOWNLOADING);
 				last_package_name = name;
 				break;
 			}

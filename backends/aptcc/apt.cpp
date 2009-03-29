@@ -21,17 +21,25 @@
 #include "apt.h"
 #include "apt-utils.h"
 #include "matcher.h"
+#include "aptcc_show_broken.h"
+#include "acqprogress.h"
+#include "pkg_acqfile.h"
 
 #include <apt-pkg/error.h>
 #include <apt-pkg/tagfile.h>
 #include <apt-pkg/algorithms.h>
 #include <apt-pkg/init.h>
 
+#include <apt-pkg/sptr.h>
+#include <sys/statvfs.h>
+#include <sys/statfs.h>
+#define RAMFS_MAGIC     0x858458f6
+
 #include <fstream>
 #include <dirent.h>
 #include <assert.h>
 
-aptcc::aptcc(PkBackend *backend, bool &cancel)
+aptcc::aptcc(PkBackend *backend, bool &cancel, pkgSourceList &apt_source_list)
 	:
 	packageRecords(0),
 	packageCache(0),
@@ -39,19 +47,20 @@ aptcc::aptcc(PkBackend *backend, bool &cancel)
 	Map(0),
 	Policy(0),
 	m_backend(backend),
-	_cancel(cancel)
+	_cancel(cancel),
+	m_pkgSourceList(apt_source_list)
 {
 }
 
-bool aptcc::init(const char *locale, pkgSourceList &apt_source_list)
+bool aptcc::init(const char *locale)
 {
 	// Generate it and map it
 	setlocale(LC_ALL, locale);
-	bool Res = pkgMakeStatusCache(apt_source_list, Progress, &Map, true);
+	bool Res = pkgMakeStatusCache(m_pkgSourceList, Progress, &Map, true);
 	Progress.Done();
 	if(!Res) {
 		return false;
-		//_("The package lists or status file could not be parsed or opened.")
+		//"The package lists or status file could not be parsed or opened."
 	}
 
 	packageCache = new pkgCache(Map);
@@ -573,29 +582,66 @@ void emit_files (PkBackend *backend, const PkPackageId *pi)
 	}
 }
 
+
+static bool CheckAuth(pkgAcquire& Fetcher, PkBackend *backend)
+{
+   string UntrustedList;
+   for (pkgAcquire::ItemIterator I = Fetcher.ItemsBegin(); I < Fetcher.ItemsEnd(); ++I)
+   {
+      if (!(*I)->IsTrusted())
+      {
+         UntrustedList += string((*I)->ShortDesc()) + " ";
+      }
+   }
+
+   if (UntrustedList == "")
+   {
+      return true;
+   }
+
+   string warning("WARNING: The following packages cannot be authenticated!\n");
+   warning += UntrustedList;
+   pk_backend_message(backend,
+		      PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE,
+		      warning.c_str());
+
+//    ShowList(c2out,_("WARNING: The following packages cannot be authenticated!"),UntrustedList,"");
+
+   if (_config->FindB("APT::Get::AllowUnauthenticated", false) == true)
+   {
+      egg_debug ("Authentication warning overridden.\n");
+      return true;
+   }
+
+   return false;
+}
+
 									/*}}}*/
 
 // InstallPackages - Actually download and install the packages		/*{{{*/
 // ---------------------------------------------------------------------
 /* This displays the informative messages describing what is going to
    happen and then calls the download routines */
-// bool aptcc::InstallPackages(CacheFile &Cache,bool ShwKept,bool Ask = true,
-// 		     bool Safety = true)
-// {
-// 	if (_config->FindB("APT::Get::Purge",false) == true)
-// 	{
-// 	    pkgCache::PkgIterator I = Cache->PkgBegin();
-// 	    for (; I.end() == false; I++)
-// 	    {
-// 		if (I.Purge() == false && Cache[I].Mode == pkgDepCache::ModeDelete)
-// 		    Cache->MarkDelete(I,true);
-// 	    }
-// 	}
-//
-// 	bool Fail = false;
-// 	bool Essential = false;
-//
-// 	// Show all the various warning indicators
+bool aptcc::installPackages(pkgDepCache &Cache,
+			    bool ShwKept,
+			    bool Ask,
+			    bool Safety)
+{
+	if (_config->FindB("APT::Get::Purge",false) == true)
+	{
+	    pkgCache::PkgIterator I = Cache.PkgBegin();
+	    for (; I.end() == false; I++)
+	    {
+		if (I.Purge() == false && Cache[I].Mode == pkgDepCache::ModeDelete)
+		    Cache.MarkDelete(I,true);
+	    }
+	}
+
+	bool Fail = false;
+	bool Essential = false;
+
+// we don't show things here
+	// Show all the various warning indicators
 // 	ShowDel(c1out,Cache);
 // 	ShowNew(c1out,Cache);
 // 	if (ShwKept == true)
@@ -608,162 +654,172 @@ void emit_files (PkBackend *backend, const PkPackageId *pi)
 // 		Essential = !ShowEssential(c1out,Cache);
 // 	Fail |= Essential;
 // 	Stats(c1out,Cache);
-//
-// 	// Sanity check
-// 	if (Cache->BrokenCount() != 0)
-// 	{
+
+	// Sanity check
+	if (Cache.BrokenCount() != 0)
+	{
 // 	    ShowBroken(c1out,Cache,false);
-// 	    return _error->Error(_("Internal error, InstallPackages was called with broken packages!"));
-// 	}
-//
-// 	if (Cache->DelCount() == 0 && Cache->InstCount() == 0 &&
-// 	    Cache->BadCount() == 0)
-// 	    return true;
-//
-// 	// No remove flag
-// 	if (Cache->DelCount() != 0 && _config->FindB("APT::Get::Remove",true) == false)
-// 	    return _error->Error(_("Packages need to be removed but remove is disabled."));
-//
-// 	// Run the simulator ..
-// 	if (_config->FindB("APT::Get::Simulate") == true)
-// 	{
-// 	    pkgSimulate PM(Cache);
-// 	    int status_fd = _config->FindI("APT::Status-Fd",-1);
-// 	    pkgPackageManager::OrderResult Res = PM.DoInstall(status_fd);
-// 	    if (Res == pkgPackageManager::Failed)
-// 		return false;
-// 	    if (Res != pkgPackageManager::Completed)
-// 		return _error->Error(_("Internal error, Ordering didn't finish"));
-// 	    return true;
-// 	}
-//
-// 	// Create the text record parser
-// 	pkgRecords Recs(Cache);
-// 	if (_error->PendingError() == true)
-// 	    return false;
-//
-// 	// Lock the archive directory
-// 	FileFd Lock;
-// 	if (_config->FindB("Debug::NoLocking",false) == false &&
-// 	    _config->FindB("APT::Get::Print-URIs") == false)
-// 	{
-// 	    Lock.Fd(GetLock(_config->FindDir("Dir::Cache::Archives") + "lock"));
-// 	    if (_error->PendingError() == true)
-// 		return _error->Error(_("Unable to lock the download directory"));
-// 	}
-//
-// 	// Create the download object
-// 	AcqTextStatus Stat(ScreenWidth,_config->FindI("quiet",0));
-// 	pkgAcquire Fetcher(&Stat);
-//
-// 	// Read the source list
+	    show_broken(m_backend, this);
+	    return _error->Error("Internal error, InstallPackages was called with broken packages!");
+	}
+
+	if (Cache.DelCount() == 0 && Cache.InstCount() == 0 &&
+	    Cache.BadCount() == 0)
+	    return true;
+
+	// No remove flag
+	if (Cache.DelCount() != 0 && _config->FindB("APT::Get::Remove",true) == false)
+	    return _error->Error("Packages need to be removed but remove is disabled.");
+
+	// Run the simulator ..
+	if (_config->FindB("APT::Get::Simulate") == true)
+	{
+	    pkgSimulate PM(&Cache);
+	    int status_fd = _config->FindI("APT::Status-Fd",-1);
+	    pkgPackageManager::OrderResult Res = PM.DoInstall(status_fd);
+	    if (Res == pkgPackageManager::Failed)
+		return false;
+	    if (Res != pkgPackageManager::Completed)
+		return _error->Error("Internal error, Ordering didn't finish");
+	    return true;
+	}
+
+	// Create the text record parser
+	pkgRecords Recs(Cache);
+	if (_error->PendingError() == true)
+	    return false;
+
+	// Lock the archive directory
+	FileFd Lock;
+	if (_config->FindB("Debug::NoLocking",false) == false &&
+	    _config->FindB("APT::Get::Print-URIs") == false)
+	{
+	    Lock.Fd(GetLock(_config->FindDir("Dir::Cache::Archives") + "lock"));
+	    if (_error->PendingError() == true)
+		return _error->Error("Unable to lock the download directory");
+	}
+
+	// Create the download object
+	AcqPackageKitStatus Stat(this, m_backend, _cancel, _config->FindI("quiet",0));
+	pkgAcquire Fetcher(&Stat);
+
+	// Read the source list
 // 	pkgSourceList List;
 // 	if (List.ReadMainList() == false)
-// 	    return _error->Error(_("The list of sources could not be read."));
-//
-// 	// Create the package manager and prepare to download
-// 	SPtr<pkgPackageManager> PM= _system->CreatePM(Cache);
-// 	if (PM->GetArchives(&Fetcher,&List,&Recs) == false ||
-// 	    _error->PendingError() == true)
-// 	    return false;
-//
-// 	// Display statistics
-// 	double FetchBytes = Fetcher.FetchNeeded();
-// 	double FetchPBytes = Fetcher.PartialPresent();
-// 	double DebBytes = Fetcher.TotalNeeded();
-// 	if (DebBytes != Cache->DebSize())
-// 	{
-// 	    c0out << DebBytes << ',' << Cache->DebSize() << endl;
-// 	    c0out << _("How odd.. The sizes didn't match, email apt@packages.debian.org") << endl;
-// 	}
-//
-// 	// Number of bytes
+// 	    return _error->Error("The list of sources could not be read.");
+
+	// Create the package manager and prepare to download
+	SPtr<pkgPackageManager> PM= _system->CreatePM(&Cache);
+	if (PM->GetArchives(&Fetcher, &m_pkgSourceList, &Recs) == false ||
+	    _error->PendingError() == true)
+	    return false;
+
+
+	// Generate the list of affected packages and sort it
+	for (pkgCache::PkgIterator I = Cache.PkgBegin(); I.end() == false; I++)
+	{
+		// Ignore no-version packages
+		if (I->VersionList == 0) {
+			continue;
+		}
+
+		// Not interesting
+		if ((Cache[I].Keep() == true ||
+		    Cache[I].InstVerIter(Cache) == I.CurrentVer()) &&
+		    I.State() == pkgCache::PkgIterator::NeedsNothing &&
+		    (Cache[I].iFlags & pkgDepCache::ReInstall) != pkgDepCache::ReInstall &&
+		    (I.Purge() != false || Cache[I].Mode != pkgDepCache::ModeDelete ||
+		    (Cache[I].iFlags & pkgDepCache::Purge) != pkgDepCache::Purge))
+		{
+			continue;
+		}
+
+		// Append it to the list
+		Stat.addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(I, Cache[I].InstVerIter(Cache)));
+	}
+
+	// Display statistics
+	double FetchBytes = Fetcher.FetchNeeded();
+	double FetchPBytes = Fetcher.PartialPresent();
+	double DebBytes = Fetcher.TotalNeeded();
+	if (DebBytes != Cache.DebSize())
+	{
+// 	    c0out << DebBytes << ',' << Cache.DebSize() << endl;
+	    _error->Warning("How odd.. The sizes didn't match, email apt@packages.debian.org");
+	}
+
+	// Number of bytes
 // 	if (DebBytes != FetchBytes)
-// 	    ioprintf(c1out,_("Need to get %sB/%sB of archives.\n"),
+// 	    ioprintf(c1out, "Need to get %sB/%sB of archives.\n",
 // 		    SizeToStr(FetchBytes).c_str(),SizeToStr(DebBytes).c_str());
 // 	else if (DebBytes != 0)
-// 	    ioprintf(c1out,_("Need to get %sB of archives.\n"),
+// 	    ioprintf(c1out, "Need to get %sB of archives.\n",
 // 		    SizeToStr(DebBytes).c_str());
-//
-// 	// Size delta
-// 	if (Cache->UsrSize() >= 0)
-// 	    ioprintf(c1out,_("After this operation, %sB of additional disk space will be used.\n"),
-// 		    SizeToStr(Cache->UsrSize()).c_str());
+
+	// Size delta
+// 	if (Cache.UsrSize() >= 0)
+// 	    ioprintf(c1out, "After this operation, %sB of additional disk space will be used.\n",
+// 		    SizeToStr(Cache.UsrSize()).c_str());
 // 	else
-// 	    ioprintf(c1out,_("After this operation, %sB disk space will be freed.\n"),
-// 		    SizeToStr(-1*Cache->UsrSize()).c_str());
-//
-// 	if (_error->PendingError() == true)
-// 	    return false;
-//
-// 	/* Check for enough free space, but only if we are actually going to
-// 	    download */
-// 	if (_config->FindB("APT::Get::Print-URIs") == false &&
-// 	    _config->FindB("APT::Get::Download",true) == true)
-// 	{
-// 	    struct statvfs Buf;
-// 	    string OutputDir = _config->FindDir("Dir::Cache::Archives");
-// 	    if (statvfs(OutputDir.c_str(),&Buf) != 0)
-// 		return _error->Errno("statvfs",_("Couldn't determine free space in %s"),
-// 				    OutputDir.c_str());
-// 	    if (unsigned(Buf.f_bfree) < (FetchBytes - FetchPBytes)/Buf.f_bsize)
-// 	    {
-// 		struct statfs Stat;
-// 		if (statfs(OutputDir.c_str(),&Stat) != 0 ||
-// 				unsigned(Stat.f_type) != RAMFS_MAGIC)
-// 		    return _error->Error(_("You don't have enough free space in %s."),
-// 			OutputDir.c_str());
-// 	    }
-// 	}
-//
-// 	// Fail safe check
+// 	    ioprintf(c1out, "After this operation, %sB disk space will be freed.\n",
+// 		    SizeToStr(-1*Cache.UsrSize()).c_str());
+
+	if (_error->PendingError() == true)
+	    return false;
+
+	/* Check for enough free space */
+	struct statvfs Buf;
+	string OutputDir = _config->FindDir("Dir::Cache::Archives");
+	if (statvfs(OutputDir.c_str(),&Buf) != 0) {
+		return _error->Errno("statvfs", "Couldn't determine free space in %s",
+				    OutputDir.c_str());
+	}
+	if (unsigned(Buf.f_bfree) < (FetchBytes - FetchPBytes)/Buf.f_bsize)
+	{
+		struct statfs Stat;
+		if (statfs(OutputDir.c_str(), &Stat) != 0 ||
+				unsigned(Stat.f_type) != RAMFS_MAGIC)
+		{
+			pk_backend_error_code(m_backend,
+					      PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
+					      string("You don't have enough free space in ").append(OutputDir).c_str());
+			return _error->Error("You don't have enough free space in %s.",
+					    OutputDir.c_str());
+		}
+	}
+
+	// Fail safe check
 // 	if (_config->FindI("quiet",0) >= 2 ||
 // 	    _config->FindB("APT::Get::Assume-Yes",false) == true)
 // 	{
 // 	    if (Fail == true && _config->FindB("APT::Get::Force-Yes",false) == false)
-// 		return _error->Error(_("There are problems and -y was used without --force-yes"));
+// 		return _error->Error("There are problems and -y was used without --force-yes");
 // 	}
-//
-// 	if (Essential == true && Safety == true)
-// 	{
-// 	    if (_config->FindB("APT::Get::Trivial-Only",false) == true)
-// 		return _error->Error(_("Trivial Only specified but this is not a trivial operation."));
-//
-// 	    const char *Prompt = _("Yes, do as I say!");
+
+	if (Essential == true && Safety == true)
+	{
+	    if (_config->FindB("APT::Get::Trivial-Only",false) == true)
+		return _error->Error("Trivial Only specified but this is not a trivial operation.");
+
+	    pk_backend_error_code(m_backend,
+				  PK_ERROR_ENUM_TRANSACTION_ERROR,
+				  "You was about to do something potentially harmful.\n"
+				  "Please use aptitude or synaptic to have more information.");
+	    return false;
+// 	    const char *Prompt = "Yes, do as I say!";
 // 	    ioprintf(c2out,
-// 		    _("You are about to do something potentially harmful.\n"
+// 		    "You are about to do something potentially harmful.\n"
 // 			"To continue type in the phrase '%s'\n"
-// 			" ?] "),Prompt);
+// 			" ?] ",Prompt);
 // 	    c2out << flush;
 // 	    if (AnalPrompt(Prompt) == false)
 // 	    {
-// 		c2out << _("Abort.") << endl;
+// 		c2out << "Abort." << endl;
 // 		exit(1);
 // 	    }
-// 	}
-// 	else
-// 	{
-// 	    // Prompt to continue
-// 	    if (Ask == true || Fail == true)
-// 	    {
-// 		if (_config->FindB("APT::Get::Trivial-Only",false) == true)
-// 		    return _error->Error(_("Trivial Only specified but this is not a trivial operation."));
-//
-// 		if (_config->FindI("quiet",0) < 2 &&
-// 		    _config->FindB("APT::Get::Assume-Yes",false) == false)
-// 		{
-// 		    c2out << _("Do you want to continue [Y/n]? ") << flush;
-//
-// 		    if (YnPrompt() == false)
-// 		    {
-// 		    c2out << _("Abort.") << endl;
-// 		    exit(1);
-// 		    }
-// 		}
-// 	    }
-// 	}
-//
-// 	// Just print out the uris an exit if the --print-uris flag was used
+	}
+
+	// Just print out the uris an exit if the --print-uris flag was used
 // 	if (_config->FindB("APT::Get::Print-URIs") == true)
 // 	{
 // 	    pkgAcquire::UriIterator I = Fetcher.UriBegin();
@@ -772,109 +828,115 @@ void emit_files (PkBackend *backend, const PkPackageId *pi)
 // 		    I->Owner->FileSize << ' ' << I->Owner->HashSum() << endl;
 // 	    return true;
 // 	}
-//
-// 	if (!CheckAuth(Fetcher))
-// 	    return false;
-//
-// 	/* Unlock the dpkg lock if we are not going to be doing an install
-// 	    after. */
+
+	if (!CheckAuth(Fetcher, m_backend))
+	    return false;
+
+	/* Unlock the dpkg lock if we are not going to be doing an install
+	    after. */
 // 	if (_config->FindB("APT::Get::Download-Only",false) == true)
 // 	    _system->UnLock();
-//
-// 	// Run it
-// 	while (1)
-// 	{
-// 	    bool Transient = false;
-// 	    if (_config->FindB("APT::Get::Download",true) == false)
-// 	    {
-// 		for (pkgAcquire::ItemIterator I = Fetcher.ItemsBegin(); I < Fetcher.ItemsEnd();)
-// 		{
-// 		    if ((*I)->Local == true)
-// 		    {
-// 		    I++;
-// 		    continue;
-// 		    }
-//
-// 		    // Close the item and check if it was found in cache
-// 		    (*I)->Finished();
-// 		    if ((*I)->Complete == false)
-// 		    Transient = true;
-//
-// 		    // Clear it out of the fetch list
-// 		    delete *I;
-// 		    I = Fetcher.ItemsBegin();
-// 		}
-// 	    }
-//
-// 	    if (Fetcher.Run() == pkgAcquire::Failed)
-// 		return false;
-//
-// 	    // Print out errors
-// 	    bool Failed = false;
-// 	    for (pkgAcquire::ItemIterator I = Fetcher.ItemsBegin(); I != Fetcher.ItemsEnd(); I++)
-// 	    {
-// 		if ((*I)->Status == pkgAcquire::Item::StatDone &&
-// 		    (*I)->Complete == true)
-// 		    continue;
-//
-// 		if ((*I)->Status == pkgAcquire::Item::StatIdle)
-// 		{
-// 		    Transient = true;
-// 		    // Failed = true;
-// 		    continue;
-// 		}
-//
-// 		fprintf(stderr,_("Failed to fetch %s  %s\n"),(*I)->DescURI().c_str(),
+
+	// Run it
+	while (1)
+	{
+	    bool Transient = false;
+	    if (_config->FindB("APT::Get::Download",true) == false)
+	    {
+		for (pkgAcquire::ItemIterator I = Fetcher.ItemsBegin(); I < Fetcher.ItemsEnd();)
+		{
+		    if ((*I)->Local == true)
+		    {
+		    I++;
+		    continue;
+		    }
+
+		    // Close the item and check if it was found in cache
+		    (*I)->Finished();
+		    if ((*I)->Complete == false)
+		    Transient = true;
+
+		    // Clear it out of the fetch list
+		    delete *I;
+		    I = Fetcher.ItemsBegin();
+		}
+	    }
+
+	    if (Fetcher.Run() == pkgAcquire::Failed)
+		return false;
+
+	    // Print out errors
+	    bool Failed = false;
+	    for (pkgAcquire::ItemIterator I = Fetcher.ItemsBegin(); I != Fetcher.ItemsEnd(); I++)
+	    {
+		if ((*I)->Status == pkgAcquire::Item::StatDone &&
+		    (*I)->Complete == true)
+		    continue;
+
+		if ((*I)->Status == pkgAcquire::Item::StatIdle)
+		{
+		    Transient = true;
+		    // Failed = true;
+		    continue;
+		}
+
+		string fetchError("Failed to fetch:\n");
+		fetchError += (*I)->DescURI() + "  ";
+		fetchError += (*I)->ErrorText;
+		pk_backend_error_code(m_backend,
+				      PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
+				      fetchError.c_str());
+// 		fprintf(stderr, "Failed to fetch %s  %s\n", (*I)->DescURI().c_str(),
 // 			(*I)->ErrorText.c_str());
-// 		Failed = true;
-// 	    }
-//
-// 	    /* If we are in no download mode and missing files and there were
-// 		'failures' then the user must specify -m. Furthermore, there
-// 		is no such thing as a transient error in no-download mode! */
-// 	    if (Transient == true &&
-// 		_config->FindB("APT::Get::Download",true) == false)
-// 	    {
-// 		Transient = false;
-// 		Failed = true;
-// 	    }
-//
+		Failed = true;
+	    }
+
+	    /* If we are in no download mode and missing files and there were
+		'failures' then the user must specify -m. Furthermore, there
+		is no such thing as a transient error in no-download mode! */
+	    if (Transient == true &&
+		_config->FindB("APT::Get::Download",true) == false)
+	    {
+		Transient = false;
+		Failed = true;
+	    }
+
 // 	    if (_config->FindB("APT::Get::Download-Only",false) == true)
 // 	    {
 // 		if (Failed == true && _config->FindB("APT::Get::Fix-Missing",false) == false)
-// 		    return _error->Error(_("Some files failed to download"));
-// 		c1out << _("Download complete and in download only mode") << endl;
+// 		    return _error->Error("Some files failed to download");
+// 		c1out << "Download complete and in download only mode" << endl;
 // 		return true;
 // 	    }
-//
-// 	    if (Failed == true && _config->FindB("APT::Get::Fix-Missing",false) == false)
-// 	    {
-// 		return _error->Error(_("Unable to fetch some archives, maybe run apt-get update or try with --fix-missing?"));
-// 	    }
-//
-// 	    if (Transient == true && Failed == true)
-// 		return _error->Error(_("--fix-missing and media swapping is not currently supported"));
-//
-// 	    // Try to deal with missing package files
-// 	    if (Failed == true && PM->FixMissing() == false)
-// 	    {
-// 		cerr << _("Unable to correct missing packages.") << endl;
-// 		return _error->Error(_("Aborting install."));
-// 	    }
-//
-// 	    _system->UnLock();
-// 	    int status_fd = _config->FindI("APT::Status-Fd",-1);
-// 	    pkgPackageManager::OrderResult Res = PM->DoInstall(status_fd);
-// 	    if (Res == pkgPackageManager::Failed || _error->PendingError() == true)
-// 		return false;
-// 	    if (Res == pkgPackageManager::Completed)
-// 		return true;
-//
-// 	    // Reload the fetcher object and loop again for media swapping
-// 	    Fetcher.Shutdown();
-// 	    if (PM->GetArchives(&Fetcher,&List,&Recs) == false)
-// 		return false;
-//
-// 	    _system->Lock();
-// 	}
-// }
+
+	    if (Failed == true && _config->FindB("APT::Get::Fix-Missing",false) == false)
+	    {
+		return _error->Error("Unable to fetch some archives, maybe run apt-get update or try with --fix-missing?");
+	    }
+
+	    if (Transient == true && Failed == true)
+		return _error->Error("--fix-missing and media swapping is not currently supported");
+
+	    // Try to deal with missing package files
+	    if (Failed == true && PM->FixMissing() == false)
+	    {
+		cerr << "Unable to correct missing packages." << endl;
+		return _error->Error("Aborting install.");
+	    }
+
+	    _system->UnLock();
+	    int status_fd = _config->FindI("APT::Status-Fd",-1);
+	    pkgPackageManager::OrderResult Res = PM->DoInstall(status_fd);
+	    if (Res == pkgPackageManager::Failed || _error->PendingError() == true)
+		return false;
+	    if (Res == pkgPackageManager::Completed)
+		return true;
+
+	    // Reload the fetcher object and loop again for media swapping
+	    Fetcher.Shutdown();
+	    if (PM->GetArchives(&Fetcher, &m_pkgSourceList, &Recs) == false)
+		return false;
+
+	    _system->Lock();
+	}
+}
