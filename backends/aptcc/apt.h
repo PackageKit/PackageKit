@@ -24,6 +24,7 @@
 
 #include <apt-pkg/pkgrecords.h>
 #include <apt-pkg/pkgcachegen.h>
+#include <apt-pkg/cachefile.h>
 #include <apt-pkg/policy.h>
 
 #include <pk-backend.h>
@@ -46,10 +47,10 @@ class aptcc
 {
 //     typedef int user_tag_reference;
 public:
-	aptcc(PkBackend *backend, bool &cancel);
+	aptcc(PkBackend *backend, bool &cancel, pkgSourceList &apt_source_list);
 	~aptcc();
 
-	bool init(const char *locale, pkgSourceList &apt_source_list);
+	bool init(const char *locale);
 
 	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
@@ -95,6 +96,14 @@ public:
 	 */
 	void emit_update_detail(const pkgCache::PkgIterator &pkg);
 
+	/**
+	 *  seems to install packages
+	 */
+	bool installPackages(pkgDepCache &Cache,
+			     bool ShwKept,
+			     bool Ask = true,
+			     bool Safety = true);
+
 	/** Marks all upgradable and non-held packages for upgrade.
 	 *
 	 *  \param with_autoinst if \b true, the dependencies of packages
@@ -121,6 +130,7 @@ private:
 	pkgPolicy  *Policy;
 	PkBackend  *m_backend;
 	bool &_cancel;
+	pkgSourceList &m_pkgSourceList;
 
 	/** This flag is \b true iff the persistent state has changed (ie, we
 	 *  need to save the cache).

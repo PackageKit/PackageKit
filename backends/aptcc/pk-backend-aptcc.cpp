@@ -25,7 +25,6 @@
 #include <apt-pkg/error.h>
 #include <apt-pkg/init.h>
 #include <apt-pkg/algorithms.h>
-#include <apt-pkg/cachefile.h>
 
 #include "apt.h"
 #include "apt-utils.h"
@@ -167,8 +166,8 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -259,8 +258,8 @@ backend_get_files_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -322,8 +321,8 @@ backend_get_details_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -393,9 +392,21 @@ backend_update_system_thread (PkBackend *backend)
 	_cancel = false;
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		pk_backend_finished (backend);
+		return false;
+	}
+
+	// create a cachefile object
+	pkgCacheFile Cache;
+	OpTextProgress Prog(*_config);
+	// open and lock the cache file
+	if (Cache.Open(Prog, true) == false) {
+		// TODO need PK_ERROR_ENUM_OPEN_PKG_CACHE_FAILED
+		show_errors(backend, PK_ERROR_ENUM_FAILED_INITIALIZATION);
 		delete m_apt;
 		pk_backend_finished (backend);
 		return false;
@@ -410,10 +421,12 @@ backend_update_system_thread (PkBackend *backend)
 		return false;
 	}
 
-// 	bool res = InstallPackages(Cache,true);
+	printf("4KKKKKKKKKKKKKKKKKKKK\n");
+	bool res = m_apt->installPackages(*m_apt->packageDepCache, true);
 	delete m_apt;
+	 _error->DumpErrors();
 	pk_backend_finished (backend);
-	return true;
+	return res;
 }
 
 /**
@@ -436,8 +449,8 @@ backend_get_updates_thread (PkBackend *backend)
 	_cancel = false;
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -646,8 +659,8 @@ backend_download_packages_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -752,8 +765,8 @@ backend_refresh_cache_thread (PkBackend *backend)
 
 	// we re-read it here since it might have changed
 	apt_source_list->ReadMainList();
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -826,8 +839,8 @@ backend_resolve_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -885,8 +898,8 @@ backend_search_file_thread (PkBackend *backend)
 
 	// as we can only search for installed files lets avoid the opposite
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-		aptcc *m_apt = new aptcc(backend, _cancel);
-		if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+		aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+		if (m_apt->init(pk_backend_get_locale (backend))) {
 			egg_debug ("Failed to create apt cache");
 			delete m_apt;
 			pk_backend_finished (backend);
@@ -947,8 +960,8 @@ backend_search_group_thread (PkBackend *backend)
 
 	PkGroupEnum pkGroup = pk_group_enum_from_text (group);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -1024,8 +1037,8 @@ backend_search_package_thread (PkBackend *backend)
 		return false;
 	}
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
 		delete m_matcher;
 		delete m_apt;
@@ -1311,8 +1324,8 @@ backend_get_packages_thread (PkBackend *backend)
 	_cancel = false;
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	if (m_apt->init(pk_backend_get_locale (backend), *apt_source_list)) {
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
