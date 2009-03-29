@@ -174,6 +174,7 @@ public:
 		LoadingCache,
 		ScanApplications,
 		GeneratePackageList,
+		WaitingForLock,
 		UnknownStatus = -1
 	} Status;
 	/**
@@ -264,7 +265,7 @@ Q_SIGNALS:
 	 * \li \p summary is the category's summary. It is localized.
 	 * \li \p icon is the icon identifier eg. server-cfg. If unknown, it is set to icon-missing.
 	 */
-    void category(const QString &parent_id, const QString &cat_id, const QString &name, const QString &summary, const QString &icon);
+	void category(const QString &parent_id, const QString &cat_id, const QString &name, const QString &summary, const QString &icon);
 
 	/**
 	 * Sends additional details about the \p package
