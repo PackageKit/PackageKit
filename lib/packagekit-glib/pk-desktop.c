@@ -245,7 +245,7 @@ pk_desktop_open_database (PkDesktop *desktop, GError **error)
 	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
 	if (!ret) {
 		if (error != NULL)
-			*error = g_error_new (1, 0, "database is not present");
+			*error = g_error_new (1, 0, "database %s is not present", PK_DESKTOP_DEFAULT_DATABASE);
 		return FALSE;
 	}
 
@@ -331,6 +331,7 @@ pk_desktop_test (EggTest *test)
 	gboolean ret;
 	gchar *package;
 	GPtrArray *array;
+	GError *error = NULL;
 
 	if (!egg_test_start (test, "PkDesktop"))
 		return;
@@ -345,17 +346,31 @@ pk_desktop_test (EggTest *test)
 	package = pk_desktop_get_package_for_file (desktop, "/usr/share/applications/gpk-update-viewer.desktop", NULL);
 	egg_test_assert (test, package == NULL);
 
+	/* file does not exist */
+	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
+	if (!ret) {
+		egg_warning ("skipping checks as database does not exist");
+		goto out;
+	}
+
 	/************************************************************/
 	egg_test_title (test, "open database");
-	ret = pk_desktop_open_database (desktop, NULL);
+	ret = pk_desktop_open_database (desktop, &error);
 	if (ret)
 		egg_test_success (test, "%ims", egg_test_elapsed (test));
 	else
-		egg_test_failed (test, NULL);
+		egg_test_failed (test, "failed to open: %s", error->message);
 
 	/************************************************************/
 	egg_test_title (test, "get package");
 	package = pk_desktop_get_package_for_file (desktop, "/usr/share/applications/gpk-update-viewer.desktop", NULL);
+
+	/* dummy, not yum */
+	if (egg_strequal (package, "vips-doc")) {
+		egg_test_success (test, "created db with dummy, skipping remaining tests");
+		goto out;
+	}
+
 	if (egg_strequal (package, "gnome-packagekit"))
 		egg_test_success (test, NULL);
 	else
@@ -381,7 +396,7 @@ pk_desktop_test (EggTest *test)
 		egg_test_failed (test, "length=%i", array->len);
 	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
-
+out:
 	g_object_unref (desktop);
 
 	egg_test_end (test);

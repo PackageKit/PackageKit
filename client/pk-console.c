@@ -1383,7 +1383,7 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, &error_local);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find the update details for %s: %s"), package, error_local->message);

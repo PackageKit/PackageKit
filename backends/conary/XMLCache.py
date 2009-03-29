@@ -1,5 +1,6 @@
 import os
-from xml.dom.minidom import parse, parseString
+import cElementTree
+#from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
 import urllib as url
 
@@ -15,6 +16,7 @@ from pkConaryLog import log
 from conarypk import ConaryPk
 from conaryEnums import groupMap
 
+#{{{ FuNCS
 def getGroup( categorieList ):
     where = mapGroup( categorieList )
     if where.values():
@@ -28,7 +30,7 @@ def mapGroup(categorieList):
     where = {}
     if  not categorieList:
         return where
-    log.info(categorieList)
+    #log.info(categorieList)
     for cat in categorieList:
         for group,categories in groupMap.items():
             if cat in categories:
@@ -37,7 +39,7 @@ def mapGroup(categorieList):
                 else:
                     where[group] = 1
     return where
-
+#}}}
 class XMLRepo:
     xml_path = ""
     repository = ""
@@ -52,6 +54,9 @@ class XMLRepo:
             return trove
         else:
             return None
+
+    def resolve_list(self, searchList):
+        return self._getPackages(searchList)
         
     def search(self, search, where ):
         if where == "name":
@@ -60,20 +65,20 @@ class XMLRepo:
             return self._searchDetailsPackage(search)
         elif where == "group":
             return self._searchGroupPackage(search)
-        else:
-            return self._searchPackage(search)
+        return []
 
     def _setRepo(self,repo):  
         self.repo = repo
         doc = self._open()
-        self.label = str( doc.childNodes[0].getAttribute("label") )
+        self.label = str( doc.get("label") )
 
     def _open(self):
         try:
             return self._repo
         except AttributeError:
             try:
-                self._repo =   parse(open( self.xml_path + self.repo))
+                r = self.xml_path +self.repo
+                self._repo =   cElementTree.parse(r).getroot()
                 return self._repo
             except ExpatError:
                 Pk = PackageKitBaseBackend("")
@@ -82,93 +87,84 @@ class XMLRepo:
 
     def _generatePackage(self, package_node ): 
         """ convert from package_node to dictionary """
-        pkg = {}
-        cat = []
-        for node in package_node.childNodes:
-            if pkg.has_key('category'):
-                cat.append(str(node.childNodes[0].nodeValue).replace(";","").replace("#",""))
-            else:
-                pkg[node.nodeName.encode("UTF-8")] = str(node.childNodes[0].nodeValue.encode("UTF-8")).replace(";",' ').replace("#","")
-        pkg["category"] = cat
+        cat = [ cat for cat in package_node.findall("category") ]
+        pkg = dict( 
+            name= package_node.find("name").text,
+            label = self.label,
+            version = package_node.find("version").text,
+            shortDesc = getattr( package_node.find("shortDesc"), "text", ""),
+            longDesc = getattr(package_node.find("longDesc"),"text",""),
+            url = getattr( package_node.find("url"),"text","") ,
+            category = [ i.text for i in cat ]
+        ) 
         return pkg
 
     def _getPackage(self, name):
         doc = self._open()
-        results = []
-        for packages in doc.childNodes:
-            for package in packages.childNodes:
+        for package in  doc.findall("Package"):
+            if package.find("name").text in name:
+                return self._generatePackage(package)
+
+    def _getPackages(self, name_list ):
+        doc = self._open()
+        r = []
+        for package in  doc.findall("Package"):
+            if package.find("name").text in name_list:
                 pkg = self._generatePackage(package)
-                pkg["label"] = self.label
-                if name == pkg["name"]:
-                    return pkg
-        return None
+                r.append(pkg)
+        return r
 
     def _searchNamePackage(self, name):
         doc = self._open()
         results = []
-        for packages in doc.childNodes:
-            for package in packages.childNodes:
-                pkg = self._generatePackage(package)
-                pkg["label"] = self.label
-                if name.lower() in pkg["name"].lower():
-                    results.append(pkg['name'])
-        return  [ self._getPackage(i) for i in set(results) ]
+        for package in doc.findall("Package"):
+            if name.lower() in str(package.find("name").text).lower():
+                results.append(self._generatePackage(package))
+        return results
 
     def _searchGroupPackage(self, name):
         doc = self._open()
-        results_name = []
-        for packages in doc.childNodes:
-            for package in packages.childNodes:
-                pkg = self._generatePackage(package)
-                pkg["label"] = self.label
-                """
-                if not pkg.has_key("category"):
-                    continue
-                for j in pkg["category"]:
-                    if name.lower() in j.lower():
-                        results_name.append(pkg['name'])
-                """
-                if pkg.has_key("category"):
-                    group = getGroup(pkg["category"])
-                    if name.lower() == group:
-                        results_name.append(pkg["name"])
-            log.info(results_name)
-        return [ self._getPackage(i) for i in set(results_name) ]
+        results_group = []
+        for package in doc.findall("Package"):
+            pkg = self._generatePackage(package)
+            if pkg.has_key("category"):
+                group = getGroup(pkg["category"])
+                if name.lower() == group:
+                    results_group.append(pkg)
+        return results_group
+
 
     def _searchDetailsPackage(self, name):
         return self._searchPackage(name)
+
     def _searchPackage(self, name):
         doc = self._open()
         results = []
-        for packages in doc.childNodes:
-            for package in packages.childNodes:
-                pkg = self._generatePackage(package)
-                pkg["label"] = self.label
-                for i in pkg.keys():
-                    if i  == "label":
-                        continue
-                    if i =='category':
-                        for j in pkg[i]:
-                            if name.lower() in j.lower():
-                                results.append(pkg['name'])
-                    
-                    if type(pkg[i]) == str:
-                        check = pkg[i].lower()
-                    else:
-                        check = pkg[i]
-                    if name.lower() in check:
-                        results.append(pkg['name'])
+        for package in doc.findall("Package"):
+            # categoria
+            pkg = self._generatePackage(package)
+            for i in pkg.keys():
+                if i  == "label":
+                    continue
+                if i =='category':
+                    for j in pkg[i]:
+                        if name.lower() in j.lower():
+                            results.append(pkg)
+                
+                if type(pkg[i]) == str:
+                    check = pkg[i].lower()
+                else:
+                    check = pkg[i]
+                if name.lower() in check:
+                    results.append(pkg)
             
-
-        return  [ self._getPackage(i) for i in set(results) ]
+        return results
     def _getAllPackages(self):
         doc = self._open()
         results = []
-        for packages in doc.childNodes:
-            for package in packages.childNodes:
-                pkg = self._generatePackage(package)
-                pkg["label"] = self.label
-                results.append(pkg)
+        for packages in doc.findall("Packages"):
+            pkg = self._generatePackage(package)
+            results.append(pkg)
         return results
 
 
@@ -212,8 +208,12 @@ class XMLCache:
         jobPath = self._getJobCachePath(applyList)
         log.info("jobPath %s" % jobPath)
         if os.path.exists(jobPath):
+            log.info("deleting the JobPath %s "% jobPath)
             util.rmtree(jobPath)
+            log.info("end deleting the JobPath %s "% jobPath)
+        log.info("making the logPath ")
         os.mkdir(jobPath)
+        log.info("freeze JobPath")
         updJob.freeze(jobPath)
 
     def convertTroveToDict(self, troveTupleList):
@@ -247,11 +247,32 @@ class XMLCache:
             results = repo.search(search , where )
             for i in results:
                 repositories_result.append(i)
-        return repositories_result
+        return self.list_set( repositories_result)
+    def resolve_list(self, search_list ):
+        r = []
+        for repo in self.repos:
+            res = repo.resolve_list( search_list )
+            for i in res:
+                r.append( i)
+        return self.list_set( r )
+
+    def list_set(self, repositories_result ):
+        names = set( [i["name"] for i in repositories_result] )
+        log.info("names>>>>>>>>>>>>>>>>>>>>><")
+        log.info(names)
+        results = []
+        for i in repositories_result:
+            log.info(i["name"])
+            if i["name"] in names:
+                results.append(i)
+                names.remove(i["name"])
+        log.debug([i["name"] for i in results ] )
+        return results
 
     def _fetchXML(self ):
         con = ConaryPk()
         labels = con.get_labels_from_config()
+        log.info(labels)
         for i in labels:
             label = i + '.xml'
             filename = self.xml_path + label
@@ -302,12 +323,12 @@ class XMLCache:
         categories.sort()
         return set( categories )
         
-        
 
 if __name__ == '__main__':
   #  print ">>> name"
     import sys
-    l= XMLCache().search(sys.argv[1],sys.argv[2] )
+    #print XMLCache().resolve("gimp")
+    l= XMLCache().resolve_list(sys.argv[1:])
    # print ">> details"
    # l= XMLCache().search('Internet', 'group' )
 

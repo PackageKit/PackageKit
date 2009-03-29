@@ -98,17 +98,22 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
     def setUpdateJob(self, job):
         self.currentJob = job
         self.backend.percentage(self.progress.percent)
+        log.info("callback UpdateSystem. setUpdateJob")
         log.info(self.progress.percent)
+        
 
     def creatingRollback(self):
         #self.backend.status('Creating Rollback')
         self.backend.status(STATUS_ROLLBACK)
         self.backend.percentage(self.progress.percent)
+        log.info("callback updateSystem. creatingRollback")
+        log.info(self.progress.percent)
         log.info(self.progress.percent)
 
 
     def preparingUpdate(self, troveNum, troveCount, add=0):
         #self.progress.step()
+        log.info("callback updateSystem. preparingUpdate")
         if not self.currentJob or len(self.currentJob) == 0 or troveNum > troveCount:
             return
 
@@ -140,9 +145,11 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
         log.info(self.progress.percent)
         self.backend.status(STATUS_COMMIT)
         #self.preparingUpdate(troveNum, troveCount, add=troveCount)
+        log.info("Callback UpdateSystem........ CreateingDatabaseTransaction %.2f / %.2f " % ( troveNum, troveCount ) )
+        #self.progress.set_subpercent( got*100 / float(need) )
 
     def committingTransaction(self):
-        #self.backend.status('Committing Transaction')
+        log.info('callback UpdateSystem......Committing Transaction')
 
         self.backend.status(STATUS_COMMIT)
         self.backend.percentage(self.progress.percent)
