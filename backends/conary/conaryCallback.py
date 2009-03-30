@@ -217,11 +217,11 @@ class GetUpdateCallback(callbacks.UpdateCallback):
         self.progress.step()
 
     def downloadingChangeSet(self, got, need):
-        log.info("Callback getUpdates. Changeset %s percent of %.2f/%.2f bytes" % ( int( got*100/float(need)), got/MEGA,need/MEGA) )
+       # log.info("Callback getUpdates. Changeset %s percent of %.2f/%.2f bytes" % ( int( got*100/float(need)), got/MEGA,need/MEGA) )
         self.backend.status(STATUS_DOWNLOAD)
         self.progress.set_subpercent( got*100 / float(need) )
         self.backend.percentage( self.progress.percent )
-        log.info( "%s percent" % self.progress.percent)
+       # log.info( "%s percent" % self.progress.percent)
     # 3
     def resolvingDependencies(self):
         #self.backend.status('Resolving Dependencies')
