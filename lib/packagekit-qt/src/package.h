@@ -99,6 +99,9 @@ public:
 		Removing,
 		Cleanup,
 		Obsoleting,
+		CollectionInstalled,
+		CollectionAvailable,
+		Finished,
 		UnknownState
 	} State;
 	/**

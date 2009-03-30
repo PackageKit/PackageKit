@@ -24,6 +24,7 @@
 
 #include <apt-pkg/pkgrecords.h>
 #include <apt-pkg/pkgcachegen.h>
+#include <apt-pkg/cachefile.h>
 #include <apt-pkg/policy.h>
 
 #include <pk-backend.h>
@@ -46,10 +47,10 @@ class aptcc
 {
 //     typedef int user_tag_reference;
 public:
-	aptcc(PkBackend *backend);
+	aptcc(PkBackend *backend, bool &cancel, pkgSourceList &apt_source_list);
 	~aptcc();
 
-	bool init(const char *locale, pkgSourceList &apt_source_list);
+	bool init(const char *locale);
 
 	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
@@ -65,16 +66,14 @@ public:
 	 */
 	void get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
 			 pkgCache::PkgIterator pkg,
-			 bool recursive,
-			 bool &_cancel);
+			 bool recursive);
 
 	/**
 	 *  Get requires
 	 */
 	void get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
 			  pkgCache::PkgIterator pkg,
-			  bool recursive,
-			  bool &_cancel);
+			  bool recursive);
 
 	/**
 	 *  Emits a package if it match the filters
@@ -83,6 +82,9 @@ public:
 			  const pkgCache::VerIterator &ver,
 			  PkBitfield filters = PK_FILTER_ENUM_NONE,
 			  PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
+
+	void emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			   PkBitfield filters = PK_FILTER_ENUM_NONE);
 
 	/**
 	 *  Emits details
@@ -93,6 +95,14 @@ public:
 	 *  Emits update detail
 	 */
 	void emit_update_detail(const pkgCache::PkgIterator &pkg);
+
+	/**
+	 *  seems to install packages
+	 */
+	bool installPackages(pkgDepCache &Cache,
+			     bool ShwKept,
+			     bool Ask = true,
+			     bool Safety = true);
 
 	/** Marks all upgradable and non-held packages for upgrade.
 	 *
@@ -111,15 +121,16 @@ public:
 				 undo_group *undo*/);
 
 	pkgRecords    *packageRecords;
-	pkgCache      *cacheFile;
-	pkgDepCache   *DCache;
+	pkgCache      *packageCache;
+	pkgDepCache   *packageDepCache;
 
 private:
-	MMap          *Map;
-
-	OpProgress    Progress;
-	pkgPolicy *Policy;
-	PkBackend *m_backend;
+	MMap       *Map;
+	OpProgress Progress;
+	pkgPolicy  *Policy;
+	PkBackend  *m_backend;
+	bool &_cancel;
+	pkgSourceList &m_pkgSourceList;
 
 	/** This flag is \b true iff the persistent state has changed (ie, we
 	 *  need to save the cache).
