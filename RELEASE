@@ -3,8 +3,8 @@ PackageKit Release Notes
 1. Write NEWS entries for PackageKit and gnome-packagekit in the same
    format as usual. Ignore any trivial commits.
 
-git-shortlog PACKAGEKIT_0_3_14.. | grep -v trivial | grep -v Merge > NEWS.new
-git-shortlog GNOME_PACKAGEKIT_0_3_14.. | grep -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_0_3_14.. | grep -v trivial | grep -v Merge > NEWS.new
+git shortlog GNOME_PACKAGEKIT_0_3_14.. | grep -v trivial | grep -v Merge > NEWS.new
 
 2. Add download date to docs/html/pk-download.html, save file.
 
@@ -22,7 +22,7 @@ git push --tags git+ssh://hughsient@git.freedesktop.org/git/packagekit
 5. Commit changes in gnome-packagekit git:
 
 git commit -a -m "Release version 0.3.15"
-git-tag GNOME_PACKAGEKIT_0_3_15
+git tag GNOME_PACKAGEKIT_0_3_15
 git push --tags
 git push
 

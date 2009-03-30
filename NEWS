@@ -1,3 +1,31 @@
+Version 0.3.15
+~~~~~~~~~~~~~~
+Released: 2009-03-30
+
+Bugfixes:
+ - Escape the ';' in the UpdateDetail:ChangeLog signal so we can send more
+   than one line of data (Richard Hughes)
+ - When we get the update detail in pkcon, resolve not-installed packages,
+   rather than installed ones. Fixes rh#492004 (Richard Hughes)
+ - Fix the self test by using actual provides in the catalog file (Richard Hughes)
+ - Don't dereference a NULL pointer in pk_console_resolve() which can be done
+   using pkcon list-install (Richard Hughes)
+ - Don't use an local error in pkcon list-install else we'll fail to free it,
+   and it's non-fatal (Richard Hughes)
+ - Ensure we set status finished when we return updates from the cache (Richard Hughes)
+ - Make the dbus policy more fine grained (Sebastian Heinlein)
+ - qt: Fix for the updates and obsoletes delimiter (Daniel Nicoletti)
+
+Backends:
+ - apt: Allow the properties and introspection interface of the backend
+   to everyone (Sebastian Heinlein)
+ - yum: Adds an auto_close attribute to the rpmdb object (Seth Vidal)
+ - yum: Don't backtrace with an internal error when the filename is not
+   unicode. Fixes rh#480440 (Richard Hughes)
+ - yum: Remove the tabs in the package description (Richard Hughes)
+ - yum: Don't output duplicated updates. Fixes rh#488509 (Richard Hughes)
+ - zypp: Fix up virtual callback methods (Scott Reeves)
+
 Version 0.3.14
 ~~~~~~~~~~~~~~
 Released: 2009-02-02
