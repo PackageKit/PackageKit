@@ -1,3 +1,94 @@
+Version 0.4.6
+~~~~~~~~~~~~~
+Released: 2009-03-30
+
+Notes:
+- Lots of profiling lead to many speed increases, most at cold startup
+- Fixes to command not found for bash 4.0
+- Experimental aptcc backend merged, which does not use python-apt at all
+
+Translations:
+ - Add Portuguese translation (Rui Manuel da Costa Gouveia)
+ - Updated Italian translation (Daniele Catanesi)
+ - Updated Punjabi translation (aalam)
+ - Updated Italian translation (ccielogs)
+ - Updated Brazilian Portuguese translation (igor)
+ - Updated Spanish translation (kad)
+ - Updated Hungarian translation (kelemeng)
+ - Updated Serbian translation (kmilos)
+ - Updated Danish translation (kristho)
+ - Updated Slovak translation (palos)
+ - Updated Portuguese translation (ruigo)
+ - Updated Serbian translation (soko)
+ - Updated Italian translation (tombo)
+ - Updated German translation (tomspur)
+ - Updated Finnish translation (vpv)
+ - Updated Catalan translation (xconde)
+
+New Features:
+ - Add a config variable to be able to turn off the updates cache for debugging (Richard Hughes)
+ - Warn if there are any pending sources at the end of each self test section (Richard Hughes)
+
+Bugfixes:
+ - Make the GTK+ module resident to fix crash when session is reloaded (Matthias Clasen)
+ - Only check the transaction database once at startup, to reduce 25ms off the cold start (Richard Hughes)
+ - Don't force SQLite to do fsync in PkTransactionDb, to reduce our cold cache start by 700ms (Richard Hughes)
+ - Don't store the job-id in a separate file, as this adds 37ms to each generate method (Richard Hughes)
+ - Don't allow pk_backend_error_timeout_delay_cb() to be called more than once (Richard Hughes)
+ - Escape the ';' in the UpdateDetail:ChangeLog signal so we can send more than one line (Richard Hughes)
+ - Use the bash 4.0 command_not_found function name to fix new versions of bash (Richard Hughes)
+ - When we get the update detail in pkcon, resolve not-installed packages. Fixes rh#492004 (Richard Hughes)
+ - glib: Don't hardcode /var/lib/PackageKit for the desktop database (Richard Hughes)
+ - qt: Check for QtXml in configure and use the correct deps in the packagekit-qt pc file (Richard Hughes)
+ - qt: Made Transaction::cancel() a slot (Daniel Nicoletti)
+ - qt: Updated almost all the enums (Daniel Nicoletti)
+
+Backends:
+ - alpm: Fixed a typo that caused search failures (Valeriy Lyasotskiy)
+ - aptcc: Search from apt-cache working (Daniel Nicoletti)
+ - aptcc: Searching like aptitude without leaks (Daniel Nicoletti)
+ - aptcc: Fixed versions bug now using pin's file (Daniel Nicoletti)
+ - aptcc: Fixed the development filter (Daniel Nicoletti)
+ - aptcc: Added get_files and search_file support (Daniel Nicoletti)
+ - aptcc: Class search_name improved by the matcher class search_details added (Daniel Nicoletti)
+ - aptcc: Improved search files by creating a stecial matcher (Daniel Nicoletti)
+ - aptcc: Fixed a small bug in search_name and removed a unused function (Daniel Nicoletti)
+ - aptcc: Initial cancel support (Daniel Nicoletti)
+ - aptcc: Added cancel support (Daniel Nicoletti)
+ - aptcc: Added get_requires and get_depends support (Daniel Nicoletti)
+ - aptcc: Included emit_details in aptcc class (Daniel Nicoletti)
+ - aptcc: Added recursive mode to get_requires and get_depends, still need some improvements like OR deps (Daniel Nicoletti)
+ - aptcc: Added backend_resolve (Daniel Nicoletti)
+ - aptcc: Added get_updates and get_update_detail support although there still some stuff to improve (Daniel Nicoletti)
+ - aptcc: Added refresh cache support, it downloads the translation files (Daniel Nicoletti)
+ - aptcc: Added package_download support (Daniel Nicoletti)
+ - aptcc: Added repo_list and repo_enable support (Daniel Nicoletti)
+ - aptcc: Fixed repo_enable, progress on fetcher, emit package on fetcher and some code clean up (Daniel Nicoletti)
+ - aptcc: Added backend finished before all returns (Daniel Nicoletti)
+ - conary: Add more info to callbacks (Andres Vargas)
+ - conary: Fix updateSystem (Andres Vargas)
+ - conary: Remove error signal when not found (Andres Vargas)
+ - conary: Remove many conary instances (Andres Vargas)
+ - conary: Add DepFailure exception and catch the Packages (Andres Vargas)
+ - conary: Add xmlfile for conary.rpath.com repo what its missed (Andres Vargas)
+ - conary: More rapid search (Andres Vargas)
+ - conary: Fix the high memory usage on search (Andres Vargas)
+ - conary: Fix high memory usage (Andres Vargas)
+ - conary: Fix repository output on get-details (Andres Vargas)
+ - conary: Implement get-packages (Andres Vargas)
+ - conary: Fix the get-updates broke conary: add licenses metadata (Andres Vargas)
+ - dummy: Make the distro upgrade data configurable (Richard Hughes)
+ - dummy: Do the restart required when we update packages too (Richard Hughes)
+ - poldek: Emit file list we downloaded in DownloadPackages (Marcin Banasiak)
+ - yum: Return the ChangeLog data for yum updates if it is available (Richard Hughes)
+ - yum: Don't explode parsing the ChangeLog data when not unicode (Richard Hughes)
+ - yum: Only show update-detail ChangeLog entries newer than the package we have installed (Richard Hughes)
+ - yum: Remove the tabs in the package description (Richard Hughes)
+ - yum: Don't explode when faced with an invalid ChangeLog header, just report a message (Richard Hughes)
+ - yum: Don't explode when we can't find the package when we try to get the update detail (Richard Hughes)
+ - yum: Don't output duplicated updates. Fixes rh#488509 (Richard Hughes)
+ - yum: Replace the hardcoded comps->groups map with a config file (Richard Hughes)
+
 Version 0.4.5
 ~~~~~~~~~~~~~
 Released: 2009-03-09
