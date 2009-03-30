@@ -2351,11 +2351,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 # get each element of the ChangeLog
                 changes = pkg.returnChangelog()
                 for change in changes:
-                    gmtime = time.gmtime(change[0])
-                    time_str = "%i-%i-%i" % (gmtime[0], gmtime[1], gmtime[2])
-                    header = _to_unicode(change[1])
 
-                    # format "Seth Vidal <skvidal at fedoraproject.org> - 3:3.2.20-1"
+                    # ensure change has require number of fields
+                    if len(change) != 3:
+                        changelog += ";*Could not parse change element:* '%s';" % str(change)
+                        continue
+
+                    # get version number from "Seth Vidal <skvidal at fedoraproject.org> - 3:3.2.20-1"
+                    header = _to_unicode(change[1])
                     version = header.rsplit(' ', 1)
 
                     # is older than what we have already?
@@ -2367,7 +2370,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         if rc >= 0:
                             break
 
-                    changelog += _format_str('**' + time_str + '** ' + version[0] + ' ' + version[1] + '\n' + _to_unicode(change[2].replace("\t", " ")) + '\n\n')
+                    gmtime = time.gmtime(change[0])
+                    time_str = "%i-%i-%i" % (gmtime[0], gmtime[1], gmtime[2])
+                    body = _to_unicode(change[2].replace("\t", " "))
+                    changelog += _format_str('**' + time_str + '** ' + header + '\n' + body + '\n\n')
 
             cve_url = _format_list(urls['cve'])
             bz_url = _format_list(urls['bugzilla'])
