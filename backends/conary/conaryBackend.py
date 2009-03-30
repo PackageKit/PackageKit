@@ -33,6 +33,7 @@ from conary.lib import util
 
 from packagekit.backend import *
 from packagekit.package import *
+from packagekit.enums import PackageKitEnum
 from packagekit.progress import PackagekitProgress
 from conaryCallback import UpdateCallback, GetUpdateCallback
 from conaryCallback import RemoveCallback, UpdateSystemCallback
@@ -243,6 +244,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self._resolve_list( fltlist  )
         else:
             log.info("NOT FOUND %s " % searchlist )
+            self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,"search not found")
             #self.error(ERROR_INTERNAL_ERROR, "packagenotfound")
 
 
@@ -693,29 +695,23 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         #update = self._get_updated(pkg)
         update = ""
         obsolete = ""
-        #desc, urls, reboot = self._get_update_extras(package_id)
-        #cve_url = _format_list(urls['cve'])
         cve_url = ""
-        #bz_url = _format_list(urls['jira'])
-        bz_url = ""
-        #vendor_url = _format_list(urls['vendor'])
         if pkgDict:
             if "url" in pkgDict:
                 vendor_url = pkgDict["url"]
             else:
                 vendor_url = ""
-            if  name in self.rebootpkgs:
-                reboot = RESTART_SYSTEM
-            else:
-                reboot = RESTART_NONE
             if "longDesc" in pkgDict:
                 desc = pkgDict["longDesc"]
             else:
                 desc = ""
+            reboot = self._get_restart(pkgDict.get("name"))
+            state = self._get_branch( pkgDict.get("label"))
+            bz_url = self._get_fits(pkgDict.get("label"), pkgDict.get("name"))
             #
             #def update_detail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated):
             self.update_detail(package_id, update, obsolete, vendor_url, bz_url, cve_url,
-                    reboot, desc, changelog="", state="", issued="", updated = "")
+                    reboot, desc, changelog="", state= state, issued="", updated = "")
 
    # @ExceptionHandler
     def get_details(self, package_ids):
@@ -741,24 +737,28 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         if name and pkgDict:
             shortDesc = ""
             longDesc = ""
-            url = "http://www.foresightlinux.org/packages/%s.html" % name
+            url = ""
             categories  = None
+            license = ""
 
             if "shortDesc" in pkgDict:
                 shortDesc = pkgDict["shortDesc"] 
             if "longDesc" in pkgDict:
                 longDesc = pkgDict["longDesc"]
             if "url" in pkgDict:
-                url = pkgDict["url"]
+                url = pkgDict["url"] #+ ";%s" % pkgDict["url"].replace("http://","")
             if "category" in pkgDict:
                 categories =  Cache().getGroup( pkgDict['category'])
+            if "licenses" in pkgDict:
+                license = self._get_license(pkgDict["licenses"])
+                log.info(license)
             # Package size goes here, but I don't know how to find that for conary packages.
             #
             #LICENSE_UNKNOWN = "unknown"
             pkg_id = package_id.split(";")
             pkg_id[3] = pkgDict["label"]
             package_id = ";".join(pkg_id)
-            self.details(package_id, LICENSE_UNKNOWN, categories, longDesc, url, 0)
+            self.details(package_id, license, categories, longDesc, url, 0)
 
     def _show_package(self, name, version, flavor, status):
         '''  Show info about package'''
@@ -787,20 +787,37 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
 
     def _get_status(self, notice):
-        # We need to figure out how to get this info, this is a place holder
-        #ut = notice['type']
-        # TODO : Add more types to check
-        #if ut == 'security':
-        #    return INFO_SECURITY
-        #else:
-        #    return INFO_NORMAL
         if name in self.rebootpkgs:
             return INFO_SECURITY
         elif name in self.restartpkgs:
             return INFO_INSTALLED
         else:
             return INFO_NORMAL
+    def _get_fits(self, branch, pkg_name):
+        if "conary.rpath.com" in branch:
+            return "http://issues.rpath.com;rPath Issues Tracker"
+        elif "foresight.rpath.org" in branch:
+            return "http://issues.foresightlinux.org; Foresight Issues Tracker"
+        else:
+            return ""
+    def _get_license(self, license_list ):
+        if license_list == "":
+           return ""
+        for i in license_list:
+            lic = i.split("/")
+            for j in PackageKitEnum.free_licenses:
+                if lic[1:][0].lower() == j.lower():
+                    return j
+        return ""
 
+    def _get_branch(self, branch ):
+        branchList = branch.split("@")
+        if "2-qa" in branchList[1]:
+            return UPDATE_STATE_TESTING
+        elif "2-devel" in branchList[1]:
+            return UPDATE_STATE_UNSTABLE
+        else:
+            return UPDATE_STATE_STABLE
     @ExceptionHandler
     def get_updates(self, filters):
         self.allow_cancel(True)
@@ -811,7 +828,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.client.setUpdateCallback(getUpdateC)
 
         log.info("============== get_updates ========================")
-
         log.info("get fullUpdateItemList")
         updateItems =self.client.fullUpdateItemList()
 #        updateItems = cli.cli.getUpdateItemList()
@@ -843,12 +859,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             #self._show_package(name, version, flavor, info)
         
         pkg_list = Cache().resolve_list([ name for (  ( name,version,flavor), info )  in r ])
+        log.info("generate the pkgs ")
         new_res = []
         for pkg in pkg_list:
             for ( trove, info ) in r:
-                if trove[0] == pkg["name"]:
-                    pkg = self._convert_package( trove, pkg)
-                    new_res.append( ( pkg, info ) )
+                #log.info( ( pkg, trove) ) 
+                name,version,flav = trove
+                if name == pkg["name"]:
+                    npkg = self._convert_package( trove, pkg)
+                    new_res.append( ( npkg, info ) )
+
         log.info(new_res)
 
         self._show_package_list(new_res)
