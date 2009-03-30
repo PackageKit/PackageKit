@@ -98,7 +98,8 @@ class XMLRepo:
             shortDesc = getattr( package_node.find("shortDesc"), "text", ""),
             longDesc = getattr(package_node.find("longDesc"),"text",""),
             url = getattr( package_node.find("url"),"text","") ,
-            category = [ i.text for i in cat ]
+            category = [ i.text for i in cat ],
+            licenses = eval( getattr( package_node.find("licenses"),"text", "str('')") )
         ) 
         return pkg
 
@@ -218,6 +219,7 @@ class XMLCache:
         os.mkdir(jobPath)
         log.info("freeze JobPath")
         updJob.freeze(jobPath)
+        log.info("end freeze JobPath")
 
     def convertTroveToDict(self, troveTupleList):
         mList = []
