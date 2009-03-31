@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-03-03 11:42+0000\n"
-"PO-Revision-Date: 2009-03-20 21:29+0000\n"
+"POT-Creation-Date: 2009-03-31 14:17+0000\n"
+"PO-Revision-Date: 2009-03-31 21:54+0000\n"
 "Last-Translator: A S Alam <aalam@users.sf.net>\n"
 "Language-Team: Punjabi/Panjabi <punjab-l10n@list.sf.net>\n"
 "MIME-Version: 1.0\n"
@@ -358,6 +358,7 @@ msgstr "ਇਹ ਟੂਲ ਪੈਕੇਜ ਲਿਸਟ ਨਹੀਂ ਲਈ ਜਾ
 
 #. TRANSLATORS: There was an error saving the list
 #: ../client/pk-console.c:1172
+#, c-format
 msgid "Failed to save to disk"
 msgstr "ਡਿਸਕ ਉੱਤੇ ਸੰਭਾਲਣ ਲਈ ਫੇਲ੍ਹ ਹੈ"
 
@@ -379,6 +380,7 @@ msgstr "ਹਟਾਉਣ ਲਈ ਪੈਕੇਜ"
 
 #. TRANSLATORS: We didn't find any differences
 #: ../client/pk-console.c:1314
+#, c-format
 msgid "No new packages need to be installed"
 msgstr "ਕੋਈ ਨਵਾਂ ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ ਹੈ"
 
@@ -399,6 +401,7 @@ msgstr "ਨਹੀਂ ਲੱਭਿਆ।"
 
 #. TRANSLATORS: We didn't find any packages to install
 #: ../client/pk-console.c:1347
+#, c-format
 msgid "No packages can be found to install"
 msgstr "ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਕੋਈ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭਿਆ"
 
@@ -488,11 +491,8 @@ msgstr "ਸਬ-ਕਮਾਂਡ:"
 #. TRANSLATORS: if we should show debugging data
 #: ../client/pk-console.c:1757 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
-#: ../contrib/command-not-found/pk-command-not-found.c:510
-#: ../contrib/app-install/pk-app-install-add.c:244
-#: ../contrib/app-install/pk-app-install-create.c:48
-#: ../contrib/app-install/pk-app-install-generate.c:244
-#: ../contrib/app-install/pk-app-install-remove.c:87 ../src/pk-main.c:199
+#: ../contrib/command-not-found/pk-command-not-found.c:518
+#: ../src/pk-main.c:199
 msgid "Show extra debugging information"
 msgstr "ਹੋਰ ਡੀਬੱਗ ਜਾਣਕਾਰੀ ਵੇਖੋ"
 
@@ -554,7 +554,8 @@ msgstr "ਹਟਾਉਣ ਵਾਸਤੇ ਪੈਕੇਜ ਨਾਂ ਚਾਹੀ�
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1963
-msgid "A destination directory and then the package names to download are required"
+msgid ""
+"A destination directory and then the package names to download are required"
 msgstr "ਡਾਊਨਲੋਡ ਕਰਨ ਵਾਸਤੇ ਟਿਕਾਣਾ ਡਾਇਰੈਕਟਰੀ ਅਤੇ ਤਦ ਪੈਕੇਜ ਨਾਂ ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
@@ -757,6 +758,7 @@ msgstr "ਪੈਕੇਜਕਿੱਟ ਮਾਨੀਟਰ"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:118
+#, c-format
 msgid "The package could not be found"
 msgstr "ਪੈਕੇਜ ਨਹੀਂ ਲੱਭਿਆ ਜਾ ਸਕਿਆ"
 
@@ -776,71 +778,71 @@ msgid "Please enter a number from 1 to %i: "
 msgstr "੧ ਤੋਂ %i ਤੱਕ ਨੰਬਰ ਦਿਓ ਜੀ:"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:361
+#: ../contrib/command-not-found/pk-command-not-found.c:369
 msgid "Failed to search for file"
 msgstr "ਫਾਇਲ ਲਈ ਖੋਜ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:485
+#: ../contrib/command-not-found/pk-command-not-found.c:493
 msgid "Failed to launch:"
 msgstr "ਚਲਾਉਣ ਲਈ ਫੇਲ੍ਹ:"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:526
+#: ../contrib/command-not-found/pk-command-not-found.c:534
 msgid "PackageKit Command Not Found"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਕਮਾਂਡ ਨਹੀਂ ਲੱਭੀ"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:548
+#: ../contrib/command-not-found/pk-command-not-found.c:556
 msgid "Command not found."
 msgstr "ਕਮਾਂਡ ਨਹੀਂ ਲੱਭੀ।"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:555
+#: ../contrib/command-not-found/pk-command-not-found.c:563
 msgid "Similar command is:"
 msgstr "ਰਲਦੀ ਕਮਾਂਡ ਹੈ:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:564
+#: ../contrib/command-not-found/pk-command-not-found.c:572
 msgid "Run similar command:"
 msgstr "ਰਲਦੀ ਕਮਾਂਡ ਚਲਾਓ:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:576
-#: ../contrib/command-not-found/pk-command-not-found.c:585
+#: ../contrib/command-not-found/pk-command-not-found.c:584
+#: ../contrib/command-not-found/pk-command-not-found.c:593
 msgid "Similar commands are:"
 msgstr "ਰਲਦੀਆਂ ਕਮਾਂਡਾਂ ਹਨ:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:592
+#: ../contrib/command-not-found/pk-command-not-found.c:600
 msgid "Please choose a command to run"
 msgstr "ਚਲਾਉਣ ਲਈ ਕਮਾਂਡ ਦੀ ਚੋਣ ਕਰੋ ਜੀ"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:607
+#: ../contrib/command-not-found/pk-command-not-found.c:615
 msgid "The package providing this file is:"
 msgstr "ਪੈਕੇਜ ਇਹ ਫਾਇਲ ਦਿੰਦਾ ਹੈ:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:612
+#: ../contrib/command-not-found/pk-command-not-found.c:620
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "ਕਮਾਂਡ '%2$s' ਦੇਣ ਲਈ ਪੈਕੇਜ '%1$s' ਇੰਸਟਾਲ ਕਰਨਾ ਹੈ?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:633
+#: ../contrib/command-not-found/pk-command-not-found.c:641
 msgid "Packages providing this file are:"
 msgstr "ਪੈਕੇਜ ਇਹ ਫਾਇਲ ਦਿੰਦਾ ਹੈ:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:642
+#: ../contrib/command-not-found/pk-command-not-found.c:650
 msgid "Suitable packages are:"
 msgstr "ਢੁੱਕਵੇਂ ਪੈਕੇਜ ਹਨ:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:650
+#: ../contrib/command-not-found/pk-command-not-found.c:658
 msgid "Please choose a package to install"
 msgstr "ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪੈਕੇਜ ਚੁਣੋ ਜੀ"
 
@@ -898,52 +900,6 @@ msgstr "ਤੁਹਾਡੇ ਸਿਸਟਮ ਉੱਤੇ ਕੋਈ ਪੈਕੇ�
 msgid "Installing..."
 msgstr "ਇੰਸਟਾਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ..."
 
-#. TRANSLATORS: the action is non-localised
-#: ../contrib/app-install/pk-app-install-add.c:247
-#: ../contrib/app-install/pk-app-install-generate.c:247
-msgid "The action, one of 'create', 'add', or 'remove'"
-msgstr "ਕਾਰਵਾਈ 'ਬਣਾਓ', 'ਸ਼ਾਮਲ', ਜਾਂ 'ਹਟਾਓ'"
-
-#. TRANSLATORS: if we are specifing a out-of-tree database
-#: ../contrib/app-install/pk-app-install-add.c:250
-#: ../contrib/app-install/pk-app-install-generate.c:250
-#: ../contrib/app-install/pk-app-install-remove.c:90
-msgid "Main cache file to use (if not specififed, default is used)"
-msgstr "ਵਰਤਣ ਲਈ ਮੁੱਖ ਕੈਸ਼ ਫਾਇਲ (ਜੇ ਨਾ ਦਿੱਤੀ ਤਾਂ ਡਿਫਾਲਟ ਵਰਤੀ ਜਾਵੇਗੀ)"
-
-#. TRANSLATORS: the source database, typically used for adding
-#: ../contrib/app-install/pk-app-install-add.c:253
-#: ../contrib/app-install/pk-app-install-generate.c:253
-msgid "Source cache file to add to the main database"
-msgstr "ਮੁੱਖ ਡਾਟਾਬੇਸ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰਨ ਵਾਸਤੇ ਸਰੋਤ ਕੈਸ਼ ਫਾਇਲ"
-
-#. TRANSLATORS: the icon directory
-#: ../contrib/app-install/pk-app-install-add.c:256
-#: ../contrib/app-install/pk-app-install-generate.c:256
-#: ../contrib/app-install/pk-app-install-remove.c:93
-msgid "Icon directory"
-msgstr "ਆਈਕਾਨ ਡਾਇਰੈਕਟਰੀ"
-
-#. TRANSLATORS: the repo of the software source, e.g. fedora
-#: ../contrib/app-install/pk-app-install-add.c:259
-#: ../contrib/app-install/pk-app-install-generate.c:259
-#: ../contrib/app-install/pk-app-install-remove.c:96
-msgid "Name of the remote repo"
-msgstr "ਰਿਮੋਟ ਰੈਪੋ ਦਾ ਨਾਂ"
-
-#. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/app-install/pk-app-install-add.c:270
-#: ../contrib/app-install/pk-app-install-create.c:62
-#: ../contrib/app-install/pk-app-install-generate.c:270
-#: ../contrib/app-install/pk-app-install-remove.c:107
-msgid "PackageKit Application Database Installer"
-msgstr "ਪੈਕੇਜਕਿੱਟ ਐਪਲੀਕੇਸ਼ਨ ਡਾਟਾਬੇਸ ਇੰਸਟਾਲਰ"
-
-#. TRANSLATORS: if we are specifing a out-of-tree database
-#: ../contrib/app-install/pk-app-install-create.c:51
-msgid "Main database file to use (if not specififed, default is used)"
-msgstr "ਵਰਤਣ ਲਈ ਮੁੱਖ ਡਾਟਾਬੇਸ ਫਾਇਲ (ਜੇ ਨਾ ਦਿੱਤੀ ਤਾਂ ਡਿਫਾਲਟ ਵਰਤੀ ਜਾਵੇਗੀ)"
-
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਕੈਟਾਲਾਗ"
@@ -955,6 +911,100 @@ msgstr "ਪੈਕੇਜਕਿੱਟ ਪੈਕੇਜ ਲਿਸਟ"
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਸਰਵਿਸ ਪੈਕ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "EULA ਮਨਜ਼ੂਰ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "EULA  ਮਨਜ਼ੂਰ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr "ਤੁਹਾਡੇ ਵਲੋਂ ਨਾ ਸ਼ੁਰੂ ਕੀਤੀ ਗਈ ਟਾਸਕ ਨੂੰ ਰੱਦ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid "Authentication is required to change software source parameters"
+msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਪੈਰਾਮੀਟਰ ਬਦਲਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"ਪੈਕੇਜ ਟਰੱਸਟ ਕੀਤਾ ਬਣਾਉਣ ਲਈ ਸਾਈਨ ਵਾਸਤੇ ਕੁੰਜੀ ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install a signed package"
+msgstr "ਸਾਈਨ ਕੀਤਾ ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to install an untrusted package"
+msgstr "ਅਣ-ਟਰੱਸਟ ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to refresh the system sources"
+msgstr "ਸਿਸਟਮ ਸਰੋਤ ਤਾਜ਼ਾ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to remove packages"
+msgstr "ਪੈਕੇਜ ਹਟਾਉਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid "Authentication is required to rollback a transaction"
+msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਰੋਲਬੈਕ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr "ਪੈਕੇਜ ਡਾਊਨਲੋਡ ਕਰਨ ਵਾਸਤੇ ਨੈੱਟਵਰਕ ਪਰਾਕਸੀ ਸੈੱਟ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Authentication is required to update packages"
+msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ ਕਰਨ ਵਾਸਤੇ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Cancel foreign task"
+msgstr "ਬਾਹਰੀ ਟਾਸਕ ਰੱਦ ਕਰੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Change software source parameters"
+msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਪੈਰਾਮੀਟਰ ਬਦਲੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Install signed package"
+msgstr "ਸਾਈਨ ਕੀਤੇ ਪੈਕੇਜ ਇੰਸਟਾਲ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Install untrusted local file"
+msgstr "ਅਣ-ਟਰੱਸਟ ਲੋਕਲ ਫਾਇਲ ਇੰਸਟਾਲ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Refresh system sources"
+msgstr "ਸਿਸਟਮ ਸਰੋਤ ਤਾਜ਼ਾ ਕਰੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Remove package"
+msgstr "ਪੈਕੇਜ ਹਟਾਓ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Rollback to a previous transaction"
+msgstr "ਪਿਛਲੀ ਟਰਾਂਸੈਕਸ਼ਨ ਰੋਲ-ਬੈਕ ਕਰੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Set network proxy"
+msgstr "ਨੈੱਟਵਰਕ ਪਰਾਕਸੀ ਸੈੱਟ ਕਰੋ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:21
+msgid "Trust a key used for signing packages"
+msgstr "ਪੈਕੇਜ ਸਾਈਨ ਲਈ ਵਰਤੀ ਕੁੰਜੀ ਉੱਤੇ ਟਰੱਸਟ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:22
+msgid "Update packages"
+msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ"
 
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
@@ -1024,4 +1074,23 @@ msgstr "ਸਿਸਟਮ ਬੱਸ ਨਾਲ ਕੁਨੈਕਟ ਨਹੀਂ ਕ�
 msgid "Error trying to start: %s\n"
 msgstr "ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਗਲਤੀ: %s\n"
 
+#~ msgid "The action, one of 'create', 'add', or 'remove'"
+#~ msgstr "ਕਾਰਵਾਈ 'ਬਣਾਓ', 'ਸ਼ਾਮਲ', ਜਾਂ 'ਹਟਾਓ'"
 
+#~ msgid "Main cache file to use (if not specififed, default is used)"
+#~ msgstr "ਵਰਤਣ ਲਈ ਮੁੱਖ ਕੈਸ਼ ਫਾਇਲ (ਜੇ ਨਾ ਦਿੱਤੀ ਤਾਂ ਡਿਫਾਲਟ ਵਰਤੀ ਜਾਵੇਗੀ)"
+
+#~ msgid "Source cache file to add to the main database"
+#~ msgstr "ਮੁੱਖ ਡਾਟਾਬੇਸ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰਨ ਵਾਸਤੇ ਸਰੋਤ ਕੈਸ਼ ਫਾਇਲ"
+
+#~ msgid "Icon directory"
+#~ msgstr "ਆਈਕਾਨ ਡਾਇਰੈਕਟਰੀ"
+
+#~ msgid "Name of the remote repo"
+#~ msgstr "ਰਿਮੋਟ ਰੈਪੋ ਦਾ ਨਾਂ"
+
+#~ msgid "PackageKit Application Database Installer"
+#~ msgstr "ਪੈਕੇਜਕਿੱਟ ਐਪਲੀਕੇਸ਼ਨ ਡਾਟਾਬੇਸ ਇੰਸਟਾਲਰ"
+
+#~ msgid "Main database file to use (if not specififed, default is used)"
+#~ msgstr "ਵਰਤਣ ਲਈ ਮੁੱਖ ਡਾਟਾਬੇਸ ਫਾਇਲ (ਜੇ ਨਾ ਦਿੱਤੀ ਤਾਂ ਡਿਫਾਲਟ ਵਰਤੀ ਜਾਵੇਗੀ)"
