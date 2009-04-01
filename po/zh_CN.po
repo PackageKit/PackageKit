@@ -1,660 +1,646 @@
+# translation of packagekit.master.po to Simplified Chinese
 # 简体中文翻译
 # Copyright (C) 2008 THE 'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the  package.
-# Chen Yu <jcomee@gmail.com>, 2008
-# 甘露(Gan Lu) <rhythm.gan@gmail.com>, 2008
-# zhou renren <zhourenren@gmail.com>,2009
 #
 #
+# Chen Yu <jcomee@gmail.com>, 2008.
+# 甘露(Gan Lu) <rhythm.gan@gmail.com>, 2008.
+# zhou renren <zhourenren@gmail.com>,2009.
+# Leah Liu <lliu@redhat.com>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-02-17 08:37+0000\n"
-"PO-Revision-Date: 2009-02-21 13:48+0700\n"
-"Last-Translator: 甘露(Gan Lu) <rhythm.gan@gmail.com>\n"
-"Language-Team: \n"
+"POT-Creation-Date: 2009-03-31 08:08+0000\n"
+"PO-Revision-Date: 2009-04-01 21:53+1000\n"
+"Last-Translator: Leah Liu <lliu@redhat.com>\n"
+"Language-Team: Simplified Chinese <zh@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:230
+#: ../client/pk-console.c:234
 msgid "Transaction"
 msgstr "处理"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:232
+#: ../client/pk-console.c:236
 msgid "System time"
 msgstr "系统时间"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:234
+#: ../client/pk-console.c:238
 msgid "Succeeded"
 msgstr "成功"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:234
-#: ../client/pk-console.c:401
+#: ../client/pk-console.c:238 ../client/pk-console.c:405
 msgid "True"
 msgstr "是"
 
-#: ../client/pk-console.c:234
-#: ../client/pk-console.c:401
+#: ../client/pk-console.c:238 ../client/pk-console.c:405
 msgid "False"
 msgstr "否"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
-#: ../client/pk-console.c:236
+#: ../client/pk-console.c:240
 msgid "Role"
 msgstr "操作"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:241
+#: ../client/pk-console.c:245
 msgid "Duration"
 msgstr "持续时间"
 
-#: ../client/pk-console.c:241
+#: ../client/pk-console.c:245
 msgid "(seconds)"
 msgstr "秒"
 
 #. TRANSLATORS: this is The command line used to do the action
-#: ../client/pk-console.c:245
+#: ../client/pk-console.c:249
 msgid "Command line"
 msgstr "命令行"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:247
+#: ../client/pk-console.c:251
 msgid "User ID"
 msgstr "用户ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:254
+#: ../client/pk-console.c:258
 msgid "Username"
 msgstr "用户名"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:258
+#: ../client/pk-console.c:262
 msgid "Real name"
 msgstr "真实姓名"
 
-#: ../client/pk-console.c:266
+#: ../client/pk-console.c:270
 msgid "Affected packages:"
 msgstr "受影响的软件包"
 
-#: ../client/pk-console.c:268
+#: ../client/pk-console.c:272
 msgid "Affected packages: None"
 msgstr "受影响的软件包:无"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:293
+#: ../client/pk-console.c:297
 msgid "Distribution"
 msgstr "发布"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:295
+#: ../client/pk-console.c:299
 msgid "Type"
 msgstr "类型"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:297
-#: ../client/pk-console.c:320
+#: ../client/pk-console.c:301 ../client/pk-console.c:324
 msgid "Summary"
 msgstr "摘要"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:309
+#: ../client/pk-console.c:313
 msgid "Category"
 msgstr "分类"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:311
+#: ../client/pk-console.c:315
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:314
+#: ../client/pk-console.c:318
 msgid "Parent"
 msgstr "上一级"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:317
+#: ../client/pk-console.c:321
 msgid "Name"
 msgstr "上一级组名"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:323
+#: ../client/pk-console.c:327
 msgid "Icon"
 msgstr "图标"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:338
+#: ../client/pk-console.c:342
 msgid "Details about the update:"
 msgstr "本次更新详情："
 
 #. TRANSLATORS: details about the update, package name and version
-#: ../client/pk-console.c:340
+#: ../client/pk-console.c:344
 msgid "Package"
 msgstr "软件包"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:343
+#: ../client/pk-console.c:347
 msgid "Updates"
 msgstr "更新"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:347
+#: ../client/pk-console.c:351
 msgid "Obsoletes"
 msgstr "过时"
 
 #. TRANSLATORS: details about the update, the vendor URLs
-#: ../client/pk-console.c:351
+#: ../client/pk-console.c:355
 msgid "Vendor"
 msgstr "厂商"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:355
+#: ../client/pk-console.c:359
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:359
+#: ../client/pk-console.c:363
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:363
+#: ../client/pk-console.c:367
 msgid "Restart"
 msgstr "重启"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:367
+#: ../client/pk-console.c:371
 msgid "Update text"
 msgstr "更新文档"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:371
+#: ../client/pk-console.c:375
 msgid "Changes"
 msgstr "变化"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:375
+#: ../client/pk-console.c:379
 msgid "State"
 msgstr "状态"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:380
+#: ../client/pk-console.c:384
 msgid "Issued"
 msgstr "发布"
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:385
+#: ../client/pk-console.c:389
 msgid "Updated"
 msgstr "已更新"
 
-#: ../client/pk-console.c:472
-#: ../client/pk-console.c:474
+#: ../client/pk-console.c:476 ../client/pk-console.c:478
 msgid "Percentage"
 msgstr "百分比"
 
-#: ../client/pk-console.c:474
+#: ../client/pk-console.c:478
 msgid "Unknown"
 msgstr "未知"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:525
+#: ../client/pk-console.c:529
 msgid "System restart required by:"
 msgstr "要求系统重启的软件包:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:528
+#: ../client/pk-console.c:532
 msgid "Session restart required:"
 msgstr "要求会话重启的软件包:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:531
+#: ../client/pk-console.c:535
 msgid "Application restart required by:"
 msgstr "要求应用程序重启的软件包:"
 
 #. TRANSLATORS: a package needs to restart they system
-#: ../client/pk-console.c:568
+#: ../client/pk-console.c:572
 msgid "Please restart the computer to complete the update."
 msgstr "请重新启动计算机以完成本次更新。"
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:571
+#: ../client/pk-console.c:575
 msgid "Please logout and login to complete the update."
 msgstr "请登出并登录以完成本次更新。"
 
 #. TRANSLATORS: a package needs to restart the application
-#: ../client/pk-console.c:574
+#: ../client/pk-console.c:578
 msgid "Please restart the application as it is being used."
 msgstr "请重新启动正在使用中的程序。"
 
 #. TRANSLATORS: The package is already installed on the system
-#: ../client/pk-console.c:687
+#: ../client/pk-console.c:691
 #, c-format
 msgid "The package %s is already installed"
 msgstr "该软件包 '%s' 已经安装"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:695
+#: ../client/pk-console.c:699
 #, c-format
 msgid "The package %s could not be installed: %s"
 msgstr "该软件包 '%s' 无法安装：%s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:720
-#: ../client/pk-console.c:747
-#: ../client/pk-console.c:843
-#: ../client/pk-console.c:960
-#: ../client/pk-tools-common.c:61
-#: ../client/pk-tools-common.c:79
-#: ../client/pk-tools-common.c:86
+#: ../client/pk-console.c:724 ../client/pk-console.c:751
+#: ../client/pk-console.c:847 ../client/pk-console.c:964
+#: ../client/pk-tools-common.c:62 ../client/pk-tools-common.c:81
+#: ../client/pk-tools-common.c:89
 #, c-format
 msgid "Internal error: %s"
 msgstr "内部错误：%s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:728
-#: ../client/pk-console.c:1355
+#: ../client/pk-console.c:732 ../client/pk-console.c:1360
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "该工具无法安装本软件包：%s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:755
+#: ../client/pk-console.c:759
 #, c-format
 msgid "This tool could not install the files: %s"
 msgstr "本工具无法安装文件：%s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:811
+#: ../client/pk-console.c:815
 #, c-format
 msgid "This tool could not remove %s: %s"
 msgstr "该工具无法删除 %s：%s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:834
-#: ../client/pk-console.c:872
-#: ../client/pk-console.c:905
+#: ../client/pk-console.c:838 ../client/pk-console.c:876
+#: ../client/pk-console.c:909
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "该工具无法删除本软件包：%s"
 
 #. TRANSLATORS: When removing, we might have to remove other dependencies
-#: ../client/pk-console.c:884
+#: ../client/pk-console.c:888
 msgid "The following packages have to be removed:"
 msgstr "下列软件包必须被删除："
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:891
+#: ../client/pk-console.c:895
 msgid "Proceed removing additional packages?"
 msgstr "开始进行删除额外的软件包吗？"
 
 #. TRANSLATORS: We did not remove any packages
-#: ../client/pk-console.c:896
+#: ../client/pk-console.c:900
 msgid "The package removal was canceled!"
 msgstr "已取消删除本软件包！"
 
 #. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:937
+#: ../client/pk-console.c:941
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
 msgstr "本工具无法下载软件包 '%s' (无法找到)"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:968
+#: ../client/pk-console.c:972
 #, c-format
 msgid "This tool could not download the packages: %s"
 msgstr "本工具无法下载该软件包：%s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:995
-#: ../client/pk-console.c:1004
+#: ../client/pk-console.c:999 ../client/pk-console.c:1008
 #, c-format
 msgid "This tool could not update %s: %s"
 msgstr "该工具无法更新 %s：%s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1026
-#: ../client/pk-console.c:1034
+#: ../client/pk-console.c:1030 ../client/pk-console.c:1038
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
 msgstr "本工具无法得到 %s 的需求：%s "
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:1056
-#: ../client/pk-console.c:1064
+#: ../client/pk-console.c:1060 ../client/pk-console.c:1068
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
 msgstr "本工具无法得到 %s 的依赖关系：%s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:1086
-#: ../client/pk-console.c:1094
+#: ../client/pk-console.c:1090 ../client/pk-console.c:1098
 #, c-format
 msgid "This tool could not get package details for %s: %s"
 msgstr "该工具无法得到 %s 的软件包详情：%s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1116
+#: ../client/pk-console.c:1120
 #, c-format
 msgid "This tool could not find the files for %s: %s"
 msgstr "该工具无法找到 %s 的文件：%s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1124
+#: ../client/pk-console.c:1128
 #, c-format
 msgid "This tool could not get the file list for %s: %s"
 msgstr "该工具无法得到 %s 的文件清单：%s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
-#: ../client/pk-console.c:1146
+#: ../client/pk-console.c:1150
 #, c-format
 msgid "File already exists: %s"
 msgstr "文件已存在: %s"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1151
-#: ../client/pk-console.c:1207
-#: ../client/pk-console.c:1282
+#: ../client/pk-console.c:1155 ../client/pk-console.c:1211
+#: ../client/pk-console.c:1286
 msgid "Getting package list"
 msgstr "正在获得软件包列表..."
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1157
-#: ../client/pk-console.c:1213
-#: ../client/pk-console.c:1288
+#: ../client/pk-console.c:1161 ../client/pk-console.c:1217
+#: ../client/pk-console.c:1292
 #, c-format
 msgid "This tool could not get package list: %s"
 msgstr "该工具无法得到软件表列表：%s"
 
 #. TRANSLATORS: There was an error saving the list
-#: ../client/pk-console.c:1168
+#: ../client/pk-console.c:1172
+#, c-format
 msgid "Failed to save to disk"
 msgstr "存盘失败"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1202
-#: ../client/pk-console.c:1277
+#: ../client/pk-console.c:1206 ../client/pk-console.c:1281
 #, c-format
 msgid "File does not exist: %s"
 msgstr "文件不存在 : %s"
 
 #. TRANSLATORS: header to a list of packages newly added
-#: ../client/pk-console.c:1234
+#: ../client/pk-console.c:1238
 msgid "Packages to add"
 msgstr "添加软件包"
 
 #. TRANSLATORS: header to a list of packages removed
-#: ../client/pk-console.c:1242
+#: ../client/pk-console.c:1246
 msgid "Packages to remove"
 msgstr "删除软件包"
 
 #. TRANSLATORS: We didn't find any differences
-#: ../client/pk-console.c:1310
+#: ../client/pk-console.c:1314
+#, c-format
 msgid "No new packages need to be installed"
 msgstr "没有新的软件包安装"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1316
+#: ../client/pk-console.c:1320
 msgid "To install"
 msgstr "安装"
 
 #. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1327
+#: ../client/pk-console.c:1332
 msgid "Searching for package: "
 msgstr "搜索软件包: "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1331
+#: ../client/pk-console.c:1336
 msgid "not found."
 msgstr "没有找到"
 
 #. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1342
+#: ../client/pk-console.c:1347
+#, c-format
 msgid "No packages can be found to install"
 msgstr "找不到软件包安装"
 
 #. TRANSLATORS: installing new packages from package list
-#: ../client/pk-console.c:1348
+#: ../client/pk-console.c:1353
 msgid "Installing packages"
 msgstr "正在安装软件包..."
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1384
+#: ../client/pk-console.c:1389
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
 msgstr "该工具无法找到 %s 的更新详情：%s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1392
+#: ../client/pk-console.c:1397
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
 msgstr "该工具无法得到 %s 的更新详情：%s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1438
+#: ../client/pk-console.c:1443
 msgid "Error:"
 msgstr "错误："
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1452
+#: ../client/pk-console.c:1457
 msgid "Package description"
 msgstr "软件包描述"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1486
+#: ../client/pk-console.c:1491
 msgid "Package files"
 msgstr "软件包文件"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1494
+#: ../client/pk-console.c:1499
 msgid "No files"
 msgstr "没有文件"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1517
+#: ../client/pk-console.c:1522
 msgid "Repository signature required"
 msgstr "要求软件库签名"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1527
+#: ../client/pk-console.c:1532
 msgid "Do you accept this signature?"
-msgstr "你接受该签名吗？"
+msgstr "您接受该签名吗？"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1531
+#: ../client/pk-console.c:1536
 msgid "The signature was not accepted."
 msgstr "没有接受签名。"
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1565
+#: ../client/pk-console.c:1570
 msgid "End user license agreement required"
 msgstr "需要最终用户许可协议"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1572
+#: ../client/pk-console.c:1577
 msgid "Do you agree to this license?"
-msgstr "你同意本许可吗？"
+msgstr "您同意本许可吗？"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1576
+#: ../client/pk-console.c:1581
 msgid "The license was refused."
 msgstr "拒绝该许可。"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1605
+#: ../client/pk-console.c:1610
 msgid "The daemon crashed mid-transaction!"
 msgstr "后台程序在事务处理中期崩溃！"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1658
+#: ../client/pk-console.c:1663
 msgid "PackageKit Console Interface"
 msgstr "PackageKit 终端界面"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1660
+#: ../client/pk-console.c:1665
 msgid "Subcommands:"
 msgstr "子命令："
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1750
-#: ../client/pk-generate-pack.c:185
-#: ../client/pk-monitor.c:115
-#: ../contrib/command-not-found/pk-command-not-found.c:510
+#: ../client/pk-console.c:1757 ../client/pk-generate-pack.c:185
+#: ../client/pk-monitor.c:125
+#: ../contrib/command-not-found/pk-command-not-found.c:518
 #: ../src/pk-main.c:199
 msgid "Show extra debugging information"
 msgstr "显示额外的调试信息"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1753
-#: ../client/pk-monitor.c:117
+#: ../client/pk-console.c:1760 ../client/pk-monitor.c:127
 msgid "Show the program version and exit"
 msgstr "显示本程序版本并退出"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1756
+#: ../client/pk-console.c:1763
 msgid "Set the filter, e.g. installed"
 msgstr "设置过滤器，例如已安装的"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1759
+#: ../client/pk-console.c:1766
 msgid "Exit without waiting for actions to complete"
 msgstr "不等操作完成即退出"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1786
+#: ../client/pk-console.c:1793
 msgid "This tool could not connect to system DBUS."
 msgstr "该工具无法连接到系统 DBUS。"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1873
+#: ../client/pk-console.c:1880
 msgid "The filter specified was invalid"
 msgstr "过滤器指定非法"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1891
+#: ../client/pk-console.c:1898
 msgid "A search type is required, e.g. name"
-msgstr "你需要指定搜索类型，如软件包名"
+msgstr "您需要指定搜索类型，如软件包名"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1897
-#: ../client/pk-console.c:1905
-#: ../client/pk-console.c:1913
-#: ../client/pk-console.c:1921
+#: ../client/pk-console.c:1904 ../client/pk-console.c:1912
+#: ../client/pk-console.c:1920 ../client/pk-console.c:1928
 msgid "A search term is required"
-msgstr "你需要指定搜索条件"
+msgstr "您需要指定搜索条件"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1927
+#: ../client/pk-console.c:1934
 msgid "Invalid search type"
 msgstr "无效的搜索类型"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1933
+#: ../client/pk-console.c:1940
 msgid "A package name or filename to install is required"
-msgstr "你需要为安装指定一个软件包名或文件名"
+msgstr "您需要为安装指定一个软件包名或文件名"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1941
+#: ../client/pk-console.c:1948
 msgid "A type, key_id and package_id are required"
 msgstr "需要指定某个类型，证书ID或者软件包ID"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1949
+#: ../client/pk-console.c:1956
 msgid "A package name to remove is required"
-msgstr "你需要为卸载指定一个软件包名"
+msgstr "您需要为卸载指定一个软件包名"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1956
+#: ../client/pk-console.c:1963
 msgid "A destination directory and then the package names to download are required"
 msgstr "需要指定目的地目录以及软件包名来下载"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1962
+#: ../client/pk-console.c:1969
 msgid "Directory not found"
 msgstr "目录没有找到"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1969
+#: ../client/pk-console.c:1976
 msgid "A licence identifier (eula-id) is required"
 msgstr "需要指定某个许可证鉴别 (eula-id)"
 
+#. TRANSLATORS: geeky error, 99.9999% of users won't see this
+#: ../client/pk-console.c:1985
+msgid "A transaction identifier (tid) is required"
+msgstr "需要交易标识符（tid）"
+
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1986
+#: ../client/pk-console.c:2001
 msgid "A package name to resolve is required"
-msgstr "你需要为解析指定一个软件包名"
+msgstr "您需要为解析指定一个软件包名"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1994
-#: ../client/pk-console.c:2002
+#: ../client/pk-console.c:2009 ../client/pk-console.c:2017
 msgid "A repository name is required"
 msgstr "要求软件库名"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2010
+#: ../client/pk-console.c:2025
 msgid "A repo name, parameter and value are required"
-msgstr "你需要指定某个软件库名字，参数或值"
+msgstr "您需要指定某个软件库名字，参数或值"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2023
+#: ../client/pk-console.c:2038
 msgid "An action, e.g. 'update-system' is required"
-msgstr "你需要指定某个行动，例如“更新系统”"
+msgstr "您需要指定某个行动，例如“更新系统”"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2029
+#: ../client/pk-console.c:2044
 msgid "A correct role is required"
 msgstr "需要一个正确响应"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2035
+#: ../client/pk-console.c:2050
 msgid "Failed to get the time since this action was last completed"
 msgstr "未获得最后一次操作的时间"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2044
-#: ../client/pk-console.c:2055
-#: ../client/pk-console.c:2063
-#: ../client/pk-console.c:2079
-#: ../client/pk-console.c:2087
-#: ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2059 ../client/pk-console.c:2070
+#: ../client/pk-console.c:2078 ../client/pk-console.c:2094
+#: ../client/pk-console.c:2102 ../client/pk-generate-pack.c:241
 msgid "A package name is required"
 msgstr "需要软件包名"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2071
+#: ../client/pk-console.c:2086
 msgid "A package provide string is required"
-msgstr "你需要指定特定参数"
+msgstr "您需要指定特定参数"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2095
+#: ../client/pk-console.c:2110
 msgid "A list file name to create is required"
 msgstr "需要建立一个文件列表"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2104
-#: ../client/pk-console.c:2113
+#: ../client/pk-console.c:2119 ../client/pk-console.c:2128
 msgid "A list file to open is required"
 msgstr "需要打开一个文件列表"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2166
+#: ../client/pk-console.c:2181
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "不支持 '%s' 选项"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2179
+#: ../client/pk-console.c:2194
 msgid "Incorrect privileges for this operation"
-msgstr "你没有本次操作需要的必要权限"
+msgstr "您没有本次操作需要的必要权限"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2182
+#: ../client/pk-console.c:2197
 msgid "Command failed"
 msgstr "命令失败"
 
@@ -706,12 +692,11 @@ msgstr "选定了两个选项"
 #. TRANSLATORS: This is when the user fails to supply the output
 #: ../client/pk-generate-pack.c:249
 msgid "A output directory or file name is required"
-msgstr "你需要指定输出的目录名或文件名"
+msgstr "您需要指定输出的目录名或文件名"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:267
-#: ../client/pk-generate-pack.c:273
+#: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
 msgid "The package manager cannot perform this type of operation."
 msgstr "软件包管理器不能处理当前类型的操作"
 
@@ -723,7 +708,7 @@ msgstr "如果指定一个文件，文件后缀名必须是"
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:301
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "已经有同名软件包存在，你想要覆盖它吗？"
+msgstr "已经有同名软件包存在，您想要覆盖它吗？"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:304
@@ -769,96 +754,97 @@ msgid "Failed to create '%s': %s"
 msgstr "无法创建 '%s': %s"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:133
+#: ../client/pk-monitor.c:143
 msgid "PackageKit Monitor"
 msgstr "PackageKit 监视器"
 
 #. TRANSLATORS: The package was not found in any software sources
-#: ../client/pk-tools-common.c:114
+#: ../client/pk-tools-common.c:118
+#, c-format
 msgid "The package could not be found"
 msgstr "无法找到该软件包"
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-tools-common.c:125
+#: ../client/pk-tools-common.c:130
 msgid "More than one package matches:"
 msgstr "超过一个软件包符合："
 
 #. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-tools-common.c:132
+#: ../client/pk-tools-common.c:137
 msgid "Please choose the correct package: "
 msgstr "请选择正确的软件包："
 
-#: ../client/pk-tools-common.c:157
+#: ../client/pk-tools-common.c:162
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "请输入从1到 %i 的数字："
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:361
+#: ../contrib/command-not-found/pk-command-not-found.c:369
 msgid "Failed to search for file"
 msgstr "未找到该软件包"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:485
+#: ../contrib/command-not-found/pk-command-not-found.c:493
 msgid "Failed to launch:"
 msgstr "无法执行"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:526
+#: ../contrib/command-not-found/pk-command-not-found.c:534
 msgid "PackageKit Command Not Found"
 msgstr "PackageKit 命令没有找到"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:548
+#: ../contrib/command-not-found/pk-command-not-found.c:556
 msgid "Command not found."
 msgstr "命令未找到"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:555
+#: ../contrib/command-not-found/pk-command-not-found.c:563
 msgid "Similar command is:"
 msgstr "可能命令是:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:564
+#: ../contrib/command-not-found/pk-command-not-found.c:572
 msgid "Run similar command:"
 msgstr "执行可能的命令:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:576
-#: ../contrib/command-not-found/pk-command-not-found.c:585
+#: ../contrib/command-not-found/pk-command-not-found.c:584
+#: ../contrib/command-not-found/pk-command-not-found.c:593
 msgid "Similar commands are:"
 msgstr "可能命令是："
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:592
+#: ../contrib/command-not-found/pk-command-not-found.c:600
 msgid "Please choose a command to run"
 msgstr "请选择一条命令执行"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:607
+#: ../contrib/command-not-found/pk-command-not-found.c:615
 msgid "The package providing this file is:"
 msgstr "提供该命令的软件包是:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:612
+#: ../contrib/command-not-found/pk-command-not-found.c:620
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "安装包'%s' 提供命令 '%s'"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:633
+#: ../contrib/command-not-found/pk-command-not-found.c:641
 msgid "Packages providing this file are:"
 msgstr "提供该命令的软件包有:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:642
+#: ../contrib/command-not-found/pk-command-not-found.c:650
 msgid "Suitable packages are:"
 msgstr "适合的软件包是:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:650
+#: ../contrib/command-not-found/pk-command-not-found.c:658
 msgid "Please choose a package to install"
 msgstr "请选择要安装的某个软件包"
 
@@ -909,7 +895,7 @@ msgstr "版本"
 #. TRANSLATORS: noting found, so can't install
 #: ../contrib/browser-plugin/src/contents.cpp:344
 msgid "No packages found for your system"
-msgstr "没有为你系统发现软件包"
+msgstr "没有为您系统发现软件包"
 
 #. TRANSLATORS: package is being installed
 #: ../contrib/browser-plugin/src/contents.cpp:349
@@ -928,6 +914,98 @@ msgstr "PackageKit 软件包清单"
 msgid "PackageKit Service Pack"
 msgstr "PackageKit 服务包"
 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "接受 EULA"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "需要验证才可接受 EULA"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "需要验证才可取消不是您启动的任务"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid "Authentication is required to change software source parameters"
+msgstr "需要验证才可更改软件源参数"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr "需要验证才可将用于签注软件包的密钥视为可信的"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install a signed package"
+msgstr "需要验证才可安装签注的软件包"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to install an untrusted package"
+msgstr "需要验证才可安装不可信的软件包"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to refresh the system sources"
+msgstr "需要验证才可刷新系统源"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to remove packages"
+msgstr "需要验证才可删除软件包"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid "Authentication is required to rollback a transaction"
+msgstr "需要验证才可重新运行交易"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr "需要验证才可设置用于下载软件包的网络代理服务器"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Authentication is required to update packages"
+msgstr "需要验证才可更新软件包"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Cancel foreign task"
+msgstr "取消外来的任务"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Change software source parameters"
+msgstr "更改软件源参数"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Install signed package"
+msgstr "安装签注的软件包"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Install untrusted local file"
+msgstr "安装不可信本地文件"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Refresh system sources"
+msgstr "刷新系统源"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Remove package"
+msgstr "删除软件包"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Rollback to a previous transaction"
+msgstr "重新运行前一个交易"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Set network proxy"
+msgstr "设置网络代理服务器"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:21
+msgid "Trust a key used for signing packages"
+msgstr "相信用来签注软件包的密钥"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:22
+msgid "Update packages"
+msgstr "更新软件包"
+
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
@@ -945,7 +1023,9 @@ msgstr "用户正确但无法启动可执行程序(通常作为根用户)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
 msgstr "org.freedesktop.PackageKit.conf 没有安装到系统目录中："
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
@@ -993,43 +1073,4 @@ msgstr "无法连接到系统总线"
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "尝试启动时出错: %s\n"
-
-#~ msgid "You need to specify a search type, e.g. name"
-#~ msgstr "你需要指定某个搜索类型，例如名字"
-#~ msgid "You need to specify a search term"
-#~ msgstr "你需要指定某个搜索术语"
-#~ msgid "You need to specify a package or file to install"
-#~ msgstr "你需要指定某个软件包或文件来安装"
-#~ msgid "You need to specify a package to remove"
-#~ msgstr "你需要指定某个软件包来删除"
-#~ msgid "You need to specify a package name to resolve"
-#~ msgstr "你需要指定某个软件包名字来解决依赖关系"
-#~ msgid "You need to specify a repository name"
-#~ msgstr "你需要指定某个软件库名字"
-#~ msgid "You need to specify a correct role"
-#~ msgstr "你需要指定某个正确的角色"
-#~ msgid "Failed to get last time"
-#~ msgstr "无法得到最后一次时间"
-#~ msgid "You need to specify a package to find the details for"
-#~ msgstr "你需要指定某个软件包已找到相关详情"
-#~ msgid "You need to specify a package to find the files for"
-#~ msgstr "你需要指定某个软件包已找到相关文件"
-#~ msgid "You need to specify a list file to create"
-#~ msgstr "你需要指定一个要创建的文件序列"
-#~ msgid "You need to specify a list file to open"
-#~ msgstr "你需要指定一个文件序列来打开"
-
-#, fuzzy
-#~ msgid "Install signed package"
-#~ msgstr "正在安装软件包..."
-#~ msgid "This tool could not remove the packages: '%s'"
-#~ msgstr "该工具无法删除本软件包： '%s'"
-#~ msgid "Okay to import key?"
-#~ msgstr "可以导入证书吗？"
-#~ msgid "Did not import key"
-#~ msgstr "不导入证书"
-#~ msgid "Eula required"
-#~ msgstr "要求最终用户协议"
-#~ msgid "Do you agree?"
-#~ msgstr "你同意吗？"
 
