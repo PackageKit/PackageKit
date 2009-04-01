@@ -1,6 +1,6 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.4.6)
+AC_INIT(PackageKit, 0.4.7)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -20,7 +20,7 @@ DEVELOPMENT_RELEASE=yes
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=11
-LT_REVISION=4
+LT_REVISION=5
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -75,11 +75,11 @@ if test "$GCC" = "yes"; then
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wformat-security"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wmissing-include-dirs"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wmissing-format-attribute"
-	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wclobbered"
-	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wempty-body"
-	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wignored-qualifiers"
+#	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wclobbered"
+#	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wempty-body"
+#	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wignored-qualifiers"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wsign-compare"
-	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wtype-limits"
+#	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wtype-limits"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wuninitialized"
 
 	# work only in C
@@ -89,8 +89,8 @@ if test "$GCC" = "yes"; then
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wshadow"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wno-strict-aliasing"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Winline"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wmissing-parameter-type"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Woverride-init"
+#	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wmissing-parameter-type"
+#	WARNINGFLAGS_C="$WARNINGFLAGS_C -Woverride-init"
 else
 	WARNINGFLAGS_C=""
 	WARNINGFLAGS_CPP=""
@@ -121,6 +121,7 @@ QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
 QTGUI_REQUIRED=4.4.0
 QTSQL_REQUIRED=4.4.0
+QTXML_REQUIRED=4.4.0
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -169,10 +170,13 @@ if test x$enable_qt = xyes; then
 	AC_SUBST(QTGUI_CFLAGS)
 	AC_SUBST(QTGUI_LIBS)
 
-
 	PKG_CHECK_MODULES(QTSQL, QtSql >= $QTSQL_REQUIRED)
 	AC_SUBST(QTSQL_CFLAGS)
 	AC_SUBST(QTSQL_LIBS)
+
+	PKG_CHECK_MODULES(QTXML, QtXml >= $QTXML_REQUIRED)
+	AC_SUBST(QTXML_CFLAGS)
+	AC_SUBST(QTXML_LIBS)
 
 	PKG_CHECK_MODULES(CPPUNIT, cppunit)
 	AC_SUBST(CPPUNIT_CFLAGS)

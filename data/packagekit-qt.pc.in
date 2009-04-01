@@ -6,7 +6,7 @@ includedir=@includedir@
 Name: packagekit-qt
 Description: PackageKit is a system daemon for installing stuff.
 Version: @VERSION@
-Requires: QtCore, QtDBus
+Requires: QtCore, QtDBus, QtGui, QtSql, QtXml
 Libs: -L${libdir} -lpackagekit-qt
-Cflags: -I${includedir}/PackageKit
+Cflags: -I${includedir}/PackageKit/packagekit-qt
 

@@ -171,7 +171,7 @@ manpage.1: manpage.xml
     <para>
       2. Bill wants to create a service pack named <filename>kdegames-fedora-9-i686.servicepack</filename>
       for his new system which does not have an internet connection.
-      He generates a list of packages on his system using <command>pk-generate-package-list</command>
+      He generates a list of packages on his system using <command>pkcon list-create</command>
       and copies that list to his USB key.
       He then gives that USB to Rishi who has a good internet connectivity.
       Rishi runs the following command on his system:

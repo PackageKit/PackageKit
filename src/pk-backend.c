@@ -74,6 +74,13 @@
  */
 #define PK_BACKEND_FINISHED_TIMEOUT_GRACE	10 /* ms */
 
+/* a boolean with unset */
+typedef enum {
+	PK_BACKEND_TRISTATE_FALSE = FALSE,
+	PK_BACKEND_TRISTATE_TRUE = TRUE,
+	PK_BACKEND_TRISTATE_UNSET
+} PkBackendTristate;
+
 struct _PkBackendPrivate
 {
 	GModule			*handle;
@@ -101,7 +108,7 @@ struct _PkBackendPrivate
 	PkBackendFileChanged	 file_changed_func;
 	gpointer		 file_changed_data;
 	gboolean		 during_initialize;
-	gboolean		 allow_cancel;
+	PkBackendTristate	 allow_cancel;
 	gboolean		 finished;
 	guint			 last_percentage;
 	guint			 last_subpercentage;
@@ -1436,9 +1443,9 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	}
 
 	/* same as last state? */
-	if (backend->priv->allow_cancel == allow_cancel) {
+	if (backend->priv->allow_cancel == (PkBackendTristate) allow_cancel) {
 		egg_debug ("ignoring same allow-cancel state");
-		return TRUE;
+		return FALSE;
 	}
 
 	/* can we do the action? */
@@ -1456,9 +1463,16 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 gboolean
 pk_backend_get_allow_cancel (PkBackend *backend)
 {
+	gboolean allow_cancel = FALSE;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
-	return backend->priv->allow_cancel;
+
+	/* return FALSE if we never set state */
+	if (backend->priv->allow_cancel != PK_BACKEND_TRISTATE_UNSET)
+		allow_cancel = backend->priv->allow_cancel;
+
+	return allow_cancel;
 }
 
 /**
@@ -1952,11 +1966,11 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
 	backend->priv->set_eula = FALSE;
-	backend->priv->allow_cancel = FALSE;
 	backend->priv->finished = FALSE;
 	backend->priv->has_sent_package = FALSE;
 	backend->priv->thread = NULL;
 	backend->priv->last_package = NULL;
+	backend->priv->allow_cancel = PK_BACKEND_TRISTATE_UNSET;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -2326,6 +2340,35 @@ pk_backend_test (EggTest *test)
 	/* wait for finished */
 	egg_test_loop_wait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 400);
 	egg_test_loop_check (test);
+
+	/************************************************************
+	 ****************     CANCEL TRISTATE      ******************
+	 ************************************************************/
+	egg_test_title (test, "get allow cancel after reset");
+	pk_backend_reset (backend);
+	ret = pk_backend_get_allow_cancel (backend);
+	egg_test_assert (test, !ret);
+
+	/************************************************************/
+	egg_test_title (test, "set allow cancel TRUE");
+	ret = pk_backend_set_allow_cancel (backend, TRUE);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "set allow cancel TRUE (repeat)");
+	ret = pk_backend_set_allow_cancel (backend, TRUE);
+	egg_test_assert (test, !ret);
+
+	/************************************************************/
+	egg_test_title (test, "set allow cancel FALSE");
+	ret = pk_backend_set_allow_cancel (backend, FALSE);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "set allow cancel FALSE (after reset)");
+	pk_backend_reset (backend);
+	ret = pk_backend_set_allow_cancel (backend, FALSE);
+	egg_test_assert (test, ret);
 
 #ifdef PK_IS_DEVELOPER
 	egg_test_title (test, "check we enforce finished after error_code");

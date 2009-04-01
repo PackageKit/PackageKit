@@ -1,112 +1,108 @@
-# translation of packagekit.master.po to Simplified Chinese
-# 简体中文翻译
-# Copyright (C) 2008 THE 'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the  package.
+# translation of packagekit.master.PackageKit.or.po to Oriya
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
 #
-#
-# Chen Yu <jcomee@gmail.com>, 2008.
-# 甘露(Gan Lu) <rhythm.gan@gmail.com>, 2008.
-# zhou renren <zhourenren@gmail.com>,2009.
-# Leah Liu <lliu@redhat.com>, 2009.
+# Manoj Kumar Giri <mgiri@redhat.com>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: packagekit.master\n"
+"Project-Id-Version: packagekit.master.PackageKit.or\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-03-31 08:08+0000\n"
-"PO-Revision-Date: 2009-04-01 21:53+1000\n"
-"Last-Translator: Leah Liu <lliu@redhat.com>\n"
-"Language-Team: Simplified Chinese <zh@li.org>\n"
+"POT-Creation-Date: 2009-04-01 08:09+0000\n"
+"PO-Revision-Date: 2009-04-01 19:24+0530\n"
+"Last-Translator: Manoj Kumar Giri <mgiri@redhat.com>\n"
+"Language-Team: Oriya <oriya-it@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
+"Plural-Forms:  nplurals=2; plural=(n!=1);\n\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #: ../client/pk-console.c:234
 msgid "Transaction"
-msgstr "处理"
+msgstr "କାରବାର"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: ../client/pk-console.c:236
 msgid "System time"
-msgstr "系统时间"
+msgstr "ତନ୍ତ୍ର ସମୟ"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: ../client/pk-console.c:238
 msgid "Succeeded"
-msgstr "成功"
+msgstr "ସଫଳ ହୋଇଛି"
 
 #. TRANSLATORS: if the repo is enabled
 #: ../client/pk-console.c:238 ../client/pk-console.c:405
 msgid "True"
-msgstr "是"
+msgstr "True (ସତ୍ୟ)"
 
 #: ../client/pk-console.c:238 ../client/pk-console.c:405
 msgid "False"
-msgstr "否"
+msgstr "False (ମିଥ୍ୟା)"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #: ../client/pk-console.c:240
 msgid "Role"
-msgstr "操作"
+msgstr "ଭୂମିକା"
 
 #. TRANSLATORS: this is The duration of the transaction
 #: ../client/pk-console.c:245
 msgid "Duration"
-msgstr "持续时间"
+msgstr "ଅବଧି"
 
 #: ../client/pk-console.c:245
 msgid "(seconds)"
-msgstr "秒"
+msgstr "(ସେକଣ୍ଡ)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #: ../client/pk-console.c:249
 msgid "Command line"
-msgstr "命令行"
+msgstr "ପାଠ୍ୟ ନିର୍ଦ୍ଦେଶ"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 #: ../client/pk-console.c:251
 msgid "User ID"
-msgstr "用户ID"
+msgstr "ଚାଳକ ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 #: ../client/pk-console.c:258
 msgid "Username"
-msgstr "用户名"
+msgstr "ଚାଳକ ନାମ"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: ../client/pk-console.c:262
 msgid "Real name"
-msgstr "真实姓名"
+msgstr "ପ୍ରକୃତ ନାମ"
 
 #: ../client/pk-console.c:270
 msgid "Affected packages:"
-msgstr "受影响的软件包"
+msgstr "ପ୍ରଭାବିତ ପ୍ୟାକେଜଗୁଡ଼ିକ:"
 
 #: ../client/pk-console.c:272
 msgid "Affected packages: None"
-msgstr "受影响的软件包:无"
+msgstr "ପ୍ରଭାବିତ ପ୍ୟାକେଜଗୁଡ଼ିକ: କିଛିନୁହଁ"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: ../client/pk-console.c:297
 msgid "Distribution"
-msgstr "发布"
+msgstr "ବଣ୍ଟନ"
 
 #. TRANSLATORS: this is type of update, stable or testing
 #: ../client/pk-console.c:299
 msgid "Type"
-msgstr "类型"
+msgstr "ପ୍ରକାର"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
 #: ../client/pk-console.c:301 ../client/pk-console.c:324
 msgid "Summary"
-msgstr "摘要"
+msgstr "ସାରାଂଶ"
 
 #. TRANSLATORS: this is the group category name
 #: ../client/pk-console.c:313
 msgid "Category"
-msgstr "分类"
+msgstr "ବିଭାଗ"
 
 #. TRANSLATORS: this is group identifier
 #: ../client/pk-console.c:315
@@ -116,42 +112,42 @@ msgstr "ID"
 #. TRANSLATORS: this is the parent group
 #: ../client/pk-console.c:318
 msgid "Parent"
-msgstr "上一级"
+msgstr "ମୂଖ୍ୟ"
 
 #. TRANSLATORS: this is the name of the parent group
 #: ../client/pk-console.c:321
 msgid "Name"
-msgstr "上一级组名"
+msgstr "ନାମ"
 
 #. TRANSLATORS: this is preferred icon for the group
 #: ../client/pk-console.c:327
 msgid "Icon"
-msgstr "图标"
+msgstr "ଚିତ୍ରସଂକେତ"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:342
 msgid "Details about the update:"
-msgstr "本次更新详情："
+msgstr "ଅଦ୍ୟତନ ବିଷୟରେ ବିସ୍ତୃତ ବିବରଣୀ:"
 
 #. TRANSLATORS: details about the update, package name and version
 #: ../client/pk-console.c:344
 msgid "Package"
-msgstr "软件包"
+msgstr "ପ୍ୟାକେଜ"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
 #: ../client/pk-console.c:347
 msgid "Updates"
-msgstr "更新"
+msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକ"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
 #: ../client/pk-console.c:351
 msgid "Obsoletes"
-msgstr "过时"
+msgstr "ଅଚଳଗୁଡ଼ିକ"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #: ../client/pk-console.c:355
 msgid "Vendor"
-msgstr "厂商"
+msgstr "ବିକ୍ରେତା"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 #: ../client/pk-console.c:359
@@ -166,82 +162,82 @@ msgstr "CVE"
 #. TRANSLATORS: details about the update, if the package requires a restart
 #: ../client/pk-console.c:367
 msgid "Restart"
-msgstr "重启"
+msgstr "ପୁନଃଚାଳନ"
 
 #. TRANSLATORS: details about the update, any description of the update
 #: ../client/pk-console.c:371
 msgid "Update text"
-msgstr "更新文档"
+msgstr "ପାଠ୍ୟ ଅଦ୍ୟତନ କରନ୍ତୁ"
 
 #. TRANSLATORS: details about the update, the changelog for the package
 #: ../client/pk-console.c:375
 msgid "Changes"
-msgstr "变化"
+msgstr "ପରିବର୍ତ୍ତନଗୁଡ଼ିକ"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
 #: ../client/pk-console.c:379
 msgid "State"
-msgstr "状态"
+msgstr "ଅବସ୍ଥା"
 
 #. TRANSLATORS: details about the update, date the update was issued
 #: ../client/pk-console.c:384
 msgid "Issued"
-msgstr "发布"
+msgstr "ପ୍ରଦତ୍ତ"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #: ../client/pk-console.c:389
 msgid "Updated"
-msgstr "已更新"
+msgstr "ଅଦ୍ୟତିତ"
 
 #: ../client/pk-console.c:476 ../client/pk-console.c:478
 msgid "Percentage"
-msgstr "百分比"
+msgstr "ଶତକଡ଼ା"
 
 #: ../client/pk-console.c:478
 msgid "Unknown"
-msgstr "未知"
+msgstr "ଅଜଣା"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #: ../client/pk-console.c:529
 msgid "System restart required by:"
-msgstr "要求系统重启的软件包:"
+msgstr "ପାଇଁ ତନ୍ତ୍ର ପୁନଃଚାଳନ ଆବଶ୍ୟକ:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:532
 msgid "Session restart required:"
-msgstr "要求会话重启的软件包:"
+msgstr "ଅଧିବେଶନ ପୁନଃଚାଳନ ଆବଶ୍ୟକ:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:535
 msgid "Application restart required by:"
-msgstr "要求应用程序重启的软件包:"
+msgstr "ପାଇଁ ପ୍ରୟୋଗ ପୁନଃଚାଳନ ଆବଶ୍ୟକ:"
 
 #. TRANSLATORS: a package needs to restart they system
 #: ../client/pk-console.c:572
 msgid "Please restart the computer to complete the update."
-msgstr "请重新启动计算机以完成本次更新。"
+msgstr "ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ କମ୍ପୁଟରକୁ ପୁନଃଚାଳନ କରନ୍ତୁ।"
 
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:575
 msgid "Please logout and login to complete the update."
-msgstr "请登出并登录以完成本次更新。"
+msgstr "ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ ଦୟାକରି ଲଗଆଉଟ କରିସାରି ପୁଣି ଲଗଇନ କରନ୍ତୁ।"
 
 #. TRANSLATORS: a package needs to restart the application
 #: ../client/pk-console.c:578
 msgid "Please restart the application as it is being used."
-msgstr "请重新启动正在使用中的程序。"
+msgstr "ପ୍ରୟୋଗଟି ବ୍ୟବହୃତ ହେଉଥିବା ପରି ଦୟାକରି ପୁନଃଚାଳନ କରନ୍ତୁ।"
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:691
 #, c-format
 msgid "The package %s is already installed"
-msgstr "该软件包 '%s' 已经安装"
+msgstr "ପ୍ୟାକେଜ %s ପୂର୍ବରୁ ସ୍ଥାପିତ ହୋଇଛି"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:699
 #, c-format
 msgid "The package %s could not be installed: %s"
-msgstr "该软件包 '%s' 无法安装：%s"
+msgstr "ପ୍ୟାକେଜ %s କୁ ସ୍ଥାପନ କରିହେଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
 #: ../client/pk-console.c:724 ../client/pk-console.c:751
@@ -250,245 +246,245 @@ msgstr "该软件包 '%s' 无法安装：%s"
 #: ../client/pk-tools-common.c:89
 #, c-format
 msgid "Internal error: %s"
-msgstr "内部错误：%s"
+msgstr "ଆଭ୍ୟନ୍ତରିଣ ତ୍ରୁଟି: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
 #: ../client/pk-console.c:732 ../client/pk-console.c:1360
 #, c-format
 msgid "This tool could not install the packages: %s"
-msgstr "该工具无法安装本软件包：%s"
+msgstr "ଏହା ମଧ୍ୟ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରିପାରିଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
 #: ../client/pk-console.c:759
 #, c-format
 msgid "This tool could not install the files: %s"
-msgstr "本工具无法安装文件：%s"
+msgstr "ଏହା ମଧ୍ୟ ଫାଇଲଗୁଡ଼ିକୁ ସ୍ଥାପନ କରିପାରିଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
 #: ../client/pk-console.c:815
 #, c-format
 msgid "This tool could not remove %s: %s"
-msgstr "该工具无法删除 %s：%s"
+msgstr "ଏହା ମଧ୍ଯ %sକୁ କାଢ଼ିପାରିଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:838 ../client/pk-console.c:876
 #: ../client/pk-console.c:909
 #, c-format
 msgid "This tool could not remove the packages: %s"
-msgstr "该工具无法删除本软件包：%s"
+msgstr "ଏହା ମଧ୍ଯ ପ୍ୟାକେଜଗୁଡ଼ିକୁ କାଢ଼ିପାରିଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: When removing, we might have to remove other dependencies
 #: ../client/pk-console.c:888
 msgid "The following packages have to be removed:"
-msgstr "下列软件包必须被删除："
+msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ କାଢ଼ିବାକୁ ହେବ:"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
 #: ../client/pk-console.c:895
 msgid "Proceed removing additional packages?"
-msgstr "开始进行删除额外的软件包吗？"
+msgstr "ଅତିରିକ୍ତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ କାଢ଼ିସାରି ଅଗ୍ରସର ହେବେ କି?"
 
 #. TRANSLATORS: We did not remove any packages
 #: ../client/pk-console.c:900
 msgid "The package removal was canceled!"
-msgstr "已取消删除本软件包！"
+msgstr "ପ୍ୟାକେଜ କାଢ଼ିବାକୁ ବାତିଲ କରାଯାଇଥିଲା!"
 
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:941
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
-msgstr "本工具无法下载软件包 '%s' (无法找到)"
+msgstr "ଏହା ମଧ୍ଯ ପ୍ୟାକେଜ %sକୁ ଆହରଣ କରିପାରିଲା ନାହିଁ କାରଣ ଏହା ମିଳିଲା ନାହିଁ"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:972
 #, c-format
 msgid "This tool could not download the packages: %s"
-msgstr "本工具无法下载该软件包：%s"
+msgstr "ଏହା ମଧ୍ଯ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଆହରଣ କରିପାରିଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:999 ../client/pk-console.c:1008
 #, c-format
 msgid "This tool could not update %s: %s"
-msgstr "该工具无法更新 %s：%s"
+msgstr "ଏହା ମଧ୍ଯ %sକୁ ଅଦ୍ୟତନ କରିପାରିଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1030 ../client/pk-console.c:1038
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
-msgstr "本工具无法得到 %s 的需求：%s "
+msgstr "ଏହା ମଧ୍ଯ %s ପାଇଁ ଆବଶ୍ୟକତାଗୁଡ଼ିକୁ ପାଇଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #: ../client/pk-console.c:1060 ../client/pk-console.c:1068
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
-msgstr "本工具无法得到 %s 的依赖关系：%s"
+msgstr "ଏହା ମଧ୍ଯ %s ପାଇଁ ନିର୍ଭରତାଗୁଡ଼ିକୁ ପାଇଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #: ../client/pk-console.c:1090 ../client/pk-console.c:1098
 #, c-format
 msgid "This tool could not get package details for %s: %s"
-msgstr "该工具无法得到 %s 的软件包详情：%s"
+msgstr "ଏହା ମଧ୍ଯ %s ପାଇଁ ପ୍ୟାକେଜ ବିବରଣୀ ପାଇଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1120
 #, c-format
 msgid "This tool could not find the files for %s: %s"
-msgstr "该工具无法找到 %s 的文件：%s"
+msgstr "ଏହା ମଧ୍ଯ %s ପାଇଁ ଫାଇଲଗୁଡ଼ିକୁ ପାଇଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1128
 #, c-format
 msgid "This tool could not get the file list for %s: %s"
-msgstr "该工具无法得到 %s 的文件清单：%s"
+msgstr "ଏହା ମଧ୍ଯ %s ପାଇଁ ଫାଇଲ ତାଲିକା ପାଇଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
 #: ../client/pk-console.c:1150
 #, c-format
 msgid "File already exists: %s"
-msgstr "文件已存在: %s"
+msgstr "ଫାଇଲ ପୂର୍ବରୁ ଅବସ୍ଥିତ: %s"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1155 ../client/pk-console.c:1211
 #: ../client/pk-console.c:1286
 msgid "Getting package list"
-msgstr "正在获得软件包列表..."
+msgstr "ପ୍ୟାକେଜ ତାଲିକା ଗ୍ରହଣ କରୁଅଛି"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
 #: ../client/pk-console.c:1161 ../client/pk-console.c:1217
 #: ../client/pk-console.c:1292
 #, c-format
 msgid "This tool could not get package list: %s"
-msgstr "该工具无法得到软件表列表：%s"
+msgstr "ଏହା ମଧ୍ଯ ପ୍ୟାକେଜ ତାଲିକା ପାଇଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error saving the list
 #: ../client/pk-console.c:1172
 #, c-format
 msgid "Failed to save to disk"
-msgstr "存盘失败"
+msgstr "ଡିସ୍କରେ ସଂରକ୍ଷଣ କରିବାରେ ବିଫଳ"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
 #: ../client/pk-console.c:1206 ../client/pk-console.c:1281
 #, c-format
 msgid "File does not exist: %s"
-msgstr "文件不存在 : %s"
+msgstr "ଫାଇଲ ଅବସ୍ଥିତ ନାହିଁ: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
 #: ../client/pk-console.c:1238
 msgid "Packages to add"
-msgstr "添加软件包"
+msgstr "ଯୋଗ କରିବା ପାଇଁ ପ୍ୟାକେଜଗୁଡ଼ିକ"
 
 #. TRANSLATORS: header to a list of packages removed
 #: ../client/pk-console.c:1246
 msgid "Packages to remove"
-msgstr "删除软件包"
+msgstr "କାଢ଼ାଯିବା ପାଇଁ ପ୍ୟାକେଜଗୁଡ଼ିକ"
 
 #. TRANSLATORS: We didn't find any differences
 #: ../client/pk-console.c:1314
 #, c-format
 msgid "No new packages need to be installed"
-msgstr "没有新的软件包安装"
+msgstr "କୌଣସି ନୂତନ ପ୍ୟାକେଜ ସ୍ଥାପନ କରିବା ଆବଶ୍ୟକ ନାହିଁ"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1320
 msgid "To install"
-msgstr "安装"
+msgstr "ସ୍ଥାପନ କରିବାକୁ"
 
 #. TRANSLATORS: searching takes some time....
 #: ../client/pk-console.c:1332
 msgid "Searching for package: "
-msgstr "搜索软件包: "
+msgstr "ପ୍ୟାକେଜ ପାଇଁ ସନ୍ଧାନ କରୁଅଛି: "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
 #: ../client/pk-console.c:1336
 msgid "not found."
-msgstr "没有找到"
+msgstr "ମିଳିଲା ନାହିଁ।"
 
 #. TRANSLATORS: We didn't find any packages to install
 #: ../client/pk-console.c:1347
 #, c-format
 msgid "No packages can be found to install"
-msgstr "找不到软件包安装"
+msgstr "ସ୍ଥାପନ କରିବା ପାଇଁ କୌଣସି ପ୍ୟାକେଜ ମିଳିଲା ନାହିଁ"
 
 #. TRANSLATORS: installing new packages from package list
 #: ../client/pk-console.c:1353
 msgid "Installing packages"
-msgstr "正在安装软件包..."
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1389
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
-msgstr "该工具无法找到 %s 的更新详情：%s"
+msgstr "ଏହି ଉପକରଣଟି %s ପାଇଁ ଅଦ୍ୟତନ ବିବରଣୀ ଖୋଜି ପାଉନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
 #: ../client/pk-console.c:1397
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
-msgstr "该工具无法得到 %s 的更新详情：%s"
+msgstr "ଏହି ଉପକରଣଟି %s ପାଇଁ ଅଦ୍ୟତନ ବିବରଣୀ ପାଇଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1443
 msgid "Error:"
-msgstr "错误："
+msgstr "ତ୍ରୁଟି:"
 
 #. TRANSLATORS: This a list of details about the package
 #: ../client/pk-console.c:1457
 msgid "Package description"
-msgstr "软件包描述"
+msgstr "ପ୍ୟାକେଜ ବର୍ଣ୍ଣନା"
 
 #. TRANSLATORS: This a list files contained in the package
 #: ../client/pk-console.c:1491
 msgid "Package files"
-msgstr "软件包文件"
+msgstr "ପ୍ୟାକେଜ ଫାଇଲଗୁଡ଼ିକ"
 
 #. TRANSLATORS: This where the package has no files
 #: ../client/pk-console.c:1499
 msgid "No files"
-msgstr "没有文件"
+msgstr "କୌଣସି ଫାଇଲ ନାହିଁ"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
 #: ../client/pk-console.c:1522
 msgid "Repository signature required"
-msgstr "要求软件库签名"
+msgstr "ସଂଗ୍ରହାଳୟ ହସ୍ତାକ୍ଷର ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
 #: ../client/pk-console.c:1532
 msgid "Do you accept this signature?"
-msgstr "您接受该签名吗？"
+msgstr "ଆପଣ ଏହି ହସ୍ତାକ୍ଷରକୁ ଗ୍ରହଣ କରିବେ କି?"
 
 #. TRANSLATORS: This is where the user declined the security key
 #: ../client/pk-console.c:1536
 msgid "The signature was not accepted."
-msgstr "没有接受签名。"
+msgstr "ଏହି ହସ୍ତାକ୍ଷରକୁ ଗ୍ରହଣ କରାଯାଇନାହିଁ।"
 
 #. TRANSLATORS: This a request for a EULA
 #: ../client/pk-console.c:1570
 msgid "End user license agreement required"
-msgstr "需要最终用户许可协议"
+msgstr "ଚାଳକ ଅନୁମତି ପତ୍ର ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
 #: ../client/pk-console.c:1577
 msgid "Do you agree to this license?"
-msgstr "您同意本许可吗？"
+msgstr "ଆପଣ ଏହି ଅନୁମତି ପତ୍ର ସହିତ ସହମତ କି?"
 
 #. TRANSLATORS: This is where the user declined the license
 #: ../client/pk-console.c:1581
 msgid "The license was refused."
-msgstr "拒绝该许可。"
+msgstr "ଅନୁମତି ପତ୍ରକୁ ବାରଣ କରାଯାଇଛି।"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
 #: ../client/pk-console.c:1610
 msgid "The daemon crashed mid-transaction!"
-msgstr "后台程序在事务处理中期崩溃！"
+msgstr "ଡେମନ ମଧ୍ଯ-କାରବାରକୁ ନଷ୍ଟ କରିଛି!"
 
 #. TRANSLATORS: This is the header to the --help menu
 #: ../client/pk-console.c:1663
 msgid "PackageKit Console Interface"
-msgstr "PackageKit 终端界面"
+msgstr "PackageKit କୋନସୋଲ ଅନ୍ତରାପୃଷ୍ଠ"
 
 #. these are commands we can use with pkcon
 #: ../client/pk-console.c:1665
 msgid "Subcommands:"
-msgstr "子命令："
+msgstr "ଉପ ନିର୍ଦ୍ଦେଶଗୁଡ଼ିକ:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
@@ -497,113 +493,113 @@ msgstr "子命令："
 #: ../contrib/command-not-found/pk-command-not-found.c:518
 #: ../src/pk-main.c:199
 msgid "Show extra debugging information"
-msgstr "显示额外的调试信息"
+msgstr "ଅତିରିକ୍ତ ତ୍ରୁଟି ନିବାରଣ ସୂଚନା ଦର୍ଶାନ୍ତୁ"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1760 ../client/pk-monitor.c:127
 msgid "Show the program version and exit"
-msgstr "显示本程序版本并退出"
+msgstr "ପ୍ରଗ୍ରାମ ସଂସ୍କରଣ ଦର୍ଶାନ୍ତୁ ଏବଂ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: ../client/pk-console.c:1763
 msgid "Set the filter, e.g. installed"
-msgstr "设置过滤器，例如已安装的"
+msgstr "ଛାଣକ ସେଟ କରନ୍ତୁ, ଯେପରିକି ସ୍ଥାପିତ"
 
 #. TRANSLATORS: command line argument, work asynchronously
 #: ../client/pk-console.c:1766
 msgid "Exit without waiting for actions to complete"
-msgstr "不等操作完成即退出"
+msgstr "କାର୍ଯ୍ୟ ସମ୍ପୂର୍ଣ୍ଣ ହେବା ପର୍ଯ୍ୟନ୍ତ ଅପେକ୍ଷା ନକରି ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
 #: ../client/pk-console.c:1793
 msgid "This tool could not connect to system DBUS."
-msgstr "该工具无法连接到系统 DBUS。"
+msgstr "ଏହି ଉପକରଣ ତନ୍ତ୍ର DBUS ସହିତ ସଂଯୁକ୍ତ ହୋଇପାରିଲା ନାହିଁ।"
 
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1880
 msgid "The filter specified was invalid"
-msgstr "过滤器指定非法"
+msgstr "ଉଲ୍ଲିଖିତ ଛାଣକଟି ଅବୈଧ ଅଟେ"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
 #: ../client/pk-console.c:1898
 msgid "A search type is required, e.g. name"
-msgstr "您需要指定搜索类型，如软件包名"
+msgstr "ଗୋଟିଏ ସନ୍ଧାନ ପ୍ରକାର ଆବଶ୍ୟକ, ଯେପରିକି ନାମ"
 
 #. TRANSLATORS: the user needs to provide a search term
 #: ../client/pk-console.c:1904 ../client/pk-console.c:1912
 #: ../client/pk-console.c:1920 ../client/pk-console.c:1928
 msgid "A search term is required"
-msgstr "您需要指定搜索条件"
+msgstr "ଗୋଟିଏ ସନ୍ଧାନ ନିତି ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: the search type was provided, but invalid
 #: ../client/pk-console.c:1934
 msgid "Invalid search type"
-msgstr "无效的搜索类型"
+msgstr "ଅବୈଧ ସନ୍ଧାନ ପ୍ରକାର"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:1940
 msgid "A package name or filename to install is required"
-msgstr "您需要为安装指定一个软件包名或文件名"
+msgstr "ସ୍ଥାପନ କରିବା ପାଇଁ ଗୋଟିଏ ପ୍ୟାକେଜ ନାମ କିମ୍ବା ଫାଇଲନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1948
 msgid "A type, key_id and package_id are required"
-msgstr "需要指定某个类型，证书ID或者软件包ID"
+msgstr "ଗୋଟିଏ ପ୍ରକାର, key_id ଏବଂ package_id ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:1956
 msgid "A package name to remove is required"
-msgstr "您需要为卸载指定一个软件包名"
+msgstr "କାଢ଼ିବା ପାଇଁ ଗୋଟିଏ ପ୍ୟାକେଜ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1963
 msgid "A destination directory and then the package names to download are required"
-msgstr "需要指定目的地目录以及软件包名来下载"
+msgstr "ଆହରଣ କରିବା ପାଇଁ ଗୋଟିଏ ଲକ୍ଷ୍ଯସ୍ଥଳ ଡିରେକ୍ଟୋରୀ ଏବଂ ତାପରେ ପ୍ୟାକେଜ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1969
 msgid "Directory not found"
-msgstr "目录没有找到"
+msgstr "ଡିରେକ୍ଟୋରୀ ମିଳୁନାହିଁ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1976
 msgid "A licence identifier (eula-id) is required"
-msgstr "需要指定某个许可证鉴别 (eula-id)"
+msgstr "ଗୋଟିଏ ଅନୁମତିପତ୍ର ପରିଚାୟକ (eula-id) ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1985
 msgid "A transaction identifier (tid) is required"
-msgstr "需要交易标识符（tid）"
+msgstr "ଗୋଟିଏ କାରବାର ପରିଚାୟକ (tid) ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user did not specify a package name
 #: ../client/pk-console.c:2001
 msgid "A package name to resolve is required"
-msgstr "您需要为解析指定一个软件包名"
+msgstr "ସମାଧାନ କରିବା ପାଇଁ ଗୋଟିଏ ପ୍ୟାକେଜ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:2009 ../client/pk-console.c:2017
 msgid "A repository name is required"
-msgstr "要求软件库名"
+msgstr "ଗୋଟିଏ ସଂଗ୍ରହାଳୟ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user didn't provide any data
 #: ../client/pk-console.c:2025
 msgid "A repo name, parameter and value are required"
-msgstr "您需要指定某个软件库名字，参数或值"
+msgstr "ଗୋଟିଏ ସଂଗ୍ରହାଳୟ, ପ୍ରାଚଳ ଏବଂ ମୂଲ୍ୟ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user didn't specify what action to use
 #: ../client/pk-console.c:2038
 msgid "An action, e.g. 'update-system' is required"
-msgstr "您需要指定某个行动，例如“更新系统”"
+msgstr "ଗୋଟିଏ କାର୍ଯ୍ୟ, ଉଦାହରଣ ସ୍ୱରୂପ 'update-system' ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:2044
 msgid "A correct role is required"
-msgstr "需要一个正确响应"
+msgstr "ଗୋଟିଏ ସଠିକ ଭୂମିକା ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
 #: ../client/pk-console.c:2050
 msgid "Failed to get the time since this action was last completed"
-msgstr "未获得最后一次操作的时间"
+msgstr "ଏହି କାର୍ଯ୍ୟଟି ଶେଷରେ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଥିବା ହେତୁ ସମୟ ପାଇବାରେ ବିଫଳ"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
@@ -611,466 +607,468 @@ msgstr "未获得最后一次操作的时间"
 #: ../client/pk-console.c:2078 ../client/pk-console.c:2094
 #: ../client/pk-console.c:2102 ../client/pk-generate-pack.c:241
 msgid "A package name is required"
-msgstr "需要软件包名"
+msgstr "ଗୋଟିଏ ପ୍ୟାକେଜ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:2086
 msgid "A package provide string is required"
-msgstr "您需要指定特定参数"
+msgstr "ଗୋଟିଏ ପ୍ୟାକେଜ ପ୍ରଦତ୍ତ ବାକ୍ୟଖଣ୍ଡ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
 #: ../client/pk-console.c:2110
 msgid "A list file name to create is required"
-msgstr "需要建立一个文件列表"
+msgstr "ନିର୍ମାଣ କରିବା ପାଇଁ ଗୋଟିଏ ତାଲିକା ଫାଇଲ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
 #: ../client/pk-console.c:2119 ../client/pk-console.c:2128
 msgid "A list file to open is required"
-msgstr "需要打开一个文件列表"
+msgstr "ଖୋଲିବା ପାଇଁ ଗୋଟିଏ ତାଲିକା ଫାଇଲ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:2181
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "不支持 '%s' 选项"
+msgstr "ବିକଳ୍ପ '%s' ଟି ସମର୍ଥିତ ନୁହଁ"
 
 #. TRANSLATORS: User does not have permission to do this
 #: ../client/pk-console.c:2194
 msgid "Incorrect privileges for this operation"
-msgstr "您没有本次操作需要的必要权限"
+msgstr "ଏହି ପ୍ରୟୋଗ ପାଇଁ ଭୁଲ ଅଧିକାର"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 #: ../client/pk-console.c:2197
 msgid "Command failed"
-msgstr "命令失败"
+msgstr "ନିର୍ଦ୍ଦେଶ ବିଫଳ ହୋଇଛି"
 
 #. TRANSLATORS: This is the state of the transaction
 #: ../client/pk-generate-pack.c:101
 msgid "Downloading"
-msgstr "正在下载"
+msgstr "ଆହରଣ କରୁଅଛି"
 
 #. TRANSLATORS: This is when the main packages are being downloaded
 #: ../client/pk-generate-pack.c:121
 msgid "Downloading packages"
-msgstr "正在下载软件包"
+msgstr "ପ୍ୟାକେଜ ଆହରଣ କରୁଅଛି"
 
 #. TRANSLATORS: This is when the dependency packages are being downloaded
 #: ../client/pk-generate-pack.c:126
 msgid "Downloading dependencies"
-msgstr "正在下载依赖关系"
+msgstr "ନିର୍ଭରତାଗୁଡ଼ିକୁ ଆହରଣ କରୁଅଛି"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
 #: ../client/pk-generate-pack.c:188
 msgid "Set the file name of dependencies to be excluded"
-msgstr "设置将被除外的依赖关系的文件名"
+msgstr "ବାହାର କରିବା ପାଇଁ ନିର୍ଭରତାଗୁଡ଼ିକର ଫାଇଲ ନାମକୁ ସେଟ କରନ୍ତୁ"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:191
 msgid "The output file or directory (the current directory is used if ommitted)"
-msgstr "输出文件或目录(使用当前目录如忘记指定)"
+msgstr "ନିର୍ଗମ ଫାଇଲ କିମ୍ବା ଡିରେକ୍ଟୋରୀ (ଛାଡ଼ି ଯାଇଥିଲେ ପ୍ରଚଳିତ ଡିରେକ୍ଟୋରୀକୁ ବ୍ୟବହାର କରାଯାଇଛି)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:194
 msgid "The package to be put into the service pack"
-msgstr "将放入服务包的软件包"
+msgstr "ସର୍ଭିସ ପ୍ୟାକ ମଧ୍ଯରେ ରଖିବାକୁ ଥିବା ପ୍ୟାକେଜ"
 
 #. TRANSLATORS: put all pending updates in the pack
 #: ../client/pk-generate-pack.c:197
 msgid "Put all updates available in the service pack"
-msgstr "将所有可获得的更新放入服务包"
+msgstr "ସର୍ଭିସ ପ୍ୟାକ ମଧ୍ଯରେ ସମସ୍ତ ଉପଲବ୍ଧ ଅଦ୍ୟତନଗୁଡ଼ିକୁ ରଖନ୍ତୁ"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:225
 msgid "Neither --package or --updates option selected."
-msgstr "要么是选定了 --package 选项，要么是选定了 --updates 选项"
+msgstr "--package କିମ୍ବା --updates ବିକଳ୍ପକୁ ବଛାହୋଇନାହିଁ।"
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
 #: ../client/pk-generate-pack.c:233
 msgid "Both options selected."
-msgstr "选定了两个选项"
+msgstr "ଉଭୟ ବିକଳ୍ପଗୁଡ଼ିକୁ ବଛାହୋଇଛି।"
 
 #. TRANSLATORS: This is when the user fails to supply the output
 #: ../client/pk-generate-pack.c:249
 msgid "A output directory or file name is required"
-msgstr "您需要指定输出的目录名或文件名"
+msgstr "ଗୋଟିଏ ନିର୍ଗମ ଡିରେକ୍ଟୋରୀ କିମ୍ବା ଫାଇଲ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
 #: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
 msgid "The package manager cannot perform this type of operation."
-msgstr "软件包管理器不能处理当前类型的操作"
+msgstr "ପ୍ୟାକେଜ ପରିଚାଳକ ଏହି ପ୍ରକାର ପ୍ରୟୋଗକୁ କାର୍ଯ୍ୟକାରୀ କରିପାରେ ନାହିଁ।"
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
 #: ../client/pk-generate-pack.c:285
 msgid "If specifying a file, the service pack name must end with"
-msgstr "如果指定一个文件，文件后缀名必须是"
+msgstr "ଯଦି ଗୋଟିଏ ଫାଇଲକୁ ଉଲ୍ଲେଖ କରାଯାଏ, ତେବେ ସର୍ଭିସ ପ୍ୟାକ ନାମ ଏହା ସହିତ ସମାପ୍ତ ହୋଇଥାଏ"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:301
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "已经有同名软件包存在，您想要覆盖它吗？"
+msgstr "ସମାନ ନାମ ବିଶିଷ୍ଟ ଗୋଟିଏ ପ୍ୟାକ ପୂର୍ବରୁ ଅବସ୍ଥିତ, ଆପଣ ଏହାକୁ ନବଲିଖନ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:304
 msgid "The pack was not overwritten."
-msgstr "该软件包没有被覆盖"
+msgstr "ପ୍ୟାକଟି ନବଲିଖନ ହୋଇନାହିଁ।"
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
 #: ../client/pk-generate-pack.c:317
 msgid "Failed to create directory:"
-msgstr "无法创建目录"
+msgstr "ଡିରେକ୍ଟୋରୀ ନିର୍ମାଣ କରିବାରେ ବିଫଳ:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
 #: ../client/pk-generate-pack.c:327
 msgid "Failed to open package list."
-msgstr "无法打开软件包清单"
+msgstr "ପ୍ୟାକେଜ ତାଲିକା ଖୋଲିବାରେ ବିଫଳ।"
 
 #. TRANSLATORS: The package name is being matched up to available packages
 #: ../client/pk-generate-pack.c:338
 msgid "Finding package name."
-msgstr "正在寻找软件包名"
+msgstr "ପ୍ୟାକେଜ ନାମ ଖୋଜୁଅଛି।"
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
 #: ../client/pk-generate-pack.c:342
 #, c-format
 msgid "Failed to find package '%s': %s"
-msgstr "无法找到软件包 '%s': %s"
+msgstr "ପ୍ୟାକେଜ '%s'କୁ ଖୋଜିବାରେ ବିଫଳ: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
 #: ../client/pk-generate-pack.c:359
 msgid "Creating service pack..."
-msgstr "正在创建服务包..."
+msgstr "ସର୍ଭିସ ପ୍ୟାକ ନିର୍ମାଣ କରୁଅଛି..."
 
 #. TRANSLATORS: we succeeded in making the file
 #: ../client/pk-generate-pack.c:366
 #, c-format
 msgid "Service pack created '%s'"
-msgstr "服务包已创建 '%s'"
+msgstr "ସର୍ଭିସ ପ୍ୟାକ ନିର୍ମାଣ ହୋଇଅଛି '%s'"
 
 #. TRANSLATORS: we failed to make te file
 #: ../client/pk-generate-pack.c:371
 #, c-format
 msgid "Failed to create '%s': %s"
-msgstr "无法创建 '%s': %s"
+msgstr "'%s'କୁ ନିର୍ମାଣ କରିବାରେ ବିଫଳ: %s"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: ../client/pk-monitor.c:143
 msgid "PackageKit Monitor"
-msgstr "PackageKit 监视器"
+msgstr "PackageKit ପ୍ରଦର୍ଶିକା"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:118
 #, c-format
 msgid "The package could not be found"
-msgstr "无法找到该软件包"
+msgstr "ପ୍ୟାକେଜ ମିଳିଲା ନାହିଁ"
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
 #: ../client/pk-tools-common.c:130
 msgid "More than one package matches:"
-msgstr "超过一个软件包符合："
+msgstr "ଗୋଟିଏରୁ ଅଧିକ ପ୍ୟାକେଜ ମେଳ ଖାଉଛି:"
 
 #. TRANSLATORS: This finds out which package in the list to use
 #: ../client/pk-tools-common.c:137
 msgid "Please choose the correct package: "
-msgstr "请选择正确的软件包："
+msgstr "ଦୟାକରି ସଠିକ ପ୍ୟାକେଜ ବାଛନ୍ତୁ: "
 
 #: ../client/pk-tools-common.c:162
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "请输入从1到 %i 的数字："
+msgstr "ଦୟାକରି 1 ରୁ %i ଭିତରେ ଥିବା ଗୋଟିଏ ସଂଖ୍ୟାକୁ ଭରଣ କରନ୍ତୁ: "
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:369
 msgid "Failed to search for file"
-msgstr "未找到该软件包"
+msgstr "ଫାଇଲ ସନ୍ଧାନ କରିବାରେ ବିଫଳ"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: ../contrib/command-not-found/pk-command-not-found.c:493
 msgid "Failed to launch:"
-msgstr "无法执行"
+msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/command-not-found/pk-command-not-found.c:534
 msgid "PackageKit Command Not Found"
-msgstr "PackageKit 命令没有找到"
+msgstr "PackageKit ନିର୍ଦ୍ଦେଶ ମିଳିଲା ନାହିଁ"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
 #: ../contrib/command-not-found/pk-command-not-found.c:556
 msgid "Command not found."
-msgstr "命令未找到"
+msgstr "ନିର୍ଦ୍ଦେଶ ମିଳିଲା ନାହିଁ।"
 
 #. TRANSLATORS: tell the user what we think the command is
 #: ../contrib/command-not-found/pk-command-not-found.c:563
 msgid "Similar command is:"
-msgstr "可能命令是:"
+msgstr "ଏକାପ୍ରକାର ନିର୍ଦ୍ଦେଶ:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 #: ../contrib/command-not-found/pk-command-not-found.c:572
 msgid "Run similar command:"
-msgstr "执行可能的命令:"
+msgstr "ଏକା ପ୍ରକାର ନିର୍ଦ୍ଦେଶ ଚଲାନ୍ତୁ:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 #: ../contrib/command-not-found/pk-command-not-found.c:584
 #: ../contrib/command-not-found/pk-command-not-found.c:593
 msgid "Similar commands are:"
-msgstr "可能命令是："
+msgstr "ଏକା ପ୍ରକାର ନିର୍ଦ୍ଦେଶଗୁଡ଼ିକ ହେଉଛି:"
 
 #. TRANSLATORS: ask the user to choose a file to run
 #: ../contrib/command-not-found/pk-command-not-found.c:600
 msgid "Please choose a command to run"
-msgstr "请选择一条命令执行"
+msgstr "ଦୟାକରି ଚଲାଇବା ପାଇଁ ଗୋଟିଏ ନିର୍ଦ୍ଦେଶ ବାଛନ୍ତୁ"
 
 #. TRANSLATORS: tell the user what package provides the command
 #: ../contrib/command-not-found/pk-command-not-found.c:615
 msgid "The package providing this file is:"
-msgstr "提供该命令的软件包是:"
+msgstr "ଏହି ଫାଇଲ ପ୍ରଦାନ କରିଥିବା ପ୍ୟାକେଜଟି ହେଉଛି:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
 #: ../contrib/command-not-found/pk-command-not-found.c:620
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "安装包'%s' 提供命令 '%s'"
+msgstr "ନିର୍ଦ୍ଦେଶ '%s'କୁ ପ୍ରଦାନ କରିବା ପାଇଁ ପ୍ୟାକେଜ '%s'କୁ ସ୍ଥାପନ କରିବେ କି?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:641
 msgid "Packages providing this file are:"
-msgstr "提供该命令的软件包有:"
+msgstr "ଏହି ଫାଇଲ ପ୍ରଦାନ କରିଥିବା ପ୍ୟାକେଜଗୁଡ଼ିକ ହେଉଛି:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:650
 msgid "Suitable packages are:"
-msgstr "适合的软件包是:"
+msgstr "ଉପଯୁକ୍ତ ପ୍ୟାକେଜଗୁଡ଼ିକ ହେଉଛି:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
 #: ../contrib/command-not-found/pk-command-not-found.c:658
 msgid "Please choose a package to install"
-msgstr "请选择要安装的某个软件包"
+msgstr "ସ୍ଥାପନ କରିବା ପାଇଁ ଦୟାକରି ଗୋଟିଏ ପ୍ୟାକେଜ ବାଛନ୍ତୁ"
 
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/src/contents.cpp:298
 msgid "Getting package information..."
-msgstr "正在获得软件包信息..."
+msgstr "ପ୍ୟାକେଜ ସୂଚନା ଗ୍ରହଣ କରୁଅଛି..."
 
 #. TRANSLATORS: run an applicaiton
 #: ../contrib/browser-plugin/src/contents.cpp:304
 #, c-format
 msgid "Run %s"
-msgstr "运行 %s"
+msgstr "%s କୁ ଚଲାନ୍ତୁ"
 
 #. TRANSLATORS: show the installed version of a package
 #: ../contrib/browser-plugin/src/contents.cpp:310
 msgid "Installed version"
-msgstr "已安装版本"
+msgstr "ସ୍ଥାପିତ ସଂସ୍କରଣ"
 
 #. TRANSLATORS: run the application now
 #: ../contrib/browser-plugin/src/contents.cpp:318
 #, c-format
 msgid "Run version %s now"
-msgstr "现在运行版本 %s"
+msgstr "ସଂସ୍କରଣ %s କୁ ବର୍ତ୍ତମାନ ଚଲାନ୍ତୁ"
 
 #. TRANSLATORS: run the application now
 #: ../contrib/browser-plugin/src/contents.cpp:324
 msgid "Run now"
-msgstr "现在运行"
+msgstr "ବର୍ତ୍ତମାନ ଚଲାନ୍ତୁ"
 
 #. TRANSLATORS: update to a new version of the package
 #: ../contrib/browser-plugin/src/contents.cpp:330
 #, c-format
 msgid "Update to version %s"
-msgstr "更新到版本 %s"
+msgstr "ସଂସ୍କରଣ %sକୁ ଅଦ୍ୟତନ କରନ୍ତୁ"
 
 #. TRANSLATORS: To install a package
 #: ../contrib/browser-plugin/src/contents.cpp:336
 #, c-format
 msgid "Install %s now"
-msgstr "现在安装 %s "
+msgstr "%s କୁ ବର୍ତ୍ତମାନ ସ୍ଥାପନ କରନ୍ତୁ"
 
 #. TRANSLATORS: the version of the package
 #: ../contrib/browser-plugin/src/contents.cpp:339
 msgid "Version"
-msgstr "版本"
+msgstr "ସଂସ୍କରଣ"
 
 #. TRANSLATORS: noting found, so can't install
 #: ../contrib/browser-plugin/src/contents.cpp:344
 msgid "No packages found for your system"
-msgstr "没有为您系统发现软件包"
+msgstr "ଆପଣଙ୍କ ତନ୍ତ୍ର ପାଇଁ କୌଣସି ପ୍ୟାକେଜ ମିଳିଲା ନାହିଁ"
 
 #. TRANSLATORS: package is being installed
 #: ../contrib/browser-plugin/src/contents.cpp:349
 msgid "Installing..."
-msgstr "正在安装..."
+msgstr "ସ୍ଥାପନ କରୁଅଛି..."
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
-msgstr "PackageKit 目录"
+msgstr "PackageKit ତାଲିକା"
 
 #: ../data/packagekit-package-list.xml.in.h:1
 msgid "PackageKit Package List"
-msgstr "PackageKit 软件包清单"
+msgstr "PackageKit ପ୍ୟାକେଜ ତାଲିକା"
 
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr "PackageKit 服务包"
+msgstr "PackageKit ସର୍ଭିସ ପ୍ୟାକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:1
 msgid "Accept EULA"
-msgstr "接受 EULA"
+msgstr "EULA କୁ ଗ୍ରହଣ କରନ୍ତୁ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:2
 msgid "Authentication is required to accept a EULA"
-msgstr "需要验证才可接受 EULA"
+msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:3
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "需要验证才可取消不是您启动的任务"
+msgstr "ଆପଣଙ୍କ ନିଜ ଦ୍ୱାରା ଆରମ୍ଭ ହୋଇନଥିବା କାର୍ଯ୍ୟଟିକୁ ବାତିଲ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
 msgid "Authentication is required to change software source parameters"
-msgstr "需要验证才可更改软件源参数"
+msgstr "ସଫ୍ଟୱେର ଉତ୍ସ ପ୍ରାଚଳଗୁଡ଼ିକୁ ପରିବର୍ତ୍ତନ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:5
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
-msgstr "需要验证才可将用于签注软件包的密钥视为可信的"
+msgstr ""
+"ପ୍ୟାକେଜଗୁଡ଼ିକୁ ବିଶ୍ଵସ୍ତ ଭାବରେ ହସ୍ତାକ୍ଷର କରିବା ପାଇଁ ବ୍ୟବହୃତ କି କୁ ଗ୍ରହଣ କରିବା ପାଇଁ "
+"ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
 msgid "Authentication is required to install a signed package"
-msgstr "需要验证才可安装签注的软件包"
+msgstr "ଗୋଟିଏ ହସ୍ତାକ୍ଷର ହୋଇଥିବା ପ୍ୟାକେଜକୁ ସ୍ଥାପନ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Authentication is required to install an untrusted package"
-msgstr "需要验证才可安装不可信的软件包"
+msgstr "ଗୋଟିଏ ଅବିଶ୍ୱସ୍ତ ପ୍ୟାକେଜକୁ ସ୍ଥାପନ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
 msgid "Authentication is required to refresh the system sources"
-msgstr "需要验证才可刷新系统源"
+msgstr "ତନ୍ତ୍ର ଉତ୍ସଗୁଡ଼ିକୁ ସତେଜନ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
 msgid "Authentication is required to remove packages"
-msgstr "需要验证才可删除软件包"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ କାଢ଼ିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to rollback a transaction"
-msgstr "需要验证才可重新运行交易"
+msgstr "ଗୋଟିଏ କାରବାରକୁ ପଛକୁ ନେବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
-msgstr "需要验证才可设置用于下载软件包的网络代理服务器"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଆହରଣ କରିବା ପାଇଁ ବ୍ୟବହୃତ ନେଟୱର୍କ ପ୍ରକ୍ସିକୁ ସେଟ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid "Authentication is required to update packages"
-msgstr "需要验证才可更新软件包"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Cancel foreign task"
-msgstr "取消外来的任务"
+msgstr "ବାହାରର କାର୍ଯ୍ୟକୁ ବାତିଲ କରନ୍ତୁ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Change software source parameters"
-msgstr "更改软件源参数"
+msgstr "ସଫ୍ୟୱେର ଉତ୍ସ ପ୍ରାଚଳଗୁଡ଼ିକୁ ପରିବର୍ତ୍ତନ କରନ୍ତୁ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Install signed package"
-msgstr "安装签注的软件包"
+msgstr "ହସ୍ତାକ୍ଷର ହୋଇଥିବା ପ୍ଯାକେଜକୁ ସ୍ଥାପନ କରନ୍ତୁ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Install untrusted local file"
-msgstr "安装不可信本地文件"
+msgstr "ବିଶ୍ୱସ୍ତ ସ୍ଥାନୀୟ ଫାଇଲକୁ ସ୍ଥାପନ କରନ୍ତୁ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Refresh system sources"
-msgstr "刷新系统源"
+msgstr "ତନ୍ତ୍ର ଉତ୍ସଗୁଡ଼ିକୁ ସତେଜନ କରନ୍ତୁ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Remove package"
-msgstr "删除软件包"
+msgstr "ପ୍ୟାକେଜ କାଢ଼ନ୍ତୁ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid "Rollback to a previous transaction"
-msgstr "重新运行前一个交易"
+msgstr "ପୂର୍ବ କାରବାରକୁ ପଛାନ୍ତୁ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Set network proxy"
-msgstr "设置网络代理服务器"
+msgstr "ନେଟୱର୍କ ପ୍ରକ୍ସି ସେଟ କରନ୍ତୁ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:21
 msgid "Trust a key used for signing packages"
-msgstr "相信用来签注软件包的密钥"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ହସ୍ତାକ୍ଷର କରିବା ପାଇଁ ବ୍ୟବହୃତ କି କୁ ବିଶ୍ୱାସ କରନ୍ତୁ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:22
 msgid "Update packages"
-msgstr "更新软件包"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରନ୍ତୁ"
 
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
-msgstr "由于本机的安全策略导致启动失败"
+msgstr "ଏହି ଯନ୍ତ୍ରରେ ସୁରକ୍ଷା ନିତୀ ଯୋଗୁଁ ଆରମ୍ଭ କ୍ରିୟା ବିଫଳ ହୋଇଛି।"
 
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
 msgid "This can happen for two reasons:"
-msgstr "发生这个可能有两个原因："
+msgstr "ଏହା ଦୁଇଟି କାରଣରୁ ଘଟିଥାଏ:"
 
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "用户正确但无法启动可执行程序(通常作为根用户)"
+msgstr "ସଠିକ ଚାଳକ ନିଷ୍ପାଦ୍ୟକୁ ଆରମ୍ଭ କରୁନାହିଁ (ସାଧାରଣତଃ ମୂଖ୍ୟ ଚାଳକ)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system "
 "directory:"
-msgstr "org.freedesktop.PackageKit.conf 没有安装到系统目录中："
+msgstr "org.freedesktop.PackageKit.conf ଫାଇଲଟି ତନ୍ତ୍ର ଡିରେକ୍ଟୋରୀରେ ସ୍ଥାପିତ ହୋଇନାହିଁ:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:193
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "使用的打包后端，例如“伪”后端"
+msgstr "ବ୍ୟବହାର କରିବା ପାଇଁ ପୃଷ୍ଠଭୂମିକୁ ପ୍ୟାକେଜ କରୁଅଛି, ଯେପରିକି ନକଲି"
 
 #. TRANSLATORS: if we should run in the background
 #: ../src/pk-main.c:196
 msgid "Daemonize and detach from the terminal"
-msgstr "后台化并从终端中分离"
+msgstr "ଟର୍ମିନାଲରୁ ପରିସରମୟ ଏବଂ ପୃଥକ କରନ୍ତୁ"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: ../src/pk-main.c:202
 msgid "Disable the idle timer"
-msgstr "禁止计时器"
+msgstr "ଅଚଳ ସମୟ ମାପକକୁ ନିଷ୍କ୍ରିୟ କରନ୍ତୁ"
 
 #. TRANSLATORS: show version
 #: ../src/pk-main.c:205
 msgid "Show version and exit"
-msgstr "显示版本并退出"
+msgstr "ସଂସ୍କରଣ ଦର୍ଶାନ୍ତୁ ଏବଂ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 #: ../src/pk-main.c:208
 msgid "Exit after a small delay"
-msgstr "稍稍延迟后退出"
+msgstr "ଗୋଟିଏ ଛୋଟ ବିଳମ୍ବ ପରେ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: ../src/pk-main.c:211
 msgid "Exit after the engine has loaded"
-msgstr "引擎载入后退出"
+msgstr "ଯନ୍ତ୍ରଟି ଧାରଣ ହୋଇସାରିବା ପରେ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: describing the service that is running
 #: ../src/pk-main.c:226
 msgid "PackageKit service"
-msgstr "PackageKit 服务"
+msgstr "PackageKit ସର୍ଭିସ"
 
 #. TRANSLATORS: fatal error, dbus is not running
 #: ../src/pk-main.c:263
 msgid "Cannot connect to the system bus"
-msgstr "无法连接到系统总线"
+msgstr "ତନ୍ତ୍ର ବସ ସହିତ ସଂଯୋଗ କରିପାରିବେ ନାହିଁ"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
 msgid "Error trying to start: %s\n"
-msgstr "尝试启动时出错: %s\n"
+msgstr "ଆରମ୍ଭ କରିବାକୁ ଚେଷ୍ଟା କରିବାରେ ତ୍ରୁଟି: %s\n"
 

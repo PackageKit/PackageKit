@@ -315,6 +315,21 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 	g_free (filters_text);
 }
 
+
+/**
+ * backend_get_packages:
+ */
+static void
+backend_get_packages (PkBackend *backend, PkBitfield filters)
+{
+    gchar *filters_text;
+    filters_text = pk_filter_bitfield_to_text (filters);
+    pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-packages", filters_text, NULL);
+    g_free (filters_text);
+}
+
+
+
 PK_BACKEND_OPTIONS (
 	"Conary with XMLCache",				/* description */
 	"Andres Vargas <zodman@foresightlinux.org>",
@@ -331,7 +346,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_details,			/* get_details */
 	NULL,					/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
-	NULL,					/* get_packages */
+	backend_get_packages,					/* get_packages */
 	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	backend_get_update_detail,              /* get_update_detail */

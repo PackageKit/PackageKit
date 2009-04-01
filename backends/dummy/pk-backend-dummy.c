@@ -903,6 +903,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	_package_ids = package_ids;
 	_package_current = 0;
 	_progress_percentage = 0;
+	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_percentage (backend, 0);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	_signal_timeout = g_timeout_add (200, backend_update_packages_download_timeout, backend);
