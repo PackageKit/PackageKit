@@ -2641,8 +2641,13 @@ class PackageKitCallback(RPMBaseCallback):
             # we don't know the summary text
             self.base.package(package_id, status, "")
         else:
+            # local file shouldn't put the path in the package_id
+            repo_id = _to_unicode(self.curpkg.repo.id)
+            if repo_id.find("/") != -1:
+                repo_id = 'local'
+
             pkgver = _get_package_ver(self.curpkg)
-            package_id = self.base.get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, self.curpkg.repo)
+            package_id = self.base.get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, repo_id)
             self.base.package(package_id, status, self.curpkg.summary)
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
