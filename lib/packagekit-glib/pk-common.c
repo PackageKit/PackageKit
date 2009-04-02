@@ -158,6 +158,19 @@ pk_get_distro_id (void)
 		goto out;
 	}
 
+	/* check for Debian or Debian derivatives */
+	ret = g_file_get_contents ("/etc/debian_version", &contents, NULL, NULL);
+	if (ret) {
+		/* remove "\n": "squeeze/sid\n" */
+		g_strdelimit (contents, "\n", '\0');
+		/* removes leading and trailing whitespace */
+		g_strstrip (contents);
+
+		/* complete! */
+		distro = g_strdup_printf ("debian-(%s)", contents);
+		goto out;
+	}
+
 out:
 	g_strfreev (split);
 	g_free (arch);
