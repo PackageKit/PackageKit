@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: packagekit.master.PackageKit.as\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-04-02 08:10+0000\n"
-"PO-Revision-Date: 2009-04-02 15:44+0530\n"
+"PO-Revision-Date: 2009-04-02 17:32+0530\n"
 "Last-Translator: Amitakhya Phukan <aphukan@fedoraproject.org>\n"
 "Language-Team: Assamese <fedora-trans-as@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -527,78 +527,78 @@ msgstr "বিচৰাৰ ধৰণৰ প্ৰয়োজন, যেনে ন�
 #: ../client/pk-console.c:1904 ../client/pk-console.c:1912
 #: ../client/pk-console.c:1920 ../client/pk-console.c:1928
 msgid "A search term is required"
-msgstr ""
+msgstr "বিচাৰিবলৈ শব্দৰ প্ৰয়োজন"
 
 #. TRANSLATORS: the search type was provided, but invalid
 #: ../client/pk-console.c:1934
 msgid "Invalid search type"
-msgstr ""
+msgstr "অবৈধ বিচৰাৰ ধৰণ"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:1940
 msgid "A package name or filename to install is required"
-msgstr ""
+msgstr "সংস্থাপন কৰিবলৈ সৰঞ্জামৰ নাম বা নথিপত্ৰৰ নামৰ প্ৰয়োজন"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1948
 msgid "A type, key_id and package_id are required"
-msgstr ""
+msgstr "এটা ধৰণ, key_id আৰু package_id ৰ প্ৰয়োজন"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:1956
 msgid "A package name to remove is required"
-msgstr ""
+msgstr "আঁতৰাবলৈ এটা সৰঞ্জামৰ নামৰ প্ৰয়োজন"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1963
 msgid ""
 "A destination directory and then the package names to download are required"
-msgstr ""
+msgstr "ডাউন্‌লোড কৰিবলৈ গন্তব্যৰ পঞ্জিকা আৰু তাৰ পিছত সৰঞ্জামৰ নামৰ প্ৰয়োজন"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1969
 msgid "Directory not found"
-msgstr ""
+msgstr "পঞ্জিকা পোৱা ন'গ'ল"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1976
 msgid "A licence identifier (eula-id) is required"
-msgstr ""
+msgstr "অনুজ্ঞাপত্ৰৰ চিনাকি এটাৰ (eula-id) প্ৰয়োজন"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1985
 msgid "A transaction identifier (tid) is required"
-msgstr ""
+msgstr "লেন-দেনৰ চিনাকি এটাৰ (eula-id) প্ৰয়োজন"
 
 #. TRANSLATORS: The user did not specify a package name
 #: ../client/pk-console.c:2001
 msgid "A package name to resolve is required"
-msgstr ""
+msgstr "বিশ্লেষণ কৰিবলৈ এটা সৰঞ্জামৰ নামৰ প্ৰয়োজন"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:2009 ../client/pk-console.c:2017
 msgid "A repository name is required"
-msgstr ""
+msgstr "এটা ভঁৰালৰ নামৰ প্ৰয়োজন"
 
 #. TRANSLATORS: The user didn't provide any data
 #: ../client/pk-console.c:2025
 msgid "A repo name, parameter and value are required"
-msgstr ""
+msgstr "এটা ভঁৰালৰ নাম, স্থিতিমাপ আৰু মানৰ প্ৰয়োজন"
 
 #. TRANSLATORS: The user didn't specify what action to use
 #: ../client/pk-console.c:2038
 msgid "An action, e.g. 'update-system' is required"
-msgstr ""
+msgstr "এটা কাৰ্য্য, যেনে 'update-system' ৰ প্ৰয়োজন"
 
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:2044
 msgid "A correct role is required"
-msgstr ""
+msgstr "এটা শুদ্ধ ভূমিকাৰ প্ৰয়োজন"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
 #: ../client/pk-console.c:2050
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
+msgstr "যোৱাবাৰৰ কাম শেষ হোৱাৰ সময় পাবলৈ বিফল"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
@@ -606,53 +606,53 @@ msgstr ""
 #: ../client/pk-console.c:2078 ../client/pk-console.c:2094
 #: ../client/pk-console.c:2102 ../client/pk-generate-pack.c:241
 msgid "A package name is required"
-msgstr ""
+msgstr "এটা সৰঞ্জামৰ নামৰ প্ৰয়োজন"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:2086
 msgid "A package provide string is required"
-msgstr ""
+msgstr "এটা সৰঞ্জাম দিওঁতাৰ শব্দৰ প্ৰয়োজন"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
 #: ../client/pk-console.c:2110
 msgid "A list file name to create is required"
-msgstr ""
+msgstr "সৃষ্টি কৰিব লগা এটা তালিকাৰ নথিপত্ৰৰ নামৰ প্ৰয়োজন"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
 #: ../client/pk-console.c:2119 ../client/pk-console.c:2128
 msgid "A list file to open is required"
-msgstr ""
+msgstr "খুলিব লগা এটা তালিকাৰ নথিপত্ৰৰ প্ৰয়োজন"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:2181
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr ""
+msgstr "'%s' বিকল্প অসমৰ্থিত"
 
 #. TRANSLATORS: User does not have permission to do this
 #: ../client/pk-console.c:2194
 msgid "Incorrect privileges for this operation"
-msgstr ""
+msgstr "এই কাৰ্য্যৰ বাবে অশুদ্ধ সুবিধা"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 #: ../client/pk-console.c:2197
 msgid "Command failed"
-msgstr ""
+msgstr "আদেশ বিফল"
 
 #. TRANSLATORS: This is the state of the transaction
 #: ../client/pk-generate-pack.c:101
 msgid "Downloading"
-msgstr "ডাউনলোড কৰা হৈছে"
+msgstr "ডাউন্‌লোড কৰা হৈছে"
 
 #. TRANSLATORS: This is when the main packages are being downloaded
 #: ../client/pk-generate-pack.c:121
 msgid "Downloading packages"
-msgstr ""
+msgstr "সৰঞ্জাম ডাউন্‌লোড কৰা হৈছে"
 
 #. TRANSLATORS: This is when the dependency packages are being downloaded
 #: ../client/pk-generate-pack.c:126
 msgid "Downloading dependencies"
-msgstr ""
+msgstr "নিৰ্ভৰতা ডাউন্‌লোড কৰা হৈছে"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
 #: ../client/pk-generate-pack.c:188
