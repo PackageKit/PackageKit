@@ -59,7 +59,7 @@ class DebPackage(object):
             raise NoDebArchiveException, "This is not a valid DEB archive, missing '%s' member" % "debian-binary"
         control = apt_inst.debExtractControl(open(self.filename))
         self._sections = apt_pkg.ParseSection(control)
-        self.pkgname = self._sections["Package"]
+        self.pkgName = self._sections["Package"]
 
     def __getitem__(self, key):
         return self._sections[key]
