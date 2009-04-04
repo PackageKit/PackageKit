@@ -27,7 +27,6 @@
 #include <pk-backend.h>
 #include <pk-backend-internal.h>
 #include <egg-debug.h>
-#include <pk-enum.h>
 
 #include <libopkg/opkg.h>
 
@@ -48,7 +47,7 @@ typedef struct {
 } SearchParams;
 
 static void
-opkg_unknown_error (PkBackend *backend, gint error_code, gchar *failed_cmd)
+opkg_unknown_error (PkBackend *backend, gint error_code, const gchar *failed_cmd)
 {
 	gchar *msg;
 
@@ -106,7 +105,7 @@ opkg_is_devel_pkg (opkg_package_t *pkg)
  *
  * returns true if the tag is present
  */
-gboolean
+static gboolean 
 opkg_check_tag (opkg_package_t *pkg, gchar *tag)
 {
 	if (pkg->tags && tag)
@@ -164,7 +163,7 @@ backend_initialize (PkBackend *backend)
 	}
 
 #ifdef OPKG_OFFLINE_ROOT
-	opkg_set_option (opkg, "offline_root", OPKG_OFFLINE_ROOT);
+	opkg_set_option (opkg, (char *) "offline_root", OPKG_OFFLINE_ROOT);
 	opkg_re_read_config_files (opkg);
 #endif
 
@@ -181,7 +180,7 @@ backend_destroy (PkBackend *backend)
 
 
 static void
-pk_opkg_progress_cb (opkg_t *opkg, const opkg_progress_data_t *pdata, void *data)
+pk_opkg_progress_cb (opkg_t *_opkg, const opkg_progress_data_t *pdata, void *data)
 {
 	PkBackend *backend = PK_BACKEND (data);
 	if (!backend)
@@ -258,7 +257,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  */
 
 static void
-pk_opkg_package_list_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
+pk_opkg_package_list_cb (opkg_t *_opkg, opkg_package_t *pkg, void *data)
 {
 	SearchParams *params = (SearchParams*) data;
 	gchar *uid;
@@ -463,8 +462,8 @@ backend_remove_packages_thread (PkBackend *backend)
 	autoremove = GPOINTER_TO_INT (data[2]);
 	g_free (data);
 
-	opkg_set_option (opkg, "autoremove", &autoremove);
-	opkg_set_option (opkg, "force_removal_of_dependent_packages", &allow_deps);
+	opkg_set_option (opkg, (char *)"autoremove", &autoremove);
+	opkg_set_option (opkg, (char *)"force_removal_of_dependent_packages", &allow_deps);
 
 	err = 0;
 
@@ -604,7 +603,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
  */
 
 static void
-pk_opkg_list_upgradable_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
+pk_opkg_list_upgradable_cb (opkg_t *_opkg, opkg_package_t *pkg, void *data)
 {
 	PkBackend *backend = PK_BACKEND (data);
 	gchar *uid;
@@ -669,7 +668,7 @@ backend_get_details_thread (PkBackend *backend)
 	opkg_package_t *pkg;
 	gchar *newid;
 
-	package_ids = pk_backend_get_string (backend, "package_ids");
+        package_ids = pk_backend_get_strv(backend, "package_ids");
 	pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL)
 	{
