@@ -1943,12 +1943,15 @@ def _format_string(txt, encoding='utf-8'):
     return txt.replace("\n", ";")
 
 
-def run(args):
+def run(args, single=False):
     """
     Start the apt backend
     """
     backend = PackageKitAptBackend("")
-    backend.dispatcher(args)
+    if single == True:
+        backend.dispatch_command(args[0], args[1:])
+    else:
+        backend.dispatcher(args)
 
 def main():
     parser = optparse.OptionParser(description="APT backend for PackageKit")
@@ -1965,6 +1968,10 @@ def main():
                       help="Show a lot of additional information and drop to "
                            "a debugging console on unhandled exceptions "
                            "(Only needed by developers)")
+    parser.add_option("-s", "--single",
+                      action="store_true", dest="single",
+                      help="Only perform one command and don't listen on stdin "
+                           "(Only needed by developers)")
     (options, args) = parser.parse_args()
     if options.debug:
         pklog.setLevel(logging.DEBUG)
@@ -1979,10 +1986,10 @@ def main():
     if options.profile:
         import hotshot
         prof = hotshot.Profile(options.profile)
-        prof.runcall(run)
+        prof.runcall(run, args, options.single)
         prof.close()
     else:
-        run(args)
+        run(args, options.single)
 
 if __name__ == '__main__':
     main()
