@@ -1680,6 +1680,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                candidate[0].component in ["main", "restricted"] and \
                candidate[0].trusted == True
 
+    def _get_pkg_version_by_id(self, id):
+        '''
+        Return a package version matching the given package id or None.
+        '''
+        name, version, arch, data = id.split(";", 4)
+        if self._cache.has_key(name):
+            for pkg_ver in self._cache[name].versions:
+                if pkg_ver.version == version and \
+                   pkg_ver.architecture == arch:
+                    return pkg_ver
+        return None
+
     def _find_package_by_id(self, id):
         '''
         Return a package matching to the given package id
