@@ -143,6 +143,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 	g_free (package_ids_temp);
 }
 
+#ifdef HAVE_PYTHON_META_RELEASE
 /**
  * backend_get_distro_upgrades:
  */
@@ -151,6 +152,7 @@ backend_get_distro_upgrades (PkBackend *backend)
 {
 	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "get-distro-upgrades", NULL);
 }
+#endif /* HAVE_PYTHON_META_RELEASE */
 
 /**
  * backend_get_files:
