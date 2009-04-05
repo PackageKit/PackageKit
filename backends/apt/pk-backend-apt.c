@@ -1,5 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2009 Sebastian Heinlein <glatzor@ubuntu.com>
  * Copyright (C) 2007 Ali Sabil <ali.sabil@gmail.com>
  * Copyright (C) 2007 Tom Parker <palfrey@tevp.net>
  *
@@ -22,12 +24,29 @@
 
 #include "config.h"
 
+#include <packagekit-glib/packagekit.h>
 #include <pk-backend.h>
-#include <pk-backend-dbus.h>
+#include <pk-backend-spawn.h>
+#include <string.h>
 
-static PkBackendDbus *dbus;
+static PkBackendSpawn *spawn;
 
-#define PK_DBUS_BACKEND_SERVICE_APT   "org.freedesktop.PackageKitAptBackend"
+/**
+  * backend_stderr_cb:
+  */
+static gboolean
+backend_stderr_cb (PkBackend *backend, const gchar *output)
+{
+	// APT is a little bit chatty on stderr
+	if (strstr (output, "W:") != NULL)
+		return FALSE;
+	if (strstr (output, "E:") != NULL)
+		return FALSE;
+	// There have been a lot of API changes in python-apt recently
+	if (strstr (output, "DeprecationWarning") != NULL)
+		return FALSE;
+	return TRUE;
+}
 
 /**
  * backend_initialize:
@@ -37,8 +56,9 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	egg_debug ("backend: initialize");
-	dbus = pk_backend_dbus_new ();
-	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_APT);
+	spawn = pk_backend_spawn_new ();
+	pk_backend_spawn_set_filter_stderr (spawn, backend_stderr_cb);
+	pk_backend_spawn_set_name (spawn, "apt");
 }
 
 /**
@@ -49,9 +69,366 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	egg_debug ("backend: destroy");
-	pk_backend_dbus_kill (dbus);
-	g_object_unref (dbus);
+	g_object_unref (spawn);
 }
+
+/**
+ * backend_get_mime_types:
+ */
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+	return g_strdup ("application/x-deb");
+}
+
+/**
+ * pk_backend_bool_to_text:
+ */
+static const gchar *
+pk_backend_bool_to_text (gboolean value)
+{
+	if (value == TRUE)
+		return "yes";
+	return "no";
+}
+
+/**
+ * pk_backend_cancel:
+ */
+static void
+backend_cancel (PkBackend *backend)
+{
+	/* this feels bad... */
+	pk_backend_spawn_kill (spawn);
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "download-packages", directory, package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_get_depends:
+ */
+static void
+backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+{
+	gchar *filters_text;
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "get-depends", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	g_free (filters_text);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_get_details:
+ */
+static void
+backend_get_details (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "get-details", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_get_distro_upgrades:
+ */
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "get-distro-upgrades", NULL);
+}
+
+/**
+ * backend_get_files:
+ */
+static void
+backend_get_files (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn,  "pk-backend-apt.py", "get-files", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_get_requires:
+ */
+static void
+backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+{
+	gchar *package_ids_temp;
+	gchar *filters_text;
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	g_free (filters_text);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_get_updates:
+ */
+static void
+backend_get_updates (PkBackend *backend, PkBitfield filters)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn,  "pk-backend-apt.py", "get-updates", filters_text, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * backend_get_packages:
+ */
+static void
+backend_get_packages (PkBackend *backend, PkBitfield filters)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "get-packages", filters_text, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * backend_get_update_detail:
+ */
+static void
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "get-update-detail", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_install_packages:
+ */
+static void
+backend_install_packages (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "install-packages", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_install_files:
+ */
+static void
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "install-files", pk_backend_bool_to_text (trusted), package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_install_signature:
+ *
+FIXME: Not implemented
+ 
+static void
+backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
+			   const gchar *key_id, const gchar *package_id)
+{
+	const gchar *type_text;
+
+	type_text = pk_sig_type_enum_to_text (type);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "install-signature", type_text, key_id, package_id, NULL);
+} */
+
+/**
+ * backend_refresh_cache:
+ */
+static void
+backend_refresh_cache (PkBackend *backend, gboolean force)
+{
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "refresh-cache", NULL);
+}
+
+/**
+ * pk_backend_remove_packages:
+ */
+static void
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "remove-packages", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * pk_backend_search_details:
+ */
+static void
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "search-details", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * pk_backend_search_file:
+ */
+static void
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "search-file", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * pk_backend_search_group:
+ */
+static void
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "search-group", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * pk_backend_search_name:
+ */
+static void
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "search-name", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * pk_backend_update_packages:
+ */
+static void
+backend_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "update-packages", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * pk_backend_update_system:
+ */
+static void
+backend_update_system (PkBackend *backend)
+{
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "update-system", NULL);
+}
+
+/**
+ * pk_backend_resolve:
+ */
+static void
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+{
+	gchar *filters_text;
+	gchar *package_ids_temp;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "resolve", filters_text, package_ids_temp, NULL);
+	g_free (filters_text);
+	g_free (package_ids_temp);
+}
+
+#ifdef HAVE_PYTHON_SOFTWARE_PROPERTIES
+/**
+ * pk_backend_get_repo_list:
+ */
+static void
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "get-repo-list", filters_text, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * pk_backend_repo_enable:
+ */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+{
+	if (enabled == TRUE) {
+		pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "repo-enable", rid, "true", NULL);
+	} else {
+		pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "repo-enable", rid, "false", NULL);
+	}
+}
+
+/**
+ * pk_backend_repo_set_data:
+ *
+FIXME: Not implemented
+ 
+static void
+backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
+{
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "repo-set-data", rid, parameter, value, NULL);
+}
+*/
+#endif /* HAVE_PYTHON_SOFTWARE_PROPERTIES */
+
+/**
+ * backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+{
+	gchar *filters_text;
+	const gchar *provides_text;
+	provides_text = pk_provides_enum_to_text (provides);
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "what-provides", filters_text, provides_text, search, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * pk_backend_get_categories:
+ *
+FIXME: Not implemented
+static void
+backend_get_categories (PkBackend *backend)
+{
+	pk_backend_spawn_helper (spawn, "pk-backend-apt.py", "get-categories", NULL);
+} */
 
 /**
  * backend_get_groups:
@@ -101,240 +478,15 @@ backend_get_filters (PkBackend *backend)
 		-1);
 }
 
-/**
- * backend_get_updates:
- */
-static void
-backend_get_updates (PkBackend *backend, PkBitfield filters)
-{
-	pk_backend_dbus_get_updates (dbus, filters);
-}
-
-/**
- * backend_refresh_cache:
- * */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
-{
-	pk_backend_dbus_refresh_cache(dbus, force);
-}
-
-/**
- * pk_backend_update_system:
- * */
-static void
-backend_update_system (PkBackend *backend)
-{
-	pk_backend_dbus_update_system (dbus);
-}
-
-/**
- * backend_update_packages
- *  */
-static void
-backend_update_packages (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_dbus_update_packages (dbus, package_ids);
-}
-
-/**
- * backend_install_packages
- *  */
-static void
-backend_install_packages (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_dbus_install_packages (dbus, package_ids);
-}
-
-/**
- *  * backend_install_files:
- *   */
-static void
-backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
-{
-	        pk_backend_dbus_install_files (dbus, trusted, full_paths);
-}
-
-
-/**
- * backend_remove_packages
- *  */
-static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
-{
-	pk_backend_dbus_remove_packages (dbus, package_ids, allow_deps, autoremove);
-}
-
-/**
- * backend_get_files:
- *  */
-static void
-backend_get_files (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_dbus_get_files (dbus, package_ids);
-}
-
-#ifdef HAVE_PYTHON_META_RELEASE
-/**
- * backend_get_distro_upgrades:
- *  */
-static void
-backend_get_distro_upgrades (PkBackend *backend)
-{
-	pk_backend_dbus_get_distro_upgrades (dbus);
-}
-#endif /* HAVE_PYTHON_META_RELEASE */
-
-
-/**
- * backend_get_details:
- *  */
-static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_dbus_get_details (dbus, package_ids);
-}
-
-/**
- * backend_get_update_detail:
- *  */
-static void
-backend_get_update_detail (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_dbus_get_update_detail (dbus, package_ids);
-}
-
-/**
- *  * pk_backend_search_details:
- *   */
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
-{
-	pk_backend_dbus_search_details (dbus, filters, search);
-}
-
-/**
- *  * pk_backend_search_name:
- *   */
-static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
-{
-	pk_backend_dbus_search_name (dbus, filters, search);
-}
-
-/**
- *  * pk_backend_search_file:
- *   */
-static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
-{
-	pk_backend_dbus_search_file (dbus, filters, search);
-} 
-
-/**
- *  * pk_backend_search_group:
- *   */
-static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *group)
-{
-	pk_backend_dbus_search_group (dbus, filters, group);
-}
-
-
-/**
- *  * pk_backend_cancel:
- *   */
-static void
-backend_cancel (PkBackend *backend)
-{
-	pk_backend_dbus_cancel (dbus);
-}
-
-/**
- *  * pk_backend_resolve:
- *   */
-static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
-{
-	        pk_backend_dbus_resolve (dbus, filters, package_ids);
-}
-
-/**
- *  * pk_backend_get_packages:
- *   */
-static void
-backend_get_packages (PkBackend *backend, PkBitfield filters)
-{
-	        pk_backend_dbus_get_packages (dbus, filters);
-}
-
-#ifdef HAVE_PYTHON_SOFTWARE_PROPERTIES
-/**
- *  * pk_backend_get_repo_list:
- *   */
-static void
-backend_get_repo_list (PkBackend *backend, PkBitfield filters)
-{
-	        pk_backend_dbus_get_repo_list (dbus, filters);
-}
-
-/**
- *  * pk_backend_repo_enable
- *   */
-static void
-backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enable )
-{
-	        pk_backend_dbus_repo_enable (dbus, repo_id, enable);
-}
-#endif /* HAVE_PYTHON_SOFTWARE_PROPERTIES */
-
-
-/**
- *  * pk_backend_get_requires:
- *   */
-static void
-backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
-{
-	        pk_backend_dbus_get_requires (dbus, filters, package_ids, recursive);
-}
-
-/**
- *  * pk_backend_get_depends:
- *   */
-static void
-backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
-{
-	        pk_backend_dbus_get_depends (dbus, filters, package_ids, recursive);
-}
-
-/**
- *  * pk_backend_download_packages
- *   */
-static void
-backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
-{
-	        pk_backend_dbus_download_packages (dbus, package_ids, directory);
-}
-
-/**
- *  * pk_backend_what_provides
- *   */
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
-{
-	        pk_backend_dbus_what_provides (dbus, filters, provides, search);
-}
-
-
 
 PK_BACKEND_OPTIONS (
 	"Apt",					/* description */
-	"Ali Sabil <ali.sabil@gmail.com>; Tom Parker <palfrey@tevp.net>; Sebastian Heinlein <glatzor@ubuntu.com>",	/* author */
+	"Sebastian Heinlein <glatzor@ubuntu.com>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* get_mime_types */
+	backend_get_mime_types,			/* get_mime_types */
 	backend_cancel,				/* cancel */
 	backend_download_packages,		/* download_packages */
 	NULL,					/* get_categories */
@@ -376,3 +528,5 @@ PK_BACKEND_OPTIONS (
 	backend_update_system,			/* update_system */
 	backend_what_provides			/* what_provides */
 );
+
+
