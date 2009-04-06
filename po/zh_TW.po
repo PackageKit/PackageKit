@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-04-02 08:10+0000\n"
-"PO-Revision-Date: 2009-04-06 12:19+1000\n"
+"PO-Revision-Date: 2009-04-06 16:03+1000\n"
 "Last-Translator: Terry Chuang <tchuang@redhat.com>\n"
 "Language-Team:  <zh@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -177,7 +177,7 @@ msgstr "變更"
 #. TRANSLATORS: details about the update, the ongoing state of the update
 #: ../client/pk-console.c:379
 msgid "State"
-msgstr "省"
+msgstr "狀態"
 
 #. TRANSLATORS: details about the update, date the update was issued
 #: ../client/pk-console.c:384
@@ -704,12 +704,12 @@ msgstr "若要指定檔案的話，服務套件名稱必須以此為結尾"
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:301
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "已經有個相同名稱的套件存在了，您是否希望將此套件覆蓋？"
+msgstr "擁有相同名稱的套件已經存在，您要覆寫這個檔案嗎？"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:304
 msgid "The pack was not overwritten."
-msgstr "套件並未被覆蓋。"
+msgstr "套件並未被覆寫。"
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
 #: ../client/pk-generate-pack.c:317
@@ -916,51 +916,51 @@ msgstr "接受 EULA"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:2
 msgid "Authentication is required to accept a EULA"
-msgstr "接受 EULA 需先進行驗證"
+msgstr "要接受 EULA 需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:3
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "若要取消一項並非您自行啟動的工作，您必須先進行驗證"
+msgstr "若要取消一項並非您自行啟動的工作，您必須先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
 msgid "Authentication is required to change software source parameters"
-msgstr "要更改軟體來源參數需先進行驗證"
+msgstr "要更改軟體來源參數需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:5
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
-msgstr "要將一個用來簽署套件的金鑰列為信任的金鑰需先經過驗證"
+msgstr "要將一個用來簽署套件的金鑰列為信任的金鑰需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
 msgid "Authentication is required to install a signed package"
-msgstr "要安裝一個已簽署的套件需先經過驗證"
+msgstr "要安裝一個已簽署的套件需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Authentication is required to install an untrusted package"
-msgstr "要安裝非信任的套件需先經過驗證"
+msgstr "要安裝非信任的套件需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
 msgid "Authentication is required to refresh the system sources"
-msgstr "要刷新系統來源需先經過驗證"
+msgstr "要刷新系統來源需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
 msgid "Authentication is required to remove packages"
-msgstr "要移除套件需先經過驗證"
+msgstr "要移除套件需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to rollback a transaction"
-msgstr "要轉返一項交易需先經過驗證"
+msgstr "要復原一筆交易，需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
-msgstr "要設置用來下載套件的網路 proxy 需先經過驗證"
+msgstr "要設定用來下載套件的網路 proxy 需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid "Authentication is required to update packages"
-msgstr "要更新套件需先經過驗證"
+msgstr "要更新套件需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Cancel foreign task"
@@ -988,11 +988,11 @@ msgstr "移除套件"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid "Rollback to a previous transaction"
-msgstr "轉返回先前的交易"
+msgstr "復原至先前的交易"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Set network proxy"
-msgstr "設置網路 proxy"
+msgstr "設定網路 proxy"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:21
 msgid "Trust a key used for signing packages"
