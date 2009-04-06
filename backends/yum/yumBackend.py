@@ -2353,7 +2353,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     instpkg = instpkgs[0]
 
                 # get each element of the ChangeLog
-                changes = pkg.returnChangelog()
+                try:
+                    changes = pkg.returnChangelog()
+                except yum.Errors.RepoError, e:
+                    self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 for change in changes:
 
                     # ensure change has require number of fields
