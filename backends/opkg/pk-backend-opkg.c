@@ -306,17 +306,23 @@ pk_opkg_package_list_cb (opkg_t *_opkg, opkg_package_t *pkg, void *data)
 
 	/* check filters */
 
-	if ((filters & PK_FILTER_ENUM_DEVELOPMENT) && !opkg_is_devel_pkg (pkg))
+	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DEVELOPMENT) && 
+                !opkg_is_devel_pkg (pkg))
 		goto end_handle;
-	if ((filters & PK_FILTER_ENUM_NOT_DEVELOPMENT) && opkg_is_devel_pkg (pkg))
+	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) && 
+                opkg_is_devel_pkg (pkg))
 		goto end_handle;
-	if ((filters & PK_FILTER_ENUM_GUI) && !opkg_is_gui_pkg (pkg))
+	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_GUI) && 
+                !opkg_is_gui_pkg (pkg))
 		goto end_handle;
-	if ((filters & PK_FILTER_ENUM_NOT_GUI) && opkg_is_gui_pkg (pkg))
+	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_GUI) && 
+                opkg_is_gui_pkg (pkg))
 		goto end_handle;
-	if ((filters & PK_FILTER_ENUM_INSTALLED) && (!pkg->installed))
+	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && 
+                (!pkg->installed))
 		goto end_handle;
-	if ((filters & PK_FILTER_ENUM_NOT_INSTALLED) && (pkg->installed))
+	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED) && 
+                (pkg->installed))
 		goto end_handle;
 
 	pk_backend_package (params->backend, status, uid, pkg->description);
@@ -340,7 +346,7 @@ backend_search_thread (PkBackend *backend)
 	g_free (params->needle);
 	g_free (params);
 
-	return FALSE;
+	return TRUE;
 }
 
 static void
