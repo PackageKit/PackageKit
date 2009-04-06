@@ -1906,7 +1906,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
         else:
-            self.error(ERROR_PACKAGE_NOT_INSTALLED, "The packages failed to be removed", exit=False)
+            msg = "The following packages failed to be removed: %s" % str(package_ids)
+            self.error(ERROR_PACKAGE_NOT_INSTALLED, msg, exit=False)
 
     def _get_category(self, groupid):
         cat_id = self.comps.get_category(groupid)
