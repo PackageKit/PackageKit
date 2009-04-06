@@ -2025,6 +2025,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.PackageSackError, e:
                 self.error(ERROR_NO_DISTRO_UPGRADE_DATA, "Could not find preupgrade package in any enabled repos")
                 return
+            except yum.Errors.RepoError, e:
+                self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+                return
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 return
