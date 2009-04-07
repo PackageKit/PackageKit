@@ -193,7 +193,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
     def __init__(self, args, lock=True):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
-        self.yumbase = PackageKitYumBase(self)
+        try:
+            self.yumbase = PackageKitYumBase(self)
+        except PkError, e:
+            self.error(e.code, e.details)
 
         # get the lock early
         if lock:
@@ -2745,8 +2748,15 @@ class PackageKitYumBase(yum.YumBase):
         self.dsCallback = DepSolveCallback(backend)
         self.backend = backend
         # Setup Repo GPG support callbacks
-        self.repos.confirm_func = self._repo_gpg_confirm
-        self.repos.gpg_import_func = self._repo_gpg_import
+        try:
+            self.repos.confirm_func = self._repo_gpg_confirm
+            self.repos.gpg_import_func = self._repo_gpg_import
+        except Exception, e:
+            # helpfully, yum gives us TypeError when it can't open the rpmdb
+            if str(e).find('rpmdb open failed') != -1:
+                raise PkError(ERROR_FAILED_INITIALIZATION, _format_str(traceback.format_exc()))
+            else:
+                raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     def _repo_gpg_confirm(self, keyData):
         """ Confirm Repo GPG signature import """
