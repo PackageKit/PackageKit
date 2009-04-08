@@ -1354,7 +1354,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "The search term is invalid")
                 return
             codec = "%s:%s" % (match.group(1), match.group(2))
-            db = get_mapping_db("/var/cache/app-install/gai-codec-map.gdbm")
+            db = get_mapping_db("/var/lib/PackageKit/codec-map.gdbm")
             if db == None:
                 self.error(ERROR_INTERNAL_ERROR,
                            "Failed to open codec mapping database")
@@ -1373,7 +1373,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # Emit packages that contain an application that can handle
             # the given mime type
             handlers = set()
-            db = get_mapping_db("/var/cache/app-install/gai-mime-map.gdbm")
+            db = get_mapping_db("/var/lib/PackageKit/mime-map.gdbm")
             if db == None:
                 return
             if db.has_key(search):
