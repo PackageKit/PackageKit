@@ -15,7 +15,7 @@ packagekitpython_PYTHON =  				\
         aptbackend.py					\
         $(NULL)
 
-sbin_PROGRAMS =						\
+sbin_SCRIPTS =						\
 	update-packagekit-app-data			\
 	$(NULL)
 
