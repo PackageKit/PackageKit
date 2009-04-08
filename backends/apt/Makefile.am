@@ -15,6 +15,11 @@ packagekitpython_PYTHON =  				\
         aptbackend.py					\
         $(NULL)
 
+sbin_PROGRAMS =						\
+	update-packagekit-app-data			\
+	$(NULL)
+
+
 install-data-hook:
 	chmod a+rx $(DESTDIR)$(libexecdir)/*.py
 
