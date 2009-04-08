@@ -998,6 +998,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-download-packages functionality
         '''
+        def get_range(versions, total):
+            """
+            Calculate the start and end point of a package download progress.
+            """
+            downloaded = 0
+            for ver in versions:
+                start = downloaded * 100 / total
+                end = start + ver.size * 100 / total
+                yield ver, start, end
+                downloaded += ver.size
         pklog.info("Downloading packages: %s" % ids)
         self.status(STATUS_DOWNLOAD)
         self.allow_cancel(True)
@@ -1009,47 +1019,31 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         # Setup the fetcher
         self._check_init(prange=(0,10))
-        progress = PackageKitFetchProgress(self, prange=(10,90))
-        fetcher = apt_pkg.GetAcquire(progress)
-        pm = apt_pkg.GetPackageManager(self._cache._depcache)
-        recs = apt_pkg.GetPkgRecords(self._cache._cache)
-        list = apt_pkg.GetPkgSourceList()
-        list.ReadMainList()
-        # Mark installed packages for reinstallation and not installed packages
-        # for installation without dependencies
+        versions = []
+        total = 0
+        # Check if all ids are vaild and calculate the total download size
         for id in ids:
-            pkg = self._find_package_by_id(id)
-            if pkg == None:
+            pkg_ver = self._get_pkg_version_by_id(id)
+            if pkg_ver is None:
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                            "There is no package %s" % id)
                 return
-            if pkg.isInstalled:
-                self._cache._depcache.SetReInstall(pkg._pkg, True)
-            else:
-                self._cache._depcache.MarkInstall(pkg._pkg, False)
-        # Download 
-        pm.GetArchives(fetcher, list, recs)
-        res = fetcher.Run()
-        self._cache.clear()
-        self.percentage(95)
-        # Copy files from cache to final destination
-        for item in fetcher.Items:
-            pklog.debug("Download item: %s" % item)
-            if (item.Status != item.StatDone and not item.StatIdle) or \
-                res == fetcher.ResultCancelled:
+            if not pkg_ver.downloadable:
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,
-                           "Failed to download %s" % item.DescURI)
+                           "package %s isn't downloadable" % id)
                 return
-            pklog.debug("Copying %s to %s ..." % (item.DestFile, dest))
+            total += pkg_ver.size
+            versions.append(pkg_ver)
+        # Start the download
+        for ver, start, end in get_range(versions, total):
+            progress = PackageKitFetchProgress(self, prange=(start, end))
             try:
-                shutil.copy(item.DestFile, dest)
-            except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR,
-                           "Failed to copy %s to %s: %s" % (item.DestFile,
-                                                                dest, e))
+                ver.fetch_binary(dest, progress)
+            except Exception, error:
+                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, error.message)
                 return
         self.percentage(100)
- 
+
     @unlock_cache_afterwards
     def install_packages(self, ids):
         '''
