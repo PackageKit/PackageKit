@@ -210,33 +210,33 @@ gboolean	 pk_client_download_packages		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_updates			(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_system		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_name			(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_details		(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 const gchar	*search,
 							 GError		**error);
 gboolean	 pk_client_search_group			(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_file			(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_depends			(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 gchar		**package_ids,
 							 gboolean	 recursive,
 							 GError		**error)
@@ -308,7 +308,7 @@ gboolean	 pk_client_install_file			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_resolve			(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 gchar		**packages,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -326,7 +326,7 @@ gboolean	 pk_client_accept_eula			(PkClient	*client,
 
 /* repo stuff */
 gboolean	 pk_client_get_repo_list		(PkClient	*client,
-							 PkBitfield filters,
+							 PkBitfield	 filters,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_repo_enable			(PkClient	*client,

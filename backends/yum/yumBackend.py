@@ -193,7 +193,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
     def __init__(self, args, lock=True):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
-        self.yumbase = PackageKitYumBase(self)
+        try:
+            self.yumbase = PackageKitYumBase(self)
+        except PkError, e:
+            self.error(e.code, e.details)
 
         # get the lock early
         if lock:
@@ -1906,7 +1909,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
         else:
-            self.error(ERROR_PACKAGE_NOT_INSTALLED, "The packages failed to be removed", exit=False)
+            msg = "The following packages failed to be removed: %s" % str(package_ids)
+            self.error(ERROR_PACKAGE_NOT_INSTALLED, msg, exit=False)
 
     def _get_category(self, groupid):
         cat_id = self.comps.get_category(groupid)
@@ -2024,6 +2028,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 pkgs = self.yumbase.pkgSack.returnNewestByName(name='preupgrade')
             except yum.Errors.PackageSackError, e:
                 self.error(ERROR_NO_DISTRO_UPGRADE_DATA, "Could not find preupgrade package in any enabled repos")
+                return
+            except yum.Errors.RepoError, e:
+                self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
                 return
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
@@ -2349,7 +2356,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     instpkg = instpkgs[0]
 
                 # get each element of the ChangeLog
-                changes = pkg.returnChangelog()
+                try:
+                    changes = pkg.returnChangelog()
+                except yum.Errors.RepoError, e:
+                    self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 for change in changes:
 
                     # ensure change has require number of fields
@@ -2641,8 +2653,13 @@ class PackageKitCallback(RPMBaseCallback):
             # we don't know the summary text
             self.base.package(package_id, status, "")
         else:
+            # local file shouldn't put the path in the package_id
+            repo_id = _to_unicode(self.curpkg.repo.id)
+            if repo_id.find("/") != -1:
+                repo_id = 'local'
+
             pkgver = _get_package_ver(self.curpkg)
-            package_id = self.base.get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, self.curpkg.repo)
+            package_id = self.base.get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, repo_id)
             self.base.package(package_id, status, self.curpkg.summary)
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
@@ -2731,8 +2748,15 @@ class PackageKitYumBase(yum.YumBase):
         self.dsCallback = DepSolveCallback(backend)
         self.backend = backend
         # Setup Repo GPG support callbacks
-        self.repos.confirm_func = self._repo_gpg_confirm
-        self.repos.gpg_import_func = self._repo_gpg_import
+        try:
+            self.repos.confirm_func = self._repo_gpg_confirm
+            self.repos.gpg_import_func = self._repo_gpg_import
+        except Exception, e:
+            # helpfully, yum gives us TypeError when it can't open the rpmdb
+            if str(e).find('rpmdb open failed') != -1:
+                raise PkError(ERROR_FAILED_INITIALIZATION, _format_str(traceback.format_exc()))
+            else:
+                raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     def _repo_gpg_confirm(self, keyData):
         """ Confirm Repo GPG signature import """
