@@ -19,6 +19,9 @@ sbin_SCRIPTS =						\
 	update-packagekit-app-data			\
 	$(NULL)
 
+EXTRA_DIST =						\
+	update-packagekit-app-data			\
+	$(NULL)
 
 install-data-hook:
 	chmod a+rx $(DESTDIR)$(libexecdir)/*.py
