@@ -24,6 +24,10 @@ if PK_BUILD_COMMAND_NOT_FOUND
 SUBDIRS += command-not-found
 endif
 
+if PK_BUILD_CRON
+SUBDIRS += cron
+endif
+
 bashcompletiondir = ${SYSCONFDIR}/bash_completion.d
 dist_bashcompletion_DATA = pk-completion.bash
 

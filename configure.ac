@@ -419,6 +419,13 @@ AC_ARG_ENABLE(command_not_found, AS_HELP_STRING([--enable-command-not-found],[Bu
 AM_CONDITIONAL(PK_BUILD_COMMAND_NOT_FOUND, test $build_command_not_found = "yes")
 
 dnl ---------------------------------------------------------------------------
+dnl - Able to build cron background functionality
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(cron, AS_HELP_STRING([--enable-cron],[Build cron background functionality]),
+	      build_cron=$enableval,build_cron=yes)
+AM_CONDITIONAL(PK_BUILD_CRON, test $build_cron = "yes")
+
+dnl ---------------------------------------------------------------------------
 dnl - Build ruck (a rug-like interface for PackageKit)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(ruck, AS_HELP_STRING([--enable-ruck],[Build ruck client]),
@@ -721,6 +728,7 @@ contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
 contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
+contrib/cron/Makefile
 contrib/ruck/Makefile
 contrib/ruck/src/Makefile
 backends/Makefile
@@ -787,6 +795,7 @@ echo "
         Application install:       ${enable_app_install}
         Pango module:              ${build_gtk_module}
         BASH Command not found:    ${build_command_not_found}
+        Cron scripts:              ${build_cron}
         RUCK client:               ${build_ruck}
         QT library:                ${build_qt}
 	Managed bindings:          ${build_managed}

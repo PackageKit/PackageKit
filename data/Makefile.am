@@ -7,12 +7,6 @@ SUBDIRS = 						\
 	tests						\
 	$(NULL)
 
-cronfiledir = ${SYSCONFDIR}/cron.daily
-cronfile_SCRIPTS = packagekit-background.cron
-
-crondatadir = ${SYSCONFDIR}/sysconfig
-crondata_SCRIPTS = packagekit-background
-
 pmutilsdir = $(libdir)/pm-utils/sleep.d
 pmutils_DATA = 95packagekit
 
@@ -46,8 +40,6 @@ database_DATA =						\
 
 EXTRA_DIST =						\
 	95packagekit					\
-	packagekit-background				\
-	packagekit-background.cron			\
 	org.freedesktop.PackageKit.conf.in		\
 	$(servicemain_in_files)				\
 	$(servicetest_in_files)				\
