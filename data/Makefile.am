@@ -7,9 +7,6 @@ SUBDIRS = 						\
 	tests						\
 	$(NULL)
 
-pmutilsdir = $(libdir)/pm-utils/sleep.d
-pmutils_DATA = 95packagekit
-
 upgradescriptdir = $(datadir)/PackageKit
 upgradescript_SCRIPTS = pk-upgrade-distro.sh
 
@@ -39,7 +36,6 @@ database_DATA =						\
 	$(NULL)
 
 EXTRA_DIST =						\
-	95packagekit					\
 	org.freedesktop.PackageKit.conf.in		\
 	$(servicemain_in_files)				\
 	$(servicetest_in_files)				\
@@ -52,9 +48,6 @@ EXTRA_DIST =						\
 
 clean-local:
 	rm -f *~
-
-install-data-hook:
-	chmod a+x $(DESTDIR)$(libdir)/pm-utils/sleep.d/95packagekit;
 
 DISTCLEANFILES =					\
 	$(mime_DATA)					\
