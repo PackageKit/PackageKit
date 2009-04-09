@@ -800,7 +800,6 @@ echo "
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
-        Application install:       ${enable_app_install}
         Pango module:              ${build_gtk_module}
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}
