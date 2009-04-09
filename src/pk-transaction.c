@@ -1574,7 +1574,9 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	/* check if it's safe to kill */
 	if (!transaction->priv->allow_cancel) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
-				     "Tried to cancel a transaction that is not safe to kill");
+				     "Tried to cancel %s (%s) that is not safe to kill",
+				     transaction->priv->tid,
+				     pk_role_enum_to_text (transaction->priv->role));
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
