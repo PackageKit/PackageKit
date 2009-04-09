@@ -747,8 +747,6 @@ data/Makefile
 data/packagekit-glib.pc
 data/packagekit-qt.pc
 data/org.freedesktop.PackageKit.conf
-data/org.freedesktop.PackageKitTestBackend.conf
-data/org.freedesktop.PackageKitAptBackend.conf
 data/tests/Makefile
 lib/Makefile
 lib/packagekit-glib/Makefile

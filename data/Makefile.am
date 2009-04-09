@@ -42,8 +42,6 @@ mime_DATA = $(mime_in_files:.xml.in=.xml)
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = 					\
 	org.freedesktop.PackageKit.conf			\
-	org.freedesktop.PackageKitTestBackend.conf	\
-	org.freedesktop.PackageKitAptBackend.conf	\
 	$(NULL)
 
 servicemaindir       = $(DBUS_SERVICES_DIR)
@@ -51,18 +49,6 @@ servicemain_in_files = org.freedesktop.PackageKit.service.in
 servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
 $(servicemain_DATA): $(servicemain_in_files) Makefile
 	@sed -e "s|\@servicedir\@|$(sbindir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@
-
-servicetestdir       = $(DBUS_SERVICES_DIR)
-servicetest_in_files = org.freedesktop.PackageKitTestBackend.service.in
-servicetest_DATA     = $(servicetest_in_files:.service.in=.service)
-$(servicetest_DATA): $(servicetest_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PK_BACKEND_USER\@|$(PK_BACKEND_USER)|" $< > $@
-
-serviceaptdir       = $(DBUS_SERVICES_DIR)
-serviceapt_in_files = org.freedesktop.PackageKitAptBackend.service.in
-serviceapt_DATA     = $(serviceapt_in_files:.service.in=.service)
-$(serviceapt_DATA): $(serviceapt_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PK_BACKEND_USER\@|$(PK_BACKEND_USER)|" $< > $@
 
 localcachedir = $(localstatedir)/lib/PackageKit
 localcache_DATA =					\
@@ -79,8 +65,6 @@ EXTRA_DIST =						\
 	packagekit-background				\
 	packagekit-background.cron			\
 	org.freedesktop.PackageKit.conf.in		\
-	org.freedesktop.PackageKitTestBackend.conf.in	\
-	org.freedesktop.PackageKitAptBackend.conf.in	\
 	packagekit-glib.pc.in				\
 	packagekit-qt.pc.in				\
 	20packagekit					\
@@ -102,8 +86,6 @@ install-data-hook:
 DISTCLEANFILES =					\
 	$(mime_DATA)					\
 	org.freedesktop.PackageKit.service		\
-	org.freedesktop.PackageKitTestBackend.service	\
-	org.freedesktop.PackageKitAptBackend.service	\
 	$(NULL)
 
 MAINTAINERCLEANFILES =					\

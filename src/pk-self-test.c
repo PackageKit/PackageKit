@@ -36,7 +36,6 @@ void pk_security_test (EggTest *test);
 void pk_time_test (EggTest *test);
 void pk_backend_test (EggTest *test);
 void pk_backend_test_spawn (EggTest *test);
-void pk_backend_test_dbus (EggTest *test);
 void pk_file_monitor_test (EggTest *test);
 void pk_engine_test (EggTest *test);
 
@@ -68,7 +67,6 @@ main (int argc, char **argv)
 	/* backend stuff */
 	pk_backend_test (test);
 	pk_backend_test_spawn (test);
-	pk_backend_test_dbus (test);
 
 	/* system */
 	pk_engine_test (test);
