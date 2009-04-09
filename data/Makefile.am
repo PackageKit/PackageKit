@@ -19,11 +19,6 @@ pmutils_DATA = 95packagekit
 upgradescriptdir = $(datadir)/PackageKit
 upgradescript_SCRIPTS = pk-upgrade-distro.sh
 
-if BACKEND_TYPE_APT
-aptconfdir = ${SYSCONFDIR}/apt/apt.conf.d
-aptconf_DATA = 20packagekit
-endif
-
 @INTLTOOL_XML_RULE@
 mimedir = $(datadir)/mime/packages
 mime_in_files = 					\
@@ -54,7 +49,6 @@ EXTRA_DIST =						\
 	packagekit-background				\
 	packagekit-background.cron			\
 	org.freedesktop.PackageKit.conf.in		\
-	20packagekit					\
 	$(servicemain_in_files)				\
 	$(servicetest_in_files)				\
 	$(serviceapt_in_files)				\
