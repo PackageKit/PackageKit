@@ -50,11 +50,6 @@ servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
 $(servicemain_DATA): $(servicemain_in_files) Makefile
 	@sed -e "s|\@servicedir\@|$(sbindir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@
 
-localcachedir = $(localstatedir)/lib/PackageKit
-localcache_DATA =					\
-	job_count.dat					\
-	$(NULL)
-
 databasedir = $(PK_DB_DIR)
 database_DATA =						\
 	transactions.db					\
