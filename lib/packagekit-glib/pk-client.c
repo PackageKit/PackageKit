@@ -382,9 +382,10 @@ pk_client_set_synchronous (PkClient *client, gboolean synchronous, GError **erro
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* are we doing this without any need? */
-	if (client->priv->synchronous) {
+	if ((client->priv->synchronous && synchronous) ||
+	    (!client->priv->synchronous && !synchronous)) {
 		if (error != NULL)
-			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "already set synchronous!");
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "already synchronous : %i!", synchronous);
 		return FALSE;
 	}
 
@@ -4559,13 +4560,33 @@ pk_client_test (EggTest *test)
 	g_free (file);
 
 	/************************************************************/
-	egg_test_title (test, "get client, then unref");
+	egg_test_title (test, "get client");
 	client = pk_client_new ();
-	g_object_unref (client);
-	egg_test_success (test, NULL);
+	egg_test_assert (test, client != NULL);
 
 	/************************************************************/
-	egg_test_title (test, "get client");
+	egg_test_title (test, "set non synchronous (fail)");
+	ret = pk_client_set_synchronous (client, FALSE, NULL);
+	egg_test_assert (test, !ret);
+
+	/************************************************************/
+	egg_test_title (test, "set synchronous (pass)");
+	ret = pk_client_set_synchronous (client, TRUE, NULL);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "set synchronous again (fail)");
+	ret = pk_client_set_synchronous (client, TRUE, NULL);
+	egg_test_assert (test, !ret);
+
+	/************************************************************/
+	egg_test_title (test, "set non synchronous (pass)");
+	ret = pk_client_set_synchronous (client, FALSE, NULL);
+	egg_test_assert (test, ret);
+	g_object_unref (client);
+
+	/************************************************************/
+	egg_test_title (test, "get new client");
 	client = pk_client_new ();
 	egg_test_assert (test, client != NULL);
 
@@ -4578,8 +4599,12 @@ pk_client_test (EggTest *test)
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (pk_client_test_finished_cb), test);
 
+	/************************************************************/
+	egg_test_title (test, "set synchronous after reset (pass)");
+	ret = pk_client_set_synchronous (client, TRUE, NULL);
+	egg_test_assert (test, ret);
+
 	/* run the method */
-	pk_client_set_synchronous (client, TRUE, NULL);
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
 
 	/************************************************************/
