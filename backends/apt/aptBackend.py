@@ -158,16 +158,17 @@ MATCH_CVE="CVE-\d{4}-\d{4}"
 HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
 def unlock_cache_afterwards(func):
-    '''
+    """
     Make sure that the package cache is unlocked after the decorated function
-    was called
-    '''
-    def wrapper(*args, **kwargs):
+    was called.
+    """
+    def _unlock_cache_afterwards(*args, **kwargs):
         backend = args[0]
-        func(*args, **kwargs)
-        backend._unlock_cache()
-    wrapper.__name__ = func.__name__
-    return wrapper
+        try:
+            func(*args, **kwargs)
+        finally:
+            backend._unlock_cache()
+    return _unlock_cache_afterwards
 
 
 class PKError(Exception):
