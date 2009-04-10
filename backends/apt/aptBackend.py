@@ -270,9 +270,9 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
 
 
 class PackageKitOpProgress(apt.progress.OpProgress):
-    '''
+    """
     Handle the cache opening process
-    '''
+    """
     def __init__(self, backend, prange=(0,100), progress=True):
         self._backend = backend
         apt.progress.OpProgress.__init__(self)
@@ -301,9 +301,9 @@ class PackageKitOpProgress(apt.progress.OpProgress):
 
 
 class PackageKitFetchProgress(apt.progress.FetchProgress):
-    '''
+    """
     Handle the package download process
-    '''
+    """
     def __init__(self, backend, prange=(0,100)):
         self._backend = backend
         apt.progress.FetchProgress.__init__(self)
@@ -338,10 +338,10 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
 
 
 class PackageKitInstallProgress(apt.progress.InstallProgress):
-    '''
+    """
     Handle the installation and removal process. Bits taken from
     DistUpgradeViewNonInteractive.
-    '''
+    """
     def __init__(self, backend, prange=(0,100)):
         apt.progress.InstallProgress.__init__(self)
         self._backend = backend
@@ -451,9 +451,9 @@ if REPOS_SUPPORT == True:
 
 
 class PackageKitAptBackend(PackageKitBaseBackend):
-    '''
+    """
     PackageKit backend for apt
-    '''
+    """
     def __init__(self, args):
         pklog.info("Initializing APT backend")
         signal.signal(signal.SIGQUIT, self._sigquit)
@@ -468,12 +468,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     # Methods ( client -> engine -> backend )
 
     def search_file(self, filters, filename):
-        '''
+        """
         Implement the apt2-search-file functionality
 
         Apt specific: Works only for installed files. Since config files are
         not removed by default even not installed packages can be reported.
-        '''
+        """
         pklog.info("Searching for file: %s" % filename)
         self.status(STATUS_QUERY)
         self.percentage(None)
@@ -487,9 +487,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     break
 
     def search_group(self, filters, group):
-        '''
+        """
         Implement the apt2-search-group functionality
-        '''
+        """
         pklog.info("Searching for group: %s" % group)
         self.status(STATUS_QUERY)
         self.percentage(None)
@@ -501,9 +501,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_visible_package(filters, pkg)
 
     def search_name(self, filters, search):
-        '''
+        """
         Implement the apt2-search-name functionality
-        '''
+        """
         pklog.info("Searching for package name: %s" % search)
         self.status(STATUS_QUERY)
         self.percentage(None)
@@ -515,9 +515,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_visible_package(filters, pkg)
 
     def search_details(self, filters, search):
-        '''
+        """
         Implement the apt2-search-details functionality
-        '''
+        """
         pklog.info("Searching for package name: %s" % search)
         self.status(STATUS_QUERY)
         self.percentage(None)
@@ -554,9 +554,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._emit_visible_package(filters, r)
 
     def get_distro_upgrades(self):
-        '''
+        """
         Implement the {backend}-get-distro-upgrades functionality
-        '''
+        """
         pklog.info("Get distro upgrades")
         self.status(STATUS_INFO)
         self.allow_cancel(False)
@@ -587,9 +587,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                 "The latest stable release")
 
     def get_updates(self, filters):
-        '''
+        """
         Implement the {backend}-get-update functionality
-        '''
+        """
         def succeeds_security_update(pkg):
             """
             Return True if an update succeeds a previous security update
@@ -649,9 +649,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._cache.clear()
 
     def get_update_detail(self, pkg_ids):
-        '''
+        """
         Implement the {backend}-get-update-details functionality
-        '''
+        """
         def get_bug_urls(changelog):
             """
             Create a list of urls pointing to closed bugs in the changelog
@@ -704,9 +704,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                updated)
 
     def get_details(self, pkg_ids):
-        '''
+        """
         Implement the {backend}-get-details functionality
-        '''
+        """
         pklog.info("Get details of %s" % pkg_ids)
         self.status(STATUS_INFO)
         self.percentage(None)
@@ -733,9 +733,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @unlock_cache_afterwards
     def update_system(self):
-        '''
+        """
         Implement the {backend}-update-system functionality
-        '''
+        """
         pklog.info("Upgrading system")
         if not self._lock_cache(): return
         self.status(STATUS_UPDATE)
@@ -754,9 +754,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @unlock_cache_afterwards
     def remove_packages(self, allowdeps, ids):
-        '''
+        """
         Implement the {backend}-remove functionality
-        '''
+        """
         pklog.info("Removing package(s): id %s" % ids)
         if not self._lock_cache(): return
         self.status(STATUS_REMOVE)
@@ -796,12 +796,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     def get_repo_list(self, filters):
-        '''
+        """
         Implement the {backend}-get-repo-list functionality
 
         FIXME: should we use the abstration of software-properties or provide
                low level access using pure aptsources?
-        '''
+        """
         pklog.info("Getting repository list: %s" % filters)
         self.status(STATUS_INFO)
         self.allow_cancel(False)
@@ -873,12 +873,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.repo_detail(repo_id, description, enabled)
 
     def repo_enable(self, repo_id, enable):
-        '''
+        """
         Implement the {backend}-repo-enable functionality
 
         FIXME: should we use the abstration of software-properties or provide
                low level access using pure aptsources?
-        '''
+        """
         pklog.info("Enabling repository: %s %s" % (repo_id, enable))
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
@@ -956,9 +956,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @unlock_cache_afterwards
     def update_packages(self, ids):
-        '''
+        """
         Implement the {backend}-update functionality
-        '''
+        """
         pklog.info("Updating package with id %s" % ids)
         if not self._lock_cache(): return
         self.status(STATUS_UPDATE)
@@ -996,9 +996,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.debug("Sending success signal")
 
     def download_packages(self, dest, ids):
-        '''
+        """
         Implement the {backend}-download-packages functionality
-        '''
+        """
         def get_range(versions, total):
             """
             Calculate the start and end point of a package download progress.
@@ -1047,9 +1047,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @unlock_cache_afterwards
     def install_packages(self, ids):
-        '''
+        """
         Implement the {backend}-install functionality
-        '''
+        """
         pklog.info("Installing package with id %s" % ids)
         if not self._lock_cache(): return
         self.status(STATUS_INSTALL)
@@ -1087,10 +1087,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @unlock_cache_afterwards
     def install_files(self, trusted, inst_files):
-        '''
+        """
         Implement install-files for the apt backend
         Install local Debian package files
-        '''
+        """
         pklog.info("Installing package files: %s" % inst_files)
         if not self._lock_cache(): return
         self.status(STATUS_INSTALL)
@@ -1149,9 +1149,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @unlock_cache_afterwards
     def refresh_cache(self):
-        '''
+        """
         Implement the {backend}-refresh_cache functionality
-        '''
+        """
         pklog.info("Refresh cache")
         if not self._lock_cache(): return
         self.status(STATUS_REFRESH_CACHE)
@@ -1170,9 +1170,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     def get_packages(self, filters):
-        '''
+        """
         Implement the apt2-get-packages functionality
-        '''
+        """
         pklog.info("Get all packages")
         self.status(STATUS_QUERY)
         self.percentage(None)
@@ -1184,9 +1184,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_package(pkg)
 
     def resolve(self, filters, names):
-        '''
+        """
         Implement the apt2-resolve functionality
-        '''
+        """
         pklog.info("Resolve")
         self.status(STATUS_QUERY)
         self.percentage(None)
@@ -1202,7 +1202,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
 
     def get_depends(self, filter, ids, recursive_text):
-        '''
+        """
         Implement the apt2-get-depends functionality
 
         Emit all packages that need to be installed or updated to install
@@ -1213,7 +1213,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         by the package manager. Therefor the list of satisfied packages cannot
         be computed easily. GDebi features this. Perhaps this should be moved
         to python-apt.
-        '''
+        """
         pklog.info("Get depends (%s,%s,%s)" % (filter, ids, recursive_text))
         recursive = _text_to_bool(recursive_text)
         #FIXME: recursive is not yet implemented
@@ -1262,9 +1262,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._cache.clear()
 
     def get_requires(self, filter, ids, recursive_text):
-        '''
+        """
         Implement the apt2-get-requires functionality
-        '''
+        """
         pklog.info("Get requires (%s,%s,%s)" % (filter, ids, recursive_text))
         recursive = _text_to_bool(rescursive_text)
         #FIXME: recursive is not yet implemented
@@ -1434,9 +1434,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         return True
 
     def _open_cache(self, prange=(0,100), progress=True):
-        '''
+        """
         (Re)Open the APT cache
-        '''
+        """
         pklog.debug("Open APT cache")
         self.status(STATUS_LOADING_CACHE)
         try:
@@ -1501,10 +1501,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         return False
 
     def _check_init(self, prange=(0,10), progress=True):
-        '''
+        """
         Check if the backend was initialized well and try to recover from
         a broken setup
-        '''
+        """
         pklog.debug("Checking apt cache and xapian database")
         pkg_cache = os.path.join(apt_pkg.Config["Dir"],
                                  apt_pkg.Config["Dir::Cache"],
@@ -1528,14 +1528,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._cache.clear()
 
     def get_id_from_package(self, pkg, force_candidate=False):
-        '''
+        """
         Return the packagekit id of package. By default this will be the 
         installed version for installed packages and the candidate version
         for not installed packages.
 
         The force_candidate option will also report the id of the candidate
         version for installed packages.
-        '''
+        """
         origin = ""
         cand_origin = pkg.candidateOrigin
         if not pkg.isInstalled or force_candidate:
@@ -1551,9 +1551,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         return id
 
     def _emit_package(self, pkg, info=None, force_candidate=False):
-        '''
+        """
         Send the Package signal for a given apt package
-        '''
+        """
         id = self.get_id_from_package(pkg, force_candidate)
         section = pkg.section.split("/")[-1]
         if info == None:
@@ -1597,9 +1597,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
 
     def _is_package_visible(self, pkg, filters):
-        '''
+        """
         Return True if the package should be shown in the user interface
-        '''
+        """
         if filters == FILTER_NONE:
             return True
         for filter in filters.split(";"):
@@ -1676,9 +1676,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                candidate[0].trusted == True
 
     def _get_pkg_version_by_id(self, id):
-        '''
+        """
         Return a package version matching the given package id or None.
-        '''
+        """
         name, version, arch, data = id.split(";", 4)
         if self._cache.has_key(name):
             for pkg_ver in self._cache[name].versions:
@@ -1688,9 +1688,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         return None
 
     def _find_package_by_id(self, id):
-        '''
+        """
         Return a package matching to the given package id
-        '''
+        """
         # FIXME: Should use package.Version
         name, version, arch, data = id.split(";", 4)
         if self._cache.has_key(name):
