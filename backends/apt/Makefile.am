@@ -10,11 +10,6 @@ aptconf_DATA = 20packagekit
 
 helperdir = $(datadir)/PackageKit/helpers/apt
 dist_helper_DATA =                      
-	pk-backend-apt.py				\
-        $(NULL)
-
-packagekitpythondir = ${PYTHON_PACKAGE_DIR}
-packagekitpython_PYTHON =  				\
         aptbackend.py					\
         $(NULL)
 
