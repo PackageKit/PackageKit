@@ -1547,8 +1547,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if cand_origin and cand_origin[0].site != "" and \
                pkg.installedVersion == pkg.candidateVersion:
                 origin = cand_origin[0].label
-        id = self._get_package_id(pkg.name, version, pkg.architecture, origin)
-        return id
+        return get_package_id(pkg.name, version, pkg.architecture, origin)
 
     def _emit_package(self, pkg, info=None, force_candidate=False):
         """
@@ -1910,9 +1909,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # Add current line to the description
             desc += line
         return desc
-
-    def _get_package_id(self, name, version, arch, data):
-        return ";".join((name, version, arch, data))
 
     def _sigquit(self, signum, frame):
         self._unlock_cache()
