@@ -652,6 +652,17 @@ def text_to_bool(text):
         return True
     return False
 
+def get_package_id(name, version, arch, data):
+    """Returns a package id."""
+    return ";".join((name, version, arch, data))
+
+def split_package_id(id):
+    """
+    Returns a tuple with the name, version, arch and data component of a
+    package id.
+    """
+    return id.split(";", 4)
+
 def exceptionHandler(typ, value, tb, base):
     # Restore original exception handler
     sys.excepthook = sys.__excepthook__
