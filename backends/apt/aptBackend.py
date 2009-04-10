@@ -1105,7 +1105,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if not deb.check():
                 self.error(ERROR_UNKNOWN, deb._failureString)
                 return
-            (install, remove, unauthenticated) = deb.requiredChanges
+            (install, remove, unauthenticated) = deb.required_changes
             pklog.debug("Changes: Install %s, Remove %s, Unauthenticated "
                         "%s" % (install, remove, unauthenticated))
             if len(remove) > 0:
