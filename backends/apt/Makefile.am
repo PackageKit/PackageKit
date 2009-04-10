@@ -10,7 +10,7 @@ aptconf_DATA = 20packagekit
 
 helperdir = $(datadir)/PackageKit/helpers/apt
 dist_helper_DATA =					\
-	aptbackend.py					\
+	aptBackend.py					\
 	$(NULL)
 
 sbin_SCRIPTS =						\
