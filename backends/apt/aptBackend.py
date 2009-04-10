@@ -700,7 +700,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             cve_url = ";".join(get_cve_urls(changelog))
             self.update_detail(pkg_id, updates, obsoletes, vendor_url,
                                bugzilla_url, cve_url, restart, update_text,
-                               _format_string(changelog), state, issued,
+                               format_string(changelog), state, issued,
                                updated)
 
     def get_details(self, pkg_ids):
@@ -728,7 +728,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 license = "unknown"
             group = self._get_package_group(pkg)
             self.details(pkg_id, license, group,
-                         _format_string(pkg.description),
+                         format_string(pkg.description),
                          pkg.homepage, pkg.packageSize)
 
     @unlock_cache_afterwards
@@ -1164,7 +1164,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except Exception, e:
             self._open_cache(prange=(95,100))
             self.error(ERROR_UNKNOWN,
-                       "Refreshing cache failed: %s" % _format_string(e.message))
+                       "Refreshing cache failed: %s" % format_string(e.message))
             return
         self._open_cache(prange=(95,100))
         self.percentage(100)
@@ -1215,7 +1215,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         to python-apt.
         """
         pklog.info("Get depends (%s,%s,%s)" % (filter, ids, recursive_text))
-        recursive = _text_to_bool(recursive_text)
+        recursive = text_to_bool(recursive_text)
         #FIXME: recursive is not yet implemented
         if recursive == True:
             pklog.warn("Recursive dependencies are not implemented")
@@ -1266,7 +1266,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the apt2-get-requires functionality
         """
         pklog.info("Get requires (%s,%s,%s)" % (filter, ids, recursive_text))
-        recursive = _text_to_bool(rescursive_text)
+        recursive = text_to_bool(rescursive_text)
         #FIXME: recursive is not yet implemented
         if recursive == True:
             pklog.warn("Recursive dependencies are not implemented")
@@ -1479,8 +1479,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                PackageKitInstallProgress(self, install_range))
         except apt.cache.FetchFailedException, e:
             self._open_cache(prange=(95,100))
-            pklog.critical(_format_string(e.message))
-            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, _format_string(e.message))
+            pklog.critical(format_string(e.message))
+            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, format_string(e.message))
         except apt.cache.FetchCancelledException:
             self._open_cache(prange=(95,100))
             self._canceled.clear()
@@ -1933,22 +1933,6 @@ def debug_exception(type, value, tb):
         traceback.print_exception(type, value, tb)
         print
         pdb.pm()
-
-def _text_to_bool(text):
-    """
-    Interpret a string as boolean value.
-    """
-    #FIXME: Should be part of the backend package
-    if text.lower() in ["yes", "true"]:
-        return True
-    return False
-
-def _format_string(txt, encoding='utf-8'):
-    #FIXME: Should be part of the backend package
-    if not isinstance(txt, unicode):
-        txt = unicode(txt, encoding, errors='replace')
-    return txt.replace("\n", ";")
-
 
 def run(args, single=False):
     """
