@@ -23,7 +23,7 @@ EXTRA_DIST =						\
 	$(NULL)
 
 install-data-hook:
-	chmod a+rx $(DESTDIR)$(libexecdir)/*.py
+	chmod a+rx $(DESTDIR)$(helperdir)/*.py
 
 clean-local :
 	rm -f *~
