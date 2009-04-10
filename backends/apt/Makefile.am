@@ -9,9 +9,9 @@ aptconfdir = ${SYSCONFDIR}/apt/apt.conf.d
 aptconf_DATA = 20packagekit
 
 helperdir = $(datadir)/PackageKit/helpers/apt
-dist_helper_DATA =                      
-        aptbackend.py					\
-        $(NULL)
+dist_helper_DATA =					\
+	aptbackend.py					\
+	$(NULL)
 
 sbin_SCRIPTS =						\
 	update-packagekit-app-data			\
