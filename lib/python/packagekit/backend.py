@@ -637,6 +637,21 @@ class PackageKitBaseBackend:
             self.unLock()
         sys.exit(0)
 
+
+def format_string(text, encoding='utf-8'):
+    '''
+    Format a string to be used on stdout for communication with the daemon.
+    '''
+    if not isinstance(text, unicode):
+        txt = unicode(text, encoding, errors='replace')
+    return text.replace("\n", ";")
+
+def text_to_bool(text):
+    '''Convert a string to a boolean value.'''
+    if text.lower() in ["yes", "true"]:
+        return True
+    return False
+
 def exceptionHandler(typ, value, tb, base):
     # Restore original exception handler
     sys.excepthook = sys.__excepthook__
