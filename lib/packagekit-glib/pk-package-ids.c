@@ -114,7 +114,7 @@ pk_package_ids_check (gchar **package_ids)
 {
 	guint i;
 	guint size;
-	gboolean ret;
+	gboolean ret = FALSE;
 	const gchar *package_id;
 
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -125,9 +125,10 @@ pk_package_ids_check (gchar **package_ids)
 		package_id = package_ids[i];
 		ret = pk_package_id_check (package_id);
 		if (!ret)
-			return FALSE;
+			goto out;
 	}
-	return TRUE;
+out:
+	return ret;
 }
 
 /**
@@ -214,6 +215,7 @@ void
 pk_package_ids_test (EggTest *test)
 {
 	gboolean ret;
+	gchar *package_ids_blank[] = {};
 	gchar **package_ids;
 	guint size;
 
@@ -232,6 +234,11 @@ pk_package_ids_test (EggTest *test)
 	egg_test_title (test, "correct size");
 	size = pk_package_ids_size (package_ids);
 	egg_test_assert (test, size == 2);
+
+	/************************************************************/
+	egg_test_title (test, "verify blank");
+	ret = pk_package_ids_check (package_ids_blank);
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "verify");

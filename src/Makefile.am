@@ -90,8 +90,6 @@ shared_SOURCES =					\
 	pk-inhibit.c					\
 	pk-backend-spawn.h				\
 	pk-backend-spawn.c				\
-	pk-backend-dbus.h				\
-	pk-backend-dbus.c				\
 	pk-transaction-db.h				\
 	pk-transaction-db.c				\
 	pk-transaction-list.c				\

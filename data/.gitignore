@@ -1,9 +1,3 @@
 org.freedesktop.PackageKit.service
-org.freedesktop.PackageKitTestBackend.conf
-org.freedesktop.PackageKitTestBackend.service
-org.freedesktop.PackageKitYumBackend.conf
-org.freedesktop.PackageKitYumBackend.service
-org.freedesktop.PackageKitAptBackend.conf
-org.freedesktop.PackageKitAptBackend.service
 packagekit-*.xml
 

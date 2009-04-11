@@ -20,6 +20,11 @@ INCLUDES = \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = 						\
+	packagekit-glib.pc					\
+	$(NULL)
+
 lib_LTLIBRARIES =						\
 	libpackagekit-glib.la					\
 	$(NULL)
@@ -145,6 +150,7 @@ TESTS = pk-self-test
 endif
 
 EXTRA_DIST =							\
+	packagekit-glib.pc.in					\
 	pk-marshal.list
 
 BUILT_SOURCES = 						\

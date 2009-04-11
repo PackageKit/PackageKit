@@ -22,6 +22,7 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <string.h>
+#include <stdlib.h>
 #include <packagekit-glib/packagekit.h>
 
 #include <pk-backend.h>
@@ -1035,6 +1036,17 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	egg_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
+
+	if (g_strcmp0 (parameter, "use-blocked") == 0)
+		_use_blocked = atoi (value);
+	else if (g_strcmp0 (parameter, "use-eula") == 0)
+		_use_eula = atoi (value);
+	else if (g_strcmp0 (parameter, "use-gpg") == 0)
+		_use_gpg = atoi (value);
+	else if (g_strcmp0 (parameter, "use-distro-upgrade") == 0)
+		_use_distro_upgrade = atoi (value);
+	else
+		pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, "invalid parameter %s", parameter);
 	pk_backend_finished (backend);
 }
 

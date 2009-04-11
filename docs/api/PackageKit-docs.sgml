@@ -43,7 +43,6 @@
     <xi:include href="spec/pk-introduction.xml"/>
     <xi:include href="spec/pk-concepts.xml"/>
     <xi:include href="spec/pk-backend-compiled.xml"/>
-    <xi:include href="spec/pk-backend-dbus.xml"/>
     <xi:include href="spec/pk-backend-spawn.xml"/>
   </reference>
 
