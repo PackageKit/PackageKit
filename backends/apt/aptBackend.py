@@ -310,6 +310,7 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self.pstart = prange[0]
         self.pend = prange[1]
         self.pprev = None
+        self.last_pkg = None
 
     def pulse(self):
         apt.progress.FetchProgress.pulse(self)
@@ -319,6 +320,15 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
             self._backend.percentage(progress)
             self.pprev = progress
         return True
+
+    def updateStatus(self, uri, descr, shortDescr, status):
+        """Callback for a fetcher status update."""
+        # Emit a Package signal for the currently processed package
+        if shortDescr != self.last_pkg and \
+           self._backend._cache.has_key(shortDescr):
+            self._backend._emit_package(self._backend._cache[shortDescr],
+                                        INFO_DOWNLOADING, True)
+            self.last_pkg = shortDescr
 
     def start(self):
         self._backend.status(STATUS_DOWNLOAD)
@@ -356,13 +366,25 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         self.output = ""
         self.master_fd = None
         self.child_pid = None
+        self.last_pkg = None
 
-    def statusChange(self, pkg, percent, status):
+    def statusChange(self, pkg_name, percent, status):
         self.last_activity = time.time()
         progress = self.pstart + percent/100 * (self.pend - self.pstart)
         if self.pprev < progress:
             self._backend.percentage(int(progress))
             self.pprev = progress
+        # Emit a Package signal for the currently processed package
+        if pkg_name != self.last_pkg:
+            pkg = self._backend._cache[pkg_name]
+            # FIXME: We need an INFO enum for downgrades/rollbacks
+            if pkg.markedInstall or pkg.markedReinstall or pkg.markedDowngrade:
+                self._backend._emit_package(pkg, INFO_INSTALLING, True)
+            elif pkg.markedDelete:
+                self._backend._emit_package(pkg, INFO_REMOVING, False)
+            elif pkg.markedUpgrade:
+                self._backend._emit_package(pkg, INFO_UPDATING, True)
+            self.last_pkg = pkg_name
         pklog.debug("APT status: %s" % status)
 
     def startUpdate(self):
