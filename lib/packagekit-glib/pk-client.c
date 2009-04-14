@@ -882,7 +882,7 @@ pk_client_media_change_required_cb (DBusGProxy *proxy,
 
 	media_type = pk_media_type_enum_from_text (media_type_text);
 	egg_debug ("emit media-change-required %s, %s, %s",
-		  pk_error_enum_to_text (media_type), media_id, media_text);
+		   media_type_text, media_id, media_text);
 	g_signal_emit (client, signals [PK_CLIENT_MEDIA_CHANGE_REQUIRED], 0,
 		       media_type, media_id, media_text);
 }
