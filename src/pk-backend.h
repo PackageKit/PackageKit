@@ -141,6 +141,10 @@ gboolean         pk_backend_eula_required		(PkBackend      *backend,
 							 const gchar    *package_id,
 							 const gchar    *vendor_name,
 							 const gchar    *license_agreement);
+gboolean         pk_backend_media_change_required	(PkBackend      *backend,
+							 PkMediaTypeEnum media_type,
+							 const gchar    *media_id,
+							 const gchar    *media_text);
 gboolean         pk_backend_category			(PkBackend      *backend,
 							 const gchar	*parent_id,
 							 const gchar	*cat_id,

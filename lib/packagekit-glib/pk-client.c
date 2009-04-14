@@ -132,6 +132,7 @@ typedef enum {
 	PK_CLIENT_ALLOW_CANCEL,
 	PK_CLIENT_CATEGORY,
 	PK_CLIENT_DESTROY,
+	PK_CLIENT_MEDIA_CHANGE_REQUIRED,
 	PK_CLIENT_LAST_SIGNAL
 } PkSignals;
 
@@ -383,9 +384,10 @@ pk_client_set_synchronous (PkClient *client, gboolean synchronous, GError **erro
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* are we doing this without any need? */
-	if (client->priv->synchronous) {
+	if ((client->priv->synchronous && synchronous) ||
+	    (!client->priv->synchronous && !synchronous)) {
 		if (error != NULL)
-			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "already set synchronous!");
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "already synchronous : %i!", synchronous);
 		return FALSE;
 	}
 
@@ -863,6 +865,26 @@ pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar
 
 	g_signal_emit (client, signals [PK_CLIENT_EULA_REQUIRED], 0,
 		       eula_id, package_id, vendor_name, license_agreement);
+}
+
+/**
+ * pk_client_media_change_required_cb:
+ **/
+static void
+pk_client_media_change_required_cb (DBusGProxy *proxy,
+				    const gchar *media_type_text,
+				    const gchar *media_id,
+				    const gchar *media_text,
+				    PkClient *client)
+{
+	PkMediaTypeEnum media_type;
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	media_type = pk_media_type_enum_from_text (media_type_text);
+	egg_debug ("emit media-change-required %s, %s, %s",
+		   media_type_text, media_id, media_text);
+	g_signal_emit (client, signals [PK_CLIENT_MEDIA_CHANGE_REQUIRED], 0,
+		       media_type, media_id, media_text);
 }
 
 /**
@@ -3946,6 +3968,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 	dbus_g_proxy_add_signal (proxy, "Destroy", G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Category", G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "MediaChangeRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_client_finished_cb), client, NULL);
@@ -3983,6 +4007,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     G_CALLBACK (pk_client_allow_cancel_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Category",
 				     G_CALLBACK (pk_client_category_cb), client, NULL);
+	dbus_g_proxy_connect_signal (proxy, "MediaChangeRequired",
+				     G_CALLBACK (pk_client_media_change_required_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Destroy",
 				     G_CALLBACK (pk_client_destroy_cb), client, NULL);
 	client->priv->proxy = proxy;
@@ -4152,6 +4178,26 @@ pk_client_class_init (PkClientClass *klass)
 			      G_STRUCT_OFFSET (PkClientClass, eula_required),
 			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
 			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+
+	/**
+	 * PkClient::media-change-required:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @media_type: the #PkMediaTypeEnum of the error, e.g. PK_MEDIA_TYPE_ENUM_DVD
+	 * @media_id: the non-localised label of the media
+	 * @media_text: the non-localised text describing the media
+	 *
+	 * The ::media-change-required signal is emitted when the transaction needs a
+	 * different media to grab the packages.
+	 *
+	 * This can only happen once in a transaction.
+	 **/
+	signals [PK_CLIENT_MEDIA_CHANGE_REQUIRED] =
+		g_signal_new ("media-change-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkClientClass, media_change_required),
+			      NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+
 	/**
 	 * PkClient::repo-detail:
 	 * @client: the #PkClient instance that emitted the signal
@@ -4351,6 +4397,8 @@ pk_client_disconnect_proxy (PkClient *client)
 					G_CALLBACK (pk_client_allow_cancel_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Destroy",
 					G_CALLBACK (pk_client_destroy_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "MediaChangeRequired",
+					G_CALLBACK (pk_client_media_change_required_cb), client);
 	g_object_unref (G_OBJECT (client->priv->proxy));
 	client->priv->proxy = NULL;
 	return TRUE;
@@ -4493,7 +4541,7 @@ pk_client_init (PkClient *client)
 	/* Use a main control object */
 	client->priv->control = pk_control_new ();
 
-	/* DistroUpgrade */
+	/* DistroUpgrade, MediaChangeRequired */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
@@ -4732,13 +4780,33 @@ pk_client_test (EggTest *test)
 	g_free (file);
 
 	/************************************************************/
-	egg_test_title (test, "get client, then unref");
+	egg_test_title (test, "get client");
 	client = pk_client_new ();
-	g_object_unref (client);
-	egg_test_success (test, NULL);
+	egg_test_assert (test, client != NULL);
 
 	/************************************************************/
-	egg_test_title (test, "get client");
+	egg_test_title (test, "set non synchronous (fail)");
+	ret = pk_client_set_synchronous (client, FALSE, NULL);
+	egg_test_assert (test, !ret);
+
+	/************************************************************/
+	egg_test_title (test, "set synchronous (pass)");
+	ret = pk_client_set_synchronous (client, TRUE, NULL);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "set synchronous again (fail)");
+	ret = pk_client_set_synchronous (client, TRUE, NULL);
+	egg_test_assert (test, !ret);
+
+	/************************************************************/
+	egg_test_title (test, "set non synchronous (pass)");
+	ret = pk_client_set_synchronous (client, FALSE, NULL);
+	egg_test_assert (test, ret);
+	g_object_unref (client);
+
+	/************************************************************/
+	egg_test_title (test, "get new client");
 	client = pk_client_new ();
 	egg_test_assert (test, client != NULL);
 
@@ -4751,8 +4819,12 @@ pk_client_test (EggTest *test)
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (pk_client_test_finished_cb), test);
 
+	/************************************************************/
+	egg_test_title (test, "set synchronous after reset (pass)");
+	ret = pk_client_set_synchronous (client, TRUE, NULL);
+	egg_test_assert (test, ret);
+
 	/* run the method */
-	pk_client_set_synchronous (client, TRUE, NULL);
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
 
 	/************************************************************/

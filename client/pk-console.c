@@ -1464,6 +1464,16 @@ pk_console_details_cb (PkClient *client, const PkDetailsObj *details, gpointer d
 }
 
 /**
+ * pk_watch_message_cb:
+ **/
+static void
+pk_watch_message_cb (PkClient *client, PkMessageEnum message, const gchar *details, gpointer data)
+{
+	/* TRANSLATORS: This a message (like a little note that may be of interest) from the transaction */
+	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (message), details);
+}
+
+/**
  * pk_console_files_cb:
  **/
 static void
@@ -1855,12 +1865,16 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_require_restart_cb), NULL);
 	g_signal_connect (client_async, "error-code",
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
+	g_signal_connect (client_async, "message",
+			  G_CALLBACK (pk_watch_message_cb), NULL);
 
 	client_task = pk_client_new ();
 	pk_client_set_use_buffer (client_task, TRUE, NULL);
 	pk_client_set_synchronous (client_task, TRUE, NULL);
 	g_signal_connect (client_task, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
+	g_signal_connect (client_task, "message",
+			  G_CALLBACK (pk_watch_message_cb), NULL);
 
 	client_install_files = pk_client_new ();
 	g_signal_connect (client_install_files, "finished",

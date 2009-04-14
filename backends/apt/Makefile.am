@@ -5,26 +5,27 @@ libpk_backend_apt_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_backend_apt_la_LDFLAGS = -module -avoid-version
 libpk_backend_apt_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
-helperdir = $(datadir)/PackageKit/helpers/apt
-dist_helper_DATA =                      
-	pk-backend-apt.py				\
-        $(NULL)
+aptconfdir = ${SYSCONFDIR}/apt/apt.conf.d
+aptconf_DATA = 20packagekit
 
-packagekitpythondir = ${PYTHON_PACKAGE_DIR}
-packagekitpython_PYTHON =  				\
-        aptbackend.py					\
-        $(NULL)
+helperdir = $(datadir)/PackageKit/helpers/apt
+dist_helper_DATA =					\
+	aptBackend.py					\
+	$(NULL)
 
 sbin_SCRIPTS =						\
 	update-packagekit-app-data			\
 	$(NULL)
 
 EXTRA_DIST =						\
+	20packagekit					\
 	update-packagekit-app-data			\
+	README.apt					\
+	TODO.apt					\
 	$(NULL)
 
 install-data-hook:
-	chmod a+rx $(DESTDIR)$(libexecdir)/*.py
+	chmod a+rx $(DESTDIR)$(helperdir)/*.py
 
 clean-local :
 	rm -f *~

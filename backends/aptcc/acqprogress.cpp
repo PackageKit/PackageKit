@@ -297,27 +297,28 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 // AcqPackageKitStatus::MediaChange - Media need to be swapped		/*{{{*/
 // ---------------------------------------------------------------------
 /* Prompt for a media swap */
-bool AcqPackageKitStatus::MediaChange(string Media,string Drive)
+bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
 {
-   if (Quiet <= 0)
-      cout << '\r' << BlankLine << '\r';
-   ioprintf(cout,"Media change: please insert the disc labeled\n"
-		   " '%s'\n"
-		   "in the drive '%s' and press enter\n",
-	    Media.c_str(),Drive.c_str());
+	pk_backend_media_change_required(m_backend,
+					 PK_MEDIA_TYPE_ENUM_UNKNOWN,
+					 Media.c_str(),
+					 Media.c_str());
 
-   char C = 0;
-   bool bStatus = true;
-   while (C != '\n' && C != '\r')
-   {
-      int len = read(STDIN_FILENO,&C,1);
-      if(C == 'c' || len <= 0)
-	 bStatus = false;
-   }
+	char errorMsg[400];
+	sprintf(errorMsg,
+		"Media change: please insert the disc labeled\n"
+		" '%s'\n"
+		"in the drive '%s' and press enter\n",
+		Media.c_str(),
+		Drive.c_str());
 
-   if(bStatus)
-      Update = true;
-   return bStatus;
+	pk_backend_error_code(m_backend,
+			      PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
+			      errorMsg);
+
+	// Set this so we can fail the transaction
+	Update = true;
+	return false;
 }
 									/*}}}*/
 

@@ -161,15 +161,16 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_FILE_CONFLICTS,		"file-conflicts"},
 	{PK_ERROR_ENUM_PACKAGE_CONFLICTS,	"package-conflicts"},
 	{PK_ERROR_ENUM_REPO_NOT_AVAILABLE,	"repo-not-available"},
-	{PK_ERROR_ENUM_INVALID_PACKAGE_FILE,    "invalid-package-file"},
+	{PK_ERROR_ENUM_INVALID_PACKAGE_FILE,	"invalid-package-file"},
 	{PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED, "package-install-blocked"},
-	{PK_ERROR_ENUM_PACKAGE_CORRUPT,         "package-corrupt"},
+	{PK_ERROR_ENUM_PACKAGE_CORRUPT,		"package-corrupt"},
 	{PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED, "all-packages-already-installed"},
 	{PK_ERROR_ENUM_FILE_NOT_FOUND,		"file-not-found"},
 	{PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY,	"no-more-mirrors-to-try"},
 	{PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,	"no-distro-upgrade-data"},
 	{PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,	"incompatible-architecture"},
 	{PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,	"no-space-on-device"},
+	{PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,	"media_change_required"},
 	{0, NULL}
 };
 
@@ -457,9 +458,17 @@ static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_STIX,			"STIX"},
 	{PK_LICENSE_ENUM_XANO,			"XANO"},
 	{PK_LICENSE_ENUM_VOSTROM,		"VOSTROM"},
-	{PK_LICENSE_ENUM_XEROX,                 "Xerox License"},
-	{PK_LICENSE_ENUM_RICEBSD,               "RiceBSD"},
-	{PK_LICENSE_ENUM_QHULL,                 "Qhull"},
+	{PK_LICENSE_ENUM_XEROX,			"Xerox License"},
+	{PK_LICENSE_ENUM_RICEBSD,		"RiceBSD"},
+	{PK_LICENSE_ENUM_QHULL,			"Qhull"},
+	{0, NULL}
+};
+
+static const PkEnumMatch enum_media_type[] = {
+	{PK_MEDIA_TYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_MEDIA_TYPE_ENUM_CD,			"cd"},
+	{PK_MEDIA_TYPE_ENUM_DVD,		"dvd"},
+	{PK_MEDIA_TYPE_ENUM_DISC,		"disc"},
 	{0, NULL}
 };
 
@@ -940,6 +949,32 @@ pk_license_enum_to_text (PkLicenseEnum license)
 	return pk_enum_find_string (enum_free_licenses, license);
 }
 
+/**
+ * pk_media_type_enum_from_text:
+ * @code: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_MEDIA_TYPE_ENUM_CD
+ **/
+PkMediaTypeEnum pk_media_type_enum_from_text (const gchar *media_type)
+{
+	return pk_enum_find_value (enum_media_type, media_type);
+}
+
+/**
+ * pk_media_type_enum_to_text:
+ * @code: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "dvd"
+ **/
+const gchar* pk_media_type_enum_to_text (PkMediaTypeEnum media_type)
+{
+	return pk_enum_find_string (enum_media_type, media_type);
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -1102,6 +1137,17 @@ pk_enum_test (EggTest *test)
 	egg_test_title (test, "check we convert all the license bitfield");
 	for (i=0; i<=PK_LICENSE_ENUM_UNKNOWN; i++) {
 		string = pk_license_enum_to_text (i);
+		if (string == NULL) {
+			egg_test_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	egg_test_success (test, NULL);
+
+	/************************************************************/
+	egg_test_title (test, "check we convert all the media type bitfield");
+	for (i=0; i<=PK_MEDIA_TYPE_ENUM_UNKNOWN; i++) {
+		string = pk_media_type_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;

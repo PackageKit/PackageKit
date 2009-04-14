@@ -306,6 +306,7 @@ Q_SIGNALS: // SIGNALS
     void DistroUpgrade(const QString &type, const QString &name, const QString &summary);
     void ErrorCode(const QString &code, const QString &details);
     void EulaRequired(const QString &eula_id, const QString &package_id, const QString &vendor_name, const QString &license_agreement);
+    void MediaChangeRequired(const QString &media_type, const QString &media_id, const QString &media_text);
     void Files(const QString &package_id, const QString &file_list);
     void Finished(const QString &exit, uint runtime);
     void Message(const QString &type, const QString &details);

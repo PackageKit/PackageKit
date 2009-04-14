@@ -1,14 +1,14 @@
-# translation of packagekit.master.PackageKit.po to Tamil
+# translation of packagekit.master.ta.po to Tamil
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
 # I. Felix <ifelix@redhat.com>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: packagekit.master.PackageKit\n"
+"Project-Id-Version: packagekit.master.ta\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-04-03 08:09+0000\n"
-"PO-Revision-Date: 2009-04-08 06:40+0530\n"
+"POT-Creation-Date: 2009-04-11 19:05+0000\n"
+"PO-Revision-Date: 2009-04-12 05:14+0530\n"
 "Last-Translator: I. Felix <ifelix@redhat.com>\n"
 "Language-Team: Tamil <fedora-trans-ta@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -16,6 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\\n\n"
+"\n"
 "\n"
 "\n"
 "\n"
@@ -436,64 +437,69 @@ msgstr "பிழை:"
 msgid "Package description"
 msgstr "தொகுப்பு விளக்கம்"
 
+#. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
+#: ../client/pk-console.c:1473
+msgid "Message:"
+msgstr "செய்தி:"
+
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1491
+#: ../client/pk-console.c:1501
 msgid "Package files"
 msgstr "தொகுப்பு கோப்புகள்"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1499
+#: ../client/pk-console.c:1509
 msgid "No files"
 msgstr "கோப்புகள் இல்லை"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1522
+#: ../client/pk-console.c:1532
 msgid "Repository signature required"
 msgstr "நம்பிக்கையான கையெழுத்து தேவைப்படுகிறது"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1532
+#: ../client/pk-console.c:1542
 msgid "Do you accept this signature?"
 msgstr "நீங்கள் இந்த கையெமுத்து ஏற்றுக் கொள்கிறீர்களா ?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1536
+#: ../client/pk-console.c:1546
 msgid "The signature was not accepted."
 msgstr "கையேழுத்து ஏற்றுக் கொள்ளப்படவில்லை."
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1570
+#: ../client/pk-console.c:1580
 msgid "End user license agreement required"
 msgstr "இறுதியான பயனரின் உரிம ஒப்பந்தம் தேவைப்படுகிறது"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1577
+#: ../client/pk-console.c:1587
 msgid "Do you agree to this license?"
 msgstr "இந்த உரிமத்தை நீங்கள் ஏற்று கொள்கிறீர்களா?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1581
+#: ../client/pk-console.c:1591
 msgid "The license was refused."
 msgstr "உரிமம் மறுக்கப்பட்டது."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1610
+#: ../client/pk-console.c:1620
 msgid "The daemon crashed mid-transaction!"
 msgstr "மத்திய பரிமாற்றத்தின் போது டோமோன் நொறுக்கப்பட்டது!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1663
+#: ../client/pk-console.c:1673
 msgid "PackageKit Console Interface"
 msgstr "PackageKit பணியக முகப்பு"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1665
+#: ../client/pk-console.c:1675
 msgid "Subcommands:"
 msgstr "துணைக்கட்டளைகள்:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1757 ../client/pk-generate-pack.c:185
+#: ../client/pk-console.c:1767 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
 #: ../contrib/command-not-found/pk-command-not-found.c:518
 #: ../src/pk-main.c:199
@@ -501,147 +507,147 @@ msgid "Show extra debugging information"
 msgstr "கூடுதல் பிழைதிருத்த தகவலைக் காட்டு"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1760 ../client/pk-monitor.c:127
+#: ../client/pk-console.c:1770 ../client/pk-monitor.c:127
 msgid "Show the program version and exit"
 msgstr "நிகழ்ச்சி பதிப்பு மற்றும் வெளியேறுவதைக் காட்டு"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1763
+#: ../client/pk-console.c:1773
 msgid "Set the filter, e.g. installed"
 msgstr "வடோப்பினை"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1766
+#: ../client/pk-console.c:1776
 msgid "Exit without waiting for actions to complete"
 msgstr "செயல் முடிவடை வரை காத்திருக்காமல் வெளியேறு"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1793
+#: ../client/pk-console.c:1803
 msgid "This tool could not connect to system DBUS."
 msgstr "இந்தக் கருவியால் கணினி DBUSஐ இணைக்க முடியாது."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1880
+#: ../client/pk-console.c:1894
 msgid "The filter specified was invalid"
 msgstr "வடிப்பி குறிப்பிடுவது தவறானது"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1898
+#: ../client/pk-console.c:1912
 msgid "A search type is required, e.g. name"
 msgstr "ஒரு தேடும் வகை தேவைப்படுகிறது, எ.கா. பெயர்"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1904 ../client/pk-console.c:1912
-#: ../client/pk-console.c:1920 ../client/pk-console.c:1928
+#: ../client/pk-console.c:1918 ../client/pk-console.c:1926
+#: ../client/pk-console.c:1934 ../client/pk-console.c:1942
 msgid "A search term is required"
 msgstr "ஒரு தேடும் சொல் தேவைப்படுகிறது"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1934
+#: ../client/pk-console.c:1948
 msgid "Invalid search type"
 msgstr "தவறான தேடும் வகை"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1940
+#: ../client/pk-console.c:1954
 msgid "A package name or filename to install is required"
 msgstr "ஒரு தொகுப்பு பெயர் அல்லது கோப்பு பெயரை நறுவுவதற்கு தேவைப்படுகிறது"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1948
+#: ../client/pk-console.c:1962
 msgid "A type, key_id and package_id are required"
 msgstr "ஒரு வகை, விசை_ஐடி மற்றும் தொகுப்பு_ஐடி தேவைப்படுகிறது"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1956
+#: ../client/pk-console.c:1970
 msgid "A package name to remove is required"
 msgstr "நீக்குவதற்கு ஒரு தொகுப்பு பெயர் தேவைப்படுகிறது"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1963
+#: ../client/pk-console.c:1977
 msgid "A destination directory and then the package names to download are required"
 msgstr "ஒரு இலக்கு அடைவு மற்றும் தொகுப்பு பெயர்கள் பதிவிறக்க தேவைப்படுகிறது"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1969
+#: ../client/pk-console.c:1983
 msgid "Directory not found"
 msgstr "அடைவு காணப்படவில்லை"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1976
+#: ../client/pk-console.c:1990
 msgid "A licence identifier (eula-id) is required"
 msgstr "ஒரு உரிமம் எடுத்துகாட்டுபவர் (eula-id) தேவைப்படுகிறது"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1985
+#: ../client/pk-console.c:1999
 msgid "A transaction identifier (tid) is required"
 msgstr "பரிமாற்ற கண்டுபிடிப்பாளர் (tid) தேவைப்படுகிறது"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2001
+#: ../client/pk-console.c:2015
 msgid "A package name to resolve is required"
 msgstr "தொகுப்பு பெயர் மறுதீர்வுக்கு தேவைப்படுகிறது"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2009 ../client/pk-console.c:2017
+#: ../client/pk-console.c:2023 ../client/pk-console.c:2031
 msgid "A repository name is required"
 msgstr "நம்பகமான ஒரு பெயர் தேவைப்படுகிறது"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2025
+#: ../client/pk-console.c:2039
 msgid "A repo name, parameter and value are required"
 msgstr "ஒரு ரெபோ பெநர், அளவுரு மற்றும் மதிப்பு தேவைப்படுகிறது"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2038
+#: ../client/pk-console.c:2052
 msgid "An action, e.g. 'update-system' is required"
 msgstr "செயலுக்கு, எ.கா. 'மேம்படுத்தப்பட்ட கணினி' தேவைப்படுகிறது"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2044
+#: ../client/pk-console.c:2058
 msgid "A correct role is required"
 msgstr "ஒரு சரியான திருப்பம் தேவைப்படுகிறது"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2050
+#: ../client/pk-console.c:2064
 msgid "Failed to get the time since this action was last completed"
 msgstr "இந்த செயல் கடைசியாக முடிவடையும் வரை நேரத்தை பெற்றிருப்பதில் தோல்வி"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2059 ../client/pk-console.c:2070
-#: ../client/pk-console.c:2078 ../client/pk-console.c:2094
-#: ../client/pk-console.c:2102 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2073 ../client/pk-console.c:2084
+#: ../client/pk-console.c:2092 ../client/pk-console.c:2108
+#: ../client/pk-console.c:2116 ../client/pk-generate-pack.c:241
 msgid "A package name is required"
 msgstr "ஒரு தொகுப்பு பெயர் தேவைப்படுகிறது"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2086
+#: ../client/pk-console.c:2100
 msgid "A package provide string is required"
 msgstr "ஒரு தொகுப்பால் வழங்கப்படும் சரம் தேவைப்படுகிறது"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2110
+#: ../client/pk-console.c:2124
 msgid "A list file name to create is required"
 msgstr "ஒரு பட்டியல் கோப்பு பெயரை உருவாக்குவது தேவைப்படுகிறது"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2119 ../client/pk-console.c:2128
+#: ../client/pk-console.c:2133 ../client/pk-console.c:2142
 msgid "A list file to open is required"
 msgstr "ஒரு பட்டியல் கோப்பினை திறப்பது தேவைப்படுகிறது"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2181
+#: ../client/pk-console.c:2195
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr " '%s' விருப்பம் துணைபுரியவில்லை"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2194
+#: ../client/pk-console.c:2208
 msgid "Incorrect privileges for this operation"
 msgstr "இந்த செயல்பாடுக்கு தவறான முன்னுரிமைகள்"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2197
+#: ../client/pk-console.c:2211
 msgid "Command failed"
 msgstr "கட்டளை தோல்வியுற்றது"
 
