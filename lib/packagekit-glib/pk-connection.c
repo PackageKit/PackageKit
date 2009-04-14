@@ -148,6 +148,10 @@ pk_connection_finalize (GObject *object)
 	connection = PK_CONNECTION (object);
 	g_return_if_fail (connection->priv != NULL);
 
+	/* disconnect signal handlers */
+	dbus_g_proxy_disconnect_signal (connection->priv->proxy, "NameOwnerChanged",
+				        G_CALLBACK (egg_dbus_connection_name_owner_changed_cb), connection);
+
 	g_object_unref (connection->priv->proxy);
 
 	G_OBJECT_CLASS (pk_connection_parent_class)->finalize (object);
