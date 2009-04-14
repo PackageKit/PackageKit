@@ -468,7 +468,7 @@ static const PkEnumMatch enum_media_type[] = {
 	{PK_MEDIA_TYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_MEDIA_TYPE_ENUM_CD,			"cd"},
 	{PK_MEDIA_TYPE_ENUM_DVD,		"dvd"},
-	{PK_MEDIA_TYPE_ENUM_CD_OR_DVD,		"cd-or-dvd"},
+	{PK_MEDIA_TYPE_ENUM_DISC,		"cd-or-dvd"},
 	{0, NULL}
 };
 
