@@ -545,11 +545,12 @@ main (int argc, char *argv[])
 	/* get policy config */
 	pk_cnf_get_config (&config);
 
-	/* generate swizzles */
+	/* get length */
 	len = egg_strlen (argv[1], 1024);
-	if (len < 2)
+	if (len < 1)
 		goto out;
 
+	/* generate swizzles */
 	array = pk_cnf_find_alternatives (argv[1], len);
 
 	/* TRANSLATORS: the prefix of all the output telling the user why it's not executing */
