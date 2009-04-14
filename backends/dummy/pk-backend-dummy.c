@@ -500,7 +500,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 			return;
 		}
 		if (_use_media) {
-			_use_media = TRUE;
+			_use_media = FALSE;
 			pk_backend_media_change_required (backend, PK_MEDIA_TYPE_ENUM_DVD, "linux-disk-1of7", "Linux Disc 1 of 7");
 			pk_backend_error_code (backend, PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
 					       "additional media linux-disk-1of7 required");
