@@ -106,7 +106,7 @@ opkg_is_devel_pkg (opkg_package_t *pkg)
  * returns true if the tag is present
  */
 static gboolean 
-opkg_check_tag (opkg_package_t *pkg, gchar *tag)
+opkg_check_tag (opkg_package_t *pkg, const gchar *tag)
 {
 	if (pkg->tags && tag)
 		return (g_strrstr (pkg->tags, tag) != NULL);
@@ -700,7 +700,7 @@ backend_get_details_thread (PkBackend *backend)
 		for (group_index = 0; group < PK_GROUP_ENUM_UNKNOWN; group_index++) {
 			group = 1 << group_index;
 			if (!(group & backend_get_groups(backend))) continue;
-			if (opkg_check_tag(pkg, (gchar *)pk_group_enum_to_text(group))) 
+			if (opkg_check_tag(pkg, (const gchar *)pk_group_enum_to_text(group))) 
 				break;
 		}
 	}
