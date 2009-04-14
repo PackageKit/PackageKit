@@ -119,7 +119,7 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 	proxy = dbus_g_proxy_new_for_name (connection,
 					   "org.freedesktop.PackageKit",
 					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.PackageKit");
+					   "org.freedesktop.PackageKit.Modify");
 	if (proxy == NULL) {
 		g_warning ("Could not connect to PackageKit session service\n");
 		goto out;
@@ -129,18 +129,18 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
 
 	/* invoke the method */
-	call = dbus_g_proxy_begin_call (proxy, "InstallFonts",
+	call = dbus_g_proxy_begin_call (proxy, "InstallFontconfigResources",
 					pk_install_fonts_dbus_notify_cb, NULL, NULL,
 				        G_TYPE_UINT, xid,
-				        G_TYPE_UINT, 0,
 				        G_TYPE_STRV, font_tags,
+					G_TYPE_STRING, "hide-finished",
 				        G_TYPE_INVALID);
 	if (call == NULL) {
 		g_warning ("Could not send method");
 		goto out;
 	}
 
-	g_debug ("InstallFonts method invoked");
+	g_debug ("InstallFontconfigResources method invoked");
 
 out:
 	g_strfreev (font_tags);

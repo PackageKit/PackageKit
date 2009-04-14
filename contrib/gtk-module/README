@@ -8,7 +8,7 @@ GTK_MODULES="$GTK_MODULES:/usr/lib/gtk-2.0/modules/pk-gtk-module.so" application
 The module installs a custom default pangocairo font map during gtk_init().
 Pango will then call back with any languages which need installing, and these
 are queued up. In an idle callback these are emitted as an asyncronous D-BUS
-method to the session PackageKit InstallFonts() method.
+method to the session PackageKit InstallFontconfigResources() method.
 
 If configured to do so, this will prompt the user to install new fonts.
 
@@ -16,5 +16,5 @@ Notes:
 
  * At the moment the window XID is not detected correctly, which means focus
    stealing prevention may not work properly.  We're working on this.
- * gnome-packagekit 0.4.x is needed for the InstallFonts method.
+ * gnome-packagekit 2.17.2 is needed for the InstallFontconfigResources method.
 
