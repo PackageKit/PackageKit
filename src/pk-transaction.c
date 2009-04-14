@@ -907,9 +907,9 @@ pk_transaction_media_change_required_cb (PkBackend *backend,
 	media_type_text = pk_media_type_enum_to_text (media_type);
 
 	egg_debug ("emitting media-change-required %s, %s, %s",
-		media_type_text, media_id, media_text);
+		   media_type_text, media_id, media_text);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_MEDIA_CHANGE_REQUIRED], 0,
-		    media_type, media_id, media_text);
+		       media_type_text, media_id, media_text);
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_media_change_required = TRUE;
@@ -3869,8 +3869,8 @@ pk_transaction_class_init (PkTransactionClass *klass)
 	signals [PK_TRANSACTION_MEDIA_CHANGE_REQUIRED] =
 		g_signal_new ("media-change-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TRANSACTION_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
