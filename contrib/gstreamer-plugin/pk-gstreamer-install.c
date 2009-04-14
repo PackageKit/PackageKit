@@ -373,7 +373,7 @@ main (int argc, char **argv)
 	ret = dbus_g_proxy_call (proxy, "InstallGStreamerResources", &error,
 				 G_TYPE_UINT, xid,
 				 G_TYPE_STRV, resources,
-				 G_TYPE_STRING, "",
+				 G_TYPE_STRING, "hide-finished",
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (!ret) {
