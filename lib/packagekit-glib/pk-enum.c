@@ -161,9 +161,9 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_FILE_CONFLICTS,		"file-conflicts"},
 	{PK_ERROR_ENUM_PACKAGE_CONFLICTS,	"package-conflicts"},
 	{PK_ERROR_ENUM_REPO_NOT_AVAILABLE,	"repo-not-available"},
-	{PK_ERROR_ENUM_INVALID_PACKAGE_FILE,    "invalid-package-file"},
+	{PK_ERROR_ENUM_INVALID_PACKAGE_FILE,	"invalid-package-file"},
 	{PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED, "package-install-blocked"},
-	{PK_ERROR_ENUM_PACKAGE_CORRUPT,         "package-corrupt"},
+	{PK_ERROR_ENUM_PACKAGE_CORRUPT,		"package-corrupt"},
 	{PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED, "all-packages-already-installed"},
 	{PK_ERROR_ENUM_FILE_NOT_FOUND,		"file-not-found"},
 	{PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY,	"no-more-mirrors-to-try"},
@@ -458,9 +458,9 @@ static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_STIX,			"STIX"},
 	{PK_LICENSE_ENUM_XANO,			"XANO"},
 	{PK_LICENSE_ENUM_VOSTROM,		"VOSTROM"},
-	{PK_LICENSE_ENUM_XEROX,                 "Xerox License"},
-	{PK_LICENSE_ENUM_RICEBSD,               "RiceBSD"},
-	{PK_LICENSE_ENUM_QHULL,                 "Qhull"},
+	{PK_LICENSE_ENUM_XEROX,			"Xerox License"},
+	{PK_LICENSE_ENUM_RICEBSD,		"RiceBSD"},
+	{PK_LICENSE_ENUM_QHULL,			"Qhull"},
 	{0, NULL}
 };
 

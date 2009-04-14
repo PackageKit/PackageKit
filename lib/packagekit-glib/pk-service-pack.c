@@ -667,9 +667,9 @@ pk_service_pack_create_from_files (PkServicePack *pack, GPtrArray *file_array, G
 	filename = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
 	ret = pk_service_pack_create_metadata_file (pack, filename);
 	if (!ret) {
-	        *error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
 				      "failed to generate metadata file %s", filename);
-	        goto out;
+		goto out;
 	}
 	g_ptr_array_add (file_array, g_strdup (filename));
 
