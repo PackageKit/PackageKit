@@ -67,6 +67,11 @@ void TransactionPrivate::eulaRequired(const QString& eulaId, const QString& pid,
 	t->eulaRequired(i);
 }
 
+void TransactionPrivate::mediaChangeRequired(const QString& mediaType, const QString& mediaId, const QString& mediaText)
+{
+	t->mediaChangeRequired((Transaction::MediaType)Util::enumFromString<Transaction>(mediaType, "MediaType"), mediaId, mediaText);
+}
+
 void TransactionPrivate::files(const QString& pid, const QString& filenames)
 {
 	t->files(new Package(pid), filenames.split(";"));

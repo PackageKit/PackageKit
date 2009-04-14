@@ -236,8 +236,19 @@ public:
 		KeyRequired,
 		EulaRequired,
 		Killed, /* when we forced the cancel, but had to sigkill */
+		MediaChangeRequired,
 		UnknownExitStatus = -1
 	} ExitStatus;
+
+	/**
+	 * Describes what kind of media is required
+	 */
+	typedef enum {
+		Cd,
+		Dvd,
+		CdOrDvd,
+		UnknownMediaType = -1
+	} MediaType;
 
 public Q_SLOTS:
 	/**
@@ -290,6 +301,14 @@ Q_SIGNALS:
 	 * \sa Client::acceptEula
 	 */
 	void eulaRequired(PackageKit::Client::EulaInfo info);
+
+	/**
+	 * Emitted when a different media is required in order to fetch packages
+	 * which prevents the transaction from running
+	 * \note You will need to relaunch the transaction after changing the media
+	 * \sa Transaction::MediaType
+	 */
+	void mediaChangeRequired(PackageKit::Transaction::MediaType type, const QString& id, const QString& text);
 
 	/**
 	 * Sends the \p filenames contained in package \p p

@@ -149,6 +149,7 @@ typedef enum {
 	PK_EXIT_ENUM_CANCELLED,
 	PK_EXIT_ENUM_KEY_REQUIRED,
 	PK_EXIT_ENUM_EULA_REQUIRED,
+        PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED,
 	PK_EXIT_ENUM_KILLED, /* when we forced the cancel, but had to SIGKILL */
 	PK_EXIT_ENUM_UNKNOWN
 } PkExitEnum;
@@ -285,6 +286,7 @@ typedef enum {
 	PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
 	PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,
 	PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
+	PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
 	PK_ERROR_ENUM_UNKNOWN
 } PkErrorCodeEnum;
 
@@ -536,6 +538,18 @@ typedef enum {
 	PK_LICENSE_ENUM_UNKNOWN
 } PkLicenseEnum;
 
+/**
+ * PkMediaTypeEnum:
+ *
+ * The media type
+ **/
+typedef enum {
+	PK_MEDIA_TYPE_ENUM_CD,
+	PK_MEDIA_TYPE_ENUM_DVD,
+	PK_MEDIA_TYPE_ENUM_CD_OR_DVD,
+	PK_MEDIA_TYPE_ENUM_UNKNOWN
+} PkMediaTypeEnum;
+
 /* general */
 guint		 pk_enum_find_value			(const PkEnumMatch *table,
 							 const gchar	*string)
@@ -588,6 +602,9 @@ const gchar	*pk_license_enum_to_text		(PkLicenseEnum	 license);
 
 PkDistroUpgradeEnum pk_distro_upgrade_enum_from_text	(const gchar	*upgrade);
 const gchar	*pk_distro_upgrade_enum_to_text		(PkDistroUpgradeEnum upgrade);
+
+PkMediaTypeEnum  pk_media_type_enum_from_text		(const gchar	*media_type);
+const gchar	*pk_media_type_enum_to_text		(PkMediaTypeEnum media_type);
 
 G_END_DECLS
 
