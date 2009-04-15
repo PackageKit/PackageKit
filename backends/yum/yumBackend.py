@@ -2673,16 +2673,18 @@ class PackageKitCallback(RPMBaseCallback):
                 self.base.message(MESSAGE_BACKEND_ERROR, "The constant '%s' was unknown, please report. details: %s" % (action, _to_unicode(e)))
 
         # do subpercentage
-        val = (te_current*100L)/te_total
-        self.base.sub_percentage(val)
+        if te_total > 0:
+            val = (te_current*100L)/te_total
+            self.base.sub_percentage(val)
 
         # find out the offset
         pct_start = StatusPercentageMap[STATUS_INSTALL]
 
         # do percentage
-        div = (100 - pct_start) / ts_total
-        pct = div * (ts_current - 1) + pct_start + ((div / 100.0) * val)
-        self.base.percentage(pct)
+        if ts_total > 0:
+            div = (100 - pct_start) / ts_total
+            pct = div * (ts_current - 1) + pct_start + ((div / 100.0) * val)
+            self.base.percentage(pct)
 
     def errorlog(self, msg):
         # grrrrrrrr
