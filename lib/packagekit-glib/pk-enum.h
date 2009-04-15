@@ -149,8 +149,8 @@ typedef enum {
 	PK_EXIT_ENUM_CANCELLED,
 	PK_EXIT_ENUM_KEY_REQUIRED,
 	PK_EXIT_ENUM_EULA_REQUIRED,
-        PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED,
 	PK_EXIT_ENUM_KILLED, /* when we forced the cancel, but had to SIGKILL */
+	PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED,
 	PK_EXIT_ENUM_UNKNOWN
 } PkExitEnum;
 
@@ -261,8 +261,8 @@ typedef enum {
 	PK_ERROR_ENUM_REPO_NOT_FOUND,
 	PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
 	PK_ERROR_ENUM_PROCESS_KILL,
-        PK_ERROR_ENUM_FAILED_INITIALIZATION,
-        PK_ERROR_ENUM_FAILED_FINALISE,
+	PK_ERROR_ENUM_FAILED_INITIALIZATION,
+	PK_ERROR_ENUM_FAILED_FINALISE,
 	PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
 	PK_ERROR_ENUM_CANNOT_CANCEL,
 	PK_ERROR_ENUM_CANNOT_GET_LOCK,
@@ -546,7 +546,7 @@ typedef enum {
 typedef enum {
 	PK_MEDIA_TYPE_ENUM_CD,
 	PK_MEDIA_TYPE_ENUM_DVD,
-	PK_MEDIA_TYPE_ENUM_CD_OR_DVD,
+	PK_MEDIA_TYPE_ENUM_DISC,
 	PK_MEDIA_TYPE_ENUM_UNKNOWN
 } PkMediaTypeEnum;
 
@@ -558,8 +558,8 @@ const gchar	*pk_enum_find_string			(const PkEnumMatch *table,
 							 guint		 value)
 							 G_GNUC_WARN_UNUSED_RESULT;
 
-PkSigTypeEnum    pk_sig_type_enum_from_text             (const gchar    *sig_type);
-const gchar     *pk_sig_type_enum_to_text               (PkSigTypeEnum   sig_type);
+PkSigTypeEnum	 pk_sig_type_enum_from_text		(const gchar	*sig_type);
+const gchar	*pk_sig_type_enum_to_text		(PkSigTypeEnum	 sig_type);
 
 PkInfoEnum	 pk_info_enum_from_text			(const gchar	*info);
 const gchar	*pk_info_enum_to_text			(PkInfoEnum	 info);

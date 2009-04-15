@@ -246,7 +246,7 @@ public:
 	typedef enum {
 		Cd,
 		Dvd,
-		CdOrDvd,
+		Disc,
 		UnknownMediaType = -1
 	} MediaType;
 

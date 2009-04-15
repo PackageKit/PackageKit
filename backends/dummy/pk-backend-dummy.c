@@ -43,6 +43,7 @@ static gboolean _updated_powertop = FALSE;
 static gboolean _has_signature = FALSE;
 static gboolean _use_blocked = FALSE;
 static gboolean _use_eula = FALSE;
+static gboolean _use_media = FALSE;
 static gboolean _use_gpg = FALSE;
 static gboolean _use_distro_upgrade = FALSE;
 
@@ -495,6 +496,14 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 						  "CATS Inc.", license_agreement);
 			pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
 					       "licence not installed so cannot install");
+			pk_backend_finished (backend);
+			return;
+		}
+		if (_use_media) {
+			_use_media = FALSE;
+			pk_backend_media_change_required (backend, PK_MEDIA_TYPE_ENUM_DVD, "linux-disk-1of7", "Linux Disc 1 of 7");
+			pk_backend_error_code (backend, PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
+					       "additional media linux-disk-1of7 required");
 			pk_backend_finished (backend);
 			return;
 		}
@@ -1041,6 +1050,8 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 		_use_blocked = atoi (value);
 	else if (g_strcmp0 (parameter, "use-eula") == 0)
 		_use_eula = atoi (value);
+	else if (g_strcmp0 (parameter, "use-media") == 0)
+		_use_media = atoi (value);
 	else if (g_strcmp0 (parameter, "use-gpg") == 0)
 		_use_gpg = atoi (value);
 	else if (g_strcmp0 (parameter, "use-distro-upgrade") == 0)

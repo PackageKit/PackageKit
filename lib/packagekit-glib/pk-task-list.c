@@ -63,6 +63,8 @@ struct _PkTaskListPrivate
 	GPtrArray		*task_list;
 	PkControl		*control;
 	PkConnection		*connection;
+	guint			 control_changed_id;
+	guint			 connection_changed_id;
 };
 
 typedef enum {
@@ -460,15 +462,17 @@ pk_task_list_init (PkTaskList *tlist)
 
 	/* get the changing job list */
 	tlist->priv->control = pk_control_new ();
-	g_signal_connect (tlist->priv->control, "transaction-list-changed",
-			  G_CALLBACK (pk_task_list_transaction_list_changed_cb), tlist);
+	tlist->priv->control_changed_id =
+		g_signal_connect (tlist->priv->control, "transaction-list-changed",
+				  G_CALLBACK (pk_task_list_transaction_list_changed_cb), tlist);
 
 	/* we maintain a local copy */
 	tlist->priv->task_list = g_ptr_array_new ();
 
 	tlist->priv->connection = pk_connection_new ();
-	g_signal_connect (tlist->priv->connection, "connection-changed",
-			  G_CALLBACK (pk_task_list_connection_changed_cb), tlist);
+	tlist->priv->connection_changed_id =
+		g_signal_connect (tlist->priv->connection, "connection-changed",
+				  G_CALLBACK (pk_task_list_connection_changed_cb), tlist);
 
 	/* force a refresh so we have valid data*/
 	pk_task_list_refresh (tlist);
@@ -486,6 +490,10 @@ pk_task_list_finalize (GObject *object)
 	g_return_if_fail (PK_IS_TASK_LIST (object));
 	tlist = PK_TASK_LIST (object);
 	g_return_if_fail (tlist->priv != NULL);
+
+	/* unhook all signals */
+	g_signal_handler_disconnect (tlist->priv->control, tlist->priv->control_changed_id);
+	g_signal_handler_disconnect (tlist->priv->connection, tlist->priv->connection_changed_id);
 
 	/* remove all watches */
 	g_ptr_array_foreach (tlist->priv->task_list, (GFunc) pk_task_list_item_free, NULL);
