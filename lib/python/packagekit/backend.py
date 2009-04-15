@@ -131,6 +131,17 @@ class PackageKitBaseBackend:
         print >> sys.stdout, "package\t%s\t%s\t%s" % (status, package_id, summary)
         sys.stdout.flush()
 
+    def media_change_required(self, mtype, id, text):
+        '''
+        send 'media-change-required' signal
+        @param mtype: the enumerated MEDIA_TYPE_* string
+        @param id: the localised label of the media
+        @param text: the localised text describing the media
+        '''
+        print >> sys.stdout, "media-change-required\t%s\t%s\t%s" % (mtype, id,
+                                                                    text)
+        sys.stdout.flush()
+
     def distro_upgrade(self, dtype, name, summary):
         '''
         send 'distro-upgrade' signal
