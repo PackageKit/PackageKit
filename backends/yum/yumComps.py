@@ -211,29 +211,3 @@ class yumComps:
             grps.add(row[0])
         return list(grps)
 
-def main():
-    _yb = yum.YumBase()
-    _db = "/var/cache/PackageKit/groups.sqlite"
-    comps = yumComps(_yb, _db)
-    comps.connect()
-    print "pk group system"
-    print 40 * "="
-    _pkgs = comps.get_package_list('system')
-    print _pkgs
-    print "comps group games"
-    print 40 * "="
-    _pkgs = comps.get_meta_package_list('games')
-    print _pkgs
-    print "comps group kde-desktop"
-    print 40 * "="
-    _pkgs = comps.get_meta_package_list('kde-desktop')
-    print _pkgs
-    print "comps group other"
-    print 40 * "="
-    _pkgs = comps.get_groups('other')
-    print _pkgs
-    os.unlink(_db) # kill the db
-
-if __name__ == "__main__":
-    main()
-
