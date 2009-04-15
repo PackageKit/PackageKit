@@ -300,15 +300,15 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
 {
 	pk_backend_media_change_required(m_backend,
-					 PK_MEDIA_TYPE_ENUM_UNKNOWN,
+					 PK_MEDIA_TYPE_ENUM_DISC,
 					 Media.c_str(),
 					 Media.c_str());
 
 	char errorMsg[400];
 	sprintf(errorMsg,
-		"Media change: please insert the disc labeled\n"
-		" '%s'\n"
-		"in the drive '%s' and press enter\n",
+		"Media change: please insert the disc labeled"
+		" '%s' "
+		"in the drive '%s' and try again.",
 		Media.c_str(),
 		Drive.c_str());
 
