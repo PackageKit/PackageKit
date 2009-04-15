@@ -1888,57 +1888,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                              pkg.name))
             return GROUP_UNKNOWN
 
-    def _get_package_description(self, pkg):
-        """
-        Return the formated long description according to the Debian policy
-        (Chapter 5.6.13).
-        See http://www.debian.org/doc/debian-policy/ch-controlfields.html
-        for more information.
-        """
-        if not pkg._lookupRecord():
-            return ""
-        # get the translated description
-        ver = self._cache._depcache.GetCandidateVer(pkg._pkg)
-        desc_iter = ver.TranslatedDescription
-        pkg._records.Lookup(desc_iter.FileList.pop(0))
-        desc = ""
-        try:
-            s = unicode(pkg._records.LongDesc,"utf-8")
-        except UnicodeDecodeError,e:
-            s = "Invalid unicode in description for '%s' (%s)" % (pkg.name, e)
-        lines = string.split(s, "\n")
-        for i in range(len(lines)):
-            # Skip the first line, since its a duplication of the summary
-            if i == 0: continue
-            raw_line = lines[i]
-            if raw_line.strip() == ".":
-                # The line is just line break
-                if not desc.endswith("\n"):
-                    desc += "\n"
-                continue
-            elif raw_line.startswith("  "):
-                # The line should be displayed verbatim without word wrapping
-                if not desc.endswith("\n"):
-                    line = "\n%s\n" % raw_line[2:]
-                else:
-                    line = "%s\n" % raw_line[2:]
-            elif raw_line.startswith(" "):
-                # The line is part of a paragraph.
-                if desc.endswith("\n") or desc == "":
-                    # Skip the leading white space
-                    line = raw_line[1:]
-                else:
-                    line = raw_line
-            else:
-                line = raw_line
-                pklog.debug("invalid line %s in description for %s:\n%s" % \
-                            (i, pkg.name, pkg.rawDescription))
-            # Use dots for lists
-            line = re.sub(r"^(\s*)(\*|0|o|-) ", ur"\1\u2022 ", line, 1)
-            # Add current line to the description
-            desc += line
-        return desc
-
     def _sigquit(self, signum, frame):
         self._unlock_cache()
         sys.exit(1)
