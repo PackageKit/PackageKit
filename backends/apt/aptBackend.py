@@ -183,6 +183,7 @@ class PackageManagerFailedPKError(PKError):
 class InstallTimeOutPKError(PKError):
     pass
 
+
 class PackageKitCache(apt.cache.Cache):
     """
     Enhanced version of the apt.cache.Cache class which supports some features
@@ -339,11 +340,17 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self._backend.allow_cancel(False)
 
     def mediaChange(self, medium, drive):
-        #FIXME: Raise an expcetion and handle it in _commit_changes
-        #       Strangly _commit_changes does not catch the expcetion
-        self._backend.message(MESSAGE_UNKNOWN,
-                              "Installing from CD-Rom (%s) is not "
-                              "supported." % medium)
+        #FIXME: Perhaps use hal to show a nicer drive name
+        self._backend.media_change_required(MEDIA_TYPE_CD_OR_DVD, medium,
+                                            drive)
+        # FIXME: We cannot call sys.exit() here. APT module would procduce
+        #        a backend error message otherwise. This way the backend
+        #        sends another error message in the FetchFailedError handling
+        #        later, but this one will be skipped by the daemon
+        self._backend.error(ERROR_MEDIA_CHANGE_REQUIRED,
+                            "Insert the CDROM or DVD labeled '%s' "
+                            "into drive '%s'" % (medium, drive),
+                            exit=False)
         return False
 
 
