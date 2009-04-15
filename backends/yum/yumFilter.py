@@ -42,7 +42,8 @@ def _do_newest_filtering(pkglist):
     '''
     newest = {}
     for pkg, state in pkglist:
-        key = (pkg.name, pkg.arch)
+        # only key on name and not arch
+        key = pkg.name
         if key in newest and pkg <= newest[key][0]:
             continue
         newest[key] = (pkg, state)
