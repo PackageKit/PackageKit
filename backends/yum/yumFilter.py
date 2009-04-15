@@ -27,81 +27,82 @@ import re
 
 GUI_KEYS = re.compile(r'(qt)|(gtk)')
 
-def _is_main_package(repo):
-    if repo.endswith('-debuginfo'):
-        return False
-    if repo.endswith('-devel'):
-        return False
-    if repo.endswith('-libs'):
-        return False
-    return True
+class YumFilter(PackagekitFilter):
 
-def _do_newest_filtering(pkglist):
-    '''
-    Only return the newest package for each name.arch
-    '''
-    newest = {}
-    for pkg, state in pkglist:
-        # only key on name and not arch
-        key = pkg.name
-        if key in newest and pkg <= newest[key][0]:
-            continue
-        newest[key] = (pkg, state)
-    return newest.values()
+    def _is_main_package(self, repo):
+        if repo.endswith('-debuginfo'):
+            return False
+        if repo.endswith('-devel'):
+            return False
+        if repo.endswith('-libs'):
+            return False
+        return True
 
-def _basename_filter(package_list):
-    '''
-    Filter the list so that the number of packages are reduced.
-    This is done by only displaying gtk2 rather than gtk2-devel, gtk2-debuginfo, etc.
-    This imlementation is done by comparing the SRPM name, and if not falling back
-    to the first entry.
-    We have to fall back else we don't emit packages where the SRPM does not produce a
-    RPM with the same name, for instance, mono produces mono-core, mono-data and mono-winforms.
-    @package_list: a (pkg, status) list of packages
-    A new list is returned that has been filtered
-    '''
-    base_list = []
-    output_list = []
-    base_list_already_got = []
+    def _basename_filter(self, package_list):
+        '''
+        Filter the list so that the number of packages are reduced.
+        This is done by only displaying gtk2 rather than gtk2-devel, gtk2-debuginfo, etc.
+        This imlementation is done by comparing the SRPM name, and if not falling back
+        to the first entry.
+        We have to fall back else we don't emit packages where the SRPM does not produce a
+        RPM with the same name, for instance, mono produces mono-core, mono-data and mono-winforms.
+        @package_list: a (pkg, status) list of packages
+        A new list is returned that has been filtered
+        '''
+        base_list = []
+        output_list = []
+        base_list_already_got = []
 
-    #find out the srpm name and add to a new array of compound data
-    for (pkg, status) in package_list:
-        if pkg.sourcerpm:
-            base = rpmUtils.miscutils.splitFilename(pkg.sourcerpm)[0]
-            base_list.append ((pkg, status, base, pkg.version))
-        else:
-            base_list.append ((pkg, status, 'nosrpm', pkg.version))
+        #find out the srpm name and add to a new array of compound data
+        for (pkg, status) in package_list:
+            if pkg.sourcerpm:
+                base = rpmUtils.miscutils.splitFilename(pkg.sourcerpm)[0]
+                base_list.append ((pkg, status, base, pkg.version))
+            else:
+                base_list.append ((pkg, status, 'nosrpm', pkg.version))
 
-    #find all the packages that match thier basename name (done seporately so we get the "best" match)
-    for (pkg, status, base, version) in base_list:
-        if base == pkg.name and (base, version) not in base_list_already_got:
-            output_list.append((pkg, status))
-            base_list_already_got.append ((base, version))
-
-    #for all the ones not yet got, can we match against a non devel match?
-    for (pkg, status, base, version) in base_list:
-        if (base, version) not in base_list_already_got:
-            if _is_main_package(pkg.name):
+        #find all the packages that match thier basename name (done seporately so we get the "best" match)
+        for (pkg, status, base, version) in base_list:
+            if base == pkg.name and (base, version) not in base_list_already_got:
                 output_list.append((pkg, status))
                 base_list_already_got.append ((base, version))
 
-    #add the remainder of the packages, which should just be the single debuginfo's
-    for (pkg, status, base, version) in base_list:
-        if (base, version) not in base_list_already_got:
-            output_list.append((pkg, status))
-            base_list_already_got.append ((base, version))
-    return output_list
+        #for all the ones not yet got, can we match against a non devel match?
+        for (pkg, status, base, version) in base_list:
+            if (base, version) not in base_list_already_got:
+                if self._is_main_package(pkg.name):
+                    output_list.append((pkg, status))
+                    base_list_already_got.append ((base, version))
 
-class YumFilter(PackagekitFilter):
+        #add the remainder of the packages, which should just be the single debuginfo's
+        for (pkg, status, base, version) in base_list:
+            if (base, version) not in base_list_already_got:
+                output_list.append((pkg, status))
+                base_list_already_got.append ((base, version))
+        return output_list
+
+    def _do_newest_filtering(self, pkglist):
+        '''
+        Only return the newest package for each name.arch
+        '''
+        newest = {}
+        for pkg, state in pkglist:
+            # only key on name and not arch
+            inst = self._pkg_is_installed(pkg)
+            key = (pkg.name, inst)
+            if key in newest and pkg <= newest[key][0]:
+                continue
+            newest[key] = (pkg, state)
+        return newest.values()
 
     def post_process(self):
         ''' do filtering we couldn't do when generating the list '''
 
         if FILTER_BASENAME in self.fltlist:
-            self.package_list = _basename_filter(self.package_list)
+            self.package_list = self._basename_filter(self.package_list)
 
         if FILTER_NEWEST in self.fltlist:
-            self.package_list = _do_newest_filtering(self.package_list)
+            self.package_list = self._do_newest_filtering(self.package_list)
 
         return self.package_list
 
