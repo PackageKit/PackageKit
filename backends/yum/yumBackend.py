@@ -898,12 +898,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # is this an real id or just an name
         if len(package_id.split(';')) > 1:
             # Split up the id
-            (n, idver, a, d) = self.get_package_from_id(package_id)
+            (n, idver, a, repo) = self.get_package_from_id(package_id)
             # get e, v, r from package id version
             e, v, r = _getEVR(idver)
         else:
             n = package_id
-            e = v = r = a = d = None
+            e = v = r = a = repo = None
+
         # search the rpmdb for the nevra
         try:
             pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
@@ -928,7 +929,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             return pkgs[0], False
         # we might have the same NEVRA in multiple repos, match by repo name
         for pkg in pkgs:
-            if d == pkg.repoid:
+            if repo == pkg.repoid:
                 return pkg, False
         # repo id did not match
         return None, False
