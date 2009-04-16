@@ -48,9 +48,6 @@ backend_stderr_cb (PkBackend *backend, const gchar *output)
 static gboolean
 backend_stdout_cb (PkBackend *backend, const gchar *output)
 {
-	/* presto is much too verbose... */
-	if (strstr (output, "Presto") != NULL)
-		return FALSE;
 	return TRUE;
 }
 
