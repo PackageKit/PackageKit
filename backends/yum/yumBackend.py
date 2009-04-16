@@ -905,14 +905,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             n = package_id
             e = v = r = a = repo = None
 
-        # search the rpmdb for the nevra
-        try:
-            pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
-        except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-        # if the package is found, then return it (do not have to match the repo_id)
-        if len(pkgs) != 0:
-            return pkgs[0], True
+        if repo == 'installed':
+            # search the rpmdb for the nevra
+            try:
+                pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            # if the package is found, then return it (do not have to match the repo_id)
+            if len(pkgs) != 0:
+                return pkgs[0], True
+
         # search the pkgSack for the nevra
         try:
             pkgs = self.yumbase.pkgSack.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
