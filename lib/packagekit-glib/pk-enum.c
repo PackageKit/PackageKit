@@ -170,7 +170,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,	"no-distro-upgrade-data"},
 	{PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,	"incompatible-architecture"},
 	{PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,	"no-space-on-device"},
-	{PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,	"media_change_required"},
+	{PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,	"media-change-required"},
 	{0, NULL}
 };
 
