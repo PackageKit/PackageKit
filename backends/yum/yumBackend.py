@@ -920,8 +920,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs = self.yumbase.pkgSack.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+            return None, False
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            return None, False
 
         # nothing found
         if len(pkgs) == 0:
