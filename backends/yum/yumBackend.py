@@ -898,39 +898,61 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # is this an real id or just an name
         if len(package_id.split(';')) > 1:
             # Split up the id
-            (n, idver, a, d) = self.get_package_from_id(package_id)
+            (n, idver, a, repo) = self.get_package_from_id(package_id)
             # get e, v, r from package id version
             e, v, r = _getEVR(idver)
         else:
             n = package_id
-            e = v = r = a = d = None
-        # search the rpmdb for the nevra
+            e = v = r = a = repo = None
+
+        if repo == 'installed':
+            # search the rpmdb for the nevra
+            try:
+                pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            # if the package is found, then return it (do not have to match the repo_id)
+            if len(pkgs) != 0:
+                return pkgs[0], True
+
+        # find the correct repo, and don't use yb.pkgSack.searchNevra as it
+        # searches all repos and takes 66ms
         try:
-            pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
+            repos = self.yumbase.repos.findRepos(repo)
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-        # if the package is found, then return it (do not have to match the repo_id)
-        if len(pkgs) != 0:
-            return pkgs[0], True
+            return None, False
+        if len(repos) == 0:
+            self.error(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
+            return None, False
+
+        # populate the sack with data
+        try:
+            self.yumbase.repos.populateSack(repo)
+        except Exception, e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            return None, False
+
         # search the pkgSack for the nevra
         try:
-            pkgs = self.yumbase.pkgSack.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
+            pkgs = repos[0].sack.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+            return None, False
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-
-        # nothing found
-        if len(pkgs) == 0:
             return None, False
+
+		# multiple entries
+        if len(pkgs) > 1:
+            self.error(ERROR_INTERNAL_ERROR, "more than one package match for %s" % package_id)
+            return pkgs[0], False
+
         # one NEVRA in a single repo
         if len(pkgs) == 1:
             return pkgs[0], False
-        # we might have the same NEVRA in multiple repos, match by repo name
-        for pkg in pkgs:
-            if d == pkg.repoid:
-                return pkg, False
-        # repo id did not match
+
+        # nothing found
         return None, False
 
     def get_requires(self, filters, package_ids, recursive_text):

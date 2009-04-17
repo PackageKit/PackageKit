@@ -52,6 +52,7 @@ class Transaction : public QObject
 	Q_OBJECT
 	Q_ENUMS(Status)
 	Q_ENUMS(ExitStatus)
+	Q_ENUMS(MediaType)
 
 public:
 	/**

@@ -365,6 +365,7 @@ public:
 		NoDistroUpgradeData,
 		IncompatibleArchitecture,
 		NoSpaceOnDevice,
+		MediaChangeRequired,
 		UnknownErrorType = -1
 	} ErrorType;
 

@@ -380,7 +380,7 @@ backend_get_updates_timeout (gpointer data)
 				    "Power consumption monitor");
 	}
 	if (!_updated_kernel) {
-		pk_backend_package (backend, PK_INFO_ENUM_SECURITY,
+		pk_backend_package (backend, PK_INFO_ENUM_BUGFIX,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 	}
