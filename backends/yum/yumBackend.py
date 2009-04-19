@@ -943,7 +943,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             return None, False
 
-		# multiple entries
+	# multiple entries
         if len(pkgs) > 1:
             self.error(ERROR_INTERNAL_ERROR, "more than one package match for %s" % package_id)
             return pkgs[0], False
