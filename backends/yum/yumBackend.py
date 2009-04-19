@@ -36,6 +36,7 @@ from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
 from yum.packages import YumLocalPackage, parsePackages
 from yum.packageSack import MetaSack
+from yum.sqlitesack import YumAvailablePackageSqlite
 import rpmUtils
 import exceptions
 import types
@@ -2559,6 +2560,9 @@ class DownloadCallback(BaseMeter):
             for pkg in self.saved_pkgs:
                 if isinstance(pkg, YumLocalPackage):
                     rpmfn = pkg.localPkg
+                elif isinstance(pkg, YumAvailablePackageSqlite):
+                    # from yum-presto, so not a local package
+                    return pkg
                 else:
                     rpmfn = os.path.basename(pkg.remote_path) # get the rpm filename of the package
                 if rpmfn == name:
