@@ -88,7 +88,7 @@ void TransactionPrivate::finished(const QString& exitCode, uint runtime)
 
 void TransactionPrivate::message(const QString& type, const QString& message)
 {
-	t->message((Client::MessageType)Util::enumFromString<Client>(type, "MessageType"), message);
+	t->message((Client::MessageType)Util::enumFromString<Client>(type, "MessageType", "Message"), message);
 }
 
 void TransactionPrivate::package(const QString& info, const QString& pid, const QString& summary)

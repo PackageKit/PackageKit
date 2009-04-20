@@ -58,6 +58,7 @@ class Client : public QObject
 	Q_ENUMS(RestartType)
 	Q_ENUMS(UpgradeType)
 	Q_ENUMS(ProvidesType)
+	Q_ENUMS(MessageType)
 
 public:
 	/**
@@ -373,18 +374,18 @@ public:
 	 * Describes a message's type
 	 */
 	typedef enum {
-		BrokenMirror,
-		ConnectionRefused,
-		ParameterInvalid,
-		PriorityInvalid,
-		BackendError,
-// 		DaemonError, //TODO another enum problem..
-		CacheBeingRebuilt,
-		UntrustedPackage,
-		NewerPackageExists,
-		CouldNotFindPackage,
-		ConfigFilesChanged,
-// 		PackageAlreadyInstalled,// TODO i dunno what to do
+		MessageBrokenMirror,
+		MessageConnectionRefused,
+		MessageParameterInvalid,
+		MessagePriorityInvalid,
+		MessageBackendError,
+		MessageDaemonError,
+		MessageCacheBeingRebuilt,
+		MessageUntrustedPackage,
+		MessageNewerPackageExists,
+		MessageCouldNotFindPackage,
+		MessageConfigFilesChanged,
+		MessagePackageAlreadyInstalled,
 		UnknownMessageType = -1
 	} MessageType;
 
