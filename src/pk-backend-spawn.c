@@ -116,6 +116,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	PkRestartEnum restart_enum;
 	PkSigTypeEnum sig_type;
 	PkUpdateStateEnum update_state_enum;
+	PkMediaTypeEnum media_type_enum;
 	PkDistroUpgradeEnum distro_upgrade_enum;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
@@ -388,6 +389,24 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		ret = pk_backend_repo_signature_required (backend_spawn->priv->backend, sections[1],
 							  sections[2], sections[3], sections[4],
 							  sections[5], sections[6], sections[7], sig_type);
+		goto out;
+	} else if (egg_strequal (command, "media-change-required")) {
+
+		if (size != 4) {
+			egg_warning ("invalid command'%s', size %i", command, size);
+			ret = FALSE;
+			goto out;
+		}
+
+		media_type_enum = pk_media_type_enum_from_text (sections[1]);
+		if (media_type_enum == PK_MEDIA_TYPE_ENUM_UNKNOWN) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+					    "media type enum not recognised, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
+
+		ret = pk_backend_media_change_required (backend_spawn->priv->backend, media_type_enum, sections[2], sections[3]);
 		goto out;
 	} else if (egg_strequal (command, "distro-upgrade")) {
 

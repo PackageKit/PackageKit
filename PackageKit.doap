@@ -1,0 +1,27 @@
+<Project xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/"
+         xmlns="http://usefulinc.com/ns/doap#">
+
+  <name xml:lang="en">PackageKit</name>
+  <shortdesc xml:lang="en">PackageKit package manager framework</shortdesc>
+  <description xml:lang="en">
+    PackageKit is a D-Bus abstraction layer that allows the session user to
+    manage packages in a secure way using a cross-distro, cross-architecture API.
+  </description>
+
+  <homepage rdf:resource="http://www.packagekit.org/" />
+  <mailing-list rdf:resource="http://lists.freedesktop.org/mailman/listinfo/packagekit/" />
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Richard Hughes</foaf:name>
+      <foaf:homepage rdf:resource="http://www.hughsie.com/" />
+    </foaf:Person>
+  </maintainer>
+
+  <license rdf:resource="http://www.gnu.org/licenses/gpl-2.0.txt" />
+  <bug-database rdf:resource="http://bugzilla.freedesktop.org/" />
+  <screenshots rdf:resource="http://www.packagekit.org/pk-screenshots.html#gnome" />
+
+</Project>

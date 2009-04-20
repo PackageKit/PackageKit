@@ -663,12 +663,51 @@
         </imageobject>
       </mediaobject>
       <para>
-        A typical successful transaction would emit signals such as
+        A typical successful transaction would emit many signals such as
         <literal>::Progress()</literal>, <literal>::Package()</literal> and
         <literal>::StatusChanged()</literal>.
         These are used to inform the client application of the current state,
         so widgets such as icons or description text can be updated.
       </para>
+      <para>
+        These different signals are needed for a few different reasons:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            <literal>::StatusChanged()</literal>: The global state of the
+            transaction, which will be useful for some GUIs.
+            Examples include downloading or installing, and this is designed
+            to be a 40,000ft view of what is happening.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <literal>::Package()</literal>: Used to either return a result
+            (e.g. returning results of the <literal>SearchName()</literal> method)
+            or to return progress about a _specific_ package.
+            For instance, when doing <literal>UpdateSystem()</literal>, sending
+            <literal>::Package(downloading)</literal> and then
+            <literal>::Package(installing)</literal> for each package as processed
+            in the transaction allows a GUI to position the cursor on the worked
+            on package and show the correct icon for that package.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <literal>::ErrorCode()</literal>: to show an error to the user about
+            the transaction, which can be cleaned up before sending
+            <literal>::Finished()</literal>.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <literal>::Finished()</literal>: to show the transaction has
+            finished, and others can be scheduled.
+          </para>
+        </listitem>
+      </itemizedlist>
     </sect2>
 
     <sect2 id="introduction-ideas-transactions-failure">

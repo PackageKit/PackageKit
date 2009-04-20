@@ -183,6 +183,7 @@ class PackageManagerFailedPKError(PKError):
 class InstallTimeOutPKError(PKError):
     pass
 
+
 class PackageKitCache(apt.cache.Cache):
     """
     Enhanced version of the apt.cache.Cache class which supports some features
@@ -310,6 +311,7 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self.pstart = prange[0]
         self.pend = prange[1]
         self.pprev = None
+        self.last_pkg = None
 
     def pulse(self):
         apt.progress.FetchProgress.pulse(self)
@@ -320,6 +322,15 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
             self.pprev = progress
         return True
 
+    def updateStatus(self, uri, descr, shortDescr, status):
+        """Callback for a fetcher status update."""
+        # Emit a Package signal for the currently processed package
+        if shortDescr != self.last_pkg and \
+           self._backend._cache.has_key(shortDescr):
+            self._backend._emit_package(self._backend._cache[shortDescr],
+                                        INFO_DOWNLOADING, True)
+            self.last_pkg = shortDescr
+
     def start(self):
         self._backend.status(STATUS_DOWNLOAD)
         self._backend.allow_cancel(True)
@@ -329,11 +340,17 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self._backend.allow_cancel(False)
 
     def mediaChange(self, medium, drive):
-        #FIXME: Raise an expcetion and handle it in _commit_changes
-        #       Strangly _commit_changes does not catch the expcetion
-        self._backend.message(MESSAGE_UNKNOWN,
-                              "Installing from CD-Rom (%s) is not "
-                              "supported." % medium)
+        #FIXME: Perhaps use hal to show a nicer drive name
+        self._backend.media_change_required(MEDIA_TYPE_CD_OR_DVD, medium,
+                                            drive)
+        # FIXME: We cannot call sys.exit() here. APT module would procduce
+        #        a backend error message otherwise. This way the backend
+        #        sends another error message in the FetchFailedError handling
+        #        later, but this one will be skipped by the daemon
+        self._backend.error(ERROR_MEDIA_CHANGE_REQUIRED,
+                            "Insert the CDROM or DVD labeled '%s' "
+                            "into drive '%s'" % (medium, drive),
+                            exit=False)
         return False
 
 
@@ -356,13 +373,25 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         self.output = ""
         self.master_fd = None
         self.child_pid = None
+        self.last_pkg = None
 
-    def statusChange(self, pkg, percent, status):
+    def statusChange(self, pkg_name, percent, status):
         self.last_activity = time.time()
         progress = self.pstart + percent/100 * (self.pend - self.pstart)
         if self.pprev < progress:
             self._backend.percentage(int(progress))
             self.pprev = progress
+        # Emit a Package signal for the currently processed package
+        if pkg_name != self.last_pkg:
+            pkg = self._backend._cache[pkg_name]
+            # FIXME: We need an INFO enum for downgrades/rollbacks
+            if pkg.markedInstall or pkg.markedReinstall or pkg.markedDowngrade:
+                self._backend._emit_package(pkg, INFO_INSTALLING, True)
+            elif pkg.markedDelete:
+                self._backend._emit_package(pkg, INFO_REMOVING, False)
+            elif pkg.markedUpgrade:
+                self._backend._emit_package(pkg, INFO_UPDATING, True)
+            self.last_pkg = pkg_name
         pklog.debug("APT status: %s" % status)
 
     def startUpdate(self):
@@ -1858,57 +1887,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pklog.debug("Unkown package section %s of %s" % (pkg.section,
                                                              pkg.name))
             return GROUP_UNKNOWN
-
-    def _get_package_description(self, pkg):
-        """
-        Return the formated long description according to the Debian policy
-        (Chapter 5.6.13).
-        See http://www.debian.org/doc/debian-policy/ch-controlfields.html
-        for more information.
-        """
-        if not pkg._lookupRecord():
-            return ""
-        # get the translated description
-        ver = self._cache._depcache.GetCandidateVer(pkg._pkg)
-        desc_iter = ver.TranslatedDescription
-        pkg._records.Lookup(desc_iter.FileList.pop(0))
-        desc = ""
-        try:
-            s = unicode(pkg._records.LongDesc,"utf-8")
-        except UnicodeDecodeError,e:
-            s = "Invalid unicode in description for '%s' (%s)" % (pkg.name, e)
-        lines = string.split(s, "\n")
-        for i in range(len(lines)):
-            # Skip the first line, since its a duplication of the summary
-            if i == 0: continue
-            raw_line = lines[i]
-            if raw_line.strip() == ".":
-                # The line is just line break
-                if not desc.endswith("\n"):
-                    desc += "\n"
-                continue
-            elif raw_line.startswith("  "):
-                # The line should be displayed verbatim without word wrapping
-                if not desc.endswith("\n"):
-                    line = "\n%s\n" % raw_line[2:]
-                else:
-                    line = "%s\n" % raw_line[2:]
-            elif raw_line.startswith(" "):
-                # The line is part of a paragraph.
-                if desc.endswith("\n") or desc == "":
-                    # Skip the leading white space
-                    line = raw_line[1:]
-                else:
-                    line = raw_line
-            else:
-                line = raw_line
-                pklog.debug("invalid line %s in description for %s:\n%s" % \
-                            (i, pkg.name, pkg.rawDescription))
-            # Use dots for lists
-            line = re.sub(r"^(\s*)(\*|0|o|-) ", ur"\1\u2022 ", line, 1)
-            # Add current line to the description
-            desc += line
-        return desc
 
     def _sigquit(self, signum, frame):
         self._unlock_cache()
