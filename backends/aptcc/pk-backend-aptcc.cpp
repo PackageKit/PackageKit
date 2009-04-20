@@ -64,6 +64,8 @@ backend_initialize (PkBackend *backend)
 	// Open the cache file
 	apt_source_list = new pkgSourceList;
 	apt_source_list->ReadMainList();
+	putenv("DEBIAN_FRONTEND=noninteractive");
+// 	putenv("APT_LISTCHANGES_FRONTEND=gtk");
 }
 
 /**
