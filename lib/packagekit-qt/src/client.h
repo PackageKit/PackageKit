@@ -58,7 +58,6 @@ class Client : public QObject
 	Q_ENUMS(RestartType)
 	Q_ENUMS(UpgradeType)
 	Q_ENUMS(ProvidesType)
-	Q_ENUMS(MessageType)
 
 public:
 	/**
