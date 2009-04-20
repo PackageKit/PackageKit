@@ -2742,6 +2742,8 @@ class ProcessTransPackageKitCallback:
             pct_start = StatusPercentageMap[STATUS_INSTALL]
             self.base.allow_cancel(False)
             self.base.percentage(pct_start)
+        else:
+            self.message(MESSAGE_BACKEND_ERROR, "unhandled transaction state: %s" % state)
 
 class DepSolveCallback(object):
 
