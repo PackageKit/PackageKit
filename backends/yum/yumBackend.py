@@ -36,7 +36,6 @@ from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
 from yum.packages import YumLocalPackage, parsePackages
 from yum.packageSack import MetaSack
-from yum.sqlitesack import YumAvailablePackageSqlite
 import rpmUtils
 import exceptions
 import types
@@ -2752,7 +2751,7 @@ class ProcessTransPackageKitCallback:
             self.base.allow_cancel(False)
             self.base.percentage(pct_start)
         else:
-            self.message(MESSAGE_BACKEND_ERROR, "unhandled transaction state: %s" % state)
+            self.base.message(MESSAGE_BACKEND_ERROR, "unhandled transaction state: %s" % state)
 
 class DepSolveCallback(object):
 
