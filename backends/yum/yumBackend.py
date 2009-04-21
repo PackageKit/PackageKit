@@ -2556,17 +2556,26 @@ class DownloadCallback(BaseMeter):
         self.percent_start = percent_start
 
     def _getPackage(self, name):
-        if self.saved_pkgs:
-            for pkg in self.saved_pkgs:
-                if isinstance(pkg, YumLocalPackage):
-                    rpmfn = pkg.localPkg
-                elif isinstance(pkg, YumAvailablePackageSqlite):
-                    # from yum-presto, so not a local package
-                    return pkg
-                else:
-                    rpmfn = os.path.basename(pkg.remote_path) # get the rpm filename of the package
-                if rpmfn == name:
-                    return pkg
+
+        # no download data
+        if not self.saved_pkgs:
+            return None
+
+        # split into name, version, release
+        # for yum, name is:
+        #  - gnote-0.1.2-2.fc11.i586.rpm
+        # and for Presto:
+        #  - gnote-0.1.1-4.fc11_0.1.2-2.fc11.i586.drpm
+        sections = name.rsplit('-', 3)
+        if len(sections) < 3:
+            return None
+
+        # we need to search the saved packages for a match and then return the pkg
+        for pkg in self.saved_pkgs:
+            if sections[0] == pkg.name:
+                return pkg
+
+        # nothing matched
         return None
 
     def update(self, amount_read, now=None):
