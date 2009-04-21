@@ -36,6 +36,7 @@ from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
 from yum.packages import YumLocalPackage, parsePackages
 from yum.packageSack import MetaSack
+from yum.sqlitesack import YumAvailablePackageSqlite
 import rpmUtils
 import exceptions
 import types
@@ -895,15 +896,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if self._is_meta_package(package_id):
             return None, False
 
-        # is this an real id or just an name
-        if len(package_id.split(';')) > 1:
-            # Split up the id
-            (n, idver, a, repo) = self.get_package_from_id(package_id)
-            # get e, v, r from package id version
-            e, v, r = _getEVR(idver)
-        else:
-            n = package_id
-            e = v = r = a = repo = None
+        # is this an real id?
+        if len(package_id.split(';')) <= 1:
+            self.error(ERROR_PACKAGE_ID_INVALID, "package_id '%s' cannot be parsed" % package_id)
+            return
+
+        # Split up the id
+        (n, idver, a, repo) = self.get_package_from_id(package_id)
+        # get e, v, r from package id version
+        e, v, r = _getEVR(idver)
 
         if repo == 'installed':
             # search the rpmdb for the nevra
@@ -943,7 +944,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             return None, False
 
-		# multiple entries
+	# multiple entries
         if len(pkgs) > 1:
             self.error(ERROR_INTERNAL_ERROR, "more than one package match for %s" % package_id)
             return pkgs[0], False
@@ -2559,6 +2560,9 @@ class DownloadCallback(BaseMeter):
             for pkg in self.saved_pkgs:
                 if isinstance(pkg, YumLocalPackage):
                     rpmfn = pkg.localPkg
+                elif isinstance(pkg, YumAvailablePackageSqlite):
+                    # from yum-presto, so not a local package
+                    return pkg
                 else:
                     rpmfn = os.path.basename(pkg.remote_path) # get the rpm filename of the package
                 if rpmfn == name:
