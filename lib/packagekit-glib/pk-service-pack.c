@@ -599,7 +599,7 @@ pk_service_pack_archive_add_file (struct archive *arch, const gchar *filename, G
 				      "file not found %s", filename);
 		goto out;
 	}
-	egg_debug ("stat(%s), size=%lu bytes\n", filename, st.st_size);
+	egg_debug ("stat(%s), size=%lu bytes\n", filename, (glong) st.st_size);
 
 	/* create new entry */
 	entry = archive_entry_new ();
