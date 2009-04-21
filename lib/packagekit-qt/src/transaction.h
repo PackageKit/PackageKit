@@ -145,37 +145,37 @@ public:
 	 * Describes the current state of the transaction
 	 */
 	typedef enum {
-		Wait,
-		Setup,
-		Running,
-		Query,
-		Info,
-		Remove,
-		RefreshCache,
-		Download,
-		Install,
-		Update,
-		Cleanup,
-		Obsolete,
-		DepResolve,
-		SigCheck,
-		Rollback,
-		TestCommit,
-		Commit,
-		Request,
-		Finished,
-		Cancel,
-		DownloadRepository,
-		DownloadPackagelist,
-		DownloadFilelist,
-		DownloadChangelog,
-		DownloadGroup,
-		DownloadUpdateinfo,
-		Repackaging,
-		LoadingCache,
-		ScanApplications,
-		GeneratePackageList,
-		WaitingForLock,
+		StatusWait,
+		StatusSetup,
+		StatusRunning,
+		StatusQuery,
+		StatusInfo,
+		StatusRemove,
+		StatusRefreshCache,
+		StatusDownload,
+		StatusInstall,
+		StatusUpdate,
+		StatusCleanup,
+		StatusObsolete,
+		StatusDepResolve,
+		StatusSigCheck,
+		StatusRollback,
+		StatusTestCommit,
+		StatusCommit,
+		StatusRequest,
+		StatusFinished,
+		StatusCancel,
+		StatusDownloadRepository,
+		StatusDownloadPackagelist,
+		StatusDownloadFilelist,
+		StatusDownloadChangelog,
+		StatusDownloadGroup,
+		StatusDownloadUpdateinfo,
+		StatusRepackaging,
+		StatusLoadingCache,
+		StatusScanApplications,
+		StatusGeneratePackageList,
+		StatusWaitingForLock,
 		UnknownStatus = -1
 	} Status;
 	/**
@@ -231,13 +231,13 @@ public:
 	 * \sa finished()
 	 */
 	typedef enum {
-		Success,
-		Failed,
-		Cancelled,
-		KeyRequired,
-		EulaRequired,
-		Killed, /* when we forced the cancel, but had to sigkill */
-		MediaChangeRequired,
+		ExitSuccess,
+		ExitFailed,
+		ExitCancelled,
+		ExitKeyRequired,
+		ExitEulaRequired,
+		ExitKilled, /* when we forced the cancel, but had to sigkill */
+		ExitMediaChangeRequired,
 		UnknownExitStatus = -1
 	} ExitStatus;
 
@@ -245,9 +245,9 @@ public:
 	 * Describes what kind of media is required
 	 */
 	typedef enum {
-		Cd,
-		Dvd,
-		Disc,
+		MediaCd,
+		MediaDvd,
+		MediaDisc,
 		UnknownMediaType = -1
 	} MediaType;
 
@@ -289,7 +289,7 @@ Q_SIGNALS:
 	 * Emitted when a distribution upgrade is available
 	 * \sa Client::getDistroUpgrades
 	 */
-	void distroUpgrade(PackageKit::Client::UpgradeType type, const QString& name, const QString& description);
+	void distroUpgrade(PackageKit::Client::DistroUpgradeType type, const QString& name, const QString& description);
 
 	/**
 	 * Emitted when an error occurs

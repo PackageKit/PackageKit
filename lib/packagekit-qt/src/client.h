@@ -54,11 +54,12 @@ class Client : public QObject
 	Q_ENUMS(Group)
 	Q_ENUMS(NetworkState)
 	Q_ENUMS(SignatureType)
-	Q_ENUMS(ErrorType)
-	Q_ENUMS(RestartType)
-	Q_ENUMS(UpgradeType)
 	Q_ENUMS(ProvidesType)
+	Q_ENUMS(ErrorType)
 	Q_ENUMS(MessageType)
+	Q_ENUMS(RestartType)
+	Q_ENUMS(UpdateState)
+	Q_ENUMS(DistroUpgradeType)
 
 public:
 	/**
@@ -178,40 +179,40 @@ public:
 	 * Describes the different groups
 	 */
 	typedef enum {
-		Accessibility,
-		Accessories,
-		AdminTools,
-		Communication,
-		DesktopGnome,
-		DesktopKde,
-		DesktopOther,
-		DesktopXfce,
-		Education,
-		Fonts,
-		Games,
-		Graphics,
-		Internet,
-		Legacy,
-		Localization,
-		Maps,
-		Multimedia,
-		Network,
-		Office,
-		Other,
-		PowerManagement,
-		Programming,
-		Publishing,
-		Repos,
-		Security,
-		Servers,
-		System,
-		Virtualization,
-		Science,
-		Documentation,
-		Electronics,
-		Collections,
-		Vendor,
-		Newest,
+		GroupAccessibility,
+		GroupAccessories,
+		GroupAdminTools,
+		GroupCommunication,
+		GroupDesktopGnome,
+		GroupDesktopKde,
+		GroupDesktopOther,
+		GroupDesktopXfce,
+		GroupEducation,
+		GroupFonts,
+		GroupGames,
+		GroupGraphics,
+		GroupInternet,
+		GroupLegacy,
+		GroupLocalization,
+		GroupMaps,
+		GroupMultimedia,
+		GroupNetwork,
+		GroupOffice,
+		GroupOther,
+		GroupPowerManagement,
+		GroupProgramming,
+		GroupPublishing,
+		GroupRepos,
+		GroupSecurity,
+		GroupServers,
+		GroupSystem,
+		GroupVirtualization,
+		GroupScience,
+		GroupDocumentation,
+		GroupElectronics,
+		GroupCollections,
+		GroupVendor,
+		GroupNewest,
 		UnknownGroup = -1
 	} Group;
 	typedef QSet<Group> Groups;
@@ -230,11 +231,11 @@ public:
 	 * Describes the current network state
 	 */
 	typedef enum {
-		Offline,
-		Online,
-		Wired,
-		Wifi,
-		Mobile,
+		NetworkOffline,
+		NetworkOnline,
+		NetworkWired,
+		NetworkWifi,
+		NetworkMobile,
 		UnknownNetworkState = -1
 	} NetworkState;
 
@@ -280,7 +281,7 @@ public:
 	 * Describes a signature type
 	 */
 	typedef enum {
-		Gpg,
+		SignatureGpg,
 		UnknownSignatureType = -1
 	} SignatureType;
 
@@ -312,7 +313,7 @@ public:
 		ProvidesCodec,
 		ProvidesMimetype,
 		ProvidesFont,
-		HardwareDriver,
+		ProvidesHardwareDriver,
 		UnknownProvidesType = -1
 	} ProvidesType;
 
@@ -320,53 +321,53 @@ public:
 	 * Lists the different types of error
 	 */
 	typedef enum {
-		Oom,
-		NoNetwork,
-		NotSupported,
-		InternalError,
-		GpgFailure,
-		PackageIdInvalid,
-		PackageNotInstalled,
-		PackageNotFound,
-		PackageAlreadyInstalled,
-		PackageDownloadFailed,
-		GroupNotFound,
-		GroupListInvalid,
-		DepResolutionFailed,
-		FilterInvalid,
-		CreateThreadFailed,
-		TransactionError,
-		TransactionCancelled,
-		NoCache,
-		RepoNotFound,
-		CannotRemoveSystemPackage,
-		ProcessKill,
-		FailedInitialization,
-		FailedFinalise,
-		FailedConfigParsing,
-		CannotCancel,
-		CannotGetLock,
-		NoPackagesToUpdate,
-		CannotWriteRepoConfig,
-		LocalInstallFailed,
-		BadGpgSignature,
-		MissingGpgSignature,
-		CannotInstallSourcePackage,
-		RepoConfigurationError,
-		NoLicenseAgreement,
-		FileConflicts,
-		PackageConflicts,
-		RepoNotAvailable,
-		InvalidPackageFile,
-		PackageInstallBlocked,
-		PackageCorrupt,
-		AllPackagesAlreadyInstalled,
-		FileNotFound,
-		NoMoreMirrorsToTry,
-		NoDistroUpgradeData,
-		IncompatibleArchitecture,
-		NoSpaceOnDevice,
-		MediaChangeRequired,
+		ErrorOom,
+		ErrorNoNetwork,
+		ErrorNotSupported,
+		ErrorInternalError,
+		ErrorGpgFailure,
+		ErrorPackageIdInvalid,
+		ErrorPackageNotInstalled,
+		ErrorPackageNotFound,
+		ErrorPackageAlreadyInstalled,
+		ErrorPackageDownloadFailed,
+		ErrorGroupNotFound,
+		ErrorGroupListInvalid,
+		ErrorDepResolutionFailed,
+		ErrorFilterInvalid,
+		ErrorCreateThreadFailed,
+		ErrorTransactionError,
+		ErrorTransactionCancelled,
+		ErrorNoCache,
+		ErrorRepoNotFound,
+		ErrorCannotRemoveSystemPackage,
+		ErrorProcessKill,
+		ErrorFailedInitialization,
+		ErrorFailedFinalise,
+		ErrorFailedConfigParsing,
+		ErrorCannotCancel,
+		ErrorCannotGetLock,
+		ErrorNoPackagesToUpdate,
+		ErrorCannotWriteRepoConfig,
+		ErrorLocalInstallFailed,
+		ErrorBadGpgSignature,
+		ErrorMissingGpgSignature,
+		ErrorCannotInstallSourcePackage,
+		ErrorRepoConfigurationError,
+		ErrorNoLicenseAgreement,
+		ErrorFileConflicts,
+		ErrorPackageConflicts,
+		ErrorRepoNotAvailable,
+		ErrorInvalidPackageFile,
+		ErrorPackageInstallBlocked,
+		ErrorPackageCorrupt,
+		ErrorAllPackagesAlreadyInstalled,
+		ErrorFileNotFound,
+		ErrorNoMoreMirrorsToTry,
+		ErrorNoDistroUpgradeData,
+		ErrorIncompatibleArchitecture,
+		ErrorNoSpaceOnDevice,
+		ErrorMediaChangeRequired,
 		UnknownErrorType = -1
 	} ErrorType;
 
@@ -418,11 +419,20 @@ public:
 	 * Describes an update's state
 	 */
 	typedef enum {
-		UpgradeStable,
-		UpgradeUnstable,
-		UpgradeTesting,
-		UnknownUpgradeType = -1
-	} UpgradeType;
+		UpdateStable,
+		UpdateUnstable,
+		UpdateTesting,
+		UnknownUpdateState = -1
+	} UpdateState;
+
+	/**
+	 * Describes an distro upgrade state
+	 */
+	typedef enum {
+		DistroUpgradeStable,
+		DistroUpgradeUnstable,
+		UnknownDistroUpgrade = -1
+	} DistroUpgradeType;
 
 	/**
 	 * Describes an error at the daemon level (for example, PackageKit crashes or is unreachable)
@@ -458,7 +468,7 @@ public:
 		RestartType restart;
 		QString updateText;
 		QString changelog;
-		UpgradeType state;
+		UpdateState state;
 		QDateTime issued;
 		QDateTime updated;
 	} UpdateInfo;

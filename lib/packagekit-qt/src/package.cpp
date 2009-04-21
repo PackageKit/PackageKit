@@ -38,19 +38,8 @@ public:
 Package::Details::Details(Package* p, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size) : d(new Private)
 {
 	d->package = p;
-
-	int licenseValue = Util::enumFromString<Package>(license, "License");
-	if(licenseValue == -1)
-		d->license = UnknownLicense;
-	else
-		d->license = (License)licenseValue;
-
-	int groupValue = Util::enumFromString<Client>(group, "Group");
-	if(groupValue == -1)
-		d->group = Client::UnknownGroup;
-	else
-		d->group = (Client::Group)groupValue;
-
+	d->license = (License)Util::enumFromString<Package>(license, "License", "License");
+	d->group = (Client::Group)Util::enumFromString<Client>(group, "Group", "Group");
 	d->description = detail;
 	d->url = url;
 	d->size = size;
@@ -119,14 +108,8 @@ Package::Package(const QString& packageId, const QString& state, const QString& 
 		d->data = tokens.at(3);
 	}
 
-	int stateValue = Util::enumFromString<Package>(state, "State");
-	if(stateValue == -1)
-		d->state = UnknownState;
-	else
-		d->state = (State)stateValue;
-
+	d->state = (State)Util::enumFromString<Package>(state, "State", "State");
 	d->summary = summary;
-
 	d->details = NULL;
 }
 

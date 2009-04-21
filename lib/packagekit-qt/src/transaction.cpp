@@ -147,7 +147,7 @@ void Transaction::setLocale(const QString& locale)
 
 Transaction::Status Transaction::status()
 {
-	int statusValue = Util::enumFromString<Transaction>(d->p->GetStatus().value(), "Status");
+	int statusValue = Util::enumFromString<Transaction>(d->p->GetStatus().value(), "Status", "Status");
 	if(statusValue == -1)
 		return UnknownStatus;
 	else
