@@ -5,13 +5,12 @@
 #
 # Ivan Ignatyev <ivan.ignatyev@auditory.ru>, 2008, 2009.
 # Alexey Kostyuk <unitoff@gmail.com>, 2009.
-
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-04-22 14:21+0000\n"
-"PO-Revision-Date: 2009-04-22 19:45+0400\n"
+"PO-Revision-Date: 2009-04-22 19:57+0400\n"
 "Last-Translator: Alexey Kostyuk <unitoff@gmail.com>\n"
 "Language-Team: Russian <fedora-trans-ru@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -992,7 +991,7 @@ msgstr "Установить ненадежный локальный файл"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Refresh system sources"
-msgstr "Обновить системные источники"
+msgstr "Обновить список пакетов"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Remove package"
