@@ -10,11 +10,11 @@ msgstr ""
 "Project-Id-Version: PackageKit \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-04-22 08:14+0000\n"
-"PO-Revision-Date: 2009-04-22 16:58+0400\n"
+"PO-Revision-Date: 2009-04-22 17:01+0400\n"
 "Last-Translator: Alexey Kostyuk <unitoff@gmail.com>\n"
 "Language-Team: Russian <fedora-trans-ru@redhat.com>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=KOI8-R\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: UTF-8\n"
 
 #. TRANSLATORS: this is an atomic transaction
@@ -215,23 +215,18 @@ msgstr "Необходим перезапуск приложения для:"
 #. TRANSLATORS: a package needs to restart they system
 #: ../client/pk-console.c:572
 msgid "Please restart the computer to complete the update."
-msgstr ""
-"Пожалуйста, перезагрузите компьютер, "
-"чтобы завершить обновление."
+msgstr "Пожалуйста, перезагрузите компьютер, чтобы завершить обновление."
 
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:575
 msgid "Please logout and login to complete the update."
 msgstr ""
-"Пожалуйста, выйдите из системы и войдите "
-"вновь, чтобы завершить обновление."
+"Пожалуйста, выйдите из системы и войдите вновь, чтобы завершить обновление."
 
 #. TRANSLATORS: a package needs to restart the application
 #: ../client/pk-console.c:578
 msgid "Please restart the application as it is being used."
-msgstr ""
-"Пожалуйста, перезапустите приложение, "
-"так как оно используется."
+msgstr "Пожалуйста, перезапустите приложение, так как оно используется."
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:691
@@ -258,17 +253,13 @@ msgstr "Внутренняя ошибка: %s"
 #: ../client/pk-console.c:732 ../client/pk-console.c:1360
 #, c-format
 msgid "This tool could not install the packages: %s"
-msgstr ""
-"Этот инструмент не может установить "
-"пакеты: %s"
+msgstr "Этот инструмент не может установить пакеты: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
 #: ../client/pk-console.c:759
 #, c-format
 msgid "This tool could not install the files: %s"
-msgstr ""
-"Этот инструмент не может установить "
-"файлы: %s"
+msgstr "Этот инструмент не может установить файлы: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
 #: ../client/pk-console.c:815
@@ -281,8 +272,7 @@ msgstr "Этот инструмент не может удалить %s: %s"
 #: ../client/pk-console.c:909
 #, c-format
 msgid "This tool could not remove the packages: %s"
-msgstr ""
-"Этот инструмент не может удалить пакеты: %s"
+msgstr "Этот инструмент не может удалить пакеты: %s"
 
 #. TRANSLATORS: When removing, we might have to remove other dependencies
 #: ../client/pk-console.c:888
@@ -292,9 +282,7 @@ msgstr "Следующие пакеты должны быть удалены:"
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
 #: ../client/pk-console.c:895
 msgid "Proceed removing additional packages?"
-msgstr ""
-"Приступить к удалению дополнительных "
-"пакетов?"
+msgstr "Приступить к удалению дополнительных пакетов?"
 
 #. TRANSLATORS: We did not remove any packages
 #: ../client/pk-console.c:900
@@ -306,16 +294,13 @@ msgstr "Удаление пакета было отменено!"
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
 msgstr ""
-"Этот инструмент не может загрузить пакет %"
-"s , так как он не может быть найден"
+"Этот инструмент не может загрузить пакет %s , так как он не может быть найден"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:972
 #, c-format
 msgid "This tool could not download the packages: %s"
-msgstr ""
-"Этот инструмент не может загрузить "
-"пакеты: %s"
+msgstr "Этот инструмент не может загрузить пакеты: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:999 ../client/pk-console.c:1008
@@ -327,41 +312,31 @@ msgstr "Этот инструмент не может обновить %s: %s"
 #: ../client/pk-console.c:1030 ../client/pk-console.c:1038
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
-msgstr ""
-"Этот инструмент не может получить "
-"требования для  %s: %s"
+msgstr "Этот инструмент не может получить требования для  %s: %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #: ../client/pk-console.c:1060 ../client/pk-console.c:1068
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
-msgstr ""
-"Этот инструмент не может получить "
-"зависимости для %s: %s"
+msgstr "Этот инструмент не может получить зависимости для %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #: ../client/pk-console.c:1090 ../client/pk-console.c:1098
 #, c-format
 msgid "This tool could not get package details for %s: %s"
-msgstr ""
-"Этот инструмент не может получить "
-"детальную информацию для %s: %s"
+msgstr "Этот инструмент не может получить детальную информацию для %s: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1120
 #, c-format
 msgid "This tool could not find the files for %s: %s"
-msgstr ""
-"Этот инструмент не может найти файлы для %"
-"s: %s"
+msgstr "Этот инструмент не может найти файлы для %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1128
 #, c-format
 msgid "This tool could not get the file list for %s: %s"
-msgstr ""
-"Этот инструмент не может получить список "
-"файлов для %s: %s"
+msgstr "Этот инструмент не может получить список файлов для %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
 #: ../client/pk-console.c:1150
@@ -380,9 +355,7 @@ msgstr "Получение списка пакетов"
 #: ../client/pk-console.c:1292
 #, c-format
 msgid "This tool could not get package list: %s"
-msgstr ""
-"Этот инструмент не может получить список "
-"пакетов: %s"
+msgstr "Этот инструмент не может получить список пакетов: %s"
 
 #. TRANSLATORS: There was an error saving the list
 #: ../client/pk-console.c:1172
@@ -410,9 +383,7 @@ msgstr "Пакеты для удаления"
 #: ../client/pk-console.c:1314
 #, c-format
 msgid "No new packages need to be installed"
-msgstr ""
-"Нет новых пакетов, нуждающихся в "
-"установке"
+msgstr "Нет новых пакетов, нуждающихся в установке"
 
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1320
@@ -444,17 +415,13 @@ msgstr "Установка пакетов"
 #: ../client/pk-console.c:1389
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
-msgstr ""
-"Этот инструмент не может найти сведения "
-"об обновлении для %s: %s"
+msgstr "Этот инструмент не может найти сведения об обновлении для %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
 #: ../client/pk-console.c:1397
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
-msgstr ""
-"Этот инструмент не может получить "
-"сведения об обновлении для %s: %s"
+msgstr "Этот инструмент не может получить сведения об обновлении для %s: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
 #: ../client/pk-console.c:1443
@@ -499,9 +466,7 @@ msgstr "Эта подпись не может быть принята."
 #. TRANSLATORS: This a request for a EULA
 #: ../client/pk-console.c:1580
 msgid "End user license agreement required"
-msgstr ""
-"Требуется лицензионное соглашение с "
-"конечным пользователем"
+msgstr "Требуется лицензионное соглашение с конечным пользователем"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
 #: ../client/pk-console.c:1587
@@ -535,9 +500,7 @@ msgstr "Подкоманды:"
 #: ../contrib/command-not-found/pk-command-not-found.c:518
 #: ../src/pk-main.c:199
 msgid "Show extra debugging information"
-msgstr ""
-"Показать дополнительную отладочную "
-"информацию"
+msgstr "Показать дополнительную отладочную информацию"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1770 ../client/pk-monitor.c:127
@@ -547,9 +510,7 @@ msgstr "Показать версию программы и выйти"
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: ../client/pk-console.c:1773
 msgid "Set the filter, e.g. installed"
-msgstr ""
-"Установите фильтр, к примеру, "
-"установленные программы"
+msgstr "Установите фильтр, к примеру, установленные программы"
 
 #. TRANSLATORS: command line argument, work asynchronously
 #: ../client/pk-console.c:1776
@@ -559,9 +520,7 @@ msgstr "Выйти, не ожидая завершения задач"
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
 #: ../client/pk-console.c:1803
 msgid "This tool could not connect to system DBUS."
-msgstr ""
-"Этот инструмент не может подсоединиться "
-"к системе DBUS."
+msgstr "Этот инструмент не может подсоединиться к системе DBUS."
 
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1894
@@ -571,9 +530,7 @@ msgstr "Указанный фильтр не верен"
 #. TRANSLATORS: a search type can be name, details, file, etc
 #: ../client/pk-console.c:1912
 msgid "A search type is required, e.g. name"
-msgstr ""
-"Необходимо ввести поисковый запрос, "
-"например имя пакета"
+msgstr "Необходимо ввести поисковый запрос, например имя пакета"
 
 #. TRANSLATORS: the user needs to provide a search term
 #: ../client/pk-console.c:1918 ../client/pk-console.c:1926
@@ -589,9 +546,7 @@ msgstr "Неверный тип поиска"
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:1954
 msgid "A package name or filename to install is required"
-msgstr ""
-"Для установки требуется имя пакета или "
-"файла"
+msgstr "Для установки требуется имя пакета или файла"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1962
@@ -601,17 +556,13 @@ msgstr "Требуется указать тип, key_id или package_id"
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:1970
 msgid "A package name to remove is required"
-msgstr ""
-"Для удаления необходимо указать имя "
-"пакета"
+msgstr "Для удаления необходимо указать имя пакета"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1977
 msgid ""
 "A destination directory and then the package names to download are required"
-msgstr ""
-"Каталог назначения, а затем имена пакета "
-"необходимы для загрузки"
+msgstr "Каталог назначения, а затем имена пакета необходимы для загрузки"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1983
@@ -621,20 +572,17 @@ msgstr "Каталог не найден"
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1990
 msgid "A licence identifier (eula-id) is required"
-msgstr ""
-"Необходим идентификатор лицензии (eula-id)"
+msgstr "Необходим идентификатор лицензии (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1999
 msgid "A transaction identifier (tid) is required"
-msgstr ""
-"Необходим идентификатор транзакции (tid)"
+msgstr "Необходим идентификатор транзакции (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
 #: ../client/pk-console.c:2015
 msgid "A package name to resolve is required"
-msgstr ""
-"Для сопоставления необходимо имя пакета"
+msgstr "Для сопоставления необходимо имя пакета"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:2023 ../client/pk-console.c:2031
@@ -644,16 +592,12 @@ msgstr "Необходимо имя репозитория"
 #. TRANSLATORS: The user didn't provide any data
 #: ../client/pk-console.c:2039
 msgid "A repo name, parameter and value are required"
-msgstr ""
-"Необходимо указать имя, параметр и "
-"значение репозитория"
+msgstr "Необходимо указать имя, параметр и значение репозитория"
 
 #. TRANSLATORS: The user didn't specify what action to use
 #: ../client/pk-console.c:2052
 msgid "An action, e.g. 'update-system' is required"
-msgstr ""
-"Необходимо указать действие, например "
-"'update-system'"
+msgstr "Необходимо указать действие, например 'update-system'"
 
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:2058
@@ -699,9 +643,7 @@ msgstr "Опция '%s' не поддерживается"
 #. TRANSLATORS: User does not have permission to do this
 #: ../client/pk-console.c:2208
 msgid "Incorrect privileges for this operation"
-msgstr ""
-"У Вас недостаточно прав для выполнения "
-"этой операции"
+msgstr "У Вас недостаточно прав для выполнения этой операции"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 #: ../client/pk-console.c:2211
@@ -726,31 +668,24 @@ msgstr "Загрузка зависимостей"
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
 #: ../client/pk-generate-pack.c:188
 msgid "Set the file name of dependencies to be excluded"
-msgstr ""
-"Укажите имена файлов зависимостей, "
-"которые требуется исключить"
+msgstr "Укажите имена файлов зависимостей, которые требуется исключить"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:191
 msgid ""
 "The output file or directory (the current directory is used if ommitted)"
 msgstr ""
-"Выходной файл или каталог (используется "
-"текущий каталог, если не указан иной)"
+"Выходной файл или каталог (используется текущий каталог, если не указан иной)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:194
 msgid "The package to be put into the service pack"
-msgstr ""
-"Пакет, который необходимо поместить в "
-"пакет обновления"
+msgstr "Пакет, который необходимо поместить в пакет обновления"
 
 #. TRANSLATORS: put all pending updates in the pack
 #: ../client/pk-generate-pack.c:197
 msgid "Put all updates available in the service pack"
-msgstr ""
-"Поместить все доступные обновления в "
-"пакет обновлений"
+msgstr "Поместить все доступные обновления в пакет обновлений"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:225
@@ -765,31 +700,23 @@ msgstr "Оба варианта выбрано."
 #. TRANSLATORS: This is when the user fails to supply the output
 #: ../client/pk-generate-pack.c:249
 msgid "A output directory or file name is required"
-msgstr ""
-"Необходимо указать конечный каталог или "
-"имя файла"
+msgstr "Необходимо указать конечный каталог или имя файла"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
 #: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
 msgid "The package manager cannot perform this type of operation."
-msgstr ""
-"Менеджер пакетов не может выполнить "
-"такого рода операции."
+msgstr "Менеджер пакетов не может выполнить такого рода операции."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
 #: ../client/pk-generate-pack.c:285
 msgid "If specifying a file, the service pack name must end with"
-msgstr ""
-"Если указан файл, то имя пакета "
-"обновления должно существовать"
+msgstr "Если указан файл, то имя пакета обновления должно существовать"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:301
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr ""
-"Пакет с таким именем уже существует, Вы "
-"желаете переписать его?"
+msgstr "Пакет с таким именем уже существует, Вы желаете переписать его?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:304
@@ -1014,80 +941,58 @@ msgstr "Принять EULA"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:2
 msgid "Authentication is required to accept a EULA"
-msgstr ""
-"Для принятия EULA необходима "
-"аутентификация"
+msgstr "Для принятия EULA необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:3
 #, fuzzy
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Для изменения параметров исходного кода "
-"необходима аутентификация"
+msgstr "Для изменения параметров исходного кода необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
 msgid "Authentication is required to change software source parameters"
-msgstr ""
-"Для изменения параметров исходного кода "
-"необходима аутентификация"
+msgstr "Для изменения параметров исходного кода необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:5
 #, fuzzy
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
-msgstr ""
-"Для обновления списков пакетов "
-"необходима аутентификация"
+msgstr "Для обновления списков пакетов необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
 #, fuzzy
 msgid "Authentication is required to install a signed package"
-msgstr ""
-"Для установки пакетов необходима "
-"аутентификация"
+msgstr "Для установки пакетов необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 #, fuzzy
 msgid "Authentication is required to install an untrusted package"
-msgstr ""
-"Для установки пакетов необходима "
-"аутентификация"
+msgstr "Для установки пакетов необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
 #, fuzzy
 msgid "Authentication is required to refresh the system sources"
-msgstr ""
-"Для обновления списков пакетов "
-"необходима аутентификация"
+msgstr "Для обновления списков пакетов необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
 msgid "Authentication is required to remove packages"
-msgstr ""
-"Для удаления пакетов необходима "
-"аутентификация"
+msgstr "Для удаления пакетов необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to rollback a transaction"
-msgstr ""
-"Для отката транзакции необходима "
-"аутентификация"
+msgstr "Для отката транзакции необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 #, fuzzy
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
-msgstr ""
-"Для удаления пакетов необходима "
-"аутентификация"
+msgstr "Для удаления пакетов необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid "Authentication is required to update packages"
-msgstr ""
-"Для обновления пакетов необходима "
-"аутентификация"
+msgstr "Для обновления пакетов необходима аутентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Cancel foreign task"
@@ -1135,9 +1040,7 @@ msgstr "Обновить пакет"
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
-msgstr ""
-"Запуск не удался из-за политики "
-"безопасности на этом компьютере"
+msgstr "Запуск не удался из-за политики безопасности на этом компьютере"
 
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
@@ -1148,9 +1051,7 @@ msgstr "Это может случится по двум причинам:"
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
 msgstr ""
-"Нужный пользователь не запускает "
-"исполняемый файл (обычно "
-"привилегированный)"
+"Нужный пользователь не запускает исполняемый файл (обычно привилегированный)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
@@ -1159,22 +1060,19 @@ msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system "
 "directory:"
 msgstr ""
-"Файл org.freedesktop.PackageKit.conf не установлен в "
-"системной директории/etc/dbus-1/system.d"
+"Файл org.freedesktop.PackageKit.conf не установлен в системной директории/"
+"etc/dbus-1/system.d"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:193
 msgid "Packaging backend to use, e.g. dummy"
 msgstr ""
-"Использовать внутренний интерфейс "
-"пакетной системы, к примеру, заглушку"
+"Использовать внутренний интерфейс пакетной системы, к примеру, заглушку"
 
 #. TRANSLATORS: if we should run in the background
 #: ../src/pk-main.c:196
 msgid "Daemonize and detach from the terminal"
-msgstr ""
-"Запустить в качестве демона и "
-"отсоединить от терминала"
+msgstr "Запустить в качестве демона и отсоединить от терминала"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: ../src/pk-main.c:202
@@ -1204,9 +1102,7 @@ msgstr "Сервис PackageKit"
 #. TRANSLATORS: fatal error, dbus is not running
 #: ../src/pk-main.c:263
 msgid "Cannot connect to the system bus"
-msgstr ""
-"Не удалось подсоединиться к системной "
-"шине"
+msgstr "Не удалось подсоединиться к системной шине"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
@@ -1242,12 +1138,10 @@ msgstr "Ошибка при попытке запуска: %s\n"
 
 #, fuzzy
 #~ msgid "You need to specify a package to find the details for"
-#~ msgstr ""
-#~ "Укажите пакет, для которого искать файлы"
+#~ msgstr "Укажите пакет, для которого искать файлы"
 
 #~ msgid "You need to specify a package to find the files for"
-#~ msgstr ""
-#~ "Укажите пакет, для которого искать файлы"
+#~ msgstr "Укажите пакет, для которого искать файлы"
 
 #, fuzzy
 #~ msgid "You need to specify a list file to create"
@@ -1271,9 +1165,7 @@ msgstr "Ошибка при попытке запуска: %s\n"
 
 #, fuzzy
 #~ msgid "Could not find package to remove"
-#~ msgstr ""
-#~ "Не удалось найти  для удаления пакет с "
-#~ "таким именем"
+#~ msgstr "Не удалось найти  для удаления пакет с таким именем"
 
 #~ msgid "Cancelled!"
 #~ msgstr "Отменено!"
@@ -1284,9 +1176,7 @@ msgstr "Ошибка при попытке запуска: %s\n"
 
 #, fuzzy
 #~ msgid "Could not find what packages require"
-#~ msgstr ""
-#~ "Не удалось найти пакеты, требующие этот "
-#~ "пакет"
+#~ msgstr "Не удалось найти пакеты, требующие этот пакет"
 
 #, fuzzy
 #~ msgid "Could not find details for"
@@ -1304,24 +1194,17 @@ msgstr "Ошибка при попытке запуска: %s\n"
 
 #~ msgid "You probably need to run this program as the root user"
 #~ msgstr ""
-#~ "Вам вероятно следует запустить эту "
-#~ "программу от имени привилегированного "
+#~ "Вам вероятно следует запустить эту программу от имени привилегированного "
 #~ "пользователя"
 
 #~ msgid "Authentication is required to install a local file"
-#~ msgstr ""
-#~ "Для установки локальных файлов "
-#~ "необходима аутентификация"
+#~ msgstr "Для установки локальных файлов необходима аутентификация"
 
 #~ msgid "Authentication is required to install a security signature"
-#~ msgstr ""
-#~ "Для установки цифровой подписи "
-#~ "необходима аутентификация"
+#~ msgstr "Для установки цифровой подписи необходима аутентификация"
 
 #~ msgid "Authentication is required to update all packages"
-#~ msgstr ""
-#~ "Для обновления всех пакетов необходима "
-#~ "аутентификация"
+#~ msgstr "Для обновления всех пакетов необходима аутентификация"
 
 #~ msgid "Update all packages"
 #~ msgstr "Обновить все пакеты"
@@ -1330,20 +1213,14 @@ msgstr "Ошибка при попытке запуска: %s\n"
 #~ "Could not find a package with that name to install, or package already "
 #~ "installed"
 #~ msgstr ""
-#~ "Не удалось найти для установки пакет с "
-#~ "таким именем, или пакет уже установлен"
+#~ "Не удалось найти для установки пакет с таким именем, или пакет уже "
+#~ "установлен"
 
 #~ msgid "Could not find a package with that name to update"
-#~ msgstr ""
-#~ "Не удалось найти для обновления пакет с "
-#~ "таким именем"
+#~ msgstr "Не удалось найти для обновления пакет с таким именем"
 
 #~ msgid "Could not find a description for this package"
-#~ msgstr ""
-#~ "Не удалось найти описания для этого "
-#~ "пакета"
+#~ msgstr "Не удалось найти описания для этого пакета"
 
 #~ msgid "You need to specify a package to find the description for"
-#~ msgstr ""
-#~ "Укажите пакет, для которого искать "
-#~ "описание"
+#~ msgstr "Укажите пакет, для которого искать описание"
