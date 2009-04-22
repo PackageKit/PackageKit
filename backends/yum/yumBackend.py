@@ -2637,6 +2637,12 @@ class DownloadCallback(BaseMeter):
                         self.base.status(typ)
                         break
 
+        # package finished
+        if val == 100:
+            pkg = self._getPackage(name)
+            if pkg:
+                self.base._show_package(pkg, INFO_FINISHED)
+
         # set sub-percentage
         self.base.sub_percentage(val)
 
