@@ -2427,16 +2427,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # Get the repo
         try:
             repo = self.yumbase.repos.getRepo(repoid)
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_REPO_NOT_FOUND, "repo '%s' cannot be found in list" % repoid, exit=False)
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-        if repo:
+        else:
+            if not repo:
+                self.error(ERROR_REPO_NOT_FOUND, 'repo %s not found' % repoid, exit=False)
+                return
             repo.cfg.set(repoid, parameter, value)
             try:
                 repo.cfg.write(file(repo.repofile, 'w'))
             except IOError, e:
                 self.error(ERROR_CANNOT_WRITE_REPO_CONFIG, _to_unicode(e))
-        else:
-            self.error(ERROR_REPO_NOT_FOUND, 'repo %s not found' % repoid)
 
     def install_signature(self, sigtype, key_id, package):
         self._check_init(repo_setup=False)
