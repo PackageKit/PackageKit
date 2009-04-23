@@ -24,6 +24,7 @@
 #include "package.h"
 #include "transactionprivate.h"
 #include "transactionproxy.h"
+#include "polkitclient.h"
 #include "util.h"
 
 using namespace PackageKit;
@@ -100,7 +101,16 @@ bool Transaction::callerActive()
 
 void Transaction::cancel()
 {
-	d->p->Cancel();
+	if (!d->p->Cancel().isValid ()) {
+		// Cancel failed, maybe it's not our transaction and we need authorization
+		if(!PolkitClient::instance()->getAuth(AUTH_CANCEL_FOREIGN)) {
+			// FIXME : should warn somehow here
+			qDebug () << "Authorization to cancel foreign failed";
+			return;
+		}
+
+		d->p->Cancel();
+	}
 }
 
 Package* Transaction::lastPackage()
