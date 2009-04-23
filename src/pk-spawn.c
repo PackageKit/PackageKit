@@ -855,7 +855,7 @@ pk_spawn_test (EggTest *test)
 	/************************************************************
 	 **********           Killing tests               ***********
 	 ************************************************************/
-	egg_test_title (test, "make sure run correct helper, and kill it using SIGKILL");
+	egg_test_title (test, "make sure run correct helper, and cancel it using SIGKILL");
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	path = egg_test_get_data_file ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
@@ -875,6 +875,35 @@ pk_spawn_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "make sure finished in SIGKILL");
 	if (mexit == PK_SPAWN_EXIT_TYPE_SIGKILL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "finish %i!", mexit);
+
+	/* get new object */
+	new_spawn_object (test, &spawn);
+
+	/************************************************************/
+	egg_test_title (test, "make sure dumb helper ignores SIGQUIT");
+	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
+	path = egg_test_get_data_file ("pk-spawn-test.sh");
+	argv = g_strsplit (path, " ", 0);
+	pk_spawn_set_allow_sigkill (spawn, FALSE);
+	ret = pk_spawn_argv (spawn, argv, NULL);
+	g_free (path);
+	g_strfreev (argv);
+	if (ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "did not run helper");
+
+	g_timeout_add_seconds (1, cancel_cb, spawn);
+	/* wait for finished */
+	egg_test_loop_wait (test, 10000);
+	egg_test_loop_check (test);
+
+	/************************************************************/
+	egg_test_title (test, "make sure finished in SIGQUIT");
+	if (mexit == PK_SPAWN_EXIT_TYPE_SIGQUIT)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "finish %i!", mexit);
