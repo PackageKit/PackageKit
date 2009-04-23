@@ -2568,7 +2568,7 @@ class DownloadCallback(BaseMeter):
         #  - gnote-0.1.2-2.fc11.i586.rpm
         # and for Presto:
         #  - gnote-0.1.1-4.fc11_0.1.2-2.fc11.i586.drpm
-        sections = name.rsplit('-', 3)
+        sections = name.rsplit('-', 2)
         if len(sections) < 3:
             return None
 
