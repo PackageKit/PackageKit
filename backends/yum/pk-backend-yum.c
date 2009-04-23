@@ -51,6 +51,7 @@ backend_initialize (PkBackend *backend)
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_filter_stderr (spawn, backend_stderr_cb);
 	pk_backend_spawn_set_name (spawn, "yum");
+	pk_backend_spawn_set_allow_sigkill (spawn, FALSE);
 }
 
 /**
