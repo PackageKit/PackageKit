@@ -75,7 +75,7 @@ static const PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_FINISHED,		"finished"},
 	{PK_STATUS_ENUM_CANCEL,			"cancel"},
 	{PK_STATUS_ENUM_DOWNLOAD_REPOSITORY,	"download-repository"},
-	{PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST,	"download-package"},
+	{PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST,	"download-packagelist"},
 	{PK_STATUS_ENUM_DOWNLOAD_FILELIST,	"download-filelist"},
 	{PK_STATUS_ENUM_DOWNLOAD_CHANGELOG,	"download-changelog"},
 	{PK_STATUS_ENUM_DOWNLOAD_GROUP,		"download-group"},
