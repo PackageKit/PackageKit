@@ -72,6 +72,8 @@ gboolean	 pk_spawn_argv				(PkSpawn	*spawn,
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_spawn_kill				(PkSpawn	*spawn);
 gboolean	 pk_spawn_exit				(PkSpawn	*spawn);
+gboolean	 pk_spawn_set_allow_sigkill		(PkSpawn	*spawn,
+							 gboolean	 allow_sigkill);
 
 G_END_DECLS
 

@@ -69,6 +69,7 @@ struct PkSpawnPrivate
 	gboolean		 finished;
 	gboolean		 is_sending_exit;
 	gboolean		 is_changing_dispatcher;
+	gboolean		 allow_sigkill;
 	PkSpawnExitType		 exit;
 	GString			*stdout_buf;
 	GString			*stderr_buf;
@@ -260,8 +261,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 /**
  * pk_spawn_kill:
  *
- * We send SIGQUIT and after a few ms SIGKILL
- *
+ * We send SIGQUIT and after a few ms SIGKILL (if allowed)
  **/
 gboolean
 pk_spawn_kill (PkSpawn *spawn)
@@ -290,7 +290,26 @@ pk_spawn_kill (PkSpawn *spawn)
 	}
 
 	/* the program might not be able to handle SIGQUIT, give it a few seconds and then SIGKILL it */
-	spawn->priv->kill_id = g_timeout_add (PK_SPAWN_SIGKILL_DELAY, (GSourceFunc) pk_spawn_sigkill_cb, spawn);
+	if (spawn->priv->allow_sigkill)
+		spawn->priv->kill_id = g_timeout_add (PK_SPAWN_SIGKILL_DELAY, (GSourceFunc) pk_spawn_sigkill_cb, spawn);
+
+	return TRUE;
+}
+
+/**
+ * pk_spawn_set_allow_sigkill:
+ *
+ * Set whether the spawned backends are allowed to be SIGKILLed if they do not
+ * respond to SIGQUIT. This ensures that Cancel() works as expected, but
+ * somtimes can corrupt databases if they are open.
+ **/
+gboolean
+pk_spawn_set_allow_sigkill (PkSpawn *spawn, gboolean allow_sigkill)
+{
+	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
+
+	egg_debug ("setting SIGKILL: %i", allow_sigkill);
+	spawn->priv->allow_sigkill = allow_sigkill;
 
 	return TRUE;
 }
@@ -544,6 +563,7 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->finished = FALSE;
 	spawn->priv->is_sending_exit = FALSE;
 	spawn->priv->is_changing_dispatcher = FALSE;
+	spawn->priv->allow_sigkill = TRUE;
 	spawn->priv->last_argv0 = NULL;
 	spawn->priv->last_envp = NULL;
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
