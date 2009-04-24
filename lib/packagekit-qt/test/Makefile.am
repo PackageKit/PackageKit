@@ -63,6 +63,3 @@ MAINTAINERCLEANFILES =					\
 	Makefile.in					\
 	$(NULL)
 
-EXTRA_DIST =						\
-	CMakeLists.txt
-

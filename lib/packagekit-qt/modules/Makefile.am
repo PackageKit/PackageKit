@@ -4,6 +4,5 @@ cmakemodule_DATA =					\
 	$(NULL)
 
 EXTRA_DIST =						\
-	CMakeLists.txt					\
 	$(cmakemodule_DATA)
 

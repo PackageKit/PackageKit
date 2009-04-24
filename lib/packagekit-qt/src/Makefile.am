@@ -82,6 +82,5 @@ clean-local:
 	rm -f $(CLEANFILES)
 
 EXTRA_DIST =							\
-	CMakeLists.txt						\
 	$(NULL)
 
