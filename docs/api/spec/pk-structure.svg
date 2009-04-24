@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
@@ -12,15 +13,21 @@
    height="1052.3622047"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.45.1"
-   sodipodi:docbase="/home/hughsie/Code/PackageKit/docs/spec"
+   inkscape:version="0.46+devel"
    sodipodi:docname="pk-structure.svg"
-   inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/spec/pk-structure.png"
+   inkscape:export-filename="/home/hughsie/Code/PackageKit/docs/api/spec/pk-structure.svg.png"
    inkscape:export-xdpi="51.209103"
    inkscape:export-ydpi="51.209103"
    inkscape:output_extension="org.inkscape.output.svg.inkscape">
   <defs
      id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective80" />
     <marker
        inkscape:stockid="Arrow1Send"
        orient="auto"
@@ -110,7 +117,7 @@
      inkscape:window-width="1270"
      inkscape:window-height="721"
      inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-y="25"
      showguides="true"
      inkscape:guide-bbox="true" />
   <metadata
@@ -121,6 +128,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -461,36 +469,6 @@
        id="path2230"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc" />
-    <rect
-       style="opacity:1;fill:#87de87;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect2232"
-       width="200"
-       height="80"
-       x="-100"
-       y="342.36218" />
-    <text
-       xml:space="preserve"
-       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="4.5527229"
-       y="376.9657"
-       id="text2234"><tspan
-         sodipodi:role="line"
-         x="4.5527229"
-         y="376.9657"
-         style="font-size:28px;text-align:center;text-anchor:middle"
-         id="tspan2239">DBUS</tspan><tspan
-         sodipodi:role="line"
-         x="4.5527229"
-         y="411.9657"
-         style="font-size:28px;text-align:center;text-anchor:middle"
-         id="tspan2245">Service</tspan></text>
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:6;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Send);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 89.090907,312.36218 L 50.90909,342.36218"
-       id="path2241"
-       inkscape:connector-type="polyline"
-       inkscape:connection-end="#rect2232"
-       inkscape:connection-start="#rect5369" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:6;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Send);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline;marker-start:url(#Arrow1Sstart)"
        d="M 326.13636,452.36218 L 181.36363,312.36218"

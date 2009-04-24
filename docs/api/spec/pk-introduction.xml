@@ -43,9 +43,8 @@
       loaded at run-time and provides an interface to the underlying package
       commands.
       A backend converts an asynchronous request into either a new thread
-      in the same process, executes external "glue" files that
-      can be written in any language, or uses DBUS to signal a
-      daemon process to handle the request.
+      in the same process, or executes external "glue" files that
+      can be written in any language.
     </para>
     <para>
       Backends do not have to support all of the commands supported
