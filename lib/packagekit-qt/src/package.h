@@ -140,13 +140,13 @@ public:
 		LicenseCrystalStacker,
 		LicenseDoc,
 		LicenseWtfpl,
-		LicenseLicenseEpl,
+		LicenseEpl,
 		LicenseEcos,
 		LicenseEfl2Dot0,
 		LicenseEu_datagrid,
 		LicenseLgplv2WithExceptions,
 		LicenseFtl,
-		LicenseLicenseGiftware,
+		LicenseGiftware,
 		LicenseGplv2,
 		LicenseGplv2WithExceptions,
 		LicenseGplv2PlusWithExceptions,
@@ -262,7 +262,7 @@ public:
 			/**
 			 * Returns the package's license
 			 */
-			Package::License license() const;
+			QString license() const;
 
 			/**
 			 * Returns the package's group (for example Multimedia, Editors...)
