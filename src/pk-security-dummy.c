@@ -52,7 +52,7 @@ PkSecurityCaller *
 pk_security_caller_new_from_sender (PkSecurity *security, const gchar *sender)
 {
 	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
-	return NULL;
+	return GUINT_TO_POINTER (1);
 }
 
 /**
