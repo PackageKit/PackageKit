@@ -513,6 +513,33 @@ pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 }
 
 /**
+ * pk_backend_spawn_convert_uri:
+ *
+ * Our proxy variable is typically 'username:password@server:port'
+ * but http_proxy expects 'http://username:password@server:port/'
+ **/
+static gchar *
+pk_backend_spawn_convert_uri (const gchar *proxy)
+{
+	GString *string;
+	string = g_string_new (proxy);
+
+	/* if we didn't specify a prefix, add a default one */
+	if (!g_str_has_prefix (proxy, "http://") &&
+	    !g_str_has_prefix (proxy, "https://") &&
+	    !g_str_has_prefix (proxy, "ftp://")) {
+		g_string_prepend (string, "http://");
+	}
+
+	/* if we didn't specify a trailing slash, add one */
+	if (!g_str_has_suffix (proxy, "/")) {
+		g_string_append_c (string, '/');
+	}
+
+	return g_string_free (string, FALSE);
+}
+
+/**
  * pk_backend_spawn_get_envp:
  *
  * Return all the environment variables the script will need
@@ -523,6 +550,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar **envp;
 	gchar *value;
 	gchar *line;
+	gchar *uri;
 	GPtrArray *array;
 
 	array = g_ptr_array_new ();
@@ -530,18 +558,22 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	/* http_proxy */
 	value = pk_backend_get_proxy_http (backend_spawn->priv->backend);
 	if (!egg_strzero (value)) {
-		line = g_strdup_printf ("%s=%s", "http_proxy", value);
+		uri = pk_backend_spawn_convert_uri (value);
+		line = g_strdup_printf ("%s=%s", "http_proxy", uri);
 		egg_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
+		g_free (uri);
 	}
 	g_free (value);
 
 	/* ftp_proxy */
 	value = pk_backend_get_proxy_ftp (backend_spawn->priv->backend);
 	if (!egg_strzero (value)) {
-		line = g_strdup_printf ("%s=%s", "ftp_proxy", value);
+		uri = pk_backend_spawn_convert_uri (value);
+		line = g_strdup_printf ("%s=%s", "ftp_proxy", uri);
 		egg_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
+		g_free (uri);
 	}
 	g_free (value);
 
@@ -833,6 +865,7 @@ pk_backend_test_spawn (EggTest *test)
 	const gchar *text;
 	guint refcount;
 	gboolean ret;
+	gchar *uri;
 
 	loop = g_main_loop_new (NULL, FALSE);
 
@@ -955,6 +988,26 @@ pk_backend_test_spawn (EggTest *test)
 	egg_test_title (test, "test pk_backend_spawn_parse_stdout AllowUpdate2");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "allow-cancel\tbrian");
 	egg_test_assert (test, !ret);
+
+	/************************************************************
+	 **********         Check uri conversion          ***********
+	 ************************************************************/
+	egg_test_title (test, "convert proxy uri (bare)");
+	uri = pk_backend_spawn_convert_uri ("username:password@server:port");
+	egg_test_assert (test, (g_strcmp0 (uri, "http://username:password@server:port/") == 0));
+	g_free (uri);
+
+	/************************************************************/
+	egg_test_title (test, "convert proxy uri (full)");
+	uri = pk_backend_spawn_convert_uri ("http://username:password@server:port/");
+	egg_test_assert (test, (g_strcmp0 (uri, "http://username:password@server:port/") == 0));
+	g_free (uri);
+
+	/************************************************************/
+	egg_test_title (test, "convert proxy uri (partial)");
+	uri = pk_backend_spawn_convert_uri ("ftp://username:password@server:port");
+	egg_test_assert (test, (g_strcmp0 (uri, "ftp://username:password@server:port/") == 0));
+	g_free (uri);
 
 	/************************************************************
 	 **********        Check parsing common out       ***********
