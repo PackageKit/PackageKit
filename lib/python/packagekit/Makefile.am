@@ -11,7 +11,6 @@ packagekitpython_PYTHON =				\
 	backend.py					\
 	frontend.py					\
 	enums.py					\
-	daemonBackend.py				\
 	pkexceptions.py					\
 	pkdbus.py					\
 	progress.py					\
