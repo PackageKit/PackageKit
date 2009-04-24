@@ -107,9 +107,12 @@ class PackageKitSmartProgress(Progress):
                     or filename.find('Release') != -1:
                         self._backend.status(STATUS_DOWNLOAD_REPOSITORY)
                     elif filename.find('primary') != -1 \
-                    or filename.find('Packages') != -1:
+                    or filename.find('Packages') != -1 \
+                    or filename.find('PACKAGES.TXT') != -1 \
+                    or filename.find('.db.tar.gz') != -1:
                         self._backend.status(STATUS_DOWNLOAD_PACKAGELIST)
-                    elif filename.find('filelists') != -1:
+                    elif filename.find('filelists') != -1 \
+                    or filename.find('.files.tar.gz') != -1:
                         self._backend.status(STATUS_DOWNLOAD_FILELIST)
                     elif filename.find('other') != -1:
                         self._backend.status(STATUS_DOWNLOAD_CHANGELOG)
