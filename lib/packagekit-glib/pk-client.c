@@ -33,7 +33,7 @@
 
 #include <string.h>
 #include <sys/types.h>
-#include <sys/prctl.h>
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
