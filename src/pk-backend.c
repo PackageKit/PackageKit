@@ -352,7 +352,7 @@ pk_backend_get_array (PkBackend *backend, const gchar *key)
 /**
  * pk_backend_get_uint:
  **/
-uint
+guint
 pk_backend_get_uint (PkBackend *backend, const gchar *key)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
