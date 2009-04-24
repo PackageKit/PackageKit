@@ -946,6 +946,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         from smart.backends.rpm.base import RPMPackage
         from smart.backends.deb.base import DebPackage
         from smart.backends.slack.base import SlackPackage
+        #from smart.backends.arch.base import ArchPackage
         if isinstance(package, RPMPackage):
             name = package.name
             version, arch = package.version.split('@')
@@ -956,7 +957,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             name = package.name
             ver, arch, rel = package.version.rsplit('-')
             version = "%s-%s" % (ver, rel)
+        #elif isinstance(package, ArchPackage):
+        elif package.__class__.__name__ == 'ArchPackage':
+            name = package.name
+            ver, rel, arch = package.version.rsplit('-')
+            version = "%s-%s" % (ver, rel)
         else:
+            name = package.name
             version, arch = package.version, self._machine()
         return name, version, arch
 
@@ -970,6 +977,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 self.systemchannel = "deb-sys"
             elif "slack-sys" in channels:
                 self.systemchannel = "slack-sys"
+            elif "arch-sys" in channels:
+                self.systemchannel = "arch-sys"
         if self.systemchannel == "rpm-sys":
             pkg = "%s-%s@%s" % (name, version, arch)
         elif self.systemchannel == "deb-sys":
@@ -977,6 +986,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         elif self.systemchannel == "slack-sys":
             ver, rel = version.rsplit("-")
             pkg = "%s-%s-%s-%s" % (name, ver, arch, rel)
+        elif self.systemchannel == "arch-sys":
+            ver, rel = version.rsplit("-")
+            pkg = "%s-%s-%s-%s" % (name, ver, rel, arch)
         else:
             pkg = "%s-%s" % (name, version)
         return pkg
