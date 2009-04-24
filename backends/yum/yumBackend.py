@@ -2248,6 +2248,16 @@ class PackageKitYumBase(yum.YumBase):
 
     def __init__(self, backend):
         yum.YumBase.__init__(self)
+
+        # disable the PackageKit plugin when running under PackageKit
+        try:
+            pc = self.preconf
+            pc.disabled_plugins = ['refresh-packagekit']
+        except yum.Errors.ConfigError, e:
+            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, _to_unicode(e))
+        except ValueError, e:
+            raise PkError(ERROR_FAILED_CONFIG_PARSING, _to_unicode(e))
+
         self.missingGPGKey = None
         self.dsCallback = DepSolveCallback(backend)
         self.backend = backend
