@@ -232,6 +232,7 @@ dnl - FreeBSD compatibility
 dnl ---------------------------------------------------------------------------
 AC_CHECK_HEADERS([execinfo.h])
 AC_CHECK_FUNCS(clearenv)
+AC_PATH_PROG(GMSGFMT, msgfmt, msgfmt)
 
 dnl ---------------------------------------------------------------------------
 dnl - xsltproc
