@@ -6,6 +6,7 @@ NULL =
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
+	$(SQLITE_CFLAGS)				\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DDATADIR=\"$(datadir)\"			\
 	-DPREFIX=\""$(prefix)"\" 			\

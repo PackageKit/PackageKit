@@ -409,7 +409,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK module functionality]),
 	      enable_gtk_module=$enableval,enable_gtk_module=yes)
 if test x$enable_gtk_module = xyes; then
-	PKG_CHECK_MODULES(PK_GTK_MODULE, gtk+-2.0 pangoft2 fontconfig dbus-glib-1,
+	PKG_CHECK_MODULES(PK_GTK_MODULE, gtk+-2.0 >= 2.14.0 pangoft2 fontconfig dbus-glib-1,
 	                  build_gtk_module=yes, build_gtk_module=no)
 	AC_SUBST(PK_GTK_MODULE_CFLAGS)
 	AC_SUBST(PK_GTK_MODULE_LIBS)

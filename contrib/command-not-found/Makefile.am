@@ -4,6 +4,7 @@ AUTOMAKE_OPTIONS = 1.7
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
+	$(SQLITE_CFLAGS)				\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
