@@ -106,8 +106,9 @@ class XMLRepo:
     def _getPackage(self, name):
         doc = self._open()
         for package in  doc.findall("Package"):
-            if package.find("name").text in name:
+            if package.find("name").text == name:
                 return self._generatePackage(package)
+        return None
 
     def _getPackages(self, name_list ):
         doc = self._open()

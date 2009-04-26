@@ -51,6 +51,7 @@ sys.excepthook = util.genExcepthook()
 def ExceptionHandler(func):
     return func
     def display(error):
+        log.info(error)
         return str(error).replace('\n', ' ').replace("\t",'')
     def wrapper(self, *args, **kwargs):
         try:
@@ -104,18 +105,18 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     restartpkgs = ("PackageKit","gnome-packagekit")
 
     packages = []
-    #{{{ 
+    #{{{   Packages structure 
     """
     packages = {
         pkg_name: {
             'trove': ( name,version,flavor)
             'metadata': pkgDict,
-            'status' : status
         }
     }
     
     """
     #}}}
+    #{{{ Init
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
 
@@ -136,7 +137,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         version = versions.ThawVersion(frzVersion)
         flavor = deps.ThawFlavor(frzFlavor)
         return version, flavor
-
+    #}}}
     def _get_arch(self, flavor):
         return _get_arch(flavor)
  
@@ -264,7 +265,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             
             dep_package = [ str(i[0][0]).split(":")[0] for i in deps ]
             log.info(dep_package)
-            self.error(ERROR_DEP_RESOLUTION_FAILED,  "This package depends of:  %s" % " ,".join(set(dep_package)))
+            self.error(ERROR_DEP_RESOLUTION_FAILED,  "This package depends of:  %s" % ", ".join(set(dep_package)))
         if cache:
             Cache().cacheUpdateJob(applyList, updJob)
         return updJob, suggMap
@@ -367,6 +368,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         cache = Cache()
         pkg_dict = cache.resolve( package[0] )
+        log.info(pkg_dict)
+        if pkg_dict is None:
+            return None
         log.info("doing a resolve")
 
         filter = ConaryFilter(filters)
@@ -422,6 +426,29 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info("options: %s searchlist:%s "%(options, searchlist))
         self._do_search(options, searchlist, 'group')
 
+    @ExceptionHandler
+    def search_file(self, filters, search ):
+
+        log.info("============= search_file ========")
+        self.allow_cancel(True)
+        self.percentage(0)
+        self.status(STATUS_QUERY)
+        log.info("options: %s searchlist:%s "%(filters, search))
+        self.percentage(10)
+
+
+        self.percentage(20)
+      
+
+        self.percentage(30)
+        name = self.conary.search_path( search )
+        self.percentage(50)
+        log.info(name)
+        if name:
+            log.info("resolving")
+            if ":" in name:
+                name = name.split(":")[0]
+            self.resolve( filters, [name]) 
 
     @ExceptionHandler
     def search_name(self, options, searchlist):
@@ -520,7 +547,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
 
         log.info(">>>>>>>>>> get update >>>>>>>>>>>>")
-        #self._get_update(applyList)
+        self._get_update(applyList)
         log.info(">>>>>>>>>> DO Update >>>>>>>>>>>>")
         jobs = self._do_update(applyList)
         log.info(">>>>>>>>>>END DO Update >>>>>>>>>>>>")
@@ -536,24 +563,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_REFRESH_CACHE)
         cache = Cache()
         cache.refresh()
-    """
-    @ExceptionHandler
-    def update(self, package_ids):
-        '''
-        Implement the {backend}-update functionality
-        '''
-        self.allow_cancel(True)
-        self.percentage(0)
-        self.status(STATUS_RUNNING)
-        
-        for package in package_ids.split(" "):
-            name, version, flavor, installed = self._findPackage(package)
-            if name:
-                cli = ConaryPk()
-                cli.update(name)
-            else:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'No available updates')
-    """
 
     def install_packages(self, package_ids):
         """
@@ -587,6 +596,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 log.info(">>> end Prepare Update")
                 self._do_package_update(name, version, flavor)
 
+        
     @ExceptionHandler
     def remove_packages(self, allowDeps, package_ids):
         '''
@@ -809,6 +819,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 if lic[1:][0].lower() == j.lower():
                     return j
         return ""
+    def _upgrade_from_branch( self, branch):
+        branchList = branch.split("@")
+        if "2-qa" in branchList[1]:
+            return DISTRO_UPGRADE_TESTING
+        elif "2-devel" in branchList[1]:
+            return DISTRO_UPGRADE_UNSTABLE
+        else:
+            return DISTRO_UPGRADE_STABLE
+
 
     def _get_branch(self, branch ):
         branchList = branch.split("@")

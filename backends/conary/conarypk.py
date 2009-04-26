@@ -53,6 +53,18 @@ class ConaryPk:
                 labels.append(i.asString())
         return labels
 
+    def search_path(self,path_file ):
+        labels = self.get_labels_from_config()
+        where = self._get_repos()
+        from conary.deps.deps import compatibleFlavors
+        for label in self.default_label:
+            trove = where.getTroveLeavesByPath([path_file], label)
+            if trove.get(path_file):
+                for ( name,version,flavor) in trove[path_file]:
+                    return name
+                
+
+
     def query(self, name):
         """ do a conary query """
         if name is None or name == "":
@@ -109,7 +121,7 @@ class ConaryPk:
 
 if __name__ == "__main__":
     conary = ConaryPk()
-    print conary.query("vim-scripts")
+    print conary.search_path("/usr/bin/vim")
     #print conary.query("gimpasdas")
     #print conary.request_query("dpaster",'zodyrepo.rpath.org@rpl:devel')
     #print conary.request_query("gimp")

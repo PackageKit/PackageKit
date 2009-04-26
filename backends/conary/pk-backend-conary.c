@@ -327,8 +327,27 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
     pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-packages", filters_text, NULL);
     g_free (filters_text);
 }
+/**
+ * pk_backend_search_file:
+ */
+static void
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+        gchar *filters_text;
+        filters_text = pk_filter_bitfield_to_text (filters);
+        pk_backend_spawn_helper (spawn, "conaryBackend.py", "search-file", filters_text, search, NULL);
+        g_free (filters_text);
+}
 
+/**
+ * backend_get_distro_upgrades:
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+    pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-distro-upgrades", NULL);
+}
 
+ */
 
 PK_BACKEND_OPTIONS (
 	"Conary with XMLCache",				/* description */
@@ -344,7 +363,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_categories */
 	NULL,					/* get_depends */
 	backend_get_details,			/* get_details */
-	NULL,					/* get_distro_upgrades */
+	NULL,	                /* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,					/* get_packages */
 	NULL,					/* get_repo_list */
@@ -361,7 +380,7 @@ PK_BACKEND_OPTIONS (
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,					/* search_details */
-	NULL,					/* search_file */
+	backend_search_file,					/* search_file */
 	backend_search_group,					/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
