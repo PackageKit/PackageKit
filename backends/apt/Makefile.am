@@ -20,10 +20,12 @@ sbin_SCRIPTS =						\
 EXTRA_DIST =						\
 	20packagekit					\
 	update-packagekit-app-data			\
+	README.apt					\
+	TODO.apt					\
 	$(NULL)
 
 install-data-hook:
-	chmod a+rx $(DESTDIR)$(libexecdir)/*.py
+	chmod a+rx $(DESTDIR)$(helperdir)/*.py
 
 clean-local :
 	rm -f *~

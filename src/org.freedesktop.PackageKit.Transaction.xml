@@ -1891,6 +1891,53 @@
     </signal>
 
     <!--*****************************************************************************************-->
+    <signal name="MediaChangeRequired">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is emitted when a transaction needsneeds a different media
+            to grab the packages.
+          </doc:para>
+          <doc:para>
+            Some backends support Media changing, which will fail the transaction each time it needs
+            a new media.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="media_type" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              Enumerated type, e.g. <doc:tt>dvd</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="media_id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The <doc:tt>media_id</doc:tt> which identifies the Media - this is provided
+              so that if DeviceKit or another program is able to identify the right media
+              before continuing, note however that it's not the DeviceKit oblication to
+              check the media when the transaction is re-scheduled this is the backend task.
+              An example <doc:tt>media_id</doc:tt>'s is <doc:tt>Debian testing amd64 Bin-1</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="media_text" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              Might be used for the disk label too, something like <doc:tt>Fedora Disk 1</doc:tt>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="RequireRestart">
       <doc:doc>
         <doc:description>

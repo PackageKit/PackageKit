@@ -24,6 +24,7 @@
 #include "package.h"
 #include "transactionprivate.h"
 #include "transactionproxy.h"
+#include "polkitclient.h"
 #include "util.h"
 
 using namespace PackageKit;
@@ -52,6 +53,7 @@ Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
 	connect(d->p, SIGNAL(RepoDetail(const QString&, const QString&, bool)), this, SIGNAL(repoDetail(const QString&, const QString&, bool)));
 	connect(d->p, SIGNAL(RepoSignatureRequired(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)), d, SLOT(repoSignatureRequired(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(EulaRequired(const QString&, const QString&, const QString&, const QString&)), d, SLOT(eulaRequired(const QString&, const QString&, const QString&, const QString&)));
+	connect(d->p, SIGNAL(MediaChangeRequired(const QString&, const QString&, const QString&)), d, SLOT(mediaChangeRequired(const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(RequireRestart(const QString&, const QString&)), d, SLOT(requireRestart(const QString&, const QString&)));
 	connect(d->p, SIGNAL(StatusChanged(const QString&)), d, SLOT(statusChanged(const QString&)));
 	connect(d->p, SIGNAL(Transaction(const QString&, const QString&, bool, const QString&, uint, const QString&, uint, const QString&)), d, SLOT(transaction(const QString&, const QString&, bool, const QString&, uint, const QString&, uint, const QString&)));
@@ -99,7 +101,16 @@ bool Transaction::callerActive()
 
 void Transaction::cancel()
 {
-	d->p->Cancel();
+	if (!d->p->Cancel().isValid ()) {
+		// Cancel failed, maybe it's not our transaction and we need authorization
+		if(!PolkitClient::instance()->getAuth(AUTH_CANCEL_FOREIGN)) {
+			// FIXME : should warn somehow here
+			qDebug () << "Authorization to cancel foreign failed";
+			return;
+		}
+
+		d->p->Cancel();
+	}
 }
 
 Package* Transaction::lastPackage()
@@ -146,7 +157,7 @@ void Transaction::setLocale(const QString& locale)
 
 Transaction::Status Transaction::status()
 {
-	int statusValue = Util::enumFromString<Transaction>(d->p->GetStatus().value(), "Status");
+	int statusValue = Util::enumFromString<Transaction>(d->p->GetStatus().value(), "Status", "Status");
 	if(statusValue == -1)
 		return UnknownStatus;
 	else

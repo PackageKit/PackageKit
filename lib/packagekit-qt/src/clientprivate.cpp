@@ -76,7 +76,7 @@ void ClientPrivate::transactionListChanged(const QStringList& tids)
 
 void ClientPrivate::networkStateChanged(const QString& state)
 {
-	int value = Util::enumFromString<Client>(state, "NetworkState");
+	int value = Util::enumFromString<Client>(state, "NetworkState", "Network");
 	if(value == -1) {
 		return;
 	}

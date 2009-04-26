@@ -274,18 +274,16 @@ main (int argc, char **argv)
 {
 	DBusGConnection *connection;
 	DBusGProxy *proxy = NULL;
-	GPtrArray *array = NULL;
-	GValueArray *varray;
-	GValue *value;
 	gboolean ret;
-	GType array_type;
 	GOptionContext *context;
 	GError *error = NULL;
 	guint i;
+	guint len;
 	gchar **codecs = NULL;
 	gint xid = 0;
 	gint retval = GST_INSTALL_PLUGINS_ERROR;
 	const gchar *suffix;
+	gchar **resources = NULL;
 
 	const GOptionEntry options[] = {
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
@@ -326,7 +324,7 @@ main (int argc, char **argv)
 	proxy = dbus_g_proxy_new_for_name (connection,
 					   "org.freedesktop.PackageKit",
 					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.PackageKit");
+					   "org.freedesktop.PackageKit.Modify");
 	if (proxy == NULL) {
 		g_print ("Cannot connect to PackageKit session service\n");
 		goto out;
@@ -335,9 +333,11 @@ main (int argc, char **argv)
 	/* use a ()(64bit) suffix for 64 bit */
 	suffix = pk_gst_get_arch_suffix ();
 
+	len = g_strv_length (codecs);
+	resources = g_new0 (gchar*, len+1);
+
 	/* process argv */
-	array = g_ptr_array_new ();
-	for (i = 0; codecs[i] != NULL; i++) {
+	for (i=0; i<len; i++) {
 		codec_info *info;
 		char *s;
 		char *type;
@@ -359,40 +359,21 @@ main (int argc, char **argv)
 			g_message ("PackageKit: non-structure: %s", type);
 		}
 
-		/* create (ss) structure */
-		varray = g_value_array_new (2);
-		value = g_new0 (GValue, 1);
-		g_value_init (value, G_TYPE_STRING);
-		g_value_set_string (value, info->codec_name);
-		g_value_array_append (varray, value);
-		g_value_reset (value);
-		g_value_set_string (value, type);
-		g_value_array_append (varray, value);
-		g_value_unset (value);
-		g_free (value);
-
-		/* add to array of (ss) */
-		g_ptr_array_add (array, varray);
+		/* "encode" */
+		resources[i] = g_strdup_printf ("%s|%s", info->codec_name, type);
 
 		/* free codec structure */
 		pk_gst_codec_free (info);
 	}
 
-	/* marshall a(ss) */
-	array_type = dbus_g_type_get_collection ("GPtrArray",
-					dbus_g_type_get_struct("GValueArray",
-						G_TYPE_STRING,
-						G_TYPE_STRING,
-						G_TYPE_INVALID));
-
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
 
 	/* invoke the method */
-	ret = dbus_g_proxy_call (proxy, "InstallGStreamerCodecs", &error,
+	ret = dbus_g_proxy_call (proxy, "InstallGStreamerResources", &error,
 				 G_TYPE_UINT, xid,
-				 G_TYPE_UINT, 0,
-				 array_type, array,
+				 G_TYPE_STRV, resources,
+				 G_TYPE_STRING, "hide-finished",
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (!ret) {
@@ -411,10 +392,7 @@ main (int argc, char **argv)
 	retval = GST_INSTALL_PLUGINS_SUCCESS;
 
 out:
-	if (array != NULL) {
-		g_ptr_array_foreach (array, (GFunc) g_value_array_free, NULL);
-		g_ptr_array_free (array, TRUE);
-	}
+	g_strfreev (resources);
 	if (proxy != NULL)
 		g_object_unref (proxy);
 	return retval;

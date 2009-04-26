@@ -117,7 +117,7 @@ Client::Groups Client::getGroups()
 	Groups flags;
 	int value;
 	foreach(const QString& group, groups) {
-		value = Util::enumFromString<Client>(group, "Group");
+		value = Util::enumFromString<Client>(group, "Group", "Group");
 		flags.insert((Group)value);
 	}
 	return flags;
@@ -131,7 +131,7 @@ QStringList Client::getMimeTypes()
 Client::NetworkState Client::getNetworkState()
 {
 	QString state = d->daemon->GetNetworkState();
-	int value = Util::enumFromString<Client>(state, "NetworkState");
+	int value = Util::enumFromString<Client>(state, "NetworkState", "Network");
 	return (NetworkState)value;
 }
 
@@ -475,7 +475,7 @@ Transaction* Client::installSignature(SignatureType type, const QString& key_id,
 		return NULL;
 	}
 
-	t->d->p->InstallSignature(Util::enumToString<Client>(type, "SignatureType"), key_id, p->id());
+	t->d->p->InstallSignature(Util::enumToString<Client>(type, "SignatureType", "Signature"), key_id, p->id());
 
 	return t;
 }
@@ -647,7 +647,7 @@ Transaction* Client::searchGroup(Client::Group group, Filters filters)
 		return NULL;
 	}
 
-	t->d->p->SearchGroup(Util::filtersToString(filters), Util::enumToString<Client>(group, "Group"));
+	t->d->p->SearchGroup(Util::filtersToString(filters), Util::enumToString<Client>(group, "Group", "Group"));
 
 	return t;
 }

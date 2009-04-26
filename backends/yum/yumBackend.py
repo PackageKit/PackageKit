@@ -895,42 +895,64 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if self._is_meta_package(package_id):
             return None, False
 
-        # is this an real id or just an name
-        if len(package_id.split(';')) > 1:
-            # Split up the id
-            (n, idver, a, d) = self.get_package_from_id(package_id)
-            # get e, v, r from package id version
-            e, v, r = _getEVR(idver)
-        else:
-            n = package_id
-            e = v = r = a = d = None
-        # search the rpmdb for the nevra
+        # is this an real id?
+        if len(package_id.split(';')) <= 1:
+            self.error(ERROR_PACKAGE_ID_INVALID, "package_id '%s' cannot be parsed" % package_id)
+            return
+
+        # Split up the id
+        (n, idver, a, repo) = self.get_package_from_id(package_id)
+        # get e, v, r from package id version
+        e, v, r = _getEVR(idver)
+
+        if repo == 'installed':
+            # search the rpmdb for the nevra
+            try:
+                pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            # if the package is found, then return it (do not have to match the repo_id)
+            if len(pkgs) != 0:
+                return pkgs[0], True
+
+        # find the correct repo, and don't use yb.pkgSack.searchNevra as it
+        # searches all repos and takes 66ms
         try:
-            pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
+            repos = self.yumbase.repos.findRepos(repo)
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-        # if the package is found, then return it (do not have to match the repo_id)
-        if len(pkgs) != 0:
-            return pkgs[0], True
+            return None, False
+        if len(repos) == 0:
+            self.error(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
+            return None, False
+
+        # populate the sack with data
+        try:
+            self.yumbase.repos.populateSack(repo)
+        except Exception, e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            return None, False
+
         # search the pkgSack for the nevra
         try:
-            pkgs = self.yumbase.pkgSack.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
+            pkgs = repos[0].sack.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+            return None, False
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-
-        # nothing found
-        if len(pkgs) == 0:
             return None, False
+
+	# multiple entries
+        if len(pkgs) > 1:
+            self.error(ERROR_INTERNAL_ERROR, "more than one package match for %s" % package_id)
+            return pkgs[0], False
+
         # one NEVRA in a single repo
         if len(pkgs) == 1:
             return pkgs[0], False
-        # we might have the same NEVRA in multiple repos, match by repo name
-        for pkg in pkgs:
-            if d == pkg.repoid:
-                return pkg, False
-        # repo id did not match
+
+        # nothing found
         return None, False
 
     def get_requires(self, filters, package_ids, recursive_text):
@@ -2405,16 +2427,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # Get the repo
         try:
             repo = self.yumbase.repos.getRepo(repoid)
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_REPO_NOT_FOUND, "repo '%s' cannot be found in list" % repoid, exit=False)
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-        if repo:
+        else:
+            if not repo:
+                self.error(ERROR_REPO_NOT_FOUND, 'repo %s not found' % repoid, exit=False)
+                return
             repo.cfg.set(repoid, parameter, value)
             try:
                 repo.cfg.write(file(repo.repofile, 'w'))
             except IOError, e:
                 self.error(ERROR_CANNOT_WRITE_REPO_CONFIG, _to_unicode(e))
-        else:
-            self.error(ERROR_REPO_NOT_FOUND, 'repo %s not found' % repoid)
 
     def install_signature(self, sigtype, key_id, package):
         self._check_init(repo_setup=False)
@@ -2533,14 +2558,26 @@ class DownloadCallback(BaseMeter):
         self.percent_start = percent_start
 
     def _getPackage(self, name):
-        if self.saved_pkgs:
-            for pkg in self.saved_pkgs:
-                if isinstance(pkg, YumLocalPackage):
-                    rpmfn = pkg.localPkg
-                else:
-                    rpmfn = os.path.basename(pkg.remote_path) # get the rpm filename of the package
-                if rpmfn == name:
-                    return pkg
+
+        # no download data
+        if not self.saved_pkgs:
+            return None
+
+        # split into name, version, release
+        # for yum, name is:
+        #  - gnote-0.1.2-2.fc11.i586.rpm
+        # and for Presto:
+        #  - gnote-0.1.1-4.fc11_0.1.2-2.fc11.i586.drpm
+        sections = name.rsplit('-', 2)
+        if len(sections) < 3:
+            return None
+
+        # we need to search the saved packages for a match and then return the pkg
+        for pkg in self.saved_pkgs:
+            if sections[0] == pkg.name:
+                return pkg
+
+        # nothing matched
         return None
 
     def update(self, amount_read, now=None):
@@ -2599,6 +2636,12 @@ class DownloadCallback(BaseMeter):
                         typ = MetaDataMap[key]
                         self.base.status(typ)
                         break
+
+        # package finished
+        if val == 100:
+            pkg = self._getPackage(name)
+            if pkg:
+                self.base._show_package(pkg, INFO_FINISHED)
 
         # set sub-percentage
         self.base.sub_percentage(val)
@@ -2673,16 +2716,18 @@ class PackageKitCallback(RPMBaseCallback):
                 self.base.message(MESSAGE_BACKEND_ERROR, "The constant '%s' was unknown, please report. details: %s" % (action, _to_unicode(e)))
 
         # do subpercentage
-        val = (te_current*100L)/te_total
-        self.base.sub_percentage(val)
+        if te_total > 0:
+            val = (te_current*100L)/te_total
+            self.base.sub_percentage(val)
 
         # find out the offset
         pct_start = StatusPercentageMap[STATUS_INSTALL]
 
         # do percentage
-        div = (100 - pct_start) / ts_total
-        pct = div * (ts_current - 1) + pct_start + ((div / 100.0) * val)
-        self.base.percentage(pct)
+        if ts_total > 0:
+            div = (100 - pct_start) / ts_total
+            pct = div * (ts_current - 1) + pct_start + ((div / 100.0) * val)
+            self.base.percentage(pct)
 
     def errorlog(self, msg):
         # grrrrrrrr
@@ -2714,6 +2759,8 @@ class ProcessTransPackageKitCallback:
             pct_start = StatusPercentageMap[STATUS_INSTALL]
             self.base.allow_cancel(False)
             self.base.percentage(pct_start)
+        else:
+            self.base.message(MESSAGE_BACKEND_ERROR, "unhandled transaction state: %s" % state)
 
 class DepSolveCallback(object):
 
@@ -2744,6 +2791,16 @@ class PackageKitYumBase(yum.YumBase):
 
     def __init__(self, backend):
         yum.YumBase.__init__(self)
+
+        # disable the PackageKit plugin when running under PackageKit
+        try:
+            pc = self.preconf
+            pc.disabled_plugins = ['refresh-packagekit']
+        except yum.Errors.ConfigError, e:
+            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, _to_unicode(e))
+        except ValueError, e:
+            raise PkError(ERROR_FAILED_CONFIG_PARSING, _to_unicode(e))
+
         self.missingGPGKey = None
         self.dsCallback = DepSolveCallback(backend)
         self.backend = backend

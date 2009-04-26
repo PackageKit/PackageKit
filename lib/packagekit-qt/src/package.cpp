@@ -28,7 +28,7 @@ class Package::Details::Private
 {
 public:
 	Package* package;
-	Package::License license;
+	QString license;
 	Client::Group group;
 	QString description;
 	QString url;
@@ -38,19 +38,8 @@ public:
 Package::Details::Details(Package* p, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size) : d(new Private)
 {
 	d->package = p;
-
-	int licenseValue = Util::enumFromString<Package>(license, "License");
-	if(licenseValue == -1)
-		d->license = UnknownLicense;
-	else
-		d->license = (License)licenseValue;
-
-	int groupValue = Util::enumFromString<Client>(group, "Group");
-	if(groupValue == -1)
-		d->group = Client::UnknownGroup;
-	else
-		d->group = (Client::Group)groupValue;
-
+	d->license = license;
+	d->group = (Client::Group)Util::enumFromString<Client>(group, "Group", "Group");
 	d->description = detail;
 	d->url = url;
 	d->size = size;
@@ -66,7 +55,7 @@ Package* Package::Details::package() const
 	return d->package;
 }
 
-Package::License Package::Details::license() const
+QString Package::Details::license() const
 {
 	return d->license;
 }
@@ -119,14 +108,8 @@ Package::Package(const QString& packageId, const QString& state, const QString& 
 		d->data = tokens.at(3);
 	}
 
-	int stateValue = Util::enumFromString<Package>(state, "State");
-	if(stateValue == -1)
-		d->state = UnknownState;
-	else
-		d->state = (State)stateValue;
-
+	d->state = (State)Util::enumFromString<Package>(state, "State", "State");
 	d->summary = summary;
-
 	d->details = NULL;
 }
 

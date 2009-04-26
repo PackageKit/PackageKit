@@ -228,6 +228,12 @@ fi
 AM_CONDITIONAL(HAVE_ARCHIVE_H, test x$HAVE_ARCHIVE_H = xyes)
 
 dnl ---------------------------------------------------------------------------
+dnl - FreeBSD compatibility
+dnl ---------------------------------------------------------------------------
+AC_CHECK_HEADERS([execinfo.h])
+AC_CHECK_FUNCS(clearenv)
+
+dnl ---------------------------------------------------------------------------
 dnl - xsltproc
 dnl ---------------------------------------------------------------------------
 AC_PATH_PROG([XSLTPROC], [xsltproc])

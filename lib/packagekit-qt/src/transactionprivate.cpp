@@ -49,12 +49,12 @@ void TransactionPrivate::details(const QString& pid, const QString& license, con
 
 void TransactionPrivate::distroUpgrade(const QString& type, const QString& name, const QString& description)
 {
-	t->distroUpgrade((Client::UpgradeType)Util::enumFromString<Client>(type, "UpgradeType", "Upgrade"), name, description);
+	t->distroUpgrade((Client::DistroUpgradeType)Util::enumFromString<Client>(type, "DistroUpgradeType", "DistroUpgrade"), name, description);
 }
 
 void TransactionPrivate::errorCode(const QString& error, const QString& details)
 {
-	t->errorCode((Client::ErrorType)Util::enumFromString<Client>(error, "ErrorType"), details);
+	t->errorCode((Client::ErrorType)Util::enumFromString<Client>(error, "ErrorType", "Error"), details);
 }
 
 void TransactionPrivate::eulaRequired(const QString& eulaId, const QString& pid, const QString& vendor, const QString& licenseAgreement)
@@ -67,6 +67,11 @@ void TransactionPrivate::eulaRequired(const QString& eulaId, const QString& pid,
 	t->eulaRequired(i);
 }
 
+void TransactionPrivate::mediaChangeRequired(const QString& mediaType, const QString& mediaId, const QString& mediaText)
+{
+	t->mediaChangeRequired((Transaction::MediaType)Util::enumFromString<Transaction>(mediaType, "MediaType", "Media"), mediaId, mediaText);
+}
+
 void TransactionPrivate::files(const QString& pid, const QString& filenames)
 {
 	t->files(new Package(pid), filenames.split(";"));
@@ -74,7 +79,7 @@ void TransactionPrivate::files(const QString& pid, const QString& filenames)
 
 void TransactionPrivate::finished(const QString& exitCode, uint runtime)
 {
-	int exitValue = Util::enumFromString<Transaction>(exitCode, "ExitStatus");
+	int exitValue = Util::enumFromString<Transaction>(exitCode, "ExitStatus", "Exit");
 	t->finished((Transaction::ExitStatus)exitValue, runtime);
 	t->destroyed(tid);
 
@@ -83,7 +88,7 @@ void TransactionPrivate::finished(const QString& exitCode, uint runtime)
 
 void TransactionPrivate::message(const QString& type, const QString& message)
 {
-	t->message((Client::MessageType)Util::enumFromString<Client>(type, "MessageType"), message);
+	t->message((Client::MessageType)Util::enumFromString<Client>(type, "MessageType", "Message"), message);
 }
 
 void TransactionPrivate::package(const QString& info, const QString& pid, const QString& summary)
@@ -111,7 +116,7 @@ void TransactionPrivate::repoSignatureRequired(const QString& pid, const QString
 	i.keyId = keyId;
 	i.keyFingerprint = keyFingerprint;
 	i.keyTimestamp = keyTimestamp;
-	i.type = (Client::SignatureType)Util::enumFromString<Client>(type, "SignatureType");
+	i.type = (Client::SignatureType)Util::enumFromString<Client>(type, "SignatureType", "Signature");
 
 	t->repoSignatureRequired(i);
 }
@@ -123,7 +128,7 @@ void TransactionPrivate::requireRestart(const QString& type, const QString& pid)
 
 void TransactionPrivate::statusChanged(const QString& status)
 {
-	t->statusChanged((Transaction::Status)Util::enumFromString<Transaction>(status, "Status"));
+	t->statusChanged((Transaction::Status)Util::enumFromString<Transaction>(status, "Status", "Status"));
 }
 
 void TransactionPrivate::transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline)
@@ -151,7 +156,7 @@ void TransactionPrivate::updateDetail(const QString& pid, const QString& updates
 	i.restart = (Client::RestartType)Util::enumFromString<Client>(restart, "RestartType", "Restart");
 	i.updateText = updateText;
 	i.changelog = changelog;
-	i.state = (Client::UpgradeType)Util::enumFromString<Client>(state, "UpgradeType", "Upgrade");
+	i.state = (Client::UpdateState)Util::enumFromString<Client>(state, "UpdateState", "Update");
 	i.issued = QDateTime::fromString(issued, Qt::ISODate);
 	i.updated = QDateTime::fromString(updated, Qt::ISODate);
 

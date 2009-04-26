@@ -63,6 +63,7 @@ struct PkBackendSpawnPrivate
 	guint			 backend_finished_id;
 	PkConf			*conf;
 	gboolean		 finished;
+	gboolean		 allow_sigkill;
 	PkBackendSpawnFilterFunc stdout_func;
 	PkBackendSpawnFilterFunc stderr_func;
 };
@@ -116,6 +117,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	PkRestartEnum restart_enum;
 	PkSigTypeEnum sig_type;
 	PkUpdateStateEnum update_state_enum;
+	PkMediaTypeEnum media_type_enum;
 	PkDistroUpgradeEnum distro_upgrade_enum;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
@@ -389,6 +391,24 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 							  sections[2], sections[3], sections[4],
 							  sections[5], sections[6], sections[7], sig_type);
 		goto out;
+	} else if (egg_strequal (command, "media-change-required")) {
+
+		if (size != 4) {
+			egg_warning ("invalid command'%s', size %i", command, size);
+			ret = FALSE;
+			goto out;
+		}
+
+		media_type_enum = pk_media_type_enum_from_text (sections[1]);
+		if (media_type_enum == PK_MEDIA_TYPE_ENUM_UNKNOWN) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+					    "media type enum not recognised, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
+
+		ret = pk_backend_media_change_required (backend_spawn->priv->backend, media_type_enum, sections[2], sections[3]);
+		goto out;
 	} else if (egg_strequal (command, "distro-upgrade")) {
 
 		if (size != 4) {
@@ -518,6 +538,33 @@ pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 }
 
 /**
+ * pk_backend_spawn_convert_uri:
+ *
+ * Our proxy variable is typically 'username:password@server:port'
+ * but http_proxy expects 'http://username:password@server:port/'
+ **/
+static gchar *
+pk_backend_spawn_convert_uri (const gchar *proxy)
+{
+	GString *string;
+	string = g_string_new (proxy);
+
+	/* if we didn't specify a prefix, add a default one */
+	if (!g_str_has_prefix (proxy, "http://") &&
+	    !g_str_has_prefix (proxy, "https://") &&
+	    !g_str_has_prefix (proxy, "ftp://")) {
+		g_string_prepend (string, "http://");
+	}
+
+	/* if we didn't specify a trailing slash, add one */
+	if (!g_str_has_suffix (proxy, "/")) {
+		g_string_append_c (string, '/');
+	}
+
+	return g_string_free (string, FALSE);
+}
+
+/**
  * pk_backend_spawn_get_envp:
  *
  * Return all the environment variables the script will need
@@ -528,6 +575,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar **envp;
 	gchar *value;
 	gchar *line;
+	gchar *uri;
 	GPtrArray *array;
 	gboolean ret;
 
@@ -536,18 +584,22 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	/* http_proxy */
 	value = pk_backend_get_proxy_http (backend_spawn->priv->backend);
 	if (!egg_strzero (value)) {
-		line = g_strdup_printf ("%s=%s", "http_proxy", value);
+		uri = pk_backend_spawn_convert_uri (value);
+		line = g_strdup_printf ("%s=%s", "http_proxy", uri);
 		egg_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
+		g_free (uri);
 	}
 	g_free (value);
 
 	/* ftp_proxy */
 	value = pk_backend_get_proxy_ftp (backend_spawn->priv->backend);
 	if (!egg_strzero (value)) {
-		line = g_strdup_printf ("%s=%s", "ftp_proxy", value);
+		uri = pk_backend_spawn_convert_uri (value);
+		line = g_strdup_printf ("%s=%s", "ftp_proxy", uri);
 		egg_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
+		g_free (uri);
 	}
 	g_free (value);
 
@@ -744,6 +796,27 @@ pk_backend_spawn_helper (PkBackendSpawn *backend_spawn, const gchar *first_eleme
 }
 
 /**
+ * pk_backend_spawn_set_allow_sigkill:
+ **/
+gboolean
+pk_backend_spawn_set_allow_sigkill (PkBackendSpawn *backend_spawn, gboolean allow_sigkill)
+{
+	gboolean ret = FALSE;
+
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+
+	/* have we banned this in the config ile */
+	if (!backend_spawn->priv->allow_sigkill && allow_sigkill) {
+		egg_warning ("cannot set allow_cancel TRUE as BackendSpawnAllowSIGKILL is set to FALSE in PackageKit.conf");
+		goto out;
+	}
+
+	ret = pk_spawn_set_allow_sigkill (backend_spawn->priv->spawn, allow_sigkill);
+out:
+	return ret;
+}
+
+/**
  * pk_backend_spawn_finalize:
  **/
 static void
@@ -802,6 +875,10 @@ pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 			  G_CALLBACK (pk_backend_spawn_stdout_cb), backend_spawn);
 	g_signal_connect (backend_spawn->priv->spawn, "stderr",
 			  G_CALLBACK (pk_backend_spawn_stderr_cb), backend_spawn);
+
+	/* set if SIGKILL is allowed */
+	backend_spawn->priv->allow_sigkill = pk_conf_get_bool (backend_spawn->priv->conf, "BackendSpawnAllowSIGKILL");
+	pk_spawn_set_allow_sigkill (backend_spawn->priv->spawn, backend_spawn->priv->allow_sigkill);
 }
 
 /**
@@ -852,6 +929,7 @@ pk_backend_test_spawn (EggTest *test)
 	const gchar *text;
 	guint refcount;
 	gboolean ret;
+	gchar *uri;
 
 	loop = g_main_loop_new (NULL, FALSE);
 
@@ -982,6 +1060,26 @@ pk_backend_test_spawn (EggTest *test)
 	egg_test_title (test, "test pk_backend_spawn_parse_stdout AllowUpdate2");
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, "allow-cancel\tbrian");
 	egg_test_assert (test, !ret);
+
+	/************************************************************
+	 **********         Check uri conversion          ***********
+	 ************************************************************/
+	egg_test_title (test, "convert proxy uri (bare)");
+	uri = pk_backend_spawn_convert_uri ("username:password@server:port");
+	egg_test_assert (test, (g_strcmp0 (uri, "http://username:password@server:port/") == 0));
+	g_free (uri);
+
+	/************************************************************/
+	egg_test_title (test, "convert proxy uri (full)");
+	uri = pk_backend_spawn_convert_uri ("http://username:password@server:port/");
+	egg_test_assert (test, (g_strcmp0 (uri, "http://username:password@server:port/") == 0));
+	g_free (uri);
+
+	/************************************************************/
+	egg_test_title (test, "convert proxy uri (partial)");
+	uri = pk_backend_spawn_convert_uri ("ftp://username:password@server:port");
+	egg_test_assert (test, (g_strcmp0 (uri, "ftp://username:password@server:port/") == 0));
+	g_free (uri);
 
 	/************************************************************
 	 **********        Check parsing common out       ***********

@@ -148,6 +148,10 @@ struct _PkClientClass
 							 guint		 runtime);
 	void		(* category)			(PkClient	*client,
 							 PkCategoryObj	*obj);
+	void		(* media_change_required)	(PkClient	*client,
+							 PkMediaTypeEnum type,
+							 const gchar	*media_id,
+							 const gchar	*media_text);
 	/* Padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);

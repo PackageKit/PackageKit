@@ -59,6 +59,7 @@ public slots:
 	void distroUpgrade(const QString& type, const QString& name, const QString& description);
 	void errorCode(const QString& error, const QString& details);
 	void eulaRequired(const QString& eulaId, const QString& pid, const QString& vendor, const QString& licenseAgreement);
+	void mediaChangeRequired(const QString& mediaType, const QString& mediaId, const QString& mediaText);
 	void files(const QString& pid, const QString& filenames);
 	void finished(const QString& exitCode, uint runtime);
 	void message(const QString& type, const QString& message);

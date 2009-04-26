@@ -48,9 +48,6 @@ backend_stderr_cb (PkBackend *backend, const gchar *output)
 static gboolean
 backend_stdout_cb (PkBackend *backend, const gchar *output)
 {
-	/* presto is much too verbose... */
-	if (strstr (output, "Presto") != NULL)
-		return FALSE;
 	return TRUE;
 }
 
@@ -66,6 +63,7 @@ backend_initialize (PkBackend *backend)
 	pk_backend_spawn_set_filter_stderr (spawn, backend_stderr_cb);
 	pk_backend_spawn_set_filter_stdout (spawn, backend_stdout_cb);
 	pk_backend_spawn_set_name (spawn, "yum");
+	pk_backend_spawn_set_allow_sigkill (spawn, FALSE);
 }
 
 /**

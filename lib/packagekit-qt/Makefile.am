@@ -7,6 +7,5 @@ pkgconfig_DATA = 					\
 
 EXTRA_DIST =						\
 	packagekit-qt.pc.in				\
-	CMakeLists.txt					\
 	Doxyfile
 

@@ -131,6 +131,17 @@ class PackageKitBaseBackend:
         print >> sys.stdout, "package\t%s\t%s\t%s" % (status, package_id, summary)
         sys.stdout.flush()
 
+    def media_change_required(self, mtype, id, text):
+        '''
+        send 'media-change-required' signal
+        @param mtype: the enumerated MEDIA_TYPE_* string
+        @param id: the localised label of the media
+        @param text: the localised text describing the media
+        '''
+        print >> sys.stdout, "media-change-required\t%s\t%s\t%s" % (mtype, id,
+                                                                    text)
+        sys.stdout.flush()
+
     def distro_upgrade(self, dtype, name, summary):
         '''
         send 'distro-upgrade' signal
@@ -636,6 +647,32 @@ class PackageKitBaseBackend:
         if self.isLocked():
             self.unLock()
         sys.exit(0)
+
+
+def format_string(text, encoding='utf-8'):
+    '''
+    Format a string to be used on stdout for communication with the daemon.
+    '''
+    if not isinstance(text, unicode):
+        txt = unicode(text, encoding, errors='replace')
+    return text.replace("\n", ";")
+
+def text_to_bool(text):
+    '''Convert a string to a boolean value.'''
+    if text.lower() in ["yes", "true"]:
+        return True
+    return False
+
+def get_package_id(name, version, arch, data):
+    """Returns a package id."""
+    return ";".join((name, version, arch, data))
+
+def split_package_id(id):
+    """
+    Returns a tuple with the name, version, arch and data component of a
+    package id.
+    """
+    return id.split(";", 4)
 
 def exceptionHandler(typ, value, tb, base):
     # Restore original exception handler

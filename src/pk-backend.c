@@ -139,6 +139,7 @@ enum {
 	PK_BACKEND_ALLOW_CANCEL,
 	PK_BACKEND_REPO_DETAIL,
 	PK_BACKEND_CATEGORY,
+	PK_BACKEND_MEDIA_CHANGE_REQUIRED,
 	PK_BACKEND_LAST_SIGNAL
 };
 
@@ -362,7 +363,7 @@ pk_backend_get_array (PkBackend *backend, const gchar *key)
 /**
  * pk_backend_get_uint:
  **/
-uint
+guint
 pk_backend_get_uint (PkBackend *backend, const gchar *key)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
@@ -1292,6 +1293,35 @@ pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar 
 }
 
 /**
+ * pk_backend_media_change_required:
+ **/
+gboolean
+pk_backend_media_change_required (PkBackend *backend,
+				  PkMediaTypeEnum media_type,
+				  const gchar *media_id,
+				  const gchar *media_text)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (media_id != NULL, FALSE);
+	g_return_val_if_fail (media_text != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		egg_warning ("already set error, cannot process: media change required");
+		return FALSE;
+	}
+
+	egg_debug ("emit media-change-required %s, %s, %s",
+		  pk_media_type_enum_to_text (media_type), media_id, media_text);
+
+	g_signal_emit (backend, signals [PK_BACKEND_MEDIA_CHANGE_REQUIRED], 0,
+		       media_type, media_id, media_text);
+
+	return TRUE;
+}
+
+/**
  * pk_backend_repo_detail:
  **/
 gboolean
@@ -1912,6 +1942,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
 			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_BACKEND_MEDIA_CHANGE_REQUIRED] =
+		g_signal_new ("media-change-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_BACKEND_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

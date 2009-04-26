@@ -84,6 +84,7 @@ struct PkTransactionPrivate
 	gboolean		 allow_cancel;
 	gboolean		 emit_eula_required;
 	gboolean		 emit_signature_required;
+	gboolean		 emit_media_change_required;
 	gchar			*locale;
 	guint			 uid;
 	EggDbusMonitor		*monitor;
@@ -139,6 +140,7 @@ struct PkTransactionPrivate
 	guint			 signal_repo_detail;
 	guint			 signal_repo_signature_required;
 	guint			 signal_eula_required;
+	guint			 signal_media_change_required;
 	guint			 signal_require_restart;
 	guint			 signal_status_changed;
 	guint			 signal_update_detail;
@@ -159,6 +161,7 @@ enum {
 	PK_TRANSACTION_REPO_DETAIL,
 	PK_TRANSACTION_REPO_SIGNATURE_REQUIRED,
 	PK_TRANSACTION_EULA_REQUIRED,
+	PK_TRANSACTION_MEDIA_CHANGE_REQUIRED,
 	PK_TRANSACTION_REQUIRE_RESTART,
 	PK_TRANSACTION_STATUS_CHANGED,
 	PK_TRANSACTION_TRANSACTION,
@@ -553,6 +556,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_detail);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_signature_required);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_eula_required);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_media_change_required);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_category);
 
@@ -652,6 +656,8 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		exit_enum = PK_EXIT_ENUM_KEY_REQUIRED;
 	else if (transaction->priv->emit_eula_required)
 		exit_enum = PK_EXIT_ENUM_EULA_REQUIRED;
+	else if (transaction->priv->emit_media_change_required)
+		exit_enum = PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED;
 
 	/* invalidate some caches if we succeeded */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
@@ -884,6 +890,32 @@ pk_transaction_eula_required_cb (PkBackend *backend, const gchar *eula_id, const
 }
 
 /**
+ * pk_transaction_media_change_required_cb:
+ **/
+static void
+pk_transaction_media_change_required_cb (PkBackend *backend,
+					 PkMediaTypeEnum media_type,
+					 const gchar *media_id,
+					 const gchar *media_text,
+					 PkTransaction *transaction)
+{
+	const gchar *media_type_text;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	media_type_text = pk_media_type_enum_to_text (media_type);
+
+	egg_debug ("emitting media-change-required %s, %s, %s",
+		   media_type_text, media_id, media_text);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_MEDIA_CHANGE_REQUIRED], 0,
+		       media_type_text, media_id, media_text);
+
+	/* we should mark this transaction so that we finish with a special code */
+	transaction->priv->emit_media_change_required = TRUE;
+}
+
+/**
  * pk_transaction_require_restart_cb:
  **/
 static void
@@ -1036,6 +1068,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->signal_eula_required =
 		g_signal_connect (transaction->priv->backend, "eula-required",
 				  G_CALLBACK (pk_transaction_eula_required_cb), transaction);
+	transaction->priv->signal_media_change_required =
+		g_signal_connect (transaction->priv->backend, "media-change-required",
+				  G_CALLBACK (pk_transaction_media_change_required_cb), transaction);
 	transaction->priv->signal_require_restart =
 		g_signal_connect (transaction->priv->backend, "require-restart",
 				  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
@@ -3831,6 +3866,11 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
 			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TRANSACTION_MEDIA_CHANGE_REQUIRED] =
+		g_signal_new ("media-change-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TRANSACTION_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -3877,6 +3917,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->allow_cancel = TRUE;
 	transaction->priv->emit_eula_required = FALSE;
 	transaction->priv->emit_signature_required = FALSE;
+	transaction->priv->emit_media_change_required = FALSE;
 	transaction->priv->cached_enabled = FALSE;
 	transaction->priv->cached_key_id = NULL;
 	transaction->priv->cached_package_id = NULL;

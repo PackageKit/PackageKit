@@ -26,6 +26,8 @@
  * This file contains functions that can be used for debugging.
  */
 
+#include "config.h"
+
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
@@ -39,7 +41,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+
+#ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
+#endif
 
 #include "egg-debug.h"
 
@@ -78,6 +83,7 @@ pk_set_console_mode (guint console_code)
 void
 egg_debug_backtrace (void)
 {
+#ifdef HAVE_EXECINFO_H
 	void *call_stack[512];
 	int  call_stack_size;
 	char **symbols;
@@ -95,6 +101,7 @@ egg_debug_backtrace (void)
 		pk_set_console_mode (CONSOLE_RESET);
 		free (symbols);
 	}
+#endif
 }
 
 /**
