@@ -5,6 +5,7 @@ dist_helper_DATA = 			\
 	conaryCallback.py		\
 	conaryInit.py			\
 	XMLCache.py			    \
+	generateXML.py			    \
 	pkConaryLog.py			\
 	conarypk.py			    \
     conaryProgress.py       \

@@ -11,6 +11,13 @@ from conary.conaryclient.update import NoNewTrovesError
 
 from pkConaryLog import log
 
+import os
+
+from packagekit.backend import PackageKitBaseBackend
+from packagekit.enums import ERROR_NO_NETWORK
+
+
+
 class ConaryPk:
     def __init__(self):
         # get configs from /etc/conary
@@ -25,6 +32,7 @@ class ConaryPk:
         self.default_label = self.cfg.installLabelPath
 
         # get if x86 or x86_64
+        self.flavors = self.cfg.flavor
         self.flavor = self.cfg.flavor[0]
         # for client
         self.cli = cli
@@ -32,6 +40,10 @@ class ConaryPk:
         self.db = cli.db
         # for request query on repository (repos)
         self.repos = cli.repos
+    def _exist_network(self):
+        if not os.environ.get("NETWORK"):
+            Pk = PackageKitBaseBackend("")
+            Pk.error(ERROR_NO_NETWORK,"Not exist network conection")
 
     def _get_db(self):
         """ get the database for do querys """
@@ -49,8 +61,8 @@ class ConaryPk:
     def get_labels_from_config(self):
         labels = []
         for i in self.default_label:
-            if "foresight.rpath.org" or "conary.rpath.com" in i.asString():
-                labels.append(i.asString())
+            #if "foresight.rpath.org" or "conary.rpath.com" in i.asString():
+            labels.append(i.asString())
         return labels
 
     def search_path(self,path_file ):
@@ -63,8 +75,6 @@ class ConaryPk:
                 for ( name,version,flavor) in trove[path_file]:
                     return name
                 
-
-
     def query(self, name):
         """ do a conary query """
         if name is None or name == "":
@@ -79,6 +89,7 @@ class ConaryPk:
 
     def request_query(self, name, installLabel = None):
         """ Do a conary request query """
+        self._exist_network()
         label = self.label( installLabel )
         repos = self._get_repos()
         try:

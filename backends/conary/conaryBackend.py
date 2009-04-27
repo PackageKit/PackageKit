@@ -254,6 +254,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         updJob = self.client.newUpdateJob()
         try:
             log.info("prepare updateJOb...............")
+            log.info(applyList)
             suggMap = self.client.prepareUpdateJob(updJob, applyList)
             log.info("end prepare updateJOB..............")
         except NoNewTrovesError:

@@ -1,6 +1,5 @@
 import os
 import cElementTree
-#from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
 import urllib as url
 
@@ -9,7 +8,7 @@ from conary.lib import sha1helper
 from conary.lib import util
 
 from packagekit.backend import PackageKitBaseBackend
-from packagekit.enums import ERROR_NO_CACHE,ERROR_REPO_CONFIGURATION_ERROR
+from packagekit.enums import ERROR_NO_CACHE,ERROR_REPO_CONFIGURATION_ERROR, ERROR_NO_NETWORK
 
 
 from pkConaryLog import log
@@ -280,18 +279,27 @@ class XMLCache:
         con = ConaryPk()
         labels = con.get_labels_from_config()
         log.info(labels)
+        Pk = PackageKitBaseBackend("")
         for i in labels:
-            label = i + '.xml'
-            filename = self.xml_path + label
-            wwwfile = self.server + label
-            try:
-                wget = url.urlopen( wwwfile )
-            except:
-                Pk = PackageKitBaseBackend("")
-                Pk.error(ERROR_NO_CACHE," %s can not open" % wwwfile)
-            openfile = open( filename ,'w')
-            openfile.writelines(wget.readlines())
-            openfile.close()
+            if "foresight.rpath.org" in i or "conary.rpath.com" in i:
+                label = i + '.xml'
+                filename = self.xml_path + label
+                wwwfile = self.server + label
+                if os.environ.get("NETWORK"):
+                    try:
+                        wget = url.urlopen( wwwfile )
+                    except:
+                        Pk.error(ERROR_NO_NETWORK,"%s can not open" % wwwfile)
+                else:
+                    Pk.error(ERROR_NO_CACHE,"Not exist network conection")
+                openfile = open( filename ,'w')
+                openfile.writelines(wget.readlines())
+                openfile.close()
+            else:
+                import generateXML
+                filename = self.xml_path + i + ".xml"
+                generateXML.init(i,filename)
+
     def getGroup(self,categorieList):
         return getGroup(categorieList)
                 

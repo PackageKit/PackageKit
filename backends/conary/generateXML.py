@@ -6,6 +6,7 @@ from conary.deps import deps
 from conary.lib.cfg import ConfigFile
 from conary.lib.cfgtypes import CfgInt, CfgPath
 import cElementTree
+from pkConaryLog import log
 
 def getPackagesFromLabel(cfg, cli, label):
     '''
@@ -25,13 +26,12 @@ def getPackagesFromLabel(cfg, cli, label):
         if ':' in name:
             # Skip components
             continue
-
         latestVersion = max(trove_versions.iterkeys())
         flavors = trove_versions[latestVersion]
         for flavor in flavors:
-            if flavor.satisfies(searchFlavor):
-                ret.add((name, latestVersion, flavor))
-                break
+            #if flavor.satisfies(searchFlavor):
+            ret.add((name, latestVersion, flavor))
+            break
     return ret
 
 
@@ -73,12 +73,14 @@ def init(label, fileoutput ):
     cli = conary.cli
 
     cfg = conary.cfg
+    log.info(" write %s on xml" %  label)
     pkgs = getPackagesFromLabel(cfg,cli,label)
     troves = conary.repos.getTroves(pkgs,withFiles=False)
     nodes = generate_xml(troves,label)
     cElementTree.ElementTree(nodes).write(fileoutput)
+    log.info("%s repo done" % label)
 
 
 
 if __name__ == "__main__":
-    init('zodyrepo.rpath.org@rpl:devel')
+    init('zodyrepo.rpath.org@rpl:devel','tmp.xml')
