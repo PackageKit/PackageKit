@@ -73,11 +73,10 @@ Client::~Client()
 Client::Actions Client::getActions()
 {
 	QStringList actions = d->daemon->GetActions().value().split(";");
+
 	Actions flags;
-	int value;
 	foreach(const QString& action, actions) {
-		value = Util::enumFromString<Client>(action, "Action", "Action");
-		flags.insert((Action)value);
+		flags |= (Action) Util::enumFromString<Client>(action, "Action", "Action");
 	}
 	return flags;
 }
@@ -102,10 +101,8 @@ Client::Filters Client::getFilters()
 	}
 
 	Filters flags;
-	int value;
 	foreach(const QString& filter, filters) {
-		value = Util::enumFromString<Client>(filter, "Filter", "Filter");
-		flags.insert((Filter)value);
+		flags |= (Filter) Util::enumFromString<Client>(filter, "Filter", "Filter");
 	}
 	return flags;
 }
@@ -115,10 +112,8 @@ Client::Groups Client::getGroups()
 	QStringList groups = d->daemon->GetGroups().value().split(";");
 
 	Groups flags;
-	int value;
 	foreach(const QString& group, groups) {
-		value = Util::enumFromString<Client>(group, "Group", "Group");
-		flags.insert((Group)value);
+		flags.insert((Group) Util::enumFromString<Client>(group, "Group", "Group"));
 	}
 	return flags;
 }
@@ -131,8 +126,7 @@ QStringList Client::getMimeTypes()
 Client::NetworkState Client::getNetworkState()
 {
 	QString state = d->daemon->GetNetworkState();
-	int value = Util::enumFromString<Client>(state, "NetworkState", "Network");
-	return (NetworkState)value;
+	return (NetworkState) Util::enumFromString<Client>(state, "NetworkState", "Network");
 }
 
 uint Client::getTimeSinceAction(Action action)
@@ -228,7 +222,6 @@ Transaction* Client::getDepends(const QList<Package*>& packages, Filters filters
 		return NULL;
 	}
 
-
 	t->d->p->GetDepends(Util::filtersToString(filters), Util::packageListToPids(packages), recursive);
 
 	return t;
@@ -237,16 +230,6 @@ Transaction* Client::getDepends(const QList<Package*>& packages, Filters filters
 Transaction* Client::getDepends(Package* package, Filters filters, bool recursive)
 {
 	return getDepends(QList<Package*>() << package, filters, recursive);
-}
-
-Transaction* Client::getDepends(const QList<Package*>& packages, Filter filter, bool recursive)
-{
-	return getDepends(packages, Filters() << filter, recursive);
-}
-
-Transaction* Client::getDepends(Package* package, Filter filter, bool recursive)
-{
-	return getDepends(QList<Package*>() << package, filter, recursive);
 }
 
 Transaction* Client::getDetails(const QList<Package*>& packages)
@@ -315,11 +298,6 @@ Transaction* Client::getPackages(Filters filters)
 	return t;
 }
 
-Transaction* Client::getPackages(Filter filter)
-{
-	return getPackages(Filters() << filter);
-}
-
 Transaction* Client::getRepoList(Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
@@ -331,11 +309,6 @@ Transaction* Client::getRepoList(Filters filters)
 	t->d->p->GetRepoList(Util::filtersToString(filters));
 
 	return t;
-}
-
-Transaction* Client::getRepoList(Filter filter)
-{
-	return getRepoList(Filters() << filter);
 }
 
 Transaction* Client::getRequires(const QList<Package*>& packages, Filters filters, bool recursive)
@@ -354,16 +327,6 @@ Transaction* Client::getRequires(const QList<Package*>& packages, Filters filter
 Transaction* Client::getRequires(Package* package, Filters filters, bool recursive)
 {
 	return getRequires(QList<Package*>() << package, filters, recursive);
-}
-
-Transaction* Client::getRequires(const QList<Package*>& packages, Filter filter, bool recursive)
-{
-	return getRequires(packages, Filters() << filter, recursive);
-}
-
-Transaction* Client::getRequires(Package* package, Filter filter, bool recursive)
-{
-	return getRequires(QList<Package*>() << package, filter, recursive);
 }
 
 Transaction* Client::getUpdateDetail(const QList<Package*>& packages)
@@ -395,11 +358,6 @@ Transaction* Client::getUpdates(Filters filters)
 	t->d->p->GetUpdates(Util::filtersToString(filters));
 
 	return t;
-}
-
-Transaction* Client::getUpdates(Filter filter)
-{
-	return getUpdates(Filters() << filter);
 }
 
 Transaction* Client::getDistroUpgrades()
@@ -570,19 +528,9 @@ Transaction* Client::resolve(const QStringList& packageNames, Filters filters)
 	return t;
 }
 
-Transaction* Client::resolve(const QStringList& packageNames, Filter filter)
-{
-	return resolve(packageNames, Filters() << filter);
-}
-
 Transaction* Client::resolve(const QString& packageName, Filters filters)
 {
 	return resolve(QStringList() << packageName, filters);
-}
-
-Transaction* Client::resolve(const QString& packageName, Filter filter)
-{
-	return resolve(packageName, Filters() << filter);
 }
 
 Transaction* Client::rollback(Transaction* oldtrans)
@@ -616,11 +564,6 @@ Transaction* Client::searchFile(const QString& search, Filters filters)
         return t;
 }
 
-Transaction* Client::searchFile(const QString& search, Filter filter)
-{
-        return Client::searchFile(search, Filters() << filter);
-}
-
 Transaction* Client::searchDetails(const QString& search, Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
@@ -632,11 +575,6 @@ Transaction* Client::searchDetails(const QString& search, Filters filters)
 	t->d->p->SearchDetails(Util::filtersToString(filters), search);
 
 	return t;
-}
-
-Transaction* Client::searchDetails(const QString& search, Filter filter)
-{
-        return Client::searchDetails(search, Filters() << filter);
 }
 
 Transaction* Client::searchGroup(Client::Group group, Filters filters)
@@ -652,11 +590,6 @@ Transaction* Client::searchGroup(Client::Group group, Filters filters)
 	return t;
 }
 
-Transaction* Client::searchGroup(Client::Group group, Filter filter)
-{
-	return searchGroup(group, Filters() << filter);
-}
-
 Transaction* Client::searchName(const QString& search, Filters filters)
 {
 	Transaction* t = d->createNewTransaction();
@@ -668,11 +601,6 @@ Transaction* Client::searchName(const QString& search, Filters filters)
 	t->d->p->SearchName(Util::filtersToString(filters), search);
 
 	return t;
-}
-
-Transaction* Client::searchName(const QString& search, Filter filter)
-{
-	return Client::searchName(search, Filters() << filter);
 }
 
 Package* Client::searchFromDesktopFile(const QString& path)
@@ -750,11 +678,6 @@ Transaction* Client::whatProvides(ProvidesType type, const QString& search, Filt
 	t->d->p->WhatProvides(Util::filtersToString(filters), Util::enumToString<Client>(type, "ProvidesType", "Provides"), search);
 
 	return t;
-}
-
-Transaction* Client::whatProvides(ProvidesType type, const QString& search, Filter filter)
-{
-	return whatProvides(type, search, Filters() << filter);
 }
 
 #include "client.moc"

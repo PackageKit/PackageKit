@@ -82,8 +82,10 @@ public:
 		QMetaEnum e = T::staticMetaObject.enumerator(id);
 		int enumValue = e.keyToValue(realName.toAscii().data());
 
-		if(enumValue == -1)
-			qDebug() << "enumFromString (" << enumName << ") : converted" << str << "to" << realName << ", enum value" << enumValue;
+		if(enumValue == -1) {
+			enumValue = e.keyToValue(QString("Unknown").append(enumName).toAscii().data());
+			qDebug() << "enumFromString (" << enumName << ") : converted" << str << "to" << QString("Unknown").append(enumName) << ", enum value" << enumValue;
+		}
 		return enumValue;
 	}
 
@@ -125,7 +127,7 @@ public:
 
 	static QStringList packageListToPids(const QList<Package*>& packages);
 
-	static QString filtersToString(const QSet<PackageKit::Client::Filter>& flags);
+	static QString filtersToString(const QFlags<PackageKit::Client::Filter>& flags);
 
 
 };

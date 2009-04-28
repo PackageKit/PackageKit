@@ -176,7 +176,7 @@ public:
 		StatusScanApplications,
 		StatusGeneratePackageList,
 		StatusWaitingForLock,
-		UnknownStatus = -1
+		UnknownStatus
 	} Status;
 	/**
 	 * Returns the current state of the transaction
@@ -238,7 +238,7 @@ public:
 		ExitEulaRequired,
 		ExitKilled, /* when we forced the cancel, but had to sigkill */
 		ExitMediaChangeRequired,
-		UnknownExitStatus = -1
+		UnknownExitStatus
 	} ExitStatus;
 
 	/**
@@ -248,7 +248,7 @@ public:
 		MediaCd,
 		MediaDvd,
 		MediaDisc,
-		UnknownMediaType = -1
+		UnknownMediaType
 	} MediaType;
 
 public Q_SLOTS:

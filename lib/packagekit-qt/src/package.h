@@ -102,7 +102,7 @@ public:
 		StateCollectionInstalled,
 		StateCollectionAvailable,
 		StateFinished,
-		UnknownState = -1
+		UnknownState
 	} State;
 	/**
 	 * Returns the package's state
@@ -238,7 +238,7 @@ public:
 		LicenseXerox,
 		LicenseRicebsd,
 		LicenseQhull,
-		UnknownLicense = -1
+		UnknownLicense
 	} License;
 
 	/**
