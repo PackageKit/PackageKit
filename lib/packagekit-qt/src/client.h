@@ -630,7 +630,6 @@ public:
 	 * The \p filters can be used to restrict the search
 	 */
 	Transaction* resolve(const QStringList& packageNames, Filters filters = NoFilter);
-	Transaction* resolve(Package* package, Filters filters = NoFilter);
 	Transaction* resolve(const QString& packageName, Filters filters = NoFilter);
 
 	/**
