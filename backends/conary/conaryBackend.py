@@ -560,8 +560,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         #log.debug("refresh-cache command ")
     #    self.percentage()
 
-        self.percentage(None)
         self.status(STATUS_REFRESH_CACHE)
+        self.percentage(None)
         cache = Cache()
         cache.refresh()
 

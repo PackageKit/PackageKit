@@ -82,9 +82,9 @@ class XMLRepo:
                 r = self.xml_path +self.repo
                 self._repo =   cElementTree.parse(r).getroot()
                 return self._repo
-            except ExpatError:
+            except:
                 Pk = PackageKitBaseBackend("")
-                Pk.error(ERROR_REPO_CONFIGURATION_ERROR," The file %s not parsed submit a issue " % ( self.xml_path + self.repo, ) )
+                Pk.error(ERROR_REPO_CONFIGURATION_ERROR," The file %s not parsed submit a issue at http://issues.foresightlinux.org" % self.repo )
        
 
     def _generatePackage(self, package_node ): 
