@@ -51,7 +51,6 @@ backend_destroy (PkBackend *backend)
 
 /**
  * backend_get_groups:
- */
 static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
@@ -70,6 +69,7 @@ backend_get_groups (PkBackend *backend)
 		-1);
 }
 
+ */
 /**
  * backend_get_filters:
  */
@@ -235,7 +235,6 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 
 /**
     pk_backend_search_groups
-*/
 static void
 backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
@@ -246,6 +245,7 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *searc
 }
 
 
+*/
 
 /**
     pk_backend_search_details
@@ -355,7 +355,7 @@ PK_BACKEND_OPTIONS (
 						/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
-	backend_get_groups,			/* get_groups */
+	NULL,//backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* get_mime_types */
 	backend_cancel,				/* cancel */
@@ -381,7 +381,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* rollback */
 	backend_search_details,					/* search_details */
 	backend_search_file,					/* search_file */
-	backend_search_group,					/* search_group */
+	NULL, //backend_search_group,					/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
