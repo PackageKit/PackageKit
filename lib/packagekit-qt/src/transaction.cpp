@@ -139,12 +139,7 @@ Transaction::RoleInfo Transaction::role()
 	QString terms;
 	RoleInfo i;
 
-	int roleValue = Util::enumFromString<Client>(d->p->GetRole(terms).value(), "Action", "Action");
-	if(roleValue == -1)
-		i.action = Client::UnkownAction;
-	else
-		i.action = (Client::Action)roleValue;
-
+	i.action = (Client::Action) Util::enumFromString<Client>(d->p->GetRole(terms).value(), "Action", "Action");
 	i.terms = terms.split(";");
 
 	return i;
@@ -157,11 +152,7 @@ void Transaction::setLocale(const QString& locale)
 
 Transaction::Status Transaction::status()
 {
-	int statusValue = Util::enumFromString<Transaction>(d->p->GetStatus().value(), "Status", "Status");
-	if(statusValue == -1)
-		return UnknownStatus;
-	else
-		return (Transaction::Status)statusValue;
+	return (Transaction::Status) Util::enumFromString<Transaction>(d->p->GetStatus().value(), "Status", "Status");
 }
 
 QDateTime Transaction::timespec()

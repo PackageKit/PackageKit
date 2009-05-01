@@ -82,39 +82,39 @@ public:
 	 * \sa getActions
 	 */
 	typedef enum {
-		ActionCancel,
-		ActionGetDepends,
-		ActionGetDetails,
-		ActionGetFiles,
-		ActionGetPackages,
-		ActionGetRepoList,
-		ActionGetRequires,
-		ActionGetUpdateDetail,
-		ActionGetUpdates,
-		ActionInstallFiles,
-		ActionInstallPackages,
-		ActionInstallSignature,
-		ActionRefreshCache,
-		ActionRemovePackages,
-		ActionRepoEnable,
-		ActionRepoSetData,
-		ActionResolve,
-		ActionRollback,
-		ActionSearchDetails,
-		ActionSearchFile,
-		ActionSearchGroup,
-		ActionSearchName,
-		ActionUpdatePackages,
-		ActionUpdateSystem,
-		ActionWhatProvides,
-		ActionAcceptEula,
-		ActionDownloadPackages,
-		ActionGetDistroUpgrades,
-		ActionGetCategories,
-		ActionGetOldTransactions,
-		UnkownAction = -1
+		ActionCancel		 = 0x00000001,
+		ActionGetDepends	 = 0x00000002,
+		ActionGetDetails	 = 0x00000004,
+		ActionGetFiles		 = 0x00000008,
+		ActionGetPackages	 = 0x00000010,
+		ActionGetRepoList	 = 0x00000020,
+		ActionGetRequires	 = 0x00000040,
+		ActionGetUpdateDetail	 = 0x00000080,
+		ActionGetUpdates	 = 0x00000100,
+		ActionInstallFiles	 = 0x00000200,
+		ActionInstallPackages	 = 0x00000400,
+		ActionInstallSignature	 = 0x00000800,
+		ActionRefreshCache	 = 0x00001000,
+		ActionRemovePackages	 = 0x00002000,
+		ActionRepoEnable	 = 0x00004000,
+		ActionRepoSetData	 = 0x00008000,
+		ActionResolve		 = 0x00010000,
+		ActionRollback		 = 0x00020000,
+		ActionSearchDetails	 = 0x00040000,
+		ActionSearchFile	 = 0x00080000,
+		ActionSearchGroup	 = 0x00100000,
+		ActionSearchName	 = 0x00200000,
+		ActionUpdatePackages	 = 0x00400000,
+		ActionUpdateSystem	 = 0x00800000,
+		ActionWhatProvides	 = 0x01000000,
+		ActionAcceptEula	 = 0x02000000,
+		ActionDownloadPackages	 = 0x04000000,
+		ActionGetDistroUpgrades	 = 0x08000000,
+		ActionGetCategories	 = 0x10000000,
+		ActionGetOldTransactions = 0x20000000,
+		UnknownAction		 = 0x40000000
 	} Action;
-	typedef QSet<Action> Actions;
+	Q_DECLARE_FLAGS(Actions, Action);
 
 	/**
 	 * Returns all the actions supported by the current backend
@@ -141,34 +141,34 @@ public:
 	 * Describes the different filters
 	 */
 	typedef enum {
-		NoFilter,
-		FilterInstalled,
-		FilterNotInstalled,
-		FilterDevelopment,
-		FilterNotDevelopment,
-		FilterGui,
-		FilterNotGui,
-		FilterFree,
-		FilterNotFree,
-		FilterVisible,
-		FilterNotVisible,
-		FilterSupported,
-		FilterNotSupported,
-		FilterBasename,
-		FilterNotBasename,
-		FilterNewest,
-		FilterNotNewest,
-		FilterArch,
-		FilterNotArch,
-		FilterSource,
-		FilterNotSource,
-		FilterCollections,
-		FilterNotCollections,
-		FilterApplication,
-		FilterNotApplication,
-		UnknownFilter = -1
+		NoFilter		 = 0x0000001,
+		FilterInstalled		 = 0x0000002,
+		FilterNotInstalled	 = 0x0000004,
+		FilterDevelopment	 = 0x0000008,
+		FilterNotDevelopment	 = 0x0000010,
+		FilterGui		 = 0x0000020,
+		FilterNotGui		 = 0x0000040,
+		FilterFree		 = 0x0000080,
+		FilterNotFree		 = 0x0000100,
+		FilterVisible		 = 0x0000200,
+		FilterNotVisible	 = 0x0000400,
+		FilterSupported		 = 0x0000800,
+		FilterNotSupported	 = 0x0001000,
+		FilterBasename		 = 0x0002000,
+		FilterNotBasename	 = 0x0004000,
+		FilterNewest		 = 0x0008000,
+		FilterNotNewest		 = 0x0010000,
+		FilterArch		 = 0x0020000,
+		FilterNotArch		 = 0x0040000,
+		FilterSource		 = 0x0080000,
+		FilterNotSource		 = 0x0100000,
+		FilterCollections	 = 0x0200000,
+		FilterNotCollections	 = 0x0400000,
+		FilterApplication	 = 0x0800000,
+		FilterNotApplication	 = 0x1000000,
+		UnknownFilter		 = 0x2000000
 	} Filter;
-	typedef QSet<Filter> Filters;
+	Q_DECLARE_FLAGS(Filters, Filter);
 
 	/**
 	 * Returns the filters supported by the current backend
@@ -213,7 +213,7 @@ public:
 		GroupCollections,
 		GroupVendor,
 		GroupNewest,
-		UnknownGroup = -1
+		UnknownGroup
 	} Group;
 	typedef QSet<Group> Groups;
 
@@ -236,7 +236,7 @@ public:
 		NetworkWired,
 		NetworkWifi,
 		NetworkMobile,
-		UnknownNetworkState = -1
+		UnknownNetworkState
 	} NetworkState;
 
 	/**
@@ -282,7 +282,7 @@ public:
 	 */
 	typedef enum {
 		SignatureGpg,
-		UnknownSignatureType = -1
+		UnknownSignatureType
 	} SignatureType;
 
 	/**
@@ -314,7 +314,7 @@ public:
 		ProvidesMimetype,
 		ProvidesFont,
 		ProvidesHardwareDriver,
-		UnknownProvidesType = -1
+		UnknownProvidesType
 	} ProvidesType;
 
 	/**
@@ -368,7 +368,7 @@ public:
 		ErrorIncompatibleArchitecture,
 		ErrorNoSpaceOnDevice,
 		ErrorMediaChangeRequired,
-		UnknownErrorType = -1
+		UnknownErrorType
 	} ErrorType;
 
 	/**
@@ -387,7 +387,7 @@ public:
 		MessageCouldNotFindPackage,
 		MessageConfigFilesChanged,
 		MessagePackageAlreadyInstalled,
-		UnknownMessageType = -1
+		UnknownMessageType
 	} MessageType;
 
 	/**
@@ -412,7 +412,7 @@ public:
 		RestartApplication,
 		RestartSession,
 		RestartSystem,
-		UnknownRestartType = -1
+		UnknownRestartType
 	} RestartType;
 
 	/**
@@ -422,7 +422,7 @@ public:
 		UpdateStable,
 		UpdateUnstable,
 		UpdateTesting,
-		UnknownUpdateState = -1
+		UnknownUpdateState
 	} UpdateState;
 
 	/**
@@ -431,7 +431,7 @@ public:
 	typedef enum {
 		DistroUpgradeStable,
 		DistroUpgradeUnstable,
-		UnknownDistroUpgrade = -1
+		UnknownDistroUpgrade
 	} DistroUpgradeType;
 
 	/**
@@ -439,7 +439,7 @@ public:
 	 */
 	typedef enum {
 		DaemonUnreachable,
-		UnkownDaemonError = -1
+		UnkownDaemonError
 	} DaemonError;
 	/**
 	 * Returns the last daemon error that was caught
@@ -513,10 +513,8 @@ public:
 	 * \sa Transaction::package
 	 *
 	 */
-	Transaction* getDepends(const QList<Package*>& packages, Filters filters = Filters() << NoFilter, bool recursive = true);
-	Transaction* getDepends(Package* package, Filters filters = Filters() << NoFilter, bool recursive = true);
-	Transaction* getDepends(const QList<Package*>& packages, Filter filter, bool recursive = true);
-	Transaction* getDepends(Package* package, Filter filter, bool recursive = true);
+	Transaction* getDepends(const QList<Package*>& packages, Filters filters = NoFilter, bool recursive = true);
+	Transaction* getDepends(Package* package, Filters filters = NoFilter, bool recursive = true);
 
 	/**
 	 * Gets more details about the given \p packages
@@ -546,14 +544,12 @@ public:
 	 *
 	 * \sa Transaction::package
 	 */
-	Transaction* getPackages(Filters filters = Filters() << NoFilter);
-	Transaction* getPackages(Filter filter);
+	Transaction* getPackages(Filters filters = NoFilter);
 
 	/**
 	 * Gets the list of software repositories matching the given \p filters
 	 */
-	Transaction* getRepoList(Filters filter = Filters() << NoFilter);
-	Transaction* getRepoList(Filter filter);
+	Transaction* getRepoList(Filters filter = NoFilter);
 
 	/**
 	 * \brief Searches for the packages requiring the given \p packages
@@ -561,10 +557,8 @@ public:
 	 * The search can be limited using the \p filters parameter. The recursive flag is used to tell
 	 * if the package manager should also search for the package requiring the resulting packages.
 	 */
-	Transaction* getRequires(const QList<Package*>& packages, Filters filters = Filters() << NoFilter, bool recursive = true);
-	Transaction* getRequires(Package* package, Filters filters = Filters() << NoFilter, bool recursive = true);
-	Transaction* getRequires(const QList<Package*>& packages, Filter filter, bool recursive = true);
-	Transaction* getRequires(Package* package, Filter filter, bool recursive = true);
+	Transaction* getRequires(const QList<Package*>& packages, Filters filters = NoFilter, bool recursive = true);
+	Transaction* getRequires(Package* package, Filters filters = NoFilter, bool recursive = true);
 
 	/**
 	 * Retrieves more details about the update for the given \p packages
@@ -577,8 +571,7 @@ public:
 	 *
 	 * The \p filters parameters can be used to restrict the updates returned
 	 */
-	Transaction* getUpdates(Filters filters = Filters() << NoFilter);
-	Transaction* getUpdates(Filter filter);
+	Transaction* getUpdates(Filters filters = NoFilter);
 
 	/**
 	 * Retrieves the available distribution upgrades
@@ -636,11 +629,8 @@ public:
 	 *
 	 * The \p filters can be used to restrict the search
 	 */
-	Transaction* resolve(const QStringList& packageNames, Filters filters = Filters() << NoFilter);
-	Transaction* resolve(Package* package, Filters filters = Filters() << NoFilter);
-	Transaction* resolve(const QStringList& packageNames, Filter filter);
-	Transaction* resolve(const QString& packageName, Filters filters = Filters() << NoFilter);
-	Transaction* resolve(const QString& packageName, Filter filter);
+	Transaction* resolve(const QStringList& packageNames, Filters filters = NoFilter);
+	Transaction* resolve(const QString& packageName, Filters filters = NoFilter);
 
 	/**
 	 * Rolls back the given \p transactions
@@ -652,32 +642,28 @@ public:
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchFile(const QString& search, Filters filters = Filters() << NoFilter);
-	Transaction* searchFile(const QString& search, Filter filter);
+	Transaction* searchFile(const QString& search, Filters filters = NoFilter);
 
 	/**
 	 * \brief Search in the packages details
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchDetails(const QString& search, Filters filters = Filters() << NoFilter);
-	Transaction* searchDetails(const QString& search, Filter filter);
+	Transaction* searchDetails(const QString& search, Filters filters = NoFilter);
 
 	/**
 	 * \brief Lists all the packages in the given \p group
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchGroup(Client::Group group, Filters filters = Filters() << NoFilter);
-	Transaction* searchGroup(Client::Group group, Filter filter);
+	Transaction* searchGroup(Client::Group group, Filters filters = NoFilter);
 
 	/**
 	 * \brief Search in the packages names
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchName(const QString& search, Filters filters = Filters() << NoFilter);
-	Transaction* searchName(const QString& search, Filter filter);
+	Transaction* searchName(const QString& search, Filters filters = NoFilter);
 
 	/**
 	 * \brief Tries to find a package name from a desktop file
@@ -703,8 +689,7 @@ public:
 	/**
 	 * Searchs for a package providing a file/a mimetype
 	 */
-	Transaction* whatProvides(ProvidesType type, const QString& search, Filters filters = Filters() << NoFilter);
-	Transaction* whatProvides(ProvidesType type, const QString& search, Filter filter);
+	Transaction* whatProvides(ProvidesType type, const QString& search, Filters filters = NoFilter);
 
 Q_SIGNALS:
 	/**
@@ -757,6 +742,8 @@ private:
 	friend class ClientPrivate;
 	ClientPrivate* d;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Client::Actions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Client::Filters)
 
 } // End namespace PackageKit
 
