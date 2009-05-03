@@ -946,11 +946,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         return False
 
     def _splitpackage(self, package):
-        from smart.backends.rpm.base import RPMPackage
+        #from smart.backends.rpm.base import RPMPackage
         from smart.backends.deb.base import DebPackage
         from smart.backends.slack.base import SlackPackage
         #from smart.backends.arch.base import ArchPackage
-        if isinstance(package, RPMPackage):
+        #if isinstance(package, RPMPackage):
+        if package.__class__.__name__ == 'RPMPackage':
             name = package.name
             version, arch = package.version.split('@')
         elif isinstance(package, DebPackage):
