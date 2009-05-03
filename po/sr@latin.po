@@ -10,13 +10,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-03-27 19:07+0000\n"
-"PO-Revision-Date: 2009-03-27 14:57-0400\n"
-"Last-Translator: Igor Miletic (Igor Miletić) <grejigl-gnomeprevod@yahoo.ca>\n"
+"POT-Creation-Date: 2009-05-03 19:22+0000\n"
+"PO-Revision-Date: 2009-05-03 22:29+0100\n"
+"Last-Translator: Miloš Komarčević <kmilos@gmail.com>\n"
 "Language-Team: Serbian <fedora-trans-sr@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4;    plural=n==1? 3 : n%10==1 && n%100!=11 ? 0 :    n"
 "%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
@@ -435,213 +435,218 @@ msgstr "Greška:"
 msgid "Package description"
 msgstr "Opis paketa"
 
+#. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
+#: ../client/pk-console.c:1473
+msgid "Message:"
+msgstr "Poruka:"
+
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1491
+#: ../client/pk-console.c:1501
 msgid "Package files"
 msgstr "Spisak datoteka"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1499
+#: ../client/pk-console.c:1509
 msgid "No files"
 msgstr "Nema datoteka"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1522
+#: ../client/pk-console.c:1532
 msgid "Repository signature required"
 msgstr "Potpis riznice je obavezan"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1532
+#: ../client/pk-console.c:1542
 msgid "Do you accept this signature?"
 msgstr "Prihvatate li ovaj potpis?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1536
+#: ../client/pk-console.c:1546
 msgid "The signature was not accepted."
 msgstr "Ovaj potpis nije prihvaćen."
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1570
+#: ../client/pk-console.c:1580
 msgid "End user license agreement required"
 msgstr "Licenci dogovor sa krajnjim korisnikom je obavezan"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1577
+#: ../client/pk-console.c:1587
 msgid "Do you agree to this license?"
 msgstr "Slažete li se sa ovom licencom?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1581
+#: ../client/pk-console.c:1591
 msgid "The license was refused."
 msgstr "Licenca je odbijena."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1610
+#: ../client/pk-console.c:1620
 msgid "The daemon crashed mid-transaction!"
 msgstr "Uslužni program se iznenada prekinuo!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1663
+#: ../client/pk-console.c:1673
 msgid "PackageKit Console Interface"
 msgstr "Tekstualno sučelje programa PaketKit"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1665
+#: ../client/pk-console.c:1675
 msgid "Subcommands:"
 msgstr "Naredbe:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1757 ../client/pk-generate-pack.c:185
+#: ../client/pk-console.c:1767 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
 #: ../contrib/command-not-found/pk-command-not-found.c:518
-#: ../src/pk-main.c:199
+#: ../src/pk-main.c:201
 msgid "Show extra debugging information"
 msgstr "Prikaži dodatne podatke za otkrivanje grešaka"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1760 ../client/pk-monitor.c:127
+#: ../client/pk-console.c:1770 ../client/pk-monitor.c:127
 msgid "Show the program version and exit"
 msgstr "Prikaži verziju programa i završi rad"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1763
+#: ../client/pk-console.c:1773
 msgid "Set the filter, e.g. installed"
 msgstr "Namesti filter, npr. instalirani"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1766
+#: ../client/pk-console.c:1776
 msgid "Exit without waiting for actions to complete"
 msgstr "Završi rad bez čekanja da se poslovi završe"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1793
+#: ../client/pk-console.c:1803
 msgid "This tool could not connect to system DBUS."
 msgstr "Ne mogu da se povežem na sistemsku komunikacionu magistralu (DBUS)."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1880
+#: ../client/pk-console.c:1894
 msgid "The filter specified was invalid"
 msgstr "Navedeni filter nije ispravan"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1898
+#: ../client/pk-console.c:1912
 msgid "A search type is required, e.g. name"
 msgstr "Morate navesti vrstu pretrage, npr. po imenu"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1904 ../client/pk-console.c:1912
-#: ../client/pk-console.c:1920 ../client/pk-console.c:1928
+#: ../client/pk-console.c:1918 ../client/pk-console.c:1926
+#: ../client/pk-console.c:1934 ../client/pk-console.c:1942
 msgid "A search term is required"
 msgstr "Morate navesti termin za pretragu"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1934
+#: ../client/pk-console.c:1948
 msgid "Invalid search type"
 msgstr "Neispravna vrsta pretrage"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1940
+#: ../client/pk-console.c:1954
 msgid "A package name or filename to install is required"
 msgstr "Morate navesti ime paketa ili ime datoteke za instalaciju"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1948
+#: ../client/pk-console.c:1962
 msgid "A type, key_id and package_id are required"
 msgstr "Morate navesti vrstu, IB ključa i IB paketa (key_id i package_id)"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1956
+#: ../client/pk-console.c:1970
 msgid "A package name to remove is required"
 msgstr "Morate navesti naziv paketa za uklanjanje"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1963
+#: ../client/pk-console.c:1977
 msgid ""
 "A destination directory and then the package names to download are required"
 msgstr "Morate navesti odredišni direktorijum pa onda pakete za preuzimanje"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1969
+#: ../client/pk-console.c:1983
 msgid "Directory not found"
 msgstr "Direktorijum nije nađen"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1976
+#: ../client/pk-console.c:1990
 msgid "A licence identifier (eula-id) is required"
 msgstr "Morete navesti identifikator licence (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1985
+#: ../client/pk-console.c:1999
 msgid "A transaction identifier (tid) is required"
 msgstr "Morate navesti identifikator transakcije (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2001
+#: ../client/pk-console.c:2015
 msgid "A package name to resolve is required"
 msgstr "Morate navesti ime paketa za razrešavanje"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2009 ../client/pk-console.c:2017
+#: ../client/pk-console.c:2023 ../client/pk-console.c:2031
 msgid "A repository name is required"
 msgstr "Morate navesti ime riznice"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2025
+#: ../client/pk-console.c:2039
 msgid "A repo name, parameter and value are required"
 msgstr "Morate navesti ime, parametar i vrednost riznice"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2038
+#: ../client/pk-console.c:2052
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Morate navesti radnju, npr. „update-system“ (ažuriranje sistema)"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2044
+#: ../client/pk-console.c:2058
 msgid "A correct role is required"
 msgstr "Morate navesti važeću radnju"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2050
+#: ../client/pk-console.c:2064
 msgid "Failed to get the time since this action was last completed"
 msgstr "Datum poslednjeg izvršavanja ove radnje nije pronađen"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2059 ../client/pk-console.c:2070
-#: ../client/pk-console.c:2078 ../client/pk-console.c:2094
-#: ../client/pk-console.c:2102 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2073 ../client/pk-console.c:2084
+#: ../client/pk-console.c:2092 ../client/pk-console.c:2108
+#: ../client/pk-console.c:2116 ../client/pk-generate-pack.c:241
 msgid "A package name is required"
 msgstr "Morate navesti ime paketa"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2086
+#: ../client/pk-console.c:2100
 msgid "A package provide string is required"
 msgstr "Morate navesti „provide“ niz (šta paket pruža)"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2110
+#: ../client/pk-console.c:2124
 msgid "A list file name to create is required"
 msgstr "Morate navesti ime datoteke spiska koja će se napraviti"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2119 ../client/pk-console.c:2128
+#: ../client/pk-console.c:2133 ../client/pk-console.c:2142
 msgid "A list file to open is required"
 msgstr "Morate navesti datoteku spiska za otvaranje"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2181
+#: ../client/pk-console.c:2195
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Opcija „%s“ nije podržana"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2194
+#: ../client/pk-console.c:2208
 msgid "Incorrect privileges for this operation"
 msgstr "Neispravna ovlašćenja za ovu operaciju"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2197
+#: ../client/pk-console.c:2211
 msgid "Command failed"
 msgstr "Naredba nije uspela"
 
@@ -799,56 +804,56 @@ msgid "PackageKit Command Not Found"
 msgstr "PaketKit naredba nije nađena"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:556
+#: ../contrib/command-not-found/pk-command-not-found.c:557
 msgid "Command not found."
 msgstr "Naredba nije nađena."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:563
+#: ../contrib/command-not-found/pk-command-not-found.c:564
 msgid "Similar command is:"
 msgstr "Slična naredba je:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:572
+#: ../contrib/command-not-found/pk-command-not-found.c:573
 msgid "Run similar command:"
 msgstr "Pokreni sličnu naredbu:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:584
-#: ../contrib/command-not-found/pk-command-not-found.c:593
+#: ../contrib/command-not-found/pk-command-not-found.c:585
+#: ../contrib/command-not-found/pk-command-not-found.c:594
 msgid "Similar commands are:"
 msgstr "Slične naredbe su:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:600
+#: ../contrib/command-not-found/pk-command-not-found.c:601
 msgid "Please choose a command to run"
 msgstr "Izaberite naredbu za pokretanje"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:615
+#: ../contrib/command-not-found/pk-command-not-found.c:616
 msgid "The package providing this file is:"
 msgstr "Paket koji pruža ovu datoteku je:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:620
+#: ../contrib/command-not-found/pk-command-not-found.c:621
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Da instaliram paket „%s“ koji pruža naredbu „%s“?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:641
+#: ../contrib/command-not-found/pk-command-not-found.c:642
 msgid "Packages providing this file are:"
 msgstr "Paketi koji pružaju ovu datoteku su:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:650
+#: ../contrib/command-not-found/pk-command-not-found.c:651
 msgid "Suitable packages are:"
 msgstr "Prikladni paketi su:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:658
+#: ../contrib/command-not-found/pk-command-not-found.c:659
 msgid "Please choose a package to install"
 msgstr "Izaberite paket za instalaciju"
 
@@ -1042,47 +1047,47 @@ msgstr ""
 "direktorijum:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:195
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Pozadinski sistem u upotrebi, npr. „dummy“ (probni)"
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:196
+#: ../src/pk-main.c:198
 msgid "Daemonize and detach from the terminal"
 msgstr "Odvoji od terminala i nastavi rad kao uslužni program"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:202
+#: ../src/pk-main.c:204
 msgid "Disable the idle timer"
 msgstr "Onemogući merač čekanja"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:205
+#: ../src/pk-main.c:207
 msgid "Show version and exit"
 msgstr "Prikaži verziju i završi rad"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:208
+#: ../src/pk-main.c:210
 msgid "Exit after a small delay"
 msgstr "Izađi posle kratke zadrške"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:211
+#: ../src/pk-main.c:213
 msgid "Exit after the engine has loaded"
 msgstr "Završi rad nakon što se učita pozadinski sistem"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:226
+#: ../src/pk-main.c:228
 msgid "PackageKit service"
 msgstr "Servis PaketKita"
 
 #. TRANSLATORS: fatal error, dbus is not running
-#: ../src/pk-main.c:263
+#: ../src/pk-main.c:265
 msgid "Cannot connect to the system bus"
 msgstr "Ne mogu da se povežem na sistemsku magistralu"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason
-#: ../src/pk-main.c:313
+#: ../src/pk-main.c:317
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Greška pri pokretanju: %s\n"
@@ -1196,8 +1201,3 @@ msgstr "Greška pri pokretanju: %s\n"
 
 #~ msgid "Could not find a description for this package"
 #~ msgstr "Ne mogu da pribavim opis za ovaj paket"
-
-# msgstr "Nisam uspeo da otkrijem prethodno vreme"
-# msgstr "Prošli put nisam uspeo da preuzmem"
-#~ msgid "You need to specify a package to find the description for"
-#~ msgstr "Moraš navesti ime paketa za prikaz opisa"
