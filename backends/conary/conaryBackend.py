@@ -924,6 +924,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         log.info("======= get repo list ===========0")
         labels = self.conary.get_labels_from_config()
+        self.status(STATUS_QUERY)
         for repo in labels:
             repo_name = repo.split("@")[0]
             repo_branch  = repo.split("@")[1]
