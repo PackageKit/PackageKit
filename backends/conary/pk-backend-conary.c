@@ -349,6 +349,20 @@ backend_get_distro_upgrades (PkBackend *backend)
 
  */
 
+
+/**
+ * pk_backend_get_repo_list:
+ */
+static void
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+{
+    gchar *filters_text;
+    filters_text = pk_filter_bitfield_to_text (filters);
+    pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-repo-list", filters_text, NULL);
+    g_free (filters_text);
+}
+
+
 PK_BACKEND_OPTIONS (
 	"Conary with XMLCache",				/* description */
 	"Andres Vargas <zodman@foresightlinux.org>",
@@ -366,7 +380,7 @@ PK_BACKEND_OPTIONS (
 	NULL,	                /* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,					/* get_packages */
-	NULL,					/* get_repo_list */
+	backend_get_repo_list,					/* get_repo_list */
 	NULL,					/* get_requires */
 	backend_get_update_detail,              /* get_update_detail */
 	backend_get_updates,			/* get_updates */
