@@ -612,21 +612,19 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         errors = ""
         #for package_id in package_ids.split('%'):
         for package_id in package_ids:
-            name, version, flavor, installed = self._findPackage(package_id)
-            if name:
-                if not installed == INFO_INSTALLED:
-                    self.error(ERROR_PACKAGE_NOT_INSTALLED, 'The package %s is not installed' % name)
-
+            name, version, arch,data = pkpackage.get_package_from_id(package_id)
+            troveTuple = self.conary.query(name)
+            for name,version,flavor in troveTuple:
                 name = '-%s' % name
+                #self.client.repos.findTrove(self.conary.default_label)
                 self.status(STATUS_REMOVE)
                 self._get_package_update(name, version, flavor)
+
                 callback = self.client.getUpdateCallback()
                 if callback.error:
                     self.error(ERROR_DEP_RESOLUTION_FAILED,', '.join(callback.error))
                         
                 self._do_package_update(name, version, flavor)
-            else:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'The package was not found')
         self.client.setUpdateCallback(self.callback)
 
     def _get_metadata(self, package_id, field):
