@@ -11,7 +11,7 @@ DaemonTest::~DaemonTest()
 void DaemonTest::getActions()
 {
 	PackageKit::Client::Actions act = PackageKit::Client::instance()->getActions();
-	CPPUNIT_ASSERT(act.contains(PackageKit::Client::ActionInstallPackages)); // Not really a test, but if *that* fails, then things are going badly :)
+	CPPUNIT_ASSERT(act & PackageKit::Client::ActionInstallPackages); // Not really a test, but if *that* fails, then things are going badly :)
 }
 
 void DaemonTest::getBackendDetail()
@@ -23,7 +23,7 @@ void DaemonTest::getBackendDetail()
 void DaemonTest::getFilters()
 {
 	PackageKit::Client::Filters f = PackageKit::Client::instance()->getFilters();
-	CPPUNIT_ASSERT(f.contains(PackageKit::Client::FilterInstalled)); // Not really a test, but if *that* fails, then things are going badly :)
+	CPPUNIT_ASSERT(f & PackageKit::Client::FilterInstalled); // Not really a test, but if *that* fails, then things are going badly :)
 }
 
 void DaemonTest::getGroups()

@@ -27,7 +27,7 @@ void TransactionTest::searchName()
 void TransactionTest::searchDesktop()
 {
 	success = FALSE;
-	Package* p = PackageKit::Client::instance()->searchFromDesktopFile("/usr/share/applications/nautilus-cd-burner.desktop");
+	Package* p = PackageKit::Client::instance()->searchFromDesktopFile("/usr/share/applications/gnome-terminal.desktop");
 	qDebug() << "searchDesktop";
 	CPPUNIT_ASSERT_MESSAGE("searchDesktop", p);
 }
@@ -77,7 +77,7 @@ void TransactionTest::getDistroUpgrades()
 	CPPUNIT_ASSERT_MESSAGE("getDistroUpgrades", t != NULL);
 	QEventLoop el;
 	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
-	connect(t, SIGNAL(distroUpgrade(PackageKit::Client::UpgradeType, const QString&, const QString&)), this, SLOT(getDistroUpgrades_cb()));
+	connect(t, SIGNAL(distroUpgrade(PackageKit::Client::DistroUpgradeType, const QString&, const QString&)), this, SLOT(getDistroUpgrades_cb()));
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("getDistroUpgrades (not fatal, only means there are no distro upgrades)", success);
 
