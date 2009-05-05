@@ -74,10 +74,12 @@ pk_get_machine_type (void)
 gchar *
 pk_get_distro_id (void)
 {
+	guint i;
 	gboolean ret;
 	gchar *contents = NULL;
 	gchar *distro = NULL;
 	gchar *arch = NULL;
+	gchar *version = NULL;
 	gchar **split = NULL;
 
 	/* check for fedora */
@@ -158,6 +160,28 @@ pk_get_distro_id (void)
 		goto out;
 	}
 
+	/* check for LSB */
+	ret = g_file_get_contents ("/etc/lsb-release", &contents, NULL, NULL);
+	if (ret) {
+		/* we can't get arch from /etc */
+		arch = pk_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* split by lines */
+		split = g_strsplit (contents, "\n", -1);
+		for (i=0; split[i] != NULL; i++) {
+			if (g_str_has_prefix (split[i], "DISTRIB_ID="))
+				distro = g_ascii_strdown (&split[i][11], -1);
+			if (g_str_has_prefix (split[i], "DISTRIB_RELEASE="))
+				version = g_ascii_strdown (&split[i][16], -1);
+		}
+
+		/* complete! */
+		distro = g_strdup_printf ("%s-%s-%s", distro, version, arch);
+		goto out;
+	}
+
 	/* check for Debian or Debian derivatives */
 	ret = g_file_get_contents ("/etc/debian_version", &contents, NULL, NULL);
 	if (ret) {
@@ -173,6 +197,7 @@ pk_get_distro_id (void)
 
 out:
 	g_strfreev (split);
+	g_free (version);
 	g_free (arch);
 	g_free (contents);
 	return distro;
