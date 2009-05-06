@@ -144,7 +144,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 	} else {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 				    "glib2;2.14.0;i386;fedora", "The GLib library");
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 				    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	}
 	pk_backend_finished (backend);
