@@ -1771,16 +1771,23 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
+
         txmbrs = []
         try:
-            for package in package_ids:
-                pkg, inst = self._findPackage(package)
+            for package_id in package_ids:
+                pkg, inst = self._findPackage(package_id)
                 if pkg:
                     try:
                         txmbr = self.yumbase.update(po=pkg)
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                    if not txmbr:
+                        self.error(ERROR_TRANSACTION_ERROR, "could not add package update for %s: %s" % (package_id, pkg), exit=False)
+                        return
                     txmbrs.extend(txmbr)
+                else:
+                    self.error(ERROR_PACKAGE_NOT_FOUND, "cannot find package '%s'" % package_id, exit=False)
+                    return
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e), exit=False)
         except Exception, e:
@@ -1792,7 +1799,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
             else:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "No available updates", exit=False)
+                self.error(ERROR_TRANSACTION_ERROR, "No transaction to process", exit=False)
 
     def _check_for_reboot(self):
         md = self.updateMetadata
