@@ -2481,6 +2481,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
     def _check_init(self, lazy_cache=False, repo_setup=True):
         '''Just does the caching tweaks'''
 
+        # clear previous transaction data
+        self.yumbase._tsInfo = None
+
         # we are working offline
         if not self.has_network:
             for repo in self.yumbase.repos.listEnabled():
