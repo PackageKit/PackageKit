@@ -391,14 +391,14 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def update_packages(self, package):
+    def update_packages(self, package_ids):
         '''
         Implement the {backend}-update functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def get_details(self, package):
+    def get_details(self, package_ids):
         '''
         Implement the {backend}-get-details functionality
         Needed to be implemented in a sub class
@@ -454,7 +454,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def download_packages(self, directory, packages):
+    def download_packages(self, directory, package_ids):
         '''
         Implement the {backend}-download-packages functionality
         Needed to be implemented in a sub class
@@ -473,7 +473,7 @@ class PackageKitBaseBackend:
         Implement the {backend}-get-categories functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend", exit=False)
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
     def customTracebackHandler(self, tb):
         '''
@@ -498,22 +498,22 @@ class PackageKitBaseBackend:
     def dispatch_command(self, cmd, args):
         if cmd == 'download-packages':
             directory = args[0]
-            pkgs = args[1].split(PACKAGE_IDS_DELIM)
-            self.download_packages(directory, pkgs)
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            self.download_packages(directory, package_ids)
             self.finished()
         elif cmd == 'get-depends':
             filters = args[0]
-            pkgs = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
             recursive = args[2]
-            self.get_depends(filters, pkgs, recursive)
+            self.get_depends(filters, package_ids, recursive)
             self.finished()
         elif cmd == 'get-details':
-            pkgs = args[0].split(PACKAGE_IDS_DELIM)
-            self.get_details(pkgs)
+            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            self.get_details(package_ids)
             self.finished()
         elif cmd == 'get-files':
-            pkgs = args[0].split(PACKAGE_IDS_DELIM)
-            self.get_files(pkgs)
+            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            self.get_files(package_ids)
             self.finished()
         elif cmd == 'get-packages':
             filters = args[0]
@@ -525,13 +525,13 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'get-requires':
             filters = args[0]
-            pkgs = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
             recursive = args[2]
-            self.get_requires(filters, pkgs, recursive)
+            self.get_requires(filters, package_ids, recursive)
             self.finished()
         elif cmd == 'get-update-detail':
-            pkgs = args[0].split(PACKAGE_IDS_DELIM)
-            self.get_update_detail(pkgs)
+            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            self.get_update_detail(package_ids)
             self.finished()
         elif cmd == 'get-distro-upgrades':
             self.get_distro_upgrades()
@@ -546,8 +546,8 @@ class PackageKitBaseBackend:
             self.install_files(trusted, files_to_inst)
             self.finished()
         elif cmd == 'install-packages':
-            pkgs = args[0].split(PACKAGE_IDS_DELIM)
-            self.install_packages(pkgs)
+            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            self.install_packages(package_ids)
             self.finished()
         elif cmd == 'install-signature':
             sigtype = args[0]
@@ -560,8 +560,8 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'remove-packages':
             allowdeps = args[0]
-            packages = args[1].split(PACKAGE_IDS_DELIM)
-            self.remove_packages(allowdeps, packages)
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            self.remove_packages(allowdeps, package_ids)
             self.finished()
         elif cmd == 'repo-enable':
             repoid = args[0]
@@ -576,8 +576,8 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'resolve':
             filters = args[0]
-            packages = args[1].split(PACKAGE_IDS_DELIM)
-            self.resolve(filters, packages)
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            self.resolve(filters, package_ids)
             self.finished()
         elif cmd == 'search-details':
             options = args[0]
@@ -604,8 +604,8 @@ class PackageKitBaseBackend:
             self.repo_signature_install(package)
             self.finished()
         elif cmd == 'update-packages':
-            packages = args[0].split(PACKAGE_IDS_DELIM)
-            self.update_packages(packages)
+            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            self.update_packages(package_ids)
             self.finished()
         elif cmd == 'update-system':
             self.update_system()
