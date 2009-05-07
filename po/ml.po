@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: packagekit.master.ml\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-05-06 02:19+0000\n"
-"PO-Revision-Date: 2009-05-06 17:54+0530\n"
+"PO-Revision-Date: 2009-05-07 13:24+0530\n"
 "Last-Translator: \n"
 "Language-Team:  <en@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -24,35 +24,35 @@ msgstr "ഇടപാടു്"
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: ../client/pk-console.c:236
 msgid "System time"
-msgstr ""
+msgstr "സിസ്റ്റം സമയം"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: ../client/pk-console.c:238
 msgid "Succeeded"
-msgstr ""
+msgstr "ഇടപാടു് പൂര്‍ത്തിയായി"
 
 #. TRANSLATORS: if the repo is enabled
 #: ../client/pk-console.c:238 ../client/pk-console.c:405
 msgid "True"
-msgstr ""
+msgstr "True"
 
 #: ../client/pk-console.c:238 ../client/pk-console.c:405
 msgid "False"
-msgstr ""
+msgstr "False"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #: ../client/pk-console.c:240
 msgid "Role"
-msgstr ""
+msgstr "റോള്‍"
 
 #. TRANSLATORS: this is The duration of the transaction
 #: ../client/pk-console.c:245
 msgid "Duration"
-msgstr ""
+msgstr "സമയം"
 
 #: ../client/pk-console.c:245
 msgid "(seconds)"
-msgstr ""
+msgstr "(സെക്കന്‍ഡുകള്‍)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #: ../client/pk-console.c:249
@@ -62,66 +62,66 @@ msgstr "കമാന്‍ഡ് ലൈന്‍"
 #. TRANSLATORS: this is the user ID of the user that started the action
 #: ../client/pk-console.c:251
 msgid "User ID"
-msgstr ""
+msgstr "ഉപയോക്താവിനുള്ള ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 #: ../client/pk-console.c:258
 msgid "Username"
-msgstr ""
+msgstr "ഉപയോക്തൃനാമം"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: ../client/pk-console.c:262
 msgid "Real name"
-msgstr ""
+msgstr "യഥാര്‍ത്ഥ പേരു്"
 
 #: ../client/pk-console.c:270
 msgid "Affected packages:"
-msgstr ""
+msgstr "ബാധിച്ച പാക്കേജുകള്‍:"
 
 #: ../client/pk-console.c:272
 msgid "Affected packages: None"
-msgstr ""
+msgstr "ബാധിച്ച പാക്കേജുകള്‍: ഒന്നുമില്ല"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: ../client/pk-console.c:297
 msgid "Distribution"
-msgstr ""
+msgstr "വിതരണം"
 
 #. TRANSLATORS: this is type of update, stable or testing
 #: ../client/pk-console.c:299
 msgid "Type"
-msgstr ""
+msgstr "തരം"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
 #: ../client/pk-console.c:301 ../client/pk-console.c:324
 msgid "Summary"
-msgstr ""
+msgstr "സമ്മറി"
 
 #. TRANSLATORS: this is the group category name
 #: ../client/pk-console.c:313
 msgid "Category"
-msgstr ""
+msgstr "വിഭാഗം"
 
 #. TRANSLATORS: this is group identifier
 #: ../client/pk-console.c:315
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
 #: ../client/pk-console.c:318
 msgid "Parent"
-msgstr ""
+msgstr "പേരന്റ്"
 
 #. TRANSLATORS: this is the name of the parent group
 #: ../client/pk-console.c:321
 msgid "Name"
-msgstr ""
+msgstr "പേരു്"
 
 #. TRANSLATORS: this is preferred icon for the group
 #: ../client/pk-console.c:327
 msgid "Icon"
-msgstr ""
+msgstr "ചിഹ്നം"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:342
@@ -136,27 +136,27 @@ msgstr "പാക്കേജ്"
 #. TRANSLATORS: details about the update, any packages that this update updates
 #: ../client/pk-console.c:347
 msgid "Updates"
-msgstr ""
+msgstr "പരിഷ്കരണങ്ങള്‍"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
 #: ../client/pk-console.c:351
 msgid "Obsoletes"
-msgstr ""
+msgstr "വേണ്ടെന്നു് വച്ചവ"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #: ../client/pk-console.c:355
 msgid "Vendor"
-msgstr ""
+msgstr "കച്ചവടക്കാരന്‍"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 #: ../client/pk-console.c:359
 msgid "Bugzilla"
-msgstr ""
+msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 #: ../client/pk-console.c:363
 msgid "CVE"
-msgstr ""
+msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
 #: ../client/pk-console.c:367
@@ -166,7 +166,7 @@ msgstr "വീണ്ടും ആരംഭിക്കുക"
 #. TRANSLATORS: details about the update, any description of the update
 #: ../client/pk-console.c:371
 msgid "Update text"
-msgstr ""
+msgstr "പരിഷ്കരിച്ച വാചകം"
 
 #. TRANSLATORS: details about the update, the changelog for the package
 #: ../client/pk-console.c:375
@@ -181,7 +181,7 @@ msgstr "അവസ്ഥ"
 #. TRANSLATORS: details about the update, date the update was issued
 #: ../client/pk-console.c:384
 msgid "Issued"
-msgstr ""
+msgstr "നല്‍കിയതു്"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #: ../client/pk-console.c:389
@@ -199,7 +199,7 @@ msgstr "അപരിചിതം"
 #. TRANSLATORS: a package requires the system to be restarted
 #: ../client/pk-console.c:529
 msgid "System restart required by:"
-msgstr ""
+msgstr "സിസ്റ്റം വീണ്ടും ആരംഭിക്കുന്നതു് ആവശ്യമുള്ളതു്:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:532
@@ -209,7 +209,7 @@ msgstr "സെഷന്‍ വീണ്ടും ആരംഭിക്കേണ�
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:535
 msgid "Application restart required by:"
-msgstr ""
+msgstr "പ്രയോഗം വീണ്ടും ആരംഭിക്കേണ്ടതു് ആവശ്യമുള്ളതു്:"
 
 #. TRANSLATORS: a package needs to restart they system
 #: ../client/pk-console.c:572
@@ -527,13 +527,13 @@ msgstr "നല്‍കിയ ഫില്‍‌റ്റര്‍ തെറ്�
 #. TRANSLATORS: a search type can be name, details, file, etc
 #: ../client/pk-console.c:1912
 msgid "A search type is required, e.g. name"
-msgstr ""
+msgstr "തെരയുന്നതിനുള്ള തരം ആവശ്യമുണ്ടു്, ഉദാ. പേരു്"
 
 #. TRANSLATORS: the user needs to provide a search term
 #: ../client/pk-console.c:1918 ../client/pk-console.c:1926
 #: ../client/pk-console.c:1934 ../client/pk-console.c:1942
 msgid "A search term is required"
-msgstr ""
+msgstr "തെരയുന്നതിനുള്ള വാചകം ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the search type was provided, but invalid
 #: ../client/pk-console.c:1948
@@ -543,7 +543,7 @@ msgstr "തെറ്റായ തരത്തിലുള്ള തെരച്�
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:1954
 msgid "A package name or filename to install is required"
-msgstr ""
+msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതിനുള്ള പാക്കേജിന്റെ പേരു് അല്ലെങ്കില്‍ ഫയലിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1962
@@ -553,7 +553,7 @@ msgstr "ഏത് തരം, key_id, package_id എന്നിവ ആവശ്�
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:1970
 msgid "A package name to remove is required"
-msgstr ""
+msgstr "നീക്കം ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1977
@@ -573,12 +573,12 @@ msgstr "ലൈസന്‍സ് ഐഡന്റിഫയര്‍ (eula-id) ആ
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1999
 msgid "A transaction identifier (tid) is required"
-msgstr ""
+msgstr "ഒരു ട്രാന്‍സാക്ഷന്‍ ഐഡന്റിഫയര്‍ (tid) ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user did not specify a package name
 #: ../client/pk-console.c:2015
 msgid "A package name to resolve is required"
-msgstr ""
+msgstr "റിസോള്‍വ് ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:2023 ../client/pk-console.c:2031
@@ -603,7 +603,7 @@ msgstr "ശരിയായ റോള്‍ ആവശ്യമുണ്ടു്"
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
 #: ../client/pk-console.c:2064
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
+msgstr "ഈ പ്രവര്‍ത്തി അവസാനമായി പൂര്‍ത്തിയാക്കിയ സമയം ലഭ്യമായില്ല"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
@@ -616,17 +616,17 @@ msgstr "പാക്കേജിന്റ് പേരു് ആവശ്യമ�
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:2100
 msgid "A package provide string is required"
-msgstr ""
+msgstr "പാക്കേജ് ലഭ്യമാക്കുന്ന സ്ട്രിങ് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
 #: ../client/pk-console.c:2124
 msgid "A list file name to create is required"
-msgstr ""
+msgstr "ലിസ്റ്റായി ഉണ്ടാക്കുവാനുള്ള ഫയലിന്റെ നാമം ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
 #: ../client/pk-console.c:2133 ../client/pk-console.c:2142
 msgid "A list file to open is required"
-msgstr ""
+msgstr "ലിസ്റ്റായി തുറക്കുവാനുള്ള ഫയലിന്റെ നാമം ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:2195
@@ -692,18 +692,18 @@ msgstr "രണ്ടു് ഐച്ഛികങ്ങളും തെരഞ്�
 #. TRANSLATORS: This is when the user fails to supply the output
 #: ../client/pk-generate-pack.c:249
 msgid "A output directory or file name is required"
-msgstr ""
+msgstr "ഒരു ഔട്ട്പുട്ട് ഡയറക്ടറി അല്ലെങ്കില്‍ ഫയലിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
 #: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
 msgid "The package manager cannot perform this type of operation."
-msgstr ""
+msgstr "പാക്കേജ് നിരീക്ഷകനു് ഈ തരത്തിലുള്ള പ്രക്രിയ നടത്തുവാന്‍ സാധ്യമല്ല"
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
 #: ../client/pk-generate-pack.c:285
 msgid "If specifying a file, the service pack name must end with"
-msgstr ""
+msgstr "ഒരു ഫയല്‍ നല്‍കുന്നു എങ്കില്‍, സര്‍വീസ് പാക്ക് അവസാനിക്കേണ്ടതു്"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:301
@@ -807,7 +807,7 @@ msgstr "ഇതു് പോലുള്ള കമാന്‍ഡ്:"
 #. TRANSLATORS: Ask the user if we should run the similar command
 #: ../contrib/command-not-found/pk-command-not-found.c:573
 msgid "Run similar command:"
-msgstr ""
+msgstr "ഇതുപോലുള്ള കമാന്‍ഡ് പ്രവര്‍ത്തിക്കുക:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
@@ -819,7 +819,7 @@ msgstr "ഇതു് പോലുള്ള കമാന്‍ഡുകള്‍:
 #. TRANSLATORS: ask the user to choose a file to run
 #: ../contrib/command-not-found/pk-command-not-found.c:601
 msgid "Please choose a command to run"
-msgstr ""
+msgstr "പ്രവര്‍ത്തിപ്പിക്കുന്നതിനുള്ള കമാന്‍ഡ് ദയവായി തെരഞ്ഞെടുക്കുക"
 
 #. TRANSLATORS: tell the user what package provides the command
 #: ../contrib/command-not-found/pk-command-not-found.c:616
@@ -830,12 +830,12 @@ msgstr "ഈ ഫയല്‍ ലഭ്യമാക്കുന്ന പാക്
 #: ../contrib/command-not-found/pk-command-not-found.c:621
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr ""
+msgstr "'%s' പാക്കേജ് ഇന്‍സ്റ്റോള്‍ ചെയ്യുക, ഇതു് '%s' നിര്‍ദ്ദേശം നല്‍കുന്നു?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:642
 msgid "Packages providing this file are:"
-msgstr ""
+msgstr "ഈ ഫയല്‍ ലഭ്യമാക്കുന്ന പാക്കേജുകള്‍:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:651
@@ -920,21 +920,23 @@ msgstr "EULA സ്വീകരിക്കുക"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:2
 msgid "Authentication is required to accept a EULA"
-msgstr ""
+msgstr "ഒരു EULA സ്വീകരിക്കുന്നതിനായി ആവശ്യമുള്ള ആധികാരികത"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:3
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
+msgstr "നിങ്ങളായി ആരംഭിച്ചിട്ടില്ലാത്ത ഒരു ജോലി റദ്ദാക്കുന്നതിനായി ആധികാരികത ആവശ്യമുണ്ടു്"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
 msgid "Authentication is required to change software source parameters"
-msgstr ""
+msgstr "സോഫ്റ്റ്‌വെയര്‍ സോഴ്സ് പരാമീറ്ററുകള്‍ മാറ്റുന്നതിനായി ആധികാരികത ആവശ്യമുണ്ടു്"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:5
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
 msgstr ""
+"പാക്കേജ് ഒപ്പിടുന്നതിനായി ഉപയോഗിക്കുന്ന ഒരു കീ വിശ്വസനീയമെന്നു് കരുതുന്നതിനായി "
+"ആധികാരികത ഉറപ്പാക്കേണ്ടതുണ്ടു്"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
 msgid "Authentication is required to install a signed package"
