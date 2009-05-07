@@ -2811,6 +2811,9 @@ class PackageKitYumBase(yum.YumBase):
         except ValueError, e:
             raise PkError(ERROR_FAILED_CONFIG_PARSING, _to_unicode(e))
 
+        # setup to use LANG for descriptions
+        yum.misc.setup_locale(override_time=True)
+
         self.missingGPGKey = None
         self.dsCallback = DepSolveCallback(backend)
         self.backend = backend
