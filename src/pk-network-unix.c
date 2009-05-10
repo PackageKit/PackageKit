@@ -49,6 +49,7 @@
 
 #include "pk-network-unix.h"
 #include "pk-marshal.h"
+#include "pk-file-monitor.h"
 
 static void     pk_network_unix_class_init	(PkNetworkUnixClass *klass);
 static void     pk_network_unix_init		(PkNetworkUnix      *network_unix);
@@ -63,7 +64,8 @@ static void     pk_network_unix_finalize	(GObject        *object);
  **/
 struct _PkNetworkUnixPrivate
 {
-	gpointer		 data;
+	PkNetworkEnum		 state_old;
+	PkFileMonitor		*file_monitor;
 };
 
 enum {
@@ -174,6 +176,28 @@ pk_network_unix_get_network_state (PkNetworkUnix *network_unix)
 }
 
 /**
+ * pk_network_unix_file_monitor_changed_cb:
+ **/
+static void
+pk_network_unix_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkNetworkUnix *network_unix)
+{
+	PkNetworkEnum state;
+
+	g_return_if_fail (PK_IS_NETWORK_UNIX (network_unix));
+
+	/* same state? */
+	state = pk_network_unix_get_network_state (network_unix);
+	if (state == network_unix->priv->state_old) {
+		egg_debug ("same state");
+		return;
+	}
+
+	/* new state */
+	network_unix->priv->state_old = state;
+	g_signal_emit (network_unix, signals [PK_NETWORK_UNIX_STATE_CHANGED], 0, state);
+}
+
+/**
  * pk_network_unix_class_init:
  * @klass: The PkNetworkUnixClass
  **/
@@ -198,6 +222,13 @@ static void
 pk_network_unix_init (PkNetworkUnix *network_unix)
 {
 	network_unix->priv = PK_NETWORK_UNIX_GET_PRIVATE (network_unix);
+	network_unix->priv->state_old = PK_NETWORK_ENUM_UNKNOWN;
+
+	/* monitor the config file for changes */
+	network_unix->priv->file_monitor = pk_file_monitor_new ();
+	pk_file_monitor_set_file (network_unix->priv->file_monitor, PK_NETWORK_PROC_ROUTE);
+	g_signal_connect (network_unix->priv->file_monitor, "file-changed",
+			  G_CALLBACK (pk_network_unix_file_monitor_changed_cb), network_unix);
 }
 
 /**
@@ -213,6 +244,9 @@ pk_network_unix_finalize (GObject *object)
 	network_unix = PK_NETWORK_UNIX (object);
 
 	g_return_if_fail (network_unix->priv != NULL);
+
+	g_object_unref (network_unix->priv->file_monitor);
+
 	G_OBJECT_CLASS (pk_network_unix_parent_class)->finalize (object);
 }
 
