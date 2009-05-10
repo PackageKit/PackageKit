@@ -301,13 +301,13 @@ pk_network_nm_get_network_state (PkNetworkNm *network_nm)
 static void
 pk_network_nm_nm_changed_cb (libnm_glib_ctx *libnm_ctx, gpointer data)
 {
-	gboolean ret;
+	PkNetworkEnum state;
 	PkNetworkNm *network_nm = (PkNetworkNm *) data;
 
 	g_return_if_fail (PK_IS_NETWORK_NM (network_nm));
 
-	ret = pk_network_nm_get_network_state (network_nm);
-	g_signal_emit (network_nm, signals [PK_NETWORK_NM_STATE_CHANGED], 0, ret);
+	state = pk_network_nm_get_network_state (network_nm);
+	g_signal_emit (network_nm, signals [PK_NETWORK_NM_STATE_CHANGED], 0, state);
 }
 
 /**
