@@ -693,7 +693,7 @@ pk_engine_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine
  * pk_engine_network_state_changed_cb:
  **/
 static void
-pk_engine_network_state_changed_cb (PkNetwork *file_monitor, PkNetworkEnum state, PkEngine *engine)
+pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum state, PkEngine *engine)
 {
 	const gchar *state_text;
 	g_return_if_fail (PK_IS_ENGINE (engine));
