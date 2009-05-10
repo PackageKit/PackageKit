@@ -25,7 +25,6 @@ import sys
 import codecs
 import traceback
 import os.path
-sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
 from enums import *
 
