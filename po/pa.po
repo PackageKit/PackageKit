@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-03-31 14:17+0000\n"
-"PO-Revision-Date: 2009-03-31 21:54+0000\n"
+"POT-Creation-Date: 2009-05-09 19:14+0000\n"
+"PO-Revision-Date: 2009-05-10 07:04+0000\n"
 "Last-Translator: A S Alam <aalam@users.sf.net>\n"
 "Language-Team: Punjabi/Panjabi <punjab-l10n@list.sf.net>\n"
 "MIME-Version: 1.0\n"
@@ -432,213 +432,217 @@ msgstr "ਗਲਤੀ:"
 msgid "Package description"
 msgstr "ਪੈਕੇਜ ਵੇਰਵਾ"
 
+#. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
+#: ../client/pk-console.c:1473
+msgid "Message:"
+msgstr "ਸੁਨੇਹਾ:"
+
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1491
+#: ../client/pk-console.c:1501
 msgid "Package files"
 msgstr "ਪੈਕੇਜ ਫਾਇਲਾਂ"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1499
+#: ../client/pk-console.c:1509
 msgid "No files"
 msgstr "ਕੋਈ ਫਾਇਲ ਨਹੀਂ"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1522
+#: ../client/pk-console.c:1532
 msgid "Repository signature required"
 msgstr "ਰਿਪੋਜ਼ਟਰੀ ਦਸਤਖਤ ਲੋੜੀਦੇ"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1532
+#: ../client/pk-console.c:1542
 msgid "Do you accept this signature?"
 msgstr "ਕੀ ਤੁਸੀਂ ਇਹ ਦਸਤਖਤ ਮਨਜ਼ੂਰ ਕਰਦੇ ਹੋ?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1536
+#: ../client/pk-console.c:1546
 msgid "The signature was not accepted."
 msgstr "ਦਸਤਖਤ ਮਨਜ਼ੂਰ ਨਹੀਂ ਸਨ।"
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1570
+#: ../client/pk-console.c:1580
 msgid "End user license agreement required"
 msgstr "ਅੰਤਮ ਯੂਜ਼ਰ ਲਾਈਸੈਂਸ ਇਕਰਾਰਨਾਮਾ ਲੋੜੀਦਾ"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1577
+#: ../client/pk-console.c:1587
 msgid "Do you agree to this license?"
 msgstr "ਕੀ ਤੁਸੀਂ ਇਸ ਲਾਈਸੈਂਸ ਨਾਲ ਸਹਿਮਤ ਹੋ?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1581
+#: ../client/pk-console.c:1591
 msgid "The license was refused."
 msgstr "ਲਾਈਸੈਂਸ ਤੋਂ ਇਨਕਾਰ ਕੀਤਾ।"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1610
+#: ../client/pk-console.c:1620
 msgid "The daemon crashed mid-transaction!"
 msgstr "ਡੈਮਨ ਅਧੂਰੀ ਟਰਾਂਸੈਕਸ਼ਨ ਕਰੈਸ਼ ਹੋ ਗਈ!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1663
+#: ../client/pk-console.c:1673
 msgid "PackageKit Console Interface"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਕਨਸੋਲ ਇੰਟਰਫੇਸ"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1665
+#: ../client/pk-console.c:1675
 msgid "Subcommands:"
 msgstr "ਸਬ-ਕਮਾਂਡ:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1757 ../client/pk-generate-pack.c:185
+#: ../client/pk-console.c:1767 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
 #: ../contrib/command-not-found/pk-command-not-found.c:518
-#: ../src/pk-main.c:199
+#: ../src/pk-main.c:201
 msgid "Show extra debugging information"
 msgstr "ਹੋਰ ਡੀਬੱਗ ਜਾਣਕਾਰੀ ਵੇਖੋ"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1760 ../client/pk-monitor.c:127
+#: ../client/pk-console.c:1770 ../client/pk-monitor.c:127
 msgid "Show the program version and exit"
 msgstr "ਪਰੋਗਰਾਮ ਵਰਜਨ ਵੇਖੋ ਅਤੇ ਬੰਦ ਕਰੋ"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1763
+#: ../client/pk-console.c:1773
 msgid "Set the filter, e.g. installed"
 msgstr "ਫਿਲਟਰ ਸੈੱਟ ਕਰੋ, ਜਿਵੇਂ ਕਿ ਇੰਸਟਾਲ"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1766
+#: ../client/pk-console.c:1776
 msgid "Exit without waiting for actions to complete"
 msgstr "ਪੂਰੇ ਹੋਣ ਵਾਲੇ ਐਕਸ਼ਨ ਦੀ ਉਡੀਕ ਕੀਤੇ ਬਿਨਾਂ ਬੰਦ ਕਰੋ"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1793
+#: ../client/pk-console.c:1803
 msgid "This tool could not connect to system DBUS."
 msgstr "ਇਹ ਟੂਲ ਸਿਸਟਮ DBUS ਨਾਲ ਕੁਨੈਕਟ ਨਹੀਂ ਹੋ ਸਕਿਆ।"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1880
+#: ../client/pk-console.c:1894
 msgid "The filter specified was invalid"
 msgstr "ਦਿੱਤਾ ਫਿਲਟਰ ਅਢੁੱਕਵਾਂ ਹੈ।"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1898
+#: ../client/pk-console.c:1912
 msgid "A search type is required, e.g. name"
 msgstr "ਖੋਜ ਕਿਸਮ ਚਾਹੀਦੀ ਹੈ, ਜਿਵੇਂ ਨਾਂ"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1904 ../client/pk-console.c:1912
-#: ../client/pk-console.c:1920 ../client/pk-console.c:1928
+#: ../client/pk-console.c:1918 ../client/pk-console.c:1926
+#: ../client/pk-console.c:1934 ../client/pk-console.c:1942
 msgid "A search term is required"
 msgstr "ਖੋਜ ਸ਼ਬਦ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1934
+#: ../client/pk-console.c:1948
 msgid "Invalid search type"
 msgstr "ਗਲਤ ਖੋਜ ਟਾਈਪ"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1940
+#: ../client/pk-console.c:1954
 msgid "A package name or filename to install is required"
 msgstr "ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਇੱਕ ਪੈਕੇਜ ਨਾਂ ਜਾਂ ਫਾਇਲ ਨਾਂ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1948
+#: ../client/pk-console.c:1962
 msgid "A type, key_id and package_id are required"
 msgstr "ਟਾਈਪ, key_id ਜਾਂ package_id ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1956
+#: ../client/pk-console.c:1970
 msgid "A package name to remove is required"
 msgstr "ਹਟਾਉਣ ਵਾਸਤੇ ਪੈਕੇਜ ਨਾਂ ਚਾਹੀਦਾ ਹੈ"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1963
-msgid ""
-"A destination directory and then the package names to download are required"
+#: ../client/pk-console.c:1977
+msgid "A destination directory and then the package names to download are required"
 msgstr "ਡਾਊਨਲੋਡ ਕਰਨ ਵਾਸਤੇ ਟਿਕਾਣਾ ਡਾਇਰੈਕਟਰੀ ਅਤੇ ਤਦ ਪੈਕੇਜ ਨਾਂ ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1969
+#: ../client/pk-console.c:1983
 msgid "Directory not found"
 msgstr "ਡਾਇਰੈਕਟਰੀ ਨਹੀਂ ਲੱਭੀ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1976
+#: ../client/pk-console.c:1990
 msgid "A licence identifier (eula-id) is required"
 msgstr "ਇੱਕ ਲਾਈਸੈਂਸ ਪਛਾਣਕਰਤਾ (eula-id) ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1985
+#: ../client/pk-console.c:1999
 msgid "A transaction identifier (tid) is required"
 msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਪਛਾਣ (tid) ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2001
+#: ../client/pk-console.c:2015
 msgid "A package name to resolve is required"
 msgstr "ਹੱਲ ਕਰਨ ਲਈ ਪੈਕੇਜ ਨਾਂ ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2009 ../client/pk-console.c:2017
+#: ../client/pk-console.c:2023 ../client/pk-console.c:2031
 msgid "A repository name is required"
 msgstr "ਰਿਪੋਜ਼ਟਰੀ ਨਾਂ ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2025
+#: ../client/pk-console.c:2039
 msgid "A repo name, parameter and value are required"
 msgstr "ਰੈਪੋ ਨਾਂ, ਪੈਰਾਮੀਟਰ ਅਤੇ ਮੁੱਲ ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2038
+#: ../client/pk-console.c:2052
 msgid "An action, e.g. 'update-system' is required"
 msgstr "ਕਾਰਵਾਈ, ਜਿਵੇਂ 'ਅੱਪਡੇਟ-ਸਿਸਟਮ' ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2044
+#: ../client/pk-console.c:2058
 msgid "A correct role is required"
 msgstr "ਠੀਕ ਰੋਲ ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2050
+#: ../client/pk-console.c:2064
 msgid "Failed to get the time since this action was last completed"
 msgstr "ਇਸ ਕਾਰਵਾਈ ਦੇ ਆਖਰੀ ਵਾਰ ਪੂਰੀ ਹੋਣ ਤੋਂ ਬਾਅਦ ਸਮਾਂ ਲੈਣ ਲਈ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2059 ../client/pk-console.c:2070
-#: ../client/pk-console.c:2078 ../client/pk-console.c:2094
-#: ../client/pk-console.c:2102 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2073 ../client/pk-console.c:2084
+#: ../client/pk-console.c:2092 ../client/pk-console.c:2108
+#: ../client/pk-console.c:2116 ../client/pk-generate-pack.c:241
 msgid "A package name is required"
 msgstr "ਪੈਕੇਜ ਨਾਂ ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2086
+#: ../client/pk-console.c:2100
 msgid "A package provide string is required"
 msgstr "ਪੈਕੇਜ ਦੇਣ ਵਾਲੀ ਸਤਰ ਲੋੜੀਦੀ ਹੈ"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2110
+#: ../client/pk-console.c:2124
 msgid "A list file name to create is required"
 msgstr "ਬਣਾਉਣ ਲਈ ਲਿਸਟ ਫਾਇਲ ਨਾਂ ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2119 ../client/pk-console.c:2128
+#: ../client/pk-console.c:2133 ../client/pk-console.c:2142
 msgid "A list file to open is required"
 msgstr "ਖੋਲ੍ਹਣ ਲਈ ਲਿਸਟ ਫਾਇਲ ਲੋੜੀਦੀ ਹੈ"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2181
+#: ../client/pk-console.c:2195
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "ਚੋਣ '%s' ਸਹਾਇਕ ਨਹੀਂ ਹੈ"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2194
+#: ../client/pk-console.c:2208
 msgid "Incorrect privileges for this operation"
 msgstr "ਇਸ ਕਾਰਵਾਈ ਲਈ ਗਲਤ ਅਧਿਕਾਰ"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2197
+#: ../client/pk-console.c:2211
 msgid "Command failed"
 msgstr "ਕਮਾਂਡ ਫੇਲ੍ਹ ਹੈ"
 
@@ -793,56 +797,56 @@ msgid "PackageKit Command Not Found"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਕਮਾਂਡ ਨਹੀਂ ਲੱਭੀ"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:556
+#: ../contrib/command-not-found/pk-command-not-found.c:557
 msgid "Command not found."
 msgstr "ਕਮਾਂਡ ਨਹੀਂ ਲੱਭੀ।"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:563
+#: ../contrib/command-not-found/pk-command-not-found.c:564
 msgid "Similar command is:"
 msgstr "ਰਲਦੀ ਕਮਾਂਡ ਹੈ:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:572
+#: ../contrib/command-not-found/pk-command-not-found.c:573
 msgid "Run similar command:"
 msgstr "ਰਲਦੀ ਕਮਾਂਡ ਚਲਾਓ:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:584
-#: ../contrib/command-not-found/pk-command-not-found.c:593
+#: ../contrib/command-not-found/pk-command-not-found.c:585
+#: ../contrib/command-not-found/pk-command-not-found.c:594
 msgid "Similar commands are:"
 msgstr "ਰਲਦੀਆਂ ਕਮਾਂਡਾਂ ਹਨ:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:600
+#: ../contrib/command-not-found/pk-command-not-found.c:601
 msgid "Please choose a command to run"
 msgstr "ਚਲਾਉਣ ਲਈ ਕਮਾਂਡ ਦੀ ਚੋਣ ਕਰੋ ਜੀ"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:615
+#: ../contrib/command-not-found/pk-command-not-found.c:616
 msgid "The package providing this file is:"
 msgstr "ਪੈਕੇਜ ਇਹ ਫਾਇਲ ਦਿੰਦਾ ਹੈ:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:620
+#: ../contrib/command-not-found/pk-command-not-found.c:621
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "ਕਮਾਂਡ '%2$s' ਦੇਣ ਲਈ ਪੈਕੇਜ '%1$s' ਇੰਸਟਾਲ ਕਰਨਾ ਹੈ?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:641
+#: ../contrib/command-not-found/pk-command-not-found.c:642
 msgid "Packages providing this file are:"
 msgstr "ਪੈਕੇਜ ਇਹ ਫਾਇਲ ਦਿੰਦਾ ਹੈ:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:650
+#: ../contrib/command-not-found/pk-command-not-found.c:651
 msgid "Suitable packages are:"
 msgstr "ਢੁੱਕਵੇਂ ਪੈਕੇਜ ਹਨ:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:658
+#: ../contrib/command-not-found/pk-command-not-found.c:659
 msgid "Please choose a package to install"
 msgstr "ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪੈਕੇਜ ਚੁਣੋ ਜੀ"
 
@@ -921,8 +925,7 @@ msgid "Authentication is required to accept a EULA"
 msgstr "EULA  ਮਨਜ਼ੂਰ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "ਤੁਹਾਡੇ ਵਲੋਂ ਨਾ ਸ਼ੁਰੂ ਕੀਤੀ ਗਈ ਟਾਸਕ ਨੂੰ ਰੱਦ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:4
@@ -933,8 +936,7 @@ msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਪੈਰਾਮੀਟਰ ਬਦਲ
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
-msgstr ""
-"ਪੈਕੇਜ ਟਰੱਸਟ ਕੀਤਾ ਬਣਾਉਣ ਲਈ ਸਾਈਨ ਵਾਸਤੇ ਕੁੰਜੀ ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+msgstr "ਪੈਕੇਜ ਟਰੱਸਟ ਕੀਤਾ ਬਣਾਉਣ ਲਈ ਸਾਈਨ ਵਾਸਤੇ ਕੁੰਜੀ ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:6
 msgid "Authentication is required to install a signed package"
@@ -1029,47 +1031,47 @@ msgid ""
 msgstr "org.freedesktop.PackageKit.conf ਫਾਇਲ ਸਿਸਟਮ ਡਾਇਰੈਕਟਰੀ ਵਿੱਚ ਇੰਸਟਾਲ ਨਹੀਂ ਹੈ।"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:195
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "ਵਰਤਣ ਲਈ ਪੈਕੇਜਿੰਗ ਬੈਕਐਂਡ, ਜਿਵੇਂ ਕਿ ਫ਼ਰਜ਼ੀ"
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:196
+#: ../src/pk-main.c:198
 msgid "Daemonize and detach from the terminal"
 msgstr "ਡੈਮੇਨਾਈਜ਼ ਅਤੇ ਟਰਮੀਨਲ ਤੋਂ ਵੱਖ"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:202
+#: ../src/pk-main.c:204
 msgid "Disable the idle timer"
 msgstr "ਵੇਹਲਾ ਟਾਈਮਰ ਆਯੋਗ"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:205
+#: ../src/pk-main.c:207
 msgid "Show version and exit"
 msgstr "ਵਰਜਨ ਵੇਖਾ ਕੇ ਬੰਦ ਕਰੋ"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:208
+#: ../src/pk-main.c:210
 msgid "Exit after a small delay"
 msgstr "ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਬੰਦ ਕਰੋ"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:211
+#: ../src/pk-main.c:213
 msgid "Exit after the engine has loaded"
 msgstr "ਇੰਜਣ ਲੋਡ ਕਰਨ ਦੇ ਬਾਅਦ ਬੰਦ ਕਰੋ"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:226
+#: ../src/pk-main.c:228
 msgid "PackageKit service"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਸਰਵਿਸ"
 
 #. TRANSLATORS: fatal error, dbus is not running
-#: ../src/pk-main.c:263
+#: ../src/pk-main.c:265
 msgid "Cannot connect to the system bus"
 msgstr "ਸਿਸਟਮ ਬੱਸ ਨਾਲ ਕੁਨੈਕਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason
-#: ../src/pk-main.c:313
+#: ../src/pk-main.c:317
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਗਲਤੀ: %s\n"
