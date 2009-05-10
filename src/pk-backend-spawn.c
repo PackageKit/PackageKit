@@ -486,12 +486,8 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 
 	/* only emit if not finished */
 	if (!backend_spawn->priv->finished) {
-		/* ignore when we exit from a dispatcher */
-		if (exit_enum != PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT &&
-		    exit_enum != PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED) {
-			egg_warning ("script exited without doing finished");
-			pk_backend_finished (backend_spawn->priv->backend);
-		}
+		egg_warning ("script exited without doing finished");
+		pk_backend_finished (backend_spawn->priv->backend);
 	}
 }
 
