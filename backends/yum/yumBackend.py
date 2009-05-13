@@ -2569,6 +2569,10 @@ class DownloadCallback(BaseMeter):
 
     def _getPackage(self, name):
 
+        # no name
+        if not name:
+            return
+
         # no download data
         if not self.saved_pkgs:
             return None
@@ -2595,6 +2599,8 @@ class DownloadCallback(BaseMeter):
 
     def _do_start(self, now=None):
         name = self._getName()
+        if not name:
+            return
         self.updateProgress(name, 0.0, "", "")
 
     def _do_update(self, amount_read, now=None):
@@ -2616,6 +2622,8 @@ class DownloadCallback(BaseMeter):
 
         total_size = format_number(amount_read)
         name = self._getName()
+        if not name:
+            return
         self.updateProgress(name, 1.0, total_size, '')
 
     def _getName(self):
