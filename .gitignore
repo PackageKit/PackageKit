@@ -61,3 +61,5 @@ packagekit.types
 .anjuta
 *.cache
 *.anjuta
+ChangeLog
+
