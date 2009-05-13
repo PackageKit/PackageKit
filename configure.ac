@@ -65,7 +65,6 @@ if test "$GCC" = "yes"; then
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wcast-align -Wno-uninitialized"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wmissing-declarations"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wredundant-decls"
-	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wmissing-noreturn"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wpointer-arith"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wcast-align"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wwrite-strings"
