@@ -78,6 +78,7 @@ typedef struct {
 	guint			 remove_id;
 	guint			 idle_id;
 	guint			 commit_id;
+	gulong			 finished_id;
 } PkTransactionItem;
 
 enum {
@@ -155,6 +156,8 @@ void
 pk_transaction_list_item_free (PkTransactionItem *item)
 {
 	g_return_if_fail (item != NULL);
+	if (item->finished_id != 0)
+		g_signal_handler_disconnect (item->transaction, item->finished_id);
 	g_object_unref (item->transaction);
 	if (item->commit_id != 0)
 		g_source_remove (item->commit_id);
@@ -292,7 +295,7 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 	tid = pk_transaction_get_tid (transaction);
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item == NULL)
-		egg_error ("no transaction list item found!");
+		egg_error ("no transaction list item '%s' found!", tid);
 
 	/* transaction is already finished? */
 	if (item->finished) {
@@ -378,6 +381,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
 	item->commit_id = 0;
 	item->remove_id = 0;
 	item->idle_id = 0;
+	item->finished_id = 0;
 	item->list = g_object_ref (tlist);
 	item->tid = g_strdup (tid);
 
@@ -387,8 +391,9 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
 		egg_error ("no connection");
 
 	item->transaction = pk_transaction_new ();
-	g_signal_connect_after (item->transaction, "finished",
-				G_CALLBACK (pk_transaction_list_transaction_finished_cb), tlist);
+	item->finished_id =
+		g_signal_connect_after (item->transaction, "finished",
+					G_CALLBACK (pk_transaction_list_transaction_finished_cb), tlist);
 
 	/* set the TID on the transaction */
 	ret = pk_transaction_set_tid (item->transaction, item->tid);
