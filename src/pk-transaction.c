@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -65,6 +65,7 @@
 static void     pk_transaction_class_init	(PkTransactionClass *klass);
 static void     pk_transaction_init		(PkTransaction      *transaction);
 static void     pk_transaction_finalize		(GObject	    *object);
+static void     pk_transaction_dispose		(GObject	    *object);
 
 #define PK_TRANSACTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION, PkTransactionPrivate))
 #define PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT	100 /* ms */
@@ -3707,6 +3708,7 @@ static void
 pk_transaction_class_init (PkTransactionClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	object_class->dispose = pk_transaction_dispose;
 	object_class->finalize = pk_transaction_finalize;
 
 	signals [PK_TRANSACTION_ALLOW_CANCEL] =
@@ -3878,8 +3880,29 @@ pk_transaction_init (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_dispose:
+ **/
+static void
+pk_transaction_dispose (GObject *object)
+{
+	PkTransaction *transaction;
+
+	g_return_if_fail (PK_IS_TRANSACTION (object));
+
+	transaction = PK_TRANSACTION (object);
+
+	/* remove any inhibit, it's okay to call this function when it's not needed */
+	pk_inhibit_remove (transaction->priv->inhibit, transaction);
+
+	/* send signal to clients that we are about to be destroyed */
+	egg_debug ("emitting destroy %s", transaction->priv->tid);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_DESTROY], 0);
+
+	G_OBJECT_CLASS (pk_transaction_parent_class)->dispose (object);
+}
+
+/**
  * pk_transaction_finalize:
- * @object: The object to finalize
  **/
 static void
 pk_transaction_finalize (GObject *object)
@@ -3889,11 +3912,6 @@ pk_transaction_finalize (GObject *object)
 	g_return_if_fail (PK_IS_TRANSACTION (object));
 
 	transaction = PK_TRANSACTION (object);
-	g_return_if_fail (transaction->priv != NULL);
-
-	/* send signal to clients that we are about to be destroyed */
-	egg_debug ("emitting destroy %s", transaction->priv->tid);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_DESTROY], 0);
 
 	g_free (transaction->priv->last_package_id);
 	g_free (transaction->priv->dbus_name);
@@ -3909,8 +3927,6 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->priv->cached_value);
 	g_free (transaction->priv->tid);
 
-	/* remove any inhibit, it's okay to call this function when it's not needed */
-	pk_inhibit_remove (transaction->priv->inhibit, transaction);
 	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->cache);
 	g_object_unref (transaction->priv->update_detail_list);
