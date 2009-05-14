@@ -115,6 +115,7 @@ enum {
 	PK_ENGINE_NETWORK_STATE_CHANGED,
 	PK_ENGINE_RESTART_SCHEDULE,
 	PK_ENGINE_UPDATES_CHANGED,
+	PK_ENGINE_QUIT,
 	PK_ENGINE_LAST_SIGNAL
 };
 
@@ -563,8 +564,8 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
 	/* can we exit straight away */
 	size = pk_transaction_list_get_size (engine->priv->transaction_list);
 	if (size == 0) {
-		egg_warning ("exit!!");
-		exit (0);
+		egg_debug ("emitting quit");
+		g_signal_emit (engine, signals [PK_ENGINE_QUIT], 0);
 		return TRUE;
 	}
 
@@ -671,6 +672,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals [PK_ENGINE_UPDATES_CHANGED] =
 		g_signal_new ("updates-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	signals [PK_ENGINE_QUIT] =
+		g_signal_new ("quit",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
