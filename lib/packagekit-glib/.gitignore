@@ -13,4 +13,5 @@ pk-self-test
 *.txt
 *.out
 *.db
+pk-version.h
 

@@ -33,6 +33,7 @@ libpackagekit_glib_includedir = $(includedir)/PackageKit/packagekit-glib
 
 libpackagekit_glib_include_HEADERS =				\
 	packagekit.h						\
+	pk-version.h						\
 	pk-desktop.h						\
 	pk-connection.h						\
 	pk-package-id.h						\
@@ -61,6 +62,7 @@ libpackagekit_glib_la_SOURCES =					\
 	egg-debug.h						\
 	egg-string.c						\
 	egg-string.h						\
+	pk-version.h						\
 	pk-marshal.c						\
 	pk-marshal.h						\
 	pk-desktop.c						\
@@ -151,6 +153,7 @@ endif
 
 EXTRA_DIST =							\
 	packagekit-glib.pc.in					\
+	pk-version.h.in						\
 	pk-marshal.list
 
 BUILT_SOURCES = 						\

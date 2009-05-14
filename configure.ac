@@ -1,10 +1,26 @@
+# Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.4.8)
+m4_define([pk_major_version], [0])
+m4_define([pk_minor_version], [4])
+m4_define([pk_micro_version], [8])
+m4_define([pk_version],
+          [pk_major_version.pk_minor_version.pk_micro_version])
+
+AC_INIT(PackageKit, [pk_version])
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
+
+PK_MAJOR_VERSION=pk_major_version
+PK_MINOR_VERSION=pk_minor_version
+PK_MICRO_VERSION=pk_micro_version
+PK_VERSION=pk_version
+AC_SUBST(PK_MAJOR_VERSION)
+AC_SUBST(PK_MINOR_VERSION)
+AC_SUBST(PK_MICRO_VERSION)
+AC_SUBST(PK_VERSION)
 
 # Should we enable extra stuff automatically?
 # set no for release builds, yes for development builds
@@ -769,6 +785,7 @@ data/Makefile
 data/org.freedesktop.PackageKit.conf
 data/tests/Makefile
 lib/Makefile
+lib/packagekit-glib/pk-version.h
 lib/packagekit-glib/Makefile
 lib/packagekit-glib/packagekit-glib.pc
 lib/packagekit-qt/Makefile

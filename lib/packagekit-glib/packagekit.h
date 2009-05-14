@@ -24,6 +24,7 @@
 
 #define __PACKAGEKIT_H_INSIDE__
 
+#include <packagekit-glib/pk-version.h>
 #include <packagekit-glib/pk-bitfield.h>
 #include <packagekit-glib/pk-catalog.h>
 #include <packagekit-glib/pk-category-obj.h>
