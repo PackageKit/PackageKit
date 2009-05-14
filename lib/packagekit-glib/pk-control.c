@@ -842,11 +842,13 @@ pk_control_class_init (PkControlClass *klass)
 			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	/**
-	 * PkControl::restart_schedule:
+	 * PkControl::restart-schedule:
 	 * @control: the #PkControl instance that emitted the signal
 	 *
-	 * The ::restart_schedule signal is emitted when the service has been
-	 * restarted. Client programs should reload themselves.
+	 * The ::restart_schedule signal is emitted when the packagekitd service
+	 * has been restarted because it has been upgraded.
+	 * Client programs should reload themselves when it is convenient to
+	 * do so, as old client tools may not be compatable with the new daemon.
 	 **/
 	signals [PK_CONTROL_RESTART_SCHEDULE] =
 		g_signal_new ("restart-schedule",
