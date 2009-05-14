@@ -88,7 +88,8 @@ static void     pk_engine_finalize	(GObject       *object);
 struct PkEnginePrivate
 {
 	GTimer			*timer;
-	gboolean		 restart_schedule;
+	gboolean		 notify_clients_of_upgrade;
+	gboolean		 shutdown_as_soon_as_possible;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
 	PkCache			*cache;
@@ -99,7 +100,8 @@ struct PkEnginePrivate
 	PkSecurity		*security;
 	PkNotify		*notify;
 	PkConf			*conf;
-	PkFileMonitor		*file_monitor;
+	PkFileMonitor		*file_monitor_conf;
+	PkFileMonitor		*file_monitor_binary;
 	PkBitfield		 actions;
 	PkBitfield		 groups;
 	PkBitfield		 filters;
@@ -530,9 +532,15 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	}
 
 	/* have we been updated? */
-	if (engine->priv->restart_schedule) {
-		egg_debug ("need to restart daemon *NOW*");
+	if (engine->priv->notify_clients_of_upgrade) {
+		egg_debug ("emitting restart-schedule because of binary change");
 		g_signal_emit (engine, signals [PK_ENGINE_RESTART_SCHEDULE], 0);
+		return G_MAXUINT;
+	}
+
+	/* do we need to shutdown quickly */
+	if (engine->priv->shutdown_as_soon_as_possible) {
+		egg_debug ("need to restart daemon asap");
 		return G_MAXUINT;
 	}
 
@@ -561,7 +569,7 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
 	/* This will wait from 0..10 seconds, depending on the status of
 	 * pk_main_timeout_check_cb() - usually it should be a few seconds
 	 * after the last transaction */
-	engine->priv->restart_schedule = TRUE;
+	engine->priv->shutdown_as_soon_as_possible = TRUE;
 	return TRUE;
 }
 
@@ -674,14 +682,27 @@ pk_engine_class_init (PkEngineClass *klass)
 }
 
 /**
- * pk_engine_file_monitor_changed_cb:
+ * pk_engine_conf_file_changed_cb:
+ *
+ * A config file has changed, we need to reload the daemon
  **/
 static void
-pk_engine_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
+pk_engine_conf_file_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	egg_debug ("setting restart_schedule TRUE");
-	engine->priv->restart_schedule = TRUE;
+	egg_debug ("setting shutdown_as_soon_as_possible TRUE");
+	engine->priv->shutdown_as_soon_as_possible = TRUE;
+}
+
+/**
+ * pk_engine_binary_file_changed_cb:
+ **/
+static void
+pk_engine_binary_file_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
+{
+	g_return_if_fail (PK_IS_ENGINE (engine));
+	egg_debug ("setting notify_clients_of_upgrade TRUE");
+	engine->priv->notify_clients_of_upgrade = TRUE;
 }
 
 /**
@@ -710,7 +731,8 @@ pk_engine_init (PkEngine *engine)
 	gchar *proxy_ftp;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
-	engine->priv->restart_schedule = FALSE;
+	engine->priv->notify_clients_of_upgrade = FALSE;
+	engine->priv->shutdown_as_soon_as_possible = FALSE;
 	engine->priv->mime_types = NULL;
 
 	/* use the config file */
@@ -769,12 +791,18 @@ pk_engine_init (PkEngine *engine)
 			  G_CALLBACK (pk_engine_notify_updates_changed_cb), engine);
 
 	/* monitor the config file for changes */
-	engine->priv->file_monitor = pk_file_monitor_new ();
+	engine->priv->file_monitor_conf = pk_file_monitor_new ();
 	filename = pk_conf_get_filename ();
-	pk_file_monitor_set_file (engine->priv->file_monitor, filename);
-	g_signal_connect (engine->priv->file_monitor, "file-changed",
-			  G_CALLBACK (pk_engine_file_monitor_changed_cb), engine);
+	pk_file_monitor_set_file (engine->priv->file_monitor_conf, filename);
+	g_signal_connect (engine->priv->file_monitor_conf, "file-changed",
+			  G_CALLBACK (pk_engine_conf_file_changed_cb), engine);
 	g_free (filename);
+
+	/* monitor the binary file for changes */
+	engine->priv->file_monitor_binary = pk_file_monitor_new ();
+	pk_file_monitor_set_file (engine->priv->file_monitor_binary, SBINDIR "/packagekitd");
+	g_signal_connect (engine->priv->file_monitor_binary, "file-changed",
+			  G_CALLBACK (pk_engine_binary_file_changed_cb), engine);
 
 	/* set the proxy */
 	proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
@@ -829,7 +857,8 @@ pk_engine_finalize (GObject *object)
 
 	/* compulsory gobjects */
 	g_timer_destroy (engine->priv->timer);
-	g_object_unref (engine->priv->file_monitor);
+	g_object_unref (engine->priv->file_monitor_conf);
+	g_object_unref (engine->priv->file_monitor_binary);
 	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
