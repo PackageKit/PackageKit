@@ -56,6 +56,10 @@ if BACKEND_TYPE_POLDEK
 SUBDIRS += poldek
 endif
 
+if BACKEND_TYPE_PORTAGE
+SUBDIRS += portage
+endif
+
 clean-local :
 	rm -f *~
 

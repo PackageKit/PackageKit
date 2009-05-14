@@ -18,6 +18,9 @@ Backend: pisi
 Backend: poldek
     Marcin Banasiak <megabajt@pld-linux.org>
 
+Backend: portage
+    Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>
+
 Backend: zypp
     Boyd Timothy <btimothy@gmail.com>
     Scott Reeves <sreeves@novell.com>
