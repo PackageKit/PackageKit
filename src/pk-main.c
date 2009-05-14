@@ -142,6 +142,16 @@ pk_main_timeout_check_cb (PkEngine *engine)
 }
 
 /**
+ * pk_main_quit_cb:
+ **/
+static void
+pk_main_quit_cb (PkEngine *engine, GMainLoop *mainloop)
+{
+	egg_debug ("engine quit");
+	g_main_loop_quit (mainloop);
+}
+
+/**
  * pk_main_sigint_handler:
  **/
 static void
@@ -292,16 +302,18 @@ main (int argc, char *argv[])
 	if (!ret)
 		egg_error ("cannot continue, backend invalid");
 
+	loop = g_main_loop_new (NULL, FALSE);
+
 	/* create a new engine object */
 	engine = pk_engine_new ();
+	g_signal_connect (engine, "quit",
+			  G_CALLBACK (pk_main_quit_cb), loop);
 
 	if (!pk_object_register (system_connection, G_OBJECT (engine), &error)) {
 		g_print (_("Error trying to start: %s\n"), error->message);
 		g_error_free (error);
 		goto out;
 	}
-
-	loop = g_main_loop_new (NULL, FALSE);
 
 	/* Only timeout and close the mainloop if we have specified it
 	 * on the command line */
@@ -316,13 +328,14 @@ main (int argc, char *argv[])
 	if (immediate_exit)
 		g_timeout_add (50, (GSourceFunc) timed_exit_cb, loop);
 
+	/* run until quit */
 	g_main_loop_run (loop);
-	g_main_loop_unref (loop);
 
 out:
 	/* log the shutdown */
 	pk_syslog_add (syslog, PK_SYSLOG_TYPE_INFO, "daemon quit");
 
+	g_main_loop_unref (loop);
 	g_object_unref (syslog);
 	g_object_unref (conf);
 	g_object_unref (engine);
