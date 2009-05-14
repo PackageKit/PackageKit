@@ -19,8 +19,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <stdio.h>
 #include <pk-backend.h>
+#include <pk-backend-spawn.h>
+
+static PkBackendSpawn *spawn = 0;
+
 
 /**
  * backend_initialize:
@@ -30,6 +33,8 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	egg_debug ("backend: initialize");
+	spawn = pk_backend_spawn_new ();
+	pk_backend_spawn_set_name (spawn, "portage");
 }
 
 /**
@@ -40,6 +45,7 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	egg_debug ("backend: destroy");
+	g_object_unref (spawn);
 }
 
 /**
@@ -97,7 +103,7 @@ static void
 backend_cancel (PkBackend *backend)
 {
 	/* this feels bad... */
-	egg_debug ("backend: cancel");
+	pk_backend_spawn_kill (spawn);
 }
 
 /**
@@ -107,6 +113,7 @@ static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	egg_debug ("backend: depends");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -116,6 +123,7 @@ static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	egg_debug ("backend: details");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -125,6 +133,7 @@ static void
 backend_get_distro_upgrades (PkBackend *backend)
 {
 	egg_debug ("backend: distro upgrade");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -134,6 +143,7 @@ static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	egg_debug ("backend: get_files");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -143,6 +153,7 @@ static void
 backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	egg_debug ("backend: requires");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -152,6 +163,7 @@ static void
 backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	egg_debug ("backend: updates");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -161,6 +173,7 @@ static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	egg_debug ("backend: update_detail");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -170,6 +183,7 @@ static void
 backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	egg_debug ("backend: install");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -180,6 +194,7 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 			   const gchar *key_id, const gchar *package_id)
 {
 	egg_debug ("backend: install signature");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -189,6 +204,7 @@ static void
 backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
 	egg_debug ("backend: install files");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -198,6 +214,7 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	egg_debug ("backend: refresh cache");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -207,6 +224,7 @@ static void
 backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	egg_debug ("backend: resolve");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -216,6 +234,7 @@ static void
 backend_rollback (PkBackend *backend, const gchar *transaction_id)
 {
 	egg_debug ("backend: rollback");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -225,33 +244,7 @@ static void
 backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	egg_debug ("backend: remove packages");
-}
-
-/**
- * backend_search_details:
- */
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
-{
-	egg_debug ("backend: search details");
-}
-
-/**
- * backend_search_file:
- */
-static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
-{
-	egg_debug ("backend: search file");
-}
-
-/**
- * backend_search_group:
- */
-static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
-{
-	egg_debug ("backend: search group");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -261,6 +254,7 @@ static void
 backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	egg_debug ("backend: search name");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -270,6 +264,7 @@ static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	egg_debug ("backend: update packages");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -279,6 +274,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	egg_debug ("backend: update system");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -288,6 +284,7 @@ static void
 backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	egg_debug ("backend: get repo list");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -297,6 +294,7 @@ static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	egg_debug ("backend: repo enable");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -306,6 +304,7 @@ static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
 	egg_debug ("backend: repo set data");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -315,6 +314,7 @@ static void
 backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
 {
 	egg_debug ("backend: what provides");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -324,6 +324,7 @@ static void
 backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	egg_debug ("backend: get packages");
+	pk_backend_finished (backend);
 }
 
 /**
@@ -333,6 +334,7 @@ static void
 backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
 {
 	egg_debug ("backend: download packages");
+	pk_backend_finished (backend);
 }
 
 PK_BACKEND_OPTIONS (
@@ -364,9 +366,9 @@ PK_BACKEND_OPTIONS (
 	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */
 	backend_rollback,			/* rollback */
-	backend_search_details,			/* search_details */
-	backend_search_file,			/* search_file */
-	backend_search_group,			/* search_group */
+	NULL,			/* search_details */
+	NULL,			/* search_file */
+	NULL,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
