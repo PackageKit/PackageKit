@@ -1,0 +1,411 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-11-09 12:10+0000\n"
+"PO-Revision-Date: 2008-12-05 18:14+0700\n"
+"Last-Translator: Manatsawin <whs@whsgroup.ath.cx>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Pootle 1.1.0\n"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "ยอมรับข้อตกลงสัญญาอนุญาต"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "ต้องยึนยันตัวเพื่อยอมรับข้อตกลงสัญญาอนุญาต"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr "ต้องยึนยันตัวเพื่อเปลี่ยนแปลงพารามิเตอร์คลังซอฟต์แวร์"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid "Authentication is required to install a local file"
+msgstr "ต้องยึนยันตัวเพื่อติดตั้งไฟล์บนเครื่อง"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a package"
+msgstr "ต้องยึนยันตัวเพื่อติดตั้งแพคเกจ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install a security signature"
+msgstr "ต้องยึนยันตัวเพื่อติดตั้งลายเซ็นรับรองความปลอดภัย"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the package lists"
+msgstr "ต้องยึนยันตัวเพื่อเรียกรายการแพคเกจใหม่"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr "ต้องยึนยันตัวเพื่อถอดแพคเกจ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr "ต้องยึนยันตัวเพื่อยกเลิกการดำเนินการ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid "Authentication is required to update all packages"
+msgstr "ต้องยึนยันตัวเพื่ออัปเดตแพคเกจทั้งหมด"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr "ต้องยึนยันตัวเพื่ออัปเดตแพคเกจ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr "เปลี่ยนแปลงพารามิเตอร์คลังซอฟต์แวร์"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Further authentication is required to install an untrusted local file"
+msgstr "ต้องยึนยันตัวเพื่อติดตั้งไฟล์ที่ไม่น่าเชื่อถือบนเครื่อง"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install local file"
+msgstr "ติดตั้งแพคเกจบนเครื่อง"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Install package"
+msgstr "ติดตั้งแพคเกจ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Install security signature"
+msgstr "ติดตั้งลายเซ็นรับรองความปลอดภัย"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Install untrusted local file"
+msgstr "ติดตั้งไฟล์ที่ไม่น่าเชื่อถือบนเครื่อง"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Refresh package lists"
+msgstr "เรียกรายการแพคเกจใหม่"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Remove package"
+msgstr "ถอดแพคเกจ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Rollback to a previous transaction"
+msgstr "ถอยกลับไปยังการดำเนินการก่อนหน้า"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:21
+msgid "Update all packages"
+msgstr "อัปเดตแพคเกจทั้งหมด"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:22
+msgid "Update package"
+msgstr "อัปเดตแพคเกจ"
+
+#: ../client/pk-console.c:224
+msgid "Update detail"
+msgstr "รายละเอียดการอัปเดต"
+
+#: ../client/pk-console.c:425
+msgid "A system restart is required"
+msgstr "ต้องเริ่มต้นระบบใหม่"
+
+#: ../client/pk-console.c:427
+msgid "A logout and login is required"
+msgstr "ต้องออกจากระบบและเข้าสู่ระบบใหม่"
+
+#: ../client/pk-console.c:429
+msgid "An application restart is required"
+msgstr "ต้องเริ่มต้นโปรแกรมใหม่"
+
+#: ../client/pk-console.c:474
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "กรุณาป้อนตัวเลขจาก 1 ถึง %i: "
+
+#: ../client/pk-console.c:524
+msgid "Could not find a package match"
+msgstr "ไม่สามารถหาแพคเกจที่ตรงกันได้"
+
+#: ../client/pk-console.c:538
+msgid "There are multiple package matches"
+msgstr "มีแพคเกจที่ตรงกันหลายตัว"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:545
+msgid "Please enter the package number: "
+msgstr "กรุณาป้อนหมายเลขแพคเกจ: "
+
+#: ../client/pk-console.c:561
+msgid ""
+"Could not find a package with that name to install, or package already "
+"installed"
+msgstr ""
+"ไม่สามารถค้นหาแพคเกจชื่อดังกล่าวเพื่อติดตั้ง "
+"หรือแพคเกจดังกล่าวถูกติดตั้งไว้อยู่แล้ว"
+
+#: ../client/pk-console.c:643
+msgid "Could not find a package with that name to remove"
+msgstr "ไม่สามารถค้นหาแพคเกจดังกล่าวเพื่อถอดถอน"
+
+#: ../client/pk-console.c:683
+msgid "The following packages have to be removed"
+msgstr "แพคเกจต่อไปนี้จะถูกถอดถอน"
+
+#. get user input
+#: ../client/pk-console.c:692
+msgid "Okay to remove additional packages?"
+msgstr "ต้องการถอดแพคเกจเพิ่มเติม?"
+
+#: ../client/pk-console.c:696
+msgid "Cancelled!"
+msgstr "ถูกยกเลิก!"
+
+#: ../client/pk-console.c:718
+msgid "Could not find a package with that name to update"
+msgstr "ไม่สามารถค้นหาแพคเกจชื่อดังกล่าวเพื่ออัปเดต"
+
+#: ../client/pk-console.c:736
+msgid "Could not find what packages require this package"
+msgstr "ไม่สามารถค้นหาแพคเกจที่ต้องการแพคเกจนี้"
+
+#: ../client/pk-console.c:754
+msgid "Could not get dependencies for this package"
+msgstr "ไม่สามารถค้นหารายการพึ่งพาแพคเกจสำหรับแพคเกจนี้"
+
+#: ../client/pk-console.c:772
+msgid "Could not find details for this package"
+msgstr "ไม่สามารถค้นหารายละเอียดแพคเกจนี้"
+
+#: ../client/pk-console.c:790
+#, c-format
+msgid "Could not find the files for this package"
+msgstr "ไม่สามารถค้นหาไฟล์สำหรับแพคเกจนี้"
+
+#: ../client/pk-console.c:870
+msgid "Package description"
+msgstr "รายละเอียดแพคเกจ"
+
+#: ../client/pk-console.c:893
+msgid "Package files"
+msgstr "ไฟล์แพคเกจ"
+
+#: ../client/pk-console.c:901
+msgid "No files"
+msgstr "ไม่มีไฟล์"
+
+#. get user input
+#: ../client/pk-console.c:933
+msgid "Okay to import key?"
+msgstr "ต้องการนำเข้ากุญแจ?"
+
+#: ../client/pk-console.c:936
+msgid "Did not import key"
+msgstr "ไม่ได้นำเข้ากุญแจ"
+
+#. get user input
+#: ../client/pk-console.c:976
+msgid "Do you agree?"
+msgstr "ยอมรับข้อความข้างต้น?"
+
+#: ../client/pk-console.c:979
+msgid "Did not agree to licence, task will fail"
+msgstr "ไม่ยอมรับข้อตกลงสัญญาอนุญาต งานที่ทำจะล้มเหลว"
+
+#: ../client/pk-console.c:1008
+msgid "The daemon crashed mid-transaction!"
+msgstr "ดีมอนขัดข้องระหว่างกระบวนการ!"
+
+#. header
+#: ../client/pk-console.c:1061
+msgid "PackageKit Console Interface"
+msgstr "ส่วนติดต่อบนคอนโซลของ PackageKit"
+
+#: ../client/pk-console.c:1061
+msgid "Subcommands:"
+msgstr "คำสั่งย่อย:"
+
+#: ../client/pk-console.c:1165 ../client/pk-monitor.c:104 ../src/pk-main.c:189
+msgid "Show extra debugging information"
+msgstr "แสดงข้อมูลเพิ่มเติมสำหรับดีบั๊ก"
+
+#: ../client/pk-console.c:1167 ../client/pk-monitor.c:106
+msgid "Show the program version and exit"
+msgstr "แสดงรุ่นของโปรแกรมแล้วออก"
+
+#: ../client/pk-console.c:1169
+msgid "Set the filter, e.g. installed"
+msgstr "ตั้งตัวกรอง เช่น ติดตั้งไว้แล้ว"
+
+#: ../client/pk-console.c:1171
+msgid "Exit without waiting for actions to complete"
+msgstr "ออกโดยไม่ต้องรอกระบวนการให้เสร็จสิ้น"
+
+#: ../client/pk-console.c:1194
+msgid "Could not connect to system DBUS."
+msgstr "ไม่สามารถต่อกับ DBUS ของระบบ"
+
+#: ../client/pk-console.c:1288
+#, c-format
+msgid "You need to specify a search type"
+msgstr "คุณต้องระบุชนิดการค้นหา"
+
+#: ../client/pk-console.c:1293 ../client/pk-console.c:1300
+#: ../client/pk-console.c:1307 ../client/pk-console.c:1314
+#: ../client/pk-console.c:1421 ../client/pk-console.c:1428
+#: ../client/pk-console.c:1435 ../client/pk-console.c:1442
+#, c-format
+msgid "You need to specify a search term"
+msgstr "คุณต้องระบุคำค้นหา"
+
+#: ../client/pk-console.c:1319
+#, c-format
+msgid "Invalid search type"
+msgstr "ชนิดการค้นหาไม่ถูกต้อง"
+
+#: ../client/pk-console.c:1324
+#, c-format
+msgid "You need to specify a package or file to install"
+msgstr "คุณต้องระบุแพคเกจหรือไฟล์ที่จะติดตั้ง"
+
+#: ../client/pk-console.c:1339
+#, c-format
+msgid "You need to specify a type, key_id and package_id"
+msgstr "คุณต้องระบุชนิด, key_id และ package_id"
+
+#: ../client/pk-console.c:1346
+#, c-format
+msgid "You need to specify a package to remove"
+msgstr "คุณต้องระบุแพคเกจที่จะถอดถอน"
+
+#: ../client/pk-console.c:1353
+#, c-format
+msgid "You need to specify a eula-id"
+msgstr "คุณต้องระบุ eula-id"
+
+#: ../client/pk-console.c:1369
+#, c-format
+#, fuzzy
+msgid "You need to specify a package name to resolve"
+msgstr "คุณต้องระบุชื่อแพคเกจที่จะแยกแยะ"
+
+#: ../client/pk-console.c:1376 ../client/pk-console.c:1383
+#, c-format
+msgid "You need to specify a repo name"
+msgstr "คุณต้องระบุชื่อคลัง"
+
+#: ../client/pk-console.c:1390
+#, c-format
+msgid "You need to specify a repo name/parameter and value"
+msgstr "คุณต้องระบุชื่อคลัง/พารามิเตอร์และค่า"
+
+#: ../client/pk-console.c:1403
+#, c-format
+#, fuzzy
+msgid "You need to specify a time term"
+msgstr "คุณต้องระบุระยะเวลา"
+
+#: ../client/pk-console.c:1408
+#, c-format
+msgid "You need to specify a correct role"
+msgstr "คุณต้องระบุหน้าที่ที่ถูกต้อง"
+
+#: ../client/pk-console.c:1413
+#, c-format
+msgid "Failed to get last time"
+msgstr "ไม่สามารถหาเวลาล่าสุด"
+
+#: ../client/pk-console.c:1449
+#, c-format
+msgid "You need to specify a package to find the details for"
+msgstr "คุณต้องระบุแพคเกจที่จะค้นหารายละเอียด"
+
+#: ../client/pk-console.c:1456
+#, c-format
+msgid "You need to specify a package to find the files for"
+msgstr "คุณต้องระบุแพคเกจที่จะค้นหาไฟล์"
+
+#: ../client/pk-console.c:1503
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "ไม่รองรับตัวเลือก '%s'"
+
+#: ../client/pk-console.c:1514
+msgid "Command failed"
+msgstr "คำสั่งล้มเหลว"
+
+#: ../client/pk-console.c:1518
+msgid "You don't have the necessary privileges for this operation"
+msgstr "คุณมีสิทธิไม่เพียงพอสำหรับกระบวนการนี้"
+
+#: ../client/pk-monitor.c:117
+msgid "PackageKit Monitor"
+msgstr "โปรแกรมเฝ้าสังเกต PackageKit"
+
+#: ../client/pk-import-desktop.c:293 ../client/pk-import-specspo.c:169
+#, c-format
+msgid "Could not open database: %s"
+msgstr "ไม่สามารถเปิดฐานข้อมูล: %s"
+
+#: ../client/pk-import-desktop.c:294 ../client/pk-import-specspo.c:170
+msgid "You probably need to run this program as the root user"
+msgstr "คุณอาจจะต้องรันโปรแกรมนี้เป็นผู้ใช้รูท"
+
+#: ../src/pk-main.c:83
+msgid "Startup failed due to security policies on this machine."
+msgstr "การเริ่มโปรแกรมไม่สำเร็จเนื่องจากนโยบายด้านความปลอดภัยบนเครื่องนี้"
+
+#: ../src/pk-main.c:84
+msgid "This can happen for two reasons:"
+msgstr "นี่อาจจะเกิดจากสองสาเหตุ:"
+
+# งงกับที่เค้าเขียนมาเหมือนกันครับ
+#: ../src/pk-main.c:85
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "ผู้ใช้ที่ถูกต้องไม่ได้เรียกโปรแกรม (ปกติคือ root)"
+
+#: ../src/pk-main.c:86
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
+msgstr ""
+"ไฟล์ org.freedesktop.PackageKit.conf file ไม่ได้ถูกติดตั้งในไดเรคทอรี "
+"/etc/dbus-1/system.d"
+
+#: ../src/pk-main.c:185
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "แบ็คเอนด์ตัวจัดการแพคเกจที่จะใช้ เช่น dummy"
+
+#: ../src/pk-main.c:187
+msgid "Daemonize and detach from the terminal"
+msgstr "เปลี่ยนเป็นดีมอนและแยกตัวออกจากเทอร์มินัล"
+
+#: ../src/pk-main.c:191
+msgid "Disable the idle timer"
+msgstr "ปิดไทเมอร์ที่ไม่ใช้งาน"
+
+#: ../src/pk-main.c:193
+msgid "Show version and exit"
+msgstr "แสดงรุ่นแล้วออก"
+
+#: ../src/pk-main.c:195
+msgid "Exit after a small delay"
+msgstr "ออกหลังจากหน่วงเวลาเล็กน้อย"
+
+#: ../src/pk-main.c:197
+msgid "Exit after the engine has loaded"
+msgstr "ออกหลังจาก engine ถูกเรียกแล้ว"
+
+#: ../src/pk-main.c:207
+msgid "PackageKit service"
+msgstr "บริการ PackageKit"
+
+#: ../src/pk-main.c:233
+msgid "Cannot connect to the system bus"
+msgstr "ไม่สามารถติดต่อกับบัสระบบ"
+
+#: ../src/pk-main.c:273
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "เกิดข้อผิดพลาดขณะจะเริ่ม: %s\n"
