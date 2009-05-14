@@ -53,7 +53,6 @@ gboolean	 pk_notify_repo_list_changed	(PkNotify	*notify);
 gboolean	 pk_notify_updates_changed	(PkNotify	*notify);
 gboolean	 pk_notify_wait_updates_changed	(PkNotify	*notify,
 						 guint		 timeout);
-gboolean	 pk_notify_restart_schedule	(PkNotify	*notify);
 
 G_END_DECLS
 

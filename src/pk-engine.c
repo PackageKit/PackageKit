@@ -214,17 +214,6 @@ pk_engine_notify_repo_list_changed_cb (PkNotify *notify, PkEngine *engine)
 }
 
 /**
- * pk_engine_notify_restart_schedule_cb:
- **/
-static void
-pk_engine_notify_restart_schedule_cb (PkNotify *notify, PkEngine *engine)
-{
-	g_return_if_fail (PK_IS_ENGINE (engine));
-	egg_debug ("emitting restart-schedule");
-	g_signal_emit (engine, signals [PK_ENGINE_RESTART_SCHEDULE], 0);
-}
-
-/**
  * pk_engine_notify_updates_changed_cb:
  **/
 static void
@@ -543,7 +532,7 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	/* have we been updated? */
 	if (engine->priv->restart_schedule) {
 		egg_debug ("need to restart daemon *NOW*");
-		pk_notify_restart_schedule (engine->priv->notify);
+		g_signal_emit (engine, signals [PK_ENGINE_RESTART_SCHEDULE], 0);
 		return G_MAXUINT;
 	}
 
@@ -774,8 +763,6 @@ pk_engine_init (PkEngine *engine)
 
 	/* add the interface */
 	engine->priv->notify = pk_notify_new ();
-	g_signal_connect (engine->priv->notify, "restart-schedule",
-			  G_CALLBACK (pk_engine_notify_restart_schedule_cb), engine);
 	g_signal_connect (engine->priv->notify, "repo-list-changed",
 			  G_CALLBACK (pk_engine_notify_repo_list_changed_cb), engine);
 	g_signal_connect (engine->priv->notify, "updates-changed",

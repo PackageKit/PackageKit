@@ -47,7 +47,6 @@ struct PkNotifyPrivate
 
 enum {
 	PK_NOTIFY_REPO_LIST_CHANGED,
-	PK_NOTIFY_RESTART_SCHEDULE,
 	PK_NOTIFY_UPDATES_CHANGED,
 	PK_NOTIFY_LAST_SIGNAL
 };
@@ -56,19 +55,6 @@ static gpointer pk_notify_object = NULL;
 static guint signals [PK_NOTIFY_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkNotify, pk_notify, G_TYPE_OBJECT)
-
-/**
- * pk_notify_restart_schedule:
- **/
-gboolean
-pk_notify_restart_schedule (PkNotify *notify)
-{
-	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
-
-	egg_debug ("emitting restart-schedule");
-	g_signal_emit (notify, signals [PK_NOTIFY_RESTART_SCHEDULE], 0);
-	return TRUE;
-}
 
 /**
  * pk_notify_repo_list_changed:
@@ -157,11 +143,6 @@ pk_notify_class_init (PkNotifyClass *klass)
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_notify_finalize;
 
-	signals [PK_NOTIFY_RESTART_SCHEDULE] =
-		g_signal_new ("restart-schedule",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
 	signals [PK_NOTIFY_REPO_LIST_CHANGED] =
 		g_signal_new ("repo-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
