@@ -801,7 +801,7 @@ pk_transaction_db_test (EggTest *test)
 	egg_test_title (test, "get an tid object");
 	tid = pk_transaction_db_generate_id (db);
 	ms = egg_test_elapsed (test);
-	if (ms < 5)
+	if (ms < 10)
 		egg_test_success (test, "acceptable time %ims", ms);
 	else
 		egg_test_failed (test, "took a long time: %ims", ms);
