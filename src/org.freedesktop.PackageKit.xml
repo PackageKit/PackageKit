@@ -14,6 +14,35 @@
     </doc:doc>
 
     <!--*****************************************************************************************-->
+    <property name="version-major" type="u" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The major version number.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+    <property name="version-minor" type="u" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The minor version number.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+    <property name="version-micro" type="u" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The micro version number.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
     <method name="GetActions">
       <doc:doc>
         <doc:description>

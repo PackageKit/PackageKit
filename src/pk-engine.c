@@ -121,6 +121,14 @@ enum {
 	PK_ENGINE_LAST_SIGNAL
 };
 
+enum {
+	PROP_0,
+	PROP_VERSION_MAJOR,
+	PROP_VERSION_MINOR,
+	PROP_VERSION_MICRO,
+	PROP_LAST,
+};
+
 static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkEngine, pk_engine, G_TYPE_OBJECT)
@@ -631,17 +639,79 @@ out:
 }
 
 /**
+ * pk_engine_get_property:
+ **/
+static void
+pk_engine_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	switch (prop_id) {
+	case PROP_VERSION_MAJOR:
+		g_value_set_uint (value, PK_MAJOR_VERSION);
+		break;
+	case PROP_VERSION_MINOR:
+		g_value_set_uint (value, PK_MINOR_VERSION);
+		break;
+	case PROP_VERSION_MICRO:
+		g_value_set_uint (value, PK_MICRO_VERSION);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
+ * pk_engine_set_property:
+ **/
+static void
+pk_engine_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	switch (prop_id) {
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
  * pk_engine_class_init:
  * @klass: The PkEngineClass
  **/
 static void
 pk_engine_class_init (PkEngineClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
 	object_class->finalize = pk_engine_finalize;
+	object_class->get_property = pk_engine_get_property;
+	object_class->set_property = pk_engine_set_property;
 
-	/* set up signal that emits 'au' */
+	/**
+	 * PkEngine:version-major:
+	 */
+	pspec = g_param_spec_uint ("version-major", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_VERSION_MAJOR, pspec);
+
+	/**
+	 * PkEngine:version-minor:
+	 */
+	pspec = g_param_spec_uint ("version-minor", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_VERSION_MINOR, pspec);
+
+	/**
+	 * PkEngine:version-micro:
+	 */
+	pspec = g_param_spec_uint ("version-micro", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_VERSION_MICRO, pspec);
+
+	/* signals */
 	signals [PK_ENGINE_LOCKED] =
 		g_signal_new ("locked",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
