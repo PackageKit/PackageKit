@@ -2472,8 +2472,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 
 	/* try and reuse cache */
 	updates_cache = pk_cache_get_updates (transaction->priv->cache);
-	ret = pk_conf_get_bool (transaction->priv->conf, "UseUpdateCache");
-	if (ret && updates_cache != NULL) {
+	if (updates_cache != NULL) {
 		const PkPackageObj *obj;
 		const gchar *info_text;
 		guint i;

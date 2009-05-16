@@ -31,11 +31,14 @@
 
 #include "egg-debug.h"
 #include "pk-cache.h"
+#include "pk-conf.h"
 
 #define PK_CACHE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CACHE, PkCachePrivate))
 
 struct PkCachePrivate
 {
+	PkConf			*conf;
+	gboolean		 use_update_cache;
 	PkPackageList		*updates_cache;
 };
 
@@ -49,6 +52,13 @@ PkPackageList *
 pk_cache_get_updates (PkCache *cache)
 {
 	g_return_val_if_fail (PK_IS_CACHE (cache), NULL);
+
+	/* do not use */
+	if (!cache->priv->use_update_cache) {
+		egg_debug ("not using cache");
+		return NULL;
+	}
+
 	return cache->priv->updates_cache;
 }
 
@@ -61,12 +71,17 @@ pk_cache_set_updates (PkCache *cache, PkPackageList *list)
 	g_return_val_if_fail (PK_IS_CACHE (cache), FALSE);
 	g_return_val_if_fail (list != NULL, FALSE);
 
+	/* do not use */
+	if (!cache->priv->use_update_cache) {
+		egg_debug ("not using cache");
+		return FALSE;
+	}
+
 	/* do this in case we have old data */
 	pk_cache_invalidate (cache);
 
-	cache->priv->updates_cache = list;
 	egg_debug ("reffing updates cache");
-	g_object_ref (cache->priv->updates_cache);
+	cache->priv->updates_cache = g_object_ref (list);
 	g_object_add_weak_pointer (G_OBJECT (cache->priv->updates_cache), (gpointer) &cache->priv->updates_cache);
 	return TRUE;
 }
@@ -97,9 +112,8 @@ pk_cache_finalize (GObject *object)
 	g_return_if_fail (PK_IS_CACHE (object));
 	cache = PK_CACHE (object);
 
-	if (cache->priv->updates_cache != NULL) {
+	if (cache->priv->updates_cache != NULL)
 		g_object_unref (cache->priv->updates_cache);
-	}
 
 	G_OBJECT_CLASS (pk_cache_parent_class)->finalize (object);
 }
@@ -127,6 +141,8 @@ pk_cache_init (PkCache *cache)
 {
 	cache->priv = PK_CACHE_GET_PRIVATE (cache);
 	cache->priv->updates_cache = NULL;
+	cache->priv->conf = pk_conf_new ();
+	cache->priv->use_update_cache = pk_conf_get_bool (cache->priv->conf, "UseUpdateCache");
 }
 
 /**
