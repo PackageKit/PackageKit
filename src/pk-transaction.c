@@ -53,7 +53,6 @@
 #include "pk-backend.h"
 #include "pk-backend-internal.h"
 #include "pk-inhibit.h"
-#include "pk-update-detail-list.h"
 #include "pk-conf.h"
 #include "pk-shared.h"
 #include "pk-cache.h"
@@ -93,7 +92,6 @@ struct PkTransactionPrivate
 	PkInhibit		*inhibit;
 	PkCache			*cache;
 	PkConf			*conf;
-	PkUpdateDetailList	*update_detail_list;
 	PkNotify		*notify;
 	PkSecurity		*security;
 	PkSecurityCaller	*caller;
@@ -982,9 +980,6 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
-
-	/* add, if not already added? */
-	pk_update_detail_list_add_obj (transaction->priv->update_detail_list, detail);
 
 	restart_text = pk_restart_enum_to_text (detail->restart);
 	package_id = pk_package_id_to_string (detail->id);
@@ -2375,13 +2370,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
-	gchar *package_id;
-	gchar **package_ids_new;
-	const PkUpdateDetailObj *detail;
-	PkPackageId *id;
-	GPtrArray *array;
-	guint i;
-	guint len;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2389,9 +2377,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	package_ids_temp = pk_package_ids_to_text (package_ids);
 	egg_debug ("GetUpdateDetail method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
-
-	/* need to split the package_ids into new and cached */
-	array = g_ptr_array_new ();
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->get_update_detail == NULL) {
@@ -2426,51 +2411,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 
-	/* try and reuse cache */
-	len = g_strv_length (package_ids);
-	for (i=0; i<len; i++) {
-		id = pk_package_id_new_from_string (package_ids[i]);
-		detail = pk_update_detail_list_get_obj (transaction->priv->update_detail_list, id);
-		pk_package_id_free (id);
-		if (detail != NULL) {
-			gchar *issued;
-			gchar *updated;
-			const gchar *state_text;
-			package_id = pk_package_id_to_string (detail->id);
-			issued = pk_iso8601_from_date (detail->issued);
-			updated = pk_iso8601_from_date (detail->updated);
-			state_text = pk_update_state_enum_to_text (detail->state);
-
-			/* emulate the backend */
-			g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
-				       package_id, detail->updates, detail->obsoletes,
-				       detail->vendor_url, detail->bugzilla_url, detail->cve_url,
-				       pk_restart_enum_to_text (detail->restart), detail->update_text,
-				       detail->changelog, state_text, issued, updated);
-			g_free (issued);
-			g_free (updated);
-			g_free (package_id);
-		} else {
-			egg_debug ("not got %s", package_ids[i]);
-			g_ptr_array_add (array, g_strdup (package_ids[i]));
-		}
-	}
-
-	/* if we have nothing to do, i.e. everything was in the cache */
-	if (array->len == 0) {
-		/* we are done */
-		g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
-		goto out;
-	}
-
-	/* get the new list */
-	egg_debug ("%i more to process", array->len);
-	package_ids_new = pk_ptr_array_to_strv (array);
-
-	/* alter list */
-	g_strfreev (transaction->priv->cached_package_ids);
-	transaction->priv->cached_package_ids = package_ids_new;
-
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
@@ -2481,9 +2421,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 		return;
 	}
 
-out:
-	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
-	g_ptr_array_free (array, TRUE);
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
 }
@@ -2535,8 +2472,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 
 	/* try and reuse cache */
 	updates_cache = pk_cache_get_updates (transaction->priv->cache);
-	ret = pk_conf_get_bool (transaction->priv->conf, "UseUpdateCache");
-	if (ret && updates_cache != NULL) {
+	if (updates_cache != NULL) {
 		const PkPackageObj *obj;
 		const gchar *info_text;
 		guint i;
@@ -3948,7 +3884,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->security = pk_security_new ();
 	transaction->priv->cache = pk_cache_new ();
 	transaction->priv->conf = pk_conf_new ();
-	transaction->priv->update_detail_list = pk_update_detail_list_new ();
 	transaction->priv->notify = pk_notify_new ();
 	transaction->priv->inhibit = pk_inhibit_new ();
 	transaction->priv->package_list = pk_package_list_new ();
@@ -4020,7 +3955,6 @@ pk_transaction_finalize (GObject *object)
 
 	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->cache);
-	g_object_unref (transaction->priv->update_detail_list);
 	g_object_unref (transaction->priv->inhibit);
 	g_object_unref (transaction->priv->backend);
 	g_object_unref (transaction->priv->monitor);

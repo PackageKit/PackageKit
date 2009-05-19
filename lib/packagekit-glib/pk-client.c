@@ -1297,6 +1297,10 @@ pk_client_transaction_timeout_cb (PkClient *client)
 	/* emit signal */
 	egg_debug ("emit error-code %i, %s", PK_ERROR_ENUM_TRANSACTION_CANCELLED, details);
 	g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, PK_ERROR_ENUM_TRANSACTION_CANCELLED, details);
+
+	/* set used */
+	client->priv->timeout_id = 0;
+
 	return FALSE;
 }
 

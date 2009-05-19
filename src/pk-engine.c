@@ -45,7 +45,6 @@
 #include "pk-network.h"
 #include "pk-cache.h"
 #include "pk-shared.h"
-#include "pk-update-detail-list.h"
 #include "pk-backend.h"
 #include "pk-backend-internal.h"
 #include "pk-engine.h"
@@ -93,7 +92,6 @@ struct PkEnginePrivate
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
 	PkCache			*cache;
-	PkUpdateDetailList	*update_detail_cache;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkNetwork		*network;
@@ -842,7 +840,6 @@ pk_engine_init (PkEngine *engine)
 
 	/* we save a cache of the latest update lists sowe can do cached responses */
 	engine->priv->cache = pk_cache_new ();
-	engine->priv->update_detail_cache = pk_update_detail_list_new ();
 
 	/* we need to be able to clear this */
 	engine->priv->signal_state_priority_timeout = 0;
@@ -937,7 +934,6 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
 	g_object_unref (engine->priv->cache);
-	g_object_unref (engine->priv->update_detail_cache);
 	g_object_unref (engine->priv->conf);
 	g_free (engine->priv->mime_types);
 
