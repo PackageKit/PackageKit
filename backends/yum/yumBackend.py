@@ -2813,7 +2813,7 @@ class PackageKitYumBase(yum.YumBase):
         # disable the PackageKit plugin when running under PackageKit
         try:
             pc = self.preconf
-            pc.disabled_plugins = ['refresh-packagekit', 'rpm-warm-cache']
+            pc.disabled_plugins = ['refresh-packagekit', 'rpm-warm-cache', 'remove-with-leaves']
         except yum.Errors.ConfigError, e:
             raise PkError(ERROR_REPO_CONFIGURATION_ERROR, _to_unicode(e))
         except ValueError, e:
