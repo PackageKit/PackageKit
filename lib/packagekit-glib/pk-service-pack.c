@@ -260,7 +260,7 @@ static gboolean
 pk_service_pack_extract (const gchar *filename, const gchar *directory, GError **error)
 {
 	*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
-			      "Cannot check PackageKit as not built with libarchive support");
+			      "The service pack %s cannot be extracted as PackageKit was not built with libarchive support", filename);
 	return FALSE;
 }
 #endif /* HAVE_ARCHIVE_H */
@@ -714,7 +714,7 @@ pk_service_pack_create_from_files (PkServicePack *pack, GPtrArray *file_array, G
 {
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
-			      "Cannot create pack as PackageKit as not built with libarchive support");
+			      "The service pack %s cannot be created as PackageKit was not built with libarchive support", filename);
 	return FALSE;
 }
 #endif
