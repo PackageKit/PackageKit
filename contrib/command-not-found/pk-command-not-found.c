@@ -340,6 +340,7 @@ pk_cnf_find_available (const gchar *cmd)
 	PkControl *control;
 	GError *error = NULL;
 	PkBitfield roles;
+	PkBitfield filters;
 	gboolean ret;
 	GPtrArray *array;
 	guint i, len;
@@ -363,7 +364,8 @@ pk_cnf_find_available (const gchar *cmd)
 	/* do search */
 	path = g_strdup_printf ("/usr/bin/%s", cmd);
 	egg_debug ("searching for %s", path);
-	ret = pk_client_search_file (client, PK_FILTER_ENUM_NONE, path, &error);
+	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
+	ret = pk_client_search_file (client, filters, path, &error);
 	if (!ret) {
 		/* TRANSLATORS: we failed to find the package, this shouldn't happen */
 		egg_warning ("%s: %s", _("Failed to search for file"), error->message);

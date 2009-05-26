@@ -275,6 +275,12 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+#ifndef HAVE_ARCHIVE_H
+	/* TRANSLATORS: This is when the distro didn't include libarchive support into PK */
+	g_print ("%s\n", _("Service packs cannot be created as PackageKit was not built with libarchive support."));
+	goto out;
+#endif
+
 	/* the user can speciify a complete path */
 	ret = g_file_test (directory, G_FILE_TEST_IS_DIR);
 	if (ret) {
