@@ -282,7 +282,9 @@ pk_iso8601_to_date (const gchar *iso_date)
 {
 	gboolean ret;
 	guint retval;
-	guint d, m, y;
+	guint d = 0;
+	guint m = 0;
+	guint y = 0;
 	GTimeVal time_val;
 	GDate *date = NULL;
 
@@ -300,12 +302,21 @@ pk_iso8601_to_date (const gchar *iso_date)
 	/* g_time_val_from_iso8601() blows goats and won't
 	 * accept a valid ISO8601 formatted date without a
 	 * time value - try and parse this case */
-	retval = sscanf (iso_date, "%i-%i-%i", &y, &m, &d);
-	if (retval == 3) {
-		date = g_date_new_dmy (d, m, y);
+	retval = sscanf (iso_date, "%u-%u-%u", &y, &m, &d);
+	if (retval != 3) {
+		egg_warning ("could not parse '%s'", iso_date);
 		goto out;
 	}
-	egg_warning ("could not parse '%s'", iso_date);
+
+	/* check it's valid */
+	ret = g_date_valid_dmy (d, m, y);
+	if (!ret) {
+		egg_warning ("invalid date %i/%i/%i from '%s'", y, m, d, iso_date);
+		goto out;
+	}
+
+	/* create valid object */
+	date = g_date_new_dmy (d, m, y);
 out:
 	return date;
 }
@@ -527,6 +538,7 @@ pk_common_test (EggTest *test)
 	gchar *text_safe;
 	gchar *present;
 	guint seconds;
+	GDate *date;
 
 	if (!egg_test_start (test, "PkCommon"))
 		return;
@@ -653,6 +665,31 @@ pk_common_test (EggTest *test)
 
 	/************************************************************/
 	g_free (present);
+
+
+	/************************************************************
+	 **************        Date handling         ****************
+	 ************************************************************/
+	egg_test_title (test, "zero length date");
+	date = pk_iso8601_to_date ("");
+	egg_test_assert (test, (date == NULL));
+
+	/************************************************************/
+	egg_test_title (test, "no day specified");
+	date = pk_iso8601_to_date ("2004-01");
+	egg_test_assert (test, (date == NULL));
+
+	/************************************************************/
+	egg_test_title (test, "date _and_ time specified");
+	date = pk_iso8601_to_date ("2009-05-08 13:11:12");
+	egg_test_assert (test, (date->day == 8 && date->month == 5 && date->year == 2009));
+	g_date_free (date);
+
+	/************************************************************/
+	egg_test_title (test, "correct date format");
+	date = pk_iso8601_to_date ("2004-02-01");
+	egg_test_assert (test, (date->day == 1 && date->month == 2 && date->year == 2004));
+	g_date_free (date);
 
 	egg_test_end (test);
 }
