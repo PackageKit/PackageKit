@@ -23,6 +23,7 @@
 #include <pk-backend-spawn.h>
 
 static PkBackendSpawn *spawn = 0;
+static const gchar* BACKEND_FILE = "portageBackend.py";
 
 
 /**
@@ -78,7 +79,6 @@ backend_get_filters (PkBackend *backend)
 
 	return pk_bitfield_from_enums (PK_FILTER_ENUM_GUI,
 		PK_FILTER_ENUM_INSTALLED,
-		PK_FILTER_ENUM_DEVELOPMENT,
 		-1);
 }
 
@@ -93,7 +93,7 @@ backend_get_mime_types (PkBackend *backend)
 	 */
 	egg_debug ("backend: get_mime_types");
 
-	return g_strdup ("application/x-rpm;application/x-deb");
+	return g_strdup ("application/ebuild");
 }
 
 /**
@@ -104,6 +104,19 @@ backend_cancel (PkBackend *backend)
 {
 	/* this feels bad... */
 	pk_backend_spawn_kill (spawn);
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	gchar *package_ids_temp;
+
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "download-packages", directory, package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -122,18 +135,11 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	egg_debug ("backend: details");
-	pk_backend_finished (backend);
-}
+	gchar *package_ids_temp;
 
-/**
- * backend_get_distro_upgrades:
- */
-static void
-backend_get_distro_upgrades (PkBackend *backend)
-{
-	egg_debug ("backend: distro upgrade");
-	pk_backend_finished (backend);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-details", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -218,26 +224,6 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * backend_resolve:
- */
-static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
-{
-	egg_debug ("backend: resolve");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_rollback:
- */
-static void
-backend_rollback (PkBackend *backend, const gchar *transaction_id)
-{
-	egg_debug ("backend: rollback");
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_remove_packages:
  */
 static void
@@ -253,8 +239,11 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 static void
 backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
-	egg_debug ("backend: search name");
-	pk_backend_finished (backend);
+	gchar *filters_text;
+
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-name", filters_text, search, NULL);
+	g_free (filters_text);
 }
 
 /**
@@ -278,36 +267,6 @@ backend_update_system (PkBackend *backend)
 }
 
 /**
- * backend_get_repo_list:
- */
-static void
-backend_get_repo_list (PkBackend *backend, PkBitfield filters)
-{
-	egg_debug ("backend: get repo list");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_repo_enable:
- */
-static void
-backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
-{
-	egg_debug ("backend: repo enable");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_repo_set_data:
- */
-static void
-backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
-{
-	egg_debug ("backend: repo set data");
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_what_provides:
  */
 static void
@@ -327,16 +286,6 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 	pk_backend_finished (backend);
 }
 
-/**
- * backend_download_packages:
- */
-static void
-backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
-{
-	egg_debug ("backend: download packages");
-	pk_backend_finished (backend);
-}
-
 PK_BACKEND_OPTIONS (
 	"Portage",				/* description */
 	"Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>",	/* author */
@@ -350,10 +299,10 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
-	backend_get_distro_upgrades,		/* get_distro_upgrades */
+	NULL,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
-	backend_get_repo_list,			/* get_repo_list */
+	NULL,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
@@ -362,10 +311,10 @@ PK_BACKEND_OPTIONS (
 	backend_install_signature,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
-	backend_repo_enable,			/* repo_enable */
-	backend_repo_set_data,			/* repo_set_data */
-	backend_resolve,			/* resolve */
-	backend_rollback,			/* rollback */
+	NULL,			/* repo_enable */
+	NULL,			/* repo_set_data */
+	NULL,			/* resolve */
+	NULL,			/* rollback */
 	NULL,			/* search_details */
 	NULL,			/* search_file */
 	NULL,			/* search_group */
