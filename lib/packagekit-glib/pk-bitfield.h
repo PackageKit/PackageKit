@@ -48,9 +48,9 @@ PkBitfield	 pk_bitfield_from_enums			(gint		 value, ...);
 PkBitfield	 pk_role_bitfield_from_text 		(const gchar	*roles);
 gchar		*pk_role_bitfield_to_text		(PkBitfield	 roles);
 PkBitfield	 pk_group_bitfield_from_text 		(const gchar	*groups);
-gchar		*pk_group_bitfield_to_text		(PkBitfield groups);
+gchar		*pk_group_bitfield_to_text		(PkBitfield	 groups);
 PkBitfield	 pk_filter_bitfield_from_text 		(const gchar	*filters);
-gchar		*pk_filter_bitfield_to_text		(PkBitfield filters);
+gchar		*pk_filter_bitfield_to_text		(PkBitfield	 filters);
 
 G_END_DECLS
 
