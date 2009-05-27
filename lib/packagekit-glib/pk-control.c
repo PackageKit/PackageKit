@@ -47,6 +47,7 @@
 #include <packagekit-glib/pk-connection.h>
 #include <packagekit-glib/pk-common.h>
 #include <packagekit-glib/pk-enum.h>
+#include <packagekit-glib/pk-version.h>
 
 #include "egg-debug.h"
 
@@ -66,6 +67,9 @@ struct _PkControlPrivate
 	PkConnection		*pconnection;
 	gchar			**array;
 	guint			 idle_id;
+	gboolean		 version_major;
+	gboolean		 version_minor;
+	gboolean		 version_micro;
 };
 
 enum {
@@ -76,6 +80,14 @@ enum {
 	PK_CONTROL_REPO_LIST_CHANGED,
 	PK_CONTROL_NETWORK_STATE_CHANGED,
 	PK_CONTROL_LAST_SIGNAL
+};
+
+enum {
+	PROP_0,
+	PROP_VERSION_MAJOR,
+	PROP_VERSION_MINOR,
+	PROP_VERSION_MICRO,
+	PROP_LAST
 };
 
 static guint signals [PK_CONTROL_LAST_SIGNAL] = { 0 };
@@ -830,14 +842,77 @@ pk_control_locked_cb (DBusGProxy *proxy, gboolean is_locked, PkControl *control)
 }
 
 /**
+ * pk_control_get_property:
+ **/
+static void
+pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkControl *control = PK_CONTROL (object);
+	switch (prop_id) {
+	case PROP_VERSION_MAJOR:
+		g_value_set_uint (value, control->priv->version_major);
+		break;
+	case PROP_VERSION_MINOR:
+		g_value_set_uint (value, control->priv->version_minor);
+		break;
+	case PROP_VERSION_MICRO:
+		g_value_set_uint (value, control->priv->version_micro);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
+ * pk_control_set_property:
+ **/
+static void
+pk_control_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	switch (prop_id) {
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
  * pk_control_class_init:
  * @klass: The PkControlClass
  **/
 static void
 pk_control_class_init (PkControlClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	object_class->get_property = pk_control_get_property;
+	object_class->set_property = pk_control_set_property;
 	object_class->finalize = pk_control_finalize;
+
+	/**
+	 * PkControl:version-major:
+	 */
+	pspec = g_param_spec_uint ("version-major", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_VERSION_MAJOR, pspec);
+
+	/**
+	 * PkControl:version-minor:
+	 */
+	pspec = g_param_spec_uint ("version-minor", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_VERSION_MINOR, pspec);
+
+	/**
+	 * PkControl:version-micro:
+	 */
+	pspec = g_param_spec_uint ("version-micro", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_VERSION_MICRO, pspec);
 
 	/**
 	 * PkControl::updates-changed:
@@ -925,6 +1000,63 @@ pk_control_class_init (PkControlClass *klass)
 }
 
 /**
+ * pk_control_get_properties:
+ **/
+static GHashTable *
+pk_control_get_properties (PkControl *control)
+{
+	gboolean ret;
+	GError *error = NULL;
+	GHashTable *hash_table = NULL;
+	DBusGProxy *proxy;
+
+	/* connect to the correct path for properties */
+	proxy = dbus_g_proxy_new_for_name (control->priv->connection,
+					   "org.freedesktop.PackageKit",
+					   "/org/freedesktop/PackageKit",
+					   "org.freedesktop.DBus.Properties");
+	if (proxy == NULL) {
+		egg_warning ("Couldn't connect to proxy");
+		goto out;
+	}
+
+	/* get all properties */
+	ret = dbus_g_proxy_call (proxy, "GetAll", &error,
+				 G_TYPE_STRING, "org.freedesktop.PackageKit",
+				 G_TYPE_INVALID,
+				 dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE),
+				 &hash_table,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("Couldn't call GetAll() to get properties for %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	if (proxy != NULL)
+		g_object_unref (proxy);
+	return hash_table;
+}
+
+/**
+ * pk_control_collect_props_cb:
+ **/
+static void
+pk_control_collect_props_cb (const char *key, const GValue *value, PkControl *control)
+{
+	if (g_strcmp0 (key, "version-major") == 0)
+		control->priv->version_major = g_value_get_uint (value);
+	else if (g_strcmp0 (key, "version-minor") == 0)
+		control->priv->version_minor = g_value_get_uint (value);
+	else if (g_strcmp0 (key, "version-micro") == 0)
+		control->priv->version_micro = g_value_get_uint (value);
+	else {
+		egg_warning ("unhandled property '%s'", key);
+		g_assert_not_reached ();
+	}
+}
+
+/**
  * pk_control_init:
  * @control: This class instance
  **/
@@ -945,6 +1077,9 @@ pk_control_init (PkControl *control)
 	/* we maintain a local copy */
 	control->priv->array = NULL;
 	control->priv->idle_id = 0;
+	control->priv->version_major = 0;
+	control->priv->version_minor = 0;
+	control->priv->version_micro = 0;
 
 	/* watch for PackageKit on the bus, and try to connect up at start */
 	control->priv->pconnection = pk_connection_new ();
@@ -987,7 +1122,12 @@ pk_control_init (PkControl *control)
 	dbus_g_proxy_add_signal (control->priv->proxy, "Locked", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (control->priv->proxy, "Locked",
 				     G_CALLBACK (pk_control_locked_cb), control, NULL);
-
+{
+	GHashTable *hash;
+	hash = pk_control_get_properties (control);
+	g_hash_table_foreach (hash, (GHFunc) pk_control_collect_props_cb, control);
+	g_hash_table_unref (hash);
+}
 	/* idle add a refresh so we have valid data */
 	control->priv->idle_id = g_idle_add ((GSourceFunc) pk_control_transaction_list_refresh_idle_cb, control);
 }
@@ -1058,6 +1198,7 @@ pk_control_test (EggTest *test)
 	gboolean ret;
 	PkControl *control;
 	PkConnection *connection;
+	guint version;
 
 	if (!egg_test_start (test, "PkControl"))
 		return;
@@ -1075,6 +1216,22 @@ pk_control_test (EggTest *test)
 	egg_test_title (test, "get control");
 	control = pk_control_new ();
 	egg_test_assert (test, control != NULL);
+
+	/************************************************************/
+	egg_test_title (test, "version major");
+	g_object_get (control, "version-major", &version, NULL);
+	egg_test_assert (test, (version == PK_MAJOR_VERSION));
+
+	/************************************************************/
+	egg_test_title (test, "version minor");
+	g_object_get (control, "version-minor", &version, NULL);
+	egg_test_assert (test, (version == PK_MINOR_VERSION));
+
+	/************************************************************/
+	egg_test_title (test, "version micro");
+	g_object_get (control, "version-micro", &version, NULL);
+	egg_test_assert (test, (version == PK_MICRO_VERSION));
+
 	g_object_unref (control);
 out:
 	egg_test_end (test);
