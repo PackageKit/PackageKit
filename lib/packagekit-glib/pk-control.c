@@ -1064,6 +1064,7 @@ static void
 pk_control_init (PkControl *control)
 {
 	GError *error = NULL;
+	GHashTable *hash;
 
 	control->priv = PK_CONTROL_GET_PRIVATE (control);
 	/* check dbus connections, exit if not valid */
@@ -1122,12 +1123,14 @@ pk_control_init (PkControl *control)
 	dbus_g_proxy_add_signal (control->priv->proxy, "Locked", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (control->priv->proxy, "Locked",
 				     G_CALLBACK (pk_control_locked_cb), control, NULL);
-{
-	GHashTable *hash;
+
+	/* get properties if they exist */
 	hash = pk_control_get_properties (control);
-	g_hash_table_foreach (hash, (GHFunc) pk_control_collect_props_cb, control);
-	g_hash_table_unref (hash);
-}
+	if (hash != NULL) {
+		g_hash_table_foreach (hash, (GHFunc) pk_control_collect_props_cb, control);
+		g_hash_table_unref (hash);
+	}
+
 	/* idle add a refresh so we have valid data */
 	control->priv->idle_id = g_idle_add ((GSourceFunc) pk_control_transaction_list_refresh_idle_cb, control);
 }
