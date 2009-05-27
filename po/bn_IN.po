@@ -1,15 +1,15 @@
-# translation of packagekit.master.bn_IN.po to Bengali INDIA
+# translation of packagekit.master.po to Bengali INDIA
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
-# Runa Bhattacharjee <runab@redhat.com>, 2008, 2009.
+# Runa Bhattacharjee <runab@redhat.com>, 2008.
 # Runa Bhattacharjee <runab@fedoraproject.org>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: packagekit.master.bn_IN\n"
+"Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-05-26 02:33+0000\n"
-"PO-Revision-Date: 2009-05-26 11:25+0530\n"
+"POT-Creation-Date: 2009-05-27 02:34+0000\n"
+"PO-Revision-Date: 2009-05-27 12:33+0530\n"
 "Last-Translator: Runa Bhattacharjee <runab@fedoraproject.org>\n"
 "Language-Team: Bengali INDIA <fedora-trans-bn_in@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -496,7 +496,7 @@ msgstr "সাব-কমান্ড:"
 #. TRANSLATORS: if we should show debugging data
 #: ../client/pk-console.c:1767 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
-#: ../contrib/command-not-found/pk-command-not-found.c:518
+#: ../contrib/command-not-found/pk-command-not-found.c:520
 #: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "ডিবাগ সংক্রান্ত অতিরিক্ত তথ্য প্রদর্শন করা হবে"
@@ -702,55 +702,62 @@ msgstr "আউটপুটের ডিরেক্টরি অথবা ফা
 msgid "The package manager cannot perform this type of operation."
 msgstr "প্যাকেজ পরিচালন ব্যবস্থা দ্বারা এই ধরনের কর্ম সঞ্চালন করা সম্ভব নয়।"
 
+#. TRANSLATORS: This is when the distro didn't include libarchive support into PK
+#: ../client/pk-generate-pack.c:280
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr "libarchive সমর্থন সহ PackageKit নির্মিত না হওয়ার ফলে সার্ভিস প্যাক তৈরি করা সম্ভব নয়।"
+
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:285
+#: ../client/pk-generate-pack.c:291
 msgid "If specifying a file, the service pack name must end with"
 msgstr "ফাইল নির্ধারণ করা হলে, সার্ভিস প্যাকের নামের শেষ চিহ্নিত মান উপস্থিত থাকা আবশ্যক"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:301
+#: ../client/pk-generate-pack.c:307
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "এই নামের একটি প্যাক বর্তমানে উপস্থিত রয়েছে, আপনি কি এটি নতুন করে লিখতে ইচ্ছুক?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:304
+#: ../client/pk-generate-pack.c:310
 msgid "The pack was not overwritten."
 msgstr "চিহ্নিত প্যাক নতুন করে লেখা হয়নি।"
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:317
+#: ../client/pk-generate-pack.c:323
 msgid "Failed to create directory:"
 msgstr "ডিরেক্টরি নির্মাণ করতে ব্যর্থ:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:327
+#: ../client/pk-generate-pack.c:333
 msgid "Failed to open package list."
 msgstr "প্যাকেজ তালিকা খুলতে ব্যর্থ।"
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:338
+#: ../client/pk-generate-pack.c:344
 msgid "Finding package name."
 msgstr "প্যাকেজের নাম অনুসন্ধান করা হচ্ছে।"
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:342
+#: ../client/pk-generate-pack.c:348
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "'%s' প্যাকেজ পাওয়া যায়নি: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:359
+#: ../client/pk-generate-pack.c:365
 msgid "Creating service pack..."
 msgstr "সার্ভিস প্যাক নির্মাণ করা হচ্ছে..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:366
+#: ../client/pk-generate-pack.c:372
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "সার্ভিস প্যাক '%s' নির্মাণ করা হয়েছে"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:371
+#: ../client/pk-generate-pack.c:377
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "'%s' নির্মাণ করতে ব্যর্থ: %s"
@@ -782,54 +789,54 @@ msgid "Please enter a number from 1 to %i: "
 msgstr "অনুগ্রহ করে ১ থেকে %i-র মধ্যে একটি সংখ্যা লিখুন: "
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:369
+#: ../contrib/command-not-found/pk-command-not-found.c:371
 msgid "Failed to search for file"
 msgstr "ফাইল অনুসন্ধান করতে ব্যর্থ"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:493
+#: ../contrib/command-not-found/pk-command-not-found.c:495
 msgid "Failed to launch:"
 msgstr "চিহ্নিত সামগ্রী আরম্ভ করতে ব্যর্থ:"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:534
+#: ../contrib/command-not-found/pk-command-not-found.c:536
 msgid "PackageKit Command Not Found"
 msgstr "PackageKit কমান্ড পাওয়া যায়নি"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:557
+#: ../contrib/command-not-found/pk-command-not-found.c:559
 msgid "Command not found."
 msgstr "কমান্ড পাওয়া যায়নি।"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:564
+#: ../contrib/command-not-found/pk-command-not-found.c:566
 msgid "Similar command is:"
 msgstr "অনুরূপ কমান্ড হল:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:573
+#: ../contrib/command-not-found/pk-command-not-found.c:575
 msgid "Run similar command:"
 msgstr "অনুরূপ কমান্ড সঞ্চালন করুন:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:585
-#: ../contrib/command-not-found/pk-command-not-found.c:594
+#: ../contrib/command-not-found/pk-command-not-found.c:587
+#: ../contrib/command-not-found/pk-command-not-found.c:596
 msgid "Similar commands are:"
 msgstr "অনুরূপ কমান্ড হল:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:601
+#: ../contrib/command-not-found/pk-command-not-found.c:603
 msgid "Please choose a command to run"
 msgstr "অনুগ্রহ করে সঞ্চালনের জন্য কমান্ড নির্বাচন করুন"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:616
+#: ../contrib/command-not-found/pk-command-not-found.c:618
 msgid "The package providing this file is:"
 msgstr "এই প্যাকেজ উপলব্ধকারী ফাইল হল:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:621
+#: ../contrib/command-not-found/pk-command-not-found.c:623
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr ""
@@ -837,18 +844,18 @@ msgstr ""
 "উপলব্ধ করা হবে।"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:642
+#: ../contrib/command-not-found/pk-command-not-found.c:644
 msgid "Packages providing this file are:"
 msgstr "এই ফাইল উপলব্ধকারী প্যাকেজগুলি হল:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:651
+#: ../contrib/command-not-found/pk-command-not-found.c:653
 msgid "Suitable packages are:"
 msgstr "প্রযোজ্য প্যাকেজগুলি হল:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:659
+#: ../contrib/command-not-found/pk-command-not-found.c:661
 msgid "Please choose a package to install"
 msgstr "অনুগ্রহ করে ইনস্টল করার জন্য একটি প্যাকেজ নির্বাচন করুন"
 
