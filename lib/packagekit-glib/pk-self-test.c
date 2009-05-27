@@ -65,7 +65,6 @@ main (int argc, char **argv)
 	pk_package_list_test (test);
 	pk_enum_test (test);
 	pk_bitfield_test (test);
-	pk_desktop_test (test);
 	pk_client_test (test);
 	pk_catalog_test (test);
 	pk_control_test (test);
@@ -73,6 +72,7 @@ main (int argc, char **argv)
 	pk_update_detail_test (test);
 	pk_details_test (test);
 	pk_service_pack_test (test);
+//	pk_desktop_test (test);
 
 	return (egg_test_finish (test));
 }
