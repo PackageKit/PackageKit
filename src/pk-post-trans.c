@@ -569,6 +569,7 @@ pk_post_trans_update_process_list (PkPostTrans *post)
 	name = g_dir_read_name (dir);
 	pk_obj_list_clear (PK_OBJ_LIST(post->priv->running_exec_list));
 	while (name != NULL) {
+		contents = NULL;
 		uid_file = g_build_filename ("/proc", name, "loginuid", NULL);
 
 		/* is a process file */
@@ -601,6 +602,7 @@ pk_post_trans_update_process_list (PkPostTrans *post)
 		pk_obj_list_add (PK_OBJ_LIST(post->priv->running_exec_list), exec);
 out:
 		g_free (uid_file);
+		g_free (contents);
 		name = g_dir_read_name (dir);
 	}
 	g_dir_close (dir);
