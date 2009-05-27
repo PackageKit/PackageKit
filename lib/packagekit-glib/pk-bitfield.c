@@ -109,7 +109,7 @@ pk_bitfield_from_enums (gint value, ...)
 }
 
 /**
- * pk_roles_bitfield_to_text:
+ * pk_role_bitfield_to_text:
  * @roles: The enumerated type values
  *
  * Converts a enumerated type bitfield to its text representation
