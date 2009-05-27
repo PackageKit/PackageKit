@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.or\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-04-14 02:09+0000\n"
-"PO-Revision-Date: 2009-04-14 11:22+0530\n"
+"POT-Creation-Date: 2009-05-27 08:26+0000\n"
+"PO-Revision-Date: 2009-05-27 17:23+0530\n"
 "Last-Translator: Manoj Kumar Giri <mgiri@redhat.com>\n"
 "Language-Team: Oriya <oriya-it@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -16,6 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
 "Plural-Forms:  nplurals=2; plural=(n!=1);\n\n"
+"\n"
 "\n"
 
 #. TRANSLATORS: this is an atomic transaction
@@ -496,8 +497,8 @@ msgstr "ଉପ ନିର୍ଦ୍ଦେଶଗୁଡ଼ିକ:"
 #. TRANSLATORS: if we should show debugging data
 #: ../client/pk-console.c:1767 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
-#: ../contrib/command-not-found/pk-command-not-found.c:518
-#: ../src/pk-main.c:199
+#: ../contrib/command-not-found/pk-command-not-found.c:520
+#: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "ଅତିରିକ୍ତ ତ୍ରୁଟି ନିବାରଣ ସୂଚନା ଦର୍ଶାନ୍ତୁ"
 
@@ -702,55 +703,64 @@ msgstr "ଗୋଟିଏ ନିର୍ଗମ ଡିରେକ୍ଟୋରୀ କି
 msgid "The package manager cannot perform this type of operation."
 msgstr "ପ୍ୟାକେଜ ପରିଚାଳକ ଏହି ପ୍ରକାର ପ୍ରୟୋଗକୁ କାର୍ଯ୍ୟକାରୀ କରିପାରେ ନାହିଁ।"
 
+#. TRANSLATORS: This is when the distro didn't include libarchive support into PK
+#: ../client/pk-generate-pack.c:280
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"ସର୍ଭିସ ପ୍ୟାକଗୁଡ଼ିକୁ ନିର୍ମାଣ କରିପାରିବେ ନାହିଁ ଯେହେତୁ PackageKit କୁ libarchieve ସମର୍ଥନ "
+"ସହିତ ନିର୍ମିତ ହୋଇନାହିଁ।"
+
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:285
+#: ../client/pk-generate-pack.c:291
 msgid "If specifying a file, the service pack name must end with"
 msgstr "ଯଦି ଗୋଟିଏ ଫାଇଲକୁ ଉଲ୍ଲେଖ କରାଯାଏ, ତେବେ ସର୍ଭିସ ପ୍ୟାକ ନାମ ଏହା ସହିତ ସମାପ୍ତ ହୋଇଥାଏ"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:301
+#: ../client/pk-generate-pack.c:307
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "ସମାନ ନାମ ବିଶିଷ୍ଟ ଗୋଟିଏ ପ୍ୟାକ ପୂର୍ବରୁ ଅବସ୍ଥିତ, ଆପଣ ଏହାକୁ ନବଲିଖନ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:304
+#: ../client/pk-generate-pack.c:310
 msgid "The pack was not overwritten."
 msgstr "ପ୍ୟାକଟି ନବଲିଖନ ହୋଇନାହିଁ।"
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:317
+#: ../client/pk-generate-pack.c:323
 msgid "Failed to create directory:"
 msgstr "ଡିରେକ୍ଟୋରୀ ନିର୍ମାଣ କରିବାରେ ବିଫଳ:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:327
+#: ../client/pk-generate-pack.c:333
 msgid "Failed to open package list."
 msgstr "ପ୍ୟାକେଜ ତାଲିକା ଖୋଲିବାରେ ବିଫଳ।"
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:338
+#: ../client/pk-generate-pack.c:344
 msgid "Finding package name."
 msgstr "ପ୍ୟାକେଜ ନାମ ଖୋଜୁଅଛି।"
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:342
+#: ../client/pk-generate-pack.c:348
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "ପ୍ୟାକେଜ '%s'କୁ ଖୋଜିବାରେ ବିଫଳ: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:359
+#: ../client/pk-generate-pack.c:365
 msgid "Creating service pack..."
 msgstr "ସର୍ଭିସ ପ୍ୟାକ ନିର୍ମାଣ କରୁଅଛି..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:366
+#: ../client/pk-generate-pack.c:372
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "ସର୍ଭିସ ପ୍ୟାକ ନିର୍ମାଣ ହୋଇଅଛି '%s'"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:371
+#: ../client/pk-generate-pack.c:377
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "'%s'କୁ ନିର୍ମାଣ କରିବାରେ ବିଫଳ: %s"
@@ -782,71 +792,71 @@ msgid "Please enter a number from 1 to %i: "
 msgstr "ଦୟାକରି 1 ରୁ %i ଭିତରେ ଥିବା ଗୋଟିଏ ସଂଖ୍ୟାକୁ ଭରଣ କରନ୍ତୁ: "
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:369
+#: ../contrib/command-not-found/pk-command-not-found.c:371
 msgid "Failed to search for file"
 msgstr "ଫାଇଲ ସନ୍ଧାନ କରିବାରେ ବିଫଳ"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:493
+#: ../contrib/command-not-found/pk-command-not-found.c:495
 msgid "Failed to launch:"
 msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:534
+#: ../contrib/command-not-found/pk-command-not-found.c:536
 msgid "PackageKit Command Not Found"
 msgstr "PackageKit ନିର୍ଦ୍ଦେଶ ମିଳିଲା ନାହିଁ"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:556
+#: ../contrib/command-not-found/pk-command-not-found.c:559
 msgid "Command not found."
 msgstr "ନିର୍ଦ୍ଦେଶ ମିଳିଲା ନାହିଁ।"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:563
+#: ../contrib/command-not-found/pk-command-not-found.c:566
 msgid "Similar command is:"
 msgstr "ଏକାପ୍ରକାର ନିର୍ଦ୍ଦେଶ:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:572
+#: ../contrib/command-not-found/pk-command-not-found.c:575
 msgid "Run similar command:"
 msgstr "ଏକା ପ୍ରକାର ନିର୍ଦ୍ଦେଶ ଚଲାନ୍ତୁ:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:584
-#: ../contrib/command-not-found/pk-command-not-found.c:593
+#: ../contrib/command-not-found/pk-command-not-found.c:587
+#: ../contrib/command-not-found/pk-command-not-found.c:596
 msgid "Similar commands are:"
 msgstr "ଏକା ପ୍ରକାର ନିର୍ଦ୍ଦେଶଗୁଡ଼ିକ ହେଉଛି:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:600
+#: ../contrib/command-not-found/pk-command-not-found.c:603
 msgid "Please choose a command to run"
 msgstr "ଦୟାକରି ଚଲାଇବା ପାଇଁ ଗୋଟିଏ ନିର୍ଦ୍ଦେଶ ବାଛନ୍ତୁ"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:615
+#: ../contrib/command-not-found/pk-command-not-found.c:618
 msgid "The package providing this file is:"
 msgstr "ଏହି ଫାଇଲ ପ୍ରଦାନ କରିଥିବା ପ୍ୟାକେଜଟି ହେଉଛି:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:620
+#: ../contrib/command-not-found/pk-command-not-found.c:623
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "ନିର୍ଦ୍ଦେଶ '%s'କୁ ପ୍ରଦାନ କରିବା ପାଇଁ ପ୍ୟାକେଜ '%s'କୁ ସ୍ଥାପନ କରିବେ କି?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:641
+#: ../contrib/command-not-found/pk-command-not-found.c:644
 msgid "Packages providing this file are:"
 msgstr "ଏହି ଫାଇଲ ପ୍ରଦାନ କରିଥିବା ପ୍ୟାକେଜଗୁଡ଼ିକ ହେଉଛି:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:650
+#: ../contrib/command-not-found/pk-command-not-found.c:653
 msgid "Suitable packages are:"
 msgstr "ଉପଯୁକ୍ତ ପ୍ୟାକେଜଗୁଡ଼ିକ ହେଉଛି:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:658
+#: ../contrib/command-not-found/pk-command-not-found.c:661
 msgid "Please choose a package to install"
 msgstr "ସ୍ଥାପନ କରିବା ପାଇଁ ଦୟାକରି ଗୋଟିଏ ପ୍ୟାକେଜ ବାଛନ୍ତୁ"
 
@@ -1031,47 +1041,47 @@ msgid ""
 msgstr "org.freedesktop.PackageKit.conf ଫାଇଲଟି ତନ୍ତ୍ର ଡିରେକ୍ଟୋରୀରେ ସ୍ଥାପିତ ହୋଇନାହିଁ:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:205
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "ବ୍ୟବହାର କରିବା ପାଇଁ ପୃଷ୍ଠଭୂମିକୁ ପ୍ୟାକେଜ କରୁଅଛି, ଯେପରିକି ନକଲି"
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:196
+#: ../src/pk-main.c:208
 msgid "Daemonize and detach from the terminal"
 msgstr "ଟର୍ମିନାଲରୁ ପରିସରମୟ ଏବଂ ପୃଥକ କରନ୍ତୁ"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:202
+#: ../src/pk-main.c:214
 msgid "Disable the idle timer"
 msgstr "ଅଚଳ ସମୟ ମାପକକୁ ନିଷ୍କ୍ରିୟ କରନ୍ତୁ"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:205
+#: ../src/pk-main.c:217
 msgid "Show version and exit"
 msgstr "ସଂସ୍କରଣ ଦର୍ଶାନ୍ତୁ ଏବଂ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:208
+#: ../src/pk-main.c:220
 msgid "Exit after a small delay"
 msgstr "ଗୋଟିଏ ଛୋଟ ବିଳମ୍ବ ପରେ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:211
+#: ../src/pk-main.c:223
 msgid "Exit after the engine has loaded"
 msgstr "ଯନ୍ତ୍ରଟି ଧାରଣ ହୋଇସାରିବା ପରେ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:226
+#: ../src/pk-main.c:238
 msgid "PackageKit service"
 msgstr "PackageKit ସର୍ଭିସ"
 
 #. TRANSLATORS: fatal error, dbus is not running
-#: ../src/pk-main.c:263
+#: ../src/pk-main.c:275
 msgid "Cannot connect to the system bus"
 msgstr "ତନ୍ତ୍ର ବସ ସହିତ ସଂଯୋଗ କରିପାରିବେ ନାହିଁ"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason
-#: ../src/pk-main.c:313
+#: ../src/pk-main.c:331
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "ଆରମ୍ଭ କରିବାକୁ ଚେଷ୍ଟା କରିବାରେ ତ୍ରୁଟି: %s\n"
