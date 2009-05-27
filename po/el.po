@@ -1140,8 +1140,8 @@ msgstr "Δεν είναι δυνατή η σύνδεση στο δίαυλο τ�
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:317
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Σφάλμα κατα την προσπάθεια έναρξης: %s\n"
+msgid "Error trying to start:"
+msgstr "Σφάλμα κατα την προσπάθεια έναρξης:"
 
 #, fuzzy
 #~ msgid "You need to specify a search type, e.g. name"

@@ -1111,8 +1111,8 @@ msgstr "Konnte nicht zum System-Bus verbinden"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Fehler beim Starten von: %s\n"
+msgid "Error trying to start:"
+msgstr "Fehler beim Starten von:"
 
 #~ msgid "The action, one of 'create', 'add', or 'remove'"
 #~ msgstr "Aktion ('create', 'add' oder 'remove')"

@@ -407,5 +407,5 @@ msgstr "ไม่สามารถติดต่อกับบัสระบ
 
 #: ../src/pk-main.c:273
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "เกิดข้อผิดพลาดขณะจะเริ่ม: %s\n"
+msgid "Error trying to start:"
+msgstr "เกิดข้อผิดพลาดขณะจะเริ่ม:"

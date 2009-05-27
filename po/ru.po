@@ -1081,8 +1081,8 @@ msgstr "Не удалось подсоединиться к системной �
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Ошибка при попытке запуска: %s\n"
+msgid "Error trying to start:"
+msgstr "Ошибка при попытке запуска:"
 
 #, fuzzy
 #~ msgid "You need to specify a search type, e.g. name"

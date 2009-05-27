@@ -1088,8 +1088,8 @@ msgstr "Не могу да се повежем на системску маги�
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:317
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Грешка при покретању: %s\n"
+msgid "Error trying to start:"
+msgstr "Грешка при покретању:"
 
 #~ msgid "You need to specify a search type, e.g. name"
 #~ msgstr "Морате навести врсту претраге, нпр. име"

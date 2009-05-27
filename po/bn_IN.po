@@ -1082,6 +1082,6 @@ msgstr "সিস্টেম বাসের সাথে সংযোগ স�
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:331
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "আরম্ভ করতে সমস্যা: %s\n"
+msgid "Error trying to start:"
+msgstr "আরম্ভ করতে সমস্যা:"
 

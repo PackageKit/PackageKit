@@ -994,5 +994,5 @@ msgstr ""
 
 #: ../src/pk-main.c:299
 #, c-format
-msgid "Error trying to start: %s\n"
+msgid "Error trying to start:"
 msgstr ""

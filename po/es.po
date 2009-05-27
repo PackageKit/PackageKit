@@ -1091,8 +1091,8 @@ msgstr "No se pudo conectar al bus del sistema"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Error intentando arrancar: %s\n"
+msgid "Error trying to start:"
+msgstr "Error intentando arrancar:"
 
 #~ msgid "Main cache file to use (if not specififed, default is used)"
 #~ msgstr ""

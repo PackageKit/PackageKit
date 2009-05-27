@@ -1072,6 +1072,6 @@ msgstr "प्रणाली बस सह जुळवणी स्थपी�
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "सुरू करतेवेळी त्रुटी आढळली: %s\n"
+msgid "Error trying to start:"
+msgstr "सुरू करतेवेळी त्रुटी आढळली:"
 

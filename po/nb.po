@@ -1042,8 +1042,8 @@ msgstr "Fikk ikke kontakt med systembussen"
 
 #: ../src/pk-main.c:299
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Det skjedde en feil under oppstart av: %s\n"
+msgid "Error trying to start:"
+msgstr "Det skjedde en feil under oppstart av:"
 
 #~ msgid "Install local file"
 #~ msgstr "Installér lokal fil"

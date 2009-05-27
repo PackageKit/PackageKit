@@ -1073,8 +1073,8 @@ msgstr "ਸਿਸਟਮ ਬੱਸ ਨਾਲ ਕੁਨੈਕਟ ਨਹੀਂ ਕ�
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:317
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਗਲਤੀ: %s\n"
+msgid "Error trying to start:"
+msgstr "ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਗਲਤੀ:"
 
 #~ msgid "The action, one of 'create', 'add', or 'remove'"
 #~ msgstr "ਕਾਰਵਾਈ 'ਬਣਾਓ', 'ਸ਼ਾਮਲ', ਜਾਂ 'ਹਟਾਓ'"

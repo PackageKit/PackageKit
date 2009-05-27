@@ -1089,8 +1089,8 @@ msgstr "Ne mogu da se povežem na sistemsku magistralu"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:317
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Greška pri pokretanju: %s\n"
+msgid "Error trying to start:"
+msgstr "Greška pri pokretanju:"
 
 #~ msgid "You need to specify a search type, e.g. name"
 #~ msgstr "Morate navesti vrstu pretrage, npr. ime"

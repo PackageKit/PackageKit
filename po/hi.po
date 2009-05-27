@@ -1079,6 +1079,6 @@ msgstr "सिस्टम बस में कनेक्ट नहीं ह�
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:331
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "आरंभ होने की कोशिश में त्रुटि: %s\n"
+msgid "Error trying to start:"
+msgstr "आरंभ होने की कोशिश में त्रुटि:"
 

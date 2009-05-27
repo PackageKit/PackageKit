@@ -1094,8 +1094,8 @@ msgstr "Não foi possível conectar ao barramento do sistema"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Erro ao tentar iniciar: %s\n"
+msgid "Error trying to start:"
+msgstr "Erro ao tentar iniciar:"
 
 #~ msgid "The action, one of 'create', 'add', or 'remove'"
 #~ msgstr "A ação, uma entre as opções \"create\", \"add\" ou \"remove\""

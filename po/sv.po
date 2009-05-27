@@ -659,8 +659,8 @@ msgstr "Kan inte ansluta till systembussen"
 
 #: ../src/pk-main.c:298
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Fel vid försök att starta: %s\n"
+msgid "Error trying to start:"
+msgstr "Fel vid försök att starta:"
 
 #~ msgid "This tool could not remove the packages: '%s'"
 #~ msgstr "Detta verktyg kunde inte ta bort paketen: \"%s\""

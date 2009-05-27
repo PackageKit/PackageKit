@@ -1089,6 +1089,6 @@ msgstr "Er kan geen verbinding worden gelegd met de systeembus"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Fout bij het proberen te starten: %s\n"
+msgid "Error trying to start:"
+msgstr "Fout bij het proberen te starten:"
 

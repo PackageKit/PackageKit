@@ -1071,6 +1071,6 @@ msgstr "Nem lehet csatlakozni a rendszerbuszhoz"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Hiba az indításkor: %s\n"
+msgid "Error trying to start:"
+msgstr "Hiba az indításkor:"
 

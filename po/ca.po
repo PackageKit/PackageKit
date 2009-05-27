@@ -1096,8 +1096,8 @@ msgstr "No s'ha pogut connectar amb el bus del sistema"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Ha fallat en intentar executar: %s\n"
+msgid "Error trying to start:"
+msgstr "Ha fallat en intentar executar:"
 
 #~ msgid "The action, one of 'create', 'add', or 'remove'"
 #~ msgstr "L'acció, una de 'crea', 'afegeix' o 'elimina'"

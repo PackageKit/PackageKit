@@ -1067,6 +1067,6 @@ msgstr "無法連至系統 bus"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "嘗試啟動時發生錯誤：%s\n"
+msgid "Error trying to start:"
+msgstr "嘗試啟動時發生錯誤："
 

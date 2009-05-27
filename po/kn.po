@@ -1072,6 +1072,6 @@ msgstr "ವ್ಯವಸ್ಥೆಯ ಬಸ್‌ನೊಂದಿಗೆ ಸಂಪ�
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "ಆರಂಭಿಸಲು ಪ್ರಯತ್ನಿಸಿದಾಗ ದೋಷ: %s\n"
+msgid "Error trying to start:"
+msgstr "ಆರಂಭಿಸಲು ಪ್ರಯತ್ನಿಸಿದಾಗ ದೋಷ:"
 

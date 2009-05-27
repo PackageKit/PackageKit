@@ -1094,5 +1094,5 @@ msgstr "Nie można połączyć się z magistralą systemową"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:331
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Błąd podczas próbowania uruchomienia: %s\n"
+msgid "Error trying to start:"
+msgstr "Błąd podczas próbowania uruchomienia:"

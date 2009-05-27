@@ -1077,6 +1077,6 @@ msgstr "સિસ્ટમ બસ સાથે જોડાઈ શકતા ન�
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "શરૂ કરવાનો પ્રયાસ કરવામાં ભૂલ: %s\n"
+msgid "Error trying to start:"
+msgstr "શરૂ કરવાનો પ્રયાસ કરવામાં ભૂલ:"
 

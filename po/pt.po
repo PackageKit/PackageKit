@@ -1088,6 +1088,6 @@ msgstr "Não foi possível ligar ao barramento do sistema"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Erro ao tentar iniciar: %s\n"
+msgid "Error trying to start:"
+msgstr "Erro ao tentar iniciar:"
 

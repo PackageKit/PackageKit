@@ -1080,7 +1080,7 @@ msgstr "ব্যৱস্থাপ্ৰণালীৰ বাছৰ সৈত�
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "আৰম্ভ কৰিবলৈ চেষ্টা কৰোঁতে ভুল: %s\n"
+msgid "Error trying to start:"
+msgstr "আৰম্ভ কৰিবলৈ চেষ্টা কৰোঁতে ভুল:"
 
 

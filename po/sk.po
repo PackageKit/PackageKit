@@ -1081,8 +1081,8 @@ msgstr "Pokus o pripojenie k systémovej zbernici neuspel"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Chyba pri pokuse o spustenie: %s\n"
+msgid "Error trying to start:"
+msgstr "Chyba pri pokuse o spustenie:"
 
 #~ msgid "You need to specify a search type, e.g. name"
 #~ msgstr "Je potrebné určiť typ vyhľadávania, napríklad názov"

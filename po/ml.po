@@ -1075,6 +1075,6 @@ msgstr "സിസ്റ്റം ബസിലേക്ക് കണക്ട് 
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:317
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "ആരംഭിക്കുന്നതിനിടെ പിശക് സംഭവിച്ചിരിക്കുന്നു: %s\n"
+msgid "Error trying to start:"
+msgstr "ആരംഭിക്കുന്നതിനിടെ പിശക് സംഭവിച്ചിരിക്കുന്നു:"
 

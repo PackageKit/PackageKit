@@ -1097,8 +1097,8 @@ msgstr "Impossibile collegarsi al bus di sistema"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Errore nell'avvio di: %s\n"
+msgid "Error trying to start:"
+msgstr "Errore nell'avvio di:"
 
 #~ msgid "You need to specify a search type, e.g. name"
 #~ msgstr "E' necessario specificare un criterio di ricerca, es. nome"

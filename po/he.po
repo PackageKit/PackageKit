@@ -1023,8 +1023,8 @@ msgstr "לא יכול להתחבר ל-system bus"
 
 #: ../src/pk-main.c:299
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "כישלון בהפעלת: %s\n"
+msgid "Error trying to start:"
+msgstr "כישלון בהפעלת:"
 
 #~ msgid "This tool could not remove the packages: '%s'"
 #~ msgstr "כישלון בהסרת החבילות: '%s'"

@@ -646,6 +646,6 @@ msgstr "Cannot connect to the system bus"
 
 #: ../src/pk-main.c:298
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Error trying to start: %s\n"
+msgid "Error trying to start:"
+msgstr "Error trying to start:"
 

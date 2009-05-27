@@ -1071,6 +1071,6 @@ msgstr "无法连接到系统总线"
 #. TRANSLATORS: cannot register on system bus, unknown reason
 #: ../src/pk-main.c:313
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "尝试启动时出错: %s\n"
+msgid "Error trying to start:"
+msgstr "尝试启动时出错:"
 

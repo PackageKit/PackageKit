@@ -327,8 +327,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_main_quit_cb), loop);
 
 	if (!pk_object_register (system_connection, G_OBJECT (engine), &error)) {
-		/* TRANSLATORS: cannot register on system bus, unknown reason */
-		g_print (_("Error trying to start: %s\n"), error->message);
+		/* TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows */
+		g_print ("%s %s\n", _("Error trying to start:"), error->message);
 		g_error_free (error);
 		goto out;
 	}

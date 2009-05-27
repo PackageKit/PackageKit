@@ -352,7 +352,7 @@ msgstr "Tidak dapat menulis kepada fail %s"
 #: ../client/pk-console.c:1140
 #, fuzzy, c-format
 msgid "Failed to save to disk"
-msgstr "gagal untuk mencipta direktori %s: %s\n"
+msgstr "gagal untuk mencipta direktori"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
 #: ../client/pk-console.c:1174 ../client/pk-console.c:1249
@@ -682,13 +682,13 @@ msgstr ""
 #: ../client/pk-generate-pack.c:276
 #, fuzzy
 msgid "Failed to create directory:"
-msgstr "gagal untuk mencipta direktori %s: %s\n"
+msgstr "gagal untuk mencipta direktori:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
 #: ../client/pk-generate-pack.c:285
 #, fuzzy
 msgid "Failed to open package list."
-msgstr "gagal untuk mencipta direktori %s: %s\n"
+msgstr "gagal untuk mencipta direktori."
 
 #. TRANSLATORS: The package name is being matched up to available packages
 #: ../client/pk-generate-pack.c:295
@@ -716,7 +716,7 @@ msgstr ""
 #: ../client/pk-generate-pack.c:326
 #, fuzzy, c-format
 msgid "Failed to create '%s': %s"
-msgstr "gagal untuk mencipta direktori %s: %s\n"
+msgstr "gagal untuk mencipta direktori %s: %s"
 
 #: ../client/pk-monitor.c:132
 #, fuzzy
@@ -750,7 +750,7 @@ msgstr "Pilih nombor latihan dari 1 hingga 10."
 #: ../contrib/command-not-found/pk-command-not-found.c:361
 #, fuzzy
 msgid "Failed to search for file"
-msgstr "gagal untuk mencipta direktori %s: %s\n"
+msgstr "gagal untuk mencipta direktori"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: ../contrib/command-not-found/pk-command-not-found.c:485
@@ -1037,8 +1037,8 @@ msgstr ""
 
 #: ../src/pk-main.c:299
 #, c-format
-msgid "Error trying to start: %s\n"
-msgstr "Ralat cuba untuk memulakan: %s\n"
+msgid "Error trying to start:"
+msgstr "Ralat cuba untuk memulakan:"
 
 #, fuzzy
 #~ msgid "Could not find package to remove"
