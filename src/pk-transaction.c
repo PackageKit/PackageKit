@@ -533,8 +533,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	gchar *packages;
 	gchar **package_ids;
 	guint i, length;
-	PkPackageList *list;
+	GPtrArray *list;
 	const PkPackageObj *obj;
+	gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -569,21 +570,27 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		if (ret) {
 
 			/* filter on UPDATING */
-			list = pk_package_list_new ();
+			list = g_ptr_array_new ();
 			length = pk_package_list_get_size (transaction->priv->package_list);
 			for (i=0; i<length; i++) {
 				obj = pk_package_list_get_obj (transaction->priv->package_list, i);
-				if (obj->info == PK_INFO_ENUM_UPDATING)
-					pk_obj_list_add (PK_OBJ_LIST(list), obj);
+				if (obj->info == PK_INFO_ENUM_UPDATING) {
+					/* we convert the package_id data to be 'installed' as this means
+					 * we can use the local package database for GetFiles rather than
+					 * downloading new remote metadata */
+					package_id = pk_package_id_build (obj->id->name, obj->id->version, obj->id->arch, "installed");
+					g_ptr_array_add (list, package_id);
+				}
 			}
 
 			/* process file lists on these packages */
-			if (PK_OBJ_LIST(list)->len > 0) {
-				package_ids = pk_package_list_to_strv (list);
+			if (list->len > 0) {
+				package_ids = pk_package_ids_from_array (list);
 				pk_post_trans_check_running_process (transaction->priv->post_trans, package_ids);
 				g_strfreev (package_ids);
 			}
-			g_object_unref (list);
+			g_ptr_array_foreach (list, (GFunc) g_free, NULL);
+			g_ptr_array_free (list, TRUE);
 		}
 	}
 
@@ -596,22 +603,26 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		if (ret) {
 
 			/* filter on INSTALLING | UPDATING */
-			list = pk_package_list_new ();
+			list = g_ptr_array_new ();
 			length = pk_package_list_get_size (transaction->priv->package_list);
 			for (i=0; i<length; i++) {
 				obj = pk_package_list_get_obj (transaction->priv->package_list, i);
-				if (obj->info == PK_INFO_ENUM_INSTALLING || obj->info == PK_INFO_ENUM_UPDATING)
-					pk_obj_list_add (PK_OBJ_LIST(list), obj);
+				if (obj->info == PK_INFO_ENUM_INSTALLING || obj->info == PK_INFO_ENUM_UPDATING) {
+					/* we convert the package_id data to be 'installed' */
+					package_id = pk_package_id_build (obj->id->name, obj->id->version, obj->id->arch, "installed");
+					g_ptr_array_add (list, package_id);
+				}
 			}
 
 			egg_debug ("processing %i packags for desktop files", PK_OBJ_LIST(list)->len);
 			/* process file lists on these packages */
-			if (PK_OBJ_LIST(list)->len > 0) {
-				package_ids = pk_package_list_to_strv (list);
+			if (list->len > 0) {
+				package_ids = pk_package_ids_from_array (list);
 				pk_post_trans_check_desktop_files (transaction->priv->post_trans, package_ids);
 				g_strfreev (package_ids);
 			}
-			g_object_unref (list);
+			g_ptr_array_foreach (list, (GFunc) g_free, NULL);
+			g_ptr_array_free (list, TRUE);
 		}
 	}
 
