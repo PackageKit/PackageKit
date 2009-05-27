@@ -1,0 +1,95 @@
+<!DOCTYPE node PUBLIC
+"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" [
+  <!ENTITY ERROR_GENERAL "org.freedesktop.packagekit.Denied">
+]>
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <interface name="org.freedesktop.PackageKit.Backend">
+    <doc:doc>
+      <doc:description>
+        <doc:para>
+          This interface is used for getting information about the loaded backend.
+        </doc:para>
+      </doc:description>
+    </doc:doc>
+
+    <!--*****************************************************************************************-->
+    <property name="name" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The backend name, e.g. <doc:tt>"yum"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="description" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The backend name, e.g. <doc:tt>"Yellow Dog Update Modifier"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="author" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The backend author, e.g. <doc:tt>"Joe Bloggs &lt;joe&amp;blogs.com&gt;"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="roles" type="as" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The roles the backend supports, e.g. <doc:tt>["search-name", "refresh-cache"]</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="groups" type="as" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The groups the backend supports, e.g. <doc:tt>["accessories", "games"]</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="filters" type="as" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The filters the backend supports, e.g. <doc:tt>["installed", "newest"]</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="mime-types" type="as" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The mime-types the backend supports, e.g. <doc:tt>["application/x-rpm", "application/x-deb"]</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+  </interface>
+</node>
+
