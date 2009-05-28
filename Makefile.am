@@ -97,7 +97,7 @@ DISTCHECK_CONFIGURE_FLAGS = 				\
 	--disable-gcov					\
 	--enable-gtk-doc				\
 	--with-security-framework=dummy			\
-	--disable-developer				\
+	--disable-tests					\
 	$(NULL)
 
 distclean-local:
