@@ -17,28 +17,10 @@ SUBDIRS = 						\
 	$(NULL)
 
 clean-local :
-	rm -f *~ *.bb *.bbg *.da *.gcov .libs/*.da .libs/*.bbg
+	rm -f *~
 
 security-check:
 	flawfinder `find -name "*.c"`
-
-if PK_BUILD_GCOV
-gcov:
-	make -C src gcov
-	make -C libpackagekit gcov
-	cat src/gcov.txt > gcov.txt
-	cat libpackagekit/gcov.txt >> gcov.txt
-	cat gcov.txt
-endif
-
-if PK_BUILD_GPROF
-gprof:
-	make -C src gprof
-	make -C libpackagekit gprof
-	cat src/gprof.txt > gprof.txt
-	cat libpackagekit/gprof.txt >> gprof.txt
-	cat gprof.txt
-endif
 
 snapshot:
 	$(MAKE) dist distdir=$(PACKAGE)-$(VERSION)-`date +"%Y%m%d"`
@@ -49,8 +31,6 @@ DISTCLEANFILES =					\
 	intltool-extract				\
 	intltool-merge					\
 	intltool-update					\
-	gcov.txt					\
-	gprof.txt					\
 	packagekit-decl-list.txt			\
 	packagekit-decl.txt				\
 	packagekit-overrides.txt			\
@@ -94,7 +74,6 @@ EXTRA_DIST =						\
 	$(NULL)
 
 DISTCHECK_CONFIGURE_FLAGS = 				\
-	--disable-gcov					\
 	--enable-gtk-doc				\
 	--with-security-framework=dummy			\
 	--disable-tests					\

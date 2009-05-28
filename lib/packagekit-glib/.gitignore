@@ -7,11 +7,6 @@
 *-marshal.h
 pk-self-test
 *.loT
-*.gcov
-*.gcda
-*.gcno
-*.txt
-*.out
 *.db
 pk-version.h
 

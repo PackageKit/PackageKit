@@ -7,10 +7,6 @@ org.freedesktop.PackageKit*.h
 packagekitd
 pk-self-test
 debug.log
-*.gcov
-*.gcda
-*.gcno
 *.txt
-*.out
 *.db
 

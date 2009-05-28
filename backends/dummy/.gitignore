@@ -7,8 +7,4 @@ Makefile.in
 *.loT
 *.o
 *~
-*.gcov
-*.gcda
-*.gcno
-*.out
 

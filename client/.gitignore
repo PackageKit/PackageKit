@@ -11,9 +11,5 @@ pk-self-test
 *.glade.bak
 *.gladep
 *.gladep.bak
-*.gcov
-*.gcda
-*.gcno
-*.out
-*.pack
+*.servicepack
 
