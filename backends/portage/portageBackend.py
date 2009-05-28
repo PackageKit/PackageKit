@@ -67,6 +67,8 @@ def cpv_to_id(cpv):
 	Transform the cpv (portage) to a package id (packagekit)
 	'''
 	# TODO: how to get KEYWORDS ?
+	# TODO: repository should be "installed" when installed
+	# TODO: => move to class
 	package, version, rev = portage.pkgsplit(cpv)
 	keywords, repo = portage.portdb.aux_get(cpv, ["KEYWORDS", "repository"])
 
@@ -87,6 +89,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 		if lock:
 			self.doLock()
+
+	def package(self, cpv):
+		desc = portage.portdb.aux_get(cpv, ["DESCRIPTION"])
+		if self.vardb.cpv_exists(cpv):
+			info = INFO_INSTALLED
+		else:
+			info = INFO_AVAILABLE
+		PackageKitBaseBackend.package(self, cpv_to_id(cpv), info, desc[0])
 
 	def download_packages(self, directory, pkgids):
 		# TODO: what is directory for ?
@@ -166,6 +176,31 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			self.files(pkgid, files)
 
+	def search_file(self, filters, key):
+		# TODO: manage filters, error if ~installed ?
+		# TODO: search for exact file name
+		self.status(STATUS_QUERY)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		searchre = re.compile(key, re.IGNORECASE)
+		cpvlist = []
+
+		for cpv in self.vardb.cpv_all():
+			cat, pv = portage.catsplit(cpv)
+			db = portage.dblink(cat, pv, portage.settings["ROOT"], self.portage_settings,
+					treetype="vartree", vartree=self.vardb)
+			contents = db.getcontents()
+			if not contents:
+				continue
+			for file in contents.keys():
+				if searchre.search(file):
+					cpvlist.append(cpv)
+					break
+
+		for cpv in cpvlist:
+			self.package(cpv)
+
 	def search_name(self, filters, key):
 		# TODO: manage filters
 		# TODO: collections ?
@@ -178,12 +213,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		for cp in portage.portdb.cp_all():
 			if searchre.search(cp):
 				for cpv in portage.portdb.match(cp): #TODO: cp_list(cp) ?
-					desc = portage.portdb.aux_get(cpv, ["DESCRIPTION"])
-					if self.vardb.cpv_exists(cpv):
-						info = INFO_INSTALLED
-					else:
-						info = INFO_AVAILABLE
-					self.package(cpv_to_id(cpv), info, desc[0])
+					self.package(cpv)
 
 def main():
 	backend = PackageKitPortageBackend("") #'', lock=True)

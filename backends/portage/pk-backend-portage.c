@@ -196,27 +196,6 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_install_signature:
- */
-static void
-backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
-			   const gchar *key_id, const gchar *package_id)
-{
-	egg_debug ("backend: install signature");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_refresh_cache:
- */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
-{
-	egg_debug ("backend: refresh cache");
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_remove_packages:
  */
 static void
@@ -224,6 +203,19 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 {
 	egg_debug ("backend: remove packages");
 	pk_backend_finished (backend);
+}
+
+/**
+ * backend_search_file:
+ */
+static void
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	gchar *filters_text;
+
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-file", filters_text, search, NULL);
+	g_free (filters_text);
 }
 
 /**
@@ -250,32 +242,22 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_update_system:
- */
-static void
-backend_update_system (PkBackend *backend)
-{
-	egg_debug ("backend: update system");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_what_provides:
- */
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
-{
-	egg_debug ("backend: what provides");
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_get_packages:
  */
 static void
 backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	egg_debug ("backend: get packages");
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_update_system:
+ */
+static void
+backend_update_system (PkBackend *backend)
+{
+	egg_debug ("backend: update system");
 	pk_backend_finished (backend);
 }
 
@@ -301,19 +283,19 @@ PK_BACKEND_OPTIONS (
 	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
 	backend_install_packages,		/* install_packages */
-	backend_install_signature,		/* install_signature */
-	backend_refresh_cache,			/* refresh_cache */
+	NULL,		/* install_signature */
+	NULL,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
 	NULL,			/* repo_enable */
 	NULL,			/* repo_set_data */
 	NULL,			/* resolve */
 	NULL,			/* rollback */
 	NULL,			/* search_details */
-	NULL,			/* search_file */
+	backend_search_file,			/* search_file */
 	NULL,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	backend_what_provides			/* what_provides */
+	NULL			/* what_provides */
 );
 
