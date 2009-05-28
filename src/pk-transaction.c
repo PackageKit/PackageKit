@@ -744,17 +744,19 @@ static void
 pk_transaction_message_cb (PkBackend *backend, PkMessageEnum message, const gchar *details, PkTransaction *transaction)
 {
 	const gchar *message_text;
+	gboolean developer_mode;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-#ifndef PK_IS_DEVELOPER
-	if (message == PK_MESSAGE_ENUM_BACKEND_ERROR ||
-	    message == PK_MESSAGE_ENUM_DAEMON_ERROR) {
+	/* if not running in developer mode, then skip these types */
+	developer_mode = pk_conf_get_bool (transaction->priv->conf, "DeveloperMode");
+	if (!developer_mode &&
+	    (message == PK_MESSAGE_ENUM_BACKEND_ERROR ||
+	     message == PK_MESSAGE_ENUM_DAEMON_ERROR)) {
 		egg_warning ("ignoring message: %s", details);
 		return;
 	}
-#endif
 
 	message_text = pk_message_enum_to_text (message);
 	egg_debug ("emitting message %s, '%s'", message_text, details);

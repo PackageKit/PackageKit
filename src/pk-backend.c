@@ -2146,9 +2146,11 @@ void
 pk_backend_test (EggTest *test)
 {
 	PkBackend *backend;
+	PkConf *conf;
 	gchar *text;
 	gboolean ret;
 	const gchar *filename;
+	gboolean developer_mode;
 
 	if (!egg_test_start (test, "PkBackend"))
 		return;
@@ -2405,13 +2407,18 @@ pk_backend_test (EggTest *test)
 	ret = pk_backend_set_allow_cancel (backend, FALSE);
 	egg_test_assert (test, ret);
 
-#ifdef PK_IS_DEVELOPER
-	egg_test_title (test, "check we enforce finished after error_code");
-	if (number_messages == 1)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "we messaged %i times!", number_messages);
-#endif
+	/* if running in developer mode, then expect a Message */
+	conf = pk_conf_new ();
+	developer_mode = pk_conf_get_bool (conf, "DeveloperMode");
+	g_object_unref (conf);
+	if (developer_mode) {
+		/************************************************************/
+		egg_test_title (test, "check we enforce finished after error_code");
+		if (number_messages == 1)
+			egg_test_success (test, NULL);
+		else
+			egg_test_failed (test, "we messaged %i times!", number_messages);
+	}
 
 	g_object_unref (backend);
 

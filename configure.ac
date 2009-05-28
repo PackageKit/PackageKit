@@ -22,10 +22,6 @@ AC_SUBST(PK_MINOR_VERSION)
 AC_SUBST(PK_MICRO_VERSION)
 AC_SUBST(PK_VERSION)
 
-# Should we enable extra stuff automatically?
-# set no for release builds, yes for development builds
-DEVELOPMENT_RELEASE=yes
-
 # libtool versioning - this applies to libpackagekit
 #
 # See http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91 for details
@@ -326,27 +322,17 @@ dnl ---------------------------------------------------------------------------
 dnl - Build self tests
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
-	      enable_tests=$enableval,enable_tests=$DEVELOPMENT_RELEASE)
+	      enable_tests=$enableval,enable_tests=yes)
 AM_CONDITIONAL(EGG_BUILD_TESTS, test x$enable_tests = xyes)
 if test x$enable_tests = xyes; then
 	AC_DEFINE(EGG_BUILD_TESTS,1,[Build test code])
 fi
 
 dnl ---------------------------------------------------------------------------
-dnl - Display DAEMON messages?
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(developer, AS_HELP_STRING([--enable-developer],[enable daemon debug messages]),
-	      enable_developer=$enableval,enable_developer=$DEVELOPMENT_RELEASE)
-AM_CONDITIONAL(PK_IS_DEVELOPER, test x$enable_developer = xyes)
-if test x$enable_developer = xyes; then
-	AC_DEFINE(PK_IS_DEVELOPER,1,[Build developer code])
-fi
-
-dnl ---------------------------------------------------------------------------
 dnl - Able to run from a checkout?
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(local, AS_HELP_STRING([--enable-local],[enable running in local checkout]),
-	      enable_local=$enableval,enable_local=$DEVELOPMENT_RELEASE)
+	      enable_local=$enableval,enable_local=no)
 AM_CONDITIONAL(PK_BUILD_LOCAL, test x$enable_local = xyes)
 if test x$enable_local = xyes; then
 	AC_DEFINE(PK_BUILD_LOCAL,1,[Build local code])
