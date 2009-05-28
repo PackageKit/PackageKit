@@ -148,8 +148,11 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
-	egg_debug ("backend: get_files");
-	pk_backend_finished (backend);
+	gchar *package_ids_temp;
+
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-files", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -200,16 +203,6 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 			   const gchar *key_id, const gchar *package_id)
 {
 	egg_debug ("backend: install signature");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_install_files:
- */
-static void
-backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
-{
-	egg_debug ("backend: install files");
 	pk_backend_finished (backend);
 }
 
@@ -306,7 +299,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_files,			/* install_files */
+	NULL,			/* install_files */
 	backend_install_packages,		/* install_packages */
 	backend_install_signature,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */

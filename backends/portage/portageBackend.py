@@ -101,6 +101,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			# is cpv valid
 			if not portage.portdb.cpv_exists(cpv):
+				# self.warning ? self.error ?
 				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find the package %s" % pkgid)
 				continue
 
@@ -124,6 +125,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			# is cpv valid
 			if not portage.portdb.cpv_exists(cpv):
+				# self.warning ? self.error ?
 				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find the package %s" % pkgid)
 				continue
 
@@ -137,6 +139,32 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 				size = manifest.getDistfilesSize(uris)
 
 			self.details(cpv_to_id(cpv), license, "GROUP?", desc, homepage, size)
+
+	def get_files(self, pkgids):
+		self.status(STATUS_INFO)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		for pkgid in pkgids:
+			cpv = id_to_cpv(pkgid)
+
+			# is cpv valid
+			if not portage.portdb.cpv_exists(cpv):
+				self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkgid)
+				continue
+
+			if not self.vardb.cpv_exists(cpv):
+				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Package %s is not installed" % pkgid)
+				continue
+
+			cat, pv = portage.catsplit(cpv)
+			db = portage.dblink(cat, pv, portage.settings["ROOT"], self.portage_settings,
+					treetype="vartree", vartree=self.vardb)
+			files = db.getcontents().keys()
+			files = sorted(files)
+			files = ";".join(files)
+
+			self.files(pkgid, files)
 
 	def search_name(self, filters, key):
 		# TODO: manage filters
