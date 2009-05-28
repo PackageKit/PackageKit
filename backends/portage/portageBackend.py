@@ -176,6 +176,22 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			self.files(pkgid, files)
 
+	def resolve(self, filters, pkgs):
+		# TODO: filters
+		self.status(STATUS_QUERY)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		for pkg in pkgs:
+			searchre = re.compile(pkg, re.IGNORECASE)
+
+			# TODO: optim with filter = installed
+			for cp in portage.portdb.cp_all():
+				if searchre.search(cp):
+					#print self.vardb.dep_bestmatch(cp)
+					self.package(portage.portdb.xmatch("bestmatch-visible", cp))
+					
+
 	def search_file(self, filters, key):
 		# TODO: manage filters, error if ~installed ?
 		# TODO: search for exact file name

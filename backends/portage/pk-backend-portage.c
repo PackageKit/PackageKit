@@ -206,6 +206,22 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 }
 
 /**
+ * pk_backend_resolve:
+ */
+static void
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+{
+	gchar *filters_text;
+	gchar *package_ids_temp;
+
+	filters_text = pk_filter_bitfield_to_text (filters);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "resolve", filters_text, package_ids_temp, NULL);
+	g_free (package_ids_temp);
+	g_free (filters_text);
+}
+
+/**
  * backend_search_file:
  */
 static void
@@ -289,7 +305,7 @@ PK_BACKEND_OPTIONS (
 	NULL,			/* repo_enable */
 	NULL,			/* repo_set_data */
 	NULL,			/* resolve */
-	NULL,			/* rollback */
+	backend_resolve,			/* rollback */
 	NULL,			/* search_details */
 	backend_search_file,			/* search_file */
 	NULL,			/* search_group */
