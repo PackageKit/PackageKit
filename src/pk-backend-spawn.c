@@ -932,12 +932,6 @@ pk_backend_test_spawn (EggTest *test)
 	if (!egg_test_start (test, "PkBackendSpawn"))
 		return;
 
-	/* don't do these when doing make distcheck */
-#ifndef PK_IS_DEVELOPER
-	egg_test_end (test);
-	return;
-#endif
-
 	/************************************************************/
 	egg_test_title (test, "get an backend_spawn");
 	backend_spawn = pk_backend_spawn_new ();

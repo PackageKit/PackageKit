@@ -1050,12 +1050,6 @@ pk_engine_test (EggTest *test)
 	if (!egg_test_start (test, "PkEngine"))
 		return;
 
-	/* don't do these when doing make distcheck */
-#ifndef PK_IS_DEVELOPER
-	egg_test_end (test);
-	return;
-#endif
-
 	/************************************************************/
 	egg_test_title (test, "get a backend instance");
 	backend = pk_backend_new ();

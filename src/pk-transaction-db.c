@@ -765,12 +765,6 @@ pk_transaction_db_test (EggTest *test)
 	if (!egg_test_start (test, "PkTransactionDb"))
 		return;
 
-	/* don't do these when doing make distcheck */
-#ifndef PK_IS_DEVELOPER
-	egg_test_end (test);
-	return;
-#endif
-
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
 	g_unlink (PK_TRANSACTION_DB_FILE);
