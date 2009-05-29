@@ -10,6 +10,15 @@ h1, h2, h3 {
 	font-weight: bold;
 	}
 
+table.noteinformation {
+	background: #f5f5ff;
+	border: 1px outset #000000;
+	margin-left: 5px;
+	margin-right: 5px;
+	padding: 3px;
+	width: 40%;
+	}
+
 p.title {
 	color: #000000;
 	text-align: center;
@@ -47,6 +56,7 @@ p.indextitle {
 table.title {
 	color: #000000;
 	background-color: #f5f5ff;
+	border: 1px outset #000000;
 	}
 
 img {
@@ -68,6 +78,7 @@ code {
 pre {
 	color: #000000;
 	background: #eeeeee;
+	border: 1px outset #000000;
 	padding: 3px;
 }
 

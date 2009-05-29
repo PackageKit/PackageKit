@@ -26,6 +26,20 @@ used in different distributions, and use some of the latest technology
 like PolicyKit to make the process suck less.
 </p>
 
+<table class="noteinformation">
+<tr>
+ <td><img src="img/dialog-information.png" alt="[NOTE]"/></td>
+ <td>
+  <p>If you're easily bored, checkout the
+   <a href="http://people.freedesktop.org/~hughsient/public/introduction-to-packagekit.pdf">presentation</a>
+   or the
+   <a href="http://video.fosdem.org/2008/maintracks/FOSDEM2008-packagekit.ogg">video</a>
+   I prepared for FOSDEM 2008 and skip the rest of this page.
+  </p>
+ </td>
+</tr>
+</table>
+
 <p>
 The actual nuts-and-bolts distro tool (yum, apt, conary, etc) is used by
 PackageKit using compiled and scripted helpers.
@@ -54,17 +68,25 @@ PackageKit-Qt</a> is the name of the QT graphical tools designed
 for PackageKit.
 </p>
 
-<p>
-  <img style="float: left" src="img/dialog-information.png" alt="[NOTE]"/>
-  By default, PackageKit uses PolicyKit for user authentication.  This
-  means that you, as an admin, can specify with fine-grained control
-  what your users can and cannot do.  For instance, an admin could
-  specify that unprivileged users can update the system and do
-  searching, but are not allowed to install or remove packages.  For
-  home users it's typical to ask the user for their own, or the
-  administrator's "root" password.  With PolicyKit, all these options
-  are possible.
-</p>
+<table class="noteinformation">
+<tr>
+ <td><img src="img/dialog-information.png" alt="[NOTE]"/></td>
+ <td>
+  <p>
+   By default, PackageKit uses PolicyKit for user authentication.
+   This means that you, as an admin, can specify with fine-grained control
+   what your users can and cannot do.
+  </p>
+  <p>
+   For instance, an admin could specify that unprivileged users can update the
+   system and do searching, but are not allowed to install or remove packages.
+   For home users it's typical to ask the user for their own, or the
+   administrator's <code>root</code> password.
+   With PolicyKit, all these options are possible.
+  </p>
+ </td>
+</tr>
+</table>
 
 <p>
 Use cases for PackageKit exist for the following scenarios:
