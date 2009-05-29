@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.mr\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-04-14 02:09+0000\n"
-"PO-Revision-Date: 2009-04-14 11:21+0530\n"
+"POT-Creation-Date: 2009-05-29 08:27+0000\n"
+"PO-Revision-Date: 2009-05-29 16:02+0530\n"
 "Last-Translator: Sandeep Shedmake <sandeep.shedmake@gmail.com>\n"
 "Language-Team: marathi\n"
 "MIME-Version: 1.0\n"
@@ -495,8 +495,8 @@ msgstr "उपआदेश:"
 #. TRANSLATORS: if we should show debugging data
 #: ../client/pk-console.c:1767 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
-#: ../contrib/command-not-found/pk-command-not-found.c:518
-#: ../src/pk-main.c:199
+#: ../contrib/command-not-found/pk-command-not-found.c:520
+#: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "अगाऊ डिबगींग माहिती दाखवा"
 
@@ -701,55 +701,64 @@ msgstr "आऊटपुट डिरेक्ट्री किंवा फा
 msgid "The package manager cannot perform this type of operation."
 msgstr "संकुल व्यवस्थापक या प्रकारची कार्य कार्यान्वीत करू शकत नाही."
 
+#. TRANSLATORS: This is when the distro didn't include libarchive support into PK
+#: ../client/pk-generate-pack.c:280
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"PackageKit ला libarchive समर्थन सह बिल्ट न केल्यामुळे Service पैक बनवणे शक्य नाही"
+"."
+
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:285
+#: ../client/pk-generate-pack.c:291
 msgid "If specifying a file, the service pack name must end with"
 msgstr "फाइल निश्चित केल्यास, सेवा पॅक नाव यानुरूप समाप्त व्हायला हवे"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:301
+#: ../client/pk-generate-pack.c:307
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "समान नावाचे पॅक आधिपासूनच अस्तित्वात आहे, तुम्हाला खोडून पुन्हा लिहायचे?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:304
+#: ../client/pk-generate-pack.c:310
 msgid "The pack was not overwritten."
 msgstr "पॅक खोडून पुन्हा लिहीले गेले नाही."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:317
+#: ../client/pk-generate-pack.c:323
 msgid "Failed to create directory:"
 msgstr "डिरेक्ट्री बनविण्यास अपयशी:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:327
+#: ../client/pk-generate-pack.c:333
 msgid "Failed to open package list."
 msgstr "संकुल यादी उघडण्यास अपयशी."
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:338
+#: ../client/pk-generate-pack.c:344
 msgid "Finding package name."
 msgstr "संकुल नाव शोधत आहे."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:342
+#: ../client/pk-generate-pack.c:348
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "संकुल '%s' आढळले नाही: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:359
+#: ../client/pk-generate-pack.c:365
 msgid "Creating service pack..."
 msgstr "सेवा पॅक बनवत आहे..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:366
+#: ../client/pk-generate-pack.c:372
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "सेवा पॅक '%s' बनविले"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:371
+#: ../client/pk-generate-pack.c:377
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "'%s' बनविण्यास अपयशी: %s"
@@ -781,71 +790,71 @@ msgid "Please enter a number from 1 to %i: "
 msgstr "कृपया 1 ते %i क्रमांक निवडा: "
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:369
+#: ../contrib/command-not-found/pk-command-not-found.c:371
 msgid "Failed to search for file"
 msgstr "फाइल करीता शोध करण्यास अपयशी"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:493
+#: ../contrib/command-not-found/pk-command-not-found.c:495
 msgid "Failed to launch:"
 msgstr "प्रक्षेपीत करण्यास अपयशी:"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:534
+#: ../contrib/command-not-found/pk-command-not-found.c:536
 msgid "PackageKit Command Not Found"
 msgstr "PackageKit आदेश आढळले नाही"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:556
+#: ../contrib/command-not-found/pk-command-not-found.c:559
 msgid "Command not found."
 msgstr "आदेश आढळले नाही."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:563
+#: ../contrib/command-not-found/pk-command-not-found.c:566
 msgid "Similar command is:"
 msgstr "समान आदेश यानुरूप आहे:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:572
+#: ../contrib/command-not-found/pk-command-not-found.c:575
 msgid "Run similar command:"
 msgstr "समान आदेश चालवा:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:584
-#: ../contrib/command-not-found/pk-command-not-found.c:593
+#: ../contrib/command-not-found/pk-command-not-found.c:587
+#: ../contrib/command-not-found/pk-command-not-found.c:596
 msgid "Similar commands are:"
 msgstr "समान आदेश यानुरूप आहे:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:600
+#: ../contrib/command-not-found/pk-command-not-found.c:603
 msgid "Please choose a command to run"
 msgstr "कृपया चालविण्याजोगी आदेश निवडा"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:615
+#: ../contrib/command-not-found/pk-command-not-found.c:618
 msgid "The package providing this file is:"
 msgstr "ही फाइल या संकुल द्वारे पुरविली जाते:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:620
+#: ../contrib/command-not-found/pk-command-not-found.c:623
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "आदेश '%2$s' पुरविण्याकरीता संकुल '%1$s' प्रतिष्ठापीत करायचे?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:641
+#: ../contrib/command-not-found/pk-command-not-found.c:644
 msgid "Packages providing this file are:"
 msgstr "ही फाइल या संकुल द्वारे पुरविले जाते:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:650
+#: ../contrib/command-not-found/pk-command-not-found.c:653
 msgid "Suitable packages are:"
 msgstr "योग्य संकुल यानुरूप आहे:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:658
+#: ../contrib/command-not-found/pk-command-not-found.c:661
 msgid "Please choose a package to install"
 msgstr "प्रतिष्ठापन करीता कृपया संकुल निवडा"
 
@@ -1030,48 +1039,47 @@ msgid ""
 msgstr "org.freedesktop.PackageKit.conf फाइल प्रणाली डिरेक्ट्री अंतर्गत प्रतिष्ठापीत नाही:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:193
+#: ../src/pk-main.c:205
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "वापरण्याजोगी संकुल बॅकएन्ड, उ.दा. dummy"
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:196
+#: ../src/pk-main.c:208
 msgid "Daemonize and detach from the terminal"
 msgstr "डिमन बनवा व टर्मिनल पासून वेगळे करा"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:202
+#: ../src/pk-main.c:214
 msgid "Disable the idle timer"
 msgstr "idle timer अकार्यान्वीत करा"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:205
+#: ../src/pk-main.c:217
 msgid "Show version and exit"
 msgstr "आवृत्ती दाखवा व बाहेर पडा"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:208
+#: ../src/pk-main.c:220
 msgid "Exit after a small delay"
 msgstr "लहान विलंब नंतर बाहेर पडा"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:211
+#: ../src/pk-main.c:223
 msgid "Exit after the engine has loaded"
 msgstr "इंजीन दाखल केल्यावर बाहेर पडा"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:226
+#: ../src/pk-main.c:238
 msgid "PackageKit service"
 msgstr "PackageKit सेवा"
 
 #. TRANSLATORS: fatal error, dbus is not running
-#: ../src/pk-main.c:263
+#: ../src/pk-main.c:275
 msgid "Cannot connect to the system bus"
 msgstr "प्रणाली बस सह जुळवणी स्थपीत करण्यास अशक्य"
 
-#. TRANSLATORS: cannot register on system bus, unknown reason
-#: ../src/pk-main.c:313
-#, c-format
+#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows
+#: ../src/pk-main.c:331
 msgid "Error trying to start:"
 msgstr "सुरू करतेवेळी त्रुटी आढळली:"
 
