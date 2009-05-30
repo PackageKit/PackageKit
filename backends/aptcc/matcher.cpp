@@ -19,6 +19,7 @@
 //  Boston, MA 02111-1307, USA.
 
 #include "matcher.h"
+#include <stdio.h>
 
 matcher::matcher(const string &matchers)
 	: m_hasError(false)
