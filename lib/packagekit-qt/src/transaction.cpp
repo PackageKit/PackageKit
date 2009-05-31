@@ -102,13 +102,14 @@ bool Transaction::callerActive()
 void Transaction::cancel()
 {
 	if (!d->p->Cancel().isValid ()) {
+#if 0
 		// Cancel failed, maybe it's not our transaction and we need authorization
 		if(!PolkitClient::instance()->getAuth(AUTH_CANCEL_FOREIGN)) {
 			// FIXME : should warn somehow here
 			qDebug () << "Authorization to cancel foreign failed";
 			return;
 		}
-
+#endif
 		d->p->Cancel();
 	}
 }

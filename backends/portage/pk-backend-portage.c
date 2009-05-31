@@ -185,8 +185,11 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 static void
 backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
-	egg_debug ("backend: updates");
-	pk_backend_finished (backend);
+	gchar *filters_text;
+
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-updates", filters_text, NULL);
+	g_free (filters_text);
 }
 
 /**
@@ -377,7 +380,7 @@ PK_BACKEND_OPTIONS (
 	NULL, // TODO			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail, // TODO		/* get_update_detail */
-	backend_get_updates, // TODO			/* get_updates */
+	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
 	backend_install_packages,		/* install_packages */
 	NULL, // TODO: choose			/* install_signature */

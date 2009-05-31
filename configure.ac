@@ -2,8 +2,8 @@
 AC_PREREQ(2.52)
 
 m4_define([pk_major_version], [0])
-m4_define([pk_minor_version], [4])
-m4_define([pk_micro_version], [9])
+m4_define([pk_minor_version], [5])
+m4_define([pk_micro_version], [0])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -130,8 +130,7 @@ GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.74
 LIBNM_GLIB_REQUIRED=0.6.4
-POLKIT_DBUS_REQUIRED=0.8
-POLKIT_GRANT_REQUIRED=0.8
+POLKIT_GOBJECT_REQUIRED=0.91
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
 QTGUI_REQUIRED=4.4.0
@@ -549,15 +548,9 @@ AC_SUBST(security_framework, "$with_security_framework")
 
 if test x$with_security_framework = xpolkit; then
 	PKG_CHECK_MODULES(POLKIT, \
-			  polkit-dbus >= $POLKIT_DBUS_REQUIRED \
-			  polkit-grant >= $POLKIT_GRANT_REQUIRED)
+			  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
 	AC_SUBST(POLKIT_CFLAGS)
 	AC_SUBST(POLKIT_LIBS)
-	AC_CHECK_PROG([POLKIT_POLICY_FILE_VALIDATE],
-		      [polkit-policy-file-validate], [polkit-policy-file-validate])
-	if test -z "$POLKIT_POLICY_FILE_VALIDATE"; then
-	   AC_MSG_ERROR([polkit-policy-file-validate not found])
-	fi
 	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
 	AC_DEFINE(USE_SECURITY_DUMMY, 1, [if we should use a dummy security framework])

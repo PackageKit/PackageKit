@@ -288,12 +288,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 		return get_package_id(package, version, ' '.join(keywords), repo)
 
-	def package(self, cpv):
+	def package(self, cpv, info=None):
 		desc = portage.portdb.aux_get(cpv, ["DESCRIPTION"])
-		if self.is_installed(cpv):
-			info = INFO_INSTALLED
-		else:
-			info = INFO_AVAILABLE
+		if not info:
+			if self.is_installed(cpv):
+				info = INFO_INSTALLED
+			else:
+				info = INFO_AVAILABLE
 		PackageKitBaseBackend.package(self, self.cpv_to_id(cpv), info, desc[0])
 
 	def get_depends(self, filters, pkgids, recursive):
@@ -511,6 +512,37 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 						self.package(node[2])
 
 		self.percentage(100)
+
+	def get_updates(self, filters):
+		# NOTES:
+		# portage prefer not to update _ALL_ packages so we will only list updated
+		# packages in world or system
+
+		# TODO: filters ?
+		# TODO: INFO
+		self.status(STATUS_INFO)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		# best way to get that ?
+		settings, trees, mtimedb = _emerge.load_emerge_config()
+		rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"],
+				portage._sets.load_default_config(self.portage_settings, trees["/"]))
+
+		cp_to_check = []
+
+		# get system and world sets
+		for s in ("system", "world"):
+			set = portage._sets.base.InternalPackageSet(
+					initial_atoms=rootconfig.setconfig.getSetAtoms(s))
+			for cp in set:
+				cp_to_check.append(cp)
+
+		# check if bestmatch is installed
+		for cp in cp_to_check:
+			best_cpv = portage.portdb.xmatch("bestmatch-visible", cp)
+			if not self.vardb.cpv_exists(best_cpv):
+				self.package(best_cpv, INFO_NORMAL)
 
 	def install_packages(self, pkgs):
 		self.status(STATUS_RUNNING)

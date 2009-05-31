@@ -153,10 +153,12 @@ void Client::setLocale(const QString& locale)
 
 void Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_NETWORK_PROXY_CONFIGURE)) {
 		emit authError(AUTH_SYSTEM_NETWORK_PROXY_CONFIGURE);
 		return;
 	}
+#endif
 
 	d->daemon->SetProxy(http_proxy, ftp_proxy);
 }
@@ -180,10 +182,12 @@ Client::DaemonError Client::getLastError ()
 
 Transaction* Client::acceptEula(EulaInfo info)
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_PACKAGE_EULA_ACCEPT)) {
 		emit authError(AUTH_PACKAGE_EULA_ACCEPT);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
@@ -376,10 +380,12 @@ Transaction* Client::getDistroUpgrades()
 Transaction* Client::installFiles(const QStringList& files, bool trusted)
 {
 	QString polkitAction = trusted ? AUTH_PACKAGE_INSTALL : AUTH_PACKAGE_INSTALL_UNTRUSTED;
+#if 0
 	if(!PolkitClient::instance()->getAuth(polkitAction)) {
 		emit authError(polkitAction);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
@@ -399,10 +405,12 @@ Transaction* Client::installFile(const QString& file, bool trusted)
 
 Transaction* Client::installPackages(const QList<Package*>& packages)
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_PACKAGE_INSTALL)) {
 		emit authError(AUTH_PACKAGE_INSTALL);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
@@ -422,10 +430,12 @@ Transaction* Client::installPackage(Package* p)
 
 Transaction* Client::installSignature(SignatureType type, const QString& key_id, Package* p)
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_TRUST_SIGNING_KEY)) {
 		emit authError(AUTH_SYSTEM_TRUST_SIGNING_KEY);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
@@ -440,10 +450,12 @@ Transaction* Client::installSignature(SignatureType type, const QString& key_id,
 
 Transaction* Client::refreshCache(bool force)
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_SOURCES_REFRESH)) {
 		emit authError(AUTH_SYSTEM_SOURCES_REFRESH);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
@@ -458,10 +470,12 @@ Transaction* Client::refreshCache(bool force)
 
 Transaction* Client::removePackages(const QList<Package*>& packages, bool allow_deps, bool autoremove)
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_PACKAGE_REMOVE)) {
 		emit authError(AUTH_PACKAGE_REMOVE);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
@@ -481,10 +495,12 @@ Transaction* Client::removePackage(Package* p, bool allow_deps, bool autoremove)
 
 Transaction* Client::repoEnable(const QString& repo_id, bool enable)
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_SOURCES_CONFIGURE)) {
 		emit authError(AUTH_SYSTEM_SOURCES_CONFIGURE);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
@@ -499,10 +515,12 @@ Transaction* Client::repoEnable(const QString& repo_id, bool enable)
 
 Transaction* Client::repoSetData(const QString& repo_id, const QString& parameter, const QString& value)
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_SOURCES_CONFIGURE)) {
 		emit authError(AUTH_SYSTEM_SOURCES_CONFIGURE);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
@@ -535,10 +553,12 @@ Transaction* Client::resolve(const QString& packageName, Filters filters)
 
 Transaction* Client::rollback(Transaction* oldtrans)
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_ROLLBACK)) {
 		emit authError(AUTH_SYSTEM_ROLLBACK);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
@@ -627,10 +647,12 @@ Package* Client::searchFromDesktopFile(const QString& path)
 
 Transaction* Client::updatePackages(const QList<Package*>& packages)
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_UPDATE)) {
 		emit authError(AUTH_SYSTEM_UPDATE);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {
@@ -650,10 +672,12 @@ Transaction* Client::updatePackage(Package* package)
 
 Transaction* Client::updateSystem()
 {
+#if 0
 	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_UPDATE)) {
 		emit authError(AUTH_SYSTEM_UPDATE);
 		return NULL;
 	}
+#endif
 
 	Transaction* t = d->createNewTransaction();
 	if (!t) {

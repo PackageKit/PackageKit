@@ -19,10 +19,6 @@
  */
 #include "config.h"
 
-#ifdef USE_SECURITY_POLKIT
- #include <polkit-dbus/polkit-dbus.h>
-#endif
-
 #include "polkitclient.h"
 
 using namespace PackageKit;
@@ -37,6 +33,8 @@ PolkitClient* PolkitClient::instance()
 
 PolkitClient::PolkitClient(QObject *parent) : QObject(parent) {
 }
+
+#if 0
 
 #ifdef USE_SECURITY_POLKIT
 bool PolkitClient::getAuth(const QString &action) {
@@ -55,9 +53,10 @@ bool PolkitClient::getAuth(const QString &action) {
 }
 #else
 bool PolkitClient::getAuth(const QString &action) {
-	qDebug() << "Not configured with PolicyKit support";
+	qDebug() << "Not configured with old PolicyKit support";
 	return false;
 }
+#endif
 #endif
 
 #include "polkitclient.moc"

@@ -32,11 +32,6 @@
 #include <gio/gdesktopappinfo.h>
 #include <sqlite3.h>
 
-#ifdef USE_SECURITY_POLKIT
-  #include <polkit/polkit.h>
-  #include <polkit-dbus/polkit-dbus.h>
-#endif
-
 #include "egg-debug.h"
 
 #include "pk-post-trans.h"
@@ -542,6 +537,32 @@ pk_post_trans_update_files_check_running_cb (PkBackend *backend, const gchar *pa
 	pk_package_id_free (id);
 }
 
+#ifdef USE_SECURITY_POLKIT
+/**
+ * dkp_post_trans_get_cmdline:
+ **/
+static gchar *
+dkp_post_trans_get_cmdline (guint pid)
+{
+	gboolean ret;
+	gchar *filename = NULL;
+	gchar *cmdline = NULL;
+	GError *error = NULL;
+
+	/* get command line from proc */
+	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
+	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
+	if (!ret) {
+		egg_debug ("failed to get cmdline: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	g_free (filename);
+	return cmdline;
+}
+#endif
+
 /**
  * pk_post_trans_update_process_list:
  **/
@@ -556,8 +577,7 @@ pk_post_trans_update_process_list (PkPostTrans *post)
 	gboolean ret;
 	guint uid;
 	pid_t pid;
-	gint retval;
-	gchar exec[128];
+	gchar *exec;
 
 	uid = getuid ();
 	dir = g_dir_open ("/proc", 0, NULL);
@@ -582,12 +602,12 @@ pk_post_trans_update_process_list (PkPostTrans *post)
 		/* get the exec for the pid */
 		pid = atoi (name);
 #ifdef USE_SECURITY_POLKIT
-		retval = polkit_sysdeps_get_exe_for_pid (pid, exec, 128);
-#else
-		retval = -1;
-#endif
-		if (retval <= 0)
+		exec = dkp_post_trans_get_cmdline (pid);
+		if (exec == NULL)
 			goto out;
+#else
+		goto out;
+#endif
 
 		/* can be /usr/libexec/notification-daemon.#prelink#.9sOhao */
 		offset = g_strrstr (exec, ".#prelink#.");

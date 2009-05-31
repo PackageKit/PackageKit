@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -38,6 +38,9 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <packagekit-glib/packagekit.h>
+#ifdef USE_SECURITY_POLKIT
+#include <polkit/polkit.h>
+#endif
 
 #include "egg-debug.h"
 #include "egg-string.h"
@@ -55,7 +58,6 @@
 #include "pk-marshal.h"
 #include "pk-notify.h"
 #include "pk-file-monitor.h"
-#include "pk-security.h"
 #include "pk-conf.h"
 
 static void     pk_engine_finalize	(GObject       *object);
@@ -95,7 +97,6 @@ struct PkEnginePrivate
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkNetwork		*network;
-	PkSecurity		*security;
 	PkNotify		*notify;
 	PkConf			*conf;
 	PkFileMonitor		*file_monitor_conf;
@@ -106,6 +107,11 @@ struct PkEnginePrivate
 	gchar			*mime_types;
 	guint			 signal_state_priority_timeout;
 	guint			 signal_state_normal_timeout;
+#ifdef USE_SECURITY_POLKIT
+	PolkitAuthority		*authority;
+#endif
+	gchar			*proxy_http;
+	gchar			*proxy_ftp;
 };
 
 enum {
@@ -577,61 +583,103 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
 	return TRUE;
 }
 
+#ifdef USE_SECURITY_POLKIT
+/**
+ * pk_engine_action_obtain_authorization:
+ **/
+static void
+pk_engine_action_obtain_authorization_finished_cb (GObject *source_object, GAsyncResult *res, PkEngine *engine)
+{
+	PolkitAuthorizationResult *result;
+	GError *error = NULL;
+	gboolean ret;
+
+	/* finish the call */
+	result = polkit_authority_check_authorization_finish (engine->priv->authority, res, &error);
+
+	/* failed */
+	if (result == NULL) {
+		egg_warning ("failed to check for auth: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* did not auth */
+	if (!polkit_authorization_result_get_is_authorized (result)) {
+		egg_warning ("failed to obtain auth");
+		goto out;
+	}
+
+	/* try to set the new proxy */
+	ret = pk_backend_set_proxy (engine->priv->backend, engine->priv->proxy_http, engine->priv->proxy_ftp);
+	if (!ret) {
+		egg_warning ("setting the proxy failed");
+		goto out;
+	}
+out:
+	if (result != NULL)
+		g_object_unref (result);
+	return;
+}
+#endif
+
 /**
  * pk_engine_set_proxy:
  **/
 void
 pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *proxy_ftp, DBusGMethodInvocation *context)
 {
-	gboolean ret;
-	GError *error;
+#ifdef USE_SECURITY_POLKIT
 	gchar *sender = NULL;
-	gchar *error_detail = NULL;
-	PkSecurityCaller *caller;
-
+	PolkitSubject *subject;
+#else
+	gboolean ret;
+	GError *error = NULL;
+#endif
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	egg_debug ("SetProxy method called: %s, %s", proxy_http, proxy_ftp);
 
-	/* check if the action is allowed from this client - if not, set an error */
+	/* save these so we can set them after the auth success */
+	egg_debug ("potentially changing http proxy from %s to %s", engine->priv->proxy_http, proxy_http);
+	egg_debug ("potentially changing ftp proxy from %s to %s", engine->priv->proxy_ftp, proxy_ftp);
+	g_free (engine->priv->proxy_http);
+	g_free (engine->priv->proxy_ftp);
+	engine->priv->proxy_http = g_strdup (proxy_http);
+	engine->priv->proxy_ftp = g_strdup (proxy_ftp);
+
+#ifdef USE_SECURITY_POLKIT
+	/* check subject */
 	sender = dbus_g_method_get_sender (context);
-
-	/* get caller */
-	caller = pk_security_caller_new_from_sender (engine->priv->security, sender);
-	if (caller == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY,
-				     "caller %s not found", sender);
-		dbus_g_method_return_error (context, error);
-		goto out;
-	}
-
-	/* use security model to get auth */
-	ret = pk_security_action_is_allowed (engine->priv->security, caller, FALSE, PK_ROLE_ENUM_SET_PROXY_PRIVATE, &error_detail);
-	if (!ret) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
-		dbus_g_method_return_error (context, error);
-		goto out;
-	}
+	subject = polkit_system_bus_name_new (sender);
+	polkit_authority_check_authorization (engine->priv->authority, subject,
+					      "org.freedesktop.packagekit.system-network-proxy-configure",
+					      NULL,
+					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
+					      NULL,
+					      (GAsyncReadyCallback) pk_engine_action_obtain_authorization_finished_cb,
+					      engine);
+#else
+	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
 	/* try to set the new proxy */
 	ret = pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "setting the proxy failed");
 		dbus_g_method_return_error (context, error);
-		goto out;
+		return;
 	}
-
+#endif
 	/* all okay */
 	dbus_g_method_return (context);
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
 
-out:
-	if (caller != NULL)
-		pk_security_caller_unref (caller);
+#ifdef USE_SECURITY_POLKIT
+	g_object_unref (subject);
 	g_free (sender);
-	g_free (error_detail);
+#endif
 }
 
 /**
@@ -793,8 +841,6 @@ pk_engine_init (PkEngine *engine)
 	DBusGConnection *connection;
 	gboolean ret;
 	gchar *filename;
-	gchar *proxy_http;
-	gchar *proxy_ftp;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->notify_clients_of_upgrade = FALSE;
@@ -819,9 +865,6 @@ pk_engine_init (PkEngine *engine)
 	ret = pk_backend_lock (engine->priv->backend);
 	if (!ret)
 		egg_error ("could not lock backend, you need to restart the daemon");
-
-	/* we dont need this, just don't keep creating and destroying it */
-	engine->priv->security = pk_security_new ();
 
 	/* proxy the network state */
 	engine->priv->network = pk_network_new ();
@@ -863,18 +906,21 @@ pk_engine_init (PkEngine *engine)
 			  G_CALLBACK (pk_engine_conf_file_changed_cb), engine);
 	g_free (filename);
 
+#ifdef USE_SECURITY_POLKIT
+	/* protect the session SetProxy with a PolicyKit action */
+	engine->priv->authority = polkit_authority_get ();
+#endif
+
 	/* monitor the binary file for changes */
 	engine->priv->file_monitor_binary = pk_file_monitor_new ();
 	pk_file_monitor_set_file (engine->priv->file_monitor_binary, SBINDIR "/packagekitd");
 	g_signal_connect (engine->priv->file_monitor_binary, "file-changed",
 			  G_CALLBACK (pk_engine_binary_file_changed_cb), engine);
 
-	/* set the proxy */
-	proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
-	proxy_ftp = pk_conf_get_string (engine->priv->conf, "ProxyFTP");
-	pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
-	g_free (proxy_http);
-	g_free (proxy_ftp);
+	/* set the default proxy */
+	engine->priv->proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
+	engine->priv->proxy_ftp = pk_conf_get_string (engine->priv->conf, "ProxyFTP");
+	pk_backend_set_proxy (engine->priv->backend, engine->priv->proxy_http, engine->priv->proxy_ftp);
 
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",
@@ -928,12 +974,16 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
 	g_object_unref (engine->priv->network);
-	g_object_unref (engine->priv->security);
+#ifdef USE_SECURITY_POLKIT
+	g_object_unref (engine->priv->authority);
+#endif
 	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
 	g_object_unref (engine->priv->cache);
 	g_object_unref (engine->priv->conf);
 	g_free (engine->priv->mime_types);
+	g_free (engine->priv->proxy_http);
+	g_free (engine->priv->proxy_ftp);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }

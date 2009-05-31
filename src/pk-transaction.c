@@ -42,6 +42,9 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <gio/gio.h>
 #include <packagekit-glib/packagekit.h>
+#ifdef USE_SECURITY_POLKIT
+#include <polkit/polkit.h>
+#endif
 
 #include "egg-debug.h"
 #include "egg-string.h"
@@ -58,7 +61,6 @@
 #include "pk-shared.h"
 #include "pk-cache.h"
 #include "pk-notify.h"
-#include "pk-security.h"
 #include "pk-post-trans.h"
 #include "pk-syslog.h"
 
@@ -67,6 +69,9 @@ static void     pk_transaction_dispose		(GObject	    *object);
 
 #define PK_TRANSACTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION, PkTransactionPrivate))
 #define PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT	100 /* ms */
+
+/* when the UID is invalid or not known */
+#define PK_TRANSACTION_UID_INVALID		G_MAXUINT
 
 static void pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTransaction *transaction);
 static void pk_transaction_progress_changed_cb (PkBackend *backend, guint percentage, guint subpercentage, guint elapsed, guint remaining, PkTransaction *transaction);
@@ -83,6 +88,7 @@ struct PkTransactionPrivate
 	gboolean		 running;
 	gboolean		 has_been_run;
 	gboolean		 allow_cancel;
+	gboolean		 waiting_for_auth;
 	gboolean		 emit_eula_required;
 	gboolean		 emit_signature_required;
 	gboolean		 emit_media_change_required;
@@ -94,8 +100,13 @@ struct PkTransactionPrivate
 	PkCache			*cache;
 	PkConf			*conf;
 	PkNotify		*notify;
-	PkSecurity		*security;
-	PkSecurityCaller	*caller;
+#ifdef USE_SECURITY_POLKIT
+	PolkitAuthority		*authority;
+	PolkitSubject		*subject;
+	GCancellable		*cancellable;
+#endif
+	DBusGConnection		*connection;
+	DBusGProxy		*proxy_pid;
 	PkPostTrans		*post_trans;
 	PkSyslog		*syslog;
 
@@ -410,6 +421,18 @@ pk_transaction_finished_emit (PkTransaction *transaction, PkExitEnum exit_enum, 
 }
 
 /**
+ * pk_transaction_error_code_emit:
+ **/
+static void
+pk_transaction_error_code_emit (PkTransaction *transaction, PkErrorCodeEnum error_enum, const gchar *details)
+{
+	const gchar *text;
+	text = pk_error_enum_to_text (error_enum);
+	egg_debug ("emitting error-code %s, '%s'", text, details);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_ERROR_CODE], 0, text, details);
+}
+
+/**
  * pk_transaction_allow_cancel_cb:
  **/
 static void
@@ -462,8 +485,6 @@ static void
 pk_transaction_error_code_cb (PkBackend *backend, PkErrorCodeEnum code,
 			      const gchar *details, PkTransaction *transaction)
 {
-	const gchar *code_text;
-
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -473,9 +494,7 @@ pk_transaction_error_code_cb (PkBackend *backend, PkErrorCodeEnum code,
 				    "- this is a backend problem and should be fixed!", pk_role_enum_to_text (transaction->priv->role));
 	}
 
-	code_text = pk_error_enum_to_text (code);
-	egg_debug ("emitting error-code %s, '%s'", code_text, details);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_ERROR_CODE], 0, code_text, details);
+	pk_transaction_error_code_emit (transaction, code, details);
 }
 
 /**
@@ -727,7 +746,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
 
 	/* report to syslog */
-	if (transaction->priv->uid != PK_SECURITY_UID_INVALID)
+	if (transaction->priv->uid != PK_TRANSACTION_UID_INVALID)
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s from uid %i finished with %s after %ims",
 			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid,
 			       transaction->priv->uid, pk_exit_enum_to_text (exit_enum), time_ms);
@@ -1235,6 +1254,31 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 }
 
 /**
+ * pk_transaction_get_uid:
+ **/
+static guint
+pk_transaction_get_uid (PkTransaction *transaction, const gchar *sender)
+{
+	guint uid;
+	DBusError error;
+	DBusConnection *con;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), G_MAXUINT);
+	g_return_val_if_fail (sender != NULL, G_MAXUINT);
+
+	dbus_error_init (&error);
+	con = dbus_g_connection_get_connection (transaction->priv->connection);
+	uid = dbus_bus_get_unix_user (con, sender, &error);
+	if (dbus_error_is_set (&error)) {
+		egg_warning ("Could not get uid for connection: %s %s", error.name, error.message);
+		uid = G_MAXUINT;
+		goto out;
+	}
+out:
+	return uid;
+}
+
+/**
  * pk_transaction_set_sender:
  */
 gboolean
@@ -1249,9 +1293,10 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 	egg_dbus_monitor_assign (transaction->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, sender);
 
 	/* we get the UID for all callers as we need to know when to cancel */
-	transaction->priv->caller = pk_security_caller_new_from_sender (transaction->priv->security, sender);
-	if (transaction->priv->caller != NULL)
-		transaction->priv->uid = pk_security_get_uid (transaction->priv->security, transaction->priv->caller);
+#ifdef USE_SECURITY_POLKIT
+	transaction->priv->subject = polkit_system_bus_name_new (sender);
+#endif
+	transaction->priv->uid = pk_transaction_get_uid (transaction, sender);
 
 	return TRUE;
 }
@@ -1270,6 +1315,77 @@ pk_transaction_release_tid (PkTransaction *transaction)
 	return ret;
 }
 
+#ifdef USE_SECURITY_POLKIT
+/**
+ * pk_transaction_get_pid:
+ **/
+static guint
+pk_transaction_get_pid (PkTransaction *transaction, PolkitSubject *subject)
+{
+	guint pid;
+	gboolean ret;
+	gchar *sender = NULL;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), G_MAXUINT);
+	g_return_val_if_fail (transaction->priv->proxy_pid != NULL, G_MAXUINT);
+	g_return_val_if_fail (subject != NULL, G_MAXUINT);
+
+	/* this comes back as 'system-bus-name::1.127' */
+	sender = polkit_subject_to_string (subject);
+
+	/* get pid from DBus (quite slow) */
+	ret = dbus_g_proxy_call (transaction->priv->proxy_pid, "GetConnectionUnixProcessID", &error,
+				 G_TYPE_STRING, sender+16,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &pid,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		egg_error ("failed to get pid: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	g_free (sender);
+	return pid;
+}
+
+
+/**
+ * pk_transaction_get_cmdline:
+ **/
+static gchar *
+pk_transaction_get_cmdline (PkTransaction *transaction, PolkitSubject *subject)
+{
+	gboolean ret;
+	gchar *filename = NULL;
+	gchar *cmdline = NULL;
+	GError *error = NULL;
+	guint pid;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
+	g_return_val_if_fail (subject != NULL, NULL);
+
+	/* get pid */
+	pid = pk_transaction_get_pid (transaction, subject);
+	if (pid == G_MAXUINT) {
+		egg_warning ("failed to get PID");
+		goto out;
+	}
+
+	/* get command line from proc */
+	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
+	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
+	if (!ret) {
+		egg_warning ("failed to get cmdline: %s", error->message);
+		g_error_free (error);
+	}
+out:
+	g_free (filename);
+	return cmdline;
+}
+#endif
+
 /**
  * pk_transaction_commit:
  **/
@@ -1277,7 +1393,9 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_commit (PkTransaction *transaction)
 {
 	gboolean ret;
+#ifdef USE_SECURITY_POLKIT
 	gchar *cmdline;
+#endif
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
@@ -1306,15 +1424,16 @@ pk_transaction_commit (PkTransaction *transaction)
 		/* save uid */
 		pk_transaction_db_set_uid (transaction->priv->transaction_db, transaction->priv->tid, transaction->priv->uid);
 
+#ifdef USE_SECURITY_POLKIT
 		/* save cmdline */
-		cmdline = pk_security_get_cmdline (transaction->priv->security, transaction->priv->caller);
+		cmdline = pk_transaction_get_cmdline (transaction, transaction->priv->subject);
 		pk_transaction_db_set_cmdline (transaction->priv->transaction_db, transaction->priv->tid, cmdline);
+		g_free (cmdline);
+#endif
 
 		/* report to syslog */
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "new %s transaction %s scheduled from uid %i",
 			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, transaction->priv->uid);
-
-		g_free (cmdline);
 	}
 	return TRUE;
 }
@@ -1425,35 +1544,163 @@ out:
 	return ret;
 }
 
+#ifdef USE_SECURITY_POLKIT
 /**
- * pk_transaction_action_is_allowed:
+ * pk_transaction_action_obtain_authorization:
+ **/
+static void
+pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, GAsyncResult *res, PkTransaction *transaction)
+{
+	PolkitAuthorizationResult *result;
+	gboolean ret;
+	GError *error = NULL;
+
+	/* finish the call */
+	result = polkit_authority_check_authorization_finish (transaction->priv->authority, res, &error);
+	transaction->priv->waiting_for_auth = FALSE;
+
+	/* failed */
+	if (result == NULL) {
+		egg_warning ("failed to check for auth: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* did not auth */
+	if (!polkit_authorization_result_get_is_authorized (result)) {
+
+		/* emit an ::ErrorCode() and then ::Finished() */
+		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "failed to obtain auth");
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
+
+		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i failed to obtain auth", transaction->priv->uid);
+		goto out;
+	}
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		egg_warning ("Could not commit to a transaction object");
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+
+	/* log success too */
+	pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i obtained auth", transaction->priv->uid);
+out:
+	if (result != NULL)
+		g_object_unref (result);
+	return;
+}
+
+/**
+ * pk_transaction_role_to_action:
+ **/
+static const gchar *
+pk_transaction_role_to_action (gboolean trusted, PkRoleEnum role)
+{
+	const gchar *policy = NULL;
+
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		policy = "org.freedesktop.packagekit.system-update";
+	} else if (role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
+		policy = "org.freedesktop.packagekit.system-trust-signing-key";
+	} else if (role == PK_ROLE_ENUM_ROLLBACK) {
+		policy = "org.freedesktop.packagekit.system-rollback";
+	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
+		   role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		policy = "org.freedesktop.packagekit.system-sources-configure";
+	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		policy = "org.freedesktop.packagekit.system-sources-refresh";
+	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		policy = "org.freedesktop.packagekit.package-remove";
+	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+		policy = "org.freedesktop.packagekit.package-install";
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && trusted) {
+		policy = "org.freedesktop.packagekit.package-install";
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && !trusted) {
+		policy = "org.freedesktop.packagekit.package-install-untrusted";
+	} else if (role == PK_ROLE_ENUM_ACCEPT_EULA) {
+		policy = "org.freedesktop.packagekit.package-eula-accept";
+	} else if (role == PK_ROLE_ENUM_CANCEL) {
+		policy = "org.freedesktop.packagekit.cancel-foreign";
+	}
+	return policy;
+}
+
+/**
+ * pk_transaction_obtain_authorization:
  *
  * Only valid from an async caller, which is fine, as we won't prompt the user
  * when not async.
+ *
+ * Because checking for authentication might have to respond to user input, this
+ * is treated as async. As such, the transaction should only be added to the
+ * transaction list when authorised, and not before.
  **/
 static gboolean
-pk_transaction_action_is_allowed (PkTransaction *transaction, gboolean trusted, PkRoleEnum role, GError **error)
+pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean trusted, PkRoleEnum role, GError **error)
 {
-	gboolean ret;
-	gchar *error_detail;
+	const gchar *action_id;
+	gboolean ret = FALSE;
 
 	g_return_val_if_fail (transaction->priv->sender != NULL, FALSE);
 
-	/* we should always have caller */
-	if (transaction->priv->caller == NULL) {
+	/* we should always have subject */
+	if (transaction->priv->subject == NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
-				      "caller %s not found", transaction->priv->sender);
-		return FALSE;
+				      "subject %s not found", transaction->priv->sender);
+		goto out;
 	}
 
-	/* use security model to get auth */
-	ret = pk_security_action_is_allowed (transaction->priv->security, transaction->priv->caller, trusted, role, &error_detail);
-	if (!ret) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
-		g_free (error_detail);
+	/* map the roles to policykit rules */
+	action_id = pk_transaction_role_to_action (trusted, role);
+	if (action_id == NULL) {
+		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_text (role));
+		goto out;
 	}
+
+	/* log */
+	pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i is trying to obtain %s auth (trusted:%i)", transaction->priv->uid, action_id, trusted);
+
+	/* check subject */
+	transaction->priv->waiting_for_auth = TRUE;
+	polkit_authority_check_authorization (transaction->priv->authority,
+					      transaction->priv->subject,
+					      action_id,
+					      NULL,
+					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
+					      transaction->priv->cancellable,
+					      (GAsyncReadyCallback) pk_transaction_action_obtain_authorization_finished_cb,
+					      transaction);
+	/* assume success, as this is async */
+	ret = TRUE;
+out:
 	return ret;
 }
+
+#else
+/**
+ * pk_transaction_obtain_authorization:
+ **/
+static gboolean
+pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean trusted, PkRoleEnum role, GError **error)
+{
+	gboolean ret;
+
+	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		egg_warning ("Could not commit to a transaction object");
+		pk_transaction_release_tid (transaction);
+	}
+
+	return ret;
+}
+#endif
 
 /**
  * pk_transaction_priv_get_role:
@@ -1554,8 +1801,8 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_ACCEPT_EULA, &error);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_ACCEPT_EULA, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -1589,7 +1836,6 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	GError *error = NULL;
 	gchar *sender;
 	guint uid;
-	PkSecurityCaller *caller;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1628,7 +1874,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	}
 
 	/* check if we saved the uid */
-	if (transaction->priv->uid == PK_SECURITY_UID_INVALID) {
+	if (transaction->priv->uid == PK_TRANSACTION_UID_INVALID) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
 				     "No context from caller to get UID from");
 		pk_transaction_dbus_return_error (context, error);
@@ -1637,13 +1883,11 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 
 	/* get the UID of the caller */
 	sender = dbus_g_method_get_sender (context);
-	caller = pk_security_caller_new_from_sender (transaction->priv->security, sender);
-	uid = pk_security_get_uid (transaction->priv->security, caller);
+	uid = pk_transaction_get_uid (transaction, sender);
 	g_free (sender);
-	pk_security_caller_unref (caller);
 
 	/* check we got a valid value */
-	if (uid == PK_SECURITY_UID_INVALID) {
+	if (uid == PK_TRANSACTION_UID_INVALID) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE, "unable to get uid of caller");
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -1652,7 +1896,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	/* check the caller uid with the originator uid */
 	if (transaction->priv->uid != uid) {
 		egg_debug ("uid does not match (%i vs. %i)", transaction->priv->uid, uid);
-		ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_CANCEL, &error);
+		ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_CANCEL, &error);
 		if (!ret) {
 			pk_transaction_dbus_return_error (context, error);
 			return;
@@ -2680,8 +2924,8 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 		}
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, trusted, PK_ROLE_ENUM_INSTALL_FILES, &error);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, trusted, PK_ROLE_ENUM_INSTALL_FILES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -2692,16 +2936,6 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	transaction->priv->cached_trusted = trusted;
 	transaction->priv->cached_full_paths = g_strdupv (full_paths);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_FILES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
 
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
@@ -2755,23 +2989,13 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_PACKAGES);
 
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -2834,24 +3058,14 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_INSTALL_SIGNATURE, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
 	/* save so we can run later */
 	transaction->priv->cached_package_id = g_strdup (package_id);
 	transaction->priv->cached_key_id = g_strdup (key_id);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_SIGNATURE);
 
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_INSTALL_SIGNATURE, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -2907,14 +3121,6 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REFRESH_CACHE, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
 	/* we unref the update cache if it exists */
 	pk_cache_invalidate (transaction->priv->cache);
 
@@ -2922,11 +3128,9 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 	transaction->priv->cached_force = force;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REFRESH_CACHE);
 
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_REFRESH_CACHE, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -2984,24 +3188,14 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REMOVE_PACKAGES, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
 	/* save so we can run later */
 	transaction->priv->cached_allow_deps = allow_deps;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REMOVE_PACKAGES);
 
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_REMOVE_PACKAGES, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -3053,24 +3247,14 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REPO_ENABLE, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
 	/* save so we can run later */
 	transaction->priv->cached_repo_id = g_strdup (repo_id);
 	transaction->priv->cached_enabled = enabled;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPO_ENABLE);
 
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_REPO_ENABLE, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -3123,25 +3307,15 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_REPO_SET_DATA, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
 	/* save so we can run later */
 	transaction->priv->cached_repo_id = g_strdup (repo_id);
 	transaction->priv->cached_parameter = g_strdup (parameter);
 	transaction->priv->cached_value = g_strdup (value);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPO_SET_DATA);
 
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_REPO_SET_DATA, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -3270,23 +3444,13 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_ROLLBACK, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
 	/* save so we can run later */
 	transaction->priv->cached_transaction_id = g_strdup (transaction_id);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_ROLLBACK);
 
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_ROLLBACK, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -3646,23 +3810,13 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPDATE_PACKAGES);
 
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -3703,14 +3857,6 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 		return;
 	}
 
-	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_transaction_action_is_allowed (transaction, FALSE, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
 	/* are we already performing an update? */
 	if (pk_transaction_list_role_present (transaction->priv->transaction_list, PK_ROLE_ENUM_UPDATE_SYSTEM)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
@@ -3722,11 +3868,9 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPDATE_SYSTEM);
 
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -3943,10 +4087,13 @@ pk_transaction_class_init (PkTransactionClass *klass)
 static void
 pk_transaction_init (PkTransaction *transaction)
 {
+	GError *error = NULL;
+
 	transaction->priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	transaction->priv->finished = FALSE;
 	transaction->priv->running = FALSE;
 	transaction->priv->has_been_run = FALSE;
+	transaction->priv->waiting_for_auth = FALSE;
 	transaction->priv->allow_cancel = TRUE;
 	transaction->priv->emit_eula_required = FALSE;
 	transaction->priv->emit_signature_required = FALSE;
@@ -3967,8 +4114,10 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->tid = NULL;
 	transaction->priv->sender = NULL;
 	transaction->priv->locale = NULL;
-	transaction->priv->caller = NULL;
-	transaction->priv->uid = PK_SECURITY_UID_INVALID;
+#ifdef USE_SECURITY_POLKIT
+	transaction->priv->subject = NULL;
+#endif
+	transaction->priv->uid = PK_TRANSACTION_UID_INVALID;
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
@@ -3976,7 +4125,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->elapsed = 0;
 	transaction->priv->remaining = 0;
 	transaction->priv->backend = pk_backend_new ();
-	transaction->priv->security = pk_security_new ();
 	transaction->priv->cache = pk_cache_new ();
 	transaction->priv->conf = pk_conf_new ();
 	transaction->priv->notify = pk_notify_new ();
@@ -3984,6 +4132,10 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->package_list = pk_package_list_new ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
 	transaction->priv->syslog = pk_syslog_new ();
+#ifdef USE_SECURITY_POLKIT
+	transaction->priv->authority = polkit_authority_get ();
+	transaction->priv->cancellable = g_cancellable_new ();
+#endif
 
 	transaction->priv->post_trans = pk_post_trans_new ();
 	g_signal_connect (transaction->priv->post_trans, "status-changed",
@@ -3998,6 +4150,17 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->monitor = egg_dbus_monitor_new ();
 	g_signal_connect (transaction->priv->monitor, "connection-changed",
 			  G_CALLBACK (pk_transaction_caller_active_changed_cb), transaction);
+
+	/* connect to DBus so we can get the pid */
+	transaction->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
+	transaction->priv->proxy_pid = dbus_g_proxy_new_for_name_owner (transaction->priv->connection,
+									"org.freedesktop.DBus",
+									"/org/freedesktop/DBus/Bus",
+									"org.freedesktop.DBus", &error);
+	if (transaction->priv->proxy_pid == NULL) {
+		egg_warning ("cannot connect to DBus: %s", error->message);
+		g_error_free (error);
+	}
 }
 
 /**
@@ -4014,6 +4177,16 @@ pk_transaction_dispose (GObject *object)
 
 	/* remove any inhibit, it's okay to call this function when it's not needed */
 	pk_inhibit_remove (transaction->priv->inhibit, transaction);
+
+	/* were we waiting for the client to authorise */
+	if (transaction->priv->waiting_for_auth) {
+#ifdef USE_SECURITY_POLKIT
+		g_cancellable_cancel (transaction->priv->cancellable);
+#endif
+		/* emit an ::ErrorCode() and then ::Finished() */
+		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "client did not authorize action");
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
+	}
 
 	/* send signal to clients that we are about to be destroyed */
 	egg_debug ("emitting destroy %s", transaction->priv->tid);
@@ -4033,6 +4206,11 @@ pk_transaction_finalize (GObject *object)
 	g_return_if_fail (PK_IS_TRANSACTION (object));
 
 	transaction = PK_TRANSACTION (object);
+
+#ifdef USE_SECURITY_POLKIT
+	if (transaction->priv->subject != NULL)
+		g_object_unref (transaction->priv->subject);
+#endif
 
 	g_free (transaction->priv->last_package_id);
 	g_free (transaction->priv->locale);
@@ -4056,11 +4234,14 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->package_list);
 	g_object_unref (transaction->priv->transaction_list);
 	g_object_unref (transaction->priv->transaction_db);
-	g_object_unref (transaction->priv->security);
+	g_object_unref (transaction->priv->proxy_pid);
 	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->syslog);
 	g_object_unref (transaction->priv->post_trans);
-	pk_security_caller_unref (transaction->priv->caller);
+#ifdef USE_SECURITY_POLKIT
+//	g_object_unref (transaction->priv->authority);
+	g_object_unref (transaction->priv->cancellable);
+#endif
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
 }
@@ -4091,6 +4272,9 @@ egg_test_transaction (EggTest *test)
 	gboolean ret;
 	const gchar *temp;
 	GError *error = NULL;
+#ifdef USE_SECURITY_POLKIT
+	const gchar *action;
+#endif
 
 	if (!egg_test_start (test, "PkTransaction"))
 		return;
@@ -4099,6 +4283,26 @@ egg_test_transaction (EggTest *test)
 	egg_test_title (test, "get PkTransaction object");
 	transaction = pk_transaction_new ();
 	egg_test_assert (test, transaction != NULL);
+
+	/************************************************************
+	 ****************         MAP ROLES        ******************
+	 ************************************************************/
+#ifdef USE_SECURITY_POLKIT
+	egg_test_title (test, "map valid role to action");
+	action = pk_transaction_role_to_action (FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES);
+	if (egg_strequal (action, "org.freedesktop.packagekit.system-update"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "did not get correct action '%s'", action);
+
+	/************************************************************/
+	egg_test_title (test, "map invalid role to action");
+	action = pk_transaction_role_to_action (FALSE, PK_ROLE_ENUM_SEARCH_NAME);
+	if (action == NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "did not get correct action '%s'", action);
+#endif
 
 	/************************************************************
 	 ****************          FILTERS         ******************
