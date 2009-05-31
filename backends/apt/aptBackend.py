@@ -720,8 +720,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             state = ""
             issued = ""
             updated = ""
-            #FIXME: Replace this method with the python-apt one as soon as the
-            #       consolidate branch gets merged
             self.status(STATUS_DOWNLOAD_CHANGELOG)
             changelog = pkg.getChangelog()
             self.status(STATUS_INFO)
