@@ -95,20 +95,6 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
- * backend_get_mime_types:
- */
-static gchar *
-backend_get_mime_types (PkBackend *backend)
-{
-	/*
-	 * TODO: what needs to be done for ebuilds here ?
-	 */
-	egg_debug ("backend: get_mime_types");
-
-	return g_strdup ("application/ebuild");
-}
-
-/**
  * backend_cancel:
  */
 static void
@@ -305,7 +291,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	backend_get_mime_types,			/* get_mime_types */
+	NULL,			/* get_mime_types */
 	backend_cancel,				/* cancel */
 	backend_download_packages,		/* download_packages */
 	NULL,					/* get_categories */
@@ -320,16 +306,16 @@ PK_BACKEND_OPTIONS (
 	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
 	backend_install_packages,		/* install_packages */
-	NULL,		/* install_signature */
+	NULL,			/* install_signature */
 	NULL,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
 	NULL,			/* repo_enable */
 	NULL,			/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,			/* rollback */
-	NULL,			/* search_details */
+	NULL, //TODO			/* search_details */
 	backend_search_file,			/* search_file */
-	NULL,			/* search_group */
+	NULL, //TODO			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
