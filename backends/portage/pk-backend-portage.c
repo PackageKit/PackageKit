@@ -211,6 +211,23 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_refresh_cache:
+ */
+static void
+backend_refresh_cache (PkBackend *backend, gboolean force)
+{ 
+	/* check network state */
+	if (!pk_backend_is_online (backend)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_backend_finished (backend);
+		return;
+	}
+
+	/* TODO: force ? */
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "refresh-cache", /*pk_backend_bool_to_text(force),*/ NULL);
+}
+
+/**
  * backend_remove_packages:
  */
 static void
@@ -364,7 +381,7 @@ PK_BACKEND_OPTIONS (
 	NULL,			/* install_files */
 	backend_install_packages,		/* install_packages */
 	NULL, // TODO: choose			/* install_signature */
-	NULL, // TODO: choose			/* refresh_cache */
+	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
 	NULL, // TODO: choose			/* repo_enable */
 	NULL, // TODO: probably not			/* repo_set_data */

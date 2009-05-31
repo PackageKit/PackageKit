@@ -265,13 +265,6 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
-	/* check network state */
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "yumBackend.py", "install-packages", package_ids_temp, NULL);
@@ -390,13 +383,6 @@ static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-
-	/* check network state */
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
-		return;
-	}
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids);

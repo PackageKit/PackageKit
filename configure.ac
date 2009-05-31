@@ -7,9 +7,9 @@ m4_define([pk_micro_version], [9])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
-AC_INIT(PackageKit, [pk_version])
+AC_INIT(PackageKit, [pk_version], [richard@hughsie.com], [PackageKit])
 AC_CONFIG_SRCDIR(src)
-AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
+AM_INIT_AUTOMAKE([1.9 tar-ustar])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
