@@ -27,6 +27,18 @@ static const gchar* BACKEND_FILE = "portageBackend.py";
 
 
 /**
+ * pk_backend_bool_to_text:
+ */
+// TODO: should be moved in to packagekit-glib/
+static const gchar *
+pk_backend_bool_to_text (gboolean value)
+{ 
+  if (value )
+    return "yes";
+  return "no";
+}
+
+/**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
@@ -125,8 +137,14 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
-	egg_debug ("backend: depends");
-	pk_backend_finished (backend);
+	gchar *filters_text;
+	gchar *package_ids_temp;
+
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-depends", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	g_free (package_ids_temp);
+	g_free (filters_text);
 }
 
 /**
@@ -304,8 +322,8 @@ PK_BACKEND_OPTIONS (
 	backend_remove_packages,		/* remove_packages */
 	NULL,			/* repo_enable */
 	NULL,			/* repo_set_data */
-	NULL,			/* resolve */
-	backend_resolve,			/* rollback */
+	backend_resolve,			/* resolve */
+	NULL,			/* rollback */
 	NULL,			/* search_details */
 	backend_search_file,			/* search_file */
 	NULL,			/* search_group */

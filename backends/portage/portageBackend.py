@@ -26,6 +26,7 @@ from packagekit.package import PackagekitPackage
 # portage imports
 # TODO: why some python app are adding try / catch around this ?
 import portage
+import _emerge
 
 # misc imports
 import sys
@@ -124,6 +125,49 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 					self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 			except Exception, e:
 				self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+
+	def get_depends(self, filters, pkgids, recursive):
+		# TODO: manage filters
+		# TODO: optimize by using vardb for installed packages ?
+		self.status(STATUS_INFO)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		recursive = text_to_bool(recursive)
+
+		for pkgid in pkgids:
+			cpv = id_to_cpv(pkgid)
+
+			# is cpv valid
+			if not portage.portdb.cpv_exists(cpv):
+				# self.warning ? self.error ?
+				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find the package %s" % pkgid)
+				continue
+
+			myopts = "--emptytree"
+			spinner = ""
+			settings, trees, mtimedb = _emerge.load_emerge_config()
+			myparams = _emerge.create_depgraph_params(myopts, "")
+			spinner = _emerge.stdout_spinner()
+			depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
+			retval, fav = depgraph.select_files(["="+cpv])
+			if not retval:
+				self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
+				continue
+
+			if recursive:
+				# printing the whole tree
+				pkgs = depgraph.altlist(reversed=1)
+				for pkg in pkgs:
+					self.package(pkg[2])
+			else: # !recursive
+				# only printing child of the root node
+				# actually, we have "=cpv" -> "cpv" -> children
+				root_node = depgraph.digraph.root_nodes()[0] # =cpv
+				root_node = depgraph.digraph.child_nodes(root_node)[0] # cpv
+				children = depgraph.digraph.child_nodes(root_node)
+				for child in children:
+					self.package(child[2])
 
 	def get_details(self, pkgids):
 		self.status(STATUS_INFO)
