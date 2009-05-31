@@ -281,8 +281,11 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
-	egg_debug ("backend: get packages");
-	pk_backend_finished (backend);
+	gchar *filters_text;
+
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-packages", filters_text, NULL);
+	g_free (filters_text);
 }
 
 /**

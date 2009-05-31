@@ -220,6 +220,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			self.files(pkgid, files)
 
+	def get_packages(self, filters):
+		# TODO: filters
+		self.status(STATUS_QUERY)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		for cp in portage.portdb.cp_all():
+			for cpv in portage.portdb.match(cp):
+				self.package(cpv)
+
 	def resolve(self, filters, pkgs):
 		# TODO: filters
 		self.status(STATUS_QUERY)
