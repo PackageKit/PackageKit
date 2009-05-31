@@ -714,7 +714,7 @@ pk_service_pack_create_from_files (PkServicePack *pack, GPtrArray *file_array, G
 {
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
 	*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
-			      "The service pack %s cannot be created as PackageKit was not built with libarchive support", filename);
+			      "The service pack %s cannot be created as PackageKit was not built with libarchive support", pack->priv->filename);
 	return FALSE;
 }
 #endif
