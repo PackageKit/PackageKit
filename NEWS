@@ -1,3 +1,64 @@
+Version 0.4.8
+~~~~~~~~~~~~~
+Released: 2009-06-01
+
+Notes:
+ - The start of a portage backend has been added by Mounir Lamouri.
+ - Numerous daemon speedups and bugfixes, so an upgrade is recommended.
+
+Translations:
+ - Updated translation for Bulgarian (Alexander Shopov)
+ - Updated translation for Punjabi (aalam)
+ - Updated translation for Malayalam (anipeter)
+ - Updated translation for Greek (charnik)
+ - Updated translation for Oriya (mgiri)
+ - Updated translation for Hindi (mgiri)
+ - Updated translation for Polish (raven)
+ - Updated translation for Bengali (runab)
+ - Updated translation for Thai (willwill)
+ - Updated translation for Marathi (sandeeps)
+ - Updated translation for Finnish (vpv)
+
+New Features:
+ - Add a PK_CHECK_VERSION macro (Richard Hughes)
+ - Add three properties on the main interface with the runtime daemon versions (Richard Hughes)
+ - Export version-* properties in PkControl (Richard Hughes)
+ - Add a prototype backend interface definition as a tech-preview (Richard Hughes)
+ - Don't use --enable-developer, instead use DeveloperMode set in the config file (Richard Hughes)
+ - Create a shared pk_backend_bool_to_text() helper to reduce copy&paste (Richard Hughes)
+
+Bugfixes:
+ - Make PkNetworkUnix watch /proc/net/route and check for network state changes (Richard Hughes)
+ - Ensure we send ::Finished() even when the dispatcher closed normally (Richard Hughes)
+ - Ensure we disconnect ::Finished() when we unref a transaction in the PkTransactionList (Richard Hughes)
+ - Emit ::Destroy() in the dispose phase to ensure it is proxied to the bus (Richard Hughes)
+ - Fix SuggestDaemonQuit to exit using the mainloop (Richard Hughes)
+ - Fix the logic of when ::RestartSchedule is used (Richard Hughes)
+ - Don't cache the update detail anymore, we can't ensure cache-consistency (Richard Hughes)
+ - Don't try to clear the cancel timeout if it fires again on PkClient finalise (Richard Hughes)
+ - Only return the newest available package for the command-not-found tool (Richard Hughes)
+ - Check earlier if we don't have libarchive when creating a service pack (Richard Hughes)
+ - Be more paranoid when parsing ISO8601 dates from the backend to avoid a critical error (Richard Hughes)
+ - Fix a small memory leak when we check for session restarts (Richard Hughes)
+ - When we search for the file list after an install or upgrade, use the local package (Richard Hughes)
+ - Don't crash the session program if we are connecting to an old packagekitd with a new libpackagekit (Richard Hughes)
+ - Protect a few function in pk-package-ids.c from NULL input (Richard Hughes)
+
+Backends:
+ - dummy: Make the depends return both types of packages (Richard Hughes)
+ - portage: Working search-name, get-details and download-packages (Mounir Lamouri)
+ - portage: Add get-files function (Mounir Lamouri)
+ - portage: Add search-file function (Mounir Lamouri)
+ - portage: Beginning of resolve function (Mounir Lamouri)
+ - portage: Add get_depends function (Mounir Lamouri)
+ - portage: Add get_packages function (Mounir Lamouri)
+ - yum: Add some more error handing when updating packages (Richard Hughes)
+ - yum: Clear previous data so a test transaction do not break actual one (Richard Hughes)
+ - yum: Setup the locale using yum.misc. Fixes rh#487614 (Richard Hughes)
+ - yum: Protect when the presto plugin doesn't send a name for the rebuild callback. Fixes rh#500428 (Richard Hughes)
+ - yum: Disable the rpm-warm-cache yum plugin, it's so broken (Richard Hughes)
+ - yum: Blacklist remove-with-leaves as well. Fixes rh#502399 (Richard Hughes)
+
 Version 0.4.7
 ~~~~~~~~~~~~~
 Released: 2009-05-05

@@ -2,7 +2,7 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_0_4_7.. | grep -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_0_4_7.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 2. Add download date to docs/html/pk-download.html, save file.
 
