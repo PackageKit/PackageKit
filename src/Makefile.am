@@ -15,6 +15,7 @@ INCLUDES =						\
 	$(POLKIT_CFLAGS)				\
 	$(PYTHON_CFLAGS)				\
 	$(LIBNM_CFLAGS)					\
+	$(CONNMAN_CFLAGS)				\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DSBINDIR=\"$(sbindir)\"		 	\
@@ -63,6 +64,7 @@ shared_SOURCES =					\
 	pk-post-trans.c					\
 	pk-post-trans.h					\
 	pk-network-nm.h					\
+	pk-network-connman.h				\
 	pk-network-unix.c				\
 	pk-network-unix.h				\
 	pk-time.h					\
@@ -102,6 +104,14 @@ shared_SOURCES +=					\
 	pk-network-nm-dummy.c
 endif
 
+if PK_BUILD_CONNMAN
+shared_SOURCES +=					\
+	pk-network-connman.c
+else
+shared_SOURCES +=					\
+	pk-network-connman-dummy.c
+endif
+
 if PK_BUILD_GIO
 shared_SOURCES +=					\
 	pk-file-monitor-gio.c				\
@@ -133,6 +143,7 @@ packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(GMODULE_LIBS)					\
 	$(LIBNM_LIBS)					\
+	$(CONNMAN_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_GLIB_LIBS)					\
@@ -207,6 +218,7 @@ pk_self_test_LDADD =					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(LIBNM_LIBS)					\
+	$(CONNMAN_LIBS)					\
 	$(PK_GLIB_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\

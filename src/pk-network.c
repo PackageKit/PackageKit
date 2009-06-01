@@ -46,6 +46,7 @@
 #include "egg-dbus-monitor.h"
 #include "pk-network.h"
 #include "pk-network-nm.h"
+#include "pk-network-connman.h"
 #include "pk-network-unix.h"
 #include "pk-marshal.h"
 #include "pk-conf.h"
@@ -62,11 +63,14 @@ static void     pk_network_finalize	(GObject        *object);
 struct _PkNetworkPrivate
 {
 	gboolean		 use_nm;
+	gboolean		 use_connman;
 	gboolean		 use_unix;
 	PkNetworkNm		*net_nm;
+	PkNetworkConnman	*net_connman;
 	PkNetworkUnix		*net_unix;
 	PkConf			*conf;
 	EggDbusMonitor		*nm_bus;
+	EggDbusMonitor		*connman_bus;
 };
 
 enum {
@@ -93,6 +97,8 @@ pk_network_get_network_state (PkNetwork *network)
 	/* use the correct backend */
 	if (network->priv->use_nm)
 		return pk_network_nm_get_network_state (network->priv->net_nm);
+	if (network->priv->use_connman)
+		return pk_network_connman_get_network_state (network->priv->net_connman);
 	if (network->priv->use_unix)
 		return pk_network_unix_get_network_state (network->priv->net_unix);
 	return PK_NETWORK_ENUM_ONLINE;
@@ -103,6 +109,20 @@ pk_network_get_network_state (PkNetwork *network)
  **/
 static void
 pk_network_nm_network_changed_cb (PkNetworkNm *net_nm, gboolean online, PkNetwork *network)
+{
+	PkNetworkEnum state;
+
+	g_return_if_fail (PK_IS_NETWORK (network));
+
+	state = pk_network_get_network_state (network);
+	g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, state);
+}
+
+/**
+ * pk_network_connman_network_changed_cb:
+ **/
+static void
+pk_network_connman_network_changed_cb (PkNetworkConnman *net_connman, gboolean online, PkNetwork *network)
 {
 	PkNetworkEnum state;
 
@@ -148,17 +168,23 @@ static void
 pk_network_init (PkNetwork *network)
 {
 	gboolean nm_alive;
+	gboolean connman_alive;
+
 	network->priv = PK_NETWORK_GET_PRIVATE (network);
 	network->priv->conf = pk_conf_new ();
 	network->priv->net_nm = pk_network_nm_new ();
 	g_signal_connect (network->priv->net_nm, "state-changed",
 			  G_CALLBACK (pk_network_nm_network_changed_cb), network);
+	network->priv->net_connman = pk_network_connman_new ();
+	g_signal_connect (network->priv->net_connman, "state-changed",
+			 G_CALLBACK (pk_network_connman_network_changed_cb), network);
 	network->priv->net_unix = pk_network_unix_new ();
 	g_signal_connect (network->priv->net_unix, "state-changed",
 			  G_CALLBACK (pk_network_unix_network_changed_cb), network);
 
 	/* get the defaults from the config file */
 	network->priv->use_nm = pk_conf_get_bool (network->priv->conf, "UseNetworkManager");
+	network->priv->use_connman = pk_conf_get_bool (network->priv->conf, "UseNetworkConnman");
 	network->priv->use_unix = pk_conf_get_bool (network->priv->conf, "UseNetworkHeuristic");
 
 	/* check if NM is on the bus */
@@ -179,6 +205,25 @@ pk_network_init (PkNetwork *network)
 		network->priv->use_nm = FALSE;
 	}
 #endif
+	/* check if ConnMan is on the bus */
+	network->priv->connman_bus = egg_dbus_monitor_new ();
+	egg_dbus_monitor_assign (network->priv->connman_bus, EGG_DBUS_MONITOR_SYSTEM, "org.moblin.connman");
+	connman_alive = egg_dbus_monitor_is_connected (network->priv->connman_bus);
+
+	/* ConnMan isn't up, so we can't use it */
+	if (network->priv->use_connman && !connman_alive) {
+		egg_warning ("UseNetworkConnman true, but org.moblin.connman not up");
+		network->priv->use_connman = FALSE;
+	}
+
+#if !PK_BUILD_CONNMAN
+	/* check we can actually use the default */
+	if (network->priv->use_connman) {
+		egg_warning ("UseNetworkConnman true, but not built with ConnMan support");
+		network->priv->use_connman = FALSE;
+	}
+#endif
+
 }
 
 /**
@@ -196,7 +241,9 @@ pk_network_finalize (GObject *object)
 	g_return_if_fail (network->priv != NULL);
 	g_object_unref (network->priv->conf);
 	g_object_unref (network->priv->nm_bus);
+	g_object_unref (network->priv->connman_bus);
 	g_object_unref (network->priv->net_nm);
+	g_object_unref (network->priv->net_connman);
 	g_object_unref (network->priv->net_unix);
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);
 }

@@ -271,21 +271,38 @@ AM_CONDITIONAL(PK_BUILD_GIO, test x$PK_BUILD_GIO = xyes)
 AC_SUBST(GIO_CFLAGS)
 AC_SUBST(GIO_LIBS)
 
+# unix networking stack always available
+networking_apis="unix"
+
 dnl ---------------------------------------------------------------------------
 dnl - Is NetworkManager available?
 dnl ---------------------------------------------------------------------------
 PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
 if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
-	with_networking_stack="NetworkManager"
+	networking_apis="${networking_apis},NetworkManager"
 	AC_DEFINE(PK_BUILD_NETWORKMANAGER, 1, [define if NetworkManager is installed])
 else
-	with_networking_stack="dummy"
 	PK_BUILD_NETWORKMANAGER=no
 fi
 
 AM_CONDITIONAL(PK_BUILD_NETWORKMANAGER, test x$PK_BUILD_NETWORKMANAGER = xyes)
 AC_SUBST(LIBNM_CFLAGS)
 AC_SUBST(LIBNM_LIBS)
+
+dnl ---------------------------------------------------------------------------
+dnl - Is ConnMan available?
+dnl ---------------------------------------------------------------------------
+PKG_CHECK_MODULES(CONNMAN, connman, PK_BUILD_CONNMAN="yes", PK_BUILD_CONNMAN="no")
+if test "x$PK_BUILD_CONNMAN" = "xyes"; then
+	networking_apis="${networking_apis},ConnMan"
+	AC_DEFINE(PK_BUILD_CONNMAN, 1, [define if Connection Manager is installed])
+else
+	PK_BUILD_CONNMAN=no
+fi
+
+AM_CONDITIONAL(PK_BUILD_CONNMAN, test x$PK_BUILD_CONNMAN = xyes)
+AC_SUBST(CONNMAN_CFLAGS)
+AC_SUBST(CONNMAN_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - Is docbook2man available?
@@ -763,7 +780,7 @@ echo "
         Able to run locally:       ${enable_local}
         Developer warnings:        ${enable_developer}
         Security framework:        ${with_security_framework}
-        Networking stack:          ${with_networking_stack}
+        Networking stacks:         ${networking_apis}
         GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
