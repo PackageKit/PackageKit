@@ -1930,8 +1930,7 @@ main (int argc, char *argv[])
 
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
-				/* TRANSLATORS: the user needs to provide a search term */
-				error = g_error_new (1, 0, "%s", _("A search term is required"));
+				error = g_error_new (1, 0, "%s", C_("A search term is required", "the user needs to provide a search term"));
 				goto out;
 			}
 			ret = pk_client_search_group (client_async, filters, details, &error);

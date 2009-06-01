@@ -25,19 +25,6 @@
 static PkBackendSpawn *spawn = 0;
 static const gchar* BACKEND_FILE = "portageBackend.py";
 
-
-/**
- * pk_backend_bool_to_text:
- */
-// TODO: should be moved in to packagekit-glib/
-static const gchar *
-pk_backend_bool_to_text (gboolean value)
-{ 
-  if (value )
-    return "yes";
-  return "no";
-}
-
 /**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction

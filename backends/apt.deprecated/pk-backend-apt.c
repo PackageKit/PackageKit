@@ -89,18 +89,6 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
- * pk_backend_bool_to_text:
- */
-static const gchar *
-pk_backend_bool_to_text (gboolean value)
-{
-	if (value == TRUE) {
-		return "yes";
-	}
-	return "no";
-}
-
-/**
  * backend_get_depends:
  */
 static void

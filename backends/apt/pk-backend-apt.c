@@ -82,17 +82,6 @@ backend_get_mime_types (PkBackend *backend)
 }
 
 /**
- * pk_backend_bool_to_text:
- */
-static const gchar *
-pk_backend_bool_to_text (gboolean value)
-{
-	if (value == TRUE)
-		return "yes";
-	return "no";
-}
-
-/**
  * pk_backend_cancel:
  */
 static void
