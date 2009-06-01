@@ -63,12 +63,14 @@ shared_SOURCES =					\
 	pk-shared.h					\
 	pk-post-trans.c					\
 	pk-post-trans.h					\
-	pk-network-nm.h					\
-	pk-network-connman.h				\
-	pk-network-unix.c				\
-	pk-network-unix.h				\
 	pk-time.h					\
 	pk-time.c					\
+	pk-network-stack.h				\
+	pk-network-stack.c				\
+	pk-network-stack-unix.c				\
+	pk-network-stack-unix.h				\
+	pk-network-stack-nm.h				\
+	pk-network-stack-connman.h			\
 	pk-syslog.h					\
 	pk-syslog.c					\
 	pk-conf.c					\
@@ -98,18 +100,12 @@ shared_SOURCES =					\
 
 if PK_BUILD_NETWORKMANAGER
 shared_SOURCES +=					\
-	pk-network-nm.c
-else
-shared_SOURCES +=					\
-	pk-network-nm-dummy.c
+	pk-network-stack-nm.c
 endif
 
 if PK_BUILD_CONNMAN
 shared_SOURCES +=					\
-	pk-network-connman.c
-else
-shared_SOURCES +=					\
-	pk-network-connman-dummy.c
+	pk-network-stack-connman.c
 endif
 
 if PK_BUILD_GIO
