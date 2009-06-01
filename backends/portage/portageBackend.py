@@ -304,8 +304,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		self.allow_cancel(True)
 		self.percentage(None)
 
-		recursive = text_to_bool(recursive)
-
 		for pkgid in pkgids:
 			cpv = id_to_cpv(pkgid)
 
@@ -422,8 +420,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		self.status(STATUS_RUNNING)
 		self.allow_cancel(True)
 		self.percentage(None)
-
-		recursive = text_to_bool(recursive)
 
 		myopts = {}
 		spinner = ""
@@ -544,10 +540,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			if not self.vardb.cpv_exists(best_cpv):
 				self.package(best_cpv, INFO_NORMAL)
 
-	def install_packages(self, pkgs):
+	def install_packages(self, only_trusted, pkgs):
 		self.status(STATUS_RUNNING)
 		self.allow_cancel(True) # TODO: sure ?
 		self.percentage(None)
+
+		# FIXME: use only_trusted
 
 		for pkg in pkgs:
 			# check for installed is not mandatory as there are a lot of reason

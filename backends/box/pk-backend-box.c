@@ -192,6 +192,8 @@ backend_get_updates_thread (PkBackend *backend)
 static gboolean
 backend_update_system_thread (PkBackend *backend)
 {
+	/* FIXME: support only_trusted */
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	box_upgrade_dist(ROOT_DIRECTORY, common_progress, backend);
@@ -207,6 +209,8 @@ backend_install_packages_thread (PkBackend *backend)
 	gchar **package_ids;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	/* FIXME: support only_trusted */
 
 	package_id = pk_backend_get_string (backend, "package_id");
 	pi = pk_package_id_new_from_string (package_id);
@@ -231,6 +235,7 @@ backend_update_packages_thread (PkBackend *backend)
 	gint i;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	/* FIXME: support only_trusted */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	for (i = 0; i < g_strv_length (package_ids); i++)
@@ -499,7 +504,7 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
  * backend_install_packages:
  */
 static void
-backend_install_packages (PkBackend *backend, gchar **package_ids)
+backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
@@ -515,7 +520,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
  * backend_install_files:
  */
 static void
-backend_install_files (PkBackend *backend, gboolean trusted, gchar **files)
+backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **files)
 {
 	pk_backend_thread_create (backend, backend_install_files_thread);
 }
@@ -589,7 +594,7 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
  * backend_update_packages:
  */
 static void
-backend_update_packages (PkBackend *backend, gchar **package_ids)
+backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
@@ -604,7 +609,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
  * backend_update_system:
  */
 static void
-backend_update_system (PkBackend *backend)
+backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_thread_create (backend, backend_update_system_thread);
 }

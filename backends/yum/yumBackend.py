@@ -143,20 +143,6 @@ def _getEVR(idver):
         release = '0'
     return epoch, version, release
 
-def _text_to_boolean(text):
-    '''
-    Parses true and false
-    '''
-    if text == 'true':
-        return True
-    if text == 'TRUE':
-        return True
-    if text == 'yes':
-        return True
-    if text == 'YES':
-        return True
-    return False
-
 def _truncate(text, length, etc='...'):
     if len(text) < length:
         return text
@@ -964,7 +950,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # nothing found
         return None, False
 
-    def get_requires(self, filters, package_ids, recursive_text):
+    def get_requires(self, filters, package_ids, recursive):
         '''
         Print a list of requires for a given package
         '''
@@ -978,7 +964,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         bump = 100 / len(package_ids)
         deps_list = []
         resolve_list = []
-        recursive = _text_to_boolean(recursive_text)
 
         for package in package_ids:
             self.percentage(percentage)
@@ -1272,7 +1257,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return deps_list
 
-    def get_depends(self, filters, package_ids, recursive_text):
+    def get_depends(self, filters, package_ids, recursive):
         '''
         Print a list of depends for a given package
         '''
@@ -1283,7 +1268,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
-        recursive = _text_to_boolean(recursive_text)
 
         # before we do an install we do ~installed + recursive true,
         # which we can emulate quicker by doing a transaction, but not
@@ -1342,7 +1326,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self._show_package_list(package_list)
         self.percentage(100)
 
-    def update_system(self):
+    def _is_package_repo_signed(self, pkg):
+        '''
+        Finds out if the repo that contains the package is signed
+        '''
+        repo = self.yumbase.repos.getRepo(pkg.repoid)
+        return repo.gpgcheck
+
+    def update_system(self, only_trusted):
         '''
         Implement the {backend}-update-system functionality
         '''
@@ -1352,7 +1343,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        old_throttle = self.yumbase.conf.throttle
+        # if only_trusted is true, it means that we will only update signed files
+        if only_trusted:
+            self.yumbase.conf.gpgcheck = 1
+        else:
+            self.yumbase.conf.gpgcheck = 0
+
         self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
                                            # to avoid taking all the system's bandwidth.
         try:
@@ -1363,14 +1359,21 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             if txmbr:
+                # check all the packages in the transaction if only-trusted
+                if only_trusted:
+                    for t in txmbr:
+                        pkg = t.po
+                        signed = self._is_package_repo_signed(pkg)
+                        if not signed:
+                            self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                            return
                 try:
                     self._runYumTransaction(allow_skip_broken=True)
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
             else:
-                self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Nothing to do")
-
-        self.yumbase.conf.throttle = old_throttle
+                self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Nothing to do", exit=False)
+                return
 
     def refresh_cache(self):
         '''
@@ -1470,7 +1473,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             if show:
                                 self._show_package(pkg, INFO_AVAILABLE)
 
-    def install_packages(self, package_ids):
+    def install_packages(self, only_trusted, package_ids):
         '''
         Implement the {backend}-install-packages functionality
         This will only work with yum 3.2.4 or higher
@@ -1485,7 +1488,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
         txmbrs = []
-        already_warned = False
+
+        # if only_trusted is true, it means that we will only update signed files
+        if only_trusted:
+            self.yumbase.conf.gpgcheck = 1
+        else:
+            self.yumbase.conf.gpgcheck = 0
+
         for package in package_ids:
             grp = self._is_meta_package(package)
             if grp:
@@ -1496,29 +1505,23 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     txmbr = self.yumbase.selectGroup(grp.groupid)
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-                for t in txmbr:
-                    try:
-                        repo = self.yumbase.repos.getRepo(t.po.repoid)
-                    except Exception, e:
-                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-                    if not already_warned and not repo.gpgcheck:
-                        self.message(MESSAGE_UNTRUSTED_PACKAGE, "The untrusted package %s will be installed from %s." % (t.po.name, repo))
-                        already_warned = True
-
                 txmbrs.extend(txmbr)
             else:
                 pkg, inst = self._findPackage(package)
                 if pkg and not inst:
-                    repo = self.yumbase.repos.getRepo(pkg.repoid)
-                    if not already_warned and not repo.gpgcheck:
-                        self.message(MESSAGE_UNTRUSTED_PACKAGE, "The untrusted package %s will be installed from %s." % (pkg.name, repo))
-                        already_warned = True
                     txmbr = self.yumbase.install(po=pkg)
                     txmbrs.extend(txmbr)
                 if inst:
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package %s is already installed" % pkg.name, exit=False)
                     return
         if txmbrs:
+            if only_trusted:
+                for t in txmbrs:
+                    pkg = t.po
+                    signed = self._is_package_repo_signed(pkg)
+                    if not signed:
+                        self.error(ERROR_CANNOT_INSTALL_REPO_UNSIGNED, "The package %s will not be installed from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                        return
             try:
                 self._runYumTransaction()
             except PkError, e:
@@ -1539,7 +1542,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if newest.EVR > po.EVR:
                 self.message(MESSAGE_NEWER_PACKAGE_EXISTS, "A newer version of %s is available online." % po.name)
 
-    def install_files(self, trusted, inst_files):
+    def install_files(self, only_trusted, inst_files):
         '''
         Implement the {backend}-install-files functionality
         Install the package containing the inst_file file
@@ -1645,8 +1648,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_ALL_PACKAGES_ALREADY_INSTALLED,
                        'All of the specified packages have already been installed')
 
-        # If trusted is true, it means that we will only install trusted files
-        if trusted == 'yes':
+        # If only_trusted is true, it means that we will only install trusted files
+        if only_trusted:
             # disregard the default
             self.yumbase.conf.gpgcheck = 1
 
@@ -1766,7 +1769,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return True
 
-    def update_packages(self, package_ids):
+    def update_packages(self, only_trusted, package_ids):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
@@ -1780,6 +1783,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
+
+        # if only_trusted is true, it means that we will only update signed files
+        if only_trusted:
+            self.yumbase.conf.gpgcheck = 1
+        else:
+            self.yumbase.conf.gpgcheck = 0
 
         txmbrs = []
         try:
@@ -1803,6 +1812,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             if txmbrs:
+                if only_trusted:
+                    for t in txmbrs:
+                        pkg = t.po
+                        signed = self._is_package_repo_signed(pkg)
+                        if not signed:
+                            self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                            return
                 try:
                     self._runYumTransaction(allow_skip_broken=True)
                 except PkError, e:
@@ -2146,7 +2162,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # are we already on the latest version
         try:
-            present_version = int(self.yumbase.conf.yumvar['releasever'])
+            present_version = float(self.yumbase.conf.yumvar['releasever'])
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if (present_version >= last_version):
@@ -2238,7 +2254,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
         try:
             repo = self.yumbase.repos.getRepo(repoid)
-            if enable == 'false':
+            if enable:
                 if repo.isEnabled():
                     repo.disablePersistent()
             else:
@@ -2274,10 +2290,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             return
         for repo in repos:
             if filters != FILTER_NOT_DEVELOPMENT or not _is_development_repo(repo.id):
-                if repo.isEnabled():
-                    self.repo_detail(repo.id, repo.name, 'true')
-                else:
-                    self.repo_detail(repo.id, repo.name, 'false')
+                enabled = repo.isEnabled()
+                self.repo_detail(repo.id, repo.name, enabled)
 
     def _get_obsoleted(self, name):
         try:
@@ -2526,6 +2540,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except Exception, e:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
+        # default to 100% unless method overrides
+        self.yumbase.conf.throttle = "90%"
+
     def _refresh_yum_cache(self):
         self.status(STATUS_REFRESH_CACHE)
         old_cache_setting = self.yumbase.conf.cache
@@ -2559,8 +2576,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-        # set bandwidth throttle to 90%
-        self.yumbase.conf.throttle = "90%"
         self.yumbase.rpmdb.auto_close = True
         self.dnlCallback = DownloadCallback(self, showNames=True)
         self.yumbase.repos.setProgressBar(self.dnlCallback)

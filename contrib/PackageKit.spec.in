@@ -1,7 +1,7 @@
 %define glib2_version			2.16.1
 %define dbus_version			0.90
 %define dbus_glib_version		0.70
-%define policykit_version		0.8
+%define polkit_version			0.92
 %define libnm_glib_version		0.6.4
 %define alphatag			#ALPHATAG#
 
@@ -26,6 +26,7 @@ Requires: PackageKit-yum = %{version}-%{release}
 Requires: shared-mime-info
 Requires: comps-extras
 Requires: preupgrade
+BuildRequires: polkit >= %{polkit_version}
 
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: dbus-devel  >= %{dbus_version}
@@ -35,7 +36,7 @@ BuildRequires: libX11-devel
 BuildRequires: xmlto
 BuildRequires: sqlite-devel
 BuildRequires: NetworkManager-glib-devel >= %{libnm_glib_version}
-BuildRequires: PolicyKit-devel >= %{policykit_version}
+BuildRequires: polkit-devel >= %{polkit_version}
 BuildRequires: libtool
 BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
@@ -220,7 +221,7 @@ and are unable to learn any new tricks.
 %setup -q
 
 %build
-%configure --enable-yum --enable-smart --with-default-backend=yum --disable-local
+%configure --disable-static --enable-yum --enable-smart --with-default-backend=yum --disable-local
 
 make %{?_smp_mflags}
 
@@ -228,14 +229,11 @@ make %{?_smp_mflags}
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 
-rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.a
-rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-2.0/modules/*.a
 rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-2.0/modules/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/polkit-1/extensions/libpackagekit-action-lookup.la
 
 touch $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/groups.sqlite
 
@@ -290,7 +288,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_datadir}/PackageKit/icons
 %{_datadir}/PackageKit/helpers/test_spawn/*
 %{_datadir}/man/man1/*.1.gz
-%{_datadir}/PolicyKit/policy/*.policy
+%{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/mime/packages/packagekit-*.xml
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
 %{_sbindir}/packagekitd
@@ -304,6 +302,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system-services/*.service
 %{_libdir}/pm-utils/sleep.d/95packagekit
+%{_libdir}/polkit-1/extensions/libpackagekit-action-lookup.so
 
 %files docs
 %defattr(-,root,root,-)

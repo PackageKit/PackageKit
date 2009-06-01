@@ -177,6 +177,8 @@ gboolean	 pk_client_set_use_buffer		(PkClient	*client,
 gboolean	 pk_client_set_synchronous		(PkClient	*client,
 							 gboolean	 synchronous,
 							 GError		**error);
+gboolean	 pk_client_set_only_trusted		(PkClient	*client,
+							 gboolean	 only_trusted);
 gboolean	 pk_client_set_timeout			(PkClient	*client,
 							 gint		 timeout,
 							 GError		**error);
@@ -218,6 +220,7 @@ gboolean	 pk_client_get_updates			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_system		(PkClient	*client,
+							 gboolean	 only_trusted,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_name			(PkClient	*client,
@@ -288,6 +291,7 @@ gboolean	 pk_client_refresh_cache		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_packages		(PkClient	*client,
+							 gboolean	 only_trusted,
 							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -298,16 +302,17 @@ gboolean	 pk_client_install_signature		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_packages		(PkClient	*client,
+							 gboolean	 only_trusted,
 							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_files		(PkClient	*client,
-							 gboolean	 trusted,
+							 gboolean	 only_trusted,
 							 gchar		**files_rel,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_file			(PkClient	*client,
-							 gboolean	 trusted,
+							 gboolean	 only_trusted,
 							 const gchar	*file_rel,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;

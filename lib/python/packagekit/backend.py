@@ -143,8 +143,7 @@ class PackageKitBaseBackend:
         @param id: the localised label of the media
         @param text: the localised text describing the media
         '''
-        print >> sys.stdout, "media-change-required\t%s\t%s\t%s" % (mtype, id,
-                                                                    text)
+        print >> sys.stdout, "media-change-required\t%s\t%s\t%s" % (mtype, id, text)
         sys.stdout.flush()
 
     def distro_upgrade(self, dtype, name, summary):
@@ -171,7 +170,7 @@ class PackageKitBaseBackend:
         @param repoid: The repo id tag
         @param state: false is repo is disabled else true.
         '''
-        print >> sys.stdout, "repo-detail\t%s\t%s\t%s" % (repoid, name, state)
+        print >> sys.stdout, "repo-detail\t%s\t%s\t%s" % (repoid, name, _bool_to_text(state))
         sys.stdout.flush()
 
     def data(self, data):
@@ -346,7 +345,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def update_system(self):
+    def update_system(self, only_trusted):
         '''
         Implement the {backend}-update-system functionality
         Needed to be implemented in a sub class
@@ -360,7 +359,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def install_packages(self, package_ids):
+    def install_packages(self, only_trusted, package_ids):
         '''
         Implement the {backend}-install functionality
         Needed to be implemented in a sub class
@@ -374,7 +373,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def install_files (self, trusted, inst_files):
+    def install_files (self, only_trusted, inst_files):
         '''
         Implement the {backend}-install_files functionality
         Install the package containing the inst_file file
@@ -396,7 +395,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def update_packages(self, package_ids):
+    def update_packages(self, only_trusted, package_ids):
         '''
         Implement the {backend}-update functionality
         Needed to be implemented in a sub class
@@ -509,7 +508,7 @@ class PackageKitBaseBackend:
         elif cmd == 'get-depends':
             filters = args[0]
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
-            recursive = args[2]
+            recursive = _text_to_bool(args[2])
             self.get_depends(filters, package_ids, recursive)
             self.finished()
         elif cmd == 'get-details':
@@ -531,7 +530,7 @@ class PackageKitBaseBackend:
         elif cmd == 'get-requires':
             filters = args[0]
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
-            recursive = args[2]
+            recursive = _text_to_bool(args[2])
             self.get_requires(filters, package_ids, recursive)
             self.finished()
         elif cmd == 'get-update-detail':
@@ -546,13 +545,14 @@ class PackageKitBaseBackend:
             self.get_updates(filters)
             self.finished()
         elif cmd == 'install-files':
-            trusted = args[0]
+            only_trusted = _text_to_bool(args[0])
             files_to_inst = args[1].split(FILENAME_DELIM)
-            self.install_files(trusted, files_to_inst)
+            self.install_files(only_trusted, files_to_inst)
             self.finished()
         elif cmd == 'install-packages':
-            package_ids = args[0].split(PACKAGE_IDS_DELIM)
-            self.install_packages(package_ids)
+            only_trusted = _text_to_bool(args[0])
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            self.install_packages(only_trusted, package_ids)
             self.finished()
         elif cmd == 'install-signature':
             sigtype = args[0]
@@ -570,7 +570,7 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'repo-enable':
             repoid = args[0]
-            state = args[1]
+            state = _text_to_bool(args[1])
             self.repo_enable(repoid, state)
             self.finished()
         elif cmd == 'repo-set-data':
@@ -609,11 +609,13 @@ class PackageKitBaseBackend:
             self.repo_signature_install(package)
             self.finished()
         elif cmd == 'update-packages':
-            package_ids = args[0].split(PACKAGE_IDS_DELIM)
-            self.update_packages(package_ids)
+            only_trusted = _text_to_bool(args[0])
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            self.update_packages(only_trusted, package_ids)
             self.finished()
         elif cmd == 'update-system':
-            self.update_system()
+            only_trusted = _text_to_bool(args[0])
+            self.update_system(only_trusted)
             self.finished()
         elif cmd == 'what-provides':
             filters = args[0]
@@ -662,11 +664,16 @@ def format_string(text, encoding='utf-8'):
         txt = unicode(text, encoding, errors='replace')
     return text.replace("\n", ";")
 
-def text_to_bool(text):
+def _text_to_bool(text):
     '''Convert a string to a boolean value.'''
     if text.lower() in ["yes", "true"]:
         return True
     return False
+
+def _bool_to_text(value):
+    if value:
+        return "true"
+    return "false"
 
 def get_package_id(name, version, arch, data):
     """Returns a package id."""

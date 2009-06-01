@@ -539,7 +539,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.files(package_id, ';'.join(files))
 
     @ExceptionHandler
-    def update_system(self):
+    def update_system(self, only_trusted):
+
+        # FIXME: use only_trusted
+
         self.allow_cancel(True)
         self.status(STATUS_UPDATE)
         self.client.setUpdateCallback( UpdateSystemCallback(self, self.cfg) )
@@ -566,17 +569,22 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         cache = Cache()
         cache.refresh()
 
-    def install_packages(self, package_ids):
+    def install_packages(self, only_trusted, package_ids):
         """
             alias of update_packages
         """
-        self.update_packages(package_ids)
+
+        # FIXME: use only_trusted
+
+        self.update_packages(only_trusted, package_ids)
 
     @ExceptionHandler
-    def update_packages(self, package_ids):
+    def update_packages(self, only_trusted, package_ids):
         '''
         Implement the {backend}-{install, update}-packages functionality
         '''
+
+        # FIXME: use only_trusted
 
         for package_id in package_ids:
             name, version, flavor, installed = self._findPackage(package_id)
@@ -928,7 +936,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         for repo in labels:
             repo_name = repo.split("@")[0]
             repo_branch  = repo.split("@")[1]
-            self.repo_detail(repo,repo,"true")
+            self.repo_detail(repo,repo,True)
 
     def repo_enable(self, repoid, enable):
         '''

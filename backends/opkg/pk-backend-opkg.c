@@ -441,7 +441,7 @@ backend_install_packages_thread (PkBackend *backend)
 }
 
 static void
-backend_install_packages (PkBackend *backend, gchar **package_ids)
+backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
@@ -540,6 +540,7 @@ backend_update_system_thread (PkBackend *backend)
 {
 	gint err;
 
+	/* FIXME: support only_trusted */
 	err = opkg_upgrade_all (opkg, pk_opkg_progress_cb, backend);
 
 	if (err)
@@ -550,7 +551,7 @@ backend_update_system_thread (PkBackend *backend)
 }
 
 static void
-backend_update_system (PkBackend *backend)
+backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -568,6 +569,7 @@ backend_update_package_thread (PkBackend *backend)
 	gint err = 0;
 	const gchar *package_id;
 
+	/* FIXME: support only_trusted */
 	package_id = pk_backend_get_string (backend, "pkgid");
 	pi = pk_package_id_new_from_string (package_id);
 
@@ -591,7 +593,7 @@ backend_update_package_thread (PkBackend *backend)
 }
 
 static void
-backend_update_packages (PkBackend *backend, gchar **package_ids)
+backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	gint i;
 

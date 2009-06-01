@@ -732,7 +732,7 @@
       </mediaobject>
       <para>
         In this non-trivial example, a local file install is being attempted.
-        First the <literal>InstallFile</literal> is called with the <literal>trusted</literal>
+        First the <literal>InstallFile</literal> is called with the <literal>only_trusted</literal>
         flag set.
         This will fail if the package does not have a valid GPG key, and ordinarily the transaction
         would fail. What the client can do, e.g. using <literal>libpackagekit</literal>, is
@@ -740,11 +740,11 @@
         This will use a different PolicyKit authentication, and allow the file to succeed.
       </para>
       <para>
-        So why do we bother calling <literal>trusted</literal> in the first place?
-        Well, the trusted PolicyKit role can be saved in the gnome-keyring, or could be
-        set to the users password as the GPG key is already trusted by the user.
+        So why do we bother calling <literal>only_trusted</literal> in the first place?
+        Well, the only_trusted PolicyKit role can be saved in the gnome-keyring, or could be
+        set to the users password as the GPG key is already only_trusted by the user.
         The <literal>non-trusted</literal> action would likely ask for the administrator password,
-        and not allowed to be saved. This gives the user the benifit of installing trusted local
+        and not allowed to be saved. This gives the user the benifit of installing only_trusted local
         files without a password (common case) but requiring something stronger for untrusted or
         unsigned files.
       </para>

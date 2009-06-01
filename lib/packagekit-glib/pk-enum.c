@@ -49,6 +49,7 @@ static const PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_EULA_REQUIRED,		"eula-required"},
 	{PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED,	"media-change-required"},
 	{PK_EXIT_ENUM_KILLED,			"killed"},
+	{PK_EXIT_ENUM_NEED_UNTRUSTED,		"need-untrusted"},
 	{0, NULL}
 };
 
@@ -174,6 +175,8 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,	"media-change-required"},
 	{PK_ERROR_ENUM_NOT_AUTHORIZED,		"not-authorized"},
 	{PK_ERROR_ENUM_UPDATE_NOT_FOUND,	"update-not-found"},
+	{PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,	"cannot-install-repo-unsigned"},
+	{PK_ERROR_ENUM_CANNOT_UPDATE_REPO_UNSIGNED,	"cannot-update-repo-unsigned"},
 	{0, NULL}
 };
 

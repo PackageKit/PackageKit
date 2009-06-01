@@ -317,7 +317,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         self.allow_cancel(True)
         self.status(STATUS_INFO)
-        recursive = (recursive == "True")
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self,self._apt_cache[name],version=[(version,"=")],data=data)
         pkg.setVersion(version)
@@ -352,7 +351,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         self.allow_cancel(True)
         self.status(STATUS_INFO)
-        recursive = (recursive == "True")
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self,self._apt_cache[name], version=[(version,"=")], data=data)
 
@@ -412,7 +410,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-repo-enable functionality
         '''
-        enable = (enable == "True")
         repo = self._build_repo_list()
         if not repo.has_key(repoid):
             self.error(ERROR_REPO_NOT_FOUND,"Couldn't find repo '%s'"%repoid)

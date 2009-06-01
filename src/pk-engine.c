@@ -64,28 +64,6 @@ static void     pk_engine_finalize	(GObject       *object);
 
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
 
-/**
- * PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT:
- *
- * The timeout in seconds to wait when we get the StateHasChanged method.
- * We don't queue these transactions if one is already in progress.
- *
- * This should be used when a native tool has been used, and the update UI should
- * be updated to reflect reality.
- */
-#define PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT		5 /* seconds */
-
-/**
- * PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT:
- *
- * The timeout in seconds to wait when we get the StateHasChanged method (for selected reasons).
- * We don't queue these transactions if one is already in progress.
- *
- * We probably don't want to be doing an update check at the busy time after a resume, or for
- * other non-critical reasons.
- */
-#define PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT		10*60 /* seconds */
-
 struct PkEnginePrivate
 {
 	GTimer			*timer;
@@ -105,8 +83,10 @@ struct PkEnginePrivate
 	PkBitfield		 groups;
 	PkBitfield		 filters;
 	gchar			*mime_types;
-	guint			 signal_state_priority_timeout;
-	guint			 signal_state_normal_timeout;
+	guint			 timeout_priority;
+	guint			 timeout_normal;
+	guint			 timeout_priority_id;
+	guint			 timeout_normal_id;
 #ifdef USE_SECURITY_POLKIT
 	PolkitAuthority		*authority;
 #endif
@@ -356,8 +336,8 @@ pk_engine_state_changed_cb (gpointer data)
 	pk_notify_updates_changed (engine->priv->notify);
 
 	/* reset, now valid */
-	engine->priv->signal_state_priority_timeout = 0;
-	engine->priv->signal_state_normal_timeout = 0;
+	engine->priv->timeout_priority_id = 0;
+	engine->priv->timeout_normal_id = 0;
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
@@ -379,9 +359,9 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* have we already scheduled priority? */
-	if (engine->priv->signal_state_priority_timeout != 0) {
+	if (engine->priv->timeout_priority_id != 0) {
 		egg_warning ("Already asked to refresh priority state less than %i seconds ago",
-			     PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT);
+			     engine->priv->timeout_priority);
 		goto out;
 	}
 
@@ -390,25 +370,25 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 		is_priority = FALSE;
 
 	/* are we normal, and already scheduled normal? */
-	if (!is_priority && engine->priv->signal_state_normal_timeout != 0) {
+	if (!is_priority && engine->priv->timeout_normal_id != 0) {
 		egg_warning ("Already asked to refresh normal state less than %i seconds ago",
-			     PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT);
+			     engine->priv->timeout_normal);
 		goto out;
 	}
 
 	/* are we priority, and already scheduled normal? */
-	if (is_priority && engine->priv->signal_state_normal_timeout != 0) {
+	if (is_priority && engine->priv->timeout_normal_id != 0) {
 		/* clear normal, as we are about to schedule a priority */
-		g_source_remove (engine->priv->signal_state_normal_timeout);
-		engine->priv->signal_state_normal_timeout = 0;	}
+		g_source_remove (engine->priv->timeout_normal_id);
+		engine->priv->timeout_normal_id = 0;	}
 
 	/* wait a little delay in case we get multiple requests */
 	if (is_priority)
-		engine->priv->signal_state_priority_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT,
-										     pk_engine_state_changed_cb, engine);
+		engine->priv->timeout_priority_id = g_timeout_add_seconds (engine->priv->timeout_priority,
+									   pk_engine_state_changed_cb, engine);
 	else
-		engine->priv->signal_state_normal_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT,
-										   pk_engine_state_changed_cb, engine);
+		engine->priv->timeout_normal_id = g_timeout_add_seconds (engine->priv->timeout_normal,
+									 pk_engine_state_changed_cb, engine);
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
@@ -632,6 +612,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 #ifdef USE_SECURITY_POLKIT
 	gchar *sender = NULL;
 	PolkitSubject *subject;
+	PolkitDetails *details;
 #else
 	gboolean ret;
 	GError *error = NULL;
@@ -652,13 +633,22 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	/* check subject */
 	sender = dbus_g_method_get_sender (context);
 	subject = polkit_system_bus_name_new (sender);
+
+	/* insert details about the authorization */
+	details = polkit_details_new ();
+	polkit_details_insert (details, "role", pk_role_enum_to_text (PK_ROLE_ENUM_UNKNOWN));
+
+	/* do authorization async */
 	polkit_authority_check_authorization (engine->priv->authority, subject,
 					      "org.freedesktop.packagekit.system-network-proxy-configure",
-					      NULL,
+					      details,
 					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
 					      NULL,
 					      (GAsyncReadyCallback) pk_engine_action_obtain_authorization_finished_cb,
 					      engine);
+
+	/* check_authorization ref's this */
+	g_object_unref (details);
 #else
 	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
@@ -883,8 +873,8 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->cache = pk_cache_new ();
 
 	/* we need to be able to clear this */
-	engine->priv->signal_state_priority_timeout = 0;
-	engine->priv->signal_state_normal_timeout = 0;
+	engine->priv->timeout_priority_id = 0;
+	engine->priv->timeout_normal_id = 0;
 
 	/* get another connection */
 	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
@@ -922,6 +912,10 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->proxy_ftp = pk_conf_get_string (engine->priv->conf, "ProxyFTP");
 	pk_backend_set_proxy (engine->priv->backend, engine->priv->proxy_http, engine->priv->proxy_ftp);
 
+	/* get the StateHasChanged timeouts */
+	engine->priv->timeout_priority = (guint) pk_conf_get_int (engine->priv->conf, "StateChangedTimeoutPriority");
+	engine->priv->timeout_normal = (guint) pk_conf_get_int (engine->priv->conf, "StateChangedTimeoutNormal");
+
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
@@ -957,13 +951,13 @@ pk_engine_finalize (GObject *object)
 		egg_warning ("couldn't unlock the backend");
 
 	/* if we set an state changed notifier, clear */
-	if (engine->priv->signal_state_priority_timeout != 0) {
-		g_source_remove (engine->priv->signal_state_priority_timeout);
-		engine->priv->signal_state_priority_timeout = 0;
+	if (engine->priv->timeout_priority_id != 0) {
+		g_source_remove (engine->priv->timeout_priority_id);
+		engine->priv->timeout_priority_id = 0;
 	}
-	if (engine->priv->signal_state_normal_timeout != 0) {
-		g_source_remove (engine->priv->signal_state_normal_timeout);
-		engine->priv->signal_state_normal_timeout = 0;
+	if (engine->priv->timeout_normal_id != 0) {
+		g_source_remove (engine->priv->timeout_normal_id);
+		engine->priv->timeout_normal_id = 0;
 	}
 
 	/* compulsory gobjects */

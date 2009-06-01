@@ -358,9 +358,9 @@ class PackageKitClient:
         return self._run_transaction("GetDistroUpgrades", [],
                                      exit_handler)
 
-    def install_files(self, trusted, files, exit_handler=None):
+    def install_files(self, only_trusted, files, exit_handler=None):
         '''Install the given local packages'''
-        return self._run_transaction("InstallFiles", [trusted, files],
+        return self._run_transaction("InstallFiles", [only_trusted, files],
                                      exit_handler)
 
     def install_signature(self, sig_type, key_id, package_id, 

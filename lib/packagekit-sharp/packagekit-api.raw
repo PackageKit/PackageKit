@@ -812,7 +812,7 @@
       <method name="InstallFile" cname="pk_client_install_file">
         <return-type type="gboolean" />
         <parameters>
-          <parameter type="gboolean" name="trusted" />
+          <parameter type="gboolean" name="only_trusted" />
           <parameter type="const-gchar*" name="file_rel" />
           <parameter type="GError**" name="error" />
         </parameters>
@@ -820,7 +820,7 @@
       <method name="InstallFiles" cname="pk_client_install_files">
         <return-type type="gboolean" />
         <parameters>
-          <parameter type="gboolean" name="trusted" />
+          <parameter type="gboolean" name="only_trusted" />
           <parameter type="gchar**" name="files_rel" />
           <parameter type="GError**" name="error" />
         </parameters>

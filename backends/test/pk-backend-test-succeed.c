@@ -134,7 +134,7 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
  * backend_install_packages:
  */
 static void
-backend_install_packages (PkBackend *backend, gchar **package_ids)
+backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }
@@ -153,7 +153,7 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
  * backend_install_files:
  */
 static void
-backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
+backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
 {
 	pk_backend_finished (backend);
 }
@@ -248,7 +248,7 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
  * backend_update_packages:
  */
 static void
-backend_update_packages (PkBackend *backend, gchar **package_ids)
+backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }
@@ -257,7 +257,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
  * backend_update_system:
  */
 static void
-backend_update_system (PkBackend *backend)
+backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_finished (backend);
 }

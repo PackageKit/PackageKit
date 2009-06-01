@@ -133,7 +133,7 @@ sub dispatch_command {
     urpm::media::configure($urpm);
   }
   elsif($command eq "update-system") {
-    update_system($urpm);
+    update_system($urpm, $args);
     urpm::media::configure($urpm);
   }
   elsif($command eq "exit") {
@@ -373,7 +373,8 @@ sub install_packages {
 
   my ($urpm, $args) = @_;
 
-  my @packageidstab = split(/&/, @{$args}[0]);
+  # FIXME: use only_trusted in @{$args}[0]
+  my @packageidstab = split(/&/, @{$args}[1]);
   
   my @names;
   foreach(@packageidstab) {
@@ -662,7 +663,8 @@ sub update_packages {
 
   my ($urpm, $args) = @_;
 
-  my @packageidstab = split(/&/, @{$args}[0]);
+  # FIXME: use only_trusted in @{$args}[0]
+  my @packageidstab = split(/&/, @{$args}[1]);
 
   my @names;
   foreach(@packageidstab) {
@@ -694,7 +696,9 @@ sub update_packages {
 
 sub update_system {
   
-  my ($urpm) = @_;
+  my ($urpm, $args) = @_;
+
+  # FIXME: use only_trusted in @{$args}[0]
   eval {
     perform_installation($urpm, {}, auto_select => 1);
   };

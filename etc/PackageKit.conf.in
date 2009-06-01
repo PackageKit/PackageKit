@@ -144,3 +144,19 @@ UseUpdateCache=true
 # default=false
 DeveloperMode=false
 
+# The time in seconds to wait when we get the StateHasChanged method
+#
+# This should be used when a native tool has been used, and the update UIs
+# should be updated to reflect reality.
+#
+# default=5
+StateChangedTimeoutPriority=5
+
+# The time in seconds to wait after the computer has been resumed or any non
+# package related system event
+#
+# We don't want to be doing an update check at the busy time after a resume
+#
+# default=600
+StateChangedTimeoutNormal=600
+

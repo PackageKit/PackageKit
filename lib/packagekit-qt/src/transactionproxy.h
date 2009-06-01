@@ -173,10 +173,10 @@ public Q_SLOTS: // METHODS
         return callWithArgumentList(QDBus::Block, QLatin1String("GetUpdates"), argumentList);
     }
 
-    inline QDBusReply<void> InstallFiles(bool trusted, const QStringList &full_paths)
+    inline QDBusReply<void> InstallFiles(bool only_trusted, const QStringList &full_paths)
     {
         QList<QVariant> argumentList;
-        argumentList << qVariantFromValue(trusted) << qVariantFromValue(full_paths);
+        argumentList << qVariantFromValue(only_trusted) << qVariantFromValue(full_paths);
         return callWithArgumentList(QDBus::Block, QLatin1String("InstallFiles"), argumentList);
     }
 
