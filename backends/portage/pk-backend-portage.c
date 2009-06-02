@@ -198,16 +198,6 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 }
 
 /**
- * backend_get_updates:
- */
-static void
-backend_get_updates (PkBackend *backend, PkBitfield filters)
-{
-	egg_debug ("backend: updates");
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_get_update_detail:
  */
 static void
@@ -218,13 +208,34 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_get_updates:
+ */
+static void
+backend_get_updates (PkBackend *backend, PkBitfield filters)
+{
+	egg_debug ("backend: updates");
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_install_packages:
  */
 static void
 backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
-	egg_debug ("backend: install");
-	pk_backend_finished (backend);
+	gchar *package_ids_temp;
+
+	/*
+	 * TODO: portage manage to install when offline
+	 * but maybe packagekit implementation will make this forbidden
+	 * (because of download funcion dir)
+	 * If needed, add something that will check for network _NOW_ (see yum)
+	 */
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "install-packages", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**

@@ -32,7 +32,7 @@ import _emerge
 import sys
 import signal
 import re
-#from urlgrabber.progress import BaseMeter, format_number
+from itertools import izip
 
 # NOTES:
 #
@@ -229,6 +229,35 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		for cp in portage.portdb.cp_all():
 			for cpv in portage.portdb.match(cp):
 				self.package(cpv)
+
+	def install_packages(self, pkgs):
+		self.status(STATUS_RUNNING)
+		self.allow_cancel(True) # TODO: sure ?
+		self.percentage(None)
+
+		myopts = {} # TODO: --nodepends ?
+		spinner = ""
+		favorites = []
+		settings, trees, mtimedb = _emerge.load_emerge_config()
+		spinner = _emerge.stdout_spinner()
+		rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"], portage._sets.load_default_config(self.portage_settings, trees["/"]))
+		# setconfig ?
+		if "resume" not in mtimedb:
+			mtimedb["resume"] = mtimedb["resume_backup"]
+			del mtimedb["resume_backup"]
+
+		for pkg in pkgs:
+			# check for installed is not mandatory as there are a lot of reason
+			# to re-install a package (USE/LDFLAGS/CFLAGS change for example) (or live)
+			# TODO: keep a final position
+			cpv = id_to_cpv(pkg)
+			db_keys = list(portage.portdb._aux_cache_keys)
+			metadata = izip(db_keys, portage.portdb.aux_get(cpv, db_keys))
+			package = _emerge.Package(type_name="ebuild", root_config=rootconfig, cpv=cpv, metadata=metadata)
+
+			mergetask = _emerge.Scheduler(settings, trees, mtimedb, myopts, spinner, [package], favorites, package)
+			mergetask.merge()
+
 
 	def resolve(self, filters, pkgs):
 		# TODO: filters
