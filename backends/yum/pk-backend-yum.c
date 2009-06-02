@@ -131,7 +131,7 @@ backend_get_filters (PkBackend *backend)
 static gchar *
 backend_get_mime_types (PkBackend *backend)
 {
-	return g_strdup ("application/x-rpm");
+	return g_strdup ("application/x-rpm;application/x-servicepack");
 }
 
 /**
