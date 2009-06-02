@@ -1,8 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
- *
- * Licensed under the GNU General Public License Version 2
+ * Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,71 +14,47 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "config.h"
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <errno.h>
-
-#include <string.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-
-#include <sys/wait.h>
-#include <fcntl.h>
-
-#include <glib/gi18n.h>
+#include <glib.h>
+#include <glib-object.h>
 #include <dbus/dbus-glib.h>
 #include <NetworkManager.h>
 #include <libnm_glib.h>
 
 #include "egg-debug.h"
-#include "pk-network-nm.h"
+#include "egg-dbus-monitor.h"
+
+#include "pk-network-stack-nm.h"
+#include "pk-conf.h"
 #include "pk-marshal.h"
 
-static void     pk_network_nm_finalize		(GObject          *object);
-
-#define PK_NETWORK_NM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NETWORK_NM, PkNetworkNmPrivate))
-
-/* experimental code */
-#define PK_NETWORK_NM_GET_CONNECTION_TYPE	1
-
-/**
- * PkNetworkNmPrivate:
- *
- * Private #PkNetworkNm data
- **/
-struct _PkNetworkNmPrivate
+struct PkNetworkStackNmPrivate
 {
+	EggDbusMonitor		*dbus_monitor;
+	PkConf			*conf;
 	libnm_glib_ctx		*ctx;
 	guint			 callback_id;
 	DBusGConnection		*bus;
+	gboolean		 is_enabled;
 };
 
-enum {
-	PK_NETWORK_NM_STATE_CHANGED,
-	PK_NETWORK_NM_LAST_SIGNAL
-};
-
-static guint signals [PK_NETWORK_NM_LAST_SIGNAL] = { 0 };
-
-G_DEFINE_TYPE (PkNetworkNm, pk_network_nm, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkNetworkStackNm, pk_network_stack_nm, PK_TYPE_NETWORK_STACK)
+#define PK_NETWORK_STACK_NM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NETWORK_STACK_NM, PkNetworkStackNmPrivate))
 
 /**
- * pk_network_nm_prioritise_connection_type:
+ * pk_network_stack_nm_prioritise_connection_type:
  *
  * GSM is more important than ethernet, so if we are using an
  * important connection even bridged we should prioritise it
  **/
 static NMDeviceType
-pk_network_nm_prioritise_connection_type (NMDeviceType type_old, NMDeviceType type_new)
+pk_network_stack_nm_prioritise_connection_type (NMDeviceType type_old, NMDeviceType type_new)
 {
 	NMDeviceType type = type_old;
 	/* by sheer fluke we can use the enum ordering */
@@ -90,10 +64,10 @@ pk_network_nm_prioritise_connection_type (NMDeviceType type_old, NMDeviceType ty
 }
 
 /**
- * pk_network_nm_get_active_connection_type_for_device:
+ * pk_network_stack_nm_get_active_connection_type_for_device:
  **/
 static NMDeviceType
-pk_network_nm_get_active_connection_type_for_device (PkNetworkNm *network_nm, const gchar *device)
+pk_network_stack_nm_get_active_connection_type_for_device (PkNetworkStackNm *nstack_nm, const gchar *device)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -102,7 +76,7 @@ pk_network_nm_get_active_connection_type_for_device (PkNetworkNm *network_nm, co
 	NMDeviceType type = NM_DEVICE_TYPE_UNKNOWN;
 
 	/* get if the device is default */
-	proxy = dbus_g_proxy_new_for_name (network_nm->priv->bus, "org.freedesktop.NetworkManager",
+	proxy = dbus_g_proxy_new_for_name (nstack_nm->priv->bus, "org.freedesktop.NetworkManager",
 					   device, "org.freedesktop.DBus.Properties");
 	ret = dbus_g_proxy_call (proxy, "Get", &error,
 				 G_TYPE_STRING, "org.freedesktop.NetworkManager.Device",
@@ -123,10 +97,10 @@ out:
 }
 
 /**
- * pk_network_nm_get_active_connection_type_for_connection:
+ * pk_network_stack_nm_get_active_connection_type_for_connection:
  **/
 static NMDeviceType
-pk_network_nm_get_active_connection_type_for_connection (PkNetworkNm *network_nm, const gchar *active_connection)
+pk_network_stack_nm_get_active_connection_type_for_connection (PkNetworkStackNm *nstack_nm, const gchar *active_connection)
 {
 	guint i;
 	gboolean ret;
@@ -142,7 +116,7 @@ pk_network_nm_get_active_connection_type_for_connection (PkNetworkNm *network_nm
 
 
 	/* get if the device is default */
-	proxy = dbus_g_proxy_new_for_name (network_nm->priv->bus, "org.freedesktop.NetworkManager",
+	proxy = dbus_g_proxy_new_for_name (nstack_nm->priv->bus, "org.freedesktop.NetworkManager",
 					   active_connection, "org.freedesktop.DBus.Properties");
 	ret = dbus_g_proxy_call (proxy, "Get", &error,
 				 G_TYPE_STRING, "org.freedesktop.NetworkManager.Connection.Active",
@@ -183,8 +157,8 @@ pk_network_nm_get_active_connection_type_for_connection (PkNetworkNm *network_nm
 	/* find the types of the active connection */
 	for (i=0; i<devices->len; i++) {
 		device = g_ptr_array_index (devices, i);
-		type_tmp = pk_network_nm_get_active_connection_type_for_device (network_nm, device);
-		type = pk_network_nm_prioritise_connection_type (type, type_tmp);
+		type_tmp = pk_network_stack_nm_get_active_connection_type_for_device (nstack_nm, device);
+		type = pk_network_stack_nm_prioritise_connection_type (type, type_tmp);
 	}
 
 out:
@@ -193,10 +167,10 @@ out:
 }
 
 /**
- * pk_network_nm_get_active_connection_type:
+ * pk_network_stack_nm_get_active_connection_type:
  **/
 static NMDeviceType
-pk_network_nm_get_active_connection_type (PkNetworkNm *network_nm)
+pk_network_stack_nm_get_active_connection_type (PkNetworkStackNm *nstack_nm)
 {
 	guint i;
 	gboolean ret;
@@ -209,7 +183,7 @@ pk_network_nm_get_active_connection_type (PkNetworkNm *network_nm)
 	NMDeviceType type = NM_DEVICE_TYPE_UNKNOWN;
 
 	/* get proxy */
-	proxy = dbus_g_proxy_new_for_name (network_nm->priv->bus, "org.freedesktop.NetworkManager",
+	proxy = dbus_g_proxy_new_for_name (nstack_nm->priv->bus, "org.freedesktop.NetworkManager",
 					   "/org/freedesktop/NetworkManager",
 					   "org.freedesktop.DBus.Properties");
 	ret = dbus_g_proxy_call (proxy, "Get", &error,
@@ -232,8 +206,8 @@ pk_network_nm_get_active_connection_type (PkNetworkNm *network_nm)
 	/* find the active connection */
 	for (i=0; i<active_connections->len; i++) {
 		active_connection = g_ptr_array_index (active_connections, i);
-		type_tmp = pk_network_nm_get_active_connection_type_for_connection (network_nm, active_connection);
-		type = pk_network_nm_prioritise_connection_type (type, type_tmp);
+		type_tmp = pk_network_stack_nm_get_active_connection_type_for_connection (nstack_nm, active_connection);
+		type = pk_network_stack_nm_prioritise_connection_type (type, type_tmp);
 	}
 
 out:
@@ -244,26 +218,18 @@ out:
 }
 
 /**
- * pk_network_nm_get_network_state:
- * @network_nm: a valid #PkNetworkNm instance
- *
- * Return value: %TRUE if the network_nm is online
+ * pk_network_stack_nm_get_state:
  **/
-PkNetworkEnum
-pk_network_nm_get_network_state (PkNetworkNm *network_nm)
+static PkNetworkEnum
+pk_network_stack_nm_get_state (PkNetworkStack *nstack)
 {
 	PkNetworkEnum ret;
-#ifdef PK_NETWORK_NM_GET_CONNECTION_TYPE
 	NMDeviceType type;
-#else
-	libnm_glib_state state;
-#endif
 
-	g_return_val_if_fail (PK_IS_NETWORK_NM (network_nm), PK_NETWORK_ENUM_UNKNOWN);
+	PkNetworkStackNm *nstack_nm = PK_NETWORK_STACK_NM (nstack);
 
-#ifdef PK_NETWORK_NM_GET_CONNECTION_TYPE
 	/* get connection type */
-	type = pk_network_nm_get_active_connection_type (network_nm);
+	type = pk_network_stack_nm_get_active_connection_type (nstack_nm);
 	switch (type) {
 	case NM_DEVICE_TYPE_UNKNOWN:
 		ret = PK_NETWORK_ENUM_OFFLINE;
@@ -281,112 +247,136 @@ pk_network_nm_get_network_state (PkNetworkNm *network_nm)
 	default:
 		ret = PK_NETWORK_ENUM_ONLINE;
 	}
-#else
-	state = libnm_glib_get_network_state (network_nm->priv->ctx);
-	switch (state) {
-	case LIBNM_NO_NETWORK_CONNECTION:
-		ret = PK_NETWORK_ENUM_OFFLINE;
-		break;
-	default:
-		ret = PK_NETWORK_ENUM_ONLINE;
-	}
-#endif
+
 	egg_debug ("network state is %s", pk_network_enum_to_text (ret));
 	return ret;
 }
 
 /**
- * pk_network_nm_nm_changed_cb:
+ * pk_network_stack_nm_nm_changed_cb:
  **/
 static void
-pk_network_nm_nm_changed_cb (libnm_glib_ctx *libnm_ctx, gpointer data)
+pk_network_stack_nm_nm_changed_cb (libnm_glib_ctx *libnm_ctx, gpointer data)
 {
 	PkNetworkEnum state;
-	PkNetworkNm *network_nm = (PkNetworkNm *) data;
+	PkNetworkStackNm *nstack_nm = (PkNetworkStackNm *) data;
 
-	g_return_if_fail (PK_IS_NETWORK_NM (network_nm));
+	g_return_if_fail (PK_IS_NETWORK_STACK_NM (nstack_nm));
 
-	state = pk_network_nm_get_network_state (network_nm);
-	g_signal_emit (network_nm, signals [PK_NETWORK_NM_STATE_CHANGED], 0, state);
+	/* do not use */
+	if (!nstack_nm->priv->is_enabled) {
+		egg_debug ("not enabled, so ignoring");
+		return;
+	}
+
+	state = pk_network_stack_nm_get_state (PK_NETWORK_STACK (nstack_nm));
+	egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_text (state));
+	g_signal_emit_by_name (PK_NETWORK_STACK (nstack_nm), "state-changed", state);
 }
 
 /**
- * pk_network_nm_class_init:
- * @klass: The PkNetworkNmClass
+ * pk_network_stack_nm_is_enabled:
+ *
+ * Return %TRUE on success, %FALSE if we failed to is_enabled or no data
  **/
-static void
-pk_network_nm_class_init (PkNetworkNmClass *klass)
+static gboolean
+pk_network_stack_nm_is_enabled (PkNetworkStack *nstack)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = pk_network_nm_finalize;
-	signals [PK_NETWORK_NM_STATE_CHANGED] =
-		g_signal_new ("state-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	g_type_class_add_private (klass, sizeof (PkNetworkNmPrivate));
+	PkNetworkStackNm *nstack_nm = PK_NETWORK_STACK_NM (nstack);
+	return nstack_nm->priv->is_enabled;
 }
 
 /**
- * pk_network_nm_init:
- * @network_nm: This class instance
+ * pk_network_stack_nm_init:
  **/
 static void
-pk_network_nm_init (PkNetworkNm *network_nm)
+pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 {
 	GError *error = NULL;
 	GMainContext *context;
+	gboolean service_alive;
 
-	network_nm->priv = PK_NETWORK_NM_GET_PRIVATE (network_nm);
+	nstack_nm->priv = PK_NETWORK_STACK_NM_GET_PRIVATE (nstack_nm);
+	nstack_nm->priv->conf = pk_conf_new ();
+
+	/* do we use this code? */
+	nstack_nm->priv->is_enabled = pk_conf_get_bool (nstack_nm->priv->conf, "UseNetworkManager");
+
+	/* register with callback */
 	context = g_main_context_default ();
-	network_nm->priv->ctx = libnm_glib_init ();
-	network_nm->priv->callback_id =
-		libnm_glib_register_callback (network_nm->priv->ctx,
-					      pk_network_nm_nm_changed_cb,
-					      network_nm, context);
+	nstack_nm->priv->ctx = libnm_glib_init ();
+	nstack_nm->priv->callback_id =
+		libnm_glib_register_callback (nstack_nm->priv->ctx,
+					      pk_network_stack_nm_nm_changed_cb,
+					      nstack_nm, context);
 
 	/* get system connection */
-	network_nm->priv->bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
-	if (network_nm->priv->bus == NULL) {
+	nstack_nm->priv->bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
+	if (nstack_nm->priv->bus == NULL) {
 		egg_warning ("Couldn't connect to system bus: %s", error->message);
 		g_error_free (error);
+	}
+
+	/* check if NM is on the bus */
+	nstack_nm->priv->dbus_monitor = egg_dbus_monitor_new ();
+	egg_dbus_monitor_assign (nstack_nm->priv->dbus_monitor, EGG_DBUS_MONITOR_SYSTEM, "org.freedesktop.NetworkManager");
+	service_alive = egg_dbus_monitor_is_connected (nstack_nm->priv->dbus_monitor);
+
+	/* NetworkManager isn't up, so we can't use it */
+	if (nstack_nm->priv->is_enabled && !service_alive) {
+		egg_warning ("UseNetworkManager true, but org.freedesktop.NetworkManager not up");
+		nstack_nm->priv->is_enabled = FALSE;
 	}
 }
 
 /**
- * pk_network_nm_finalize:
- * @object: The object to finalize
+ * pk_network_stack_nm_finalize:
  **/
 static void
-pk_network_nm_finalize (GObject *object)
+pk_network_stack_nm_finalize (GObject *object)
 {
-	PkNetworkNm *network_nm;
+	PkNetworkStackNm *nstack_nm;
+
 	g_return_if_fail (object != NULL);
-	g_return_if_fail (PK_IS_NETWORK_NM (object));
-	network_nm = PK_NETWORK_NM (object);
+	g_return_if_fail (PK_IS_NETWORK_STACK_NM (object));
 
-	g_return_if_fail (network_nm->priv != NULL);
+	nstack_nm = PK_NETWORK_STACK_NM (object);
+	g_return_if_fail (nstack_nm->priv != NULL);
 
-	libnm_glib_unregister_callback (network_nm->priv->ctx, network_nm->priv->callback_id);
-	libnm_glib_shutdown (network_nm->priv->ctx);
+	g_object_unref (nstack_nm->priv->conf);
+	g_object_unref (nstack_nm->priv->dbus_monitor);
+	libnm_glib_unregister_callback (nstack_nm->priv->ctx, nstack_nm->priv->callback_id);
+	libnm_glib_shutdown (nstack_nm->priv->ctx);
 
 	/* be paranoid */
-	network_nm->priv->ctx = NULL;
-	network_nm->priv->callback_id = 0;
+	nstack_nm->priv->ctx = NULL;
+	nstack_nm->priv->callback_id = 0;
 
-	G_OBJECT_CLASS (pk_network_nm_parent_class)->finalize (object);
+	G_OBJECT_CLASS (pk_network_stack_nm_parent_class)->finalize (object);
 }
 
 /**
- * pk_network_nm_new:
- *
- * Return value: a new PkNetworkNm object.
+ * pk_network_stack_nm_class_init:
  **/
-PkNetworkNm *
-pk_network_nm_new (void)
+static void
+pk_network_stack_nm_class_init (PkNetworkStackNmClass *klass)
 {
-	PkNetworkNm *network_nm;
-	network_nm = g_object_new (PK_TYPE_NETWORK_NM, NULL);
-	return PK_NETWORK_NM (network_nm);
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	PkNetworkStackClass *nstack_class = PK_NETWORK_STACK_CLASS (klass);
+
+	object_class->finalize = pk_network_stack_nm_finalize;
+	nstack_class->get_state = pk_network_stack_nm_get_state;
+	nstack_class->is_enabled = pk_network_stack_nm_is_enabled;
+
+	g_type_class_add_private (klass, sizeof (PkNetworkStackNmPrivate));
+}
+
+/**
+ * pk_network_stack_nm_new:
+ **/
+PkNetworkStackNm *
+pk_network_stack_nm_new (void)
+{
+	return g_object_new (PK_TYPE_NETWORK_STACK_NM, NULL);
 }
 
