@@ -278,6 +278,19 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
 }
 
 /**
+ * pk_backend_search_group:
+ */
+static void
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+{ 
+  gchar *filters_text;
+
+  filters_text = pk_filter_bitfield_to_text (filters);
+  pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-group", filters_text, search, NULL);
+  g_free (filters_text);
+}
+
+/**
  * backend_search_name:
  */
 static void
@@ -354,7 +367,7 @@ PK_BACKEND_OPTIONS (
 	NULL,			/* rollback */
 	NULL, //TODO			/* search_details */
 	backend_search_file,			/* search_file */
-	NULL, //TODO			/* search_group */
+	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
