@@ -2201,6 +2201,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         md = self.updateMetadata
         for pkg in unique(pkgs):
             if pkgfilter.pre_process(pkg):
+                # we pre-get the ChangeLog data so that the changes file is
+                # downloaded at GetUpdates time, not when we open the GUI
+                changelog = pkg.returnChangelog()
+
                 # Get info about package in updates info
                 notice = md.get_notice((pkg.name, pkg.version, pkg.release))
                 if notice:
