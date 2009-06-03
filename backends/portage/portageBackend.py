@@ -241,23 +241,34 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		settings, trees, mtimedb = _emerge.load_emerge_config()
 		spinner = _emerge.stdout_spinner()
 		rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"], portage._sets.load_default_config(self.portage_settings, trees["/"]))
-		# setconfig ?
-		if "resume" not in mtimedb:
-			mtimedb["resume"] = mtimedb["resume_backup"]
-			del mtimedb["resume_backup"]
+
+		if "resume" in mtimedb and \
+		"mergelist" in mtimedb["resume"] and \
+		len(mtimedb["resume"]["mergelist"]) > 1:
+			mtimedb["resume_backup"] = mtimedb["resume"]
+			del mtimedb["resume"]
+			mtimedb.commit()
+
+		mtimedb["resume"]={}
+		mtimedb["resume"]["myopts"] = myopts.copy()
+		mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
 
 		for pkg in pkgs:
 			# check for installed is not mandatory as there are a lot of reason
-			# to re-install a package (USE/LDFLAGS/CFLAGS change for example) (or live)
+			# to re-install a package (USE/{LD,C}FLAGS change for example) (or live)
 			# TODO: keep a final position
 			cpv = id_to_cpv(pkg)
 			db_keys = list(portage.portdb._aux_cache_keys)
 			metadata = izip(db_keys, portage.portdb.aux_get(cpv, db_keys))
-			package = _emerge.Package(type_name="ebuild", root_config=rootconfig, cpv=cpv, metadata=metadata)
+			package = _emerge.Package(type_name="ebuild", root_config=rootconfig, cpv=cpv, metadata=metadata, operation="merge")
+
+			# TODO: needed ?
+			pkgsettings = portage.config(clone=settings)
+			pkgsettings.setcpv(package)
+			package.metadata['USE'] = pkgsettings['PORTAGE_USE']
 
 			mergetask = _emerge.Scheduler(settings, trees, mtimedb, myopts, spinner, [package], favorites, package)
 			mergetask.merge()
-
 
 	def resolve(self, filters, pkgs):
 		# TODO: filters
