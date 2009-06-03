@@ -374,10 +374,9 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 
 	/* have we already scheduled priority? */
 	if (engine->priv->signal_state_priority_timeout != 0) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
-			     "Already asked to refresh priority state less than %i seconds ago",
+		egg_warning ("Already asked to refresh priority state less than %i seconds ago",
 			     PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT);
-		return FALSE;
+		goto out;
 	}
 
 	/* don't bombard the user 10 seconds after resuming */
@@ -386,10 +385,9 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 
 	/* are we normal, and already scheduled normal? */
 	if (!is_priority && engine->priv->signal_state_normal_timeout != 0) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
-			     "Already asked to refresh normal state less than %i seconds ago",
+		egg_warning ("Already asked to refresh normal state less than %i seconds ago",
 			     PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT);
-		return FALSE;
+		goto out;
 	}
 
 	/* are we priority, and already scheduled normal? */
@@ -408,7 +406,7 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
-
+out:
 	return TRUE;
 }
 
