@@ -166,6 +166,12 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
+PKG_CHECK_MODULES(GIO, \
+ gio-2.0 >= $GIO_REQUIRED \
+ gio-unix-2.0 >= $DBUS_REQUIRED)
+AC_SUBST(GIO_CFLAGS)
+AC_SUBST(GIO_LIBS)
+
 dnl ---------------------------------------------------------------------------
 dnl - Build PackageKit-Qt
 dnl ---------------------------------------------------------------------------
@@ -257,22 +263,6 @@ dnl ---------------------------------------------------------------------------
 dnl - moc (for packagekit-qt)
 dnl ---------------------------------------------------------------------------
 AC_PATH_PROG([MOC], [moc-qt4])
-
-dnl ---------------------------------------------------------------------------
-dnl - Is GIO available?
-dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(GIO, gio-2.0 >= $GIO_REQUIRED gio-unix-2.0 >= $GIO_REQUIRED, PK_BUILD_GIO="yes", PK_BUILD_GIO="no")
-if test "x$PK_BUILD_GIO" = "xyes"; then
-	with_gio="yes"
-	AC_DEFINE(PK_BUILD_GIO, 1, [define if GIO is installed])
-else
-	with_gio="no"
-	PK_BUILD_GIO=no
-fi
-
-AM_CONDITIONAL(PK_BUILD_GIO, test x$PK_BUILD_GIO = xyes)
-AC_SUBST(GIO_CFLAGS)
-AC_SUBST(GIO_LIBS)
 
 # unix networking stack always available
 networking_apis="unix"
@@ -784,7 +774,6 @@ echo "
         Developer warnings:        ${enable_developer}
         Security framework:        ${with_security_framework}
         Networking stacks:         ${networking_apis}
-        GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
         Pango module:              ${build_gtk_module}
