@@ -13,6 +13,9 @@ AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
+# enable nice build output on automake1.11
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+
 PK_MAJOR_VERSION=pk_major_version
 PK_MINOR_VERSION=pk_minor_version
 PK_MICRO_VERSION=pk_micro_version
