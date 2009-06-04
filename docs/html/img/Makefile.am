@@ -17,6 +17,10 @@ IMAGE_FILES =					\
 	author-tomparker.png			\
 	author-unknown.png			\
 	author-zodman.png			\
+	users-fedora.png			\
+	users-foresight.png			\
+	users-kubuntu.png			\
+	users-moblin.png			\
 	dialog-information.png			\
 	gpk-added-deps.png			\
 	gpk-application-groups.png		\
@@ -64,6 +68,7 @@ IMAGE_FILES =					\
 	large-help-browser.png			\
 	large-preferences-system.png		\
 	large-system-users.png			\
+	large-application-certificate.png	\
 	packagekit.png				\
 	pk-command-not-found.png		\
 	pk-opensuse-updater.png			\
