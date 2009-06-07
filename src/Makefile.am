@@ -86,6 +86,7 @@ shared_SOURCES =					\
 	pk-sysdep.h					\
 	pk-sysdep.c					\
 	pk-file-monitor.h				\
+	pk-file-monitor.c				\
 	pk-engine.h					\
 	pk-engine.c					\
 	pk-inhibit.h					\
@@ -106,16 +107,6 @@ endif
 if PK_BUILD_CONNMAN
 shared_SOURCES +=					\
 	pk-network-stack-connman.c
-endif
-
-if PK_BUILD_GIO
-shared_SOURCES +=					\
-	pk-file-monitor-gio.c				\
-	$(NULL)
-else
-shared_SOURCES +=					\
-	pk-file-monitor-dummy.c				\
-	$(NULL)
 endif
 
 if SECURITY_TYPE_POLKIT

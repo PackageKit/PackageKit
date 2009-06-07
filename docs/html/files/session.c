@@ -11,7 +11,7 @@ main (int argc, char *argv[])
 	GError *error = NULL;
 	gboolean ret;
 	guint32 xid = 0;
-	guint32 timestamp = 0;
+	const gchar *packages[] = {"openoffice-clipart", "openoffice-clipart-extras", NULL};
 
 	/* init the types system */
 	g_type_init ();
@@ -23,13 +23,13 @@ main (int argc, char *argv[])
 	proxy = dbus_g_proxy_new_for_name (connection,
 					   "org.freedesktop.PackageKit",
 					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.PackageKit");
+					   "org.freedesktop.PackageKit.Modify");
 
 	/* execute sync method */
-	ret = dbus_g_proxy_call (proxy, "InstallPackageName", &error,
+	ret = dbus_g_proxy_call (proxy, "InstallPackageNames", &error,
 				 G_TYPE_UINT, xid, /* window xid, 0 for none */
-				 G_TYPE_UINT, timestamp, /* action timestamp,, 0 for unknown */
-				 G_TYPE_STRING, "openoffice-clipart",
+				 G_TYPE_STRV, packages,
+				 G_TYPE_STRING, "show-confirm-search,hide-finished",
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (!ret) {
 		g_warning ("failed: %s", error->message);

@@ -40,6 +40,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
+#include <gio/gio.h>
 #include <packagekit-glib/packagekit.h>
 
 #include "egg-debug.h"
@@ -217,6 +218,7 @@ pk_transaction_error_get_type (void)
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INITIALIZE_FAILED, "InitializeFailed"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_COMMIT_FAILED, "CommitFailed"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_PACK_INVALID, "PackInvalid"),
+			ENUM_ENTRY (PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED, "MimeTypeNotSupported"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INVALID_PROVIDE, "InvalidProvide"),
 			{ 0, NULL, NULL }
 		};
@@ -2531,6 +2533,63 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 }
 
 /**
+ * pk_transaction_get_content_type_for_file:
+ **/
+static gchar *
+pk_transaction_get_content_type_for_file (const gchar *filename, GError **error)
+{
+	GError *error_local = NULL;
+	GFile *file;
+	GFileInfo *info;
+	gchar *content_type = NULL;
+
+	/* get file info synchronously */
+	file = g_file_new_for_path (filename);
+	info = g_file_query_info (file, "standard::content-type", G_FILE_QUERY_INFO_NONE, NULL, &error_local);
+	if (info == NULL) {
+		*error = g_error_new (1, 0, "failed to get file attributes for %s: %s", filename, error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* get content type as string */
+	content_type = g_file_info_get_attribute_as_string (info, "standard::content-type");
+out:
+	if (info != NULL)
+		g_object_unref (info);
+	g_object_unref (file);
+	return content_type;
+}
+
+/**
+ * pk_transaction_is_supported_content_type:
+ **/
+static gboolean
+pk_transaction_is_supported_content_type (PkTransaction *transaction, const gchar *content_type)
+{
+	guint i;
+	gboolean ret = FALSE;
+	gchar *mime_types_str;
+	gchar **mime_types;
+
+	/* get list of mime types supported by backends */
+	mime_types_str = pk_backend_get_mime_types (transaction->priv->backend);
+	mime_types = g_strsplit (mime_types_str, ";", -1);
+
+	/* can we support this one? */
+	for (i=0; mime_types[i] != NULL; i++) {
+		if (g_strcmp0 (mime_types[i], content_type) == 0) {
+			ret = TRUE;
+			break;
+		}
+	}
+
+	g_free (mime_types_str);
+	g_strfreev (mime_types);
+	return ret;
+}
+
+/**
  * pk_transaction_install_files:
  **/
 void
@@ -2542,6 +2601,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	GError *error;
 	GError *error_local = NULL;
 	PkServicePack *service_pack;
+	gchar *content_type;
 	guint length;
 	guint i;
 
@@ -2582,6 +2642,28 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 			pk_transaction_dbus_return_error (context, error);
 			return;
 		}
+
+		/* get content type */
+		content_type = pk_transaction_get_content_type_for_file (full_paths[i], &error_local);
+		if (content_type == NULL) {
+			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					     "Failed to get content type for file %s", full_paths[i]);
+			pk_transaction_release_tid (transaction);
+			pk_transaction_dbus_return_error (context, error);
+			return;
+		}
+
+		/* supported content type? */
+		ret = pk_transaction_is_supported_content_type (transaction, content_type);
+		g_free (content_type);
+		if (!ret) {
+			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
+					     "MIME type not supported %s", full_paths[i]);
+			pk_transaction_release_tid (transaction);
+			pk_transaction_dbus_return_error (context, error);
+			return;
+		}
+
 		/* valid */
 		if (g_str_has_suffix (full_paths[i], ".servicepack")) {
 			service_pack = pk_service_pack_new ();

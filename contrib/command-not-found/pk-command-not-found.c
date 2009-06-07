@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <string.h>
+#include <locale.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 #include <packagekit-glib/packagekit.h>

@@ -13,6 +13,9 @@ AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
+# enable nice build output on automake1.11
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+
 PK_MAJOR_VERSION=pk_major_version
 PK_MINOR_VERSION=pk_minor_version
 PK_MICRO_VERSION=pk_micro_version
@@ -69,6 +72,7 @@ dnl ---------------------------------------------------------------------------
 CPPFLAGS="$CPPFLAGS -DG_DISABLE_SINGLE_INCLUDES -DGTK_DISABLE_SINGLE_INCLUDES"
 CPPFLAGS="$CPPFLAGS -DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED"
 CPPFLAGS="$CPPFLAGS -DGDK_MULTIHEAD_SAFE -DGTK_MULTIHEAD_SAFE"
+CPPFLAGS="$CPPFLAGS -DGSEAL_ENABLE"
 
 if test "$GCC" = "yes"; then
 	# work both in C and C++
@@ -163,6 +167,12 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
+PKG_CHECK_MODULES(GIO, \
+ gio-2.0 >= $GIO_REQUIRED \
+ gio-unix-2.0 >= $DBUS_REQUIRED)
+AC_SUBST(GIO_CFLAGS)
+AC_SUBST(GIO_LIBS)
+
 dnl ---------------------------------------------------------------------------
 dnl - Build PackageKit-Qt
 dnl ---------------------------------------------------------------------------
@@ -254,22 +264,6 @@ dnl ---------------------------------------------------------------------------
 dnl - moc (for packagekit-qt)
 dnl ---------------------------------------------------------------------------
 AC_PATH_PROG([MOC], [moc-qt4])
-
-dnl ---------------------------------------------------------------------------
-dnl - Is GIO available?
-dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(GIO, gio-2.0 >= $GIO_REQUIRED gio-unix-2.0 >= $GIO_REQUIRED, PK_BUILD_GIO="yes", PK_BUILD_GIO="no")
-if test "x$PK_BUILD_GIO" = "xyes"; then
-	with_gio="yes"
-	AC_DEFINE(PK_BUILD_GIO, 1, [define if GIO is installed])
-else
-	with_gio="no"
-	PK_BUILD_GIO=no
-fi
-
-AM_CONDITIONAL(PK_BUILD_GIO, test x$PK_BUILD_GIO = xyes)
-AC_SUBST(GIO_CFLAGS)
-AC_SUBST(GIO_LIBS)
 
 # unix networking stack always available
 networking_apis="unix"
@@ -781,7 +775,6 @@ echo "
         Developer warnings:        ${enable_developer}
         Security framework:        ${with_security_framework}
         Networking stacks:         ${networking_apis}
-        GIO support:               ${with_gio}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
         Pango module:              ${build_gtk_module}
