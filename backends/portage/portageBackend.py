@@ -418,6 +418,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			# to re-install a package (USE/{LD,C}FLAGS change for example) (or live)
 			# TODO: keep a final position
 			cpv = id_to_cpv(pkg)
+
+			# is cpv valid
+			if not portage.portdb.cpv_exists(cpv):
+				self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkgid)
+				continue
+
 			db_keys = list(portage.portdb._aux_cache_keys)
 			metadata = izip(db_keys, portage.portdb.aux_get(cpv, db_keys))
 			package = _emerge.Package(type_name="ebuild", root_config=rootconfig, cpv=cpv, metadata=metadata, operation="merge")
@@ -429,6 +435,73 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			mergetask = _emerge.Scheduler(settings, trees, mtimedb, myopts, spinner, [package], favorites, package)
 			mergetask.merge()
+
+	def remove_packages(self, allowdep, pkgs):
+		# can't use allowdep: never removing dep
+		# TODO: filters ?
+		self.status(STATUS_RUNNING)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		for pkg in pkgs:
+			cpv = id_to_cpv(pkg)
+
+			# is cpv valid
+			if not portage.portdb.cpv_exists(cpv):
+				self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
+				continue
+
+			# is package installed
+			if not self.vardb.match(cpv):
+				self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package %s is not installed" % pkg)
+				continue
+
+			# operation = unmerge
+			# PackageUninstall
+#			portage.PackageUninstall(
+			myopts = {} # TODO: --nodepends ?
+			spinner = ""
+			favorites = []
+			settings, trees, mtimedb = _emerge.load_emerge_config()
+			spinner = _emerge.stdout_spinner()
+			rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"], portage._sets.load_default_config(self.portage_settings, trees["/"]))
+
+			if "resume" in mtimedb and \
+			"mergelist" in mtimedb["resume"] and \
+			len(mtimedb["resume"]["mergelist"]) > 1:
+				mtimedb["resume_backup"] = mtimedb["resume"]
+				del mtimedb["resume"]
+				mtimedb.commit()
+
+			mtimedb["resume"]={}
+			mtimedb["resume"]["myopts"] = myopts.copy()
+			mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
+
+			db_keys = list(portage.portdb._aux_cache_keys)
+			metadata = izip(db_keys, portage.portdb.aux_get(cpv, db_keys))
+			package = _emerge.Package(type_name="ebuild",
+					root_config=rootconfig,
+					cpv=cpv, metadata=metadata,
+					operation="uninstall")
+
+			# TODO: needed ?
+			pkgsettings = portage.config(clone=settings)
+			pkgsettings.setcpv(package)
+			package.metadata['USE'] = pkgsettings['PORTAGE_USE']
+
+			#scheduler = _emerge.QueueScheduler()
+			#scheduler = _emerge.Scheduler(settings, trees, mtimedb, myopts, spinner, [package], favorites, package)
+			#scheduler = scheduler._sched_iface
+			#scheduler._background = scheduler._background_model()
+			scheduler = None
+
+			#mergetask = _emerge.Scheduler(settings, trees, mtimedb, myopts, spinner, [package], favorites, package)
+			#mergetask.merge()
+			uninstall = _emerge.PackageUninstall(background=1,
+					ldpath_mtimes=mtimedb["ldpath"], opts=myopts,
+					pkg=package, scheduler=scheduler, settings=settings)
+			uninstall.start()
+			uninstall.wait()
 
 	def resolve(self, filters, pkgs):
 		# TODO: filters

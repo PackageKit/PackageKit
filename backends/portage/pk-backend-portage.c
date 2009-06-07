@@ -188,16 +188,6 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_requires:
- */
-static void
-backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
-{
-	egg_debug ("backend: requires");
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_get_update_detail:
  */
 static void
@@ -244,8 +234,12 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	egg_debug ("backend: remove packages");
-	pk_backend_finished (backend);
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "remove-packages", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -353,7 +347,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,			/* get_repo_list */
-	backend_get_requires,			/* get_requires */
+	NULL, // TODO			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
