@@ -453,18 +453,18 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			# is package installed
 			if not self.vardb.match(cpv):
-				self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package %s is not installed" % pkg)
+				self.error(ERROR_PACKAGE_NOT_INSTALLED,
+						"Package %s is not installed" % pkg)
 				continue
 
-			# operation = unmerge
-			# PackageUninstall
-#			portage.PackageUninstall(
 			myopts = {} # TODO: --nodepends ?
 			spinner = ""
 			favorites = []
 			settings, trees, mtimedb = _emerge.load_emerge_config()
 			spinner = _emerge.stdout_spinner()
-			rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"], portage._sets.load_default_config(self.portage_settings, trees["/"]))
+			rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"],
+					portage._sets.load_default_config(self.portage_settings, trees["/"])
+					)
 
 			if "resume" in mtimedb and \
 			"mergelist" in mtimedb["resume"] and \
@@ -479,9 +479,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			db_keys = list(portage.portdb._aux_cache_keys)
 			metadata = izip(db_keys, portage.portdb.aux_get(cpv, db_keys))
-			package = _emerge.Package(type_name="ebuild",
+			package = _emerge.Package(
+					type_name="ebuild",
+					built=True,
+					installed=True,
 					root_config=rootconfig,
-					cpv=cpv, metadata=metadata,
+					cpv=cpv,
+					metadata=metadata,
 					operation="uninstall")
 
 			# TODO: needed ?
@@ -489,19 +493,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			pkgsettings.setcpv(package)
 			package.metadata['USE'] = pkgsettings['PORTAGE_USE']
 
-			#scheduler = _emerge.QueueScheduler()
-			#scheduler = _emerge.Scheduler(settings, trees, mtimedb, myopts, spinner, [package], favorites, package)
-			#scheduler = scheduler._sched_iface
-			#scheduler._background = scheduler._background_model()
-			scheduler = None
-
-			#mergetask = _emerge.Scheduler(settings, trees, mtimedb, myopts, spinner, [package], favorites, package)
-			#mergetask.merge()
-			uninstall = _emerge.PackageUninstall(background=1,
-					ldpath_mtimes=mtimedb["ldpath"], opts=myopts,
-					pkg=package, scheduler=scheduler, settings=settings)
-			uninstall.start()
-			uninstall.wait()
+			mergetask = _emerge.Scheduler(settings,
+					trees, mtimedb, myopts, spinner, [package], favorites, package)
+			mergetask.merge()
 
 	def resolve(self, filters, pkgs):
 		# TODO: filters
