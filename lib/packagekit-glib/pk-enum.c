@@ -173,6 +173,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,	"no-space-on-device"},
 	{PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,	"media-change-required"},
 	{PK_ERROR_ENUM_NOT_AUTHORIZED,		"not-authorized"},
+	{PK_ERROR_ENUM_UPDATE_NOT_FOUND,	"update-not-found"},
 	{0, NULL}
 };
 
