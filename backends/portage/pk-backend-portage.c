@@ -99,11 +99,6 @@ backend_get_groups (PkBackend *backend)
 static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
-	/*
-	 * TODO: set filter list
-	 */
-	egg_debug ("backend: get_filters");
-
 	return pk_bitfield_from_enums (
 			//PK_FILTER_ENUM_NONE,
 			PK_FILTER_ENUM_INSTALLED,
@@ -113,7 +108,7 @@ backend_get_filters (PkBackend *backend)
 			//PK_FILTER_ENUM_VISIBLE,
 			//PK_FILTER_ENUM_SUPPORTED,
 			//PK_FILTER_ENUM_BASENAME,
-			//PK_FILTER_ENUM_NEWEST,
+			PK_FILTER_ENUM_NEWEST,
 			//PK_FILTER_ENUM_ARCH,
 			//PK_FILTER_ENUM_SOURCE,
 			//PK_FILTER_ENUM_COLLECTIONS,
@@ -234,9 +229,9 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
+	// TODO: autoremove ?
 	gchar *package_ids_temp;
 
-	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "remove-packages", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
 	g_free (package_ids_temp);
@@ -277,11 +272,11 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
 static void
 backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 { 
-  gchar *filters_text;
+	gchar *filters_text;
 
-  filters_text = pk_filter_bitfield_to_text (filters);
-  pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-group", filters_text, search, NULL);
-  g_free (filters_text);
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-group", filters_text, search, NULL);
+	g_free (filters_text);
 }
 
 /**
@@ -321,6 +316,22 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 }
 
 /**
+ * backend_get_requires:
+ */
+static void
+backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+{ 
+	gchar *package_ids_temp;
+	gchar *filters_text;
+
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	g_free (filters_text);
+	g_free (package_ids_temp);
+}
+
+/**
  * backend_update_system:
  */
 static void
@@ -347,7 +358,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,			/* get_repo_list */
-	NULL, // TODO			/* get_requires */
+	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */

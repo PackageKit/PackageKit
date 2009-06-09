@@ -390,6 +390,103 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			for cpv in portage.portdb.match(cp):
 				self.package(cpv)
 
+	def get_requires(self, filters, pkgs, recursive):
+		# TODO: filters
+		# TODO: recursive not implemented
+		# TODO: usefulness ? use cases
+		# TODO: work only on installed packages
+		self.status(STATUS_RUNNING)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		recursive = text_to_bool(recursive)
+
+		myopts = {}
+		myopts.pop("--verbose", None)
+		myopts["--verbose"] = True
+		spinner = ""
+		favorites = []
+		settings, trees, mtimedb = _emerge.load_emerge_config()
+		spinner = _emerge.stdout_spinner()
+		rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"],
+				portage._sets.load_default_config(self.portage_settings, trees["/"]))
+
+		for pkg in pkgs:
+			cpv = id_to_cpv(pkg)
+
+			# is cpv installed
+			# TODO: keep error msg ?
+			if not self.vardb.match(cpv):
+				self.error(ERROR_PACKAGE_NOT_INSTALLED,
+						"Package %s is not installed" % pkg)
+				return
+
+			required_set_names = ("system", "world")
+			required_sets = {}
+
+			args_set = portage._sets.base.InternalPackageSet()
+			args_set.update(["="+cpv]) # parameters is converted to atom
+			# or use portage.dep_expand
+
+			if not args_set:
+				self.error(ERROR_INTERNAL_ERROR, "Was not able to generate atoms")
+			
+			depgraph = _emerge.depgraph(settings, trees, myopts,
+					_emerge.create_depgraph_params(myopts, "remove"), spinner)
+			vardb = depgraph.trees["/"]["vartree"].dbapi
+
+			for s in required_set_names:
+				required_sets[s] = portage._sets.base.InternalPackageSet(
+						initial_atoms=rootconfig.setconfig.getSetAtoms(s))
+
+			# TODO: error/warning if world = null or system = null ?
+
+			# TODO: not sure it's needed. for deselect in emerge...
+			required_sets["world"].clear()
+			for pkg in vardb:
+				spinner.update()
+				try:
+					if args_set.findAtomForPackage(pkg) is None:
+						required_sets["world"].add("=" + pkg.cpv)
+				except portage.exception.InvalidDependString, e:
+					required_sets["world"].add("=" + pkg.cpv)
+
+			set_args = {}
+			for s, pkg_set in required_sets.iteritems():
+				set_atom = portage._sets.SETPREFIX + s
+				set_arg = _emerge.SetArg(arg=set_atom, set=pkg_set,
+						root_config=depgraph.roots[portage.settings["ROOT"]])
+				set_args[s] = set_arg
+				for atom in set_arg.set:
+					depgraph._dep_stack.append(
+							_emerge.Dependency(atom=atom, root=portage.settings["ROOT"],
+								parent=set_arg))
+					depgraph.digraph.add(set_arg, None)
+
+			if not depgraph._complete_graph():
+				self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
+
+			def cmp_pkg_cpv(pkg1, pkg2):
+				if pkg1.cpv > pkg2.cpv:
+					return 1
+				elif pkg1.cpv == pkg2.cpv:
+					return 0
+				else:
+					return -1
+
+			for pkg in sorted(vardb,
+					key=portage.util.cmp_sort_key(cmp_pkg_cpv)):
+				arg_atom = None
+				try:
+					arg_atom = args_set.findAtomForPackage(pkg)
+				except portage.exception.InvalidDependString:
+					continue
+
+				if arg_atom and pkg in depgraph.digraph:
+					parents = depgraph.digraph.parent_nodes(pkg)
+					for node in parents:
+						self.package(node[2])
+
 	def install_packages(self, pkgs):
 		self.status(STATUS_RUNNING)
 		self.allow_cancel(True) # TODO: sure ?
@@ -421,7 +518,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			# is cpv valid
 			if not portage.portdb.cpv_exists(cpv):
-				self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkgid)
+				self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
 				continue
 
 			db_keys = list(portage.portdb._aux_cache_keys)
