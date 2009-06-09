@@ -53,6 +53,7 @@
 gchar **
 pk_package_ids_from_id (const gchar *package_id)
 {
+	g_return_val_if_fail (package_id != NULL, NULL);
 	return g_strsplit (package_id, PK_PACKAGE_IDS_DELIM, 1);
 }
 
@@ -68,6 +69,7 @@ pk_package_ids_from_id (const gchar *package_id)
 gchar **
 pk_package_ids_from_text (const gchar *package_id)
 {
+	g_return_val_if_fail (package_id != NULL, NULL);
 	return g_strsplit (package_id, PK_PACKAGE_IDS_DELIM, 0);
 }
 
@@ -83,6 +85,7 @@ pk_package_ids_from_text (const gchar *package_id)
 gchar **
 pk_package_ids_from_array (GPtrArray *array)
 {
+	g_return_val_if_fail (array != NULL, NULL);
 	return pk_ptr_array_to_strv (array);
 }
 
@@ -98,6 +101,7 @@ pk_package_ids_from_array (GPtrArray *array)
 gchar **
 pk_package_ids_from_va_list (const gchar *package_id_first, va_list *args)
 {
+	g_return_val_if_fail (package_id_first != NULL, NULL);
 	return pk_va_list_to_argv (package_id_first, args);
 }
 

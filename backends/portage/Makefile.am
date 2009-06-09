@@ -1,5 +1,5 @@
 helperdir = $(datadir)/PackageKit/helpers/portage
-dist_helper_DATA = # to fill
+dist_helper_DATA = portageBackend.py
 
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_portage.la

@@ -1665,6 +1665,17 @@ pk_backend_finished (PkBackend *backend)
 }
 
 /**
+ * pk_backend_bool_to_text:
+ */
+const gchar *
+pk_backend_bool_to_text (gboolean value)
+{
+	if (value)
+		return "yes";
+	return "no";
+}
+
+/**
  * pk_backend_not_implemented_yet:
  **/
 gboolean

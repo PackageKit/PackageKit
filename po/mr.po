@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.mr\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-05-29 08:27+0000\n"
-"PO-Revision-Date: 2009-05-29 16:02+0530\n"
+"POT-Creation-Date: 2009-06-01 08:18+0000\n"
+"PO-Revision-Date: 2009-06-01 17:34+0530\n"
 "Last-Translator: Sandeep Shedmake <sandeep.shedmake@gmail.com>\n"
 "Language-Team: marathi\n"
 "MIME-Version: 1.0\n"
@@ -532,116 +532,121 @@ msgstr "शोध प्रकार आवश्यक, उ.दा. नाव"
 
 #. TRANSLATORS: the user needs to provide a search term
 #: ../client/pk-console.c:1918 ../client/pk-console.c:1926
-#: ../client/pk-console.c:1934 ../client/pk-console.c:1942
+#: ../client/pk-console.c:1941
 msgid "A search term is required"
 msgstr "शोध संज्ञा आवश्यक"
 
+#: ../client/pk-console.c:1933
+msgctxt "A search term is required"
+msgid "the user needs to provide a search term"
+msgstr "वापरकर्त्याला शोध संज्ञा पुरवण्याची आवश्यकता आहे"
+
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1948
+#: ../client/pk-console.c:1947
 msgid "Invalid search type"
 msgstr "अवैध शोध प्रकार"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1954
+#: ../client/pk-console.c:1953
 msgid "A package name or filename to install is required"
 msgstr "प्रतिष्ठपन करीता संकुल नाव किंवा फाइलनाव आवश्यक आहे"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1962
+#: ../client/pk-console.c:1961
 msgid "A type, key_id and package_id are required"
 msgstr "प्रकार, key_id व package_id आवश्यक आहे"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1970
+#: ../client/pk-console.c:1969
 msgid "A package name to remove is required"
 msgstr "काढूण टाकण्याजोगी संकुल नाव"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1977
+#: ../client/pk-console.c:1976
 msgid "A destination directory and then the package names to download are required"
 msgstr "लक्ष्य डिरेक्ट्री व त्यानंतर डाऊनलोड करीता संकुल नाव आवश्यक आहे"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1983
+#: ../client/pk-console.c:1982
 msgid "Directory not found"
 msgstr "डिरेक्ट्री आढळली नाही"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1990
+#: ../client/pk-console.c:1989
 msgid "A licence identifier (eula-id) is required"
 msgstr "परवाना ओळख (eula-id) आवश्यक आहे"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1999
+#: ../client/pk-console.c:1998
 msgid "A transaction identifier (tid) is required"
 msgstr "transaction identifier (tid) आवश्यक आहे"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2015
+#: ../client/pk-console.c:2014
 msgid "A package name to resolve is required"
 msgstr "निर्धारण करीता संकुल नाव आवश्यक आहे"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2023 ../client/pk-console.c:2031
+#: ../client/pk-console.c:2022 ../client/pk-console.c:2030
 msgid "A repository name is required"
 msgstr "रेपॉजिटरी नाव आवश्यक आहे"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2039
+#: ../client/pk-console.c:2038
 msgid "A repo name, parameter and value are required"
 msgstr "रेपो नाव, बाब व मूल्य आवश्यक आहे"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2052
+#: ../client/pk-console.c:2051
 msgid "An action, e.g. 'update-system' is required"
 msgstr "कृती, उ.दा. 'update-system' आवश्यक आहे"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2058
+#: ../client/pk-console.c:2057
 msgid "A correct role is required"
 msgstr "वर्तमान भूमिका आवश्यक आहे"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2064
+#: ../client/pk-console.c:2063
 msgid "Failed to get the time since this action was last completed"
 msgstr "शेवटच्यावेळी पूर्ण केलेली कृतीचे वेळ प्राप्त करण्यास अपयशी"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2073 ../client/pk-console.c:2084
-#: ../client/pk-console.c:2092 ../client/pk-console.c:2108
-#: ../client/pk-console.c:2116 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2072 ../client/pk-console.c:2083
+#: ../client/pk-console.c:2091 ../client/pk-console.c:2107
+#: ../client/pk-console.c:2115 ../client/pk-generate-pack.c:241
 msgid "A package name is required"
 msgstr "संकुल नाव आवश्यक आहे"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2100
+#: ../client/pk-console.c:2099
 msgid "A package provide string is required"
 msgstr "संकुल द्वारे पुरविलेली अक्षरमाळा आवश्यक आहे"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2124
+#: ../client/pk-console.c:2123
 msgid "A list file name to create is required"
 msgstr "बनविण्याकरीता यादी फाइल नाव आवश्यक आहे"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2133 ../client/pk-console.c:2142
+#: ../client/pk-console.c:2132 ../client/pk-console.c:2141
 msgid "A list file to open is required"
 msgstr "उघडण्याकरीता यादी फाइल आवश्यक आहे"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2195
+#: ../client/pk-console.c:2194
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "पर्याय '%s' समर्थीत नाही"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2208
+#: ../client/pk-console.c:2207
 msgid "Incorrect privileges for this operation"
 msgstr "या क्रिया करीता अयोग्य परवानगी"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2211
+#: ../client/pk-console.c:2210
 msgid "Command failed"
 msgstr "आदेश अपयशी"
 
@@ -706,9 +711,7 @@ msgstr "संकुल व्यवस्थापक या प्रकार
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
-msgstr ""
-"PackageKit ला libarchive समर्थन सह बिल्ट न केल्यामुळे Service पैक बनवणे शक्य नाही"
-"."
+msgstr "PackageKit ला libarchive समर्थन सह बिल्ट न केल्यामुळे Service पैक बनवणे शक्य नाही."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
 #: ../client/pk-generate-pack.c:291

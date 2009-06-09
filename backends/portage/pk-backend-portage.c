@@ -25,19 +25,6 @@
 static PkBackendSpawn *spawn = 0;
 static const gchar* BACKEND_FILE = "portageBackend.py";
 
-
-/**
- * pk_backend_bool_to_text:
- */
-// TODO: should be moved in to packagekit-glib/
-static const gchar *
-pk_backend_bool_to_text (gboolean value)
-{ 
-  if (value )
-    return "yes";
-  return "no";
-}
-
 /**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
@@ -67,15 +54,43 @@ backend_destroy (PkBackend *backend)
 static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	/*
-	 * TODO: set group list
-	 */
-	egg_debug ("backend: get_groups");
-
-	return pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSIBILITY,
-		PK_GROUP_ENUM_GAMES,
-		PK_GROUP_ENUM_SYSTEM,
-		-1);
+	return pk_bitfield_from_enums (
+			PK_GROUP_ENUM_ACCESSIBILITY,
+			PK_GROUP_ENUM_ACCESSORIES,
+			PK_GROUP_ENUM_ADMIN_TOOLS,
+			PK_GROUP_ENUM_COMMUNICATION,
+			PK_GROUP_ENUM_DESKTOP_GNOME,
+			PK_GROUP_ENUM_DESKTOP_KDE,
+			PK_GROUP_ENUM_DESKTOP_OTHER,
+			PK_GROUP_ENUM_DESKTOP_XFCE,
+			//PK_GROUP_ENUM_EDUCATION,
+			PK_GROUP_ENUM_FONTS,
+			PK_GROUP_ENUM_GAMES,
+			PK_GROUP_ENUM_GRAPHICS,
+			PK_GROUP_ENUM_INTERNET,
+			PK_GROUP_ENUM_LEGACY,
+			PK_GROUP_ENUM_LOCALIZATION,
+			//PK_GROUP_ENUM_MAPS,
+			PK_GROUP_ENUM_MULTIMEDIA,
+			PK_GROUP_ENUM_NETWORK,
+			PK_GROUP_ENUM_OFFICE,
+			PK_GROUP_ENUM_OTHER,
+			PK_GROUP_ENUM_POWER_MANAGEMENT,
+			PK_GROUP_ENUM_PROGRAMMING,
+			//PK_GROUP_ENUM_PUBLISHING,
+			PK_GROUP_ENUM_REPOS,
+			PK_GROUP_ENUM_SECURITY,
+			PK_GROUP_ENUM_SERVERS,
+			PK_GROUP_ENUM_SYSTEM,
+			PK_GROUP_ENUM_VIRTUALIZATION,
+			PK_GROUP_ENUM_SCIENCE,
+			PK_GROUP_ENUM_DOCUMENTATION,
+			//PK_GROUP_ENUM_ELECTRONICS,
+			//PK_GROUP_ENUM_COLLECTIONS,
+			//PK_GROUP_ENUM_VENDOR,
+			//PK_GROUP_ENUM_NEWEST,
+			//PK_GROUP_ENUM_UNKNOWN,
+			-1);
 }
 
 /**
@@ -89,23 +104,22 @@ backend_get_filters (PkBackend *backend)
 	 */
 	egg_debug ("backend: get_filters");
 
-	return pk_bitfield_from_enums (PK_FILTER_ENUM_GUI,
-		PK_FILTER_ENUM_INSTALLED,
-		-1);
-}
-
-/**
- * backend_get_mime_types:
- */
-static gchar *
-backend_get_mime_types (PkBackend *backend)
-{
-	/*
-	 * TODO: what needs to be done for ebuilds here ?
-	 */
-	egg_debug ("backend: get_mime_types");
-
-	return g_strdup ("application/ebuild");
+	return pk_bitfield_from_enums (
+			//PK_FILTER_ENUM_NONE,
+			PK_FILTER_ENUM_INSTALLED,
+			//PK_FILTER_ENUM_DEVELOPMENT,
+			//PK_FILTER_ENUM_GUI,
+			//PK_FILTER_ENUM_FREE,
+			//PK_FILTER_ENUM_VISIBLE,
+			//PK_FILTER_ENUM_SUPPORTED,
+			//PK_FILTER_ENUM_BASENAME,
+			//PK_FILTER_ENUM_NEWEST,
+			//PK_FILTER_ENUM_ARCH,
+			//PK_FILTER_ENUM_SOURCE,
+			//PK_FILTER_ENUM_COLLECTIONS,
+			//PK_FILTER_ENUM_APPLICATION,
+			//PK_FILTER_ENUM_UNKNOWN
+			-1);
 }
 
 /**
@@ -174,12 +188,12 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_requires:
+ * backend_get_update_detail:
  */
 static void
-backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	egg_debug ("backend: requires");
+	egg_debug ("backend: update_detail");
 	pk_backend_finished (backend);
 }
 
@@ -194,23 +208,24 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_get_update_detail:
- */
-static void
-backend_get_update_detail (PkBackend *backend, gchar **package_ids)
-{
-	egg_debug ("backend: update_detail");
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_install_packages:
  */
 static void
 backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
-	egg_debug ("backend: install");
-	pk_backend_finished (backend);
+	gchar *package_ids_temp;
+
+	/*
+	 * TODO: portage manage to install when offline
+	 * but maybe packagekit implementation will make this forbidden
+	 * (because of download funcion dir)
+	 * If needed, add something that will check for network _NOW_ (see yum)
+	 */
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "install-packages", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -219,8 +234,12 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	egg_debug ("backend: remove packages");
-	pk_backend_finished (backend);
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "remove-packages", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -253,6 +272,19 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
 }
 
 /**
+ * pk_backend_search_group:
+ */
+static void
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+{ 
+  gchar *filters_text;
+
+  filters_text = pk_filter_bitfield_to_text (filters);
+  pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-group", filters_text, search, NULL);
+  g_free (filters_text);
+}
+
+/**
  * backend_search_name:
  */
 static void
@@ -281,8 +313,11 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
-	egg_debug ("backend: get packages");
-	pk_backend_finished (backend);
+	gchar *filters_text;
+
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-packages", filters_text, NULL);
+	g_free (filters_text);
 }
 
 /**
@@ -302,7 +337,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	backend_get_mime_types,			/* get_mime_types */
+	NULL,			/* get_mime_types */
 	backend_cancel,				/* cancel */
 	backend_download_packages,		/* download_packages */
 	NULL,					/* get_categories */
@@ -312,21 +347,21 @@ PK_BACKEND_OPTIONS (
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,			/* get_repo_list */
-	backend_get_requires,			/* get_requires */
+	NULL, // TODO			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
 	backend_install_packages,		/* install_packages */
-	NULL,		/* install_signature */
+	NULL,			/* install_signature */
 	NULL,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
 	NULL,			/* repo_enable */
 	NULL,			/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,			/* rollback */
-	NULL,			/* search_details */
+	NULL, //TODO			/* search_details */
 	backend_search_file,			/* search_file */
-	NULL,			/* search_group */
+	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */

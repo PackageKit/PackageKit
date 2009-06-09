@@ -31,6 +31,12 @@ from enums import *
 PACKAGE_IDS_DELIM = '&'
 FILENAME_DELIM = '|'
 
+def _to_unicode(txt, encoding='utf-8'):
+    if isinstance(txt, basestring):
+        if not isinstance(txt, unicode):
+            txt = unicode(txt, encoding, errors='replace')
+    return txt
+
 # Classes
 
 class PkError(Exception):
@@ -580,7 +586,7 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'search-details':
             options = args[0]
-            searchterms = args[1]
+            searchterms = _to_unicode(args[1])
             self.search_details(options, searchterms)
             self.finished()
         elif cmd == 'search-file':
@@ -595,7 +601,7 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'search-name':
             options = args[0]
-            searchterms = args[1]
+            searchterms = _to_unicode(args[1])
             self.search_name(options, searchterms)
             self.finished()
         elif cmd == 'signature-install':
@@ -612,7 +618,7 @@ class PackageKitBaseBackend:
         elif cmd == 'what-provides':
             filters = args[0]
             provides_type = args[1]
-            search = args[2]
+            search = _to_unicode(args[2])
             self.what_provides(filters, provides_type, search)
             self.finished()
         elif cmd == 'set-locale':

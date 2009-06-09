@@ -256,14 +256,15 @@ static void
 get_style(PangoFontDescription **font_desc, guint32 *foreground, guint32 *background, guint32 *link)
 {
 	GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	GtkStyle *style;
+	GdkColor link_color = { 0, 0, 0, 0xeeee };
+	GdkColor *tmp = NULL;
 
 	gtk_widget_ensure_style(window);
 
-	*foreground = rgba_from_gdk_color(&window->style->text[GTK_STATE_NORMAL]);
-	*background = rgba_from_gdk_color(&window->style->base[GTK_STATE_NORMAL]);
-
-	GdkColor link_color = { 0, 0, 0, 0xeeee };
-	GdkColor *tmp = NULL;
+	style = gtk_widget_get_style(window);
+	*foreground = rgba_from_gdk_color(&style->text[GTK_STATE_NORMAL]);
+	*background = rgba_from_gdk_color(&style->base[GTK_STATE_NORMAL]);
 
 	gtk_widget_style_get (GTK_WIDGET (window), "link-color", &tmp, NULL);
 	if (tmp != NULL) {
@@ -273,7 +274,7 @@ get_style(PangoFontDescription **font_desc, guint32 *foreground, guint32 *backgr
 
 	*link = rgba_from_gdk_color(&link_color);
 
-	*font_desc = pango_font_description_copy(window->style->font_desc);
+	*font_desc = pango_font_description_copy(style->font_desc);
 
 	gtk_widget_destroy(window);
 }
@@ -633,9 +634,14 @@ static guint32
 get_server_timestamp()
 {
 	GtkWidget *invisible = gtk_invisible_new();
+	GdkWindow *window;
+	guint32 server_time;
+
 	gtk_widget_realize(invisible);
-	return gdk_x11_get_server_time(invisible->window);
+	window = gtk_widget_get_window(invisible);
+	server_time = gdk_x11_get_server_time(window);
 	gtk_widget_destroy(invisible);
+	return server_time;
 }
 
 void

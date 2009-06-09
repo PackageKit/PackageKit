@@ -187,6 +187,7 @@ gpointer	 pk_backend_get_pointer			(PkBackend	*backend,
 							 const gchar	*key);
 
 /* helper functions */
+const gchar	*pk_backend_bool_to_text		(gboolean	 value);
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 							 const gchar	*method);
 typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend);

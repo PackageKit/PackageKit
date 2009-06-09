@@ -495,7 +495,7 @@ pk_control_get_backend_detail (PkControl *control, gchar **name, gchar **author,
 	if (name != NULL)
 		*name = tname;
 	else
-		g_free (tauthor);
+		g_free (tname);
 	/* copy needed bits */
 	if (author != NULL)
 		*author = tauthor;

@@ -131,18 +131,7 @@ backend_get_filters (PkBackend *backend)
 static gchar *
 backend_get_mime_types (PkBackend *backend)
 {
-	return g_strdup ("application/x-rpm");
-}
-
-/**
- * pk_backend_bool_to_text:
- */
-static const gchar *
-pk_backend_bool_to_text (gboolean value)
-{
-	if (value == TRUE)
-		return "yes";
-	return "no";
+	return g_strdup ("application/x-rpm;application/x-servicepack");
 }
 
 /**

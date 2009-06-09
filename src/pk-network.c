@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -17,13 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- */
-
-/**
- * SECTION:pk-network
- * @short_description: network detection code
- *
- * This file contains a network checker.
  */
 
 #include "config.h"
@@ -45,8 +38,10 @@
 #include "egg-debug.h"
 #include "egg-dbus-monitor.h"
 #include "pk-network.h"
-#include "pk-network-nm.h"
-#include "pk-network-unix.h"
+#include "pk-network-stack.h"
+#include "pk-network-stack-unix.h"
+#include "pk-network-stack-connman.h"
+#include "pk-network-stack-nm.h"
 #include "pk-marshal.h"
 #include "pk-conf.h"
 
@@ -61,12 +56,8 @@ static void     pk_network_finalize	(GObject        *object);
  **/
 struct _PkNetworkPrivate
 {
-	gboolean		 use_nm;
-	gboolean		 use_unix;
-	PkNetworkNm		*net_nm;
-	PkNetworkUnix		*net_unix;
 	PkConf			*conf;
-	EggDbusMonitor		*nm_bus;
+	GPtrArray		*nstacks;
 };
 
 enum {
@@ -89,38 +80,40 @@ G_DEFINE_TYPE (PkNetwork, pk_network, G_TYPE_OBJECT)
 PkNetworkEnum
 pk_network_get_network_state (PkNetwork *network)
 {
-	g_return_val_if_fail (PK_IS_NETWORK (network), PK_NETWORK_ENUM_UNKNOWN);
-	/* use the correct backend */
-	if (network->priv->use_nm)
-		return pk_network_nm_get_network_state (network->priv->net_nm);
-	if (network->priv->use_unix)
-		return pk_network_unix_get_network_state (network->priv->net_unix);
-	return PK_NETWORK_ENUM_ONLINE;
-}
-
-/**
- * pk_network_nm_network_changed_cb:
- **/
-static void
-pk_network_nm_network_changed_cb (PkNetworkNm *net_nm, gboolean online, PkNetwork *network)
-{
 	PkNetworkEnum state;
+	GPtrArray *nstacks;
+	PkNetworkStack *nstack;
+	guint i;
 
-	g_return_if_fail (PK_IS_NETWORK (network));
+	g_return_val_if_fail (PK_IS_NETWORK (network), PK_NETWORK_ENUM_UNKNOWN);
 
-	state = pk_network_get_network_state (network);
-	g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, state);
+	/* try each networking stack in order of preference */
+	nstacks = network->priv->nstacks;
+	for (i=0; i<nstacks->len; i++) {
+		nstack = g_ptr_array_index (nstacks, i);
+		if (pk_network_stack_is_enabled (nstack)) {
+			state = pk_network_stack_get_state (nstack);
+			if (state != PK_NETWORK_ENUM_UNKNOWN)
+				goto out;
+		}
+	}
+
+	/* no valid data providers */
+	state = PK_NETWORK_ENUM_ONLINE;
+out:
+	return state;
 }
 
 /**
- * pk_network_unix_network_changed_cb:
+ * pk_network_stack_state_changed_cb:
  **/
 static void
-pk_network_unix_network_changed_cb (PkNetworkUnix *net_unix, gboolean online, PkNetwork *network)
+pk_network_stack_state_changed_cb (PkNetworkStack *nstack, PkNetworkEnum state, PkNetwork *network)
 {
 	g_return_if_fail (PK_IS_NETWORK (network));
-	if (network->priv->use_unix)
-		g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, online);
+
+	egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_text (state));
+	g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, state);
 }
 
 /**
@@ -147,38 +140,32 @@ pk_network_class_init (PkNetworkClass *klass)
 static void
 pk_network_init (PkNetwork *network)
 {
-	gboolean nm_alive;
+	PkNetworkStack *nstack;
 	network->priv = PK_NETWORK_GET_PRIVATE (network);
 	network->priv->conf = pk_conf_new ();
-	network->priv->net_nm = pk_network_nm_new ();
-	g_signal_connect (network->priv->net_nm, "state-changed",
-			  G_CALLBACK (pk_network_nm_network_changed_cb), network);
-	network->priv->net_unix = pk_network_unix_new ();
-	g_signal_connect (network->priv->net_unix, "state-changed",
-			  G_CALLBACK (pk_network_unix_network_changed_cb), network);
 
-	/* get the defaults from the config file */
-	network->priv->use_nm = pk_conf_get_bool (network->priv->conf, "UseNetworkManager");
-	network->priv->use_unix = pk_conf_get_bool (network->priv->conf, "UseNetworkHeuristic");
+	/* array of PkNetworkStacks, in order of preference */
+	network->priv->nstacks = g_ptr_array_new ();
 
-	/* check if NM is on the bus */
-	network->priv->nm_bus = egg_dbus_monitor_new ();
-	egg_dbus_monitor_assign (network->priv->nm_bus, EGG_DBUS_MONITOR_SYSTEM, "org.freedesktop.NetworkManager");
-	nm_alive = egg_dbus_monitor_is_connected (network->priv->nm_bus);
-
-	/* NetworkManager isn't up, so we can't use it */
-	if (network->priv->use_nm && !nm_alive) {
-		egg_warning ("UseNetworkManager true, but org.freedesktop.NetworkManager not up");
-		network->priv->use_nm = FALSE;
-	}
-
-#if !PK_BUILD_NETWORKMANAGER
-	/* check we can actually use the default */
-	if (network->priv->use_nm) {
-		egg_warning ("UseNetworkManager true, but not built with NM support");
-		network->priv->use_nm = FALSE;
-	}
+#if PK_BUILD_NETWORKMANAGER
+	nstack = PK_NETWORK_STACK (pk_network_stack_nm_new ());
+	g_signal_connect (nstack, "state-changed",
+			  G_CALLBACK (pk_network_stack_state_changed_cb), network);
+	g_ptr_array_add (network->priv->nstacks, nstack);
 #endif
+
+#if PK_BUILD_CONNMAN
+	nstack = PK_NETWORK_STACK (pk_network_stack_connman_new ());
+	g_signal_connect (nstack, "state-changed",
+			  G_CALLBACK (pk_network_stack_state_changed_cb), network);
+	g_ptr_array_add (network->priv->nstacks, nstack);
+#endif
+
+	/* always build UNIX fallback */
+	nstack = PK_NETWORK_STACK (pk_network_stack_unix_new ());
+	g_signal_connect (nstack, "state-changed",
+			  G_CALLBACK (pk_network_stack_state_changed_cb), network);
+	g_ptr_array_add (network->priv->nstacks, nstack);
 }
 
 /**
@@ -195,9 +182,11 @@ pk_network_finalize (GObject *object)
 
 	g_return_if_fail (network->priv != NULL);
 	g_object_unref (network->priv->conf);
-	g_object_unref (network->priv->nm_bus);
-	g_object_unref (network->priv->net_nm);
-	g_object_unref (network->priv->net_unix);
+
+	/* free all network stacks in use */
+	g_ptr_array_foreach (network->priv->nstacks, (GFunc) g_object_unref, NULL);
+	g_ptr_array_free (network->priv->nstacks, TRUE);
+
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);
 }
 

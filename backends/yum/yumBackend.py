@@ -98,6 +98,15 @@ def _get_package_ver(po):
         ver = "%s-%s" % (po.version, po.release)
     return ver
 
+def _format_package_id(package_id):
+    """
+    Convert 'hal;0.5.8;i386;fedora' to 'hal-0.5.8-fedora(i386)'
+    """
+    parts = package_id.split(';')
+    if len(parts) != 4:
+        return "incorrect package_id: %s" % package_id
+    return "%s-%s(%s)%s" % (parts[0], parts[1], parts[2], parts[3])
+
 def _format_str(text):
     """
     Convert a multi line string to a list separated by ';'
@@ -353,7 +362,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     else:
                         available.append(pkg)
             except yum.Errors.RepoError, e:
-                raise PkError(ERROR_NO_CACHE, _to_unicode(e))
+                raise PkError(ERROR_NO_CACHE, "failed to use search generator: %s" %_to_unicode(e))
             except Exception, e:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
@@ -423,7 +432,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             pkgs = self.yumbase.pkgSack.searchNames(names=name_list)
         except yum.Errors.RepoError, e:
-            raise PkError(ERROR_NO_CACHE, _to_unicode(e))
+            raise PkError(ERROR_NO_CACHE, "failed to search names: %s" %_to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return pkgs
@@ -492,7 +501,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             grp = self.yumbase.comps.return_group(grpid)
         except yum.Errors.RepoError, e:
-            raise PkError(ERROR_NO_CACHE, _to_unicode(e))
+            raise PkError(ERROR_NO_CACHE, "failed to get groups from comps: %s" %_to_unicode(e))
         except yum.Errors.GroupsError, e:
             raise PkError(ERROR_GROUP_NOT_FOUND, _to_unicode(e))
         except Exception, e:
@@ -608,7 +617,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 pkgs = self.yumbase.pkgSack
             except yum.Errors.RepoError, e:
-                self.error(ERROR_NO_CACHE, _to_unicode(e), exit=False)
+                self.error(ERROR_NO_CACHE, "failed to get package sack: %s" %_to_unicode(e), exit=False)
                 return
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
@@ -647,7 +656,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.yumbase.repos.populateSack(mdtype='filelists')
                 pkgs = self.yumbase.pkgSack.searchFiles(key)
             except yum.Errors.RepoError, e:
-                self.error(ERROR_NO_CACHE, _to_unicode(e), exit=False)
+                self.error(ERROR_NO_CACHE, "failed to search sack: %s" %_to_unicode(e), exit=False)
                 return
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
@@ -715,7 +724,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         try:
                             pkgs = self.yumbase.pkgSack.searchProvides(provide)
                         except yum.Errors.RepoError, e:
-                            self.error(ERROR_NO_CACHE, _to_unicode(e), exit=False)
+                            self.error(ERROR_NO_CACHE, "failed to get provides for sack: %s" %_to_unicode(e), exit=False)
                             return
                         except Exception, e:
                             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
@@ -736,7 +745,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             cats = self.yumbase.comps.categories
         except yum.Errors.RepoError, e:
-            self.error(ERROR_NO_CACHE, _to_unicode(e), exit=False)
+            self.error(ERROR_NO_CACHE, "failed to get comps list: %s" %_to_unicode(e), exit=False)
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
@@ -821,7 +830,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 packs = self.yumbase.pkgSack.searchNevra(n, e, v, r, a)
             except yum.Errors.RepoError, e:
-                self.error(ERROR_NO_CACHE, _to_unicode(e), exit=False)
+                self.error(ERROR_NO_CACHE, "failed to search package sack: %s" %_to_unicode(e), exit=False)
                 return
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
@@ -884,7 +893,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 isGroup = True
             if isGroup and not grp:
-                self.error(ERROR_PACKAGE_NOT_FOUND, "The Group %s dont exist" % name)
+                self.error(ERROR_GROUP_NOT_FOUND, "The Group %s dont exist" % name)
         return grp
 
     def _findPackage(self, package_id):
@@ -945,7 +954,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
 	# multiple entries
         if len(pkgs) > 1:
-            self.error(ERROR_INTERNAL_ERROR, "more than one package match for %s" % package_id)
+            self.error(ERROR_INTERNAL_ERROR, "more than one package match for %s" % _format_package_id(package_id))
             return pkgs[0], False
 
         # one NEVRA in a single repo
@@ -1446,7 +1455,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 try:
                     pkgs = self.yumbase.pkgSack.returnNewestByNameArch()
                 except yum.Errors.RepoError, e:
-                    self.error(ERROR_NO_CACHE, _to_unicode(e), exit=False)
+                    self.error(ERROR_NO_CACHE, "failed to return newest by package sack: %s" %_to_unicode(e), exit=False)
                     return
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
@@ -1782,11 +1791,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     if not txmbr:
-                        self.error(ERROR_TRANSACTION_ERROR, "could not add package update for %s: %s" % (package_id, pkg), exit=False)
+                        self.error(ERROR_TRANSACTION_ERROR, "could not add package update for %s: %s" % (_format_package_id(package_id), pkg), exit=False)
                         return
                     txmbrs.extend(txmbr)
                 else:
-                    self.error(ERROR_PACKAGE_NOT_FOUND, "cannot find package '%s'" % package_id, exit=False)
+                    self.error(ERROR_UPDATE_NOT_FOUND, "cannot find package '%s'" % _format_package_id(package_id), exit=False)
                     return
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e), exit=False)
@@ -2201,6 +2210,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         md = self.updateMetadata
         for pkg in unique(pkgs):
             if pkgfilter.pre_process(pkg):
+                # we pre-get the ChangeLog data so that the changes file is
+                # downloaded at GetUpdates time, not when we open the GUI
+                changelog = pkg.returnChangelog()
+
                 # Get info about package in updates info
                 notice = md.get_notice((pkg.name, pkg.version, pkg.release))
                 if notice:
@@ -2507,7 +2520,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 self.yumbase.repos.doSetup()
             except yum.Errors.RepoError, e:
-                raise PkError(ERROR_NO_CACHE, _to_unicode(e))
+                raise PkError(ERROR_NO_CACHE, "failed to setup repos: %s" %_to_unicode(e))
             except exceptions.IOError, e:
                 raise PkError(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
             except Exception, e:

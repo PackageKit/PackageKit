@@ -330,10 +330,11 @@ connection = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
 proxy = dbus_g_proxy_new_for_name (connection,
                              "org.freedesktop.PackageKit",
                              "/org/freedesktop/PackageKit",
-                             "org.freedesktop.PackageKit");
+                             "org.freedesktop.PackageKit.Modify");
 /* execute sync method */
-ret = dbus_g_proxy_call (proxy, "InstallPackageName", &error,
-                         G_TYPE_STRING, "openoffice-clipart",
+ret = dbus_g_proxy_call (proxy, "InstallPackageNames", &error,
+                         G_TYPE_STRV, {"openoffice-clipart", NULL},
+                         G_TYPE_STRING, "",
                          G_TYPE_INVALID, G_TYPE_INVALID);
 if (!ret) {
         g_warning ("failed: %s", error->message);
@@ -377,12 +378,16 @@ if you have any other questions
 <hr>
 <h3><a name="tray-icons">What do the tray icons mean?</a></h3>
 <table>
-<tr><td><img src="img/pk-update-bugfix.png"/></td><td>Bugfix update</td></tr>
-<tr><td><img src="img/pk-update-enhancement.png"/></td><td>Enhancement update</td></tr>
-<tr><td><img src="img/pk-update-high.png"/></td><td>High priority update</td></tr>
-<tr><td><img src="img/pk-update-low.png"/></td><td>Low priority update</td></tr>
-<tr><td><img src="img/pk-update-normal.png"/></td><td>Normal update</td></tr>
-<tr><td><img src="img/pk-update-security.png"/></td><td>Security update</td></tr>
+ <tr>
+  <td><img src="img/pk-update-bugfix.png"/></td><td>Bugfix update</td>
+  <td><img src="img/pk-update-enhancement.png"/></td><td>Enhancement update</td>
+  <td><img src="img/pk-update-high.png"/></td><td>High priority update</td>
+ </tr>
+ <tr>
+  <td><img src="img/pk-update-low.png"/></td><td>Low priority update</td>
+  <td><img src="img/pk-update-normal.png"/></td><td>Normal update</td>
+  <td><img src="img/pk-update-security.png"/></td><td>Security update</td>
+ </tr>
 </table>
 <p>
 <b>NOTE:</b>Not all the icons may show for some backends.
@@ -514,7 +519,9 @@ for more details and further discussion.
 <p>
 If the transaction needs to tell the user something, the <code>Message()</code>
 method can be used that will localise the message up the stack, and also give the user a way
-of ignoring duplicate messages of this type.
+of ignoring duplicate messages of this type. We really don't what to be doing things like
+<a href="http://tieguy.org/blog/2008/04/11/second-worst-dialog-i-saw-during-a-recent-ubuntu-upgrade/">this</a>
+or <a href="http://weblogs.mozillazine.org/gerv/archives/2008/04/upgrading_to_hardy.html">this</a>.
 </p>
 
 <hr>
@@ -629,7 +636,7 @@ I now work at Red Hat full time.
 <br><br><br><br><br><br><br><br><br><br><br>
 
 <p class="footer">
- Copyright <a href="mailto:richard@hughsie.com">Richard Hughes 2007-2008</a><br/>
+ Copyright <a href="mailto:richard@hughsie.com">Richard Hughes 2007-2009</a><br/>
  <a href="http://validator.w3.org/check/referer">Optimized</a>
  for <a href="http://www.w3.org/">standards</a>.
 </p>

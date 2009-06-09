@@ -3,7 +3,7 @@ AC_PREREQ(2.52)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [4])
-m4_define([pk_micro_version], [8])
+m4_define([pk_micro_version], [9])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -12,6 +12,9 @@ AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
+
+# enable nice build output on automake1.11
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 PK_MAJOR_VERSION=pk_major_version
 PK_MINOR_VERSION=pk_minor_version
@@ -32,7 +35,7 @@ AC_SUBST(PK_VERSION)
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=11
-LT_REVISION=6
+LT_REVISION=7
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -69,6 +72,7 @@ dnl ---------------------------------------------------------------------------
 CPPFLAGS="$CPPFLAGS -DG_DISABLE_SINGLE_INCLUDES -DGTK_DISABLE_SINGLE_INCLUDES"
 CPPFLAGS="$CPPFLAGS -DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED"
 CPPFLAGS="$CPPFLAGS -DGDK_MULTIHEAD_SAFE -DGTK_MULTIHEAD_SAFE"
+CPPFLAGS="$CPPFLAGS -DGSEAL_ENABLE"
 
 if test "$GCC" = "yes"; then
 	# work both in C and C++
@@ -163,6 +167,12 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
+PKG_CHECK_MODULES(GIO, \
+ gio-2.0 >= $GIO_REQUIRED \
+ gio-unix-2.0 >= $DBUS_REQUIRED)
+AC_SUBST(GIO_CFLAGS)
+AC_SUBST(GIO_LIBS)
+
 dnl ---------------------------------------------------------------------------
 dnl - Build PackageKit-Qt
 dnl ---------------------------------------------------------------------------
@@ -255,37 +265,38 @@ dnl - moc (for packagekit-qt)
 dnl ---------------------------------------------------------------------------
 AC_PATH_PROG([MOC], [moc-qt4])
 
-dnl ---------------------------------------------------------------------------
-dnl - Is GIO available?
-dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(GIO, gio-2.0 >= $GIO_REQUIRED gio-unix-2.0 >= $GIO_REQUIRED, PK_BUILD_GIO="yes", PK_BUILD_GIO="no")
-if test "x$PK_BUILD_GIO" = "xyes"; then
-	with_gio="yes"
-	AC_DEFINE(PK_BUILD_GIO, 1, [define if GIO is installed])
-else
-	with_gio="no"
-	PK_BUILD_GIO=no
-fi
-
-AM_CONDITIONAL(PK_BUILD_GIO, test x$PK_BUILD_GIO = xyes)
-AC_SUBST(GIO_CFLAGS)
-AC_SUBST(GIO_LIBS)
+# unix networking stack always available
+networking_apis="unix"
 
 dnl ---------------------------------------------------------------------------
 dnl - Is NetworkManager available?
 dnl ---------------------------------------------------------------------------
 PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
 if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
-	with_networking_stack="NetworkManager"
+	networking_apis="${networking_apis},NetworkManager"
 	AC_DEFINE(PK_BUILD_NETWORKMANAGER, 1, [define if NetworkManager is installed])
 else
-	with_networking_stack="dummy"
 	PK_BUILD_NETWORKMANAGER=no
 fi
 
 AM_CONDITIONAL(PK_BUILD_NETWORKMANAGER, test x$PK_BUILD_NETWORKMANAGER = xyes)
 AC_SUBST(LIBNM_CFLAGS)
 AC_SUBST(LIBNM_LIBS)
+
+dnl ---------------------------------------------------------------------------
+dnl - Is ConnMan available?
+dnl ---------------------------------------------------------------------------
+PKG_CHECK_MODULES(CONNMAN, connman, PK_BUILD_CONNMAN="yes", PK_BUILD_CONNMAN="no")
+if test "x$PK_BUILD_CONNMAN" = "xyes"; then
+	networking_apis="${networking_apis},ConnMan"
+	AC_DEFINE(PK_BUILD_CONNMAN, 1, [define if Connection Manager is installed])
+else
+	PK_BUILD_CONNMAN=no
+fi
+
+AM_CONDITIONAL(PK_BUILD_CONNMAN, test x$PK_BUILD_CONNMAN = xyes)
+AC_SUBST(CONNMAN_CFLAGS)
+AC_SUBST(CONNMAN_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - Is docbook2man available?
@@ -763,8 +774,7 @@ echo "
         Able to run locally:       ${enable_local}
         Developer warnings:        ${enable_developer}
         Security framework:        ${with_security_framework}
-        Networking stack:          ${with_networking_stack}
-        GIO support:               ${with_gio}
+        Networking stacks:         ${networking_apis}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
         Pango module:              ${build_gtk_module}

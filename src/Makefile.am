@@ -15,6 +15,7 @@ INCLUDES =						\
 	$(POLKIT_CFLAGS)				\
 	$(PYTHON_CFLAGS)				\
 	$(LIBNM_CFLAGS)					\
+	$(CONNMAN_CFLAGS)				\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DSBINDIR=\"$(sbindir)\"		 	\
@@ -62,11 +63,14 @@ shared_SOURCES =					\
 	pk-shared.h					\
 	pk-post-trans.c					\
 	pk-post-trans.h					\
-	pk-network-nm.h					\
-	pk-network-unix.c				\
-	pk-network-unix.h				\
 	pk-time.h					\
 	pk-time.c					\
+	pk-network-stack.h				\
+	pk-network-stack.c				\
+	pk-network-stack-unix.c				\
+	pk-network-stack-unix.h				\
+	pk-network-stack-nm.h				\
+	pk-network-stack-connman.h			\
 	pk-syslog.h					\
 	pk-syslog.c					\
 	pk-conf.c					\
@@ -82,6 +86,7 @@ shared_SOURCES =					\
 	pk-sysdep.h					\
 	pk-sysdep.c					\
 	pk-file-monitor.h				\
+	pk-file-monitor.c				\
 	pk-engine.h					\
 	pk-engine.c					\
 	pk-inhibit.h					\
@@ -96,20 +101,12 @@ shared_SOURCES =					\
 
 if PK_BUILD_NETWORKMANAGER
 shared_SOURCES +=					\
-	pk-network-nm.c
-else
-shared_SOURCES +=					\
-	pk-network-nm-dummy.c
+	pk-network-stack-nm.c
 endif
 
-if PK_BUILD_GIO
+if PK_BUILD_CONNMAN
 shared_SOURCES +=					\
-	pk-file-monitor-gio.c				\
-	$(NULL)
-else
-shared_SOURCES +=					\
-	pk-file-monitor-dummy.c				\
-	$(NULL)
+	pk-network-stack-connman.c
 endif
 
 if SECURITY_TYPE_POLKIT
@@ -133,6 +130,7 @@ packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(GMODULE_LIBS)					\
 	$(LIBNM_LIBS)					\
+	$(CONNMAN_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_GLIB_LIBS)					\
@@ -207,6 +205,7 @@ pk_self_test_LDADD =					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(LIBNM_LIBS)					\
+	$(CONNMAN_LIBS)					\
 	$(PK_GLIB_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
