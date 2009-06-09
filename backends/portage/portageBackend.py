@@ -223,20 +223,16 @@ def id_to_cpv(pkgid):
 
 	return ret[0] + "-" + ret[1]
 
-def cpv_to_id(cpv):
-	'''
-	Transform the cpv (portage) to a package id (packagekit)
-	'''
-	# TODO: how to get KEYWORDS ?
-	# TODO: repository should be "installed" when installed
-	# TODO: => move to class
-	package, version, rev = portage.pkgsplit(cpv)
-	keywords, repo = portage.portdb.aux_get(cpv, ["KEYWORDS", "repository"])
+# TODO: move to class ?
+def get_group(cp):
+	''' Return the group of the package
+	Argument could be cp or cpv. '''
+	cat = portage.catsplit(cp)[0]
+	if SECTION_GROUP_MAP.has_key(cat):
+		return SECTION_GROUP_MAP[cat]
 
-	if rev != "r0":
-		version = version + "-" + rev
+	return GROUP_UNKNOWN
 
-	return get_package_id(package, version, "KEYWORD", repo)
 
 class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
@@ -251,13 +247,49 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		if lock:
 			self.doLock()
 
+	def cpv_to_id(self, cpv):
+		'''
+		Transform the cpv (portage) to a package id (packagekit)
+		'''
+		# TODO: manage SLOTS !
+		package, version, rev = portage.pkgsplit(cpv)
+		pkg_keywords, repo = portage.portdb.aux_get(cpv, ["KEYWORDS", "repository"])
+
+		pkg_keywords = pkg_keywords.split()
+		sys_keywords = self.portage_settings.configdict["defaults"].get("ACCEPT_KEYWORDS").split()
+		keywords = []
+
+		for x in sys_keywords:
+			if x in pkg_keywords:
+				keywords.append(x)
+
+		# if no keywords, check in package.keywords
+		if not keywords:
+			for _, keys in self.portage_settings.pkeywordsdict.get(portage.dep_getkey(cpv)).iteritems():
+				for x in keys:
+					keywords.append(x)
+
+		if not keywords:
+			keywords.append("no keywords")
+			self.message(MESSAGE_UNKNOWN, "No keywords have been found for %s" % cpv)
+
+		# don't want to see -r0
+		if rev != "r0":
+			version = version + "-" + rev
+
+		# if installed, repo should be 'installed', packagekit rule
+		if self.vardb.cpv_exists(cpv):
+			repo = "installed"
+
+		return get_package_id(package, version, ' '.join(keywords), repo)
+
 	def package(self, cpv):
 		desc = portage.portdb.aux_get(cpv, ["DESCRIPTION"])
 		if self.vardb.cpv_exists(cpv):
 			info = INFO_INSTALLED
 		else:
 			info = INFO_AVAILABLE
-		PackageKitBaseBackend.package(self, cpv_to_id(cpv), info, desc[0])
+		PackageKitBaseBackend.package(self, self.cpv_to_id(cpv), info, desc[0])
 
 	def get_depends(self, filters, pkgids, recursive):
 		# TODO: manage filters
@@ -289,7 +321,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
 			retval, fav = depgraph.select_files(["="+cpv])
 			if not retval:
-				print fav
 				self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
 				continue
 
@@ -308,22 +339,23 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 				for child in children:
 					self.package(child[2])
 
-	def get_details(self, pkgids):
+	def get_details(self, pkgs):
 		self.status(STATUS_INFO)
 		self.allow_cancel(True)
 		self.percentage(None)
 
-		for pkgid in pkgids:
-			cpv = id_to_cpv(pkgid)
+		for pkg in pkgs:
+			cpv = id_to_cpv(pkg)
 
 			# is cpv valid
 			if not portage.portdb.cpv_exists(cpv):
 				# self.warning ? self.error ?
 				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,
-						"Could not find the package %s" % pkgid)
+						"Could not find the package %s" % pkg)
 				continue
 
-			homepage, desc, license = portage.portdb.aux_get(cpv, ["HOMEPAGE", "DESCRIPTION", "LICENSE"])
+			homepage, desc, license = portage.portdb.aux_get(cpv,
+					["HOMEPAGE", "DESCRIPTION", "LICENSE"])
 			# get size
 			ebuild = portage.portdb.findname(cpv)
 			if ebuild:
@@ -332,7 +364,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 				uris = portage.portdb.getFetchMap(cpv)
 				size = manifest.getDistfilesSize(uris)
 
-			self.details(cpv_to_id(cpv), license, "GROUP?", desc, homepage, size)
+			self.details(self.cpv_to_id(cpv), license, get_group(cpv),
+					desc, homepage, size)
 
 	def get_files(self, pkgids):
 		self.status(STATUS_INFO)
@@ -476,24 +509,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		self.allow_cancel(True) # TODO: sure ?
 		self.percentage(None)
 
-		myopts = {} # TODO: --nodepends ?
-		spinner = ""
-		favorites = []
-		settings, trees, mtimedb = _emerge.load_emerge_config()
-		spinner = _emerge.stdout_spinner()
-		rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"], portage._sets.load_default_config(self.portage_settings, trees["/"]))
-
-		if "resume" in mtimedb and \
-		"mergelist" in mtimedb["resume"] and \
-		len(mtimedb["resume"]["mergelist"]) > 1:
-			mtimedb["resume_backup"] = mtimedb["resume"]
-			del mtimedb["resume"]
-			mtimedb.commit()
-
-		mtimedb["resume"]={}
-		mtimedb["resume"]["myopts"] = myopts.copy()
-		mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
-
 		for pkg in pkgs:
 			# check for installed is not mandatory as there are a lot of reason
 			# to re-install a package (USE/{LD,C}FLAGS change for example) (or live)
@@ -505,21 +520,37 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 				self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
 				continue
 
-			db_keys = list(portage.portdb._aux_cache_keys)
-			metadata = izip(db_keys, portage.portdb.aux_get(cpv, db_keys))
-			package = _emerge.Package(type_name="ebuild", root_config=rootconfig, cpv=cpv, metadata=metadata, operation="merge")
+			# inits
+			myopts = {} # TODO: --nodepends ?
+			spinner = ""
+			favorites = []
+			settings, trees, mtimedb = _emerge.load_emerge_config()
+			myparams = _emerge.create_depgraph_params(myopts, "")
+			spinner = _emerge.stdout_spinner()
 
-			# TODO: needed ?
-			pkgsettings = portage.config(clone=settings)
-			pkgsettings.setcpv(package)
-			package.metadata['USE'] = pkgsettings['PORTAGE_USE']
+			depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
+			retval, favorites = depgraph.select_files(["="+cpv])
+			if not retval:
+				self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
+				continue
+
+			if "resume" in mtimedb and \
+			"mergelist" in mtimedb["resume"] and \
+			len(mtimedb["resume"]["mergelist"]) > 1:
+				mtimedb["resume_backup"] = mtimedb["resume"]
+				del mtimedb["resume"]
+				mtimedb.commit()
+
+			mtimedb["resume"]={}
+			mtimedb["resume"]["myopts"] = myopts.copy()
+			mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
 
 			# TODO: check for writing access before calling merge ?
-#			try:
-			mergetask = _emerge.Scheduler(settings, trees, mtimedb, myopts, spinner, [package], favorites, package)
+
+			mergetask = _emerge.Scheduler(settings, trees, mtimedb,
+					myopts, spinner, depgraph.altlist(),
+					favorites, depgraph.schedulerGraph())
 			mergetask.merge()
-#			except:
-#				self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s" % cpv)
 
 	def remove_packages(self, allowdep, pkgs):
 		# can't use allowdep: never removing dep
@@ -647,13 +678,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		self.percentage(None)
 
 		for cp in portage.portdb.cp_all():
-			category = portage.catsplit(cp)[0]
-			if SECTION_GROUP_MAP.has_key(category):
-				group_found = SECTION_GROUP_MAP[category]
-			else:
-				group_found = GROUP_UNKNOWN
-
-			if group_found == group:
+			if get_group(cp) == group:
 				for cpv in portage.portdb.match(cp):
 					self.package(cpv)
 
