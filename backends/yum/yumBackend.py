@@ -1795,7 +1795,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         return
                     txmbrs.extend(txmbr)
                 else:
-                    self.error(ERROR_PACKAGE_NOT_FOUND, "cannot find package '%s'" % _format_package_id(package_id), exit=False)
+                    self.error(ERROR_UPDATE_NOT_FOUND, "cannot find package '%s'" % _format_package_id(package_id), exit=False)
                     return
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e), exit=False)
