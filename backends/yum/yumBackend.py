@@ -893,7 +893,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 isGroup = True
             if isGroup and not grp:
-                self.error(ERROR_PACKAGE_NOT_FOUND, "The Group %s dont exist" % name)
+                self.error(ERROR_GROUP_NOT_FOUND, "The Group %s dont exist" % name)
         return grp
 
     def _findPackage(self, package_id):
