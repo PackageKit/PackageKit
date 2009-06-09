@@ -98,6 +98,15 @@ def _get_package_ver(po):
         ver = "%s-%s" % (po.version, po.release)
     return ver
 
+def _format_package_id(package_id):
+    """
+    Convert 'hal;0.5.8;i386;fedora' to 'hal-0.5.8-fedora(i386)'
+    """
+    parts = package_id.split(';')
+    if len(parts) != 4:
+        return "incorrect package_id: %s" % package_id
+    return "%s-%s(%s)%s" % (parts[0], parts[1], parts[2], parts[3])
+
 def _format_str(text):
     """
     Convert a multi line string to a list separated by ';'
@@ -945,7 +954,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
 	# multiple entries
         if len(pkgs) > 1:
-            self.error(ERROR_INTERNAL_ERROR, "more than one package match for %s" % package_id)
+            self.error(ERROR_INTERNAL_ERROR, "more than one package match for %s" % _format_package_id(package_id))
             return pkgs[0], False
 
         # one NEVRA in a single repo
@@ -1782,11 +1791,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     if not txmbr:
-                        self.error(ERROR_TRANSACTION_ERROR, "could not add package update for %s: %s" % (package_id, pkg), exit=False)
+                        self.error(ERROR_TRANSACTION_ERROR, "could not add package update for %s: %s" % (_format_package_id(package_id), pkg), exit=False)
                         return
                     txmbrs.extend(txmbr)
                 else:
-                    self.error(ERROR_PACKAGE_NOT_FOUND, "cannot find package '%s'" % package_id, exit=False)
+                    self.error(ERROR_PACKAGE_NOT_FOUND, "cannot find package '%s'" % _format_package_id(package_id), exit=False)
                     return
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e), exit=False)
