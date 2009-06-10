@@ -2253,10 +2253,13 @@ class PackageKitYumBase(yum.YumBase):
         try:
             pc = self.preconf
             pc.disabled_plugins = ['refresh-packagekit', 'rpm-warm-cache', 'remove-with-leaves']
+        except AttributeError, e:
+            # using an old version of yum...
+            pass
         except yum.Errors.ConfigError, e:
-            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, _to_unicode(e))
+            backend.error(ERROR_REPO_CONFIGURATION_ERROR, _to_unicode(e))
         except ValueError, e:
-            raise PkError(ERROR_FAILED_CONFIG_PARSING, _to_unicode(e))
+            backend.error(ERROR_FAILED_CONFIG_PARSING, _to_unicode(e))
 
         self.missingGPGKey = None
         self.dsCallback = DepSolveCallback(backend)
