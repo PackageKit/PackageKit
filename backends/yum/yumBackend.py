@@ -1738,7 +1738,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_FAILED_CONFIG_PARSING, "could not get latest distro data")
 
         # are we already on the latest version
-        present_version = self.yumbase.conf.yumvar['releasever']
+        present_version = int(self.yumbase.conf.yumvar['releasever'])
         if (present_version >= last_version):
             return
 
