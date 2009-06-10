@@ -254,6 +254,19 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 }
 
 /**
+ * pk_backend_search_details:
+ */
+static void
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	gchar *filters_text;
+
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-details", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
+/**
  * backend_search_file:
  */
 static void
@@ -357,25 +370,25 @@ PK_BACKEND_OPTIONS (
 	NULL,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
-	NULL,			/* get_repo_list */
+	NULL, // TODO			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
-	backend_get_update_detail,		/* get_update_detail */
-	backend_get_updates,			/* get_updates */
+	backend_get_update_detail, // TODO		/* get_update_detail */
+	backend_get_updates, // TODO			/* get_updates */
 	NULL,			/* install_files */
 	backend_install_packages,		/* install_packages */
-	NULL,			/* install_signature */
-	NULL,			/* refresh_cache */
+	NULL, // TODO: choose			/* install_signature */
+	NULL, // TODO: choose			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
-	NULL,			/* repo_enable */
-	NULL,			/* repo_set_data */
+	NULL, // TODO: choose			/* repo_enable */
+	NULL, // TODO: probably not			/* repo_set_data */
 	backend_resolve,			/* resolve */
-	NULL,			/* rollback */
-	NULL, //TODO			/* search_details */
+	NULL, // TODO: probably in a long time			/* rollback */
+	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_packages,		/* update_packages */
-	backend_update_system,			/* update_system */
+	backend_update_packages, // TODO		/* update_packages */
+	backend_update_system, // TODO			/* update_system */
 	NULL			/* what_provides */
 );
 
