@@ -1,3 +1,29 @@
+Version 0.3.16
+~~~~~~~~~~~~~~
+Released: 2009-06-10
+
+Bugfixes:
+ - Fix reading freed-memory from GetBackendDetail (Daniel Elstner)
+ - Correct the logic for pk_client_set_synchronous (Richard Hughes)
+ - Convert non-ASCII text to unicode for spawned backends (Richard Hughes)
+ - Never return FALSE from StateHasChanged() (Richard Hughes)
+ - Protect a few function in pk-package-ids.c from NULL input (Richard Hughes)
+ - Fix a small memory leak when we check for session restarts (Richard Hughes)
+ - Clarify the gtk-doc markup for PkControl::restart-schedule (Richard Hughes)
+ - Emit ::Destroy() in the dispose phase (Richard Hughes)
+ - Ensure we disconnect ::Finished() when we unref a transaction (Richard Hughes)
+ - Make PkNetworkUnix watch /proc/net/route (Richard Hughes)
+ - Correct a typo which causes a compile error on FreeBSD (Richard Hughes)
+ - To fix spawned backends, http_proxy has to be a URI not a bare proxy (Richard Hughes)
+ - Never return FALSE from StateHasChanged() (Richard Hughes)
+ - Allow the dummy security model to authorise actions (Richard Hughes)
+
+Backends:
+ - apt: Fix a typo in the backend (Florian Reinhard)
+ - yum: Opt out of SIGKILL as this can lead to RPM database corruption in some situations (Richard Hughes)
+ - yum: Disable refresh-packagekit when running under PackageKit (Richard Hughes)
+ - yum: Fix GetDistroUpgrades (Richard Hughes)
+
 Version 0.3.15
 ~~~~~~~~~~~~~~
 Released: 2009-03-30
