@@ -128,19 +128,6 @@ backend_cancel (PkBackend *backend)
 }
 
 /**
- * backend_download_packages:
- */
-static void
-backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
-{
-	gchar *package_ids_temp;
-
-	package_ids_temp = pk_package_ids_to_text (package_ids);
-	pk_backend_spawn_helper (spawn, BACKEND_FILE, "download-packages", directory, package_ids_temp, NULL);
-	g_free (package_ids_temp);
-}
-
-/**
  * backend_get_depends:
  */
 static void
@@ -363,7 +350,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,			/* get_mime_types */
 	backend_cancel,				/* cancel */
-	backend_download_packages,		/* download_packages */
+	NULL,		/* download_packages */
 	NULL,					/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */

@@ -259,33 +259,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			info = INFO_AVAILABLE
 		PackageKitBaseBackend.package(self, cpv_to_id(cpv), info, desc[0])
 
-	def download_packages(self, directory, pkgids):
-		# TODO: what is directory for ?
-		# TODO: remove wget output
-		# TODO: percentage
-		self.status(STATUS_DOWNLOAD)
-		self.allow_cancel(True)
-		percentage = 0
-
-		for pkgid in pkgids:
-			cpv = id_to_cpv(pkgid)
-
-			# is cpv valid
-			if not portage.portdb.cpv_exists(cpv):
-				# self.warning ? self.error ?
-				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find the package %s" % pkgid)
-				continue
-
-			# TODO: FEATURES=-fetch ?
-
-			try:
-				uris = portage.portdb.getFetchMap(cpv)
-
-				if not portage.fetch(uris, self.portage_settings, fetchonly=1, try_mirrors=1):
-					self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-			except Exception, e:
-				self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-
 	def get_depends(self, filters, pkgids, recursive):
 		# TODO: manage filters
 		# TODO: optimize by using vardb for installed packages ?
@@ -305,7 +278,10 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 						"Could not find the package %s" % pkgid)
 				continue
 
-			myopts = "--emptytree"
+			myopts = {}
+			if recursive:
+				myopts.pop("--emptytree", None)
+				myopts["--emptytree"] = True
 			spinner = ""
 			settings, trees, mtimedb = _emerge.load_emerge_config()
 			myparams = _emerge.create_depgraph_params(myopts, "")
@@ -313,6 +289,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
 			retval, fav = depgraph.select_files(["="+cpv])
 			if not retval:
+				print fav
 				self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
 				continue
 
@@ -320,7 +297,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 				# printing the whole tree
 				pkgs = depgraph.altlist(reversed=1)
 				for pkg in pkgs:
-					self.package(pkg[2])
+					if pkg[2] != cpv:
+						self.package(pkg[2])
 			else: # !recursive
 				# only printing child of the root node
 				# actually, we have "=cpv" -> "cpv" -> children
@@ -421,7 +399,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			if not self.vardb.match(cpv):
 				self.error(ERROR_PACKAGE_NOT_INSTALLED,
 						"Package %s is not installed" % pkg)
-				return
+				continue
 
 			required_set_names = ("system", "world")
 			required_sets = {}
@@ -432,6 +410,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			if not args_set:
 				self.error(ERROR_INTERNAL_ERROR, "Was not able to generate atoms")
+				continue
 			
 			depgraph = _emerge.depgraph(settings, trees, myopts,
 					_emerge.create_depgraph_params(myopts, "remove"), spinner)
@@ -467,6 +446,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			if not depgraph._complete_graph():
 				self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
+				continue
 
 			def cmp_pkg_cpv(pkg1, pkg2):
 				if pkg1.cpv > pkg2.cpv:
@@ -488,6 +468,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 					parents = depgraph.digraph.parent_nodes(pkg)
 					for node in parents:
 						self.package(node[2])
+
+		self.percentage(100)
 
 	def install_packages(self, pkgs):
 		self.status(STATUS_RUNNING)
@@ -532,8 +514,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			pkgsettings.setcpv(package)
 			package.metadata['USE'] = pkgsettings['PORTAGE_USE']
 
+			# TODO: check for writing access before calling merge ?
+#			try:
 			mergetask = _emerge.Scheduler(settings, trees, mtimedb, myopts, spinner, [package], favorites, package)
 			mergetask.merge()
+#			except:
+#				self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s" % cpv)
 
 	def remove_packages(self, allowdep, pkgs):
 		# can't use allowdep: never removing dep
@@ -586,11 +572,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 					cpv=cpv,
 					metadata=metadata,
 					operation="uninstall")
-
-			# TODO: needed ?
-			pkgsettings = portage.config(clone=settings)
-			pkgsettings.setcpv(package)
-			package.metadata['USE'] = pkgsettings['PORTAGE_USE']
 
 			mergetask = _emerge.Scheduler(settings,
 					trees, mtimedb, myopts, spinner, [package], favorites, package)
