@@ -301,7 +301,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			# is cpv valid
 			if not portage.portdb.cpv_exists(cpv):
 				# self.warning ? self.error ?
-				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find the package %s" % pkgid)
+				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,
+						"Could not find the package %s" % pkgid)
 				continue
 
 			myopts = "--emptytree"
@@ -340,7 +341,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			# is cpv valid
 			if not portage.portdb.cpv_exists(cpv):
 				# self.warning ? self.error ?
-				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find the package %s" % pkgid)
+				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,
+						"Could not find the package %s" % pkgid)
 				continue
 
 			homepage, desc, license = portage.portdb.aux_get(cpv, ["HOMEPAGE", "DESCRIPTION", "LICENSE"])
@@ -364,16 +366,18 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			# is cpv valid
 			if not portage.portdb.cpv_exists(cpv):
-				self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkgid)
+				self.error(ERROR_PACKAGE_NOT_FOUND,
+						"Package %s was not found" % pkgid)
 				continue
 
 			if not self.vardb.cpv_exists(cpv):
-				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Package %s is not installed" % pkgid)
+				self.error(ERROR_PACKAGE_NOT_INSTALLED,
+						"Package %s is not installed" % pkgid)
 				continue
 
 			cat, pv = portage.catsplit(cpv)
-			db = portage.dblink(cat, pv, portage.settings["ROOT"], self.portage_settings,
-					treetype="vartree", vartree=self.vardb)
+			db = portage.dblink(cat, pv, portage.settings["ROOT"],
+					self.portage_settings, treetype="vartree", vartree=self.vardb)
 			files = db.getcontents().keys()
 			files = sorted(files)
 			files = ";".join(files)
@@ -402,8 +406,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		recursive = text_to_bool(recursive)
 
 		myopts = {}
-		myopts.pop("--verbose", None)
-		myopts["--verbose"] = True
 		spinner = ""
 		favorites = []
 		settings, trees, mtimedb = _emerge.load_emerge_config()
@@ -601,6 +603,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		self.percentage(None)
 
 		for pkg in pkgs:
+			# TODO: be case sensitive ?
 			searchre = re.compile(pkg, re.IGNORECASE)
 
 			# TODO: optim with filter = installed
@@ -608,7 +611,28 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 				if searchre.search(cp):
 					#print self.vardb.dep_bestmatch(cp)
 					self.package(portage.portdb.xmatch("bestmatch-visible", cp))
-					
+
+	def search_details(self, filters, key):
+		# TODO: add keywords when they will be available
+		# TODO: filters
+		# TODO: split keys
+		# TODO: PERFORMANCE !
+		self.status(STATUS_QUERY)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		searchre = re.compile(key, re.IGNORECASE)
+		cpvlist = []
+
+		for cp in portage.portdb.cp_all():
+			# TODO: baaad, we are working on _every_ cpv :-/
+			for cpv in portage.portdb.match(cp): #TODO: cp_list(cp) ?
+				infos = portage.portdb.aux_get(cpv,
+						["HOMEPAGE","DESCRIPTION","repository"]) # LICENSE ?
+				for x in infos:
+					if searchre.search(x):
+						self.package(cpv)
+						break
 
 	def search_file(self, filters, key):
 		# TODO: manage filters, error if ~installed ?
@@ -622,8 +646,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 		for cpv in self.vardb.cpv_all():
 			cat, pv = portage.catsplit(cpv)
-			db = portage.dblink(cat, pv, portage.settings["ROOT"], self.portage_settings,
-					treetype="vartree", vartree=self.vardb)
+			db = portage.dblink(cat, pv, portage.settings["ROOT"],
+					self.portage_settings, treetype="vartree", vartree=self.vardb)
 			contents = db.getcontents()
 			if not contents:
 				continue
