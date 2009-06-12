@@ -289,7 +289,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
 			retval, fav = depgraph.select_files(["="+cpv])
 			if not retval:
-				print fav
 				self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
 				continue
 
@@ -476,24 +475,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		self.allow_cancel(True) # TODO: sure ?
 		self.percentage(None)
 
-		myopts = {} # TODO: --nodepends ?
-		spinner = ""
-		favorites = []
-		settings, trees, mtimedb = _emerge.load_emerge_config()
-		spinner = _emerge.stdout_spinner()
-		rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"], portage._sets.load_default_config(self.portage_settings, trees["/"]))
-
-		if "resume" in mtimedb and \
-		"mergelist" in mtimedb["resume"] and \
-		len(mtimedb["resume"]["mergelist"]) > 1:
-			mtimedb["resume_backup"] = mtimedb["resume"]
-			del mtimedb["resume"]
-			mtimedb.commit()
-
-		mtimedb["resume"]={}
-		mtimedb["resume"]["myopts"] = myopts.copy()
-		mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
-
 		for pkg in pkgs:
 			# check for installed is not mandatory as there are a lot of reason
 			# to re-install a package (USE/{LD,C}FLAGS change for example) (or live)
@@ -505,21 +486,37 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 				self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
 				continue
 
-			db_keys = list(portage.portdb._aux_cache_keys)
-			metadata = izip(db_keys, portage.portdb.aux_get(cpv, db_keys))
-			package = _emerge.Package(type_name="ebuild", root_config=rootconfig, cpv=cpv, metadata=metadata, operation="merge")
+			# inits
+			myopts = {} # TODO: --nodepends ?
+			spinner = ""
+			favorites = []
+			settings, trees, mtimedb = _emerge.load_emerge_config()
+			myparams = _emerge.create_depgraph_params(myopts, "")
+			spinner = _emerge.stdout_spinner()
 
-			# TODO: needed ?
-			pkgsettings = portage.config(clone=settings)
-			pkgsettings.setcpv(package)
-			package.metadata['USE'] = pkgsettings['PORTAGE_USE']
+			depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
+			retval, favorites = depgraph.select_files(["="+cpv])
+			if not retval:
+				self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
+				return
+
+			if "resume" in mtimedb and \
+			"mergelist" in mtimedb["resume"] and \
+			len(mtimedb["resume"]["mergelist"]) > 1:
+				mtimedb["resume_backup"] = mtimedb["resume"]
+				del mtimedb["resume"]
+				mtimedb.commit()
+
+			mtimedb["resume"]={}
+			mtimedb["resume"]["myopts"] = myopts.copy()
+			mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
 
 			# TODO: check for writing access before calling merge ?
-#			try:
-			mergetask = _emerge.Scheduler(settings, trees, mtimedb, myopts, spinner, [package], favorites, package)
+
+			mergetask = _emerge.Scheduler(settings, trees, mtimedb,
+					myopts, spinner, depgraph.altlist(),
+					favorites, depgraph.schedulerGraph())
 			mergetask.merge()
-#			except:
-#				self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s" % cpv)
 
 	def remove_packages(self, allowdep, pkgs):
 		# can't use allowdep: never removing dep
