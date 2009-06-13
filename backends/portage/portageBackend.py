@@ -247,6 +247,11 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		if lock:
 			self.doLock()
 
+	def is_installed(self, cpv):
+		if self.vardb.cpv_exists(cpv):
+			return True
+		return False
+
 	def cpv_to_id(self, cpv):
 		'''
 		Transform the cpv (portage) to a package id (packagekit)
@@ -278,14 +283,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			version = version + "-" + rev
 
 		# if installed, repo should be 'installed', packagekit rule
-		if self.vardb.cpv_exists(cpv):
+		if self.is_installed(cpv):
 			repo = "installed"
 
 		return get_package_id(package, version, ' '.join(keywords), repo)
 
 	def package(self, cpv):
 		desc = portage.portdb.aux_get(cpv, ["DESCRIPTION"])
-		if self.vardb.cpv_exists(cpv):
+		if self.is_installed(cpv):
 			info = INFO_INSTALLED
 		else:
 			info = INFO_AVAILABLE
@@ -356,13 +361,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 			homepage, desc, license = portage.portdb.aux_get(cpv,
 					["HOMEPAGE", "DESCRIPTION", "LICENSE"])
-			# get size
-			ebuild = portage.portdb.findname(cpv)
-			if ebuild:
-				dir = os.path.dirname(ebuild)
-				manifest = portage.manifest.Manifest(dir, portage.settings["DISTDIR"])
-				uris = portage.portdb.getFetchMap(cpv)
-				size = manifest.getDistfilesSize(uris)
+
+			# size should be prompted only if not installed
+			size = 0
+			if not self.is_installed(cpv):
+				ebuild = portage.portdb.findname(cpv)
+				if ebuild:
+					dir = os.path.dirname(ebuild)
+					manifest = portage.manifest.Manifest(dir, portage.settings["DISTDIR"])
+					uris = portage.portdb.getFetchMap(cpv)
+					size = manifest.getDistfilesSize(uris)
 
 			self.details(self.cpv_to_id(cpv), license, get_group(cpv),
 					desc, homepage, size)
