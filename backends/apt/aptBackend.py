@@ -756,9 +756,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             else:
                 license = "unknown"
             group = self._get_package_group(pkg)
+            if pkg.isInstalled:
+                size = pkg.packageSize
+            else:
+                size = pkg.installedSize
             self.details(pkg_id, license, group,
                          format_string(pkg.description),
-                         pkg.homepage, pkg.packageSize)
+                         pkg.homepage, size)
 
     @unlock_cache_afterwards
     def update_system(self):
