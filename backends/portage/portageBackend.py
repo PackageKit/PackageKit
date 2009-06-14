@@ -560,6 +560,21 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 					favorites, depgraph.schedulerGraph())
 			mergetask.merge()
 
+	def refresh_cache(self):
+		self.status(STATUS_REFRESH_CACHE)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		myopts = {} # TODO: --quiet ?
+		myopts.pop("--quiet", None)
+		myopts["--quiet"] = True
+		settings, trees, mtimedb = _emerge.load_emerge_config()
+		spinner = _emerge.stdout_spinner()
+		try:
+			_emerge.action_sync(settings, trees, mtimedb, myopts, "")
+		finally:
+			self.percentage(100)
+
 	def remove_packages(self, allowdep, pkgs):
 		# can't use allowdep: never removing dep
 		# TODO: filters ?
