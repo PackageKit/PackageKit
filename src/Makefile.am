@@ -56,7 +56,6 @@ shared_SOURCES =					\
 	pk-backend.c					\
 	pk-backend.h					\
 	pk-backend-internal.h				\
-	pk-security.h					\
 	pk-network.c					\
 	pk-network.h					\
 	pk-shared.c					\
@@ -107,14 +106,6 @@ endif
 if PK_BUILD_CONNMAN
 shared_SOURCES +=					\
 	pk-network-stack-connman.c
-endif
-
-if SECURITY_TYPE_POLKIT
-shared_SOURCES += pk-security-polkit.c
-endif
-
-if SECURITY_TYPE_DUMMY
-shared_SOURCES += pk-security-dummy.c
 endif
 
 sbin_PROGRAMS =						\
@@ -170,7 +161,7 @@ org.freedesktop.PackageKit.h: org.freedesktop.PackageKit.xml
 	$(LIBTOOL) --mode=execute dbus-binding-tool	\
 		--prefix=pk_engine			\
 		--mode=glib-server			\
-		--output=org.freedesktop.PackageKit.h			\
+		--output=org.freedesktop.PackageKit.h	\
 		$(srcdir)/org.freedesktop.PackageKit.xml
 
 org.freedesktop.PackageKit.Transaction.h: org.freedesktop.PackageKit.Transaction.xml
@@ -225,8 +216,6 @@ install-data-hook:
 
 EXTRA_DIST =						\
 	pk-marshal.list					\
-	pk-security-polkit.c				\
-	pk-security-dummy.c				\
 	org.freedesktop.PackageKit.xml			\
 	org.freedesktop.PackageKit.Transaction.xml	\
 	org.freedesktop.PackageKit.Backend.xml		\

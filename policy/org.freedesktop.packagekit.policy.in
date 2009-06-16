@@ -6,7 +6,7 @@
 
   <!--
     Policy definitions for PackageKit system actions.
-    Copyright (c) 2007-2008 Richard Hughes <richard@hughsie.com>
+    Copyright (c) 2007-2009 Richard Hughes <richard@hughsie.com>
   -->
 
   <vendor>The PackageKit Project</vendor>
@@ -18,8 +18,9 @@
     <_message>Authentication is required to cancel a task that was not started by yourself</_message>
     <icon_name>pk-package-delete</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep_always</allow_active>
+      <allow_active>auth_admin_keep</allow_active>
     </defaults>
   </action>
 
@@ -28,8 +29,9 @@
     <_message>Authentication is required to install a signed package</_message>
     <icon_name>pk-package-add</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep_always</allow_active>
+      <allow_active>yes</allow_active>
     </defaults>
   </action>
 
@@ -38,6 +40,7 @@
     <_message>Authentication is required to install an untrusted package</_message>
     <icon_name>pk-package-add</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin</allow_active>
     </defaults>
@@ -48,6 +51,7 @@
     <_message>Authentication is required to consider a key used for signing packages as trusted</_message>
     <icon_name>pk-package-add</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin</allow_active>
     </defaults>
@@ -58,6 +62,7 @@
     <_message>Authentication is required to accept a EULA</_message>
     <icon_name>pk-package-add</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
@@ -68,8 +73,9 @@
     <_message>Authentication is required to remove packages</_message>
     <icon_name>pk-package-delete</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep_always</allow_active>
+      <allow_active>auth_admin_keep</allow_active>
     </defaults>
   </action>
 
@@ -78,8 +84,9 @@
     <_message>Authentication is required to update packages</_message>
     <icon_name>pk-package-update</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep_always</allow_active>
+      <allow_active>yes</allow_active>
     </defaults>
   </action>
 
@@ -88,8 +95,9 @@
     <_message>Authentication is required to rollback a transaction</_message>
     <icon_name>pk-rollback</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep_always</allow_active>
+      <allow_active>auth_admin</allow_active>
     </defaults>
   </action>
 
@@ -98,8 +106,9 @@
     <_message>Authentication is required to change software source parameters</_message>
     <icon_name>pk-package-info</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep_always</allow_active>
+      <allow_active>auth_admin_keep</allow_active>
     </defaults>
   </action>
 
@@ -108,6 +117,7 @@
     <_message>Authentication is required to refresh the system sources</_message>
     <icon_name>pk-refresh-cache</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
@@ -118,6 +128,7 @@
     <_message>Authentication is required to set the network proxy used for downloading packages</_message>
     <icon_name>applications-internet</icon_name>
     <defaults>
+      <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>

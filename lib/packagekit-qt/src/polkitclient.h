@@ -31,7 +31,9 @@ class PolkitClient : QObject{
 
 public:
 	static PolkitClient* instance();
+#if 0
 	bool getAuth(const QString& action);
+#endif
 private:
 	static PolkitClient* m_instance;
 	PolkitClient(QObject *parent = 0);

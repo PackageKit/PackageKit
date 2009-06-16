@@ -42,10 +42,6 @@
 #include <glib/gprintf.h>
 #include <dbus/dbus-glib.h>
 
-#ifdef USE_SECURITY_POLKIT
-#include <polkit-dbus/polkit-dbus.h>
-#endif
-
 #include <packagekit-glib/pk-enum.h>
 #include <packagekit-glib/pk-bitfield.h>
 #include <packagekit-glib/pk-client.h>
@@ -190,131 +186,53 @@ pk_client_error_get_type (void)
  * pk_client_error_fixup:
  * @error: a %GError
  **/
-static gboolean
-pk_client_error_fixup (GError **error)
+static GError *
+pk_client_error_fixup (GError *error_local)
 {
+	GError *error;
 	const gchar *name;
-	guint code;
-	if (error != NULL && *error != NULL) {
-		/* get some proper debugging */
-		if ((*error)->domain == DBUS_GERROR &&
-		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION) {
-			/* use one of our local codes */
-			name = dbus_g_error_get_name (*error);
-			code = PK_CLIENT_ERROR_FAILED;
 
-			/* trim common prefix */
-			if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
-				name = &name[39];
+	g_return_val_if_fail (error_local != NULL, NULL);
 
-			/* try to get a better error */
-			if (g_str_has_prefix (name, "PermissionDenied") ||
-			    g_str_has_prefix (name, "RefusedByPolicy"))
-				code = PK_CLIENT_ERROR_FAILED_AUTH;
-			else if (g_str_has_prefix (name, "PackageIdInvalid") ||
-				 g_str_has_prefix (name, "SearchInvalid") ||
-				 g_str_has_prefix (name, "FilterInvalid") ||
-				 g_str_has_prefix (name, "InvalidProvide") ||
-				 g_str_has_prefix (name, "InputInvalid"))
-				code = PK_CLIENT_ERROR_INVALID_INPUT;
-			else if (g_str_has_prefix (name, "PackInvalid") ||
-				 g_str_has_prefix (name, "NoSuchFile") ||
-				 g_str_has_prefix (name, "NoSuchDirectory"))
-				code = PK_CLIENT_ERROR_INVALID_FILE;
-			else if (g_str_has_prefix (name, "NotSupported"))
-				code = PK_CLIENT_ERROR_NOT_SUPPORTED;
-
-			egg_debug ("fixing up code from %s to %i", name, code);
-			(*error)->code = code;
-		}
-		if (g_str_has_prefix ((*error)->message, "org.freedesktop.packagekit.")) {
-			egg_debug ("fixing up code for Policykit auth failure");
-			g_error_free (*error);
-			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED_AUTH, "PolicyKit authorization failure");
-		}
-		return TRUE;
-	}
-	return FALSE;
-}
-
-/**
- * pk_client_error_refused_by_policy:
- * @error: a valid #GError
- *
- * Return value: %TRUE if the error is the PolicyKit "RefusedByPolicy"
- **/
-static gboolean
-pk_client_error_refused_by_policy (GError *error)
-{
-	const gchar *error_name;
-
-	/* if not set */
-	if (error == NULL)
-		return FALSE;
-
-	/* not a dbus error */
-	if (error->code != DBUS_GERROR_REMOTE_EXCEPTION) {
-		egg_warning ("not a remote exception: %s", error->message);
-		return FALSE;
+	/* PolicyKit failure */
+	if (g_str_has_prefix (error_local->message, "org.freedesktop.packagekit.")) {
+		egg_debug ("fixing up code for Policykit auth failure");
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED_AUTH, "PolicyKit authorization failure");
+		goto out;
 	}
 
-	/* check for specific error */
-	error_name = dbus_g_error_get_name (error);
-	egg_debug ("ERROR: %s: %s", error_name, error->message);
-	if (egg_strequal (error_name, "org.freedesktop.PackageKit.RefusedByPolicy"))
-		return TRUE;
-	if (egg_strequal (error_name, "org.freedesktop.PackageKit.Transaction.RefusedByPolicy"))
-		return TRUE;
-	return FALSE;
-}
+	/* new default error with correct domain and code */
+	error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "%s", error_local->message);
 
-/**
- * pk_client_error_auth_obtain:
- * @error: the GError with the failure
- *
- * This function is indented to be passed failure messages from dbus methods
- * so that extra auth can be requested.
- *
- * Return value: if we gained the privilege we asked for
- **/
-static gboolean
-pk_client_error_auth_obtain (GError *error)
-{
-	gboolean ret = FALSE;
-#ifdef USE_SECURITY_POLKIT
-	PolKitAction *action = NULL;
-	PolKitResult result;
-	gchar *action_id = NULL; /* we don't free this */
-	DBusError error2;
-	dbus_error_init (&error2);
+	/* get some proper debugging */
+	if (error_local->domain == DBUS_GERROR &&
+	    error_local->code == DBUS_GERROR_REMOTE_EXCEPTION) {
+		/* use one of our local codes */
+		name = dbus_g_error_get_name (error_local);
 
-	g_return_val_if_fail (error != NULL, FALSE);
+		/* trim common prefix */
+		if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
+			name = &name[39];
 
-	/* get PolKitAction */
-	ret = polkit_dbus_error_parse_from_strings ("org.freedesktop.PolicyKit.Error.NotAuthorized", error->message, &action, &result);
-	if (!ret) {
-		egg_warning ("Not a polkit auth failure: %s", error->message);
-		return FALSE;
+		/* try to get a better error */
+		if (g_str_has_prefix (name, "PermissionDenied") ||
+		    g_str_has_prefix (name, "RefusedByPolicy"))
+			error->code = PK_CLIENT_ERROR_FAILED_AUTH;
+		else if (g_str_has_prefix (name, "PackageIdInvalid") ||
+			 g_str_has_prefix (name, "SearchInvalid") ||
+			 g_str_has_prefix (name, "FilterInvalid") ||
+			 g_str_has_prefix (name, "InvalidProvide") ||
+			 g_str_has_prefix (name, "InputInvalid"))
+			error->code = PK_CLIENT_ERROR_INVALID_INPUT;
+		else if (g_str_has_prefix (name, "PackInvalid") ||
+			 g_str_has_prefix (name, "NoSuchFile") ||
+			 g_str_has_prefix (name, "NoSuchDirectory"))
+			error->code = PK_CLIENT_ERROR_INVALID_FILE;
+		else if (g_str_has_prefix (name, "NotSupported"))
+			error->code = PK_CLIENT_ERROR_NOT_SUPPORTED;
 	}
-
-	/* get action_id from PolKitAction */
-	ret = polkit_action_get_action_id (action, &action_id);
-	if (!ret) {
-		egg_warning ("Unable to get an action ID");
-		return FALSE;
-	}
-
-	/* this blocks - use polkit_gnome_auth_obtain for non blocking version */
-	ret = polkit_auth_obtain (action_id, 0, getpid (), &error2);
-	if (dbus_error_is_set (&error2))
-		egg_warning ("Failed to obtain auth: %s", error2.message);
-	dbus_error_free (&error2);
-
-	egg_debug ("gained %s privilege = %d", action_id, ret);
-
-	polkit_action_unref (action);
-#endif
-	return ret;
+out:
+	return error;
 }
 
 /**
@@ -944,7 +862,8 @@ pk_client_allow_cancel_cb (DBusGProxy *proxy, gboolean allow_cancel, PkClient *c
 gboolean
 pk_client_get_allow_cancel (PkClient *client, gboolean *allow_cancel, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
@@ -954,13 +873,21 @@ pk_client_get_allow_cancel (PkClient *client, gboolean *allow_cancel, GError **e
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetAllowCancel", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetAllowCancel", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_BOOLEAN, allow_cancel,
 				 G_TYPE_INVALID);
-	pk_client_error_fixup (error);
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+out:
 	return ret;
 }
 
@@ -1033,8 +960,9 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 gboolean
 pk_client_get_status (PkClient *client, PkStatusEnum *status, GError **error)
 {
-	gboolean ret;
-	gchar *status_text;
+	gboolean ret = FALSE;
+	gchar *status_text = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (status != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -1045,17 +973,23 @@ pk_client_get_status (PkClient *client, PkStatusEnum *status, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetStatus", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetStatus", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &status_text,
 				 G_TYPE_INVALID);
-	pk_client_error_fixup (error);
-	if (ret) {
-		*status = pk_status_enum_from_text (status_text);
-		g_free (status_text);
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
+	*status = pk_status_enum_from_text (status_text);
+out:
+	g_free (status_text);
 	return ret;
 }
 
@@ -1073,7 +1007,8 @@ pk_client_get_status (PkClient *client, PkStatusEnum *status, GError **error)
 gboolean
 pk_client_get_package (PkClient *client, gchar **package, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
@@ -1084,13 +1019,21 @@ pk_client_get_package (PkClient *client, gchar **package, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackageLast", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackageLast", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID);
-	pk_client_error_fixup (error);
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+out:
 	return ret;
 }
 
@@ -1114,7 +1057,8 @@ gboolean
 pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentage,
 			guint *elapsed, guint *remaining, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
@@ -1124,16 +1068,24 @@ pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentag
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetProgress", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetProgress", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, percentage,
 				 G_TYPE_UINT, subpercentage,
 				 G_TYPE_UINT, elapsed,
 				 G_TYPE_UINT, remaining,
 				 G_TYPE_INVALID);
-	pk_client_error_fixup (error);
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+out:
 	return ret;
 }
 
@@ -1152,9 +1104,10 @@ pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentag
 gboolean
 pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **text, GError **error)
 {
-	gboolean ret;
-	gchar *role_text;
+	gboolean ret = FALSE;
+	gchar *role_text = NULL;
 	gchar *text_temp;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (role != NULL, FALSE);
@@ -1164,7 +1117,7 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **text, GError **e
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		goto out;
 	}
 
 	/* we can avoid a trip to the daemon */
@@ -1173,41 +1126,25 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **text, GError **e
 		return TRUE;
 	}
 
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetRole", error,
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetRole", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &role_text,
 				 G_TYPE_STRING, &text_temp,
 				 G_TYPE_INVALID);
-	if (ret) {
-		*role = pk_role_enum_from_text (role_text);
-		g_free (role_text);
-		if (text != NULL)
-			*text = text_temp;
-		else
-			g_free (text_temp);
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
-	pk_client_error_fixup (error);
-	return ret;
-}
-
-/**
- * pk_client_cancel_action:
- **/
-static gboolean
-pk_client_cancel_action (PkClient *client, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", error,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+	*role = pk_role_enum_from_text (role_text);
+	if (text != NULL)
+		*text = text_temp;
+	else
+		g_free (text_temp);
+out:
+	g_free (role_text);
 	return ret;
 }
 
@@ -1227,37 +1164,34 @@ pk_client_cancel_action (PkClient *client, GError **error)
 gboolean
 pk_client_cancel (PkClient *client, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* we don't need to cancel, so return TRUE */
-	if (client->priv->proxy == NULL)
-		return TRUE;
+	if (client->priv->proxy == NULL) {
+		ret = TRUE;
+		goto out;
+	}
 
 	/* we cannot cancel a client in ::Finished() */
 	if (client->priv->is_finishing) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "unable to cancel client in finished handler");
-		return FALSE;
+		goto out;
 	}
 
-	/* hopefully do the operation first time */
-	ret = pk_client_cancel_action (client, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* retry the action now we have got auth */
-			ret = pk_client_cancel_action (client, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", &error_local,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* no error to process */
 	if (ret)
@@ -1272,8 +1206,9 @@ pk_client_cancel (PkClient *client, GError **error)
 	}
 
 	/* we failed one of these, return the error to the user */
-	pk_client_error_fixup (&error_local);
-	g_propagate_error (error, error_local);
+	if (error != NULL)
+		*error = pk_client_error_fixup (error_local);
+	g_error_free (error_local);
 out:
 	return ret;
 }
@@ -1316,8 +1251,8 @@ pk_client_transaction_timeout_cb (PkClient *client)
 static gboolean
 pk_client_allocate_transaction_id (PkClient *client, GError **error)
 {
-	gboolean ret;
-	gchar *tid;
+	gboolean ret = FALSE;
+	gchar *tid = NULL;
 	GError *error_local = NULL;
 	const gchar **list;
 	guint len;
@@ -1332,7 +1267,7 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 		if (len > 0) {
 			if (error != NULL)
 				*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "will not queue as timeout 0");
-			return FALSE;
+			goto out;
 		}
 	}
 
@@ -1346,7 +1281,7 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 				*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to get a TID: %s (%i)", error_local->message, error_local->code);
 		}
 		g_error_free (error_local);
-		return FALSE;
+		goto out;
 	}
 
 	/* free any old tid */
@@ -1355,19 +1290,19 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 
 	/* set that new ID to this GObject */
 	ret = pk_client_set_tid (client, tid, &error_local);
-	g_free (tid);
 	if (!ret) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to set TID: %s", error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		goto out;
 	}
 
 	/* set a timeout */
 	if (client->priv->timeout > 0)
 		client->priv->timeout_id = g_timeout_add (client->priv->timeout, (GSourceFunc) pk_client_transaction_timeout_cb, client);
-
-	return TRUE;
+out:
+	g_free (tid);
+	return ret;
 }
 
 /**
@@ -1383,8 +1318,9 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 gboolean
 pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 {
-	gboolean ret;
-	gchar *filter_text;
+	gboolean ret = FALSE;
+	gchar *filter_text = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1393,13 +1329,13 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATES;
@@ -1409,14 +1345,24 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdates", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdates", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1424,7 +1370,8 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -1440,7 +1387,8 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 gboolean
 pk_client_get_categories (PkClient *client, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1449,13 +1397,13 @@ pk_client_get_categories (PkClient *client, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_CATEGORIES;
@@ -1468,11 +1416,22 @@ pk_client_get_categories (PkClient *client, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetCategories", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetCategories", &error_local,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1480,30 +1439,7 @@ pk_client_get_categories (PkClient *client, GError **error)
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
-	return ret;
-}
-
-/**
- * pk_client_update_system_action:
- **/
-static gboolean
-pk_client_update_system_action (PkClient *client, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		if (error != NULL)
-			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "UpdateSystem", error,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
 	return ret;
 }
 
@@ -1524,7 +1460,7 @@ pk_client_update_system_action (PkClient *client, GError **error)
 gboolean
 pk_client_update_system (PkClient *client, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -1534,7 +1470,7 @@ pk_client_update_system (PkClient *client, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
@@ -1545,34 +1481,28 @@ pk_client_update_system (PkClient *client, GError **error)
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 
-	/* hopefully do the operation first time */
-	ret = pk_client_update_system_action (client, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_update_system_action (client, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		ret = FALSE;
+		goto out;
 	}
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "UpdateSystem", &error_local,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1580,7 +1510,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
+out:
 	return ret;
 }
 
@@ -1599,8 +1529,9 @@ out:
 gboolean
 pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
-	gboolean ret;
-	gchar *filter_text;
+	gboolean ret = FALSE;
+	gchar *filter_text = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1609,13 +1540,13 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_NAME;
@@ -1626,15 +1557,25 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "SearchName", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "SearchName", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1642,7 +1583,8 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -1662,8 +1604,9 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 gboolean
 pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
-	gboolean ret;
-	gchar *filter_text;
+	gboolean ret = FALSE;
+	gchar *filter_text = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1672,13 +1615,13 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_DETAILS;
@@ -1689,15 +1632,25 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "SearchDetails", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "SearchDetails", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1705,7 +1658,8 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -1723,8 +1677,9 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 gboolean
 pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
-	gboolean ret;
-	gchar *filter_text;
+	gboolean ret = FALSE;
+	gchar *filter_text = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1733,13 +1688,13 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_GROUP;
@@ -1750,15 +1705,25 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "SearchGroup", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "SearchGroup", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1766,7 +1731,8 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -1784,8 +1750,9 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 gboolean
 pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
-	gboolean ret;
-	gchar *filter_text;
+	gboolean ret = FALSE;
+	gchar *filter_text = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1794,13 +1761,13 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_FILE;
@@ -1811,15 +1778,25 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "SearchFile", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "SearchFile", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1827,7 +1804,8 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -1846,9 +1824,10 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 gboolean
 pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GError **error)
 {
-	gboolean ret;
-	gchar *filter_text;
+	gboolean ret = FALSE;
+	gchar *filter_text = NULL;
 	gchar *package_ids_temp;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -1858,7 +1837,7 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
@@ -1868,13 +1847,13 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
@@ -1886,16 +1865,26 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1903,7 +1892,8 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -1919,8 +1909,9 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 gboolean
 pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar *directory, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	gchar *package_ids_temp;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -1930,7 +1921,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
@@ -1940,14 +1931,13 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
-		return FALSE;
-	}
+	if (!ret)
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_DOWNLOAD_PACKAGES;
@@ -1958,12 +1948,23 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "DownloadPackages", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "DownloadPackages", &error_local,
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1971,7 +1972,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
 	return ret;
 }
 
@@ -1988,8 +1989,9 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 gboolean
 pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 {
-	gboolean ret;
-	gchar *filter_text;
+	gboolean ret = FALSE;
+	gchar *filter_text = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1998,13 +2000,13 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_PACKAGES;
@@ -2014,14 +2016,24 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackages", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackages", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2029,7 +2041,8 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -2048,7 +2061,8 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 gboolean
 pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (code != NULL, FALSE);
@@ -2058,12 +2072,20 @@ pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "SetLocale", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "SetLocale", &error_local,
 				 G_TYPE_STRING, code,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_client_error_fixup (error);
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+out:
 	return ret;
 }
 
@@ -2082,9 +2104,10 @@ pk_client_set_locale (PkClient *client, const gchar *code, GError **error)
 gboolean
 pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GError **error)
 {
-	gboolean ret;
-	gchar *filter_text;
+	gboolean ret = FALSE;
+	gchar *filter_text = NULL;
 	gchar *package_ids_temp;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -2094,7 +2117,7 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
@@ -2104,13 +2127,13 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
@@ -2122,16 +2145,26 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2139,7 +2172,8 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -2161,9 +2195,10 @@ gboolean
 pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum provides,
 			 const gchar *search, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	const gchar *provides_text;
-	gchar *filter_text;
+	gchar *filter_text = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (provides != PK_PROVIDES_ENUM_UNKNOWN, FALSE);
@@ -2174,13 +2209,13 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_WHAT_PROVIDES;
@@ -2194,16 +2229,26 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "WhatProvides", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "WhatProvides", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, provides_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2211,7 +2256,8 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -2229,8 +2275,9 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 gboolean
 pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	gchar *package_ids_temp;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -2240,7 +2287,7 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
@@ -2250,13 +2297,13 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
@@ -2270,12 +2317,23 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdateDetail", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdateDetail", &error_local,
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2283,30 +2341,7 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
-	return ret;
-}
-
-/**
- * pk_client_rollback_action:
- **/
-static gboolean
-pk_client_rollback_action (PkClient *client, const gchar *transaction_id, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
-				 G_TYPE_STRING, transaction_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
 	return ret;
 }
 
@@ -2324,7 +2359,7 @@ pk_client_rollback_action (PkClient *client, const gchar *transaction_id, GError
 gboolean
 pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -2334,46 +2369,39 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_ROLLBACK;
 	client->priv->cached_transaction_id = g_strdup (transaction_id);
 
-	/* hopefully do the operation first time */
-	ret = pk_client_rollback_action (client, transaction_id, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_rollback_action (client, transaction_id, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", &error_local,
+				 G_TYPE_STRING, transaction_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2381,7 +2409,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
+out:
 	return ret;
 }
 
@@ -2401,8 +2429,9 @@ out:
 gboolean
 pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar *filter_text;
+	gboolean ret = FALSE;
+	gchar *filter_text = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (packages != NULL, FALSE);
@@ -2412,13 +2441,13 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_RESOLVE;
@@ -2429,15 +2458,25 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRV, packages,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2445,7 +2484,8 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -2463,8 +2503,9 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 gboolean
 pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	gchar *package_ids_temp;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -2474,7 +2515,7 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
@@ -2484,13 +2525,13 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* we use the cached objects support */
 	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_details_obj_copy);
@@ -2504,12 +2545,23 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetDetails", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetDetails", &error_local,
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2517,7 +2569,7 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
 	return ret;
 }
 
@@ -2534,7 +2586,8 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 gboolean
 pk_client_get_distro_upgrades (PkClient *client, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -2543,13 +2596,13 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
@@ -2562,11 +2615,22 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetDistroUpgrades", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetDistroUpgrades", &error_local,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2574,7 +2638,7 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
+out:
 	return ret;
 }
 
@@ -2591,8 +2655,9 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 gboolean
 pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	gchar *package_ids_temp;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
@@ -2602,7 +2667,7 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
@@ -2612,13 +2677,13 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_FILES;
@@ -2628,12 +2693,23 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetFiles", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetFiles", &error_local,
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2641,34 +2717,7 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	pk_client_error_fixup (error);
-	return ret;
-}
-
-/**
- * pk_client_remove_packages_action:
- **/
-static gboolean
-pk_client_remove_packages_action (PkClient *client, gchar **package_ids,
-				  gboolean allow_deps, gboolean autoremove,
-				  GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "RemovePackages", error,
-				 G_TYPE_STRV, package_ids,
-				 G_TYPE_BOOLEAN, allow_deps,
-				 G_TYPE_BOOLEAN, autoremove,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
 	return ret;
 }
 
@@ -2690,7 +2739,7 @@ gboolean
 pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow_deps,
 			  gboolean autoremove, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	gchar *package_ids_temp;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
@@ -2702,7 +2751,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
@@ -2712,7 +2761,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
@@ -2726,34 +2775,29 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	client->priv->cached_autoremove = autoremove;
 	client->priv->cached_package_ids = g_strdupv (package_ids);
 
-	/* hopefully do the operation first time */
-	ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "RemovePackages", &error_local,
+				 G_TYPE_STRV, package_ids,
+				 G_TYPE_BOOLEAN, allow_deps,
+				 G_TYPE_BOOLEAN, autoremove,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2761,30 +2805,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
-	return ret;
-}
-
-/**
- * pk_client_refresh_cache_action:
- **/
-static gboolean
-pk_client_refresh_cache_action (PkClient *client, gboolean force, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "RefreshCache", error,
-				 G_TYPE_BOOLEAN, force,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
 	return ret;
 }
 
@@ -2804,7 +2825,7 @@ pk_client_refresh_cache_action (PkClient *client, gboolean force, GError **error
 gboolean
 pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -2814,7 +2835,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
@@ -2826,34 +2847,27 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 	client->priv->role = PK_ROLE_ENUM_REFRESH_CACHE;
 	client->priv->cached_force = force;
 
-	/* hopefully do the operation first time */
-	ret = pk_client_refresh_cache_action (client, force, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_refresh_cache_action (client, force, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "RefreshCache", &error_local,
+				 G_TYPE_BOOLEAN, force,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2861,30 +2875,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
-	return ret;
-}
-
-/**
- * pk_client_install_package_action:
- **/
-static gboolean
-pk_client_install_package_action (PkClient *client, gchar **package_ids, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "InstallPackages", error,
-				 G_TYPE_STRV, package_ids,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
 	return ret;
 }
 
@@ -2901,7 +2892,7 @@ pk_client_install_package_action (PkClient *client, gchar **package_ids, GError 
 gboolean
 pk_client_install_packages (PkClient *client, gchar **package_ids, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	gchar *package_ids_temp;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
@@ -2913,7 +2904,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
@@ -2923,7 +2914,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
@@ -2935,34 +2926,27 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
 	client->priv->cached_package_ids = g_strdupv (package_ids);
 
-	/* hopefully do the operation first time */
-	ret = pk_client_install_package_action (client, package_ids, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_install_package_action (client, package_ids, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "InstallPackages", &error_local,
+				 G_TYPE_STRV, package_ids,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2970,35 +2954,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
-	return ret;
-}
-
-/**
- * pk_client_install_signature_action:
- **/
-static gboolean
-pk_client_install_signature_action (PkClient *client, PkSigTypeEnum type, const gchar *key_id,
-				    const gchar *package_id, GError **error)
-{
-	gboolean ret;
-	const gchar *type_text;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	type_text = pk_sig_type_enum_to_text (type);
-	ret = dbus_g_proxy_call (client->priv->proxy, "InstallSignature", error,
-				 G_TYPE_STRING, type_text,
-				 G_TYPE_STRING, key_id,
-				 G_TYPE_STRING, package_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
 	return ret;
 }
 
@@ -3016,7 +2972,8 @@ gboolean
 pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *key_id,
 			     const gchar *package_id, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
+	const gchar *type_text;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -3029,7 +2986,7 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
@@ -3042,34 +2999,30 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	client->priv->cached_package_id = g_strdup (package_id);
 	client->priv->cached_key_id = g_strdup (key_id);
 
-	/* hopefully do the operation first time */
-	ret = pk_client_install_signature_action (client, type, key_id, package_id, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_install_signature_action (client, type, key_id, package_id, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
+	type_text = pk_sig_type_enum_to_text (type);
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "InstallSignature", &error_local,
+				 G_TYPE_STRING, type_text,
+				 G_TYPE_STRING, key_id,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -3077,30 +3030,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
-	return ret;
-}
-
-/**
- * pk_client_update_packages_action:
- **/
-static gboolean
-pk_client_update_packages_action (PkClient *client, gchar **package_ids, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "UpdatePackages", error,
-				 G_TYPE_STRV, package_ids,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
 	return ret;
 }
 
@@ -3117,7 +3047,7 @@ pk_client_update_packages_action (PkClient *client, gchar **package_ids, GError 
 gboolean
 pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	gchar *package_ids_temp;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
@@ -3129,7 +3059,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* check the PackageIDs here to avoid a round trip if invalid */
@@ -3139,7 +3069,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
@@ -3155,34 +3085,27 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 		client->priv->cached_package_ids = g_strdupv (package_ids);
 	}
 
-	/* hopefully do the operation first time */
-	ret = pk_client_update_packages_action (client, package_ids, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_update_packages_action (client, package_ids, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "UpdatePackages", &error_local,
+				 G_TYPE_STRV, package_ids,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -3190,31 +3113,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
-	return ret;
-}
-
-/**
- * pk_client_install_files_action:
- **/
-static gboolean
-pk_client_install_files_action (PkClient *client, gboolean trusted, gchar **files, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "InstallFiles", error,
-				 G_TYPE_BOOLEAN, trusted,
-				 G_TYPE_STRV, files,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
 	return ret;
 }
 
@@ -3232,9 +3131,8 @@ pk_resolve_local_path (const gchar *rel_path)
 	gchar *temp;
 
 	/* don't trust realpath one little bit */
-	if (rel_path == NULL) {
+	if (rel_path == NULL)
 		return NULL;
-	}
 
 	/* ITS4: ignore, glibc allocates us a buffer to try and fix some brain damage */
 	temp = realpath (rel_path, NULL);
@@ -3263,7 +3161,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 {
 	guint i;
 	guint length;
-	gboolean ret;
+	gboolean ret = FALSE;
 	gchar **files = NULL;
 	gchar *file;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
@@ -3276,7 +3174,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
@@ -3304,34 +3202,28 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 	client->priv->cached_trusted = trusted;
 	client->priv->cached_full_paths = g_strdupv (files);
 
-	/* hopefully do the operation first time */
-	ret = pk_client_install_files_action (client, trusted, files, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_install_files_action (client, trusted, files, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "InstallFiles", &error_local,
+				 G_TYPE_BOOLEAN, trusted,
+				 G_TYPE_STRV, files,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -3339,7 +3231,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
+out:
 	g_strfreev (files);
 	return ret;
 }
@@ -3356,8 +3248,9 @@ out:
 gboolean
 pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 {
-	gboolean ret;
-	gchar *filter_text;
+	gboolean ret = FALSE;
+	gchar *filter_text = NULL;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -3366,13 +3259,13 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REPO_LIST;
@@ -3382,15 +3275,24 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	filter_text = pk_filter_bitfield_to_text (filters);
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetRepoList", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetRepoList", &error_local,
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	g_free (filter_text);
-	pk_client_error_fixup (error);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -3398,29 +3300,8 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-	return ret;
-}
-
-/**
- * pk_client_accept_eula_action:
- **/
-static gboolean
-pk_client_accept_eula_action (PkClient *client, const gchar *eula_id, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "AcceptEula", error,
-				 G_TYPE_STRING, eula_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
+	g_free (filter_text);
 	return ret;
 }
 
@@ -3437,7 +3318,7 @@ pk_client_accept_eula_action (PkClient *client, const gchar *eula_id, GError **e
 gboolean
 pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -3448,7 +3329,7 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
@@ -3459,34 +3340,27 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_ACCEPT_EULA;
 
-	/* hopefully do the operation first time */
-	ret = pk_client_accept_eula_action (client, eula_id, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_accept_eula_action (client, eula_id, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "AcceptEula", &error_local,
+				 G_TYPE_STRING, eula_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -3494,31 +3368,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
-	return ret;
-}
-
-/**
- * pk_client_repo_enable_action:
- **/
-static gboolean
-pk_client_repo_enable_action (PkClient *client, const gchar *repo_id, gboolean enabled, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "RepoEnable", error,
-				 G_TYPE_STRING, repo_id,
-				 G_TYPE_BOOLEAN, enabled,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
 	return ret;
 }
 
@@ -3536,7 +3386,7 @@ pk_client_repo_enable_action (PkClient *client, const gchar *repo_id, gboolean e
 gboolean
 pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -3547,7 +3397,7 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
@@ -3558,34 +3408,28 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_ENABLE;
 
-	/* hopefully do the operation first time */
-	ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "RepoEnable", &error_local,
+				 G_TYPE_STRING, repo_id,
+				 G_TYPE_BOOLEAN, enabled,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -3593,33 +3437,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
-	return ret;
-}
-
-/**
- * pk_client_repo_set_data_action:
- **/
-static gboolean
-pk_client_repo_set_data_action (PkClient *client, const gchar *repo_id,
-				const gchar *parameter, const gchar *value, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* check to see if we have a valid proxy */
-	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
-	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "RepoSetData", error,
-				 G_TYPE_STRING, repo_id,
-				 G_TYPE_STRING, parameter,
-				 G_TYPE_STRING, value,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+out:
 	return ret;
 }
 
@@ -3640,7 +3458,7 @@ gboolean
 pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *parameter,
 			 const gchar *value, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -3653,7 +3471,7 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
@@ -3664,34 +3482,29 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_SET_DATA;
 
-	/* hopefully do the operation first time */
-	ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_local);
-
-	/* we were refused by policy */
-	if (!ret && pk_client_error_refused_by_policy (error_local)) {
-		/* try to get auth */
-		if (pk_client_error_auth_obtain (error_local)) {
-			/* clear old error */
-			g_clear_error (&error_local);
-
-			/* get a new tid */
-			ret = pk_client_allocate_transaction_id (client, &error_local);
-			if (!ret)
-				goto out;
-
-			/* retry the action now we have got auth */
-			ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_local);
-		}
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		goto out;
 	}
 
-out:
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "RepoSetData", &error_local,
+				 G_TYPE_STRING, repo_id,
+				 G_TYPE_STRING, parameter,
+				 G_TYPE_STRING, value,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
 	/* we failed one of these, return the error to the user */
 	if (!ret) {
-		pk_client_error_fixup (&error_local);
-		g_propagate_error (error, error_local);
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
 	}
 
-	if (ret && !client->priv->is_finished) {
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -3699,7 +3512,7 @@ out:
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
-
+out:
 	return ret;
 }
 
@@ -3717,7 +3530,8 @@ out:
 gboolean
 pk_client_is_caller_active (PkClient *client, gboolean *is_active, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (is_active != NULL, FALSE);
@@ -3727,13 +3541,22 @@ pk_client_is_caller_active (PkClient *client, gboolean *is_active, GError **erro
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "IsCallerActive", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "IsCallerActive", &error_local,
 				 G_TYPE_INVALID,
 				 G_TYPE_BOOLEAN, is_active,
 				 G_TYPE_INVALID);
-	pk_client_error_fixup (error);
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+out:
 	return ret;
 }
 
@@ -3750,7 +3573,8 @@ pk_client_is_caller_active (PkClient *client, gboolean *is_active, GError **erro
 gboolean
 pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -3759,13 +3583,13 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
-		return FALSE;
+		goto out;
 
 	/* we use the cached objects support */
 	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_transaction_obj_copy);
@@ -3775,13 +3599,23 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetOldTransactions", error,
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetOldTransactions", &error_local,
 				 G_TYPE_UINT, number,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_client_error_fixup (error);
-	if (ret && !client->priv->is_finished) {
+	if (!ret) {
+		if (error != NULL)
+			*error = pk_client_error_fixup (error_local);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* is not already finished */
+	if (!client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -3789,6 +3623,7 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 		if (client->priv->synchronous)
 			g_main_loop_run (client->priv->loop);
 	}
+out:
 	return ret;
 }
 
@@ -3806,7 +3641,7 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 gboolean
 pk_client_requeue (PkClient *client, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	PkClientPrivate *priv = PK_CLIENT_GET_PRIVATE (client);
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -3816,14 +3651,14 @@ pk_client_requeue (PkClient *client, GError **error)
 	if (priv->role == PK_ROLE_ENUM_UNKNOWN) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
-		return FALSE;
+		goto out;
 	}
 
-	/* are we still running? */
+	/* is not already finished */
 	if (!client->priv->is_finished) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "not finished, so cannot requeue");
-		return FALSE;
+		goto out;
 	}
 
 	/* clear enough data of the client to allow us to requeue */
@@ -3886,9 +3721,9 @@ pk_client_requeue (PkClient *client, GError **error)
 	else {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
-		return FALSE;
+		goto out;
 	}
-	pk_client_error_fixup (error);
+out:
 	return ret;
 }
 
@@ -3908,6 +3743,7 @@ gboolean
 pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 {
 	DBusGProxy *proxy = NULL;
+	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -3915,7 +3751,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 	if (client->priv->tid != NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_ALREADY_TID, "cannot set the tid on an already set client");
-		return FALSE;
+		goto out;
 	}
 
 	/* get a connection */
@@ -3924,7 +3760,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 	if (proxy == NULL) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_ALREADY_TID, "Cannot connect to PackageKit tid %s", tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
@@ -4016,8 +3852,9 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 	dbus_g_proxy_connect_signal (proxy, "Destroy",
 				     G_CALLBACK (pk_client_destroy_cb), client, NULL);
 	client->priv->proxy = proxy;
-
-	return TRUE;
+	ret = TRUE;
+out:
+	return ret;
 }
 
 /**
@@ -4425,7 +4262,7 @@ pk_client_disconnect_proxy (PkClient *client)
 gboolean
 pk_client_reset (PkClient *client, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -4436,7 +4273,7 @@ pk_client_reset (PkClient *client, GError **error)
 	if (client->priv->is_finishing && client->priv->synchronous) {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "unable to reset synchronous client in finished handler");
-		return FALSE;
+		goto out;
 	}
 
 	if (client->priv->tid != NULL && !client->priv->is_finished) {
@@ -4444,7 +4281,7 @@ pk_client_reset (PkClient *client, GError **error)
 		/* we try to cancel the running tranaction */
 		ret = pk_client_cancel (client, error);
 		if (!ret)
-			return FALSE;
+			goto out;
 	}
 
 	/* stop the timeout timer if running */
@@ -4489,7 +4326,9 @@ pk_client_reset (PkClient *client, GError **error)
 
 	/* TODO: make clean */
 	pk_obj_list_clear (client->priv->cached_data);
-	return TRUE;
+	ret = TRUE;
+out:
+	return ret;
 }
 
 /**

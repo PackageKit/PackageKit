@@ -32,7 +32,6 @@ void pk_inhibit_test (EggTest *test);
 void pk_spawn_test (EggTest *test);
 void pk_transaction_list_test (EggTest *test);
 void pk_transaction_db_test (EggTest *test);
-void pk_security_test (EggTest *test);
 void pk_time_test (EggTest *test);
 void pk_backend_test (EggTest *test);
 void pk_backend_test_spawn (EggTest *test);
@@ -55,7 +54,6 @@ main (int argc, char **argv)
 
 	/* components */
 	pk_file_monitor_test (test);
-	pk_security_test (test);
 	pk_time_test (test);
 	pk_conf_test (test);
 	pk_store_test (test);

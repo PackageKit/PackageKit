@@ -570,10 +570,6 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 	if (wrong != 0)
 		g_string_append_printf (string, "ERROR: %i have inconsistent flags\n", wrong);
 
-	/* some are not committed */
-	if (no_commit != 0)
-		g_string_append_printf (string, "WARNING: %i have not been committed\n", no_commit);
-
 	/* more than one running */
 	if (running > 1)
 		g_string_append_printf (string, "ERROR: %i are running\n", running);
@@ -649,7 +645,7 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 
 	/* some are not committed */
 	if (no_commit != 0)
-		egg_debug ("%i have not been committed", no_commit);
+		egg_debug ("%i have not been committed and may be pending auth", no_commit);
 
 	/* more than one running */
 	if (running > 1) {
