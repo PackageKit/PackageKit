@@ -535,8 +535,8 @@ pk_console_destroy_cb (PkClient *client, gpointer data)
 	/* exit our private loop if it's running */
 	ret = g_main_loop_is_running (loop);
 	if (ret) {
-		egg_warning ("quitting loop due to transaction being destroyed");
-		g_main_loop_quit (loop);
+		egg_warning ("maybe quit loop due to transaction being destroyed?");
+//		g_main_loop_quit (loop);
 	}
 }
 
