@@ -1322,7 +1322,7 @@ pk_transaction_release_tid (PkTransaction *transaction)
 static guint
 pk_transaction_get_pid (PkTransaction *transaction, PolkitSubject *subject)
 {
-	guint pid;
+	guint pid = G_MAXUINT;
 	gboolean ret;
 	gchar *sender = NULL;
 	GError *error = NULL;
@@ -1341,7 +1341,7 @@ pk_transaction_get_pid (PkTransaction *transaction, PolkitSubject *subject)
 				 G_TYPE_UINT, &pid,
 				 G_TYPE_INVALID);
 	if (!ret) {
-		egg_error ("failed to get pid: %s", error->message);
+		egg_warning ("failed to get pid: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
