@@ -1673,6 +1673,7 @@ pk_transaction_role_to_action_untrusted (PkRoleEnum role)
 static gboolean
 pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_trusted, PkRoleEnum role, GError **error)
 {
+	PolkitDetails *details;
 	const gchar *action_id;
 	gboolean ret = FALSE;
 
@@ -1700,14 +1701,25 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 
 	/* check subject */
 	transaction->priv->waiting_for_auth = TRUE;
+
+	/* insert details about the authorization */
+	details = polkit_details_new ();
+	polkit_details_insert (details, "role", pk_role_enum_to_text (transaction->priv->role));
+	polkit_details_insert (details, "only-trusted", transaction->priv->cached_only_trusted ? "true" : "false");
+
+	/* do authorization async */
 	polkit_authority_check_authorization (transaction->priv->authority,
 					      transaction->priv->subject,
 					      action_id,
-					      NULL,
+					      details,
 					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
 					      transaction->priv->cancellable,
 					      (GAsyncReadyCallback) pk_transaction_action_obtain_authorization_finished_cb,
 					      transaction);
+
+	/* check_authorization ref's this */
+	g_object_unref (details);
+
 	/* assume success, as this is async */
 	ret = TRUE;
 out:
@@ -4136,6 +4148,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->emit_signature_required = FALSE;
 	transaction->priv->emit_media_change_required = FALSE;
 	transaction->priv->cached_enabled = FALSE;
+	transaction->priv->cached_only_trusted = TRUE;
 	transaction->priv->cached_key_id = NULL;
 	transaction->priv->cached_package_id = NULL;
 	transaction->priv->cached_package_ids = NULL;

@@ -612,6 +612,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 #ifdef USE_SECURITY_POLKIT
 	gchar *sender = NULL;
 	PolkitSubject *subject;
+	PolkitDetails *details;
 #else
 	gboolean ret;
 	GError *error = NULL;
@@ -632,13 +633,22 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	/* check subject */
 	sender = dbus_g_method_get_sender (context);
 	subject = polkit_system_bus_name_new (sender);
+
+	/* insert details about the authorization */
+	details = polkit_details_new ();
+	polkit_details_insert (details, "role", pk_role_enum_to_text (PK_ROLE_ENUM_UNKNOWN));
+
+	/* do authorization async */
 	polkit_authority_check_authorization (engine->priv->authority, subject,
 					      "org.freedesktop.packagekit.system-network-proxy-configure",
-					      NULL,
+					      details,
 					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
 					      NULL,
 					      (GAsyncReadyCallback) pk_engine_action_obtain_authorization_finished_cb,
 					      engine);
+
+	/* check_authorization ref's this */
+	g_object_unref (details);
 #else
 	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
