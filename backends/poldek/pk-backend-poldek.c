@@ -1635,7 +1635,7 @@ update_packages_thread (PkBackend *backend)
 	GString *cmd;
 
 	update_system = pk_backend_get_bool (backend, "update_system");
-	/* FIXME: support trusted */
+	/* FIXME: support only_trusted */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	/* sth goes wrong. package_ids has to be set in UpdatePackages */
@@ -2745,7 +2745,7 @@ backend_install_packages_thread (PkBackend *backend)
 
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_INSTALL);
 
-	/* FIXME: support trusted */
+	/* FIXME: support only_trusted */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	setup_vf_progress (&vf_progress, backend);
@@ -2782,7 +2782,7 @@ backend_install_packages_thread (PkBackend *backend)
 }
 
 static void
-backend_install_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
+backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install package when offline!");
@@ -2988,7 +2988,7 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
  * backend_update_packages:
  */
 static void
-backend_update_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
+backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline!");
@@ -3008,7 +3008,7 @@ backend_update_packages (PkBackend *backend, gboolean trusted, gchar **package_i
  * backend_update_system:
  **/
 static void
-backend_update_system (PkBackend *backend, gboolean trusted)
+backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update system when offline!");

@@ -539,9 +539,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.files(package_id, ';'.join(files))
 
     @ExceptionHandler
-    def update_system(self, trusted):
+    def update_system(self, only_trusted):
 
-        # FIXME: use trusted
+        # FIXME: use only_trusted
 
         self.allow_cancel(True)
         self.status(STATUS_UPDATE)
@@ -569,22 +569,22 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         cache = Cache()
         cache.refresh()
 
-    def install_packages(self, trusted, package_ids):
+    def install_packages(self, only_trusted, package_ids):
         """
             alias of update_packages
         """
 
-        # FIXME: use trusted
+        # FIXME: use only_trusted
 
-        self.update_packages(trusted, package_ids)
+        self.update_packages(only_trusted, package_ids)
 
     @ExceptionHandler
-    def update_packages(self, trusted, package_ids):
+    def update_packages(self, only_trusted, package_ids):
         '''
         Implement the {backend}-{install, update}-packages functionality
         '''
 
-        # FIXME: use trusted
+        # FIXME: use only_trusted
 
         for package_id in package_ids:
             name, version, flavor, installed = self._findPackage(package_id)

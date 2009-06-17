@@ -373,7 +373,7 @@ sub install_packages {
 
   my ($urpm, $args) = @_;
 
-  # FIXME: use trusted in @{$args}[0]
+  # FIXME: use only_trusted in @{$args}[0]
   my @packageidstab = split(/&/, @{$args}[1]);
   
   my @names;
@@ -663,7 +663,7 @@ sub update_packages {
 
   my ($urpm, $args) = @_;
 
-  # FIXME: use trusted in @{$args}[0]
+  # FIXME: use only_trusted in @{$args}[0]
   my @packageidstab = split(/&/, @{$args}[1]);
 
   my @names;
@@ -698,7 +698,7 @@ sub update_system {
   
   my ($urpm, $args) = @_;
 
-  # FIXME: use trusted in @{$args}[0]
+  # FIXME: use only_trusted in @{$args}[0]
   eval {
     perform_installation($urpm, {}, auto_select => 1);
   };

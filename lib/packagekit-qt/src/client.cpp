@@ -377,9 +377,9 @@ Transaction* Client::getDistroUpgrades()
 	return t;
 }
 
-Transaction* Client::installFiles(const QStringList& files, bool trusted)
+Transaction* Client::installFiles(const QStringList& files, bool only_trusted)
 {
-	QString polkitAction = trusted ? AUTH_PACKAGE_INSTALL : AUTH_PACKAGE_INSTALL_UNTRUSTED;
+	QString polkitAction = only_trusted ? AUTH_PACKAGE_INSTALL : AUTH_PACKAGE_INSTALL_UNTRUSTED;
 #if 0
 	if(!PolkitClient::instance()->getAuth(polkitAction)) {
 		emit authError(polkitAction);
@@ -393,14 +393,14 @@ Transaction* Client::installFiles(const QStringList& files, bool trusted)
 		return NULL;
 	}
 
-	t->d->p->InstallFiles(trusted, files);
+	t->d->p->InstallFiles(only_trusted, files);
 
 	return t;
 }
 
-Transaction* Client::installFile(const QString& file, bool trusted)
+Transaction* Client::installFile(const QString& file, bool only_trusted)
 {
-	return installFiles(QStringList() << file, trusted);
+	return installFiles(QStringList() << file, only_trusted);
 }
 
 Transaction* Client::installPackages(const QList<Package*>& packages)

@@ -616,7 +616,7 @@
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.localinstall-untrusted</doc:permission>
       </doc:doc>
-      <arg type="b" name="trusted" direction="in">
+      <arg type="b" name="only_trusted" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -626,7 +626,7 @@
             <doc:para>
               If this method is can only install trusted files, and the files are unsigned, then
               the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
-              On recieving this error, the client may choose to retry with trusted <doc:tt>FALSE</doc:tt>
+              On recieving this error, the client may choose to retry with only_trusted <doc:tt>FALSE</doc:tt>
               after gaining further authentication.
             </doc:para>
           </doc:summary>
@@ -673,7 +673,7 @@
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.install-untrusted</doc:permission>
       </doc:doc>
-      <arg type="b" name="trusted" direction="in">
+      <arg type="b" name="only_trusted" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -683,7 +683,7 @@
             <doc:para>
               If this method is can only install trusted packages, and the packages are unsigned, then
               the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
-              On recieving this error, the client may choose to retry with trusted <doc:tt>FALSE</doc:tt>
+              On recieving this error, the client may choose to retry with only_trusted <doc:tt>FALSE</doc:tt>
               after gaining further authentication.
             </doc:para>
           </doc:summary>
@@ -1218,7 +1218,7 @@
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.update-package</doc:permission>
       </doc:doc>
-      <arg type="b" name="trusted" direction="in">
+      <arg type="b" name="only_trusted" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -1228,7 +1228,7 @@
             <doc:para>
               If this method is can only update trusted packages, and the packages are unsigned, then
               the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
-              On recieving this error, the client may choose to retry with trusted <doc:tt>FALSE</doc:tt>
+              On recieving this error, the client may choose to retry with only_trusted <doc:tt>FALSE</doc:tt>
               after gaining further authentication.
             </doc:para>
           </doc:summary>
@@ -1275,7 +1275,7 @@
           </doc:para>
         <doc:permission>Callers need the org.freedesktop.packagekit.update-system</doc:permission>
       </doc:doc>
-      <arg type="b" name="trusted" direction="in">
+      <arg type="b" name="only_trusted" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -1285,7 +1285,7 @@
             <doc:para>
               If this method is can only update trusted packages, and the packages are unsigned, then
               the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
-              On recieving this error, the client may choose to retry with trusted <doc:tt>FALSE</doc:tt>
+              On recieving this error, the client may choose to retry with only_trusted <doc:tt>FALSE</doc:tt>
               after gaining further authentication.
             </doc:para>
           </doc:summary>

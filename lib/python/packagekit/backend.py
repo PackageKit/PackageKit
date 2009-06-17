@@ -345,7 +345,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def update_system(self, trusted):
+    def update_system(self, only_trusted):
         '''
         Implement the {backend}-update-system functionality
         Needed to be implemented in a sub class
@@ -359,7 +359,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def install_packages(self, trusted, package_ids):
+    def install_packages(self, only_trusted, package_ids):
         '''
         Implement the {backend}-install functionality
         Needed to be implemented in a sub class
@@ -373,7 +373,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def install_files (self, trusted, inst_files):
+    def install_files (self, only_trusted, inst_files):
         '''
         Implement the {backend}-install_files functionality
         Install the package containing the inst_file file
@@ -395,7 +395,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def update_packages(self, trusted, package_ids):
+    def update_packages(self, only_trusted, package_ids):
         '''
         Implement the {backend}-update functionality
         Needed to be implemented in a sub class
@@ -545,14 +545,14 @@ class PackageKitBaseBackend:
             self.get_updates(filters)
             self.finished()
         elif cmd == 'install-files':
-            trusted = _text_to_bool(args[0])
+            only_trusted = _text_to_bool(args[0])
             files_to_inst = args[1].split(FILENAME_DELIM)
-            self.install_files(trusted, files_to_inst)
+            self.install_files(only_trusted, files_to_inst)
             self.finished()
         elif cmd == 'install-packages':
-            trusted = _text_to_bool(args[0])
+            only_trusted = _text_to_bool(args[0])
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
-            self.install_packages(trusted, package_ids)
+            self.install_packages(only_trusted, package_ids)
             self.finished()
         elif cmd == 'install-signature':
             sigtype = args[0]
@@ -609,13 +609,13 @@ class PackageKitBaseBackend:
             self.repo_signature_install(package)
             self.finished()
         elif cmd == 'update-packages':
-            trusted = _text_to_bool(args[0])
+            only_trusted = _text_to_bool(args[0])
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
-            self.update_packages(trusted, package_ids)
+            self.update_packages(only_trusted, package_ids)
             self.finished()
         elif cmd == 'update-system':
-            trusted = _text_to_bool(args[0])
-            self.update_system(trusted)
+            only_trusted = _text_to_bool(args[0])
+            self.update_system(only_trusted)
             self.finished()
         elif cmd == 'what-provides':
             filters = args[0]

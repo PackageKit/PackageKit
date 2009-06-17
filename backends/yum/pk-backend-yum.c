@@ -261,13 +261,13 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
  * backend_install_packages:
  */
 static void
-backend_install_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
+backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids);
-	pk_backend_spawn_helper (spawn, "yumBackend.py", "install-packages", pk_backend_bool_to_text (trusted), package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "install-packages", pk_backend_bool_to_text (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -275,13 +275,13 @@ backend_install_packages (PkBackend *backend, gboolean trusted, gchar **package_
  * backend_install_files:
  */
 static void
-backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
+backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
 {
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
 	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
-	pk_backend_spawn_helper (spawn, "yumBackend.py", "install-files", pk_backend_bool_to_text (trusted), package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "install-files", pk_backend_bool_to_text (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -380,13 +380,13 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
  * pk_backend_update_packages:
  */
 static void
-backend_update_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
+backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids);
-	pk_backend_spawn_helper (spawn, "yumBackend.py", "update-packages", pk_backend_bool_to_text (trusted), package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "update-packages", pk_backend_bool_to_text (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -394,9 +394,9 @@ backend_update_packages (PkBackend *backend, gboolean trusted, gchar **package_i
  * pk_backend_update_system:
  */
 static void
-backend_update_system (PkBackend *backend, gboolean trusted)
+backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
-	pk_backend_spawn_helper (spawn, "yumBackend.py", "update-system", pk_backend_bool_to_text (trusted), NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "update-system", pk_backend_bool_to_text (only_trusted), NULL);
 }
 
 /**

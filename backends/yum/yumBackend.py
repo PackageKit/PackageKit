@@ -1333,7 +1333,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         repo = self.yumbase.repos.getRepo(pkg.repoid)
         return repo.gpgcheck
 
-    def update_system(self, trusted):
+    def update_system(self, only_trusted):
         '''
         Implement the {backend}-update-system functionality
         '''
@@ -1343,8 +1343,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        # if trusted is true, it means that we will only update signed files
-        if trusted:
+        # if only_trusted is true, it means that we will only update signed files
+        if only_trusted:
             self.yumbase.conf.gpgcheck = 1
         else:
             self.yumbase.conf.gpgcheck = 0
@@ -1360,7 +1360,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         else:
             if txmbr:
                 # check all the packages in the transaction if only-trusted
-                if trusted:
+                if only_trusted:
                     for t in txmbr:
                         pkg = t.po
                         signed = self._is_package_repo_signed(pkg)
@@ -1473,7 +1473,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             if show:
                                 self._show_package(pkg, INFO_AVAILABLE)
 
-    def install_packages(self, trusted, package_ids):
+    def install_packages(self, only_trusted, package_ids):
         '''
         Implement the {backend}-install-packages functionality
         This will only work with yum 3.2.4 or higher
@@ -1490,8 +1490,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         txmbrs = []
         already_warned = False
 
-        # if trusted is true, it means that we will only update signed files
-        if trusted:
+        # if only_trusted is true, it means that we will only update signed files
+        if only_trusted:
             self.yumbase.conf.gpgcheck = 1
         else:
             self.yumbase.conf.gpgcheck = 0
@@ -1529,7 +1529,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package %s is already installed" % pkg.name, exit=False)
                     return
         if txmbrs:
-            if trusted:
+            if only_trusted:
                 for t in txmbr:
                     pkg = t.po
                     signed = self._is_package_repo_signed(pkg)
@@ -1556,7 +1556,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if newest.EVR > po.EVR:
                 self.message(MESSAGE_NEWER_PACKAGE_EXISTS, "A newer version of %s is available online." % po.name)
 
-    def install_files(self, trusted, inst_files):
+    def install_files(self, only_trusted, inst_files):
         '''
         Implement the {backend}-install-files functionality
         Install the package containing the inst_file file
@@ -1662,8 +1662,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_ALL_PACKAGES_ALREADY_INSTALLED,
                        'All of the specified packages have already been installed')
 
-        # If trusted is true, it means that we will only install trusted files
-        if trusted:
+        # If only_trusted is true, it means that we will only install trusted files
+        if only_trusted:
             # disregard the default
             self.yumbase.conf.gpgcheck = 1
 
@@ -1783,7 +1783,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return True
 
-    def update_packages(self, trusted, package_ids):
+    def update_packages(self, only_trusted, package_ids):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
@@ -1798,8 +1798,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        # if trusted is true, it means that we will only update signed files
-        if trusted:
+        # if only_trusted is true, it means that we will only update signed files
+        if only_trusted:
             self.yumbase.conf.gpgcheck = 1
         else:
             self.yumbase.conf.gpgcheck = 0
@@ -1826,7 +1826,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             if txmbrs:
-                if trusted:
+                if only_trusted:
                     for t in txmbr:
                         pkg = t.po
                         signed = self._is_package_repo_signed(pkg)

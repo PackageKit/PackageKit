@@ -540,12 +540,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			if not self.vardb.cpv_exists(best_cpv):
 				self.package(best_cpv, INFO_NORMAL)
 
-	def install_packages(self, trusted, pkgs):
+	def install_packages(self, only_trusted, pkgs):
 		self.status(STATUS_RUNNING)
 		self.allow_cancel(True) # TODO: sure ?
 		self.percentage(None)
 
-		# FIXME: use trusted
+		# FIXME: use only_trusted
 
 		for pkg in pkgs:
 			# check for installed is not mandatory as there are a lot of reason

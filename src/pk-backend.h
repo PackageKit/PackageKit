@@ -241,10 +241,10 @@ typedef struct {
 	void		(*get_updates)			(PkBackend	*backend,
 							 PkBitfield	 filters);
 	void		(*install_files)		(PkBackend	*backend,
-							 gboolean	 trusted,
+							 gboolean	 only_trusted,
 							 gchar		**full_paths);
 	void		(*install_packages)		(PkBackend	*backend,
-							 gboolean	 trusted,
+							 gboolean	 only_trusted,
 							 gchar		**package_ids);
 	void		(*install_signature)		(PkBackend	*backend,
 							 PkSigTypeEnum	 type,
@@ -281,10 +281,10 @@ typedef struct {
 							 PkBitfield	 filters,
 							 const gchar	*search);
 	void		(*update_packages)		(PkBackend	*backend,
-							 gboolean	 trusted,
+							 gboolean	 only_trusted,
 							 gchar		**package_ids);
 	void		(*update_system)		(PkBackend	*backend,
-							 gboolean	 trusted);
+							 gboolean	 only_trusted);
 	void		(*what_provides)		(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 PkProvidesEnum	 provides,

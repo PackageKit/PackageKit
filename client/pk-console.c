@@ -49,7 +49,7 @@ static gboolean has_output_bar = FALSE;
 static gboolean need_requeue = FALSE;
 static gboolean nowait = FALSE;
 static gboolean awaiting_space = FALSE;
-static gboolean trusted = TRUE;
+static gboolean only_trusted = TRUE;
 static guint timer_id = 0;
 static guint percentage_last = 0;
 static gchar **untrusted_strv_cache = NULL;
@@ -746,7 +746,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			goto out;
 		}
 
-		ret = pk_client_install_packages (client, trusted, package_ids, &error_local);
+		ret = pk_client_install_packages (client, only_trusted, package_ids, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
@@ -773,7 +773,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			goto out;
 		}
 
-		ret = pk_client_install_files (client, trusted, files, &error_local);
+		ret = pk_client_install_files (client, only_trusted, files, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error installing the files. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not install the files: %s"), error_local->message);
@@ -1450,18 +1450,18 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 	}
 
 	/* do we need to do the untrusted action */
-	if (error_code == PK_ERROR_ENUM_MISSING_GPG_SIGNATURE && trusted) {
-		egg_debug ("need to try again with trusted FALSE");
-		trusted = FALSE;
+	if (error_code == PK_ERROR_ENUM_MISSING_GPG_SIGNATURE && only_trusted) {
+		egg_debug ("need to try again with only_trusted FALSE");
+		only_trusted = FALSE;
 
 		if (role == PK_ROLE_ENUM_INSTALL_FILES)
-			ret = pk_client_install_files (client_trusted, trusted, untrusted_strv_cache, &error);
+			ret = pk_client_install_files (client_trusted, only_trusted, untrusted_strv_cache, &error);
 		else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES)
-			ret = pk_client_install_packages (client_trusted, trusted, untrusted_strv_cache, &error);
+			ret = pk_client_install_packages (client_trusted, only_trusted, untrusted_strv_cache, &error);
 		else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES)
-			ret = pk_client_update_packages (client_trusted, trusted, untrusted_strv_cache, &error);
+			ret = pk_client_update_packages (client_trusted, only_trusted, untrusted_strv_cache, &error);
 		else if (role == PK_ROLE_ENUM_UPDATE_SYSTEM)
-			ret = pk_client_update_system (client_trusted, trusted, &error);
+			ret = pk_client_update_system (client_trusted, only_trusted, &error);
 
 		/* we succeeded, so wait for the requeue */
 		if (!ret) {

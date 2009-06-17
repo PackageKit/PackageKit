@@ -167,9 +167,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._package_list = []
 
     @needs_cache
-    def install_packages(self, trusted, packageids):
+    def install_packages(self, only_trusted, packageids):
 
-        # FIXME: use trusted
+        # FIXME: use only_trusted
 
         packages = []
         for packageid in packageids:
@@ -203,7 +203,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def install_files(self, trusted, paths):
+    def install_files(self, only_trusted, paths):
         for path in paths:
             self.ctrl.addFileChannel(path)
         self.ctrl.reloadChannels()
@@ -262,9 +262,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def update_packages(self, trusted, packageids):
+    def update_packages(self, only_trusted, packageids):
 
-        # FIXME: use trusted
+        # FIXME: use only_trusted
 
         packages = []
         for packageid in packageids:
@@ -313,9 +313,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self.files(package, ";".join(files))
 
     @needs_cache
-    def update_system(self, trusted):
+    def update_system(self, only_trusted):
 
-        # FIXME: use trusted
+        # FIXME: use only_trusted
 
         self.status(STATUS_INFO)
         cache = self.ctrl.getCache()
