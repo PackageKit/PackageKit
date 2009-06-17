@@ -212,7 +212,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         for repo in pisi.api.list_repos():
             # Internal FIXME: What an ugly way to get repo uri
             # FIXME: Use repository enabled/disabled state
-            self.repo_detail(repo, self.repodb.get_repo(repo).indexuri.get_uri(), "true")
+            self.repo_detail(repo, self.repodb.get_repo(repo).indexuri.get_uri(), True)
 
     def get_requires(self, filters, package_ids, recursive):
         """ Prints a list of requires for a given package """

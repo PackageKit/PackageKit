@@ -1243,7 +1243,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package name %s could not be resolved" % name)
                 return
 
-    def get_depends(self, filter, ids, recursive_text):
+    def get_depends(self, filter, ids, recursive):
         """
         Implement the apt2-get-depends functionality
 
@@ -1257,7 +1257,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         to python-apt.
         """
         pklog.info("Get depends (%s,%s,%s)" % (filter, ids, recursive_text))
-        recursive = text_to_bool(recursive_text)
         #FIXME: recursive is not yet implemented
         if recursive == True:
             pklog.warn("Recursive dependencies are not implemented")
@@ -1303,12 +1302,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Clean up
         self._cache.clear()
 
-    def get_requires(self, filter, ids, recursive_text):
+    def get_requires(self, filter, ids, recursive):
         """
         Implement the apt2-get-requires functionality
         """
         pklog.info("Get requires (%s,%s,%s)" % (filter, ids, recursive_text))
-        recursive = text_to_bool(rescursive_text)
         #FIXME: recursive is not yet implemented
         if recursive == True:
             pklog.warn("Recursive dependencies are not implemented")

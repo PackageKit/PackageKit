@@ -304,8 +304,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		self.allow_cancel(True)
 		self.percentage(None)
 
-		recursive = text_to_bool(recursive)
-
 		for pkgid in pkgids:
 			cpv = id_to_cpv(pkgid)
 
@@ -422,8 +420,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 		self.status(STATUS_RUNNING)
 		self.allow_cancel(True)
 		self.percentage(None)
-
-		recursive = text_to_bool(recursive)
 
 		myopts = {}
 		spinner = ""

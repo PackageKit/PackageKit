@@ -143,8 +143,7 @@ class PackageKitBaseBackend:
         @param id: the localised label of the media
         @param text: the localised text describing the media
         '''
-        print >> sys.stdout, "media-change-required\t%s\t%s\t%s" % (mtype, id,
-                                                                    text)
+        print >> sys.stdout, "media-change-required\t%s\t%s\t%s" % (mtype, id, text)
         sys.stdout.flush()
 
     def distro_upgrade(self, dtype, name, summary):
@@ -171,7 +170,7 @@ class PackageKitBaseBackend:
         @param repoid: The repo id tag
         @param state: false is repo is disabled else true.
         '''
-        print >> sys.stdout, "repo-detail\t%s\t%s\t%s" % (repoid, name, state)
+        print >> sys.stdout, "repo-detail\t%s\t%s\t%s" % (repoid, name, _bool_to_text(state))
         sys.stdout.flush()
 
     def data(self, data):
@@ -509,7 +508,7 @@ class PackageKitBaseBackend:
         elif cmd == 'get-depends':
             filters = args[0]
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
-            recursive = args[2]
+            recursive = _text_to_bool(args[2])
             self.get_depends(filters, package_ids, recursive)
             self.finished()
         elif cmd == 'get-details':
@@ -531,7 +530,7 @@ class PackageKitBaseBackend:
         elif cmd == 'get-requires':
             filters = args[0]
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
-            recursive = args[2]
+            recursive = _text_to_bool(args[2])
             self.get_requires(filters, package_ids, recursive)
             self.finished()
         elif cmd == 'get-update-detail':
@@ -546,12 +545,12 @@ class PackageKitBaseBackend:
             self.get_updates(filters)
             self.finished()
         elif cmd == 'install-files':
-            trusted = args[0]
+            trusted = _text_to_bool(args[0])
             files_to_inst = args[1].split(FILENAME_DELIM)
             self.install_files(trusted, files_to_inst)
             self.finished()
         elif cmd == 'install-packages':
-            trusted = args[0]
+            trusted = _text_to_bool(args[0])
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             self.install_packages(trusted, package_ids)
             self.finished()
@@ -571,7 +570,7 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'repo-enable':
             repoid = args[0]
-            state = args[1]
+            state = _text_to_bool(args[1])
             self.repo_enable(repoid, state)
             self.finished()
         elif cmd == 'repo-set-data':
@@ -610,12 +609,12 @@ class PackageKitBaseBackend:
             self.repo_signature_install(package)
             self.finished()
         elif cmd == 'update-packages':
-            trusted = args[0]
+            trusted = _text_to_bool(args[0])
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             self.update_packages(trusted, package_ids)
             self.finished()
         elif cmd == 'update-system':
-            trusted = args[0]
+            trusted = _text_to_bool(args[0])
             self.update_system(trusted)
             self.finished()
         elif cmd == 'what-provides':
@@ -665,11 +664,16 @@ def format_string(text, encoding='utf-8'):
         txt = unicode(text, encoding, errors='replace')
     return text.replace("\n", ";")
 
-def text_to_bool(text):
+def _text_to_bool(text):
     '''Convert a string to a boolean value.'''
     if text.lower() in ["yes", "true"]:
         return True
     return False
+
+def _bool_to_text(value):
+    if value:
+        return "true"
+    return "false"
 
 def get_package_id(name, version, arch, data):
     """Returns a package id."""

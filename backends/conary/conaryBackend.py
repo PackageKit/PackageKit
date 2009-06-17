@@ -936,7 +936,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         for repo in labels:
             repo_name = repo.split("@")[0]
             repo_branch  = repo.split("@")[1]
-            self.repo_detail(repo,repo,"true")
+            self.repo_detail(repo,repo,True)
 
     def repo_enable(self, repoid, enable):
         '''

@@ -143,20 +143,6 @@ def _getEVR(idver):
         release = '0'
     return epoch, version, release
 
-def _text_to_boolean(text):
-    '''
-    Parses true and false
-    '''
-    if text == 'true':
-        return True
-    if text == 'TRUE':
-        return True
-    if text == 'yes':
-        return True
-    if text == 'YES':
-        return True
-    return False
-
 def _truncate(text, length, etc='...'):
     if len(text) < length:
         return text
@@ -964,7 +950,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # nothing found
         return None, False
 
-    def get_requires(self, filters, package_ids, recursive_text):
+    def get_requires(self, filters, package_ids, recursive):
         '''
         Print a list of requires for a given package
         '''
@@ -978,7 +964,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         bump = 100 / len(package_ids)
         deps_list = []
         resolve_list = []
-        recursive = _text_to_boolean(recursive_text)
 
         for package in package_ids:
             self.percentage(percentage)
@@ -1272,7 +1257,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return deps_list
 
-    def get_depends(self, filters, package_ids, recursive_text):
+    def get_depends(self, filters, package_ids, recursive):
         '''
         Print a list of depends for a given package
         '''
@@ -1283,7 +1268,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
-        recursive = _text_to_boolean(recursive_text)
 
         # before we do an install we do ~installed + recursive true,
         # which we can emulate quicker by doing a transaction, but not
@@ -2245,7 +2229,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
         try:
             repo = self.yumbase.repos.getRepo(repoid)
-            if enable == 'false':
+            if enable:
                 if repo.isEnabled():
                     repo.disablePersistent()
             else:
@@ -2281,10 +2265,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             return
         for repo in repos:
             if filters != FILTER_NOT_DEVELOPMENT or not _is_development_repo(repo.id):
-                if repo.isEnabled():
-                    self.repo_detail(repo.id, repo.name, 'true')
-                else:
-                    self.repo_detail(repo.id, repo.name, 'false')
+                enabled = repo.isEnabled()
+                self.repo_detail(repo.id, repo.name, enabled)
 
     def _get_obsoleted(self, name):
         try:
