@@ -1652,7 +1652,7 @@ pk_transaction_role_to_action_untrusted (PkRoleEnum role)
 		case PK_ROLE_ENUM_UPDATE_PACKAGES:
 		case PK_ROLE_ENUM_UPDATE_SYSTEM:
 		case PK_ROLE_ENUM_INSTALL_FILES:
-			policy = "org.freedesktop.packagekit.install-untrusted";
+			policy = "org.freedesktop.packagekit.package-install-untrusted";
 			break;
 		default:
 			break;
