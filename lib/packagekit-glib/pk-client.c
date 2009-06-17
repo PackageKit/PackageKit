@@ -236,6 +236,26 @@ out:
 }
 
 /**
+ * pk_client_set_only_trusted:
+ * @client: a valid #PkClient instance
+ * @only_trusted: only operate on trusted packages
+ *
+ * Set the trusted mode. This is useful when doing pk_client_requeue()
+ *
+ * Return value: %TRUE if the mode was set correctly
+ **/
+gboolean
+pk_client_set_only_trusted (PkClient *client, gboolean only_trusted)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
+
+	client->priv->cached_only_trusted = only_trusted;
+
+	return TRUE;
+}
+
+/**
  * pk_client_get_tid:
  * @client: a valid #PkClient instance
  *

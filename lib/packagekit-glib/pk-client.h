@@ -177,6 +177,8 @@ gboolean	 pk_client_set_use_buffer		(PkClient	*client,
 gboolean	 pk_client_set_synchronous		(PkClient	*client,
 							 gboolean	 synchronous,
 							 GError		**error);
+gboolean	 pk_client_set_only_trusted		(PkClient	*client,
+							 gboolean	 only_trusted);
 gboolean	 pk_client_set_timeout			(PkClient	*client,
 							 gint		 timeout,
 							 GError		**error);
