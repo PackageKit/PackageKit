@@ -49,15 +49,12 @@ static gboolean has_output_bar = FALSE;
 static gboolean need_requeue = FALSE;
 static gboolean nowait = FALSE;
 static gboolean awaiting_space = FALSE;
-static gboolean only_trusted = TRUE;
 static guint timer_id = 0;
 static guint percentage_last = 0;
-static gchar **untrusted_strv_cache = NULL;
 static PkControl *control = NULL;
-static PkClient *client_async = NULL;
-static PkClient *client_task = NULL;
-static PkClient *client_trusted = NULL;
-static PkClient *client_signature = NULL;
+static PkClient *client_primary = NULL;
+static PkClient *client_secondary = NULL;
+static PkClient *client_sync = NULL;
 
 typedef struct {
 	gint position;
@@ -501,21 +498,12 @@ pk_console_signature_finished_cb (PkClient *client, PkExitEnum exit_enum, guint 
 	GError *error = NULL;
 
 	egg_debug ("trying to requeue");
-	ret = pk_client_requeue (client_async, &error);
+	ret = pk_client_requeue (client_primary, &error);
 	if (!ret) {
 		egg_warning ("failed to requeue action: %s", error->message);
 		g_error_free (error);
 		g_main_loop_quit (loop);
 	}
-}
-
-/**
- * pk_console_install_files_finished_cb:
- **/
-static void
-pk_console_install_files_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, gpointer data)
-{
-	g_main_loop_quit (loop);
 }
 
 /**
@@ -562,6 +550,8 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, g
 	const gchar *role_text;
 	gfloat time_s;
 	PkRestartEnum restart;
+	gboolean ret;
+	GError *error = NULL;
 
 	pk_client_get_role (client, &role, NULL, NULL);
 
@@ -592,6 +582,20 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, g
 	} else if (restart == PK_RESTART_ENUM_APPLICATION) {
 		/* TRANSLATORS: a package needs to restart the application */
 		g_print ("%s\n", _("Please restart the application as it is being used."));
+	}
+
+	/* need to handle retry with only_trusted=FALSE */
+	if (exit_enum == PK_EXIT_ENUM_NEED_UNTRUSTED) {
+		egg_debug ("need to handle untrusted");
+
+		/* retry new action with untrusted */
+		pk_client_set_only_trusted (client, FALSE);
+		ret = pk_client_requeue (client, &error);
+		if (!ret) {
+			egg_warning ("Failed to requeue: %s", error->message);
+			g_error_free (error);
+		}
+		return;
 	}
 
 	if ((role == PK_ROLE_ENUM_INSTALL_FILES || role == PK_ROLE_ENUM_INSTALL_PACKAGES) &&
@@ -733,10 +737,6 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		/* convert to strv */
 		package_ids = pk_ptr_array_to_strv (array_packages);
 
-		/* save for untrusted callback */
-		g_strfreev (untrusted_strv_cache);
-		untrusted_strv_cache = g_strdupv (files);
-
 		/* reset */
 		ret = pk_client_reset (client, &error_local);
 		if (!ret) {
@@ -746,7 +746,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			goto out;
 		}
 
-		ret = pk_client_install_packages (client, only_trusted, package_ids, &error_local);
+		ret = pk_client_install_packages (client, TRUE, package_ids, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
@@ -760,10 +760,6 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		/* convert to strv */
 		files = pk_ptr_array_to_strv (array_files);
 
-		/* save for untrusted callback */
-		g_strfreev (untrusted_strv_cache);
-		untrusted_strv_cache = g_strdupv (files);
-
 		/* reset */
 		ret = pk_client_reset (client, &error_local);
 		if (!ret) {
@@ -773,7 +769,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			goto out;
 		}
 
-		ret = pk_client_install_files (client, only_trusted, files, &error_local);
+		ret = pk_client_install_files (client, TRUE, files, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error installing the files. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not install the files: %s"), error_local->message);
@@ -861,7 +857,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 		goto out;
 	}
 
-	ret = pk_client_reset (client_task, &error_local);
+	ret = pk_client_reset (client_sync, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
 		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
@@ -871,14 +867,14 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 
 	egg_debug ("Getting installed requires for %s", package_ids[0]);
 	/* see if any packages require this one */
-	ret = pk_client_get_requires (client_task, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, TRUE, error);
+	ret = pk_client_get_requires (client_sync, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, TRUE, error);
 	if (!ret) {
 		egg_warning ("failed to get requires");
 		goto out;
 	}
 
 	/* see how many packages there are */
-	list_single = pk_client_get_package_list (client_task);
+	list_single = pk_client_get_package_list (client_sync);
 	pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
 	g_object_unref (list_single);
 
@@ -1022,11 +1018,6 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 	}
 
 	package_ids = pk_package_ids_from_id (package_id);
-
-	/* save for untrusted callback */
-	g_strfreev (untrusted_strv_cache);
-	untrusted_strv_cache = g_strdupv (package_ids);
-
 	ret = pk_client_update_packages (client, TRUE, package_ids, error);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
@@ -1180,7 +1171,7 @@ pk_console_list_create (PkClient *client, const gchar *file, GError **error)
 	g_print ("%s...\n", _("Getting package list"));
 
 	/* get all installed packages and save it to disk */
-	ret = pk_client_get_packages (client_task, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
+	ret = pk_client_get_packages (client_sync, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of packages. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get package list: %s"), error_local->message);
@@ -1189,7 +1180,7 @@ pk_console_list_create (PkClient *client, const gchar *file, GError **error)
 	}
 
 	/* save list to disk */
-	list = pk_client_get_package_list (client_task);
+	list = pk_client_get_package_list (client_sync);
 	ret = pk_obj_list_to_file (PK_OBJ_LIST(list), file);
 	g_object_unref (list);
 	if (!ret) {
@@ -1236,7 +1227,7 @@ pk_console_list_diff (PkClient *client, const gchar *file, GError **error)
 	g_print ("%s...\n", _("Getting package list"));
 
 	/* get all installed packages */
-	ret = pk_client_get_packages (client_task, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
+	ret = pk_client_get_packages (client_sync, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of packages. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get package list: %s"), error_local->message);
@@ -1245,7 +1236,7 @@ pk_console_list_diff (PkClient *client, const gchar *file, GError **error)
 	}
 
 	/* get two copies of the list */
-	list = pk_client_get_package_list (client_task);
+	list = pk_client_get_package_list (client_sync);
 	list_copy = pk_package_list_new ();
 	pk_obj_list_add_list (PK_OBJ_LIST(list_copy), PK_OBJ_LIST(list));
 
@@ -1311,7 +1302,7 @@ pk_console_list_install (PkClient *client, const gchar *file, GError **error)
 	g_print ("%s...\n", _("Getting package list"));
 
 	/* get all installed packages */
-	ret = pk_client_get_packages (client_task, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
+	ret = pk_client_get_packages (client_sync, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of packages. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get package list: %s"), error_local->message);
@@ -1320,7 +1311,7 @@ pk_console_list_install (PkClient *client, const gchar *file, GError **error)
 	}
 
 	/* get two copies of the list */
-	list = pk_client_get_package_list (client_task);
+	list = pk_client_get_package_list (client_sync);
 
 	/* get installed copy */
 	new = pk_package_list_new ();
@@ -1433,42 +1424,18 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 static void
 pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
-	gboolean ret = TRUE;
 	PkRoleEnum role;
-	GError *error = NULL;
 
 	pk_client_get_role (client, &role, NULL, NULL);
 
 	/* handled */
 	if (need_requeue) {
-		if (error_code == PK_ERROR_ENUM_GPG_FAILURE ||
-		    error_code == PK_ERROR_ENUM_NO_LICENSE_AGREEMENT) {
+		if (error_code == PK_ERROR_ENUM_NO_LICENSE_AGREEMENT ||
+		    pk_error_code_is_need_untrusted (error_code)) {
 			egg_debug ("ignoring %s error as handled", pk_error_enum_to_text (error_code));
 			return;
 		}
 		egg_warning ("set requeue, but did not handle error");
-	}
-
-	/* do we need to do the untrusted action */
-	if (pk_error_code_is_need_untrusted (error_code) && only_trusted) {
-		egg_debug ("need to try again with only_trusted FALSE");
-		only_trusted = FALSE;
-
-		if (role == PK_ROLE_ENUM_INSTALL_FILES)
-			ret = pk_client_install_files (client_trusted, only_trusted, untrusted_strv_cache, &error);
-		else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES)
-			ret = pk_client_install_packages (client_trusted, only_trusted, untrusted_strv_cache, &error);
-		else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES)
-			ret = pk_client_update_packages (client_trusted, only_trusted, untrusted_strv_cache, &error);
-		else if (role == PK_ROLE_ENUM_UPDATE_SYSTEM)
-			ret = pk_client_update_system (client_trusted, only_trusted, &error);
-
-		/* we succeeded, so wait for the requeue */
-		if (!ret) {
-			egg_warning ("failed to install package second time: %s", error->message);
-			g_error_free (error);
-		}
-		need_requeue = ret;
 	}
 
 	if (awaiting_space)
@@ -1583,7 +1550,7 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 
 	/* install signature */
 	egg_debug ("install signature %s", key_id);
-	ret = pk_client_install_signature (client_signature, PK_SIGTYPE_ENUM_GPG,
+	ret = pk_client_install_signature (client_secondary, PK_SIGTYPE_ENUM_GPG,
 					   key_id, package_id, &error);
 	/* we succeeded, so wait for the requeue */
 	if (!ret) {
@@ -1628,7 +1595,7 @@ pk_console_eula_required_cb (PkClient *client, const gchar *eula_id, const gchar
 
 	/* accept eula */
 	egg_debug ("accept eula %s", eula_id);
-	ret = pk_client_accept_eula (client_signature, eula_id, &error);
+	ret = pk_client_accept_eula (client_secondary, eula_id, &error);
 	/* we succeeded, so wait for the requeue */
 	if (!ret) {
 		egg_warning ("failed to accept eula: %s", error->message);
@@ -1671,18 +1638,18 @@ pk_console_sigint_handler (int sig)
 	signal (SIGINT, SIG_DFL);
 
 	/* cancel any tasks */
-	pk_client_get_role (client_async, &role, NULL, NULL);
+	pk_client_get_role (client_primary, &role, NULL, NULL);
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		ret = pk_client_cancel (client_async, &error);
+		ret = pk_client_cancel (client_primary, &error);
 		if (!ret) {
 			egg_warning ("failed to cancel normal client: %s", error->message);
 			g_error_free (error);
 			error = NULL;
 		}
 	}
-	pk_client_get_role (client_task, &role, NULL, NULL);
+	pk_client_get_role (client_sync, &role, NULL, NULL);
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		ret = pk_client_cancel (client_task, &error);
+		ret = pk_client_cancel (client_sync, &error);
 		if (!ret) {
 			egg_warning ("failed to cancel task client: %s", error->message);
 			g_error_free (error);
@@ -1869,59 +1836,53 @@ main (int argc, char *argv[])
 	g_signal_connect (pconnection, "connection-changed",
 			  G_CALLBACK (pk_connection_changed_cb), loop);
 
-	client_async = pk_client_new ();
-	pk_client_set_use_buffer (client_async, TRUE, NULL);
-	g_signal_connect (client_async, "package",
+	client_primary = pk_client_new ();
+	pk_client_set_use_buffer (client_primary, TRUE, NULL);
+	g_signal_connect (client_primary, "package",
 			  G_CALLBACK (pk_console_package_cb), NULL);
-	g_signal_connect (client_async, "transaction",
+	g_signal_connect (client_primary, "transaction",
 			  G_CALLBACK (pk_console_transaction_cb), NULL);
-	g_signal_connect (client_async, "distro-upgrade",
+	g_signal_connect (client_primary, "distro-upgrade",
 			  G_CALLBACK (pk_console_distro_upgrade_cb), NULL);
-	g_signal_connect (client_async, "category",
+	g_signal_connect (client_primary, "category",
 			  G_CALLBACK (pk_console_category_cb), NULL);
-	g_signal_connect (client_async, "details",
+	g_signal_connect (client_primary, "details",
 			  G_CALLBACK (pk_console_details_cb), NULL);
-	g_signal_connect (client_async, "files",
+	g_signal_connect (client_primary, "files",
 			  G_CALLBACK (pk_console_files_cb), NULL);
-	g_signal_connect (client_async, "repo-signature-required",
+	g_signal_connect (client_primary, "repo-signature-required",
 			  G_CALLBACK (pk_console_repo_signature_required_cb), NULL);
-	g_signal_connect (client_async, "eula-required",
+	g_signal_connect (client_primary, "eula-required",
 			  G_CALLBACK (pk_console_eula_required_cb), NULL);
-	g_signal_connect (client_async, "update-detail",
+	g_signal_connect (client_primary, "update-detail",
 			  G_CALLBACK (pk_console_update_detail_cb), NULL);
-	g_signal_connect (client_async, "repo-detail",
+	g_signal_connect (client_primary, "repo-detail",
 			  G_CALLBACK (pk_console_repo_detail_cb), NULL);
-	g_signal_connect (client_async, "progress-changed",
+	g_signal_connect (client_primary, "progress-changed",
 			  G_CALLBACK (pk_console_progress_changed_cb), NULL);
-	g_signal_connect (client_async, "finished",
+	g_signal_connect (client_primary, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
-	g_signal_connect (client_async, "destroy",
+	g_signal_connect (client_primary, "destroy",
 			  G_CALLBACK (pk_console_destroy_cb), NULL);
-	g_signal_connect (client_async, "require-restart",
+	g_signal_connect (client_primary, "require-restart",
 			  G_CALLBACK (pk_console_require_restart_cb), NULL);
-	g_signal_connect (client_async, "error-code",
+	g_signal_connect (client_primary, "error-code",
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
-	g_signal_connect (client_async, "message",
+	g_signal_connect (client_primary, "message",
 			  G_CALLBACK (pk_watch_message_cb), NULL);
 
-	client_task = pk_client_new ();
-	pk_client_set_use_buffer (client_task, TRUE, NULL);
-	pk_client_set_synchronous (client_task, TRUE, NULL);
-	g_signal_connect (client_task, "finished",
+	client_sync = pk_client_new ();
+	pk_client_set_use_buffer (client_sync, TRUE, NULL);
+	pk_client_set_synchronous (client_sync, TRUE, NULL);
+	g_signal_connect (client_sync, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
-	g_signal_connect (client_task, "message",
+	g_signal_connect (client_sync, "message",
 			  G_CALLBACK (pk_watch_message_cb), NULL);
-	g_signal_connect (client_task, "destroy",
+	g_signal_connect (client_sync, "destroy",
 			  G_CALLBACK (pk_console_destroy_cb), NULL);
 
-	client_trusted = pk_client_new ();
-	g_signal_connect (client_trusted, "finished",
-			  G_CALLBACK (pk_console_install_files_finished_cb), NULL);
-	g_signal_connect (client_trusted, "error-code",
-			  G_CALLBACK (pk_console_error_code_cb), NULL);
-
-	client_signature = pk_client_new ();
-	g_signal_connect (client_signature, "finished",
+	client_secondary = pk_client_new ();
+	g_signal_connect (client_secondary, "finished",
 			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
 
 	/* check filter */
@@ -1956,7 +1917,7 @@ main (int argc, char *argv[])
 				error = g_error_new (1, 0, "%s", _("A search term is required"));
 				goto out;
 			}
-			ret = pk_client_search_name (client_async, filters, details, &error);
+			ret = pk_client_search_name (client_primary, filters, details, &error);
 
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
@@ -1964,7 +1925,7 @@ main (int argc, char *argv[])
 				error = g_error_new (1, 0, "%s", _("A search term is required"));
 				goto out;
 			}
-			ret = pk_client_search_details (client_async, filters, details, &error);
+			ret = pk_client_search_details (client_primary, filters, details, &error);
 
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
@@ -1972,7 +1933,7 @@ main (int argc, char *argv[])
 				error = g_error_new (1, 0, "%s", _("A search term is required"));
 				goto out;
 			}
-			ret = pk_client_search_group (client_async, filters, details, &error);
+			ret = pk_client_search_group (client_primary, filters, details, &error);
 
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
@@ -1980,7 +1941,7 @@ main (int argc, char *argv[])
 				error = g_error_new (1, 0, "%s", _("A search term is required"));
 				goto out;
 			}
-			ret = pk_client_search_file (client_async, filters, details, &error);
+			ret = pk_client_search_file (client_primary, filters, details, &error);
 		} else {
 			/* TRANSLATORS: the search type was provided, but invalid */
 			error = g_error_new (1, 0, "%s", _("Invalid search type"));
@@ -1992,7 +1953,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A package name or filename to install is required"));
 			goto out;
 		}
-		ret = pk_console_install_stuff (client_async, argv, &error);
+		ret = pk_console_install_stuff (client_primary, argv, &error);
 
 	} else if (strcmp (mode, "install-sig") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -2000,7 +1961,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A type, key_id and package_id are required"));
 			goto out;
 		}
-		ret = pk_client_install_signature (client_async, PK_SIGTYPE_ENUM_GPG, details, parameter, &error);
+		ret = pk_client_install_signature (client_primary, PK_SIGTYPE_ENUM_GPG, details, parameter, &error);
 
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
@@ -2008,7 +1969,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A package name to remove is required"));
 			goto out;
 		}
-		ret = pk_console_remove_packages (client_async, argv, &error);
+		ret = pk_console_remove_packages (client_primary, argv, &error);
 	} else if (strcmp (mode, "download") == 0) {
 		if (value == NULL || details == NULL) {
 			/* TRANSLATORS: the user did not specify anything about what to download or where */
@@ -2021,14 +1982,14 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s: %s", _("Directory not found"), value);
 			goto out;
 		}
-		ret = pk_console_download_packages (client_async, argv, value, &error);
+		ret = pk_console_download_packages (client_primary, argv, value, &error);
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
 			/* TRANSLATORS: geeky error, 99.9999% of users won't see this */
 			error = g_error_new (1, 0, "%s", _("A licence identifier (eula-id) is required"));
 			goto out;
 		}
-		ret = pk_client_accept_eula (client_async, value, &error);
+		ret = pk_client_accept_eula (client_primary, value, &error);
 		maybe_sync = FALSE;
 
 	} else if (strcmp (mode, "rollback") == 0) {
@@ -2037,14 +1998,14 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A transaction identifier (tid) is required"));
 			goto out;
 		}
-		ret = pk_client_rollback (client_async, value, &error);
+		ret = pk_client_rollback (client_primary, value, &error);
 
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
 			/* do the system update */
-			ret = pk_client_update_system (client_async, TRUE, &error);
+			ret = pk_client_update_system (client_primary, TRUE, &error);
 		} else {
-			ret = pk_console_update_package (client_async, value, &error);
+			ret = pk_console_update_package (client_primary, value, &error);
 		}
 
 	} else if (strcmp (mode, "resolve") == 0) {
@@ -2053,7 +2014,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A package name to resolve is required"));
 			goto out;
 		}
-		ret = pk_client_resolve (client_async, filters, argv+2, &error);
+		ret = pk_client_resolve (client_primary, filters, argv+2, &error);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {
@@ -2061,7 +2022,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A repository name is required"));
 			goto out;
 		}
-		ret = pk_client_repo_enable (client_async, value, TRUE, &error);
+		ret = pk_client_repo_enable (client_primary, value, TRUE, &error);
 
 	} else if (strcmp (mode, "repo-disable") == 0) {
 		if (value == NULL) {
@@ -2069,7 +2030,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A repository name is required"));
 			goto out;
 		}
-		ret = pk_client_repo_enable (client_async, value, FALSE, &error);
+		ret = pk_client_repo_enable (client_primary, value, FALSE, &error);
 
 	} else if (strcmp (mode, "repo-set-data") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -2077,10 +2038,10 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A repo name, parameter and value are required"));
 			goto out;
 		}
-		ret = pk_client_repo_set_data (client_async, value, details, parameter, &error);
+		ret = pk_client_repo_set_data (client_primary, value, details, parameter, &error);
 
 	} else if (strcmp (mode, "repo-list") == 0) {
-		ret = pk_client_get_repo_list (client_async, filters, &error);
+		ret = pk_client_get_repo_list (client_primary, filters, &error);
 
 	} else if (strcmp (mode, "get-time") == 0) {
 		PkRoleEnum role;
@@ -2111,10 +2072,10 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A package name is required"));
 			goto out;
 		}
-		ret = pk_console_get_depends (client_async, filters, value, &error);
+		ret = pk_console_get_depends (client_primary, filters, value, &error);
 
 	} else if (strcmp (mode, "get-distro-upgrades") == 0) {
-		ret = pk_client_get_distro_upgrades (client_async, &error);
+		ret = pk_client_get_distro_upgrades (client_primary, &error);
 
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {
@@ -2122,7 +2083,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A package name is required"));
 			goto out;
 		}
-		ret = pk_console_get_update_detail (client_async, value, &error);
+		ret = pk_console_get_update_detail (client_primary, value, &error);
 
 	} else if (strcmp (mode, "get-requires") == 0) {
 		if (value == NULL) {
@@ -2130,7 +2091,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A package name is required"));
 			goto out;
 		}
-		ret = pk_console_get_requires (client_async, filters, value, &error);
+		ret = pk_console_get_requires (client_primary, filters, value, &error);
 
 	} else if (strcmp (mode, "what-provides") == 0) {
 		if (value == NULL) {
@@ -2138,7 +2099,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A package provide string is required"));
 			goto out;
 		}
-		ret = pk_client_what_provides (client_async, filters, PK_PROVIDES_ENUM_CODEC, value, &error);
+		ret = pk_client_what_provides (client_primary, filters, PK_PROVIDES_ENUM_CODEC, value, &error);
 
 	} else if (strcmp (mode, "get-details") == 0) {
 		if (value == NULL) {
@@ -2146,7 +2107,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A package name is required"));
 			goto out;
 		}
-		ret = pk_console_get_details (client_async, value, &error);
+		ret = pk_console_get_details (client_primary, value, &error);
 
 	} else if (strcmp (mode, "get-files") == 0) {
 		if (value == NULL) {
@@ -2154,7 +2115,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A package name is required"));
 			goto out;
 		}
-		ret = pk_console_get_files (client_async, value, &error);
+		ret = pk_console_get_files (client_primary, value, &error);
 
 	} else if (strcmp (mode, "list-create") == 0) {
 		if (value == NULL) {
@@ -2162,7 +2123,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A list file name to create is required"));
 			goto out;
 		}
-		ret = pk_console_list_create (client_async, value, &error);
+		ret = pk_console_list_create (client_primary, value, &error);
 		maybe_sync = FALSE;
 
 	} else if (strcmp (mode, "list-diff") == 0) {
@@ -2171,7 +2132,7 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A list file to open is required"));
 			goto out;
 		}
-		ret = pk_console_list_diff (client_async, value, &error);
+		ret = pk_console_list_diff (client_primary, value, &error);
 		maybe_sync = FALSE;
 
 	} else if (strcmp (mode, "list-install") == 0) {
@@ -2180,16 +2141,16 @@ main (int argc, char *argv[])
 			error = g_error_new (1, 0, "%s", _("A list file to open is required"));
 			goto out;
 		}
-		ret = pk_console_list_install (client_async, value, &error);
+		ret = pk_console_list_install (client_primary, value, &error);
 
 	} else if (strcmp (mode, "get-updates") == 0) {
-		ret = pk_client_get_updates (client_async, filters, &error);
+		ret = pk_client_get_updates (client_primary, filters, &error);
 
 	} else if (strcmp (mode, "get-categories") == 0) {
-		ret = pk_client_get_categories (client_async, &error);
+		ret = pk_client_get_categories (client_primary, &error);
 
 	} else if (strcmp (mode, "get-packages") == 0) {
-		ret = pk_client_get_packages (client_async, filters, &error);
+		ret = pk_client_get_packages (client_primary, filters, &error);
 
 	} else if (strcmp (mode, "get-actions") == 0) {
 		text = pk_role_bitfield_to_text (roles);
@@ -2221,12 +2182,12 @@ main (int argc, char *argv[])
 		ret = TRUE;
 
 	} else if (strcmp (mode, "get-transactions") == 0) {
-		ret = pk_client_get_old_transactions (client_async, 10, &error);
+		ret = pk_client_get_old_transactions (client_primary, 10, &error);
 
 	} else if (strcmp (mode, "refresh") == 0) {
 		/* special case - this takes a long time, and doesn't do packages */
 		pk_console_start_bar ("refresh-cache");
-		ret = pk_client_refresh_cache (client_async, FALSE, &error);
+		ret = pk_client_refresh_cache (client_primary, FALSE, &error);
 
 	} else {
 		/* TRANSLATORS: The user tried to use an unsupported option on the command line */
@@ -2254,12 +2215,10 @@ out:
 	g_free (options_help);
 	g_free (filter);
 	g_free (summary);
-	g_strfreev (untrusted_strv_cache);
 	g_object_unref (control);
-	g_object_unref (client_async);
-	g_object_unref (client_task);
-	g_object_unref (client_trusted);
-	g_object_unref (client_signature);
+	g_object_unref (client_primary);
+	g_object_unref (client_sync);
+	g_object_unref (client_secondary);
 
 	return 0;
 }
