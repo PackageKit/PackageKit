@@ -52,11 +52,11 @@ static gboolean awaiting_space = FALSE;
 static gboolean trusted = TRUE;
 static guint timer_id = 0;
 static guint percentage_last = 0;
-static gchar **files_cache = NULL;
+static gchar **untrusted_strv_cache = NULL;
 static PkControl *control = NULL;
 static PkClient *client_async = NULL;
 static PkClient *client_task = NULL;
-static PkClient *client_install_files = NULL;
+static PkClient *client_trusted = NULL;
 static PkClient *client_signature = NULL;
 
 typedef struct {
@@ -594,7 +594,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, g
 		g_print ("%s\n", _("Please restart the application as it is being used."));
 	}
 
-	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
+	if ((role == PK_ROLE_ENUM_INSTALL_FILES || role == PK_ROLE_ENUM_INSTALL_PACKAGES) &&
 	    exit_enum == PK_EXIT_ENUM_FAILED && need_requeue) {
 		egg_warning ("waiting for second install file to finish");
 		return;
@@ -733,6 +733,10 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		/* convert to strv */
 		package_ids = pk_ptr_array_to_strv (array_packages);
 
+		/* save for untrusted callback */
+		g_strfreev (untrusted_strv_cache);
+		untrusted_strv_cache = g_strdupv (files);
+
 		/* reset */
 		ret = pk_client_reset (client, &error_local);
 		if (!ret) {
@@ -742,7 +746,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			goto out;
 		}
 
-		ret = pk_client_install_packages (client, package_ids, &error_local);
+		ret = pk_client_install_packages (client, trusted, package_ids, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
@@ -757,8 +761,8 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		files = pk_ptr_array_to_strv (array_files);
 
 		/* save for untrusted callback */
-		g_strfreev (files_cache);
-		files_cache = g_strdupv (files);
+		g_strfreev (untrusted_strv_cache);
+		untrusted_strv_cache = g_strdupv (files);
 
 		/* reset */
 		ret = pk_client_reset (client, &error_local);
@@ -1018,7 +1022,12 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 	}
 
 	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_update_packages (client, package_ids, error);
+
+	/* save for untrusted callback */
+	g_strfreev (untrusted_strv_cache);
+	untrusted_strv_cache = g_strdupv (package_ids);
+
+	ret = pk_client_update_packages (client, TRUE, package_ids, error);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
@@ -1370,7 +1379,7 @@ pk_console_list_install (PkClient *client, const gchar *file, GError **error)
 
 	/* install packages */
 	package_ids = pk_package_ids_from_array (array);
-	ret = pk_client_install_packages (client, package_ids, &error_local);
+	ret = pk_client_install_packages (client, FALSE, package_ids, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
@@ -1424,7 +1433,7 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 static void
 pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
-	gboolean ret;
+	gboolean ret = TRUE;
 	PkRoleEnum role;
 	GError *error = NULL;
 
@@ -1441,18 +1450,27 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 	}
 
 	/* do we need to do the untrusted action */
-	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
-	    error_code == PK_ERROR_ENUM_MISSING_GPG_SIGNATURE && trusted) {
+	if (error_code == PK_ERROR_ENUM_MISSING_GPG_SIGNATURE && trusted) {
 		egg_debug ("need to try again with trusted FALSE");
 		trusted = FALSE;
-		ret = pk_client_install_files (client_install_files, trusted, files_cache, &error);
+
+		if (role == PK_ROLE_ENUM_INSTALL_FILES)
+			ret = pk_client_install_files (client_trusted, trusted, untrusted_strv_cache, &error);
+		else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES)
+			ret = pk_client_install_packages (client_trusted, trusted, untrusted_strv_cache, &error);
+		else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES)
+			ret = pk_client_update_packages (client_trusted, trusted, untrusted_strv_cache, &error);
+		else if (role == PK_ROLE_ENUM_UPDATE_SYSTEM)
+			ret = pk_client_update_system (client_trusted, trusted, &error);
+
 		/* we succeeded, so wait for the requeue */
 		if (!ret) {
-			egg_warning ("failed to install file second time: %s", error->message);
+			egg_warning ("failed to install package second time: %s", error->message);
 			g_error_free (error);
 		}
 		need_requeue = ret;
 	}
+
 	if (awaiting_space)
 		g_print ("\n");
 	/* TRANSLATORS: This was an unhandled error, and we don't have _any_ context */
@@ -1896,10 +1914,10 @@ main (int argc, char *argv[])
 	g_signal_connect (client_task, "destroy",
 			  G_CALLBACK (pk_console_destroy_cb), NULL);
 
-	client_install_files = pk_client_new ();
-	g_signal_connect (client_install_files, "finished",
+	client_trusted = pk_client_new ();
+	g_signal_connect (client_trusted, "finished",
 			  G_CALLBACK (pk_console_install_files_finished_cb), NULL);
-	g_signal_connect (client_install_files, "error-code",
+	g_signal_connect (client_trusted, "error-code",
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
 
 	client_signature = pk_client_new ();
@@ -2024,7 +2042,7 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
 			/* do the system update */
-			ret = pk_client_update_system (client_async, &error);
+			ret = pk_client_update_system (client_async, TRUE, &error);
 		} else {
 			ret = pk_console_update_package (client_async, value, &error);
 		}
@@ -2236,11 +2254,11 @@ out:
 	g_free (options_help);
 	g_free (filter);
 	g_free (summary);
-	g_strfreev (files_cache);
+	g_strfreev (untrusted_strv_cache);
 	g_object_unref (control);
 	g_object_unref (client_async);
 	g_object_unref (client_task);
-	g_object_unref (client_install_files);
+	g_object_unref (client_trusted);
 	g_object_unref (client_signature);
 
 	return 0;

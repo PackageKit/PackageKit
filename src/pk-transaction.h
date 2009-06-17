@@ -163,6 +163,7 @@ void		 pk_transaction_install_files		(PkTransaction	*transaction,
 							 gchar		**full_paths,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_install_packages	(PkTransaction	*transaction,
+							 gboolean	 trusted,
 							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_install_signature	(PkTransaction	*transaction,
@@ -217,9 +218,11 @@ void		 pk_transaction_set_locale		(PkTransaction	*transaction,
 							 const gchar	*code,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_update_packages		(PkTransaction	*transaction,
+							 gboolean	 trusted,
 							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_update_system		(PkTransaction	*transaction,
+							 gboolean	 trusted,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_what_provides		(PkTransaction	*transaction,
 							 const gchar	*filter,

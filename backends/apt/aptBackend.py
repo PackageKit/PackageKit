@@ -765,10 +765,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                          pkg.homepage, size)
 
     @unlock_cache_afterwards
-    def update_system(self):
+    def update_system(self, trusted):
         """
         Implement the {backend}-update-system functionality
         """
+
+        # FIXME: use trusted
+
         pklog.info("Upgrading system")
         if not self._lock_cache(): return
         self.status(STATUS_UPDATE)
@@ -988,10 +991,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
 
     @unlock_cache_afterwards
-    def update_packages(self, ids):
+    def update_packages(self, trusted, ids):
         """
         Implement the {backend}-update functionality
         """
+
+        # FIXME: use trusted
+
         pklog.info("Updating package with id %s" % ids)
         if not self._lock_cache(): return
         self.status(STATUS_UPDATE)
@@ -1079,10 +1085,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     @unlock_cache_afterwards
-    def install_packages(self, ids):
+    def install_packages(self, trusted, ids):
         """
         Implement the {backend}-install functionality
         """
+
+        # FIXME: use trusted
+
         pklog.info("Installing package with id %s" % ids)
         if not self._lock_cache(): return
         self.status(STATUS_INSTALL)

@@ -137,7 +137,7 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
  * backend_install_packages:
  */
 static void
-backend_install_packages (PkBackend *backend, gchar **package_id)
+backend_install_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }
@@ -233,7 +233,7 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
  * backend_update_packages:
  */
 static void
-backend_update_packages (PkBackend *backend, gchar **package_ids)
+backend_update_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }
@@ -242,7 +242,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
  * backend_update_system:
  */
 static void
-backend_update_system (PkBackend *backend)
+backend_update_system (PkBackend *backend, gboolean trusted)
 {
 	pk_backend_finished (backend);
 }

@@ -963,6 +963,7 @@ backend_update_system_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
+	/* FIXME: support trusted */
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
@@ -1018,7 +1019,7 @@ backend_update_system_thread (PkBackend *backend)
  * backend_update_system
  */
 static void
-backend_update_system (PkBackend *backend)
+backend_update_system (PkBackend *backend, gboolean trusted)
 {
 	pk_backend_thread_create (backend, backend_update_system_thread);
 }
@@ -1035,6 +1036,7 @@ backend_install_packages_thread (PkBackend *backend)
 	zypp = get_zypp ();
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
+	/* FIXME: support trusted */
 
 	try
 	{
@@ -1114,7 +1116,7 @@ backend_install_packages_thread (PkBackend *backend)
  * backend_install_packages:
  */
 static void
-backend_install_packages (PkBackend *backend, gchar **package_ids)
+backend_install_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
 {
 	// For now, don't let the user cancel the install once it's started
 	pk_backend_set_allow_cancel (backend, FALSE);
@@ -1609,6 +1611,7 @@ backend_update_packages_thread (PkBackend *backend)
 {
 	gboolean retval;
 	gchar **package_ids;
+	/* FIXME: support trusted */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
@@ -1640,7 +1643,7 @@ backend_update_packages_thread (PkBackend *backend)
   *backend_update_packages
   */
 static void
-backend_update_packages(PkBackend *backend, gchar **package_ids)
+backend_update_packages(PkBackend *backend, gboolean trusted, gchar **package_ids)
 {
 	pk_backend_thread_create(backend, backend_update_packages_thread);
 }

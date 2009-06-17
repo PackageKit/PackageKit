@@ -1455,6 +1455,7 @@ out:
 /**
  * pk_client_update_system:
  * @client: a valid #PkClient instance
+ * @trusted: if untrused actions should be allowed
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Update all the packages on the system with the highest versions found in all
@@ -1467,7 +1468,7 @@ out:
  * Return value: %TRUE if we told the daemon to update the system
  **/
 gboolean
-pk_client_update_system (PkClient *client, GError **error)
+pk_client_update_system (PkClient *client, gboolean trusted, GError **error)
 {
 	gboolean ret = FALSE;
 	GError *error_local = NULL; /* we can't use the same error as we might be NULL */
@@ -1489,6 +1490,7 @@ pk_client_update_system (PkClient *client, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
+	client->priv->cached_trusted = trusted;
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -1500,6 +1502,7 @@ pk_client_update_system (PkClient *client, GError **error)
 
 	/* do the method */
 	ret = dbus_g_proxy_call (client->priv->proxy, "UpdateSystem", &error_local,
+				 G_TYPE_BOOLEAN, trusted,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* we failed one of these, return the error to the user */
@@ -2891,6 +2894,7 @@ out:
 /**
  * pk_client_install_packages:
  * @client: a valid #PkClient instance
+ * @trusted: if untrused actions should be allowed
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -2899,7 +2903,7 @@ out:
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_install_packages (PkClient *client, gchar **package_ids, GError **error)
+pk_client_install_packages (PkClient *client, gboolean trusted, gchar **package_ids, GError **error)
 {
 	gboolean ret = FALSE;
 	gchar *package_ids_temp;
@@ -2933,6 +2937,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
+	client->priv->cached_trusted = trusted;
 	client->priv->cached_package_ids = g_strdupv (package_ids);
 
 	/* check to see if we have a valid proxy */
@@ -2943,6 +2948,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 
 	/* do the method */
 	ret = dbus_g_proxy_call (client->priv->proxy, "InstallPackages", &error_local,
+				 G_TYPE_BOOLEAN, trusted,
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 
@@ -3046,6 +3052,7 @@ out:
 /**
  * pk_client_update_packages:
  * @client: a valid #PkClient instance
+ * @trusted: if untrused actions should be allowed
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -3054,7 +3061,7 @@ out:
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error)
+pk_client_update_packages (PkClient *client, gboolean trusted, gchar **package_ids, GError **error)
 {
 	gboolean ret = FALSE;
 	gchar *package_ids_temp;
@@ -3088,6 +3095,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
+	client->priv->cached_trusted = trusted;
 
 	/* only copy if we are not requeing */
 	if (client->priv->cached_package_ids != package_ids) {
@@ -3102,6 +3110,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 
 	/* do the method */
 	ret = dbus_g_proxy_call (client->priv->proxy, "UpdatePackages", &error_local,
+				 G_TYPE_BOOLEAN, trusted,
 				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 
@@ -3708,7 +3717,7 @@ pk_client_requeue (PkClient *client, GError **error)
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
 		ret = pk_client_search_name (client, priv->cached_filters, priv->cached_search, error);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES)
-		ret = pk_client_install_packages (client, priv->cached_package_ids, error);
+		ret = pk_client_install_packages (client, priv->cached_trusted, priv->cached_package_ids, error);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES)
 		ret = pk_client_install_files (client, priv->cached_trusted, priv->cached_full_paths, error);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE)
@@ -3718,9 +3727,9 @@ pk_client_requeue (PkClient *client, GError **error)
 	else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES)
 		ret = pk_client_remove_packages (client, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove, error);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
-		ret = pk_client_update_packages (client, priv->cached_package_ids, error);
+		ret = pk_client_update_packages (client, priv->cached_trusted, priv->cached_package_ids, error);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM)
-		ret = pk_client_update_system (client, error);
+		ret = pk_client_update_system (client, priv->cached_trusted, error);
 	else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST)
 		ret = pk_client_get_repo_list (client, priv->cached_filters, error);
 	else if (priv->role == PK_ROLE_ENUM_GET_CATEGORIES)

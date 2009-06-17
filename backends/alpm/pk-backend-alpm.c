@@ -1201,6 +1201,7 @@ backend_install_packages_thread (PkBackend *backend)
 	unsigned int iterator;
 	alpm_list_t *data = NULL;
 
+	/* FIXME: support trusted */
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	/* create a new transaction */
@@ -1240,7 +1241,7 @@ backend_install_packages_thread (PkBackend *backend)
  * backend_install_packages:
  */
 static void
-backend_install_packages (PkBackend *backend, gchar **package_ids)
+backend_install_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
@@ -1473,7 +1474,7 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
  * backend_update_packages:
  */
 static void
-backend_update_packages (PkBackend *backend, gchar **package_ids)
+backend_update_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 

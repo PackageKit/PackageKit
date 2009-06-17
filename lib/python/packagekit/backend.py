@@ -346,7 +346,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def update_system(self):
+    def update_system(self, trusted):
         '''
         Implement the {backend}-update-system functionality
         Needed to be implemented in a sub class
@@ -360,7 +360,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def install_packages(self, package_ids):
+    def install_packages(self, trusted, package_ids):
         '''
         Implement the {backend}-install functionality
         Needed to be implemented in a sub class
@@ -396,7 +396,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def update_packages(self, package_ids):
+    def update_packages(self, trusted, package_ids):
         '''
         Implement the {backend}-update functionality
         Needed to be implemented in a sub class
@@ -551,8 +551,9 @@ class PackageKitBaseBackend:
             self.install_files(trusted, files_to_inst)
             self.finished()
         elif cmd == 'install-packages':
-            package_ids = args[0].split(PACKAGE_IDS_DELIM)
-            self.install_packages(package_ids)
+            trusted = args[0]
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            self.install_packages(trusted, package_ids)
             self.finished()
         elif cmd == 'install-signature':
             sigtype = args[0]
@@ -609,11 +610,13 @@ class PackageKitBaseBackend:
             self.repo_signature_install(package)
             self.finished()
         elif cmd == 'update-packages':
-            package_ids = args[0].split(PACKAGE_IDS_DELIM)
-            self.update_packages(package_ids)
+            trusted = args[0]
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            self.update_packages(trusted, package_ids)
             self.finished()
         elif cmd == 'update-system':
-            self.update_system()
+            trusted = args[0]
+            self.update_system(trusted)
             self.finished()
         elif cmd == 'what-provides':
             filters = args[0]

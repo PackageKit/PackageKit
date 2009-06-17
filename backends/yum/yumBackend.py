@@ -1342,7 +1342,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self._show_package_list(package_list)
         self.percentage(100)
 
-    def update_system(self):
+    def update_system(self, trusted):
         '''
         Implement the {backend}-update-system functionality
         '''
@@ -1351,6 +1351,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_RUNNING)
+
+        # FIXME: use trusted
 
         old_throttle = self.yumbase.conf.throttle
         self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
@@ -1470,7 +1472,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             if show:
                                 self._show_package(pkg, INFO_AVAILABLE)
 
-    def install_packages(self, package_ids):
+    def install_packages(self, trusted, package_ids):
         '''
         Implement the {backend}-install-packages functionality
         This will only work with yum 3.2.4 or higher
@@ -1486,6 +1488,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_RUNNING)
         txmbrs = []
         already_warned = False
+
+        # FIXME: use trusted
+
         for package in package_ids:
             grp = self._is_meta_package(package)
             if grp:
@@ -1766,7 +1771,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return True
 
-    def update_packages(self, package_ids):
+    def update_packages(self, trusted, package_ids):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
@@ -1780,6 +1785,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
+
+        # FIXME: use trusted
 
         txmbrs = []
         try:

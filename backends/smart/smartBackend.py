@@ -167,7 +167,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._package_list = []
 
     @needs_cache
-    def install_packages(self, packageids):
+    def install_packages(self, trusted, packageids):
+
+        # FIXME: use trusted
+
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -259,7 +262,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def update_packages(self, packageids):
+    def update_packages(self, trusted, packageids):
+
+        # FIXME: use trusted
+
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -307,7 +313,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self.files(package, ";".join(files))
 
     @needs_cache
-    def update_system(self):
+    def update_system(self, trusted):
+
+        # FIXME: use trusted
+
         self.status(STATUS_INFO)
         cache = self.ctrl.getCache()
 

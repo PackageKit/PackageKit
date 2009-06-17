@@ -218,6 +218,7 @@ gboolean	 pk_client_get_updates			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_system		(PkClient	*client,
+							 gboolean	 trusted,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_name			(PkClient	*client,
@@ -288,6 +289,7 @@ gboolean	 pk_client_refresh_cache		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_packages		(PkClient	*client,
+							 gboolean	 trusted,
 							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -298,6 +300,7 @@ gboolean	 pk_client_install_signature		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_packages		(PkClient	*client,
+							 gboolean	 trusted,
 							 gchar		**package_ids,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;

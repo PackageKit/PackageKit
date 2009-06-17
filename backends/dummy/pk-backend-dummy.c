@@ -452,11 +452,13 @@ backend_install_timeout (gpointer data)
  * backend_install_packages:
  */
 static void
-backend_install_packages (PkBackend *backend, gchar **package_ids)
+backend_install_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
 {
 	const gchar *license_agreement;
 	const gchar *eula_id;
 	gboolean has_eula;
+
+	/* FIXME: support trusted */
 
 	if (egg_strequal (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva")) {
 		if (_use_gpg && !_has_signature) {
@@ -864,11 +866,14 @@ backend_update_packages_download_timeout (gpointer data)
  * backend_update_packages:
  */
 static void
-backend_update_packages (PkBackend *backend, gchar **package_ids)
+backend_update_packages (PkBackend *backend, gboolean trusted, gchar **package_ids)
 {
 	const gchar *eula_id;
 	const gchar *license_agreement;
 	gboolean has_eula;
+
+	/* FIXME: support trusted */
+
 	if (_use_gpg && !_has_signature) {
 		pk_backend_repo_signature_required (backend, package_ids[0], "updates",
 						    "http://example.com/gpgkey",
@@ -984,11 +989,14 @@ backend_update_system_timeout (gpointer data)
  * backend_update_system:
  */
 static void
-backend_update_system (PkBackend *backend)
+backend_update_system (PkBackend *backend, gboolean trusted)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	_progress_percentage = 0;
+
+	/* FIXME: support trusted */
+
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 	_signal_timeout = g_timeout_add (100, backend_update_system_timeout, backend);
 }
