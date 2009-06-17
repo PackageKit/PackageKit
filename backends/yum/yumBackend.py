@@ -1326,6 +1326,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self._show_package_list(package_list)
         self.percentage(100)
 
+    def _is_package_repo_signed(self, pkg):
+        '''
+        Finds out if the repo that contains the package is signed
+        '''
+        repo = self.yumbase.repos.getRepo(pkg.repoid)
+        return repo.gpgcheck
+
     def update_system(self, trusted):
         '''
         Implement the {backend}-update-system functionality
@@ -1336,9 +1343,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        # FIXME: use trusted
+        # if trusted is true, it means that we will only update signed files
+        if trusted:
+            self.yumbase.conf.gpgcheck = 1
+        else:
+            self.yumbase.conf.gpgcheck = 0
 
-        old_throttle = self.yumbase.conf.throttle
         self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
                                            # to avoid taking all the system's bandwidth.
         try:
@@ -1349,14 +1359,21 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             if txmbr:
+                # check all the packages in the transaction if only-trusted
+                if trusted:
+                    for t in txmbr:
+                        pkg = t.po
+                        signed = self._is_package_repo_signed(pkg)
+                        if not signed:
+                            self.error(ERROR_MISSING_GPG_SIGNATURE, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                            return
                 try:
                     self._runYumTransaction(allow_skip_broken=True)
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
             else:
-                self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Nothing to do")
-
-        self.yumbase.conf.throttle = old_throttle
+                self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Nothing to do", exit=False)
+                return
 
     def refresh_cache(self):
         '''
@@ -1473,7 +1490,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         txmbrs = []
         already_warned = False
 
-        # FIXME: use trusted
+        # if trusted is true, it means that we will only update signed files
+        if trusted:
+            self.yumbase.conf.gpgcheck = 1
+        else:
+            self.yumbase.conf.gpgcheck = 0
 
         for package in package_ids:
             grp = self._is_meta_package(package)
@@ -1508,6 +1529,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package %s is already installed" % pkg.name, exit=False)
                     return
         if txmbrs:
+            if trusted:
+                for t in txmbr:
+                    pkg = t.po
+                    signed = self._is_package_repo_signed(pkg)
+                    if not signed:
+                        self.error(ERROR_MISSING_GPG_SIGNATURE, "The package %s will not be installed from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                        return
             try:
                 self._runYumTransaction()
             except PkError, e:
@@ -1635,7 +1663,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                        'All of the specified packages have already been installed')
 
         # If trusted is true, it means that we will only install trusted files
-        if trusted == 'yes':
+        if trusted:
             # disregard the default
             self.yumbase.conf.gpgcheck = 1
 
@@ -1770,7 +1798,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        # FIXME: use trusted
+        # if trusted is true, it means that we will only update signed files
+        if trusted:
+            self.yumbase.conf.gpgcheck = 1
+        else:
+            self.yumbase.conf.gpgcheck = 0
 
         txmbrs = []
         try:
@@ -1794,6 +1826,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             if txmbrs:
+                if trusted:
+                    for t in txmbr:
+                        pkg = t.po
+                        signed = self._is_package_repo_signed(pkg)
+                        if not signed:
+                            self.error(ERROR_MISSING_GPG_SIGNATURE, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                            return
                 try:
                     self._runYumTransaction(allow_skip_broken=True)
                 except PkError, e:
@@ -2515,6 +2554,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except Exception, e:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
+        # default to 100% unless method overrides
+        self.yumbase.conf.throttle = "90%"
+
     def _refresh_yum_cache(self):
         self.status(STATUS_REFRESH_CACHE)
         old_cache_setting = self.yumbase.conf.cache
@@ -2548,8 +2590,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-        # set bandwidth throttle to 90%
-        self.yumbase.conf.throttle = "90%"
         self.yumbase.rpmdb.auto_close = True
         self.dnlCallback = DownloadCallback(self, showNames=True)
         self.yumbase.repos.setProgressBar(self.dnlCallback)
