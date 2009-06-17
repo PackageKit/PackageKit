@@ -436,7 +436,16 @@ pk_client_get_cached_objects (PkClient *client)
 static void
 pk_client_destroy_cb (DBusGProxy *proxy, PkClient *client)
 {
+	gboolean ret;
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* exit our private loop if it's running */
+	ret = g_main_loop_is_running (client->priv->loop);
+	if (ret && client->priv->synchronous) {
+		egg_warning ("quitting loop due to transaction being destroyed");
+		g_main_loop_quit (client->priv->loop);
+	}
+
 	egg_debug ("emit destroy %s", client->priv->tid);
 	g_signal_emit (client, signals [PK_CLIENT_DESTROY], 0);
 }
