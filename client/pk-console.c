@@ -1437,6 +1437,8 @@ pk_console_is_error_code_retry_trusted (PkErrorCodeEnum error_code)
 {
 	gboolean ret = FALSE;
 	switch (error_code) {
+		case PK_ERROR_ENUM_GPG_FAILURE:
+		case PK_ERROR_ENUM_BAD_GPG_SIGNATURE:
 		case PK_ERROR_ENUM_MISSING_GPG_SIGNATURE:
 		case PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED:
 		case PK_ERROR_ENUM_CANNOT_UPDATE_REPO_UNSIGNED:
