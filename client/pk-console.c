@@ -537,6 +537,22 @@ pk_console_require_restart_cb (PkClient *client, PkRestartEnum restart, const Pk
 }
 
 /**
+ * pk_console_destroy_cb:
+ **/
+static void
+pk_console_destroy_cb (PkClient *client, gpointer data)
+{
+	gboolean ret;
+
+	/* exit our private loop if it's running */
+	ret = g_main_loop_is_running (loop);
+	if (ret) {
+		egg_warning ("quitting loop due to transaction being destroyed");
+		g_main_loop_quit (loop);
+	}
+}
+
+/**
  * pk_console_finished_cb:
  **/
 static void
@@ -1861,6 +1877,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_progress_changed_cb), NULL);
 	g_signal_connect (client_async, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
+	g_signal_connect (client_async, "destroy",
+			  G_CALLBACK (pk_console_destroy_cb), NULL);
 	g_signal_connect (client_async, "require-restart",
 			  G_CALLBACK (pk_console_require_restart_cb), NULL);
 	g_signal_connect (client_async, "error-code",
@@ -1875,6 +1893,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_finished_cb), NULL);
 	g_signal_connect (client_task, "message",
 			  G_CALLBACK (pk_watch_message_cb), NULL);
+	g_signal_connect (client_task, "destroy",
+			  G_CALLBACK (pk_console_destroy_cb), NULL);
 
 	client_install_files = pk_client_new ();
 	g_signal_connect (client_install_files, "finished",
