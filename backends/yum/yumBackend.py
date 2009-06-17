@@ -1365,7 +1365,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         pkg = t.po
                         signed = self._is_package_repo_signed(pkg)
                         if not signed:
-                            self.error(ERROR_MISSING_GPG_SIGNATURE, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                            self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                             return
                 try:
                     self._runYumTransaction(allow_skip_broken=True)
@@ -1488,7 +1488,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
         txmbrs = []
-        already_warned = False
 
         # if only_trusted is true, it means that we will only update signed files
         if only_trusted:
@@ -1506,23 +1505,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     txmbr = self.yumbase.selectGroup(grp.groupid)
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-                for t in txmbr:
-                    try:
-                        repo = self.yumbase.repos.getRepo(t.po.repoid)
-                    except Exception, e:
-                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-                    if not already_warned and not repo.gpgcheck:
-                        self.message(MESSAGE_UNTRUSTED_PACKAGE, "The untrusted package %s will be installed from %s." % (t.po.name, repo))
-                        already_warned = True
-
                 txmbrs.extend(txmbr)
             else:
                 pkg, inst = self._findPackage(package)
                 if pkg and not inst:
-                    repo = self.yumbase.repos.getRepo(pkg.repoid)
-                    if not already_warned and not repo.gpgcheck:
-                        self.message(MESSAGE_UNTRUSTED_PACKAGE, "The untrusted package %s will be installed from %s." % (pkg.name, repo))
-                        already_warned = True
                     txmbr = self.yumbase.install(po=pkg)
                     txmbrs.extend(txmbr)
                 if inst:
@@ -1530,11 +1516,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     return
         if txmbrs:
             if only_trusted:
-                for t in txmbr:
+                for t in txmbrs:
                     pkg = t.po
                     signed = self._is_package_repo_signed(pkg)
                     if not signed:
-                        self.error(ERROR_MISSING_GPG_SIGNATURE, "The package %s will not be installed from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                        self.error(ERROR_CANNOT_INSTALL_REPO_UNSIGNED, "The package %s will not be installed from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                         return
             try:
                 self._runYumTransaction()
@@ -1827,11 +1813,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         else:
             if txmbrs:
                 if only_trusted:
-                    for t in txmbr:
+                    for t in txmbrs:
                         pkg = t.po
                         signed = self._is_package_repo_signed(pkg)
                         if not signed:
-                            self.error(ERROR_MISSING_GPG_SIGNATURE, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                            self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                             return
                 try:
                     self._runYumTransaction(allow_skip_broken=True)
