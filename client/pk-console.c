@@ -1428,29 +1428,6 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 }
 
 /**
- * pk_console_is_error_code_retry_trusted:
- *
- * Returns if the error code suggests to try with only_trusted %FALSE
- **/
-static gboolean
-pk_console_is_error_code_retry_trusted (PkErrorCodeEnum error_code)
-{
-	gboolean ret = FALSE;
-	switch (error_code) {
-		case PK_ERROR_ENUM_GPG_FAILURE:
-		case PK_ERROR_ENUM_BAD_GPG_SIGNATURE:
-		case PK_ERROR_ENUM_MISSING_GPG_SIGNATURE:
-		case PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED:
-		case PK_ERROR_ENUM_CANNOT_UPDATE_REPO_UNSIGNED:
-			ret = TRUE;
-			break;
-		default:
-			break;
-	}
-	return ret;
-}
-
-/**
  * pk_console_error_code_cb:
  **/
 static void
@@ -1473,7 +1450,7 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 	}
 
 	/* do we need to do the untrusted action */
-	if (pk_console_is_error_code_retry_trusted (error_code) && only_trusted) {
+	if (pk_error_code_is_need_untrusted (error_code) && only_trusted) {
 		egg_debug ("need to try again with only_trusted FALSE");
 		only_trusted = FALSE;
 
