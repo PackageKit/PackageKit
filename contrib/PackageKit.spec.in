@@ -1,7 +1,7 @@
 %define glib2_version			2.16.1
 %define dbus_version			0.90
 %define dbus_glib_version		0.70
-%define policykit_version		0.8
+%define polkit_version			0.92
 %define libnm_glib_version		0.6.4
 %define alphatag			#ALPHATAG#
 
@@ -26,6 +26,7 @@ Requires: PackageKit-yum = %{version}-%{release}
 Requires: shared-mime-info
 Requires: comps-extras
 Requires: preupgrade
+BuildRequires: polkit >= %{polkit_version}
 
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: dbus-devel  >= %{dbus_version}
@@ -35,7 +36,7 @@ BuildRequires: libX11-devel
 BuildRequires: xmlto
 BuildRequires: sqlite-devel
 BuildRequires: NetworkManager-glib-devel >= %{libnm_glib_version}
-BuildRequires: PolicyKit-devel >= %{policykit_version}
+BuildRequires: polkit-devel >= %{polkit_version}
 BuildRequires: libtool
 BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
@@ -290,7 +291,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_datadir}/PackageKit/icons
 %{_datadir}/PackageKit/helpers/test_spawn/*
 %{_datadir}/man/man1/*.1.gz
-%{_datadir}/PolicyKit/policy/*.policy
+%{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/mime/packages/packagekit-*.xml
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
 %{_sbindir}/packagekitd
