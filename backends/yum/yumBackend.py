@@ -2162,7 +2162,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # are we already on the latest version
         try:
-            present_version = int(self.yumbase.conf.yumvar['releasever'])
+            present_version = float(self.yumbase.conf.yumvar['releasever'])
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if (present_version >= last_version):
