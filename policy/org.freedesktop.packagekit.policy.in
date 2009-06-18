@@ -16,7 +16,7 @@
   <action id="org.freedesktop.packagekit.cancel-foreign">
     <_description>Cancel foreign task</_description>
     <_message>Authentication is required to cancel a task that was not started by yourself</_message>
-    <icon_name>pk-package-delete</icon_name>
+    <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -27,7 +27,7 @@
   <action id="org.freedesktop.packagekit.package-install">
     <_description>Install signed package</_description>
     <_message>Authentication is required to install a signed package</_message>
-    <icon_name>pk-package-add</icon_name>
+    <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -38,7 +38,7 @@
   <action id="org.freedesktop.packagekit.package-install-untrusted">
     <_description>Install untrusted local file</_description>
     <_message>Authentication is required to install an untrusted package</_message>
-    <icon_name>pk-package-add</icon_name>
+    <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -49,7 +49,7 @@
   <action id="org.freedesktop.packagekit.system-trust-signing-key">
     <_description>Trust a key used for signing packages</_description>
     <_message>Authentication is required to consider a key used for signing packages as trusted</_message>
-    <icon_name>pk-package-add</icon_name>
+    <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -60,7 +60,7 @@
   <action id="org.freedesktop.packagekit.package-eula-accept">
     <_description>Accept EULA</_description>
     <_message>Authentication is required to accept a EULA</_message>
-    <icon_name>pk-package-add</icon_name>
+    <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -71,7 +71,7 @@
   <action id="org.freedesktop.packagekit.package-remove">
     <_description>Remove package</_description>
     <_message>Authentication is required to remove packages</_message>
-    <icon_name>pk-package-delete</icon_name>
+    <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -82,7 +82,7 @@
   <action id="org.freedesktop.packagekit.system-update">
     <_description>Update packages</_description>
     <_message>Authentication is required to update packages</_message>
-    <icon_name>pk-package-update</icon_name>
+    <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -93,7 +93,7 @@
   <action id="org.freedesktop.packagekit.system-rollback">
     <_description>Rollback to a previous transaction</_description>
     <_message>Authentication is required to rollback a transaction</_message>
-    <icon_name>pk-rollback</icon_name>
+    <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -104,7 +104,7 @@
   <action id="org.freedesktop.packagekit.system-sources-configure">
     <_description>Change software source parameters</_description>
     <_message>Authentication is required to change software source parameters</_message>
-    <icon_name>pk-package-info</icon_name>
+    <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -115,7 +115,7 @@
   <action id="org.freedesktop.packagekit.system-sources-refresh">
     <_description>Refresh system sources</_description>
     <_message>Authentication is required to refresh the system sources</_message>
-    <icon_name>pk-refresh-cache</icon_name>
+    <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -126,7 +126,7 @@
   <action id="org.freedesktop.packagekit.system-network-proxy-configure">
     <_description>Set network proxy</_description>
     <_message>Authentication is required to set the network proxy used for downloading packages</_message>
-    <icon_name>applications-internet</icon_name>
+    <icon_name>preferences-system-network-proxy</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
