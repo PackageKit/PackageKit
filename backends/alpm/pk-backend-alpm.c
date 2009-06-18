@@ -60,6 +60,8 @@ gchar *current_file = NULL;
 off_t trans_xfered;
 off_t trans_total;
 
+int trans_subprogress;
+
 typedef enum {
 	PK_ALPM_SEARCH_TYPE_NULL,
 	PK_ALPM_SEARCH_TYPE_RESOLVE,
@@ -156,7 +158,7 @@ pkg_equals_to (pmpkg_t *pkg, const gchar *name, const gchar *version)
 static void
 cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 {
-	// TODO: Add more code here
+	/* TODO: Add more code here */
 	gchar **package_ids;
 	gchar *package_id_needle;
 	gchar *package_id_str;
@@ -166,12 +168,18 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 		case PM_TRANS_EVT_REMOVE_START:
 			pk_backend_set_allow_cancel (backend_instance, FALSE);
 
+			/* reset transaction subprogress */
+			trans_subprogress = -1;
+
 			package_id_str = pkg_to_package_id_str (data1, ALPM_LOCAL_DB_ALIAS);
 			pk_backend_package (backend_instance, PK_INFO_ENUM_REMOVING, package_id_str, alpm_pkg_get_desc (data1));
 			g_free (package_id_str);
 			break;
 		case PM_TRANS_EVT_ADD_START:
 			pk_backend_set_allow_cancel (backend_instance, FALSE);
+
+			/* reset transaction subprogress */
+			trans_subprogress = -1;
 
 			pk_backend_set_status (backend_instance, PK_STATUS_ENUM_INSTALL);
 			package_id_needle = pkg_to_package_id_str (data1, "");
@@ -198,6 +206,11 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 			g_free (package_id_needle);
 			break;
 		case PM_TRANS_EVT_UPGRADE_START:
+			pk_backend_set_allow_cancel (backend_instance, FALSE);
+
+			/* reset transaction subprogress */
+			trans_subprogress = -1;
+
 			package_id_str = pkg_to_package_id_str (data1, "local");
 			pk_backend_package (backend_instance, PK_INFO_ENUM_UPDATING, package_id_str, alpm_pkg_get_desc (data1));
 			g_free (package_id_str);
@@ -209,19 +222,24 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 static void
 cb_trans_conv (pmtransconv_t conv, void *data1, void *data2, void *data3, int *response)
 {
-	// TODO: check if some code needs to be placed there
+	/* TODO: check if some code needs to be placed there */
 }
 
 static void
 cb_trans_progress (pmtransprog_t event, const char *pkgname, int percent, int howmany, int current)
 {
-	if (event == PM_TRANS_PROGRESS_ADD_START || event == PM_TRANS_PROGRESS_UPGRADE_START || event == PM_TRANS_PROGRESS_REMOVE_START) {
-		int trans_percent;
+	if (trans_subprogress != percent) {
+		/* avoid duplicates */
+		trans_subprogress = percent;
 
-		egg_debug ("alpm: transaction percentage for %s is %i", pkgname, percent);
-		trans_percent = (int) ((float) ((current - 1) * 100 + percent)) / ((float) (howmany * 100)) * 100;
-		pk_backend_set_sub_percentage ((PkBackend *) backend_instance, percent);
-		pk_backend_set_percentage ((PkBackend *) backend_instance, trans_percent);
+		if (event == PM_TRANS_PROGRESS_ADD_START || event == PM_TRANS_PROGRESS_UPGRADE_START || event == PM_TRANS_PROGRESS_REMOVE_START) {
+			int trans_percent;
+
+			egg_debug ("alpm: transaction percentage for %s is %i", pkgname, percent);
+			trans_percent = (int) ((float) ((current - 1) * 100 + percent)) / ((float) (howmany * 100)) * 100;
+			pk_backend_set_sub_percentage ((PkBackend *) backend_instance, percent);
+			pk_backend_set_percentage ((PkBackend *) backend_instance, trans_percent);
+		}
 	}
 }
 
@@ -233,27 +251,39 @@ cb_dl_progress (const char *filename, off_t file_xfered, off_t file_total)
 
 	if (g_str_has_suffix (filename, ALPM_PKG_EXT)) {
 		if (!egg_strequal (filename, current_file)) {
-			unsigned int iterator;
-			gchar *package_id = NULL;
-			gchar **package_ids = pk_backend_get_strv (backend_instance, "package_ids");
+			alpm_list_t *repos;
+			alpm_list_t *packages;
+			pmpkg_t *current_pkg = NULL;
+			const gchar *repo_name = NULL;
 
 			g_free (current_file);
 			current_file = g_strdup (filename);
 
-			/* search for this package in package_ids */
-			for (iterator = 0; package_id == NULL && iterator < g_strv_length (package_ids); ++iterator) {
-				PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
-				gchar *pkginfo = g_strjoin ("-", pk_package_id_get_name (id), pk_package_id_get_version (id), NULL);
-				if (g_str_has_prefix (filename, pkginfo))
-					package_id = package_ids[iterator];
-				g_free (pkginfo);
-				pk_package_id_free (id);
+			/* iterate repos */
+			for (repos = alpm_option_get_syncdbs (); current_pkg == NULL && repos; repos = alpm_list_next (repos)) {
+				pmdb_t *db = alpm_list_getdata (repos);
+
+				/* iterate pkgs */
+				for (packages = alpm_db_getpkgcache (db); current_pkg == NULL && packages; packages = alpm_list_next (packages)) {
+					pmpkg_t *pkg = alpm_list_getdata (packages);
+
+					/* compare package information with file name */
+					gchar *pkginfo = g_strjoin ("-", alpm_pkg_get_name (pkg), alpm_pkg_get_version (pkg), NULL);
+					if (pkginfo != NULL && strcmp (pkginfo, "") != 0)
+						egg_debug ("matching %s with %s", filename, pkginfo);
+					if (g_str_has_prefix (filename, pkginfo)) {
+						current_pkg = pkg;
+						repo_name = alpm_db_get_name (db);
+					}
+					g_free (pkginfo);
+				}
 			}
 
 			/* emit package */
-			if (package_id != NULL) {
-				pmpkg_t *pkg = pkg_from_package_id_str (package_id);
-				pk_backend_package (backend_instance, PK_INFO_ENUM_DOWNLOADING, package_id, alpm_pkg_get_desc (pkg));
+			if (current_pkg != NULL) {
+				gchar *package_id = pkg_to_package_id_str (current_pkg, repo_name);
+				pk_backend_package (backend_instance, PK_INFO_ENUM_DOWNLOADING, package_id, alpm_pkg_get_desc (current_pkg));
+				g_free (package_id);
 			}
 		}
 	}
@@ -576,7 +606,7 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 static void
 backend_initialize (PkBackend *backend)
 {
-	// initialize backend_instance for use in callback functions
+	/* initialize backend_instance for use in callback functions */
 	backend_instance = backend;
 
 	egg_debug ("alpm: initializing backend");
@@ -880,13 +910,13 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 			}
 		}
 
-		// get licenses_str content to licenses array
+		/* get licenses_str content to licenses array */
 		licenses = g_string_free (licenses_str, FALSE);
 
-		// return details
+		/* return details */
 		pk_backend_details (backend, package_ids[iterator], licenses, PK_GROUP_ENUM_OTHER, alpm_pkg_get_desc (pkg), alpm_pkg_get_url(pkg), alpm_pkg_get_size (pkg));
 
-		// free licenses array as we no longer need it
+		/* free licenses array as we no longer need it */
 		g_free (licenses);
 	}
 
@@ -1086,7 +1116,7 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 	pk_backend_set_allow_cancel (backend, FALSE);
 
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-		// TODO: add changelog code here
+		/* TODO: add changelog code here */
 		PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
 
 		pmpkg_t *installed_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), pk_package_id_get_name (id));
@@ -1482,6 +1512,47 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 }
 
 /**
+ * backend_update_system_thread:
+ */
+static gboolean
+backend_update_system_thread (PkBackend *backend)
+{
+	alpm_list_t *data = NULL;
+
+	/* don't specify any flags for now */
+	pmtransflag_t flags = 0;
+
+	/* create a new transaction */
+	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, flags, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	/* set action, prepare and commit transaction */
+	if (alpm_trans_sysupgrade () != 0 || alpm_trans_prepare (&data) != 0 || alpm_trans_commit (&data) != 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
+		alpm_trans_release ();
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	alpm_trans_release ();
+
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_update_system:
+ */
+static void
+backend_update_system (PkBackend *backend)
+{
+	pk_backend_thread_create (backend, backend_update_system_thread);
+}
+
+/**
  * backend_what_provides:
  */
 static void
@@ -1528,6 +1599,6 @@ PK_BACKEND_OPTIONS (
 	backend_search_group,				/* search_group */
 	backend_search_name,				/* search_name */
 	backend_update_packages,			/* update_packages */
-	NULL,						/* update_system */
+	backend_update_system,				/* update_system */
 	backend_what_provides				/* what_provides */
 );
