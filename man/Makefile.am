@@ -3,14 +3,14 @@ EXTRA_DIST =				\
 	pkmon.xml			\
 	pkgenpack.xml
 
-if HAVE_DOCBOOK2MAN
+if HAVE_XSLTPROC
 man_MANS =				\
 	pkcon.1				\
 	pkmon.1				\
 	pkgenpack.1
 endif
 
-if HAVE_DOCBOOK2MAN
+if HAVE_XSLTPROC
 pkcon.1: pkcon.xml
 	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
 
@@ -19,7 +19,6 @@ pkmon.1: pkmon.xml
 
 pkgenpack.1: pkgenpack.xml
 	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
-
 endif
 
 clean-local :
