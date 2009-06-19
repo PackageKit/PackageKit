@@ -1699,6 +1699,9 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	/* log */
 	pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i is trying to obtain %s auth (only_trusted:%i)", transaction->priv->uid, action_id, only_trusted);
 
+	/* emit status for GUIs */
+	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_WAITING_FOR_AUTH);
+
 	/* check subject */
 	transaction->priv->waiting_for_auth = TRUE;
 
