@@ -1569,7 +1569,8 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	/* did not auth */
 	if (!polkit_authorization_result_get_is_authorized (result)) {
 
-		/* emit an ::ErrorCode() and then ::Finished() */
+		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "failed to obtain auth");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 
