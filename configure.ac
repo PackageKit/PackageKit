@@ -765,7 +765,6 @@ echo "
         cppflags:                  ${CPPFLAGS}
         Building unit tests:       ${enable_tests}
         Able to run locally:       ${enable_local}
-        Developer warnings:        ${enable_developer}
         Security framework:        ${with_security_framework}
         Networking stacks:         ${networking_apis}
         Browser plugin:            ${build_browser_plugin}
