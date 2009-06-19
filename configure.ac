@@ -298,6 +298,15 @@ AC_SUBST(CONNMAN_CFLAGS)
 AC_SUBST(CONNMAN_LIBS)
 
 dnl ---------------------------------------------------------------------------
+dnl - Is docbook2man available?
+dnl ---------------------------------------------------------------------------
+AC_PATH_PROG(DOCBOOK2MAN, docbook2man, no)
+if test "$DOCBOOK2MAN" = "no" ; then
+	AC_MSG_WARN([docbook2man not found, will not be able to build man documentation])
+	fi
+AM_CONDITIONAL(HAVE_DOCBOOK2MAN, [test "$DOCBOOK2MAN" != "no"])
+
+dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
 dnl ---------------------------------------------------------------------------
 AC_SUBST(SYSCONFDIR, $sysconfdir)
@@ -756,6 +765,7 @@ echo "
         cppflags:                  ${CPPFLAGS}
         Building unit tests:       ${enable_tests}
         Able to run locally:       ${enable_local}
+        Developer warnings:        ${enable_developer}
         Security framework:        ${with_security_framework}
         Networking stacks:         ${networking_apis}
         Browser plugin:            ${build_browser_plugin}
