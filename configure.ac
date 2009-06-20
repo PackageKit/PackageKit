@@ -298,6 +298,15 @@ AC_SUBST(CONNMAN_CFLAGS)
 AC_SUBST(CONNMAN_LIBS)
 
 dnl ---------------------------------------------------------------------------
+dnl - Is xsltproc available?
+dnl ---------------------------------------------------------------------------
+AC_PATH_PROG(XSLTPROC, xsltproc, no)
+if test "$XSLTPROC" = "no" ; then
+	AC_MSG_WARN([xsltproc not found, will not be able to build man documentation])
+	fi
+AM_CONDITIONAL(HAVE_XSLTPROC, [test "$XSLTPROC" != "no"])
+
+dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
 dnl ---------------------------------------------------------------------------
 AC_SUBST(SYSCONFDIR, $sysconfdir)

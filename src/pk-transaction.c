@@ -1569,7 +1569,8 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	/* did not auth */
 	if (!polkit_authorization_result_get_is_authorized (result)) {
 
-		/* emit an ::ErrorCode() and then ::Finished() */
+		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "failed to obtain auth");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 
@@ -1698,6 +1699,9 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 
 	/* log */
 	pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i is trying to obtain %s auth (only_trusted:%i)", transaction->priv->uid, action_id, only_trusted);
+
+	/* emit status for GUIs */
+	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_WAITING_FOR_AUTH);
 
 	/* check subject */
 	transaction->priv->waiting_for_auth = TRUE;

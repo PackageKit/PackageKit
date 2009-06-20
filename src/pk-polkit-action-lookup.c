@@ -168,40 +168,23 @@ static gchar *
 pk_action_lookup_get_icon_name (PolkitBackendActionLookup *lookup, const gchar *action_id,
 				PolkitDetails *details, PolkitActionDescription *action_description)
 {
-	PkRoleEnum role = PK_ROLE_ENUM_UNKNOWN;
 	gboolean only_trusted = TRUE;
-	const gchar *role_text;
 	const gchar *only_trusted_text;
 	gchar *value = NULL;
 
 	if (!g_str_has_prefix (action_id, "org.freedesktop.packagekit."))
 		goto out;
 
-	/* get role */
-	role_text = polkit_details_lookup (details, "role");
-	if (role_text != NULL)
-		role = pk_role_enum_from_text (role_text);
-
 	/* get only-trusted */
 	only_trusted_text = polkit_details_lookup (details, "only-trusted");
 	if (only_trusted_text != NULL)
 		only_trusted = g_str_equal (only_trusted_text, "true");
-
-	/* set proxy */
-	if (role == PK_ROLE_ENUM_UNKNOWN) {
-		value = g_strdup ("preferences-system-network-proxy");
-		goto out;
-	}
 
 	/* only-trusted */
 	if (!only_trusted) {
 		value = g_strdup ("emblem-important");
 		goto out;
 	}
-
-	/* fallback */
-	value = g_strdup ("package-x-generic");
-
 out:
 	return value;
 }

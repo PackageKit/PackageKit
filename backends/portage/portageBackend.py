@@ -509,6 +509,37 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 		self.percentage(100)
 
+	def get_update_detail(self, pkgs):
+		# TODO: a lot of informations are missing
+
+		self.status(STATUS_INFO)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		for pkg in pkgs:
+			updates = []
+			obsoletes = ""
+			vendor_url = ""
+			bugzilla_url = ""
+			cve_url = ""
+
+			cpv = id_to_cpv(pkg)
+
+			if not portage.portdb.cpv_exists(cpv):
+				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % pkg)
+
+			for cpv in self.vardb.match(portage.pkgsplit(cpv)[0]):
+				updates.append(cpv)
+			updates = "&".join(updates)
+
+			# temporarily set vendor_url = homepage
+			homepage = portage.portdb.aux_get(cpv, ["HOMEPAGE"])[0]
+			vendor_url = homepage
+
+			self.update_detail(pkg, updates, obsoletes, vendor_url, bugzilla_url,
+					cve_url, "none", "No update text", "No ChangeLog",
+					UPDATE_STATE_STABLE, None, None)
+
 	def get_updates(self, filters):
 		# NOTES:
 		# portage prefer not to update _ALL_ packages so we will only list updated
@@ -748,6 +779,53 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			if searchre.search(cp):
 				for cpv in portage.portdb.match(cp): #TODO: cp_list(cp) ?
 					self.package(cpv)
+
+	def update_packages(self, pkgs):
+		# TODO: add some checks ?
+		self.install_packages("false", pkgs)
+
+	def update_system(self, only_trusted):
+		# TODO: only_trusted
+		self.status(STATUS_RUNNING)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		# inits
+		myopts = {}
+		myopts.pop("--deep", None)
+		myopts.pop("--newuse", None)
+		myopts.pop("--update", None)
+		myopts["--deep"] = True
+		myopts["--newuse"] = True
+		myopts["--update"] = True
+
+		spinner = ""
+		favorites = []
+		settings, trees, mtimedb = _emerge.load_emerge_config()
+		myparams = _emerge.create_depgraph_params(myopts, "")
+		spinner = _emerge.stdout_spinner()
+
+		depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
+		retval, favorites = depgraph.select_files(["system", "world"])
+		if not retval:
+			self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
+			return
+
+		if "resume" in mtimedb and \
+		"mergelist" in mtimedb["resume"] and \
+		len(mtimedb["resume"]["mergelist"]) > 1:
+			mtimedb["resume_backup"] = mtimedb["resume"]
+			del mtimedb["resume"]
+			mtimedb.commit()
+
+		mtimedb["resume"]={}
+		mtimedb["resume"]["myopts"] = myopts.copy()
+		mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
+
+		mergetask = _emerge.Scheduler(settings, trees, mtimedb,
+				myopts, spinner, depgraph.altlist(),
+				favorites, depgraph.schedulerGraph())
+		mergetask.merge()
 
 def main():
 	backend = PackageKitPortageBackend("") #'', lock=True)
