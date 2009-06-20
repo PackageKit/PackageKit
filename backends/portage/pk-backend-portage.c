@@ -364,8 +364,7 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 static void
 backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
-	egg_debug ("backend: update system");
-	pk_backend_finished (backend);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-system", pk_backend_bool_to_text (only_trusted), NULL);
 }
 
 PK_BACKEND_OPTIONS (
@@ -402,7 +401,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
-	backend_update_system, // TODO			/* update_system */
+	backend_update_system,			/* update_system */
 	NULL			/* what_provides */
 );
 
