@@ -513,6 +513,37 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 		self.percentage(100)
 
+	def get_update_detail(self, pkgs):
+		# TODO: a lot of informations are missing
+
+		self.status(STATUS_INFO)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		for pkg in pkgs:
+			updates = []
+			obsoletes = ""
+			vendor_url = ""
+			bugzilla_url = ""
+			cve_url = ""
+
+			cpv = id_to_cpv(pkg)
+
+			if not portage.portdb.cpv_exists(cpv):
+				self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % pkg)
+
+			for cpv in self.vardb.match(portage.pkgsplit(cpv)[0]):
+				updates.append(cpv)
+			updates = "&".join(updates)
+
+			# temporarily set vendor_url = homepage
+			homepage = portage.portdb.aux_get(cpv, ["HOMEPAGE"])[0]
+			vendor_url = homepage
+
+			self.update_detail(pkg, updates, obsoletes, vendor_url, bugzilla_url,
+					cve_url, "none", "No update text", "No ChangeLog",
+					UPDATE_STATE_STABLE, None, None)
+
 	def get_updates(self, filters):
 		# NOTES:
 		# portage prefer not to update _ALL_ packages so we will only list updated
@@ -750,6 +781,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			if searchre.search(cp):
 				for cpv in portage.portdb.match(cp): #TODO: cp_list(cp) ?
 					self.package(cpv)
+
+	def update_packages(self, pkgs):
+		self.status(STATUS_RUNNING)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		self.install_packages(pkgs)
 
 def main():
 	backend = PackageKitPortageBackend("") #'', lock=True)

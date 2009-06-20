@@ -175,8 +175,11 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	egg_debug ("backend: update_detail");
-	pk_backend_finished (backend);
+	gchar *package_ids_temp;
+
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-update-detail", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -318,8 +321,12 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
-	egg_debug ("backend: update packages");
-	pk_backend_finished (backend);
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-packages", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -383,7 +390,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
 	backend_install_packages,		/* install_packages */
-	NULL, // TODO: choose			/* install_signature */
+	NULL,			/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
 	NULL, // TODO: choose			/* repo_enable */
@@ -394,7 +401,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_packages, // TODO		/* update_packages */
+	backend_update_packages,		/* update_packages */
 	backend_update_system, // TODO			/* update_system */
 	NULL			/* what_provides */
 );
