@@ -765,10 +765,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                          pkg.homepage, size)
 
     @unlock_cache_afterwards
-    def update_system(self):
+    def update_system(self, only_trusted):
         """
         Implement the {backend}-update-system functionality
         """
+
+        # FIXME: use only_trusted
+
         pklog.info("Upgrading system")
         if not self._lock_cache(): return
         self.status(STATUS_UPDATE)
@@ -988,10 +991,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
 
     @unlock_cache_afterwards
-    def update_packages(self, ids):
+    def update_packages(self, only_trusted, ids):
         """
         Implement the {backend}-update functionality
         """
+
+        # FIXME: use only_trusted
+
         pklog.info("Updating package with id %s" % ids)
         if not self._lock_cache(): return
         self.status(STATUS_UPDATE)
@@ -1079,10 +1085,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     @unlock_cache_afterwards
-    def install_packages(self, ids):
+    def install_packages(self, only_trusted, ids):
         """
         Implement the {backend}-install functionality
         """
+
+        # FIXME: use only_trusted
+
         pklog.info("Installing package with id %s" % ids)
         if not self._lock_cache(): return
         self.status(STATUS_INSTALL)
@@ -1119,7 +1128,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
 
     @unlock_cache_afterwards
-    def install_files(self, trusted, inst_files):
+    def install_files(self, only_trusted, inst_files):
         """
         Implement install-files for the apt backend
         Install local Debian package files
@@ -1234,7 +1243,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package name %s could not be resolved" % name)
                 return
 
-    def get_depends(self, filter, ids, recursive_text):
+    def get_depends(self, filter, ids, recursive):
         """
         Implement the apt2-get-depends functionality
 
@@ -1248,7 +1257,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         to python-apt.
         """
         pklog.info("Get depends (%s,%s,%s)" % (filter, ids, recursive_text))
-        recursive = text_to_bool(recursive_text)
         #FIXME: recursive is not yet implemented
         if recursive == True:
             pklog.warn("Recursive dependencies are not implemented")
@@ -1294,12 +1302,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Clean up
         self._cache.clear()
 
-    def get_requires(self, filter, ids, recursive_text):
+    def get_requires(self, filter, ids, recursive):
         """
         Implement the apt2-get-requires functionality
         """
         pklog.info("Get requires (%s,%s,%s)" % (filter, ids, recursive_text))
-        recursive = text_to_bool(rescursive_text)
         #FIXME: recursive is not yet implemented
         if recursive == True:
             pklog.warn("Recursive dependencies are not implemented")

@@ -167,7 +167,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._package_list = []
 
     @needs_cache
-    def install_packages(self, packageids):
+    def install_packages(self, only_trusted, packageids):
+
+        # FIXME: use only_trusted
+
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -200,7 +203,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def install_files(self, trusted, paths):
+    def install_files(self, only_trusted, paths):
         for path in paths:
             self.ctrl.addFileChannel(path)
         self.ctrl.reloadChannels()
@@ -259,7 +262,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def update_packages(self, packageids):
+    def update_packages(self, only_trusted, packageids):
+
+        # FIXME: use only_trusted
+
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -307,7 +313,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self.files(package, ";".join(files))
 
     @needs_cache
-    def update_system(self):
+    def update_system(self, only_trusted):
+
+        # FIXME: use only_trusted
+
         self.status(STATUS_INFO)
         cache = self.ctrl.getCache()
 
@@ -803,13 +812,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
             self.files(packageid, ";".join(paths))
 
-    def _text_to_boolean(self, text):
-        if text == 'true' or text == 'TRUE':
-            return True
-        elif text == 'yes' or text == 'YES':
-            return True
-        return False
-
     def _best_package_from_list(self, package_list):
         for installed in (True, False):
             best = None
@@ -821,8 +823,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         return None
 
     @needs_cache
-    def get_depends(self, filters, packageids, recursive_text):
-        recursive = self._text_to_boolean(recursive_text)
+    def get_depends(self, filters, packageids, recursive):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         for packageid in packageids:
@@ -856,8 +857,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self._show_package_list()
 
     @needs_cache
-    def get_requires(self, filters, packageids, recursive_text):
-        recursive = self._text_to_boolean(recursive_text)
+    def get_requires(self, filters, packageids, recursive):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         for packageid in packageids:
@@ -898,9 +898,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             channel = smart.sysconf.get(("channels", alias))
             name = channel.get("name", alias)
             parsed = smart.channel.parseChannelData(channel)
-            enabled = 'true'
+            enabled = True
             if channel.has_key('disabled') and channel['disabled'] == 'yes':
-                enabled = 'false'
+                enabled = False
             channel['alias'] = alias
             if self._channel_passes_filters(channel, filters):
                 self.repo_detail(alias, name, enabled)
@@ -909,7 +909,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         if smart.sysconf.has(("channels", repoid)):
-            if enable == "true":
+            if enable:
                 smart.sysconf.remove(("channels", repoid, "disabled"))
             else:
                 smart.sysconf.set(("channels", repoid, "disabled"), "yes")

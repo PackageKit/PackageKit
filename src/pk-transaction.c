@@ -123,7 +123,7 @@ struct PkTransactionPrivate
 	gboolean		 cached_allow_deps;
 	gboolean		 cached_autoremove;
 	gboolean		 cached_enabled;
-	gboolean		 cached_trusted;
+	gboolean		 cached_only_trusted;
 	gchar			*cached_package_id;
 	gchar			**cached_package_ids;
 	gchar			*cached_transaction_id;
@@ -1128,7 +1128,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	pk_store_set_bool (store, "allow_deps", priv->cached_allow_deps);
 	pk_store_set_bool (store, "autoremove", priv->cached_autoremove);
 	pk_store_set_bool (store, "enabled", priv->cached_enabled);
-	pk_store_set_bool (store, "trusted", priv->cached_trusted);
+	pk_store_set_bool (store, "only_trusted", priv->cached_only_trusted);
 	pk_store_set_uint (store, "filters", priv->cached_filters);
 	pk_store_set_uint (store, "provides", priv->cached_provides);
 	pk_store_set_strv (store, "package_ids", priv->cached_package_ids);
@@ -1180,9 +1180,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
 		desc->search_name (priv->backend,priv->cached_filters,priv->cached_search);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES)
-		desc->install_packages (priv->backend, priv->cached_package_ids);
+		desc->install_packages (priv->backend, priv->cached_only_trusted, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES)
-		desc->install_files (priv->backend, priv->cached_trusted, priv->cached_full_paths);
+		desc->install_files (priv->backend, priv->cached_only_trusted, priv->cached_full_paths);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE)
 		desc->install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
 	else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE)
@@ -1190,9 +1190,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES)
 		desc->remove_packages (priv->backend, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
-		desc->update_packages (priv->backend, priv->cached_package_ids);
+		desc->update_packages (priv->backend, priv->cached_only_trusted, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM)
-		desc->update_system (priv->backend);
+		desc->update_system (priv->backend, priv->cached_only_trusted);
 	else if (priv->role == PK_ROLE_ENUM_GET_CATEGORIES)
 		desc->get_categories (priv->backend);
 	else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST)
@@ -1322,7 +1322,7 @@ pk_transaction_release_tid (PkTransaction *transaction)
 static guint
 pk_transaction_get_pid (PkTransaction *transaction, PolkitSubject *subject)
 {
-	guint pid;
+	guint pid = G_MAXUINT;
 	gboolean ret;
 	gchar *sender = NULL;
 	GError *error = NULL;
@@ -1341,7 +1341,7 @@ pk_transaction_get_pid (PkTransaction *transaction, PolkitSubject *subject)
 				 G_TYPE_UINT, &pid,
 				 G_TYPE_INVALID);
 	if (!ret) {
-		egg_error ("failed to get pid: %s", error->message);
+		egg_warning ("failed to get pid: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -1569,7 +1569,8 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	/* did not auth */
 	if (!polkit_authorization_result_get_is_authorized (result)) {
 
-		/* emit an ::ErrorCode() and then ::Finished() */
+		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "failed to obtain auth");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 
@@ -1597,34 +1598,65 @@ out:
  * pk_transaction_role_to_action:
  **/
 static const gchar *
-pk_transaction_role_to_action (gboolean trusted, PkRoleEnum role)
+pk_transaction_role_to_action (PkRoleEnum role)
 {
 	const gchar *policy = NULL;
 
-	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
-	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		policy = "org.freedesktop.packagekit.system-update";
-	} else if (role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
-		policy = "org.freedesktop.packagekit.system-trust-signing-key";
-	} else if (role == PK_ROLE_ENUM_ROLLBACK) {
-		policy = "org.freedesktop.packagekit.system-rollback";
-	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
-		   role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		policy = "org.freedesktop.packagekit.system-sources-configure";
-	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		policy = "org.freedesktop.packagekit.system-sources-refresh";
-	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-		policy = "org.freedesktop.packagekit.package-remove";
-	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
-		policy = "org.freedesktop.packagekit.package-install";
-	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && trusted) {
-		policy = "org.freedesktop.packagekit.package-install";
-	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && !trusted) {
-		policy = "org.freedesktop.packagekit.package-install-untrusted";
-	} else if (role == PK_ROLE_ENUM_ACCEPT_EULA) {
-		policy = "org.freedesktop.packagekit.package-eula-accept";
-	} else if (role == PK_ROLE_ENUM_CANCEL) {
-		policy = "org.freedesktop.packagekit.cancel-foreign";
+	switch (role) {
+		case PK_ROLE_ENUM_UPDATE_PACKAGES:
+		case PK_ROLE_ENUM_UPDATE_SYSTEM:
+			policy = "org.freedesktop.packagekit.system-update";
+			break;
+		case PK_ROLE_ENUM_INSTALL_SIGNATURE:
+			policy = "org.freedesktop.packagekit.system-trust-signing-key";
+			break;
+		case PK_ROLE_ENUM_ROLLBACK:
+			policy = "org.freedesktop.packagekit.system-rollback";
+			break;
+		case PK_ROLE_ENUM_REPO_ENABLE:
+		case PK_ROLE_ENUM_REPO_SET_DATA:
+			policy = "org.freedesktop.packagekit.system-sources-configure";
+			break;
+		case PK_ROLE_ENUM_REFRESH_CACHE:
+			policy = "org.freedesktop.packagekit.system-sources-refresh";
+			break;
+		case PK_ROLE_ENUM_REMOVE_PACKAGES:
+			policy = "org.freedesktop.packagekit.package-remove";
+			break;
+		case PK_ROLE_ENUM_INSTALL_PACKAGES:
+			policy = "org.freedesktop.packagekit.package-install";
+			break;
+		case PK_ROLE_ENUM_INSTALL_FILES:
+			policy = "org.freedesktop.packagekit.package-install";
+			break;
+		case PK_ROLE_ENUM_ACCEPT_EULA:
+			policy = "org.freedesktop.packagekit.package-eula-accept";
+			break;
+		case PK_ROLE_ENUM_CANCEL:
+			policy = "org.freedesktop.packagekit.cancel-foreign";
+			break;
+		default:
+			break;
+	}
+	return policy;
+}
+
+/**
+ * pk_transaction_role_to_action_untrusted:
+ **/
+static const gchar *
+pk_transaction_role_to_action_untrusted (PkRoleEnum role)
+{
+	const gchar *policy = NULL;
+
+	switch (role) {
+		case PK_ROLE_ENUM_UPDATE_PACKAGES:
+		case PK_ROLE_ENUM_UPDATE_SYSTEM:
+		case PK_ROLE_ENUM_INSTALL_FILES:
+			policy = "org.freedesktop.packagekit.package-install-untrusted";
+			break;
+		default:
+			break;
 	}
 	return policy;
 }
@@ -1640,8 +1672,9 @@ pk_transaction_role_to_action (gboolean trusted, PkRoleEnum role)
  * transaction list when authorised, and not before.
  **/
 static gboolean
-pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean trusted, PkRoleEnum role, GError **error)
+pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_trusted, PkRoleEnum role, GError **error)
 {
+	PolkitDetails *details;
 	const gchar *action_id;
 	gboolean ret = FALSE;
 
@@ -1655,25 +1688,42 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean truste
 	}
 
 	/* map the roles to policykit rules */
-	action_id = pk_transaction_role_to_action (trusted, role);
+	if (only_trusted)
+		action_id = pk_transaction_role_to_action (role);
+	else
+		action_id = pk_transaction_role_to_action_untrusted (role);
 	if (action_id == NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_text (role));
 		goto out;
 	}
 
 	/* log */
-	pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i is trying to obtain %s auth (trusted:%i)", transaction->priv->uid, action_id, trusted);
+	pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i is trying to obtain %s auth (only_trusted:%i)", transaction->priv->uid, action_id, only_trusted);
+
+	/* emit status for GUIs */
+	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_WAITING_FOR_AUTH);
 
 	/* check subject */
 	transaction->priv->waiting_for_auth = TRUE;
+
+	/* insert details about the authorization */
+	details = polkit_details_new ();
+	polkit_details_insert (details, "role", pk_role_enum_to_text (transaction->priv->role));
+	polkit_details_insert (details, "only-trusted", transaction->priv->cached_only_trusted ? "true" : "false");
+
+	/* do authorization async */
 	polkit_authority_check_authorization (transaction->priv->authority,
 					      transaction->priv->subject,
 					      action_id,
-					      NULL,
+					      details,
 					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
 					      transaction->priv->cancellable,
 					      (GAsyncReadyCallback) pk_transaction_action_obtain_authorization_finished_cb,
 					      transaction);
+
+	/* check_authorization ref's this */
+	g_object_unref (details);
+
 	/* assume success, as this is async */
 	ret = TRUE;
 out:
@@ -1685,7 +1735,7 @@ out:
  * pk_transaction_obtain_authorization:
  **/
 static gboolean
-pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean trusted, PkRoleEnum role, GError **error)
+pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_trusted, PkRoleEnum role, GError **error)
 {
 	gboolean ret;
 
@@ -2837,7 +2887,7 @@ pk_transaction_is_supported_content_type (PkTransaction *transaction, const gcha
  * pk_transaction_install_files:
  **/
 void
-pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
+pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 			      gchar **full_paths, DBusGMethodInvocation *context)
 {
 	gchar *full_paths_temp;
@@ -2853,7 +2903,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	full_paths_temp = pk_package_ids_to_text (full_paths);
-	egg_debug ("InstallFiles method called: %s (trusted %i)", full_paths_temp, trusted);
+	egg_debug ("InstallFiles method called: %s (only_trusted %i)", full_paths_temp, only_trusted);
 	g_free (full_paths_temp);
 
 	/* not implemented yet */
@@ -2925,7 +2975,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	}
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, trusted, PK_ROLE_ENUM_INSTALL_FILES, &error);
+	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_INSTALL_FILES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -2933,7 +2983,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_trusted = trusted;
+	transaction->priv->cached_only_trusted = only_trusted;
 	transaction->priv->cached_full_paths = g_strdupv (full_paths);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_FILES);
 
@@ -2946,8 +2996,8 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
  * pk_transaction_install_packages:
  **/
 void
-pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids,
-				 DBusGMethodInvocation *context)
+pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trusted,
+				 gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
@@ -2990,11 +3040,12 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 	}
 
 	/* save so we can run later */
+	transaction->priv->cached_only_trusted = only_trusted;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_PACKAGES);
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
+	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -3768,7 +3819,7 @@ pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, DBusGM
  * pk_transaction_update_packages:
  **/
 void
-pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
+pk_transaction_update_packages (PkTransaction *transaction, gboolean only_trusted, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
@@ -3811,11 +3862,12 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	}
 
 	/* save so we can run later */
+	transaction->priv->cached_only_trusted = only_trusted;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPDATE_PACKAGES);
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
+	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -3830,7 +3882,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
  * pk_transaction_update_system:
  **/
 void
-pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation *context)
+pk_transaction_update_system (PkTransaction *transaction, gboolean only_trusted, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
@@ -3866,10 +3918,11 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 		return;
 	}
 
+	transaction->priv->cached_only_trusted = only_trusted;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPDATE_SYSTEM);
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
+	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -4099,6 +4152,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->emit_signature_required = FALSE;
 	transaction->priv->emit_media_change_required = FALSE;
 	transaction->priv->cached_enabled = FALSE;
+	transaction->priv->cached_only_trusted = TRUE;
 	transaction->priv->cached_key_id = NULL;
 	transaction->priv->cached_package_id = NULL;
 	transaction->priv->cached_package_ids = NULL;
@@ -4289,7 +4343,7 @@ egg_test_transaction (EggTest *test)
 	 ************************************************************/
 #ifdef USE_SECURITY_POLKIT
 	egg_test_title (test, "map valid role to action");
-	action = pk_transaction_role_to_action (FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES);
+	action = pk_transaction_role_to_action (PK_ROLE_ENUM_UPDATE_PACKAGES);
 	if (egg_strequal (action, "org.freedesktop.packagekit.system-update"))
 		egg_test_success (test, NULL);
 	else
@@ -4297,7 +4351,7 @@ egg_test_transaction (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "map invalid role to action");
-	action = pk_transaction_role_to_action (FALSE, PK_ROLE_ENUM_SEARCH_NAME);
+	action = pk_transaction_role_to_action (PK_ROLE_ENUM_SEARCH_NAME);
 	if (action == NULL)
 		egg_test_success (test, NULL);
 	else

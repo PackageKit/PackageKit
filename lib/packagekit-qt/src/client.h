@@ -581,10 +581,10 @@ public:
 	/**
 	 * \brief Installs the local packages \p files
 	 *
-	 * \p trusted indicate if the packages are signed by a trusted authority
+	 * \p only_trusted indicate if the packages are signed by a trusted authority
 	 */
-	Transaction* installFiles(const QStringList& files, bool trusted);
-	Transaction* installFile(const QString& file, bool trusted);
+	Transaction* installFiles(const QStringList& files, bool only_trusted);
+	Transaction* installFile(const QString& file, bool only_trusted);
 
 	/**
 	 * Install the given \p packages

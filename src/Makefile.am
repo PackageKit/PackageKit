@@ -17,17 +17,17 @@ INCLUDES =						\
 	$(LIBNM_CFLAGS)					\
 	$(CONNMAN_CFLAGS)				\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
-	-DBINDIR=\"$(bindir)\"			 	\
-	-DSBINDIR=\"$(sbindir)\"		 	\
+	-DBINDIR=\"$(bindir)\"				\
+	-DSBINDIR=\"$(sbindir)\"			\
 	-DDATADIR=\"$(datadir)\"			\
-	-DPREFIX=\""$(prefix)"\" 			\
-	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
-	-DLIBDIR=\""$(libdir)"\" 			\
-	-DLIBEXECDIR=\""$(libexecdir)"\" 		\
-	-DVERSION="\"$(VERSION)\"" 			\
+	-DPREFIX=\""$(prefix)"\"			\
+	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
+	-DLIBDIR=\""$(libdir)"\"			\
+	-DLIBEXECDIR=\""$(libexecdir)"\"		\
+	-DVERSION="\"$(VERSION)\""			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
-	-DLOCALSTATEDIR=\""$(localstatedir)"\" 		\
-	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
+	-DLOCALSTATEDIR=\""$(localstatedir)"\"		\
+	-DPK_DB_DIR=\""$(PK_DB_DIR)"\"			\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
 	-DEGG_VERBOSE="\"PK_VERBOSE\""			\
 	-DEGG_LOGGING="\"PK_LOGGING\""			\
@@ -136,13 +136,13 @@ packagekitd_CFLAGS =					\
 	$(NULL)
 
 if BACKEND_TYPE_BOX
-packagekitd_INCLUDES =	 				\
+packagekitd_INCLUDES =					\
 	$(BOX_CFLAGS)
-packagekitd_LDADD += 					\
+packagekitd_LDADD +=					\
 	$(BOX_LIBS)
 endif
 
-BUILT_SOURCES = 					\
+BUILT_SOURCES =						\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	org.freedesktop.PackageKit.h			\
@@ -177,6 +177,31 @@ org.freedesktop.PackageKit.Backend.h: org.freedesktop.PackageKit.Backend.xml
 		--mode=glib-server			\
 		--output=org.freedesktop.PackageKit.Backend.h	\
 		$(srcdir)/org.freedesktop.PackageKit.Backend.xml
+
+# provide a PolicyKit extensions to make the authorization dialogs better
+polkitmodulesdir = $(libdir)/polkit-1/extensions
+polkitmodules_LTLIBRARIES = libpackagekit-action-lookup.la
+
+libpackagekit_action_lookup_la_SOURCES =			\
+	pk-polkit-action-lookup.c				\
+	$(NULL)
+
+libpackagekit_action_lookup_la_CFLAGS =				\
+	-DPOLKIT_BACKEND_I_KNOW_API_IS_SUBJECT_TO_CHANGE	\
+	-DG_LOG_DOMAIN=\"PackageKit-Action-Lookup\"		\
+	$(POLKIT_BACKEND_1_CFLAGS)				\
+	$(NULL)
+
+libpackagekit_action_lookup_la_LDFLAGS =			\
+	-export_dynamic -avoid-version -module -no-undefined	\
+	-export-symbols-regex '^g_io_module_(load|unload)'	\
+	$(POLKIT_BACKEND_1_LIBS)				\
+	$(NULL)
+
+libpackagekit_action_lookup_la_LIBADD =				\
+	$(GLIB_LIBS)						\
+	$(PK_GLIB_LIBS)						\
+	$(NULL)
 
 if EGG_BUILD_TESTS
 

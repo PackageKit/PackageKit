@@ -1414,11 +1414,12 @@ out:
  * pk_backend_error_code:
  **/
 gboolean
-pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *format, ...)
+pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum error_code, const gchar *format, ...)
 {
 	va_list args;
 	gchar *buffer;
 	gboolean ret = TRUE;
+	gboolean need_untrusted;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
@@ -1445,11 +1446,15 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	backend->priv->signal_error_timeout = g_timeout_add (PK_BACKEND_FINISHED_ERROR_TIMEOUT,
 							     pk_backend_error_timeout_delay_cb, backend);
 
-	/* we mark any transaction with errors as failed */
-	pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
+	/* some error codes have a different exit code */
+	need_untrusted = pk_error_code_is_need_untrusted (error_code);
+	if (need_untrusted)
+		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_NEED_UNTRUSTED);
+	else
+		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
 
-	egg_debug ("emit error-code %s, %s", pk_error_enum_to_text (code), buffer);
-	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, code, buffer);
+	egg_debug ("emit error-code %s, %s", pk_error_enum_to_text (error_code), buffer);
+	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, error_code, buffer);
 
 out:
 	g_free (buffer);

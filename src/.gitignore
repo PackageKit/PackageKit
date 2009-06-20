@@ -1,6 +1,8 @@
 .deps
 .libs
 *.o
+*.la
+*.lo
 pk-marshal.h
 pk-marshal.c
 org.freedesktop.PackageKit*.h
