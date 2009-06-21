@@ -352,7 +352,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def refresh_cache(self):
+    def refresh_cache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         Needed to be implemented in a sub class
@@ -561,7 +561,8 @@ class PackageKitBaseBackend:
             self.install_signature(sigtype, key_id, package_id)
             self.finished()
         elif cmd == 'refresh-cache':
-            self.refresh_cache()
+            force = _text_to_bool(args[0])
+            self.refresh_cache(force)
             self.finished()
         elif cmd == 'remove-packages':
             allowdeps = args[0]

@@ -223,6 +223,7 @@ pk_transaction_error_get_type (void)
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_SEARCH_INVALID, "SearchInvalid"),
+			ENUM_ENTRY (PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID, "SearchPathInvalid"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_FILTER_INVALID, "FilterInvalid"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INPUT_INVALID, "InputInvalid"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INVALID_STATE, "InvalidState"),
@@ -1595,10 +1596,10 @@ out:
 }
 
 /**
- * pk_transaction_role_to_action:
+ * pk_transaction_role_to_action_only_trusted:
  **/
 static const gchar *
-pk_transaction_role_to_action (PkRoleEnum role)
+pk_transaction_role_to_action_only_trusted (PkRoleEnum role)
 {
 	const gchar *policy = NULL;
 
@@ -1642,21 +1643,22 @@ pk_transaction_role_to_action (PkRoleEnum role)
 }
 
 /**
- * pk_transaction_role_to_action_untrusted:
+ * pk_transaction_role_to_action_allow_untrusted:
  **/
 static const gchar *
-pk_transaction_role_to_action_untrusted (PkRoleEnum role)
+pk_transaction_role_to_action_allow_untrusted (PkRoleEnum role)
 {
 	const gchar *policy = NULL;
 
 	switch (role) {
+		case PK_ROLE_ENUM_INSTALL_PACKAGES:
+		case PK_ROLE_ENUM_INSTALL_FILES:
 		case PK_ROLE_ENUM_UPDATE_PACKAGES:
 		case PK_ROLE_ENUM_UPDATE_SYSTEM:
-		case PK_ROLE_ENUM_INSTALL_FILES:
 			policy = "org.freedesktop.packagekit.package-install-untrusted";
 			break;
 		default:
-			break;
+			policy = pk_transaction_role_to_action_only_trusted (role);
 	}
 	return policy;
 }
@@ -1689,9 +1691,9 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 
 	/* map the roles to policykit rules */
 	if (only_trusted)
-		action_id = pk_transaction_role_to_action (role);
+		action_id = pk_transaction_role_to_action_only_trusted (role);
 	else
-		action_id = pk_transaction_role_to_action_untrusted (role);
+		action_id = pk_transaction_role_to_action_allow_untrusted (role);
 	if (action_id == NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_text (role));
 		goto out;
@@ -3613,6 +3615,15 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	/* check the search term */
 	ret = pk_transaction_search_check (search, &error);
 	if (!ret) {
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* when not an absolute path, disallow slashes in search */
+	if (search[0] != '/' && strstr (search, "/") != NULL) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID,
+				     "Invalid search path");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;

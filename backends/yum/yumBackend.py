@@ -1375,10 +1375,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Nothing to do", exit=False)
                 return
 
-    def refresh_cache(self):
+    def refresh_cache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
+        # TODO: use force ?
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)
@@ -1834,10 +1835,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             # in the update metadata and is installed/updated etc
             notice = md.get_notice((pkg.name, pkg.version, pkg.release))
             if (pkg.name in self.rebootpkgs \
-                or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']))\
-                and txmbr.ts_state in TS_INSTALL_STATES:
+                or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested'])):
                 self.require_restart(RESTART_SYSTEM, self._pkg_to_id(pkg))
-                break
 
     def _runYumTransaction(self, allow_remove_deps=None, allow_skip_broken=False):
         '''

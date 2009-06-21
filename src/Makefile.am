@@ -178,6 +178,7 @@ org.freedesktop.PackageKit.Backend.h: org.freedesktop.PackageKit.Backend.xml
 		--output=org.freedesktop.PackageKit.Backend.h	\
 		$(srcdir)/org.freedesktop.PackageKit.Backend.xml
 
+if SECURITY_TYPE_POLKIT
 # provide a PolicyKit extensions to make the authorization dialogs better
 polkitmodulesdir = $(libdir)/polkit-1/extensions
 polkitmodules_LTLIBRARIES = libpackagekit-action-lookup.la
@@ -202,6 +203,7 @@ libpackagekit_action_lookup_la_LIBADD =				\
 	$(GLIB_LIBS)						\
 	$(PK_GLIB_LIBS)						\
 	$(NULL)
+endif
 
 if EGG_BUILD_TESTS
 

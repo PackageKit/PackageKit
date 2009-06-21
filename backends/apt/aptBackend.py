@@ -1184,10 +1184,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     @unlock_cache_afterwards
-    def refresh_cache(self):
+    def refresh_cache(self, force):
         """
         Implement the {backend}-refresh_cache functionality
         """
+        # TODO: use force ?
         pklog.info("Refresh cache")
         if not self._lock_cache(): return
         self.status(STATUS_REFRESH_CACHE)

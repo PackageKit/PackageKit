@@ -229,8 +229,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	/* TODO: force ? */
-	pk_backend_spawn_helper (spawn, BACKEND_FILE, "refresh-cache", /*pk_backend_bool_to_text(force),*/ NULL);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "refresh-cache", pk_backend_bool_to_text(force), NULL);
 }
 
 /**
@@ -245,6 +244,15 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "remove-packages", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
 	g_free (package_ids_temp);
+}
+
+/**
+ * pk_backend_repo_enable:
+ */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+{
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "repo-enable", rid, pk_backend_bool_to_text (enabled), NULL);
 }
 
 /**
@@ -343,6 +351,19 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 }
 
 /**
+ * pk_backend_get_repo_list:
+ */
+static void
+backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+{
+	gchar *filters_text;
+
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-repo-list", filters_text, NULL);
+	g_free (filters_text);
+}
+
+/**
  * backend_get_requires:
  */
 static void
@@ -383,16 +404,16 @@ PK_BACKEND_OPTIONS (
 	NULL,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
-	NULL, // TODO			/* get_repo_list */
+	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
-	backend_get_update_detail, // TODO		/* get_update_detail */
+	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
 	backend_install_packages,		/* install_packages */
 	NULL,			/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
-	NULL, // TODO: choose			/* repo_enable */
+	backend_repo_enable,			/* repo_enable */
 	NULL, // TODO: probably not			/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL, // TODO: probably in a long time			/* rollback */
