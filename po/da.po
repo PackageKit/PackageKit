@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-06-21 14:14+0000\n"
-"PO-Revision-Date: 2009-06-21 21:37+0200\n"
+"PO-Revision-Date: 2009-06-21 22:47+0200\n"
 "Last-Translator: Kris Thomsen <lakristho@gmail.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "MIME-Version: 1.0\n"
@@ -1106,7 +1106,7 @@ msgstr "Opdatér ikke denne pakke medmindre du er sikker på, at det er sikkert.
 #. TRANSLATORS: warn the user that all bets are off
 #: ../src/pk-polkit-action-lookup.c:136 ../src/pk-polkit-action-lookup.c:155
 msgid "Malicious software can damage your computer or cause other harm."
-msgstr "Fejlfyldt software kan ødelægge din computer eller gøre anden skade."
+msgstr "Ondsindet software kan ødelægge din computer eller gøre anden skade."
 
 #. TRANSLATORS: user has to trust provider -- I know, this sucks
 #: ../src/pk-polkit-action-lookup.c:151
