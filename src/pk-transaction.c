@@ -1650,9 +1650,10 @@ pk_transaction_role_to_action_untrusted (PkRoleEnum role)
 	const gchar *policy = NULL;
 
 	switch (role) {
+		case PK_ROLE_ENUM_INSTALL_PACKAGES:
+		case PK_ROLE_ENUM_INSTALL_FILES:
 		case PK_ROLE_ENUM_UPDATE_PACKAGES:
 		case PK_ROLE_ENUM_UPDATE_SYSTEM:
-		case PK_ROLE_ENUM_INSTALL_FILES:
 			policy = "org.freedesktop.packagekit.package-install-untrusted";
 			break;
 		default:
