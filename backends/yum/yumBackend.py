@@ -1834,8 +1834,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             # in the update metadata and is installed/updated etc
             notice = md.get_notice((pkg.name, pkg.version, pkg.release))
             if (pkg.name in self.rebootpkgs \
-                or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']))\
-                and txmbr.ts_state in TS_INSTALL_STATES:
+                or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested'])):
                 self.require_restart(RESTART_SYSTEM, self._pkg_to_id(pkg))
                 break
 
