@@ -1006,7 +1006,7 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 	/* save this in the array (is freed from array) */
 	g_ptr_array_add (client->priv->require_restart_list, id);
 
-	egg_debug ("emit require-restart %i, %s", restart, package_id);
+	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
 	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, id);
 	if (restart > client->priv->require_restart) {
 		client->priv->require_restart = restart;
