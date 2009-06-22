@@ -1595,10 +1595,10 @@ out:
 }
 
 /**
- * pk_transaction_role_to_action:
+ * pk_transaction_role_to_action_only_trusted:
  **/
 static const gchar *
-pk_transaction_role_to_action (PkRoleEnum role)
+pk_transaction_role_to_action_only_trusted (PkRoleEnum role)
 {
 	const gchar *policy = NULL;
 
@@ -1642,10 +1642,10 @@ pk_transaction_role_to_action (PkRoleEnum role)
 }
 
 /**
- * pk_transaction_role_to_action_untrusted:
+ * pk_transaction_role_to_action_allow_untrusted:
  **/
 static const gchar *
-pk_transaction_role_to_action_untrusted (PkRoleEnum role)
+pk_transaction_role_to_action_allow_untrusted (PkRoleEnum role)
 {
 	const gchar *policy = NULL;
 
@@ -1690,9 +1690,9 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 
 	/* map the roles to policykit rules */
 	if (only_trusted)
-		action_id = pk_transaction_role_to_action (role);
+		action_id = pk_transaction_role_to_action_only_trusted (role);
 	else
-		action_id = pk_transaction_role_to_action_untrusted (role);
+		action_id = pk_transaction_role_to_action_allow_untrusted (role);
 	if (action_id == NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_text (role));
 		goto out;
