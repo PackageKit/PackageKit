@@ -28,6 +28,10 @@ from packagekit.package import PackagekitPackage
 import portage
 import _emerge
 
+# layman imports
+import layman.db
+import layman.config
+
 # misc imports
 import sys
 import signal
@@ -412,6 +416,18 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			for cpv in portage.portdb.match(cp):
 				self.package(cpv)
 
+	def get_repo_list(self, filters):
+		# TODO: filters
+		# TODO: not official
+		# TODO: not supported (via filters ?)
+		self.status(STATUS_INFO)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		layman_db = layman.db.RemoteDB(layman.config.Config())
+		for o in layman_db.overlays.keys():
+			self.repo_detail(o, layman_db.overlays[o].description, True)
+
 	def get_requires(self, filters, pkgs, recursive):
 		# TODO: filters
 		# TODO: recursive not implemented
@@ -691,6 +707,53 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			mergetask = _emerge.Scheduler(settings,
 					trees, mtimedb, myopts, spinner, [package], favorites, package)
 			mergetask.merge()
+
+	def repo_enable(self, repoid, enable):
+		self.status(STATUS_INFO)
+		self.allow_cancel(True)
+		self.percentage(None)
+
+		# get installed and available dbs
+		installed_layman_db = layman.db.DB(layman.config.Config())
+		available_layman_db = layman.db.RemoteDB(layman.config.Config())
+
+		# disabling (removing) a db
+		if not enable:
+			if not repoid in installed_layman_db.overlays.keys():
+				self.error(ERROR_REPO_NOT_FOUND, "Repository %s was not found" %repoid)
+				return
+
+			overlay = installed_layman_db.select(repoid)
+
+			if not overlay:
+				self.error(ERROR_REPO_NOT_FOUND, "Repository %s was not found" %repoid)
+				return
+
+			try:
+				installed_layman_db.delete(overlay)
+			except Exception, e:
+				self.error(ERROR_INTERNAL_ERROR,
+						"Failed to disable repository " + repoid + " : " + str(e))
+				return
+
+		# enabling (adding) a db
+		if enable:
+			if not repoid in available_layman_db.overlays.keys():
+				self.error(ERROR_REPO_NOT_FOUND, "Repository %s was not found" %repoid)
+				return
+
+			overlay = available_layman_db.select(repoid)
+
+			if not overlay:
+				self.error(ERROR_REPO_NOT_FOUND, "Repository %s was not found" %repoid)
+				return
+
+			try:
+				installed_layman_db.add(overlay, True)
+			except Exception, e:
+				self.error(ERROR_INTERNAL_ERROR,
+						"Failed to disable repository " + repoid + " : " + str(e))
+				return
 
 	def resolve(self, filters, pkgs):
 		# TODO: filters
