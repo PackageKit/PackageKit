@@ -1657,7 +1657,7 @@ pk_transaction_role_to_action_allow_untrusted (PkRoleEnum role)
 			policy = "org.freedesktop.packagekit.package-install-untrusted";
 			break;
 		default:
-			break;
+			policy = pk_transaction_role_to_action_only_trusted (role);
 	}
 	return policy;
 }
