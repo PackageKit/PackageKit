@@ -795,13 +795,15 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
 	def search_file(self, filters, key):
 		# TODO: manage filters, error if ~installed ?
-		# TODO: search for exact file name
+		# TODO: keep exact path or change to exact name ?
 		self.status(STATUS_QUERY)
 		self.allow_cancel(True)
 		self.percentage(None)
 
 		searchre = re.compile(key, re.IGNORECASE)
 		cpvlist = []
+		pkg_processed = 0.0
+		nb_pkg = float(len(self.vardb.cpv_all()))
 
 		for cpv in self.vardb.cpv_all():
 			cat, pv = portage.catsplit(cpv)
@@ -811,9 +813,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 			if not contents:
 				continue
 			for file in contents.keys():
-				if searchre.search(file):
+				if searchre.match(file):
 					cpvlist.append(cpv)
 					break
+
+			pkg_processed+=100.0 # instead of +=1 and *100, doing +=100
+			self.percentage(pkg_processed/nb_pkg)
+
+		self.percentage(100)
 
 		for cpv in cpvlist:
 			self.package(cpv)
