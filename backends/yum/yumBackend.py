@@ -1836,7 +1836,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if (pkg.name in self.rebootpkgs \
                 or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested'])):
                 self.require_restart(RESTART_SYSTEM, self._pkg_to_id(pkg))
-                break
 
     def _runYumTransaction(self, allow_remove_deps=None, allow_skip_broken=False):
         '''
