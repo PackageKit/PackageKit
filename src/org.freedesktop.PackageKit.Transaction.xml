@@ -1079,7 +1079,9 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A single local path on the system
+              A filename or fully qualified path and filename on the system.
+              If the search term begins with a <doc:tt>/</doc:tt> it will be assumed the entire path has been given and only packages that contain this exact path and filename will be returned.
+              If the search term does not start with <doc:tt>/</doc:tt> then it should be treated as a single filename, which can be in any directory.
             </doc:para>
           </doc:summary>
         </doc:doc>
