@@ -637,7 +637,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 					favorites, depgraph.schedulerGraph())
 			mergetask.merge()
 
-	def refresh_cache(self):
+	def refresh_cache(self, force):
+		# TODO: use force ?
 		self.status(STATUS_REFRESH_CACHE)
 		self.allow_cancel(True)
 		self.percentage(None)

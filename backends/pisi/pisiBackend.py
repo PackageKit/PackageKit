@@ -281,8 +281,9 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
 
-    def refresh_cache(self):
+    def refresh_cache(self, force):
         """ Updates repository indexes """
+        # TODO: use force ?
         self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)

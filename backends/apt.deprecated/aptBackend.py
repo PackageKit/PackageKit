@@ -259,10 +259,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.error(ERROR_NOT_SUPPORTED,
                 "This function is not implemented in this backend")
 
-    def refresh_cache(self):
+    def refresh_cache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
+        # TODO: use force ?
         self.status(STATUS_REFRESH_CACHE)
         try:
             res = self._apt_cache.update(PackageKitProgress(self))

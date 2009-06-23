@@ -559,7 +559,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.client.setUpdateCallback(self.callback )
 
 #    @ExceptionHandler
-    def refresh_cache(self):
+    def refresh_cache(self, force):
+        # TODO: use force ?
+
         #log.debug("refresh-cache command ")
     #    self.percentage()
 

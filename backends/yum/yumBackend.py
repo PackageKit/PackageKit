@@ -1375,10 +1375,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Nothing to do", exit=False)
                 return
 
-    def refresh_cache(self):
+    def refresh_cache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
+        # TODO: use force ?
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)

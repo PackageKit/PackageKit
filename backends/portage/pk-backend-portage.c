@@ -229,8 +229,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	/* TODO: force ? */
-	pk_backend_spawn_helper (spawn, BACKEND_FILE, "refresh-cache", /*pk_backend_bool_to_text(force),*/ NULL);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "refresh-cache", pk_backend_bool_to_text(force), NULL);
 }
 
 /**

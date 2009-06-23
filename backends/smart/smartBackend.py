@@ -543,7 +543,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._post_process_package_list(filters)
         self._show_package_list()
 
-    def refresh_cache(self):
+    def refresh_cache(self, force):
+        # TODO: use force ?
         self.status(STATUS_REFRESH_CACHE)
         self.allow_cancel(True)
         self.ctrl.rebuildSysConfChannels()
