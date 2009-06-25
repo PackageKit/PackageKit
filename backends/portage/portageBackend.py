@@ -328,7 +328,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         pkg_keywords, repo = portage.portdb.aux_get(cpv, ["KEYWORDS", "repository"])
 
         pkg_keywords = pkg_keywords.split()
-        sys_keywords = self.portage_settings.configdict["defaults"].get("ACCEPT_KEYWORDS").split()
+        sys_keywords = self.portage_settings.configdict["conf"].get("ACCEPT_KEYWORDS").split()
         keywords = []
 
         for x in sys_keywords:
