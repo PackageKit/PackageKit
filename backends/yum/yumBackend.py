@@ -2253,7 +2253,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
         try:
             repo = self.yumbase.repos.getRepo(repoid)
-            if enable:
+            if not enable:
                 if repo.isEnabled():
                     repo.disablePersistent()
             else:
