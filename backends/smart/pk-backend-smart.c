@@ -285,7 +285,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, BACKEND("refresh-cache"), NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("refresh-cache"), pk_backend_bool_to_text (force), NULL);
 }
 
 /**

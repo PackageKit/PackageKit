@@ -255,7 +255,7 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	pk_backend_spawn_helper (spawn, "aptBackend.py", "refresh-cache", NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "refresh-cache", pk_backend_bool_to_text (force), NULL);
 }
 
 /**
