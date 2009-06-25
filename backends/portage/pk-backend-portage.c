@@ -100,21 +100,18 @@ static PkBitfield
 backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
-			//PK_FILTER_ENUM_NONE,
 			PK_FILTER_ENUM_INSTALLED,
-			//PK_FILTER_ENUM_DEVELOPMENT,
-			//PK_FILTER_ENUM_GUI,
-			//PK_FILTER_ENUM_FREE,
-			//PK_FILTER_ENUM_VISIBLE,
-			//PK_FILTER_ENUM_SUPPORTED,
-			//PK_FILTER_ENUM_BASENAME,
+			PK_FILTER_ENUM_FREE,
 			PK_FILTER_ENUM_NEWEST,
-			//PK_FILTER_ENUM_ARCH,
-			//PK_FILTER_ENUM_SOURCE,
-			//PK_FILTER_ENUM_COLLECTIONS,
-			//PK_FILTER_ENUM_APPLICATION,
-			//PK_FILTER_ENUM_UNKNOWN
 			-1);
+	/*
+	 * These filters are candidate for further add:
+	 * PK_FILTER_ENUM_GUI	(need new PROPERTIES entry)
+	 * PK_FILTER_ENUM_ARCH (need some work, see ML)
+	 * PK_FILTER_ENUM_SOURCE (need some work/support, see ML)
+	 * PK_FILTER_ENUM_COLLECTIONS (need new PROPERTIES entry)
+	 * PK_FILTER_ENUM_APPLICATION (need new PROPERTIES entry)
+	 */
 }
 
 /**
@@ -414,9 +411,9 @@ PK_BACKEND_OPTIONS (
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
 	backend_repo_enable,			/* repo_enable */
-	NULL, // TODO: probably not			/* repo_set_data */
+	NULL,			/* repo_set_data */
 	backend_resolve,			/* resolve */
-	NULL, // TODO: probably in a long time			/* rollback */
+	NULL,			/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
