@@ -51,7 +51,9 @@ from itertools import izip
 #   names a package (an ebuild for portage)
 
 # TODO:
-# print only found package or every ebuilds ?
+# FREE filter
+# NEWEST filter
+# ERRORS with messages ?
 
 # Map Gentoo categories to the PackageKit group name space
 SECTION_GROUP_MAP = {
@@ -257,6 +259,66 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             return True
         return False
 
+    def get_all_cp(self, fltlist):
+        # NOTES:
+        # returns a list of cp _BUT_ if filter=installed, returns cpv
+        #
+        # FILTERS:
+        # - installed: ok
+        # - free: ok (should be done with cpv)
+        # - newest: ok (should be finished with cpv)
+
+        # if installed filter, return vardb.cpv_all
+        # it's a bit weird but with get_all_cpv(cp) return cpv, it could be ok
+        # TODO: ask zmedico
+        if FILTER_INSTALLED in fltlist:
+            return self.vardb.cpv_all()
+        else:
+            return portage.portdb.cp_all()
+
+    def get_all_cpv(self, cp, fltlist):
+        # NOTES:
+        # returns a list of cpv
+        # TODO: maybe improve filters management ?
+        #
+        # FILTERS:
+        # - installed: ok
+        # - free: TODO
+        # - newest: ok
+
+        cpv = []
+
+        # installed filter
+        if FILTER_INSTALLED in fltlist:
+            # special case : cp = cpv
+            cpv.append(cp)
+        elif FILTER_NOT_INSTALLED in fltlist:
+            for x in portage.portdb.match(cp):
+                if not self.is_installed(x):
+                    cpv.append(x)
+        else:
+            cpv = portage.portdb.match(cp)
+
+        if len(cpv) == 0:
+            return []
+
+        # newest filter
+        if FILTER_NEWEST in fltlist:
+            if FILTER_INSTALLED in fltlist:
+                return cpv
+            elif FILTER_NOT_INSTALLED in fltlist:
+                return [cpv[-1]]
+            else:
+                if self.is_installed(cpv[-1]):
+                    return [cpv[-1]]
+                else:
+                    for x in cpv:
+                        if self.is_installed(x):
+                            return [x, cpv[-1]]
+                    return [cpv[-1]]
+
+        return cpv
+
     def cpv_to_id(self, cpv):
         '''
         Transform the cpv (portage) to a package id (packagekit)
@@ -266,7 +328,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         pkg_keywords, repo = portage.portdb.aux_get(cpv, ["KEYWORDS", "repository"])
 
         pkg_keywords = pkg_keywords.split()
-        sys_keywords = self.portage_settings.configdict["defaults"].get("ACCEPT_KEYWORDS").split()
+        sys_keywords = self.portage_settings.configdict["conf"].get("ACCEPT_KEYWORDS").split()
         keywords = []
 
         for x in sys_keywords:
@@ -796,10 +858,19 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                         break
 
     def search_file(self, filters, key):
-        # TODO: manage filters, error if ~installed ?
+        # FILTERS:
+        # - ~installed is not accepted (error)
+        # - free: TODO
+        # - newest: as only installed, by himself
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
+
+        fltlist = filters.split(';')
+        if FILTER_NOT_INSTALLED in fltlist:
+            self.error(ERROR_CANNOT_GET_FILELIST,
+                    "search-filelist isn't available with ~installed filter")
+            return
 
         cpvlist = []
         pkg_processed = 0.0
@@ -813,7 +884,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         for cpv in self.vardb.cpv_all():
             cat, pv = portage.catsplit(cpv)
             db = portage.dblink(cat, pv, portage.settings["ROOT"],
-                    self.portage_settings, treetype="vartree", vartree=self.vardb)
+                    self.portage_settings, treetype="vartree",
+                    vartree=self.vardb)
             contents = db.getcontents()
             if not contents:
                 continue
@@ -832,14 +904,15 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.package(cpv)
 
     def search_group(self, filters, group):
-        # TODO: filters
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
-        for cp in portage.portdb.cp_all():
+        fltlist = filters.split(';')
+
+        for cp in self.get_all_cp(fltlist):
             if get_group(cp) == group:
-                for cpv in portage.portdb.match(cp):
+                for cpv in self.get_all_cpv(cp, fltlist):
                     self.package(cpv)
 
     def search_name(self, filters, key):
