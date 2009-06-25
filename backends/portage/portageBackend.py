@@ -280,15 +280,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # NOTES:
         # returns a list of cpv
         # TODO: maybe improve filters management ?
+        # like licenses when populating the list ?
         #
         # FILTERS:
         # - installed: ok
-        # - free: TODO
+        # - free: ok
         # - newest: ok
 
         cpv = []
 
-        # installed filter
+        # populate cpv and take care of installed filter
         if FILTER_INSTALLED in fltlist:
             # special case : cp = cpv
             cpv.append(cp)
@@ -298,6 +299,29 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     cpv.append(x)
         else:
             cpv = portage.portdb.match(cp)
+
+        if len(cpv) == 0:
+            return []
+
+        # free filter
+        if FILTER_FREE or FILTER_NOT_FREE in fltlist:
+            free_licenses = "@FSF-APPROVED"
+            if FILTER_FREE in fltlist:
+                licenses = "-* " + free_licenses
+            else:
+                licenses = "* -" + free_licenses
+            backup_license = self.portage_settings["ACCEPT_LICENSE"]
+            self.portage_settings["ACCEPT_LICENSE"] = licenses
+            self.portage_settings.backup_changes("ACCEPT_LICENSE")
+            self.portage_settings.regenerate()
+            keys = ["LICENSE", "USE", "SLOT"]
+            for x in cpv:
+                metadata = dict(izip(keys, portage.portdb.aux_get(x, keys)))
+                if self.portage_settings._getMissingLicenses(x, metadata):
+                    cpv.remove(x)
+            self.portage_settings["ACCEPT_LICENSE"] = backup_license
+            self.portage_settings.backup_changes("ACCEPT_LICENSE")
+            self.portage_settings.regenerate()
 
         if len(cpv) == 0:
             return []
@@ -328,7 +352,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         pkg_keywords, repo = portage.portdb.aux_get(cpv, ["KEYWORDS", "repository"])
 
         pkg_keywords = pkg_keywords.split()
-        sys_keywords = self.portage_settings.configdict["conf"].get("ACCEPT_KEYWORDS").split()
+        sys_keywords = self.portage_settings["ACCEPT_KEYWORDS"].split()
         keywords = []
 
         for x in sys_keywords:
