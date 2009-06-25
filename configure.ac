@@ -366,14 +366,12 @@ if test x$enable_browser_plugin = xyes; then
 	AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
 	if test $build_browser_plugin = "yes"; then
 
+		# check we have xulrunner headers
 		packagekit_save_CPPFLAGS="$CPPFLAGS"
 		packagekit_save_LDFLAGS="$LDFLAGS"
-
 		CPPFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_CFLAGS"
 		LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
-
-		AC_CHECK_HEADER(npfunctions.h, xulrunner_plugin_new=yes, xulrunner_plugin_new=no)
-
+		AC_CHECK_HEADER(npfunctions.h, have_xulrunner_npfunctions=yes, have_xulrunner_npfunctions=no)
 		CPPFLAGS="$packagekit_save_CPPFLAGS"
 		LDFLAGS="$packagekit_save_LDFLAGS"
 
@@ -385,12 +383,16 @@ if test x$enable_browser_plugin = xyes; then
 			MOZILLA_PLUGIN_DIR="$LIBDIR/mozilla/plugins"
 		fi
 		AC_SUBST(MOZILLA_PLUGIN_DIR)
+
+		# not got headers
+		if test $have_xulrunner_npfunctions = "no"; then
+			build_browser_plugin=no
+		fi
 	fi
 else
 	build_browser_plugin=no
 fi
 AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
-AM_CONDITIONAL(PK_XULRUNNER_PLUGIN_NEW, test $xulrunner_plugin_new = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Able to build gstreamer plugin
