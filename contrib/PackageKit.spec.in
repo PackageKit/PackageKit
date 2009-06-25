@@ -1,6 +1,6 @@
 %define glib2_version			2.16.1
-%define dbus_version			0.90
-%define dbus_glib_version		0.70
+%define dbus_version			1.1.1
+%define dbus_glib_version		0.74
 %define polkit_version			0.92
 %define libnm_glib_version		0.6.4
 %define alphatag			#ALPHATAG#
