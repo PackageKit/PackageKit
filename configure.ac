@@ -354,12 +354,17 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(browser_plugin, AS_HELP_STRING([--enable-browser-plugin],[Build browser plugin functionality]),
 	      enable_browser_plugin=$enableval,enable_browser_plugin=yes)
 if test x$enable_browser_plugin = xyes; then
-	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
-	                  build_browser_plugin=yes, build_browser_plugin=no)
+	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN,	\
+			  mozilla-plugin	\
+			  gio-unix-2.0		\
+			  cairo			\
+			  pango			\
+			  gtk+-2.0 >= 2.14.0	\
+			  dbus-glib-1,
+			  build_browser_plugin=yes, build_browser_plugin=no)
 	AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
 	AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
 	if test $build_browser_plugin = "yes"; then
-		# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
 
 		packagekit_save_CPPFLAGS="$CPPFLAGS"
 		packagekit_save_LDFLAGS="$LDFLAGS"
@@ -367,7 +372,6 @@ if test x$enable_browser_plugin = xyes; then
 		CPPFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_CFLAGS"
 		LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
 
-		AC_CHECK_FUNCS(gdk_app_launch_context_new)
 		AC_CHECK_HEADER(npfunctions.h, xulrunner_plugin_new=yes, xulrunner_plugin_new=no)
 
 		CPPFLAGS="$packagekit_save_CPPFLAGS"
