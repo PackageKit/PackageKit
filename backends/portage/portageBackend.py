@@ -262,8 +262,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
     def get_newer_cpv(self, cpv_list):
         newer = cpv_list[0]
         for cpv in cpv_list:
-	        if portage.pkgcmp(portage.pkgsplit(cpv),portage.pkgsplit(newer)) == 1:
-		        newer = cpv
+            if portage.pkgcmp(portage.pkgsplit(cpv), portage.pkgsplit(newer)) == 1:
+                newer = cpv
         return newer
 
     def get_metadata(self, cpv, keys, in_dict = False):
