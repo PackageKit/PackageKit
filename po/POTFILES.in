@@ -7,6 +7,7 @@ client/pk-monitor.c
 client/pk-tools-common.c
 contrib/command-not-found/pk-command-not-found.c
 contrib/browser-plugin/src/contents.cpp
+contrib/debuginfo-install/pk-debuginfo-install.c
 data/packagekit-catalog.xml.in
 data/packagekit-package-list.xml.in
 data/packagekit-servicepack.xml.in
