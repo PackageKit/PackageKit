@@ -55,6 +55,8 @@ class PackageKitBaseBackend:
         self._locked = False
         self.lang = "C"
         self.has_network = False
+        self.percentage_old = 0
+        self.sub_percentage_old = 0
 
         # try to get LANG
         try:
@@ -83,20 +85,23 @@ class PackageKitBaseBackend:
     def percentage(self, percent=None):
         '''
         Write progress percentage
-        @param percent: Progress percentage
+        @param percent: Progress percentage (int preferred)
         '''
-        if percent != None:
-            print "percentage\t%i" % (percent)
-        else:
+        if percent == None:
             print "no-percentage-updates"
+        elif percent == 0 or percent > self.percentage_old:
+            print "percentage\t%i" % (percent)
+            self.percentage_old = percent
         sys.stdout.flush()
 
     def sub_percentage(self, percent=None):
         '''
         send 'subpercentage' signal : subprogress percentage
-        @param percent: subprogress percentage
+        @param percent: subprogress percentage (int preferred)
         '''
-        print "subpercentage\t%i" % (percent)
+        if percent == 0 or percent > self.sub_percentage_old:
+            print "subpercentage\t%i" % (percent)
+            self.sub_percentage_old = percent
         sys.stdout.flush()
 
     def error(self, err, description, exit=True):

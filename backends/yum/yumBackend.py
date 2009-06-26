@@ -219,8 +219,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.doLock()
 
         self.package_summary_cache = {}
-        self.percentage_old = 0
-        self.sub_percentage_old = 0
         self.comps = yumComps(self.yumbase)
         if not self.comps.connect():
             self.refresh_cache()
@@ -237,22 +235,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self._setup_yum()
         except PkError, e:
             self.error(e.code, e.details)
-
-    def percentage(self, percent=None):
-        '''
-        @param percent: Progress percentage
-        '''
-        if percent == 0 or percent > self.percentage_old:
-            PackageKitBaseBackend.percentage(self, percent)
-            self.percentage_old = percent
-
-    def sub_percentage(self, percent=None):
-        '''
-        @param percent: subprogress percentage
-        '''
-        if percent == 0 or percent > self.sub_percentage_old:
-            PackageKitBaseBackend.sub_percentage(self, percent)
-            self.sub_percentage_old = percent
 
     def details(self, package_id, package_license, group, desc, url, bytes):
         '''
