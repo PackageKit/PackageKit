@@ -120,6 +120,7 @@ backend_get_mime_types (PkBackend *backend)
 	                 "application/x-gzip;"	/* .tgz */
 	                 "application/x-bzip2;"	/* .tbz */
 	                 "application/x-lzma;"	/* .tlz */
+	                 "application/x-xz;"	/* .txz */
 	                 "application/x-arch-pkg");
 }
 
