@@ -735,7 +735,7 @@ sub _print_package_details {
   $description =~ s/\n/;/g;
   $description =~ s/\t/ /g;
   
-  pk_print_details(get_package_id($pkg), "N/A", $pkg->group, ensure_utf8($description), "N/A", $pkg->size);
+  pk_print_details(get_package_id($pkg), "N/A", get_pk_group($pkg->group), ensure_utf8($description), $xml_info_pkgs{$name}{url}, $pkg->size);
 }
 
 sub _print_package_files {
