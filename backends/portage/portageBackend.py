@@ -54,7 +54,7 @@ from itertools import izip
 # FREE filter
 # NEWEST filter
 # ERRORS with messages ?
-# use vardb.aux_get instead of portdb.aux_get when possible ?
+# use get_metadata instead of aux_get
 
 # Map Gentoo categories to the PackageKit group name space
 SECTION_GROUP_MAP = {
@@ -260,6 +260,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             return True
         return False
 
+    def get_metadata(self, cpv, keys):
+        if self.is_installed(cpv):
+            aux_get = self.vardb.aux_get
+        else:
+            aux_get = portage.portdb.aux_get
+
+        return dict(izip(keys, aux_get(cpv, keys)))
+
     def filter_free(self, cpv_list, fltlist):
         if FILTER_FREE in fltlist or FILTER_NOT_FREE in fltlist:
             free_licenses = "@FSF-APPROVED"
@@ -271,9 +279,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.portage_settings["ACCEPT_LICENSE"] = licenses
             self.portage_settings.backup_changes("ACCEPT_LICENSE")
             self.portage_settings.regenerate()
-            keys = ["LICENSE", "USE", "SLOT"]
             for x in cpv_list:
-                metadata = dict(izip(keys, portage.portdb.aux_get(x, keys)))
+                metadata = self.get_metadata(x, ["LICENSE", "USE", "SLOT"])
                 if self.portage_settings._getMissingLicenses(x, metadata):
                     cpv_list.remove(x)
             self.portage_settings["ACCEPT_LICENSE"] = backup_license
@@ -500,13 +507,17 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.files(pkgid, files)
 
     def get_packages(self, filters):
-        # TODO: filters
+        # TODO: use cases tests on fedora 11
+        # TODO: progress ?
+        # TODO: installed before non-installed ?
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
-        for cp in portage.portdb.cp_all():
-            for cpv in portage.portdb.match(cp):
+        fltlist = filters.split(';')
+
+        for cp in self.get_all_cp(fltlist):
+            for cpv in self.get_all_cpv(cp, fltlist):
                 self.package(cpv)
 
     def get_repo_list(self, filters):
@@ -888,9 +899,11 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                         break
 
     def search_file(self, filters, key):
+        # TODO: use cases tests on fedora 11
+        # TODO: installed before non-installed ?
         # FILTERS:
         # - ~installed is not accepted (error)
-        # - free: TODO
+        # - free: ok
         # - newest: as only installed, by himself
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -902,17 +915,21 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     "search-filelist isn't available with ~installed filter")
             return
 
-        cpvlist = []
+        cpv_results = []
+        cpv_list = self.vardb.cpv_all()
+        nb_pkg = 0.0
         pkg_processed = 0.0
-        # TODO: create a temp var for self.vardb.cpv_all()
-        nb_pkg = float(len(self.vardb.cpv_all()))
         is_full_path = True
 
         if key[0] != "/":
             is_full_path = False
             searchre = re.compile("/" + key + "$", re.IGNORECASE)
 
-        for cpv in self.vardb.cpv_all():
+        # free filter
+        cpv_list = self.filter_free(cpv_list, fltlist)
+        nb_pkg = float(len(cpv_list))
+
+        for cpv in cpv_list:
             cat, pv = portage.catsplit(cpv)
             db = portage.dblink(cat, pv, portage.settings["ROOT"],
                     self.portage_settings, treetype="vartree",
@@ -923,7 +940,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             for file in contents.keys():
                 if (is_full_path and key == file) \
                 or (not is_full_path and searchre.search(file)):
-                    cpvlist.append(cpv)
+                    cpv_results.append(cpv)
                     break
 
             pkg_processed += 100.0 # instead of +=1 and *100, doing +=100
@@ -931,7 +948,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         self.percentage(100)
 
-        for cpv in cpvlist:
+        for cpv in cpv_results:
             self.package(cpv)
 
     def search_group(self, filters, group):
