@@ -106,6 +106,7 @@ struct _PkClientPrivate
 	PkBitfield		 cached_filters;
 	gint			 timeout;
 	guint			 timeout_id;
+	GError			*error;
 };
 
 typedef enum {
@@ -506,8 +507,12 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	client->priv->is_finishing = FALSE;
 
 	/* exit our private loop */
-	if (client->priv->synchronous)
+	if (client->priv->synchronous) {
+		if (exit_enum != PK_EXIT_ENUM_SUCCESS)
+			client->priv->error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
+							   "failed: %s", exit_text);
 		g_main_loop_quit (client->priv->loop);
+	}
 
 	/* unref what we previously ref'd */
 	g_object_unref (client);
@@ -1396,8 +1401,14 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -1465,8 +1476,14 @@ pk_client_get_categories (PkClient *client, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -1539,8 +1556,14 @@ pk_client_update_system (PkClient *client, gboolean only_trusted, GError **error
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -1612,8 +1635,14 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -1687,8 +1716,14 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -1760,8 +1795,14 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -1833,8 +1874,14 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -1921,8 +1968,14 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -2001,8 +2054,14 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -2070,8 +2129,14 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -2201,8 +2266,14 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -2285,8 +2356,14 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -2370,8 +2447,14 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -2438,8 +2521,14 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -2513,8 +2602,14 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GErro
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -2598,8 +2693,14 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -2667,8 +2768,14 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -2746,8 +2853,14 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -2834,8 +2947,14 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -2904,8 +3023,14 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -2986,8 +3111,14 @@ pk_client_install_packages (PkClient *client, gboolean only_trusted, gchar **pac
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -3062,8 +3193,14 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -3148,8 +3285,14 @@ pk_client_update_packages (PkClient *client, gboolean only_trusted, gchar **pack
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -3266,8 +3409,14 @@ pk_client_install_files (PkClient *client, gboolean only_trusted, gchar **files_
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_strfreev (files);
@@ -3335,8 +3484,14 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	g_free (filter_text);
@@ -3403,8 +3558,14 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -3472,8 +3633,14 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -3547,8 +3714,14 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -3658,8 +3831,14 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 out:
 	return ret;
@@ -4338,6 +4517,7 @@ pk_client_reset (PkClient *client, GError **error)
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
 	g_object_unref (client->priv->package_list);
+	g_clear_error (&client->priv->error);
 
 	/* clear restart array */
 	g_ptr_array_foreach (client->priv->require_restart_list, (GFunc) pk_package_id_free, NULL);
@@ -4403,6 +4583,7 @@ pk_client_init (PkClient *client)
 	client->priv->proxy = NULL;
 	client->priv->timeout = -1;
 	client->priv->timeout_id = 0;
+	client->priv->error = NULL;
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -4522,6 +4703,8 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->tid);
 	g_strfreev (client->priv->cached_package_ids);
 	g_strfreev (client->priv->cached_full_paths);
+	if (client->priv->error)
+		g_error_free (client->priv->error);
 
 	/* clear restart array */
 	g_ptr_array_foreach (client->priv->require_restart_list, (GFunc) pk_package_id_free, NULL);
