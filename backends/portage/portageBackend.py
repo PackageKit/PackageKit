@@ -51,10 +51,9 @@ from itertools import izip
 #   names a package (an ebuild for portage)
 
 # TODO:
-# FREE filter
-# NEWEST filter
 # ERRORS with messages ?
 # use get_metadata instead of aux_get
+# manage slots
 
 # Map Gentoo categories to the PackageKit group name space
 SECTION_GROUP_MAP = {
@@ -260,15 +259,29 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             return True
         return False
 
-    def get_metadata(self, cpv, keys):
+    def get_newer_cpv(self, cpv_list):
+        newer = cpv_list[0]
+        for cpv in cpv_list:
+	        if portage.pkgcmp(portage.pkgsplit(cpv),portage.pkgsplit(newer)) == 1:
+		        newer = cpv
+        return newer
+
+    def get_metadata(self, cpv, keys, in_dict = False):
         if self.is_installed(cpv):
             aux_get = self.vardb.aux_get
         else:
             aux_get = portage.portdb.aux_get
 
-        return dict(izip(keys, aux_get(cpv, keys)))
+        if in_dict:
+            return dict(izip(keys, aux_get(cpv, keys)))
+        else:
+            return aux_get(cpv, keys)
 
     def filter_free(self, cpv_list, fltlist):
+        def _has_validLicense(cpv):
+            metadata = self.get_metadata(cpv, ["LICENSE", "USE", "SLOT"], True)
+            return not self.portage_settings._getMissingLicenses(cpv, metadata)
+
         if FILTER_FREE in fltlist or FILTER_NOT_FREE in fltlist:
             free_licenses = "@FSF-APPROVED"
             if FILTER_FREE in fltlist:
@@ -279,10 +292,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.portage_settings["ACCEPT_LICENSE"] = licenses
             self.portage_settings.backup_changes("ACCEPT_LICENSE")
             self.portage_settings.regenerate()
-            for x in cpv_list:
-                metadata = self.get_metadata(x, ["LICENSE", "USE", "SLOT"])
-                if self.portage_settings._getMissingLicenses(x, metadata):
-                    cpv_list.remove(x)
+
+            cpv_list = filter(_has_validLicense, cpv_list)
+
             self.portage_settings["ACCEPT_LICENSE"] = backup_license
             self.portage_settings.backup_changes("ACCEPT_LICENSE")
             self.portage_settings.regenerate()
@@ -291,20 +303,26 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def get_all_cp(self, fltlist):
         # NOTES:
-        # returns a list of cp _BUT_ if filter=installed, returns cpv
+        # returns a list of cp
         #
         # FILTERS:
         # - installed: ok
         # - free: ok (should be done with cpv)
         # - newest: ok (should be finished with cpv)
+        cp_list = []
 
-        # if installed filter, return vardb.cpv_all
-        # it's a bit weird but with get_all_cpv(cp) return cpv, it could be ok
-        # TODO: ask zmedico
         if FILTER_INSTALLED in fltlist:
-            return self.vardb.cpv_all()
+            cp_list = self.vardb.cp_all()
+        elif FILTER_NOT_INSTALLED in fltlist:
+            cp_list = portage.portdb.cp_all()
         else:
-            return portage.portdb.cp_all()
+            # need installed packages first
+            cp_list = self.vardb.cp_all()
+            for cp in portage.portdb.cp_all():
+                if cp not in cp_list:
+                    cp_list.append(cp)
+
+        return cp_list
 
     def get_all_cpv(self, cp, fltlist):
         # NOTES:
@@ -315,46 +333,46 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # - free: ok
         # - newest: ok
 
-        cpv = []
+        cpv_list = []
 
-        # populate cpv and take care of installed filter
+        # populate cpv_list taking care of installed filter
         if FILTER_INSTALLED in fltlist:
-            # special case : cp = cpv
-            cpv.append(cp)
+            cpv_list = self.vardb.match(cp)
         elif FILTER_NOT_INSTALLED in fltlist:
-            for x in portage.portdb.match(cp):
-                if not self.is_installed(x):
-                    cpv.append(x)
+            for cpv in portage.portdb.match(cp):
+                if not self.is_installed(cpv):
+                    cpv_list.append(cpv)
         else:
-            cpv = portage.portdb.match(cp)
+            cpv_list = self.vardb.match(cp)
+            for cpv in portage.portdb.match(cp):
+                if cpv not in cpv_list:
+                    cpv_list.append(cpv)
 
-        if len(cpv) == 0:
+        if len(cpv_list) == 0:
             return []
 
         # free filter
-        cpv = self.filter_free(cpv, fltlist)
+        cpv_list = self.filter_free(cpv_list, fltlist)
 
-        if len(cpv) == 0:
+        if len(cpv_list) == 0:
             return []
 
         # newest filter
         if FILTER_NEWEST in fltlist:
-            # if FILTER_INSTALLED in fltlist, cpv=cpv
+            # if FILTER_INSTALLED in fltlist, cpv_list=cpv_list
             if FILTER_NOT_INSTALLED in fltlist:
-                cpv = [cpv[-1]]
-            elif not FILTER_INSTALLED in fltlist:
-                if self.is_installed(cpv[-1]):
-                    cpv = [cpv[-1]]
-                else:
-                    for x in cpv:
-                        if self.is_installed(x):
-                            cpv = [x, cpv[-1]]
-                    cpv = [cpv[-1]]
+                cpv_list = [cpv_list[-1]]
+            elif FILTER_INSTALLED not in fltlist:
+                # cpv_list is not ordered so getting newer and filter others
+                newer_cpv = self.get_newer_cpv(cpv_list)
+                cpv_list = filter(
+                        lambda cpv: self.is_installed(cpv) or cpv == newer_cpv,
+                        cpv_list)
 
-        if len(cpv) == 0:
+        if len(cpv_list) == 0:
             return []
 
-        return cpv
+        return cpv_list
 
     def cpv_to_id(self, cpv):
         '''
@@ -362,7 +380,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         # TODO: manage SLOTS !
         package, version, rev = portage.pkgsplit(cpv)
-        pkg_keywords, repo = portage.portdb.aux_get(cpv, ["KEYWORDS", "repository"])
+        pkg_keywords, repo = self.get_metadata(cpv, ["KEYWORDS", "repository"])
 
         pkg_keywords = pkg_keywords.split()
         sys_keywords = self.portage_settings["ACCEPT_KEYWORDS"].split()
@@ -374,9 +392,11 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # if no keywords, check in package.keywords
         if not keywords:
-            for _, keys in self.portage_settings.pkeywordsdict.get(portage.dep_getkey(cpv)).iteritems():
-                for x in keys:
-                    keywords.append(x)
+            key_dict = self.portage_settings.pkeywordsdict.get(portage.dep_getkey(cpv))
+            if key_dict:
+                for _, keys in key_dict.iteritems():
+                    for x in keys:
+                        keywords.append(x)
 
         if not keywords:
             keywords.append("no keywords")
@@ -393,13 +413,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         return get_package_id(package, version, ' '.join(keywords), repo)
 
     def package(self, cpv, info=None):
-        desc = portage.portdb.aux_get(cpv, ["DESCRIPTION"])
+        desc = self.get_metadata(cpv, ["DESCRIPTION"])[0]
         if not info:
             if self.is_installed(cpv):
                 info = INFO_INSTALLED
             else:
                 info = INFO_AVAILABLE
-        PackageKitBaseBackend.package(self, self.cpv_to_id(cpv), info, desc[0])
+        PackageKitBaseBackend.package(self, self.cpv_to_id(cpv), info, desc)
 
     def get_depends(self, filters, pkgids, recursive):
         # TODO: manage filters
@@ -462,7 +482,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                         "Could not find the package %s" % pkg)
                 continue
 
-            homepage, desc, license = portage.portdb.aux_get(cpv,
+            homepage, desc, license = self.get_metadata(cpv,
                     ["HOMEPAGE", "DESCRIPTION", "LICENSE"])
 
             # size should be prompted only if not installed
@@ -653,7 +673,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             updates = "&".join(updates)
 
             # temporarily set vendor_url = homepage
-            homepage = portage.portdb.aux_get(cpv, ["HOMEPAGE"])[0]
+            homepage = self.get_metadata(cpv, ["HOMEPAGE"])[0]
             vendor_url = homepage
 
             self.update_detail(pkg, updates, obsoletes, vendor_url, bugzilla_url,
@@ -799,7 +819,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
 
             db_keys = list(portage.portdb._aux_cache_keys)
-            metadata = izip(db_keys, portage.portdb.aux_get(cpv, db_keys))
+            metadata = self.get_metadata(cpv, db_keys)
             package = _emerge.Package(
                     type_name="ebuild",
                     built=True,
@@ -891,8 +911,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         for cp in portage.portdb.cp_all():
             # TODO: baaad, we are working on _every_ cpv :-/
             for cpv in portage.portdb.match(cp): #TODO: cp_list(cp) ?
-                infos = portage.portdb.aux_get(cpv,
-                        ["HOMEPAGE","DESCRIPTION","repository"]) # LICENSE ?
+                infos = self.get_metadata(cpv, ["HOMEPAGE","DESCRIPTION","repository"]) # LICENSE ?
                 for x in infos:
                     if searchre.search(x):
                         self.package(cpv)
