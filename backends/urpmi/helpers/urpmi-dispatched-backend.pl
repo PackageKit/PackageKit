@@ -373,7 +373,7 @@ sub install_packages {
 
   my ($urpm, $args) = @_;
 
-  # FIXME: use only_trusted in @{$args}[0]
+  my $only_trusted = @{$args}[0];
   my @packageidstab = split(/&/, @{$args}[1]);
   
   my @names;
@@ -389,7 +389,7 @@ sub install_packages {
     caseinsensitive => 0,
     all => 0);
   eval {
-    perform_installation($urpm, \%requested);
+    perform_installation($urpm, \%requested, { only_trusted => $only_trusted });
   };
   _finished();
 }
@@ -663,7 +663,7 @@ sub update_packages {
 
   my ($urpm, $args) = @_;
 
-  # FIXME: use only_trusted in @{$args}[0]
+  my $only_trusted = @{$args}[0];
   my @packageidstab = split(/&/, @{$args}[1]);
 
   my @names;
@@ -689,7 +689,7 @@ sub update_packages {
     tonext:
   }
   eval {
-    perform_installation($urpm, \%requested);
+    perform_installation($urpm, \%requested, only_trusted => $only_trusted);
   };
   _finished();
 }
@@ -698,9 +698,9 @@ sub update_system {
   
   my ($urpm, $args) = @_;
 
-  # FIXME: use only_trusted in @{$args}[0]
+  my $only_trusted = @{$args}[0];
   eval {
-    perform_installation($urpm, {}, auto_select => 1);
+    perform_installation($urpm, {}, { auto_select => 1, only_trusted => $only_trusted});
   };
   _finished();
 }
