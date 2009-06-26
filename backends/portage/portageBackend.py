@@ -54,6 +54,7 @@ from itertools import izip
 # FREE filter
 # NEWEST filter
 # ERRORS with messages ?
+# use vardb.aux_get instead of portdb.aux_get when possible ?
 
 # Map Gentoo categories to the PackageKit group name space
 SECTION_GROUP_MAP = {
@@ -259,6 +260,28 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             return True
         return False
 
+    def filter_free(self, cpv_list, fltlist):
+        if FILTER_FREE in fltlist or FILTER_NOT_FREE in fltlist:
+            free_licenses = "@FSF-APPROVED"
+            if FILTER_FREE in fltlist:
+                licenses = "-* " + free_licenses
+            else:
+                licenses = "* -" + free_licenses
+            backup_license = self.portage_settings["ACCEPT_LICENSE"]
+            self.portage_settings["ACCEPT_LICENSE"] = licenses
+            self.portage_settings.backup_changes("ACCEPT_LICENSE")
+            self.portage_settings.regenerate()
+            keys = ["LICENSE", "USE", "SLOT"]
+            for x in cpv_list:
+                metadata = dict(izip(keys, portage.portdb.aux_get(x, keys)))
+                if self.portage_settings._getMissingLicenses(x, metadata):
+                    cpv_list.remove(x)
+            self.portage_settings["ACCEPT_LICENSE"] = backup_license
+            self.portage_settings.backup_changes("ACCEPT_LICENSE")
+            self.portage_settings.regenerate()
+
+        return cpv_list
+
     def get_all_cp(self, fltlist):
         # NOTES:
         # returns a list of cp _BUT_ if filter=installed, returns cpv
@@ -279,8 +302,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
     def get_all_cpv(self, cp, fltlist):
         # NOTES:
         # returns a list of cpv
-        # TODO: maybe improve filters management ?
-        # like licenses when populating the list ?
         #
         # FILTERS:
         # - installed: ok
@@ -304,42 +325,27 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             return []
 
         # free filter
-        if FILTER_FREE or FILTER_NOT_FREE in fltlist:
-            free_licenses = "@FSF-APPROVED"
-            if FILTER_FREE in fltlist:
-                licenses = "-* " + free_licenses
-            else:
-                licenses = "* -" + free_licenses
-            backup_license = self.portage_settings["ACCEPT_LICENSE"]
-            self.portage_settings["ACCEPT_LICENSE"] = licenses
-            self.portage_settings.backup_changes("ACCEPT_LICENSE")
-            self.portage_settings.regenerate()
-            keys = ["LICENSE", "USE", "SLOT"]
-            for x in cpv:
-                metadata = dict(izip(keys, portage.portdb.aux_get(x, keys)))
-                if self.portage_settings._getMissingLicenses(x, metadata):
-                    cpv.remove(x)
-            self.portage_settings["ACCEPT_LICENSE"] = backup_license
-            self.portage_settings.backup_changes("ACCEPT_LICENSE")
-            self.portage_settings.regenerate()
+        cpv = self.filter_free(cpv, fltlist)
 
         if len(cpv) == 0:
             return []
 
         # newest filter
         if FILTER_NEWEST in fltlist:
-            if FILTER_INSTALLED in fltlist:
-                return cpv
-            elif FILTER_NOT_INSTALLED in fltlist:
-                return [cpv[-1]]
-            else:
+            # if FILTER_INSTALLED in fltlist, cpv=cpv
+            if FILTER_NOT_INSTALLED in fltlist:
+                cpv = [cpv[-1]]
+            elif not FILTER_INSTALLED in fltlist:
                 if self.is_installed(cpv[-1]):
-                    return [cpv[-1]]
+                    cpv = [cpv[-1]]
                 else:
                     for x in cpv:
                         if self.is_installed(x):
-                            return [x, cpv[-1]]
-                    return [cpv[-1]]
+                            cpv = [x, cpv[-1]]
+                    cpv = [cpv[-1]]
+
+        if len(cpv) == 0:
+            return []
 
         return cpv
 
@@ -898,6 +904,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         cpvlist = []
         pkg_processed = 0.0
+        # TODO: create a temp var for self.vardb.cpv_all()
         nb_pkg = float(len(self.vardb.cpv_all()))
         is_full_path = True
 
@@ -928,6 +935,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.package(cpv)
 
     def search_group(self, filters, group):
+        # TODO: use cases tests on fedora 11
+        # TODO: progress ?
+        # TODO: installed before non-installed ?
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
@@ -940,17 +950,19 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.package(cpv)
 
     def search_name(self, filters, key):
-        # TODO: manage filters
-        # TODO: collections ?
+        # TODO: use cases tests on fedora 11
+        # TODO: progress ?
+        # TODO: installed before non-installed ?
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
+        fltlist = filters.split(';')
         searchre = re.compile(key, re.IGNORECASE)
 
-        for cp in portage.portdb.cp_all():
+        for cp in self.get_all_cp(fltlist):
             if searchre.search(cp):
-                for cpv in portage.portdb.match(cp): #TODO: cp_list(cp) ?
+                for cpv in self.get_all_cpv(cp, fltlist):
                     self.package(cpv)
 
     def update_packages(self, only_trusted, pkgs):
