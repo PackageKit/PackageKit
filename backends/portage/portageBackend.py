@@ -918,15 +918,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                         break
 
     def search_file(self, filters, key):
-        # TODO: use cases tests on fedora 11
-        # TODO: installed before non-installed ?
+        # TODO: update specifications
         # FILTERS:
         # - ~installed is not accepted (error)
         # - free: ok
         # - newest: as only installed, by himself
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
 
         fltlist = filters.split(';')
         if FILTER_NOT_INSTALLED in fltlist:
@@ -936,8 +935,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         cpv_results = []
         cpv_list = self.vardb.cpv_all()
-        nb_pkg = 0.0
-        pkg_processed = 0.0
+        nb_cpv = 0.0
+        cpv_processed = 0.0
         is_full_path = True
 
         if key[0] != "/":
@@ -946,7 +945,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # free filter
         cpv_list = self.filter_free(cpv_list, fltlist)
-        nb_pkg = float(len(cpv_list))
+        nb_cpv = float(len(cpv_list))
 
         for cpv in cpv_list:
             cat, pv = portage.catsplit(cpv)
@@ -962,8 +961,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     cpv_results.append(cpv)
                     break
 
-            pkg_processed += 100.0 # instead of +=1 and *100, doing +=100
-            self.percentage(pkg_processed/nb_pkg)
+            cpv_processed += 100.0
+            self.percentage(cpv_processed/nb_cpv)
 
         self.percentage(100)
 
@@ -971,35 +970,48 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.package(cpv)
 
     def search_group(self, filters, group):
-        # TODO: use cases tests on fedora 11
-        # TODO: progress ?
-        # TODO: installed before non-installed ?
+        # TODO: input has to be checked by server before
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
 
         fltlist = filters.split(';')
+        cpv_list = self.get_all_cp(fltlist)
+        nb_cpv = float(len(cpv_list))
+        cpv_processed = 0.0
 
-        for cp in self.get_all_cp(fltlist):
+        for cp in cpv_list:
             if get_group(cp) == group:
                 for cpv in self.get_all_cpv(cp, fltlist):
                     self.package(cpv)
 
+            cpv_processed += 100.0
+            self.percentage(cpv_processed/nb_cpv)
+
+        self.percentage(100)
+
     def search_name(self, filters, key):
-        # TODO: use cases tests on fedora 11
-        # TODO: progress ?
-        # TODO: installed before non-installed ?
+        # TODO: input has to be checked by server before
+        # TODO: use muli-key input ?
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
 
         fltlist = filters.split(';')
+        cpv_list = self.get_all_cp(fltlist)
+        nb_cpv = float(len(cpv_list))
+        cpv_processed = 0.0
         searchre = re.compile(key, re.IGNORECASE)
 
-        for cp in self.get_all_cp(fltlist):
+        for cp in cpv_list:
             if searchre.search(cp):
                 for cpv in self.get_all_cpv(cp, fltlist):
                     self.package(cpv)
+
+            cpv_processed += 100.0
+            self.percentage(cpv_processed/nb_cpv)
+
+        self.percentage(100)
 
     def update_packages(self, only_trusted, pkgs):
         # TODO: add some checks ?
