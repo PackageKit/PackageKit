@@ -962,7 +962,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     break
 
             cpv_processed += 100.0
-            self.percentage(cpv_processed/nb_cpv)
+            self.percentage(int(cpv_processed/nb_cpv))
 
         self.percentage(100)
 
@@ -986,7 +986,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.package(cpv)
 
             cpv_processed += 100.0
-            self.percentage(cpv_processed/nb_cpv)
+            self.percentage(int(cpv_processed/nb_cpv))
 
         self.percentage(100)
 
@@ -1009,7 +1009,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.package(cpv)
 
             cpv_processed += 100.0
-            self.percentage(cpv_processed/nb_cpv)
+            self.percentage(int(cpv_processed/nb_cpv))
 
         self.percentage(100)
 
