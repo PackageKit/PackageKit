@@ -10,29 +10,6 @@
 # (at your option) any later version.
 #
 
-#
-# Dispatched backend implementation progress
-#
-# get-depends                   DONE
-# get-details                   DONE
-# get-distro-upgrades           DONE
-# get-files                     DONE
-# get-packages                  DONE
-# get-requires                  DONE
-# get-update-detail             DONE
-# get-updates                   DONE
-# install-packages		DONE
-# refresh-cache                 DONE
-# remove-packages               DONE
-# resolve                       DONE
-# search-details                DONE
-# search-file                   DONE
-# search-group                  DONE
-# search-name                   DONE
-# update-packages               DONE
-# update-system                 DONE
-#
-
 use strict;
 local $| = 1; # stdout autoflush
 
