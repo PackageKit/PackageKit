@@ -990,21 +990,33 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         self.percentage(100)
 
-    def search_name(self, filters, key):
-        # TODO: input has to be checked by server before
-        # TODO: use muli-key input ?
+    def search_name(self, filters, keys):
+        # NOTES: searching in package name, excluding category
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
 
         fltlist = filters.split(';')
+        keys_list = keys.split(' ')
         cpv_list = self.get_all_cp(fltlist)
         nb_cpv = float(len(cpv_list))
         cpv_processed = 0.0
-        searchre = re.compile(key, re.IGNORECASE)
+        search_list = []
+
+        for k in keys_list:
+            # not done entirely by pk-transaction
+            k = re.escape(k)
+            search_list.append(re.compile(k, re.IGNORECASE))
 
         for cp in cpv_list:
-            if searchre.search(cp):
+            # pkg name has to correspond to _every_ keys
+            pkg_name = portage.catsplit(cp)[1]
+            found = True
+            for s in search_list:
+                if not s.search(pkg_name):
+                    found = False
+                    break
+            if found:
                 for cpv in self.get_all_cpv(cp, fltlist):
                     self.package(cpv)
 
