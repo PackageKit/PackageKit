@@ -52,11 +52,10 @@ from itertools import izip
 
 # TODO:
 # ERRORS with messages ?
-# use get_metadata instead of aux_get
 # manage slots
 
 # Map Gentoo categories to the PackageKit group name space
-SECTION_GROUP_MAP = {
+CATEGORY_GROUP_MAP = {
         "app-accessibility" : GROUP_ACCESSIBILITY,
         "app-admin" : GROUP_ADMIN_TOOLS,
         "app-antivirus" : GROUP_OTHER,  #TODO
@@ -230,16 +229,15 @@ def id_to_cpv(pkgid):
 
     return ret[0] + "-" + ret[1]
 
-# TODO: move to class ?
 def get_group(cp):
     ''' Return the group of the package
     Argument could be cp or cpv. '''
-    cat = portage.catsplit(cp)[0]
-    if SECTION_GROUP_MAP.has_key(cat):
-        return SECTION_GROUP_MAP[cat]
+    category = portage.catsplit(cp)[0]
+    if CATEGORY_GROUP_MAP.has_key(category):
+        return CATEGORY_GROUP_MAP[category]
 
+    # TODO: add message ?
     return GROUP_UNKNOWN
-
 
 class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
@@ -918,7 +916,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                         break
 
     def search_file(self, filters, key):
-        # TODO: update specifications
         # FILTERS:
         # - ~installed is not accepted (error)
         # - free: ok
@@ -928,12 +925,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
 
         fltlist = filters.split(';')
+
         if FILTER_NOT_INSTALLED in fltlist:
             self.error(ERROR_CANNOT_GET_FILELIST,
-                    "search-filelist isn't available with ~installed filter")
+                    "search-file isn't available with ~installed filter")
             return
 
-        cpv_results = []
         cpv_list = self.vardb.cpv_all()
         nb_cpv = 0.0
         cpv_processed = 0.0
@@ -955,22 +952,18 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             contents = db.getcontents()
             if not contents:
                 continue
-            for file in contents.keys():
-                if (is_full_path and key == file) \
-                or (not is_full_path and searchre.search(file)):
-                    cpv_results.append(cpv)
-                    break
+            for f in contents.keys():
+                if (is_full_path and key == f) \
+                or (not is_full_path and searchre.search(f)):
+                    self.package(cpv)
 
             cpv_processed += 100.0
             self.percentage(int(cpv_processed/nb_cpv))
 
         self.percentage(100)
 
-        for cpv in cpv_results:
-            self.package(cpv)
-
     def search_group(self, filters, group):
-        # TODO: input has to be checked by server before
+        # TODO: filter unknown groups before searching ? (optimization)
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
@@ -992,6 +985,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def search_name(self, filters, keys):
         # NOTES: searching in package name, excluding category
+        # TODO: "-" equals "_" ? should be specified
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
