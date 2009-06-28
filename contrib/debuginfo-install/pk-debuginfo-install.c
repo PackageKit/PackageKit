@@ -200,7 +200,7 @@ pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const 
 	}
 
 	/* resolve */
-	ret = pk_client_resolve (priv->client, PK_FILTER_ENUM_NONE, names, &error_local);
+	ret = pk_client_resolve (priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1), names, &error_local);
 	if (!ret) {
 		*error = g_error_new (1, 0, "failed to resolve: %s", error_local->message);
 		g_error_free (error_local);
