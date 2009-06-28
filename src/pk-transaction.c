@@ -3695,6 +3695,15 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 		return;
 	}
 
+	/* do not allow spaces */
+	if (strstr (search, " ") != NULL) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+				     "Invalid search containing spaces");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
