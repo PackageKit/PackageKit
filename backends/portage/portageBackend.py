@@ -938,6 +938,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         if key[0] != "/":
             is_full_path = False
+            key = re.escape(key)
             searchre = re.compile("/" + key + "$", re.IGNORECASE)
 
         # free filter
