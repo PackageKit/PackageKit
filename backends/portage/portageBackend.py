@@ -239,6 +239,21 @@ def get_group(cp):
     # TODO: add message ?
     return GROUP_UNKNOWN
 
+def get_search_list(keys):
+    '''
+    Get a string composed of keys (separated with spaces).
+    Returns a list of compiled regular expressions.
+    '''
+    keys_list = keys.split(' ')
+    search_list = []
+
+    for k in keys_list:
+        # not done entirely by pk-transaction
+        k = re.escape(k)
+        search_list.append(re.compile(k, re.IGNORECASE))
+
+    return search_list
+
 class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def __init__(self, args, lock=True):
@@ -276,6 +291,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             return aux_get(cpv, keys)
 
     def filter_free(self, cpv_list, fltlist):
+        if len(cpv_list) == 0:
+            return cpv_list
+
         def _has_validLicense(cpv):
             metadata = self.get_metadata(cpv, ["LICENSE", "USE", "SLOT"], True)
             return not self.portage_settings._getMissingLicenses(cpv, metadata)
@@ -296,6 +314,23 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.portage_settings["ACCEPT_LICENSE"] = backup_license
             self.portage_settings.backup_changes("ACCEPT_LICENSE")
             self.portage_settings.regenerate()
+
+        return cpv_list
+
+    def filter_newest(self, cpv_list, fltlist):
+        if len(cpv_list) == 0:
+            return cpv_list
+
+        if FILTER_NEWEST in fltlist:
+            # if FILTER_INSTALLED in fltlist, cpv_list=cpv_list
+            if FILTER_NOT_INSTALLED in fltlist:
+                cpv_list = [cpv_list[-1]]
+            elif FILTER_INSTALLED not in fltlist:
+                # cpv_list is not ordered so getting newer and filter others
+                newer_cpv = self.get_newer_cpv(cpv_list)
+                cpv_list = filter(
+                        lambda cpv: self.is_installed(cpv) or cpv == newer_cpv,
+                        cpv_list)
 
         return cpv_list
 
@@ -322,7 +357,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return cp_list
 
-    def get_all_cpv(self, cp, fltlist):
+    def get_all_cpv(self, cp, fltlist, filter_newest=True):
         # NOTES:
         # returns a list of cpv
         #
@@ -346,29 +381,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                 if cpv not in cpv_list:
                     cpv_list.append(cpv)
 
-        if len(cpv_list) == 0:
-            return []
-
         # free filter
         cpv_list = self.filter_free(cpv_list, fltlist)
 
-        if len(cpv_list) == 0:
-            return []
-
         # newest filter
-        if FILTER_NEWEST in fltlist:
-            # if FILTER_INSTALLED in fltlist, cpv_list=cpv_list
-            if FILTER_NOT_INSTALLED in fltlist:
-                cpv_list = [cpv_list[-1]]
-            elif FILTER_INSTALLED not in fltlist:
-                # cpv_list is not ordered so getting newer and filter others
-                newer_cpv = self.get_newer_cpv(cpv_list)
-                cpv_list = filter(
-                        lambda cpv: self.is_installed(cpv) or cpv == newer_cpv,
-                        cpv_list)
-
-        if len(cpv_list) == 0:
-            return []
+        if filter_newest:
+            self.filter_newest(cpv_list, fltlist)
 
         return cpv_list
 
@@ -894,26 +912,52 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     #print self.vardb.dep_bestmatch(cp)
                     self.package(portage.portdb.xmatch("bestmatch-visible", cp))
 
-    def search_details(self, filters, key):
-        # TODO: add keywords when they will be available
-        # TODO: filters
-        # TODO: split keys
-        # TODO: PERFORMANCE !
+    def search_details(self, filters, keys):
+        # NOTES: very bad performance
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
-        searchre = re.compile(key, re.IGNORECASE)
-        cpvlist = []
+        fltlist = filters.split(';')
+        cp_list = self.get_all_cp(fltlist)
+        nb_cp = float(len(cp_list))
+        cp_processed = 0.0
+        search_list = get_search_list(keys)
 
-        for cp in portage.portdb.cp_all():
-            # TODO: baaad, we are working on _every_ cpv :-/
-            for cpv in portage.portdb.match(cp): #TODO: cp_list(cp) ?
-                infos = self.get_metadata(cpv, ["HOMEPAGE","DESCRIPTION","repository"]) # LICENSE ?
-                for x in infos:
-                    if searchre.search(x):
-                        self.package(cpv)
+        for cp in cp_list:
+            # unfortunatelly, everything is related to cpv, not cp
+            # can't filter cp
+            cpv_list = []
+
+            # newest filter can't be executed now
+            # because some cpv are going to be filtered by search conditions
+            # and newest filter could be alterated
+            for cpv in self.get_all_cpv(cp, fltlist, filter_newest=False):
+                match = True
+                details = self.get_metadata(cpv,
+                        ["DESCRIPTION", "HOMEPAGE","LICENSE","repository"])
+                for s in search_list:
+                    found = False
+                    for x in details:
+                        if s.search(x):
+                            found = True
+                            break
+                    if not found:
+                        match = False
                         break
+                if match:
+                    cpv_list.append(cpv)
+
+            # newest filter
+            cpv_list = self.filter_newest(cpv_list, fltlist)
+
+            for cpv in cpv_list:
+                self.package(cpv)
+
+            cp_processed += 100.0
+            self.percentage(int(cp_processed/nb_cp))
+
+        self.percentage(100)
 
     def search_file(self, filters, key):
         # FILTERS:
@@ -970,17 +1014,17 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
 
         fltlist = filters.split(';')
-        cpv_list = self.get_all_cp(fltlist)
-        nb_cpv = float(len(cpv_list))
-        cpv_processed = 0.0
+        cp_list = self.get_all_cp(fltlist)
+        nb_cp = float(len(cp_list))
+        cp_processed = 0.0
 
-        for cp in cpv_list:
+        for cp in cp_list:
             if get_group(cp) == group:
                 for cpv in self.get_all_cpv(cp, fltlist):
                     self.package(cpv)
 
-            cpv_processed += 100.0
-            self.percentage(int(cpv_processed/nb_cpv))
+            cp_processed += 100.0
+            self.percentage(int(cp_processed/nb_cp))
 
         self.percentage(100)
 
@@ -992,18 +1036,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
 
         fltlist = filters.split(';')
-        keys_list = keys.split(' ')
-        cpv_list = self.get_all_cp(fltlist)
-        nb_cpv = float(len(cpv_list))
-        cpv_processed = 0.0
-        search_list = []
+        cp_list = self.get_all_cp(fltlist)
+        nb_cp = float(len(cp_list))
+        cp_processed = 0.0
+        search_list = get_search_list(keys)
 
-        for k in keys_list:
-            # not done entirely by pk-transaction
-            k = re.escape(k)
-            search_list.append(re.compile(k, re.IGNORECASE))
-
-        for cp in cpv_list:
+        for cp in cp_list:
             # pkg name has to correspond to _every_ keys
             pkg_name = portage.catsplit(cp)[1]
             found = True
@@ -1015,8 +1053,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                 for cpv in self.get_all_cpv(cp, fltlist):
                     self.package(cpv)
 
-            cpv_processed += 100.0
-            self.percentage(int(cpv_processed/nb_cpv))
+            cp_processed += 100.0
+            self.percentage(int(cp_processed/nb_cp))
 
         self.percentage(100)
 
