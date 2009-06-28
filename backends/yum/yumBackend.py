@@ -312,6 +312,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
         package_list = []
+
+        # FIXME: treat as AND, not OR
         keys = key.split(' ')
 
         # get collection objects
