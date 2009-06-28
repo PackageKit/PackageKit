@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-06-18 19:16+0200\n"
-"PO-Revision-Date: 2009-06-18 19:20+0200\n"
+"POT-Creation-Date: 2009-06-28 01:46+0000\n"
+"PO-Revision-Date: 2009-06-28 03:58+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -39,7 +39,7 @@ msgstr "Fałsz"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:237 ../src/pk-polkit-action-lookup.c:228
+#: ../client/pk-console.c:237 ../src/pk-polkit-action-lookup.c:256
 msgid "Role"
 msgstr "Rola"
 
@@ -53,7 +53,8 @@ msgid "(seconds)"
 msgstr "(sekundy)"
 
 #. TRANSLATORS: this is The command line used to do the action
-#: ../client/pk-console.c:246
+#. TRANSLATORS: the command line of the thing that wants the authentication
+#: ../client/pk-console.c:246 ../src/pk-polkit-action-lookup.c:270
 msgid "Command line"
 msgstr "Wiersz poleceń"
 
@@ -493,6 +494,7 @@ msgstr "Podpolecenia:"
 #: ../client/pk-console.c:1768 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
 #: ../contrib/command-not-found/pk-command-not-found.c:521
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:303
 #: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Wyświetla dodatkowe informacje o debugowaniu"
@@ -914,6 +916,118 @@ msgstr "Nie znaleziono pakietów dla systemu"
 msgid "Installing..."
 msgstr "Instalowanie..."
 
+#. command line argument, simulate what would be done, but don't actually do it
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:306
+msgid "Don't actually install any packages, only simulate"
+msgstr "Nie instaluje żadnych pakietów, tylko symuluje"
+
+#. TRANSLATORS: tool that gets called when the command is not found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:324
+msgid "PackageKit Debuginfo Installer"
+msgstr "Instalator pakietów debugowania PackageKit"
+
+#. TRANSLATORS: the use needs to specify a list of package names on the command line
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:334
+#, c-format
+msgid "ERROR: Specify package names to install."
+msgstr "BŁĄD: proszę podać nazwy pakietów do zainstalowania."
+
+#. TRANSLATORS: we are getting the list of repositories
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:355
+#, c-format
+msgid "Getting sources list..."
+msgstr "Pobieranie listy źródeł..."
+
+#. TRANSLATORS: all completed 100%
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:366
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:402
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:428
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:483
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:515
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:544
+#, c-format
+msgid "OK."
+msgstr "OK."
+
+#. TRANSLATORS: tell the user what we found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:369
+#, c-format
+msgid "Found %i enabled and %i disabled sources."
+msgstr "Znaleziono %i włączone i %i wyłączone źródła."
+
+#. TRANSLATORS: we're finding repositories that match out pattern
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:376
+#, c-format
+msgid "Finding debugging sources..."
+msgstr "Wyszukiwanie źródeł pakietów debugowania..."
+
+#. TRANSLATORS: tell the user what we found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:405
+#, c-format
+msgid "Found %i disabled debuginfo repos."
+msgstr "Znaleziono %i wyłączonych repozytoriów pakietów debugowania."
+
+#. TRANSLATORS: we're now enabling all the debug sources we found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:412
+#, c-format
+msgid "Enabling debugging sources..."
+msgstr "Włączanie źródeł pakietów debugowania..."
+
+#. TRANSLATORS: operation was not successful
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:418
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:474
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:535
+msgid "FAILED."
+msgstr "NIEUDANE."
+
+#. TRANSLATORS: tell the user how many we enabled
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:431
+#, c-format
+msgid "Enabled %i debugging sources."
+msgstr "Włączono %i źródła pakietów debugowania."
+
+#. TRANSLATORS: we couldn't find the package name, non-fatal
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:454
+#, c-format
+msgid "Failed to find a package of that name: %s"
+msgstr "Znalezienie pakietu o tej nazwie nie powiodło się: %s"
+
+#. TRANSLATORS: no debuginfo packages could be found to be installed
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:477
+#, c-format
+msgid "Found no packages to install."
+msgstr "Nie znaleziono pakietów do zainstalowania."
+
+#. TRANSLATORS: tell the user we found some packages, and then list them
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:486
+#, c-format
+msgid "Found %i packages:"
+msgstr "Znaleziono %i pakiety:"
+
+#. TRANSLATORS: simulate mode is a testing mode where we quit before the action
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:495
+#, c-format
+msgid "Not installing packages in simulate mode"
+msgstr "Pakiety nie zostaną zainstalowane w trybie symulacji"
+
+#. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:529
+#, c-format
+msgid "Disabling sources previously enabled..."
+msgstr "Wyłączanie źródeł poprzednio włączonych..."
+
+#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:538
+#, c-format
+msgid "Could not disable the debugging sources: %s"
+msgstr "Nie można wyłączyć źródeł pakietów debugowania: %s"
+
+#. TRANSLATORS: we disabled all the debugging repos that we enabled before
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:547
+#, c-format
+msgid "Disabled %i debugging sources."
+msgstr "Wyłączono %i źródło pakietów debugowania."
+
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
 msgstr "Katalog PackageKit"
@@ -1097,32 +1211,36 @@ msgstr "Nie można połączyć się z magistralą systemową"
 msgid "Error trying to start:"
 msgstr "Błąd podczas próbowania uruchomienia:"
 
+#: ../src/pk-polkit-action-lookup.c:143
+msgid "To install debugging packages, extra sources need to be enabled"
+msgstr "Aby zainstalować pakiety debugowania, należy włączyć dodatkowe źródła"
+
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:128 ../src/pk-polkit-action-lookup.c:147
+#: ../src/pk-polkit-action-lookup.c:156 ../src/pk-polkit-action-lookup.c:175
 msgid "The software is not from a trusted source."
 msgstr "Oprogramowanie nie jest z zaufanego źródła."
 
 #. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:132
+#: ../src/pk-polkit-action-lookup.c:160
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr ""
 "Nie należy aktualizować tego pakietu, jeśli nie ma się pewności, że to "
 "bezpieczne."
 
 #. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:136 ../src/pk-polkit-action-lookup.c:155
+#: ../src/pk-polkit-action-lookup.c:164 ../src/pk-polkit-action-lookup.c:183
 msgid "Malicious software can damage your computer or cause other harm."
 msgstr ""
 "Złośliwe oprogramowanie może uszkodzić komputer lub spowodować inne szkody."
 
 #. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:151
+#: ../src/pk-polkit-action-lookup.c:179
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr ""
 "Nie należy instalować tego pakietu, jeśli nie ma się pewności, że to "
 "bezpieczne."
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:235
+#: ../src/pk-polkit-action-lookup.c:263
 msgid "Only trusted"
 msgstr "Tylko zaufane"
