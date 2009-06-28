@@ -986,7 +986,7 @@
             Do not refresh the package cache. This should be fast.
             This is very similar to search-name.
             This should search as much data as possible, including, if possible
-            repo names, package summaries, descriptions and URLs.
+            repo names, package summaries, descriptions, licenses and URLs.
           </doc:para>
           <doc:para>
             This method typically emits
