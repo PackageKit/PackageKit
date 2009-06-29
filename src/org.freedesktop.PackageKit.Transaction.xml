@@ -1054,6 +1054,9 @@
               <doc:tt>GPL games</doc:tt> should returns every games with a GPL
               license.
             </doc:para>
+            <doc:para>
+              The search should not be treated as case sensitive.
+            </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
@@ -1100,6 +1103,9 @@
               If the search term begins with a <doc:tt>/</doc:tt> it will be assumed the entire path has been given and only packages that contain this exact path and filename will be returned.
               If the search term does not start with <doc:tt>/</doc:tt> then it should be treated as a single filename, which can be in any directory.
               Only one filename can be specified, which should not be escaped or surrounded in quotes.
+            </doc:para>
+            <doc:para>
+              The search is case sensitive, and should not be escaped or surrounded in quotes.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1186,10 +1192,6 @@
             in the backend.
           </doc:para>
           <doc:para>
-            The search query in the backend should not be case sensitive, and
-            should not be sensitive to <doc:tt>_</doc:tt> or <doc:tt>-</doc:tt>.
-          </doc:para>
-          <doc:para>
             The search methods should return all results in all repositories.
             This may mean that multiple versions of package are returned.
             If this is not what is wanted by the client program, then the
@@ -1226,6 +1228,9 @@
               <doc:tt>gnome power</doc:tt> should returns
               <doc:tt>gnome-power-manager</doc:tt> but not
               <doc:tt>gnomesword</doc:tt> or <doc:tt>powertop</doc:tt>.
+            </doc:para>
+            <doc:para>
+              The search should not be treated as case sensitive.
             </doc:para>
           </doc:summary>
         </doc:doc>
