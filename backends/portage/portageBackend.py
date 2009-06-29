@@ -545,18 +545,23 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.files(pkgid, files)
 
     def get_packages(self, filters):
-        # TODO: use cases tests on fedora 11
-        # TODO: progress ?
-        # TODO: installed before non-installed ?
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
 
         fltlist = filters.split(';')
+        cp_list = self.get_all_cp(fltlist)
+        nb_cp = float(len(cp_list))
+        cp_processed = 0.0
 
         for cp in self.get_all_cp(fltlist):
             for cpv in self.get_all_cpv(cp, fltlist):
                 self.package(cpv)
+
+            cp_processed += 100.0
+            self.percentage(int(cp_processed/nb_cp))
+
+        self.percentage(100)
 
     def get_repo_list(self, filters):
         # TODO: filters
@@ -1044,7 +1049,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def search_name(self, filters, keys):
         # NOTES: searching in package name, excluding category
-        # TODO: "-" equals "_" ? should be specified
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
