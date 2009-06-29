@@ -905,8 +905,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             mergetask.merge()
 
     def repo_enable(self, repoid, enable):
-        # NOTES: use layman API
-        # TODO: remove output when enable=True
+        # NOTES: use layman API >= 1.2.3
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
@@ -935,7 +934,17 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # if repository already enabled, ignoring
         if enable and not is_repository_enabled(installed_layman_db, repoid):
             try:
-                installed_layman_db.add(available_layman_db.select(repoid))
+                # TODO: clean the trick to prevent outputs from layman
+                orig_out = sys.stdout
+                orig_err = sys.stderr
+                sys.stdout = open('/dev/null', 'w')
+                sys.stderr = open('/dev/null', 'w')
+
+                installed_layman_db.add(available_layman_db.select(repoid),
+                        quiet=True)
+
+                sys.stdout = orig_out
+                sys.stderr = orig_err
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR,
                         "Failed to enable repository "+repoid+" : "+str(e))
