@@ -1429,34 +1429,38 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_QUERY)
 
         fltlist = filters.split(';')
+        pkgfilter = YumFilter(fltlist)
+        package_list = []
+
+        # OR search
         for package in packages:
             # Get installed packages
-            try:
-                installedByKey = self.yumbase.rpmdb.searchNevra(name=package)
-            except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if FILTER_NOT_INSTALLED not in fltlist:
-                for pkg in installedByKey:
-                    self._show_package(pkg, INFO_INSTALLED)
+                try:
+                    pkgs = self.yumbase.rpmdb.searchNevra(name=package)
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                else:
+                    pkgfilter.add_installed(pkgs)
+
             # Get available packages
             if FILTER_INSTALLED not in fltlist:
                 try:
-                    pkgs = self.yumbase.pkgSack.returnNewestByNameArch()
+                    pkgs = self.yumbase.pkgSack.returnNewestByName(name=package)
+                except yum.Errors.PackageSackError, e:
+                    # no package of this name found, which is okay
+                    pass
                 except yum.Errors.RepoError, e:
                     self.error(ERROR_NO_CACHE, "failed to return newest by package sack: %s" %_to_unicode(e), exit=False)
                     return
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 else:
-                    for pkg in pkgs:
-                        if pkg.name == package:
-                            show = True
-                            for instpo in installedByKey:
-                                # Check if package has equal EVR to a inst pkg
-                                if pkg.EVR == instpo.EVR:
-                                    show = False
-                            if show:
-                                self._show_package(pkg, INFO_AVAILABLE)
+                    pkgfilter.add_available(pkgs)
+
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
 
     def install_packages(self, only_trusted, package_ids):
         '''
