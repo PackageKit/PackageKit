@@ -30,6 +30,24 @@
 
 #include "egg-debug.h"
 
+/* Reserved exit codes:
+ * 1		miscellaneous errors, such as "divide by zero"
+ * 2		misuse of shell builtins
+ * 126		command invoked cannot execute
+ * 127		"command not found"
+ * 128		invalid argument to exit
+ * 128+n	fatal error signal "n"
+ * 130		script terminated by Control-C
+ * 255		exit status out of range
+ */
+#define PK_DEBUGINFO_EXIT_CODE_FAILED				1
+#define PK_DEBUGINFO_EXIT_CODE_FAILED_TO_GET_REPOLIST		3
+#define PK_DEBUGINFO_EXIT_CODE_FAILED_TO_ENABLE			4
+#define PK_DEBUGINFO_EXIT_CODE_NOTHING_TO_DO			5
+#define PK_DEBUGINFO_EXIT_CODE_FAILED_TO_FIND_DEPS		6
+#define PK_DEBUGINFO_EXIT_CODE_FAILED_TO_INSTALL		7
+#define PK_DEBUGINFO_EXIT_CODE_FAILED_TO_DISABLE		8
+
 typedef struct {
 	GPtrArray *enabled;
 	GPtrArray *disabled;
@@ -408,6 +426,8 @@ main (int argc, char *argv[])
 	GPtrArray *package_ids_recognised = NULL;
 	GPtrArray *package_ids_to_install = NULL;
 	guint i;
+	guint /* return correct failure retval */
+		retval = 0;
 	gchar *package_id;
 	gchar *name;
 	gchar *name_debuginfo;
@@ -426,7 +446,7 @@ main (int argc, char *argv[])
 		  _("Show extra debugging information"), NULL },
 		{ "simulate", 's', 0, G_OPTION_ARG_NONE, &simulate,
 		   /* command line argument, simulate what would be done, but don't actually do it */
-		  _("Don't actually install any packages, only simulate"), NULL },
+		  _("Don't actually install any packages, only simulate what would be installed"), NULL },
 		{ "no-depends", 'n', 0, G_OPTION_ARG_NONE, &no_depends,
 		   /* command line argument, do we skip packages that depend on the ones specified */
 		  _("Do not install dependencies of the core packages"), NULL },
@@ -459,6 +479,9 @@ main (int argc, char *argv[])
 		/* TRANSLATORS: the use needs to specify a list of package names on the command line */
 		g_print (_("ERROR: Specify package names to install."));
 		g_print ("\n");
+
+		/* return correct failure retval */
+		retval = PK_DEBUGINFO_EXIT_CODE_FAILED;
 		goto out;
 	}
 
@@ -488,6 +511,9 @@ main (int argc, char *argv[])
 	if (!ret) {
 		g_print ("failed to get repo list: %s", error->message);
 		g_error_free (error);
+
+		/* return correct failure retval */
+		retval = PK_DEBUGINFO_EXIT_CODE_FAILED_TO_GET_REPOLIST;
 		goto out;
 	}
 
@@ -552,6 +578,9 @@ main (int argc, char *argv[])
 		g_print ("Failed to enable debugging sources: %s", error->message);
 		g_print ("\n");
 		g_error_free (error);
+
+		/* return correct failure retval */
+		retval = PK_DEBUGINFO_EXIT_CODE_FAILED_TO_ENABLE;
 		goto out;
 	}
 
@@ -627,6 +656,9 @@ not_found:
 		/* TRANSLATORS: no debuginfo packages could be found to be installed */
 		g_print (_("Found no packages to install."));
 		g_print ("\n");
+
+		/* return correct failure retval */
+		retval = PK_DEBUGINFO_EXIT_CODE_NOTHING_TO_DO;
 		goto out;
 	}
 
@@ -659,6 +691,9 @@ not_found:
 			g_print (_("Could not find dependant packages: %s"), error->message);
 			g_print ("\n");
 			g_error_free (error);
+
+			/* return correct failure retval */
+			retval = PK_DEBUGINFO_EXIT_CODE_FAILED_TO_FIND_DEPS;
 			goto out;
 		}
 
@@ -708,6 +743,9 @@ not_found:
 		g_print (_("Could not install packages: %s"), error->message);
 		g_print ("\n");
 		g_error_free (error);
+
+		/* return correct failure retval */
+		retval = PK_DEBUGINFO_EXIT_CODE_FAILED_TO_INSTALL;
 		goto out;
 	}
 
@@ -742,6 +780,10 @@ out:
 			g_print (_("Could not disable the debugging sources: %s"), error->message);
 			g_print ("\n");
 			g_error_free (error);
+
+			/* return correct failure retval */
+			retval = PK_DEBUGINFO_EXIT_CODE_FAILED_TO_DISABLE;
+
 		} else {
 
 			/* TRANSLATORS: all completed 100% */
@@ -765,6 +807,6 @@ out:
 	}
 	if (priv->client != NULL)
 		g_object_unref (priv->client);
-	return 0;
+	return retval;
 }
 

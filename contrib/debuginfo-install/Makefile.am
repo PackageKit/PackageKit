@@ -1,6 +1,21 @@
 ## We require new-style dependency handling.
 AUTOMAKE_OPTIONS = 1.7
 
+EXTRA_DIST =						\
+	pk-debuginfo-install.xml			\
+	$(NULL)
+
+if HAVE_XSLTPROC
+man_MANS =						\
+	pk-debuginfo-install.1				\
+	$(NULL)
+endif
+
+if HAVE_XSLTPROC
+pk-debuginfo-install.1: pk-debuginfo-install.xml
+	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
+endif
+
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
@@ -32,4 +47,10 @@ pk_debuginfo_install_LDADD =				\
 pk_debuginfo_install_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
+
+clean-local:
+	rm -f *~
+	rm -f *.1
+	rm -f manpage.*
+	rm -f *.out
 

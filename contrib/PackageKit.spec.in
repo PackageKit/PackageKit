@@ -295,7 +295,9 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_datadir}/PackageKit/helpers/test_spawn
 %dir %{_datadir}/PackageKit/icons
 %{_datadir}/PackageKit/helpers/test_spawn/*
-%{_datadir}/man/man1/*.1.gz
+%{_datadir}/man/man1/pkcon.1.gz
+%{_datadir}/man/man1/pkmon.1.gz
+%{_datadir}/man/man1/pkgenpack.1.gz
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/mime/packages/packagekit-*.xml
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
@@ -364,6 +366,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
 %{_libexecdir}/pk-debuginfo-install
+%{_datadir}/man/man1/pk-debuginfo-install.1.gz
 
 %files browser-plugin
 %defattr(-,root,root,-)
