@@ -274,6 +274,27 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             return True
         return False
 
+    def is_cpv_valid(self, cpv):
+        if self.is_installed(cpv):
+            # actually if is_installed return True that means cpv is in db
+            return True
+        elif portage.portdb.cpv_exists(cpv):
+            return True
+
+        return False
+
+    def get_file_list(self, cpv):
+        cat, pv = portage.catsplit(cpv)
+        db = portage.dblink(cat, pv, portage.settings["ROOT"],
+                self.portage_settings, treetype="vartree",
+                vartree=self.vardb)
+
+        contents = db.getcontents()
+        if not contents:
+            return []
+
+        return db.getcontents().keys()
+
     def get_newer_cpv(self, cpv_list):
         newer = cpv_list[0]
         for cpv in cpv_list:
@@ -519,30 +540,34 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
     def get_files(self, pkgids):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
+
+        nb_pkg = float(len(pkgids))
+        pkg_processed = 0.0
 
         for pkgid in pkgids:
             cpv = id_to_cpv(pkgid)
 
-            # is cpv valid
-            if not portage.portdb.cpv_exists(cpv):
+            if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                         "Package %s was not found" % pkgid)
                 continue
 
-            if not self.vardb.cpv_exists(cpv):
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,
-                        "Package %s is not installed" % pkgid)
+            if not self.is_installed(cpv):
+                self.error(ERROR_CANNOT_GET_FILELIST,
+                        "get-files is only available for installed packages")
                 continue
 
-            cat, pv = portage.catsplit(cpv)
-            db = portage.dblink(cat, pv, portage.settings["ROOT"],
-                    self.portage_settings, treetype="vartree", vartree=self.vardb)
-            files = db.getcontents().keys()
+            files = self.get_file_list(cpv)
             files = sorted(files)
             files = ";".join(files)
 
             self.files(pkgid, files)
+
+            pkg_processed += 100.0
+            self.percentage(int(pkg_processed/nb_pkg))
+
+        self.percentage(100)
 
     def get_packages(self, filters):
         self.status(STATUS_QUERY)
@@ -1009,14 +1034,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         nb_cpv = float(len(cpv_list))
 
         for cpv in cpv_list:
-            cat, pv = portage.catsplit(cpv)
-            db = portage.dblink(cat, pv, portage.settings["ROOT"],
-                    self.portage_settings, treetype="vartree",
-                    vartree=self.vardb)
-            contents = db.getcontents()
-            if not contents:
-                continue
-            for f in contents.keys():
+            for f in self.get_file_list(cpv):
                 if (is_full_path and key == f) \
                 or (not is_full_path and searchre.search(f)):
                     self.package(cpv)
