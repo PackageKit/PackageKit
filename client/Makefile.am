@@ -3,6 +3,31 @@ AUTOMAKE_OPTIONS = 1.7
 
 NULL =
 
+EXTRA_DIST =						\
+	pkcon.xml					\
+	pkmon.xml					\
+	pkgenpack.xml					\
+	$(NULL)
+
+if HAVE_XSLTPROC
+man_MANS =						\
+	pkcon.1						\
+	pkmon.1						\
+	pkgenpack.1					\
+	$(NULL)
+endif
+
+if HAVE_XSLTPROC
+pkcon.1: pkcon.xml
+	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
+
+pkmon.1: pkmon.xml
+	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
+
+pkgenpack.1: pkgenpack.xml
+	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
+endif
+
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
@@ -121,6 +146,8 @@ endif
 
 clean-local:
 	rm -f *~
+	rm -f *.1
+	rm -f manpage.*
 	rm -f *.out
 
 CLEANFILES = $(BUILT_SOURCES)

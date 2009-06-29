@@ -704,7 +704,6 @@ dnl ---------------------------------------------------------------------------
 AC_OUTPUT([
 Makefile
 etc/Makefile
-man/Makefile
 docs/Makefile
 docs/html/Makefile
 docs/html/img/Makefile

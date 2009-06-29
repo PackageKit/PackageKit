@@ -12,4 +12,6 @@ pk-self-test
 *.gladep
 *.gladep.bak
 *.servicepack
+manpage.*
+*.1
 
