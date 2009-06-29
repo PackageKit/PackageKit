@@ -1478,8 +1478,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         if pkg.name == package:
                             show = True
                             for instpo in installedByKey:
-                                # Check if package have a smaller & equal EVR to a inst pkg
-                                if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
+                                # Check if package has equal EVR to a inst pkg
+                                if pkg.EVR == instpo.EVR:
                                     show = False
                             if show:
                                 self._show_package(pkg, INFO_AVAILABLE)
