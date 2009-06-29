@@ -427,7 +427,7 @@ main (int argc, char *argv[])
 		{ "simulate", 's', 0, G_OPTION_ARG_NONE, &simulate,
 		   /* command line argument, simulate what would be done, but don't actually do it */
 		  _("Don't actually install any packages, only simulate"), NULL },
-		{ "--no-depends", 'n', 0, G_OPTION_ARG_NONE, &no_depends,
+		{ "no-depends", 'n', 0, G_OPTION_ARG_NONE, &no_depends,
 		   /* command line argument, do we skip packages that depend on the ones specified */
 		  _("Do not install dependencies of the core packages"), NULL },
 		{ NULL}
