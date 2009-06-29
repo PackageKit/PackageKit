@@ -509,48 +509,58 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
     def get_details(self, pkgs):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
+
+        nb_pkg = float(len(pkgs))
+        pkg_processed = 0.0
+
+        def get_size(cpv):
+            # should return package size if not installed
+            # or 0 if installed
+            if self.is_installed(cpv):
+                return 0
+            ebuild = portage.portdb.findname(cpv)
+            if not ebuild: # should probably not happen
+                return 0
+            dir = os.path.dirname(ebuild)
+            manifest = portage.manifest.Manifest(dir,
+                    portage.settings["DISTDIR"])
+            uris = portage.portdb.getFetchMap(cpv)
+            return manifest.getDistfilesSize(uris)
 
         for pkg in pkgs:
             cpv = id_to_cpv(pkg)
 
-            # is cpv valid
-            if not portage.portdb.cpv_exists(cpv):
-                # self.warning ? self.error ?
-                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,
-                        "Could not find the package %s" % pkg)
+            if not self.is_cpv_valid(cpv):
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                        "Package %s was not found" % pkg)
                 continue
 
             homepage, desc, license = self.get_metadata(cpv,
                     ["HOMEPAGE", "DESCRIPTION", "LICENSE"])
 
-            # size should be prompted only if not installed
-            size = 0
-            if not self.is_installed(cpv):
-                ebuild = portage.portdb.findname(cpv)
-                if ebuild:
-                    dir = os.path.dirname(ebuild)
-                    manifest = portage.manifest.Manifest(dir, portage.settings["DISTDIR"])
-                    uris = portage.portdb.getFetchMap(cpv)
-                    size = manifest.getDistfilesSize(uris)
-
             self.details(self.cpv_to_id(cpv), license, get_group(cpv),
-                    desc, homepage, size)
+                    desc, homepage, get_size(cpv))
 
-    def get_files(self, pkgids):
+            pkg_processed += 100.0
+            self.percentage(int(pkg_processed/nb_pkg))
+
+        self.percentage(100)
+
+    def get_files(self, pkgs):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(0)
 
-        nb_pkg = float(len(pkgids))
+        nb_pkg = float(len(pkgs))
         pkg_processed = 0.0
 
-        for pkgid in pkgids:
-            cpv = id_to_cpv(pkgid)
+        for pkg in pkgs:
+            cpv = id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
-                        "Package %s was not found" % pkgid)
+                        "Package %s was not found" % pkg)
                 continue
 
             if not self.is_installed(cpv):
@@ -562,7 +572,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             files = sorted(files)
             files = ";".join(files)
 
-            self.files(pkgid, files)
+            self.files(pkg, files)
 
             pkg_processed += 100.0
             self.percentage(int(pkg_processed/nb_pkg))
