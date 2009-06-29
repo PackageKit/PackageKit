@@ -153,30 +153,40 @@
         <tbody>
           <row>
             <entry><literal>installed</literal> or <literal>~installed</literal></entry>
-            <entry>If the package is installed on the system</entry>
+            <entry>
+              If the package is currently installed.
+              Packages returned with the <literal>~installed</literal> filter set
+              are available in remote software sources.
+            </entry>
           </row>
           <row>
             <entry><literal>devel</literal> or <literal>~devel</literal></entry>
-            <entry>Development packages typically end -devel, -dgb and -static.</entry>
+            <entry>
+              Development packages are typically not required for normal operation
+              and typically have the suffixes -devel, -dgb and -static.
+            </entry>
           </row>
           <row>
             <entry><literal>gui</literal> or <literal>~gui</literal></entry>
-            <entry>GUI programs typically depend on gtk, libkde or libxfce.</entry>
+            <entry>
+              GUI programs typically depend on gtk, libkde or libxfce.
+            </entry>
           </row>
           <row>
             <entry><literal>application</literal> or <literal>~application</literal></entry>
-            <entry>Applications provide desktop files.</entry>
+            <entry>
+              Packages that provide desktop files and are probably applications.
+            </entry>
           </row>
           <row>
             <entry><literal>free</literal> or <literal>~free</literal></entry>
             <entry>
               Free software. The package contains only software and
               other content that is available under a free license.
-              See http://fedoraproject.org/wiki/Licensing for a list
-              of licenses that are considered free. If a license
-              cannot be determined from the package metadata, or the
-              status of the license is not known, the package will
-              be marked as 'non-free'.
+              See the <ulink url="http://fedoraproject.org/wiki/Licensing">Fedora wiki</ulink>
+              for a list of licenses that are considered free.
+              If a license cannot be determined from the package metadata, or the
+              status of the license is not known, the package will be marked as 'non-free'.
             </entry>
           </row>
           <row>
@@ -184,12 +194,15 @@
             <entry>
               Repositories may want to specify if a package should be visible
               in an application chooser.
+              This is only really useful for embedded environments where the
+              package list is manually chosen.
             </entry>
           </row>
           <row>
             <entry><literal>supported</literal> or <literal>~supported</literal></entry>
             <entry>
-              If the package is supported or is a third party addon.
+              If the package is supported by the distribution or retailer or is a
+              unsupported third party package.
             </entry>
           </row>
           <row>
@@ -207,12 +220,23 @@
           <row>
             <entry><literal>newest</literal> or <literal>~newest</literal></entry>
             <entry>
-              The newest filter will only return the newest package available.
-              This is useful if you are searching for <literal>gimp</literal>
-              and only <literal>gimp-2.4.5-1.fc9.i386</literal> would be returned,
-              not <literal>gimp-2.4.5-1.fc9.i386</literal>,
-              <literal>gimp-2.4.4-1.fc9.i386</literal> and
-              <literal>gimp-2.4.3-1.fc9.i386</literal>.
+              <para>
+                The newest filter will only return the newest package available.
+                This is useful if you are searching for <literal>gimp</literal>
+                and only <literal>gimp-2.4.5-1.fc9.i386</literal> would be returned,
+                not <literal>gimp-2.4.5-1.fc9.i386</literal>,
+                <literal>gimp-2.4.4-1.fc9.i386</literal> and
+                <literal>gimp-2.4.3-1.fc9.i386</literal>.
+             </para>
+              <para>
+                <emphasis>NOTE:</emphasis>
+                The <literal>newest</literal> filter processes installed and available
+                package lists separately and so the <literal>installed</literal> or
+                <literal>~installed</literal> filter also has to be specified if only one type of
+                results are required.
+                There is no way to do a <literal>newest</literal> filter across both
+                installed and available packages.
+              </para>
             </entry>
           </row>
           <row>
@@ -267,6 +291,96 @@
         </tbody>
       </tgroup>
     </informaltable>
+
+    <sect2 id="introduction-ideas-filters-removeinstalled">
+      <title>Removing installed versions in search results</title>
+      <para>
+        When outputting a list of packages, it's important to remove the <emphasis>available</emphasis>
+        package if the <emphasis>same</emphasis> version is installed.
+        This is required, as the user may do <literal>SearchName("kernel",filter="none")</literal>
+        and only want to return results that can be operated on.
+        For instance, suppose we have installed:
+      </para>
+      <simplelist type="horiz" columns="1">
+        <member><literal>kernel-2.6.29.4-167 (installed)</literal></member>
+        <member><literal>kernel-2.6.29.5-191 (installed)</literal></member>
+      </simplelist>
+      <para>
+        And in the remote software sources we have:
+      </para>
+      <simplelist type="horiz" columns="1">
+        <member><literal>kernel-2.6.29.4-167 (fedora)</literal></member>
+        <member><literal>kernel-2.6.29.5-191 (fedora-updates)</literal></member>
+        <member><literal>kernel-2.6.30.1-203 (fedora-updates)</literal></member>
+      </simplelist>
+      <para>
+        If we do <literal>Resolve("kernel",filter="none")</literal> we should expect:
+      </para>
+      <simplelist type="horiz" columns="1">
+        <member><literal>kernel-2.6.29.4-167 (installed)</literal></member>
+        <member><literal>kernel-2.6.29.5-191 (installed)</literal></member>
+        <member><literal>kernel-2.6.30.1-203 (fedora-updates)</literal></member>
+      </simplelist>
+      <para>
+        If the <literal>kernel-2.6.29.4-167 (fedora)</literal> result was returned,
+        this will be in the list of results, and is a valid install target.
+        The user will get very confused why <literal>2.6.29.4-167</literal> is both
+        installed and not installed.
+      </para>
+    </sect2>
+
+    <sect2 id="introduction-ideas-filters-examples">
+      <title>Filter examples</title>
+      <para>
+        Suppose we have installed:
+      </para>
+      <simplelist type="horiz" columns="1">
+        <member><literal>kernel-2.6.29.4-167 (installed)</literal></member>
+        <member><literal>kernel-2.6.29.5-191 (installed)</literal></member>
+      </simplelist>
+      <para>
+        In the remote software sources we have:
+      </para>
+      <simplelist type="horiz" columns="1">
+        <member><literal>kernel-2.6.29.4-167 (fedora)</literal></member>
+        <member><literal>kernel-2.6.29.5-191 (fedora-updates)</literal></member>
+        <member><literal>kernel-2.6.30.1-203 (fedora-updates)</literal></member>
+      </simplelist>
+      <para>
+        If we do <literal>Resolve("kernel",filter="none")</literal> we should expect:
+      </para>
+      <simplelist type="horiz" columns="1">
+        <member><literal>kernel-2.6.29.4-167 (installed)</literal></member>
+        <member><literal>kernel-2.6.29.5-191 (installed)</literal></member>
+        <member><literal>kernel-2.6.30.1-203 (fedora-updates)</literal></member>
+      </simplelist>
+      <para>
+        If we do <literal>Resolve("kernel",filter="installed")</literal> we should expect:
+      </para>
+      <simplelist type="horiz" columns="1">
+        <member><literal>kernel-2.6.29.4-167 (installed)</literal></member>
+        <member><literal>kernel-2.6.29.5-191 (installed)</literal></member>
+      </simplelist>
+      <para>
+        If we do <literal>Resolve("kernel",filter="~installed")</literal> we should expect:
+      </para>
+      <simplelist type="horiz" columns="1">
+        <member><literal>kernel-2.6.30.1-203 (fedora-updates)</literal></member>
+      </simplelist>
+      <para>
+        If we do <literal>Resolve("kernel",filter="newest;installed")</literal> we should expect:
+      </para>
+      <simplelist type="horiz" columns="1">
+        <member><literal>kernel-2.6.29.5-191 (installed)</literal></member>
+      </simplelist>
+      <para>
+        If we do <literal>Resolve("kernel",filter="newest")</literal> we should expect:
+      </para>
+      <simplelist type="horiz" columns="1">
+        <member><literal>kernel-2.6.29.5-191 (installed)</literal></member>
+        <member><literal>kernel-2.6.30.1-203 (fedora-updates)</literal></member>
+      </simplelist>
+    </sect2>
 
   </sect1>
 
