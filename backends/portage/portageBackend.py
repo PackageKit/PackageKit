@@ -53,6 +53,8 @@ from itertools import izip
 # TODO:
 # ERRORS with messages ?
 # manage slots
+# remove percentage(None) if percentage is used
+# change how newest is working ?
 
 # Map Gentoo categories to the PackageKit group name space
 CATEGORY_GROUP_MAP = {
@@ -386,7 +388,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # newest filter
         if filter_newest:
-            self.filter_newest(cpv_list, fltlist)
+            cpv_list = self.filter_newest(cpv_list, fltlist)
 
         return cpv_list
 
@@ -897,26 +899,38 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                 return
 
     def resolve(self, filters, pkgs):
-        # TODO: filters
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
 
+        fltlist = filters.split(';')
+        cp_list = self.get_all_cp(fltlist)
+        nb_cp = float(len(cp_list))
+        cp_processed = 0.0
+
+        reg_expr = []
         for pkg in pkgs:
-            # TODO: be case sensitive ?
-            searchre = re.compile(pkg, re.IGNORECASE)
+            reg_expr.append("^" + re.escape(pkg) + "$")
+        reg_expr = "|".join(reg_expr)
 
-            # TODO: optim with filter = installed
-            for cp in portage.portdb.cp_all():
-                if searchre.search(cp):
-                    #print self.vardb.dep_bestmatch(cp)
-                    self.package(portage.portdb.xmatch("bestmatch-visible", cp))
+        # specifications says "be case sensitive"
+        s = re.compile(reg_expr)
+
+        for cp in cp_list:
+            if s.match(cp):
+                for cpv in self.get_all_cpv(cp, fltlist):
+                    self.package(cpv)
+
+            cp_processed += 100.0
+            self.percentage(int(cp_processed/nb_cp))
+
+        self.percentage(100)
 
     def search_details(self, filters, keys):
         # NOTES: very bad performance
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
 
         fltlist = filters.split(';')
         cp_list = self.get_all_cp(fltlist)
