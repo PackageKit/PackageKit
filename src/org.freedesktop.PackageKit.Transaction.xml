@@ -1186,8 +1186,7 @@
             in the backend.
           </doc:para>
           <doc:para>
-            The search query in the backend should not be case sensitive, and
-            should not be sensitive to <doc:tt>_</doc:tt> or <doc:tt>-</doc:tt>.
+            The search query in the backend should not be case sensitive.
           </doc:para>
           <doc:para>
             The search methods should return all results in all repositories.
