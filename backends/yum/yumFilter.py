@@ -90,8 +90,17 @@ class YumFilter(PackagekitFilter):
             # only key on name and not arch
             inst = self._pkg_is_installed(pkg)
             key = (pkg.name, inst)
-            if key in newest and pkg <= newest[key][0]:
-                continue
+
+            # we've already come across this package
+            if key in newest:
+
+                # the current package is older (or the same) than the one we have stored
+                if pkg <= newest[key][0]:
+                    continue
+
+                # the current package is newer than what we have stored, so nuke the old package
+                del newest[key]
+
             newest[key] = (pkg, state)
         return newest.values()
 
