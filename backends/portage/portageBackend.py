@@ -256,6 +256,11 @@ def get_search_list(keys):
 
     return search_list
 
+def is_repository_enabled(layman_db, repo_name):
+    if repo_name in layman_db.overlays.keys():
+        return True
+    return False
+
 class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def __init__(self, args, lock=True):
@@ -599,16 +604,24 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(100)
 
     def get_repo_list(self, filters):
-        # TODO: filters
-        # TODO: not official
-        # TODO: not supported (via filters ?)
+        # NOTES:
+        # use layman API
+        # returns only official and supported repositories
+        # TODO: what filters are for ?
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
-        layman_db = layman.db.RemoteDB(layman.config.Config())
-        for o in layman_db.overlays.keys():
-            self.repo_detail(o, layman_db.overlays[o].description, True)
+        # get installed and available dbs
+        installed_layman_db = layman.db.DB(layman.config.Config())
+        available_layman_db = layman.db.RemoteDB(layman.config.Config())
+
+        for o in available_layman_db.overlays.keys():
+            if available_layman_db.overlays[o].is_official() \
+                    and available_layman_db.overlays[o].is_supported():
+                self.repo_detail(o,
+                        available_layman_db.overlays[o].description,
+                        is_repository_enabled(installed_layman_db, o))
 
     def get_requires(self, filters, pkgs, recursive):
         # TODO: filters
@@ -892,6 +905,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             mergetask.merge()
 
     def repo_enable(self, repoid, enable):
+        # NOTES: use layman API
+        # TODO: remove output when enable=True
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
@@ -900,42 +915,30 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         installed_layman_db = layman.db.DB(layman.config.Config())
         available_layman_db = layman.db.RemoteDB(layman.config.Config())
 
+        # check now for repoid so we don't have to do it after
+        if not repoid in available_layman_db.overlays.keys():
+            self.error(ERROR_REPO_NOT_FOUND,
+                    "Repository %s was not found" % repoid)
+            return
+
         # disabling (removing) a db
-        if not enable:
-            if not repoid in installed_layman_db.overlays.keys():
-                self.error(ERROR_REPO_NOT_FOUND, "Repository %s was not found" %repoid)
-                return
-
-            overlay = installed_layman_db.select(repoid)
-
-            if not overlay:
-                self.error(ERROR_REPO_NOT_FOUND, "Repository %s was not found" %repoid)
-                return
-
+        # if repository already disabled, ignoring
+        if not enable and is_repository_enabled(installed_layman_db, repoid):
             try:
-                installed_layman_db.delete(overlay)
+                installed_layman_db.delete(installed_layman_db.select(repoid))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR,
-                        "Failed to disable repository " + repoid + " : " + str(e))
+                        "Failed to disable repository "+repoid+" : "+str(e))
                 return
 
         # enabling (adding) a db
-        if enable:
-            if not repoid in available_layman_db.overlays.keys():
-                self.error(ERROR_REPO_NOT_FOUND, "Repository %s was not found" %repoid)
-                return
-
-            overlay = available_layman_db.select(repoid)
-
-            if not overlay:
-                self.error(ERROR_REPO_NOT_FOUND, "Repository %s was not found" %repoid)
-                return
-
+        # if repository already enabled, ignoring
+        if enable and not is_repository_enabled(installed_layman_db, repoid):
             try:
-                installed_layman_db.add(overlay, True)
+                installed_layman_db.add(available_layman_db.select(repoid))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR,
-                        "Failed to disable repository " + repoid + " : " + str(e))
+                        "Failed to enable repository "+repoid+" : "+str(e))
                 return
 
     def resolve(self, filters, pkgs):
