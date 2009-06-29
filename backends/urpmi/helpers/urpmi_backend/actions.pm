@@ -156,7 +156,7 @@ sub perform_installation {
         print "Install current mode = ", $mode, "\n";
       },
       bad_signature => sub {
-        if($options{auto_select} eq "yes") {
+        if($options{only_trusted} eq "yes") {
           pk_print_error(PK_ERROR_ENUM_GPG_FAILURE, "Bad or missing GPG signatures");
           undef $lock;
           undef $rpm_lock;
