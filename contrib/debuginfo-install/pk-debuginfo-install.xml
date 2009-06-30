@@ -107,6 +107,14 @@ manpage.1: manpage.xml
           <para>Do not scan for, or install dependencies of the core packages.</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--quiet</option>
+        </term>
+        <listitem>
+          <para>Do not display information or progress to the terminal.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>

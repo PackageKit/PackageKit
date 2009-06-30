@@ -519,6 +519,7 @@ main (int argc, char *argv[])
 	gboolean verbose = FALSE;
 	gboolean simulate = FALSE;
 	gboolean no_depends = FALSE;
+	gboolean quiet = FALSE;
 	GOptionContext *context;
 	const gchar *repo_id;
 	gchar *repo_id_debuginfo;
@@ -535,6 +536,9 @@ main (int argc, char *argv[])
 		{ "no-depends", 'n', 0, G_OPTION_ARG_NONE, &no_depends,
 		   /* command line argument, do we skip packages that depend on the ones specified */
 		  _("Do not install dependencies of the core packages"), NULL },
+		{ "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet,
+		   /* command line argument, do we operate quietly */
+		  _("Do not display information or progress"), NULL },
 		{ NULL}
 	};
 
@@ -561,10 +565,12 @@ main (int argc, char *argv[])
 
 	/* no input */
 	if (argv[1] == NULL) {
-		/* TRANSLATORS: the use needs to specify a list of package names on the command line */
-		g_print (_("ERROR: Specify package names to install."));
-		g_print ("\n");
-
+		/* should be vocal? */
+		if (!quiet) {
+			/* TRANSLATORS: the use needs to specify a list of package names on the command line */
+			g_print (_("ERROR: Specify package names to install."));
+			g_print ("\n");
+		}
 		/* return correct failure retval */
 		retval = PK_DEBUGINFO_EXIT_CODE_FAILED;
 		goto out;
@@ -590,12 +596,15 @@ main (int argc, char *argv[])
 	pk_progress_bar_set_size (priv->progress_bar, 25);
 	pk_progress_bar_set_padding (priv->progress_bar, 60);
 
-	/* starting this section */
-	g_print ("%i. ", step++);
+	/* should be vocal? */
+	if (!quiet) {
+		/* starting this section */
+		g_print ("%i. ", step++);
 
-	/* TRANSLATORS: we are getting the list of repositories */
-	g_print (_("Getting sources list"));
-	g_print ("...");
+		/* TRANSLATORS: we are getting the list of repositories */
+		g_print (_("Getting sources list"));
+		g_print ("...");
+	}
 
 	/* get all enabled repos */
 	ret = pk_client_get_repo_list (priv->client, PK_FILTER_ENUM_NONE, &error);
@@ -608,19 +617,22 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
-	/* TRANSLATORS: all completed 100% */
-	g_print ("%s ", _("OK."));
+	/* should be vocal? */
+	if (!quiet) {
+		/* TRANSLATORS: all completed 100% */
+		g_print ("%s ", _("OK."));
 
-	/* TRANSLATORS: tell the user what we found */
-	g_print (_("Found %i enabled and %i disabled sources."), priv->enabled->len, priv->disabled->len);
-	g_print ("\n");
+		/* TRANSLATORS: tell the user what we found */
+		g_print (_("Found %i enabled and %i disabled sources."), priv->enabled->len, priv->disabled->len);
+		g_print ("\n");
 
-	/* starting this section */
-	g_print ("%i. ", step++);
+		/* starting this section */
+		g_print ("%i. ", step++);
 
-	/* TRANSLATORS: we're finding repositories that match out pattern */
-	g_print (_("Finding debugging sources"));
-	g_print ("...");
+		/* TRANSLATORS: we're finding repositories that match out pattern */
+		g_print (_("Finding debugging sources"));
+		g_print ("...");
+	}
 
 	/* find all debuginfo repos for repos that are enabled */
 	for (i=0; i<priv->enabled->len; i++) {
@@ -645,26 +657,31 @@ main (int argc, char *argv[])
 		g_free (repo_id_debuginfo);
 	}
 
-	/* TRANSLATORS: all completed 100% */
-	g_print ("%s ", _("OK."));
+	/* should be vocal? */
+	if (!quiet) {
+		/* TRANSLATORS: all completed 100% */
+		g_print ("%s ", _("OK."));
 
-	/* TRANSLATORS: tell the user what we found */
-	g_print (_("Found %i disabled debuginfo repos."), added_repos->len);
-	g_print ("\n");
+		/* TRANSLATORS: tell the user what we found */
+		g_print (_("Found %i disabled debuginfo repos."), added_repos->len);
+		g_print ("\n");
 
-	/* starting this section */
-	g_print ("%i. ", step++);
+		/* starting this section */
+		g_print ("%i. ", step++);
 
-	/* TRANSLATORS: we're now enabling all the debug sources we found */
-	g_print (_("Enabling debugging sources"));
-	g_print ("...");
+		/* TRANSLATORS: we're now enabling all the debug sources we found */
+		g_print (_("Enabling debugging sources"));
+		g_print ("...");
+	}
 
 	/* enable all debuginfo repos we found */
 	ret = pk_debuginfo_install_enable_repos (priv, added_repos, TRUE, &error);
 	if (!ret) {
-		/* TRANSLATORS: operation was not successful */
-		g_print ("%s ", _("FAILED."));
-
+		/* should be vocal? */
+		if (!quiet) {
+			/* TRANSLATORS: operation was not successful */
+			g_print ("%s ", _("FAILED."));
+		}
 		/* TRANSLATORS: we're failed to enable the sources, detailed error follows */
 		g_print ("Failed to enable debugging sources: %s", error->message);
 		g_print ("\n");
@@ -675,19 +692,22 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
-	/* TRANSLATORS: all completed 100% */
-	g_print ("%s ", _("OK."));
+	/* should be vocal? */
+	if (!quiet) {
+		/* TRANSLATORS: all completed 100% */
+		g_print ("%s ", _("OK."));
 
-	/* TRANSLATORS: tell the user how many we enabled */
-	g_print (_("Enabled %i debugging sources."), added_repos->len);
-	g_print ("\n");
+		/* TRANSLATORS: tell the user how many we enabled */
+		g_print (_("Enabled %i debugging sources."), added_repos->len);
+		g_print ("\n");
 
-	/* starting this section */
-	g_print ("%i. ", step++);
+		/* starting this section */
+		g_print ("%i. ", step++);
 
-	/* TRANSLATORS: we're now finding packages that match in all the repos */
-	g_print (_("Finding debugging packages"));
-	g_print ("...");
+		/* TRANSLATORS: we're now finding packages that match in all the repos */
+		g_print (_("Finding debugging packages"));
+		g_print ("...");
+	}
 
 	/* parse arguments and resolve to packages */
 	for (i=1; argv[i] != NULL; i++) {
@@ -741,8 +761,11 @@ not_found:
 
 	/* no packages? */
 	if (package_ids_to_install->len == 0) {
-		/* TRANSLATORS: operation was not successful */
-		g_print ("%s ", _("FAILED."));
+		/* should be vocal? */
+		if (!quiet) {
+			/* TRANSLATORS: operation was not successful */
+			g_print ("%s ", _("FAILED."));
+		}
 
 		/* TRANSLATORS: no debuginfo packages could be found to be installed */
 		g_print (_("Found no packages to install."));
@@ -753,12 +776,15 @@ not_found:
 		goto out;
 	}
 
-	/* TRANSLATORS: all completed 100% */
-	g_print ("%s ", _("OK."));
+	/* should be vocal? */
+	if (!quiet) {
+		/* TRANSLATORS: all completed 100% */
+		g_print ("%s ", _("OK."));
 
-	/* TRANSLATORS: tell the user we found some packages, and then list them */
-	g_print (_("Found %i packages:"), package_ids_to_install->len);
-	g_print ("\n");
+		/* TRANSLATORS: tell the user we found some packages, and then list them */
+		g_print (_("Found %i packages:"), package_ids_to_install->len);
+		g_print ("\n");
+	}
 
 	/* optional */
 	if (!no_depends) {
@@ -766,18 +792,24 @@ not_found:
 		/* save for later logic */
 		i = package_ids_to_install->len;
 
-		/* starting this section */
-		g_print ("%i. ", step++);
+		/* should be vocal? */
+		if (!quiet) {
+			/* starting this section */
+			g_print ("%i. ", step++);
 
-		/* TRANSLATORS: tell the user we are searching for deps */
-		g_print (_("Finding packages that depend on these packages"));
-		g_print ("...");
+			/* TRANSLATORS: tell the user we are searching for deps */
+			g_print (_("Finding packages that depend on these packages"));
+			g_print ("...");
+		}
 
 		ret = pk_debuginfo_install_add_deps (priv, package_ids_recognised, package_ids_to_install, &error);
 		if (!ret) {
-			/* TRANSLATORS: operation was not successful */
-			g_print ("%s ", _("FAILED."));
 
+			/* should be vocal? */
+			if (!quiet) {
+				/* TRANSLATORS: operation was not successful */
+				g_print ("%s ", _("FAILED."));
+			}
 			/* TRANSLATORS: could not install, detailed error follows */
 			g_print (_("Could not find dependant packages: %s"), error->message);
 			g_print ("\n");
@@ -788,48 +820,63 @@ not_found:
 			goto out;
 		}
 
-		/* TRANSLATORS: all completed 100% */
-		g_print ("%s ", _("OK."));
+		/* should be vocal? */
+		if (!quiet) {
+			/* TRANSLATORS: all completed 100% */
+			g_print ("%s ", _("OK."));
 
-		if (i < package_ids_to_install->len) {
-			/* TRANSLATORS: tell the user we found some more packages */
-			g_print (_("Found %i extra packages."), package_ids_to_install->len - i);
-			g_print ("\n");
-		} else {
-			/* TRANSLATORS: tell the user we found some more packages */
-			g_print (_("No extra packages required."));
-			g_print ("\n");
+			if (i < package_ids_to_install->len) {
+				/* TRANSLATORS: tell the user we found some more packages */
+				g_print (_("Found %i extra packages."), package_ids_to_install->len - i);
+				g_print ("\n");
+			} else {
+				/* TRANSLATORS: tell the user we found some more packages */
+				g_print (_("No extra packages required."));
+				g_print ("\n");
+			}
 		}
 	}
 
-	/* TRANSLATORS: tell the user we found some packages (and deps), and then list them */
-	g_print (_("Found %i packages to install:"), package_ids_to_install->len);
-	g_print ("\n");
+	/* should be vocal? */
+	if (!quiet) {
+		/* TRANSLATORS: tell the user we found some packages (and deps), and then list them */
+		g_print (_("Found %i packages to install:"), package_ids_to_install->len);
+		g_print ("\n");
+	}
 
 	/* print list */
-	pk_debuginfo_install_print_array (package_ids_to_install);
+	if (!quiet)
+		pk_debuginfo_install_print_array (package_ids_to_install);
 
 	/* simulate mode for testing */
 	if (simulate) {
-		/* TRANSLATORS: simulate mode is a testing mode where we quit before the action */
-		g_print (_("Not installing packages in simulate mode"));
-		g_print ("\n");
+		/* should be vocal? */
+		if (!quiet) {
+			/* TRANSLATORS: simulate mode is a testing mode where we quit before the action */
+			g_print (_("Not installing packages in simulate mode"));
+			g_print ("\n");
+		}
 		goto out;
 	}
 
-	/* starting this section */
-	g_print ("%i. ", step++);
+	/* should be vocal? */
+	if (!quiet) {
+		/* starting this section */
+		g_print ("%i. ", step++);
 
-	/* TRANSLATORS: we are now installing the debuginfo packages we found earlier */
-	g_print (_("Installing packages"));
-	g_print ("...\n");
+		/* TRANSLATORS: we are now installing the debuginfo packages we found earlier */
+		g_print (_("Installing packages"));
+		g_print ("...\n");
+	}
 
 	/* install */
 	ret = pk_debuginfo_install_packages_install (priv, package_ids_to_install, &error);
 	if (!ret) {
-		/* TRANSLATORS: operation was not successful */
-		g_print ("%s ", _("FAILED."));
-
+		/* should be vocal? */
+		if (!quiet) {
+			/* TRANSLATORS: operation was not successful */
+			g_print ("%s ", _("FAILED."));
+		}
 		/* TRANSLATORS: coul dnot install, detailed error follows */
 		g_print (_("Could not install packages: %s"), error->message);
 		g_print ("\n");
@@ -840,9 +887,12 @@ not_found:
 		goto out;
 	}
 
-	/* TRANSLATORS: all completed 100% */
-	g_print (_("OK."));
-	g_print ("\n");
+	/* should be vocal? */
+	if (!quiet) {
+		/* TRANSLATORS: all completed 100% */
+		g_print (_("OK."));
+		g_print ("\n");
+	}
 out:
 	if (package_ids_to_install != NULL) {
 		g_ptr_array_foreach (package_ids_to_install, (GFunc) g_free, NULL);
@@ -854,19 +904,23 @@ out:
 	}
 	if (added_repos != NULL) {
 
-		/* starting this section */
-		g_print ("%i. ", step++);
+		/* should be vocal? */
+		if (!quiet) {
+			/* starting this section */
+			g_print ("%i. ", step++);
 
-		/* TRANSLATORS: we are now disabling all debuginfo repos we previously enabled */
-		g_print (_("Disabling sources previously enabled"));
-		g_print ("...");
-
+			/* TRANSLATORS: we are now disabling all debuginfo repos we previously enabled */
+			g_print (_("Disabling sources previously enabled"));
+			g_print ("...");
+		}
 		/* disable all debuginfo repos we previously enabled */
 		ret = pk_debuginfo_install_enable_repos (priv, added_repos, FALSE, &error);
 		if (!ret) {
-			/* TRANSLATORS: operation was not successful */
-			g_print ("%s ", _("FAILED."));
-
+			/* should be vocal? */
+			if (!quiet) {
+				/* TRANSLATORS: operation was not successful */
+				g_print ("%s ", _("FAILED."));
+			}
 			/* TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows */
 			g_print (_("Could not disable the debugging sources: %s"), error->message);
 			g_print ("\n");
@@ -877,12 +931,15 @@ out:
 
 		} else {
 
-			/* TRANSLATORS: all completed 100% */
-			g_print ("%s ", _("OK."));
+			/* should be vocal? */
+			if (!quiet) {
+				/* TRANSLATORS: all completed 100% */
+				g_print ("%s ", _("OK."));
 
-			/* TRANSLATORS: we disabled all the debugging repos that we enabled before */
-			g_print (_("Disabled %i debugging sources."), added_repos->len);
-			g_print ("\n");
+				/* TRANSLATORS: we disabled all the debugging repos that we enabled before */
+				g_print (_("Disabled %i debugging sources."), added_repos->len);
+				g_print ("\n");
+			}
 		}
 
 		g_ptr_array_foreach (added_repos, (GFunc) g_free, NULL);
