@@ -248,6 +248,7 @@ pk_task_list_item_create (PkTaskList *tlist, const gchar *tid)
 		pk_task_list_item_free (item);
 		return NULL;
 	}
+	pk_client_set_use_buffer (item->monitor, TRUE, NULL);
 	pk_client_get_role (item->monitor, &item->role, &item->text, NULL);
 	pk_client_get_status (item->monitor, &item->status, NULL);
 

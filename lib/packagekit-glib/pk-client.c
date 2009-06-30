@@ -57,6 +57,7 @@
 #include <packagekit-glib/pk-transaction-obj.h>
 #include <packagekit-glib/pk-category-obj.h>
 #include <packagekit-glib/pk-distro-upgrade-obj.h>
+#include <packagekit-glib/pk-require-restart-obj.h>
 #include <packagekit-glib/pk-obj-list.h>
 
 #include "egg-debug.h"
@@ -82,12 +83,14 @@ struct _PkClientPrivate
 	gboolean		 synchronous;
 	gchar			*tid;
 	PkControl		*control;
-	PkObjList		*cached_data;
+	PkObjList		*category_list;
+	PkObjList		*distro_upgrade_list;
+	PkObjList		*transaction_list;
+	PkObjList		*require_restart_list;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
 	gulong			 pconnection_signal_id;
 	PkRestartEnum		 require_restart;
-	GPtrArray		*require_restart_list;
 	PkStatusEnum		 last_status;
 	PkRoleEnum		 role;
 	gboolean		 cached_force;
@@ -406,14 +409,16 @@ pk_client_get_require_restart (PkClient *client)
  * This method allows a client program to discover what packages
  * caused different require restarts.
  *
- * Return value: a #PkRestartEnum value, e.g. PK_RESTART_ENUM_SYSTEM
+ * Return value: a #PkObjList list of #PkRequireRestartObj's or %NULL if not found or invalid
  **/
-const GPtrArray	*
+PkObjList *
 pk_client_get_require_restart_list (PkClient *client)
 {
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	return client->priv->require_restart_list;
+	if (!client->priv->use_buffer)
+		return NULL;
+	return g_object_ref (client->priv->require_restart_list);
 }
 
 /**
@@ -435,20 +440,54 @@ pk_client_get_package_list (PkClient *client)
 }
 
 /**
- * pk_client_get_cached_objects:
+ * pk_client_get_category_list:
  * @client: a valid #PkClient instance
  *
- * Return the cached object list
+ * Return the cached category list
  *
- * Return value: The #GPtrArray of cached objects or %NULL if invalid
+ * Return value: The #PkObjList of #PkCategoryObj's or %NULL if invalid
  **/
 PkObjList *
-pk_client_get_cached_objects (PkClient *client)
+pk_client_get_category_list (PkClient *client)
 {
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	if (!client->priv->use_buffer)
 		return NULL;
-	return g_object_ref (client->priv->cached_data);
+	return g_object_ref (client->priv->category_list);
+}
+
+/**
+ * pk_client_get_distro_upgrade_list:
+ * @client: a valid #PkClient instance
+ *
+ * Return the cached distro upgrades list
+ *
+ * Return value: The #PkObjList of #PkDistroUpgradeObj's or %NULL if invalid
+ **/
+PkObjList *
+pk_client_get_distro_upgrade_list (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	if (!client->priv->use_buffer)
+		return NULL;
+	return g_object_ref (client->priv->distro_upgrade_list);
+}
+
+/**
+ * pk_client_get_transaction_list:
+ * @client: a valid #PkClient instance
+ *
+ * Return the cached transactions list
+ *
+ * Return value: The #PkObjList of cached objects or %NULL if invalid
+ **/
+PkObjList *
+pk_client_get_transaction_list (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	if (!client->priv->use_buffer)
+		return NULL;
+	return g_object_ref (client->priv->transaction_list);
 }
 
 /**
@@ -607,7 +646,7 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_obj_list_add (client->priv->cached_data, obj);
+		pk_obj_list_add (client->priv->transaction_list, obj);
 
 	pk_transaction_obj_free (obj);
 }
@@ -630,7 +669,7 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_obj_list_add (client->priv->cached_data, obj);
+		pk_obj_list_add (client->priv->distro_upgrade_list, obj);
 
 	pk_distro_upgrade_obj_free (obj);
 }
@@ -671,10 +710,6 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 						     issued, updated);
 	g_signal_emit (client, signals [PK_CLIENT_UPDATE_DETAIL], 0, detail);
 
-	/* cache */
-	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_obj_list_add (client->priv->cached_data, detail);
-
 	if (issued != NULL)
 		g_date_free (issued);
 	if (updated != NULL)
@@ -701,7 +736,7 @@ pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_obj_list_add (client->priv->cached_data, category);
+		pk_obj_list_add (client->priv->category_list, category);
 
 	pk_category_obj_free (category);
 }
@@ -728,10 +763,6 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 
 	details = pk_details_obj_new_from_data (id, license, group, description, url, size);
 	g_signal_emit (client, signals [PK_CLIENT_DETAILS], 0, details);
-
-	/* cache */
-	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_obj_list_add (client->priv->cached_data, details);
 
 	pk_package_id_free (id);
 	pk_details_obj_free (details);
@@ -950,20 +981,25 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 {
 	PkRestartEnum restart;
 	PkPackageId *id;
+	PkRequireRestartObj *obj;
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	restart = pk_restart_enum_from_text (restart_text);
 	id = pk_package_id_new_from_string (package_id);
+	obj = pk_require_restart_obj_new_from_data (restart, id);
 
-	/* save this in the array (is freed from array) */
-	g_ptr_array_add (client->priv->require_restart_list, id);
+	/* cache */
+	if (client->priv->use_buffer || client->priv->synchronous)
+		pk_obj_list_add (client->priv->require_restart_list, obj);
 
 	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
-	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, id);
+	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, obj);
 	if (restart > client->priv->require_restart) {
 		client->priv->require_restart = restart;
 		egg_debug ("restart status now %s", pk_restart_enum_to_text (restart));
 	}
+	pk_package_id_free (id);
+	pk_require_restart_obj_free (obj);
 }
 
 /**
@@ -1447,10 +1483,6 @@ pk_client_get_categories (PkClient *client, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_CATEGORIES;
-
-	/* we use the cached objects support */
-	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_category_obj_copy);
-	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_category_obj_free);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2418,10 +2450,6 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
 	client->priv->cached_package_ids = g_strdupv (package_ids);
 
-	/* we use the cached objects support */
-	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_update_detail_obj_copy);
-	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_update_detail_obj_free);
-
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
@@ -2660,10 +2688,6 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 	if (!ret)
 		goto out;
 
-	/* we use the cached objects support */
-	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_details_obj_copy);
-	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_details_obj_free);
-
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DETAILS;
 	client->priv->cached_package_ids = g_strdupv (package_ids);
@@ -2739,10 +2763,6 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
-
-	/* we use the cached objects support */
-	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_distro_upgrade_obj_copy);
-	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_distro_upgrade_obj_free);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -3802,10 +3822,6 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 	if (!ret)
 		goto out;
 
-	/* we use the cached objects support */
-	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_transaction_obj_copy);
-	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_transaction_obj_free);
-
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
@@ -3886,7 +3902,9 @@ pk_client_requeue (PkClient *client, GError **error)
 
 	/* clear package list */
 	pk_obj_list_clear (PK_OBJ_LIST(client->priv->package_list));
-	pk_obj_list_clear (client->priv->cached_data);
+	pk_obj_list_clear (client->priv->category_list);
+	pk_obj_list_clear (client->priv->distro_upgrade_list);
+	pk_obj_list_clear (client->priv->transaction_list);
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS)
@@ -4119,7 +4137,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::package:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkPackageObj structure describing the package
+	 * @obj: a pointer to a #PkPackageObj structure describing the package
 	 *
 	 * The ::package signal is emitted when the update list may have
 	 * changed and the client program may have to update some UI.
@@ -4133,7 +4151,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::transaction:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkTransactionObj structure describing the transaction
+	 * @obj: a pointer to a #PkTransactionObj structure describing the transaction
 	 *
 	 * The ::transaction is emitted when the method GetOldTransactions() is
 	 * called, and the values are being replayed from a database.
@@ -4147,7 +4165,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::distro_upgrade:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkDistroUpgradeObj structure describing the upgrade
+	 * @obj: a pointer to a #PkDistroUpgradeObj structure describing the upgrade
 	 *
 	 * The ::distro_upgrade signal is emitted when the method GetDistroUpgrades() is
 	 * called, and the upgrade options are being sent.
@@ -4161,7 +4179,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::update-detail:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkUpdateDetailsObj structure describing the update
+	 * @obj: a pointer to a #PkUpdateDetailsObj structure describing the update
 	 *
 	 * The ::update-detail signal is emitted when GetUpdateDetail() is
 	 * called on a set of package_id's.
@@ -4175,7 +4193,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::details:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkDetailObj structure describing the package in detail
+	 * @obj: a pointer to a #PkDetailObj structure describing the package in detail
 	 *
 	 * The ::details signal is emitted when GetDetails() is called.
 	 **/
@@ -4292,8 +4310,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::require-restart:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @restart: the PkRestartEnum type of restart, e.g. PK_RESTART_ENUM_SYSTEM
-	 * @details: the optional details about the restart, why this is needed
+	 * @obj: a pointer to a #PkRequireRestartObj structure describing the restart request in detail
 	 *
 	 * The ::require-restart signal is emitted when the transaction
 	 * requires a application or session restart.
@@ -4302,8 +4319,8 @@ pk_client_class_init (PkClientClass *klass)
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, require_restart),
-			      NULL, NULL, g_cclosure_marshal_VOID__UINT_POINTER,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_POINTER);
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	/**
 	 * PkClient::message:
 	 * @client: the #PkClient instance that emitted the signal
@@ -4353,7 +4370,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::category:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkCategoryObj structure describing the category
+	 * @obj: a pointer to a #PkCategoryObj structure describing the category
 	 *
 	 * The ::category signal is emitted when GetCategories() is called.
 	 **/
@@ -4519,10 +4536,6 @@ pk_client_reset (PkClient *client, GError **error)
 	g_object_unref (client->priv->package_list);
 	g_clear_error (&client->priv->error);
 
-	/* clear restart array */
-	g_ptr_array_foreach (client->priv->require_restart_list, (GFunc) pk_package_id_free, NULL);
-	g_ptr_array_set_size (client->priv->require_restart_list, 0);
-
 	/* we need to do this now we have multiple paths */
 	pk_client_disconnect_proxy (client);
 
@@ -4543,7 +4556,10 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->package_list = pk_package_list_new ();
 
 	/* TODO: make clean */
-	pk_obj_list_clear (client->priv->cached_data);
+	pk_obj_list_clear (client->priv->category_list);
+	pk_obj_list_clear (client->priv->distro_upgrade_list);
+	pk_obj_list_clear (client->priv->transaction_list);
+	pk_obj_list_clear (client->priv->require_restart_list);
 	ret = TRUE;
 out:
 	return ret;
@@ -4568,8 +4584,6 @@ pk_client_init (PkClient *client)
 	client->priv->is_finished = FALSE;
 	client->priv->is_finishing = FALSE;
 	client->priv->package_list = pk_package_list_new ();
-	client->priv->require_restart_list = g_ptr_array_new ();
-	client->priv->cached_data = pk_obj_list_new ();
 	client->priv->cached_package_id = NULL;
 	client->priv->cached_package_ids = NULL;
 	client->priv->cached_transaction_id = NULL;
@@ -4584,6 +4598,26 @@ pk_client_init (PkClient *client)
 	client->priv->timeout = -1;
 	client->priv->timeout_id = 0;
 	client->priv->error = NULL;
+
+	/* cache require restart objects */
+	client->priv->require_restart_list = pk_obj_list_new ();
+	pk_obj_list_set_copy (client->priv->require_restart_list, (PkObjListCopyFunc) pk_require_restart_obj_copy);
+	pk_obj_list_set_free (client->priv->require_restart_list, (PkObjListFreeFunc) pk_require_restart_obj_free);
+
+	/* cache category objects */
+	client->priv->category_list = pk_obj_list_new ();
+	pk_obj_list_set_copy (client->priv->category_list, (PkObjListCopyFunc) pk_category_obj_copy);
+	pk_obj_list_set_free (client->priv->category_list, (PkObjListFreeFunc) pk_category_obj_free);
+
+	/* cache distro upgrade objects */
+	client->priv->distro_upgrade_list = pk_obj_list_new ();
+	pk_obj_list_set_copy (client->priv->distro_upgrade_list, (PkObjListCopyFunc) pk_distro_upgrade_obj_copy);
+	pk_obj_list_set_free (client->priv->distro_upgrade_list, (PkObjListFreeFunc) pk_distro_upgrade_obj_free);
+
+	/* cache transaction objects */
+	client->priv->transaction_list = pk_obj_list_new ();
+	pk_obj_list_set_copy (client->priv->transaction_list, (PkObjListCopyFunc) pk_transaction_obj_copy);
+	pk_obj_list_set_free (client->priv->transaction_list, (PkObjListFreeFunc) pk_transaction_obj_free);
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -4706,10 +4740,6 @@ pk_client_finalize (GObject *object)
 	if (client->priv->error)
 		g_error_free (client->priv->error);
 
-	/* clear restart array */
-	g_ptr_array_foreach (client->priv->require_restart_list, (GFunc) pk_package_id_free, NULL);
-	g_ptr_array_free (client->priv->require_restart_list, TRUE);
-
 	/* clear the loop, if we were using it */
 	if (client->priv->synchronous)
 		g_main_loop_quit (client->priv->loop);
@@ -4724,7 +4754,10 @@ pk_client_finalize (GObject *object)
 	pk_client_disconnect_proxy (client);
 	g_object_unref (client->priv->pconnection);
 	g_object_unref (client->priv->package_list);
-	g_object_unref (client->priv->cached_data);
+	g_object_unref (client->priv->category_list);
+	g_object_unref (client->priv->distro_upgrade_list);
+	g_object_unref (client->priv->transaction_list);
+	g_object_unref (client->priv->require_restart_list);
 	g_object_unref (client->priv->control);
 
 	G_OBJECT_CLASS (pk_client_parent_class)->finalize (object);
