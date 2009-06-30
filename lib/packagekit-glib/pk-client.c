@@ -82,7 +82,9 @@ struct _PkClientPrivate
 	gboolean		 synchronous;
 	gchar			*tid;
 	PkControl		*control;
-	PkObjList		*cached_data;
+	PkObjList		*category_list;
+	PkObjList		*distro_upgrade_list;
+	PkObjList		*transaction_list;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
 	gulong			 pconnection_signal_id;
@@ -435,20 +437,54 @@ pk_client_get_package_list (PkClient *client)
 }
 
 /**
- * pk_client_get_cached_objects:
+ * pk_client_get_category_list:
  * @client: a valid #PkClient instance
  *
- * Return the cached object list
+ * Return the cached category list
  *
- * Return value: The #GPtrArray of cached objects or %NULL if invalid
+ * Return value: The #PkObjList of cached objects or %NULL if invalid
  **/
 PkObjList *
-pk_client_get_cached_objects (PkClient *client)
+pk_client_get_category_list (PkClient *client)
 {
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	if (!client->priv->use_buffer)
 		return NULL;
-	return g_object_ref (client->priv->cached_data);
+	return g_object_ref (client->priv->category_list);
+}
+
+/**
+ * pk_client_get_distro_upgrade_list:
+ * @client: a valid #PkClient instance
+ *
+ * Return the cached distro upgrades list
+ *
+ * Return value: The #PkObjList of cached objects or %NULL if invalid
+ **/
+PkObjList *
+pk_client_get_distro_upgrade_list (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	if (!client->priv->use_buffer)
+		return NULL;
+	return g_object_ref (client->priv->distro_upgrade_list);
+}
+
+/**
+ * pk_client_get_transaction_list:
+ * @client: a valid #PkClient instance
+ *
+ * Return the cached transactions list
+ *
+ * Return value: The #PkObjList of cached objects or %NULL if invalid
+ **/
+PkObjList *
+pk_client_get_transaction_list (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	if (!client->priv->use_buffer)
+		return NULL;
+	return g_object_ref (client->priv->transaction_list);
 }
 
 /**
@@ -607,7 +643,7 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_obj_list_add (client->priv->cached_data, obj);
+		pk_obj_list_add (client->priv->transaction_list, obj);
 
 	pk_transaction_obj_free (obj);
 }
@@ -630,7 +666,7 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_obj_list_add (client->priv->cached_data, obj);
+		pk_obj_list_add (client->priv->distro_upgrade_list, obj);
 
 	pk_distro_upgrade_obj_free (obj);
 }
@@ -671,10 +707,6 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 						     issued, updated);
 	g_signal_emit (client, signals [PK_CLIENT_UPDATE_DETAIL], 0, detail);
 
-	/* cache */
-	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_obj_list_add (client->priv->cached_data, detail);
-
 	if (issued != NULL)
 		g_date_free (issued);
 	if (updated != NULL)
@@ -701,7 +733,7 @@ pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_obj_list_add (client->priv->cached_data, category);
+		pk_obj_list_add (client->priv->category_list, category);
 
 	pk_category_obj_free (category);
 }
@@ -728,10 +760,6 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 
 	details = pk_details_obj_new_from_data (id, license, group, description, url, size);
 	g_signal_emit (client, signals [PK_CLIENT_DETAILS], 0, details);
-
-	/* cache */
-	if (client->priv->use_buffer || client->priv->synchronous)
-		pk_obj_list_add (client->priv->cached_data, details);
 
 	pk_package_id_free (id);
 	pk_details_obj_free (details);
@@ -1449,8 +1477,8 @@ pk_client_get_categories (PkClient *client, GError **error)
 	client->priv->role = PK_ROLE_ENUM_GET_CATEGORIES;
 
 	/* we use the cached objects support */
-	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_category_obj_copy);
-	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_category_obj_free);
+	pk_obj_list_set_copy (client->priv->category_list, (PkObjListCopyFunc) pk_category_obj_copy);
+	pk_obj_list_set_free (client->priv->category_list, (PkObjListFreeFunc) pk_category_obj_free);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -2418,10 +2446,6 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GError **err
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
 	client->priv->cached_package_ids = g_strdupv (package_ids);
 
-	/* we use the cached objects support */
-	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_update_detail_obj_copy);
-	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_update_detail_obj_free);
-
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		if (error != NULL)
@@ -2660,10 +2684,6 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GError **error)
 	if (!ret)
 		goto out;
 
-	/* we use the cached objects support */
-	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_details_obj_copy);
-	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_details_obj_free);
-
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DETAILS;
 	client->priv->cached_package_ids = g_strdupv (package_ids);
@@ -2741,8 +2761,8 @@ pk_client_get_distro_upgrades (PkClient *client, GError **error)
 	client->priv->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
 
 	/* we use the cached objects support */
-	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_distro_upgrade_obj_copy);
-	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_distro_upgrade_obj_free);
+	pk_obj_list_set_copy (client->priv->distro_upgrade_list, (PkObjListCopyFunc) pk_distro_upgrade_obj_copy);
+	pk_obj_list_set_free (client->priv->distro_upgrade_list, (PkObjListFreeFunc) pk_distro_upgrade_obj_free);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -3803,8 +3823,8 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 		goto out;
 
 	/* we use the cached objects support */
-	pk_obj_list_set_copy (client->priv->cached_data, (PkObjListCopyFunc) pk_transaction_obj_copy);
-	pk_obj_list_set_free (client->priv->cached_data, (PkObjListFreeFunc) pk_transaction_obj_free);
+	pk_obj_list_set_copy (client->priv->transaction_list, (PkObjListCopyFunc) pk_transaction_obj_copy);
+	pk_obj_list_set_free (client->priv->transaction_list, (PkObjListFreeFunc) pk_transaction_obj_free);
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
@@ -3886,7 +3906,9 @@ pk_client_requeue (PkClient *client, GError **error)
 
 	/* clear package list */
 	pk_obj_list_clear (PK_OBJ_LIST(client->priv->package_list));
-	pk_obj_list_clear (client->priv->cached_data);
+	pk_obj_list_clear (client->priv->category_list);
+	pk_obj_list_clear (client->priv->distro_upgrade_list);
+	pk_obj_list_clear (client->priv->transaction_list);
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS)
@@ -4543,7 +4565,9 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->package_list = pk_package_list_new ();
 
 	/* TODO: make clean */
-	pk_obj_list_clear (client->priv->cached_data);
+	pk_obj_list_clear (client->priv->category_list);
+	pk_obj_list_clear (client->priv->distro_upgrade_list);
+	pk_obj_list_clear (client->priv->transaction_list);
 	ret = TRUE;
 out:
 	return ret;
@@ -4569,7 +4593,9 @@ pk_client_init (PkClient *client)
 	client->priv->is_finishing = FALSE;
 	client->priv->package_list = pk_package_list_new ();
 	client->priv->require_restart_list = g_ptr_array_new ();
-	client->priv->cached_data = pk_obj_list_new ();
+	client->priv->category_list = pk_obj_list_new ();
+	client->priv->distro_upgrade_list = pk_obj_list_new ();
+	client->priv->transaction_list = pk_obj_list_new ();
 	client->priv->cached_package_id = NULL;
 	client->priv->cached_package_ids = NULL;
 	client->priv->cached_transaction_id = NULL;
@@ -4724,7 +4750,9 @@ pk_client_finalize (GObject *object)
 	pk_client_disconnect_proxy (client);
 	g_object_unref (client->priv->pconnection);
 	g_object_unref (client->priv->package_list);
-	g_object_unref (client->priv->cached_data);
+	g_object_unref (client->priv->category_list);
+	g_object_unref (client->priv->distro_upgrade_list);
+	g_object_unref (client->priv->transaction_list);
 	g_object_unref (client->priv->control);
 
 	G_OBJECT_CLASS (pk_client_parent_class)->finalize (object);

@@ -354,7 +354,9 @@ gboolean	 pk_client_repo_set_data		(PkClient	*client,
 PkPackageList	*pk_client_get_package_list		(PkClient	*client);
 PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
 const GPtrArray	*pk_client_get_require_restart_list	(PkClient	*client);
-PkObjList	*pk_client_get_cached_objects		(PkClient	*client);
+PkObjList	*pk_client_get_category_list		(PkClient	*client);
+PkObjList	*pk_client_get_distro_upgrade_list	(PkClient	*client);
+PkObjList	*pk_client_get_transaction_list	(PkClient	*client);
 
 /* not job specific */
 gboolean	 pk_client_reset			(PkClient	*client,
