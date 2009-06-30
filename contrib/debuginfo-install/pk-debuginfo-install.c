@@ -28,6 +28,8 @@
 #include <glib/gi18n.h>
 #include <packagekit-glib/packagekit.h>
 
+#include "pk-progress-bar.h"
+
 #include "egg-debug.h"
 
 /* Reserved exit codes:
@@ -49,9 +51,10 @@
 #define PK_DEBUGINFO_EXIT_CODE_FAILED_TO_DISABLE		8
 
 typedef struct {
-	GPtrArray *enabled;
-	GPtrArray *disabled;
-	PkClient *client;
+	GPtrArray		*enabled;
+	GPtrArray		*disabled;
+	PkClient		*client;
+	PkProgressBar		*progress_bar;
 } PkDebuginfoInstallPrivate;
 
 /**
@@ -179,6 +182,9 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 		goto out;
 	}
 
+	/* TRANSLATORS: we are starting to install the packages */
+	pk_progress_bar_start (priv->progress_bar, _("Starting install"));
+
 	/* enable this repo */
 	ret = pk_client_install_packages (priv->client, TRUE, package_ids, &error_local);
 	if (!ret) {
@@ -186,6 +192,9 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 		g_error_free (error_local);
 		goto out;
 	}
+
+	/* end progressbar output */
+	pk_progress_bar_end (priv->progress_bar);
 out:
 	g_strfreev (package_ids);
 	return ret;
@@ -406,12 +415,89 @@ pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subper
 		goto out;
 	}
 
-	if (percentage != PK_CLIENT_PERCENTAGE_INVALID)
-		g_print ("%s: %i%%\n", _("Percentage"), percentage);
-	else
-		g_print ("%s: %s\n", _("Percentage"), _("Unknown"));
+	pk_progress_bar_set_percentage (priv->progress_bar, percentage);
+	pk_progress_bar_set_value (priv->progress_bar, subpercentage);
 out:
 	return;
+}
+
+/**
+ * pk_strpad:
+ * @data: the input string
+ * @length: the desired length of the output string, with padding
+ *
+ * Returns the text padded to a length with spaces. If the string is
+ * longer than length then a longer string is returned.
+ *
+ * Return value: The padded string
+ **/
+static gchar *
+pk_strpad (const gchar *data, guint length)
+{
+	gint size;
+	guint data_len;
+	gchar *text;
+	gchar *padding;
+
+	if (data == NULL)
+		return g_strnfill (length, ' ');
+
+	/* ITS4: ignore, only used for formatting */
+	data_len = strlen (data);
+
+	/* calculate */
+	size = (length - data_len);
+	if (size <= 0)
+		return g_strdup (data);
+
+	padding = g_strnfill (size, ' ');
+	text = g_strdup_printf ("%s%s", data, padding);
+	g_free (padding);
+	return text;
+}
+
+/**
+ * pk_console_package_cb:
+ **/
+static void
+pk_console_package_cb (PkClient *client, const PkPackageObj *obj, PkDebuginfoInstallPrivate *priv)
+{
+	PkRoleEnum role;
+	gchar *package = NULL;
+	gchar *info_pad = NULL;
+	gchar *text = NULL;
+
+	/* get role */
+	pk_client_get_role (client, &role, NULL, NULL);
+
+	/* ignore some */
+	if (obj->info == PK_INFO_ENUM_FINISHED)
+		goto out;
+	if (role != PK_ROLE_ENUM_INSTALL_PACKAGES)
+		goto out;
+
+	/* make these all the same length */
+	info_pad = pk_strpad (pk_info_enum_to_text (obj->info), 12);
+
+	/* don't pretty print if not on console */
+	if (FALSE) {
+		g_print ("%s %s-%s.%s\n", info_pad, obj->id->name, obj->id->version, obj->id->arch);
+		goto out;
+	}
+
+	/* pad the name-version */
+	if (obj->id->version == NULL ||
+	    obj->id->version[0] == '\0')
+		package = g_strdup (obj->id->name);
+	else
+		package = g_strdup_printf ("%s-%s", obj->id->name, obj->id->version);
+	text = g_strdup_printf ("%s\t%s", info_pad, package);
+	pk_progress_bar_start (priv->progress_bar, text);
+
+out:
+	g_free (text);
+	g_free (package);
+	g_free (info_pad);
 }
 
 /**
@@ -426,8 +512,7 @@ main (int argc, char *argv[])
 	GPtrArray *package_ids_recognised = NULL;
 	GPtrArray *package_ids_to_install = NULL;
 	guint i;
-	guint /* return correct failure retval */
-		retval = 0;
+	guint retval = 0;
 	gchar *package_id;
 	gchar *name;
 	gchar *name_debuginfo;
@@ -496,8 +581,14 @@ main (int argc, char *argv[])
 	priv->client = pk_client_new ();
 	g_signal_connect (priv->client, "repo-detail", G_CALLBACK (pk_debuginfo_install_repo_details_cb), priv);
 	g_signal_connect (priv->client, "progress-changed", G_CALLBACK (pk_console_progress_changed_cb), priv);
+	g_signal_connect (priv->client, "package", G_CALLBACK (pk_console_package_cb), priv);
 	pk_client_set_synchronous (priv->client, TRUE, NULL);
 	pk_client_set_use_buffer (priv->client, TRUE, NULL);
+
+	/* use text progressbar */
+	priv->progress_bar = pk_progress_bar_new ();
+	pk_progress_bar_set_size (priv->progress_bar, 25);
+	pk_progress_bar_set_padding (priv->progress_bar, 60);
 
 	/* starting this section */
 	g_print ("%i. ", step++);
@@ -731,7 +822,7 @@ not_found:
 
 	/* TRANSLATORS: we are now installing the debuginfo packages we found earlier */
 	g_print (_("Installing packages"));
-	g_print ("...");
+	g_print ("...\n");
 
 	/* install */
 	ret = pk_debuginfo_install_packages_install (priv, package_ids_to_install, &error);
@@ -807,6 +898,8 @@ out:
 	}
 	if (priv->client != NULL)
 		g_object_unref (priv->client);
+	if (priv->progress_bar != NULL)
+		g_object_unref (priv->progress_bar);
 	return retval;
 }
 

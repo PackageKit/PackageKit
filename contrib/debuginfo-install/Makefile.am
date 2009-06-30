@@ -36,6 +36,8 @@ pk_debuginfo_install_SOURCES =				\
 	egg-debug.c					\
 	egg-debug.h					\
 	pk-debuginfo-install.c				\
+	pk-progress-bar.c				\
+	pk-progress-bar.h				\
 	$(NULL)
 
 pk_debuginfo_install_LDADD =				\
