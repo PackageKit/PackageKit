@@ -39,6 +39,7 @@ libpackagekit_glib_include_HEADERS =				\
 	pk-package-id.h						\
 	pk-package-ids.h					\
 	pk-package-obj.h					\
+	pk-require-restart-obj.h				\
 	pk-obj-list.h						\
 	pk-package-list.h					\
 	pk-category-obj.h					\
@@ -87,6 +88,8 @@ libpackagekit_glib_la_SOURCES =					\
 	pk-update-detail-obj.h					\
 	pk-distro-upgrade-obj.c					\
 	pk-distro-upgrade-obj.h					\
+	pk-require-restart-obj.c				\
+	pk-require-restart-obj.h				\
 	pk-details-obj.c					\
 	pk-details-obj.h					\
 	pk-transaction-obj.c					\
