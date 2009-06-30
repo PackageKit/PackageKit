@@ -57,6 +57,7 @@
 #include <packagekit-glib/pk-transaction-obj.h>
 #include <packagekit-glib/pk-category-obj.h>
 #include <packagekit-glib/pk-distro-upgrade-obj.h>
+#include <packagekit-glib/pk-require-restart-obj.h>
 #include <packagekit-glib/pk-obj-list.h>
 
 #include "egg-debug.h"
@@ -978,20 +979,24 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 {
 	PkRestartEnum restart;
 	PkPackageId *id;
+	PkRequireRestartObj *obj;
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	restart = pk_restart_enum_from_text (restart_text);
 	id = pk_package_id_new_from_string (package_id);
+	obj = pk_require_restart_obj_new_from_data (restart, id);
 
 	/* save this in the array (is freed from array) */
 	g_ptr_array_add (client->priv->require_restart_list, id);
 
 	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
-	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, id);
+	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, obj);
 	if (restart > client->priv->require_restart) {
 		client->priv->require_restart = restart;
 		egg_debug ("restart status now %s", pk_restart_enum_to_text (restart));
 	}
+	pk_package_id_free (id);
+	pk_require_restart_obj_free (obj);
 }
 
 /**
@@ -4141,7 +4146,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::package:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkPackageObj structure describing the package
+	 * @obj: a pointer to a #PkPackageObj structure describing the package
 	 *
 	 * The ::package signal is emitted when the update list may have
 	 * changed and the client program may have to update some UI.
@@ -4155,7 +4160,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::transaction:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkTransactionObj structure describing the transaction
+	 * @obj: a pointer to a #PkTransactionObj structure describing the transaction
 	 *
 	 * The ::transaction is emitted when the method GetOldTransactions() is
 	 * called, and the values are being replayed from a database.
@@ -4169,7 +4174,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::distro_upgrade:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkDistroUpgradeObj structure describing the upgrade
+	 * @obj: a pointer to a #PkDistroUpgradeObj structure describing the upgrade
 	 *
 	 * The ::distro_upgrade signal is emitted when the method GetDistroUpgrades() is
 	 * called, and the upgrade options are being sent.
@@ -4183,7 +4188,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::update-detail:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkUpdateDetailsObj structure describing the update
+	 * @obj: a pointer to a #PkUpdateDetailsObj structure describing the update
 	 *
 	 * The ::update-detail signal is emitted when GetUpdateDetail() is
 	 * called on a set of package_id's.
@@ -4197,7 +4202,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::details:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkDetailObj structure describing the package in detail
+	 * @obj: a pointer to a #PkDetailObj structure describing the package in detail
 	 *
 	 * The ::details signal is emitted when GetDetails() is called.
 	 **/
@@ -4314,8 +4319,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::require-restart:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @restart: the PkRestartEnum type of restart, e.g. PK_RESTART_ENUM_SYSTEM
-	 * @details: the optional details about the restart, why this is needed
+	 * @obj: a pointer to a #PkRequireRestartObj structure describing the restart request in detail
 	 *
 	 * The ::require-restart signal is emitted when the transaction
 	 * requires a application or session restart.
@@ -4324,8 +4328,8 @@ pk_client_class_init (PkClientClass *klass)
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, require_restart),
-			      NULL, NULL, g_cclosure_marshal_VOID__UINT_POINTER,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_POINTER);
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	/**
 	 * PkClient::message:
 	 * @client: the #PkClient instance that emitted the signal
@@ -4375,7 +4379,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::category:
 	 * @client: the #PkClient instance that emitted the signal
-	 * @obj: a pointer to a PkCategoryObj structure describing the category
+	 * @obj: a pointer to a #PkCategoryObj structure describing the category
 	 *
 	 * The ::category signal is emitted when GetCategories() is called.
 	 **/

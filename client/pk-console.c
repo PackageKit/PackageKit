@@ -510,17 +510,17 @@ pk_console_signature_finished_cb (PkClient *client, PkExitEnum exit_enum, guint 
  * pk_console_require_restart_cb:
  **/
 static void
-pk_console_require_restart_cb (PkClient *client, PkRestartEnum restart, const PkPackageId *id, gpointer data)
+pk_console_require_restart_cb (PkClient *client, const PkRequireRestartObj *obj, gpointer data)
 {
-	if (restart == PK_RESTART_ENUM_SYSTEM) {
+	if (obj->restart == PK_RESTART_ENUM_SYSTEM) {
 		/* TRANSLATORS: a package requires the system to be restarted */
-		g_print ("%s %s-%s.%s\n", _("System restart required by:"), id->name, id->version, id->arch);
-	} else if (restart == PK_RESTART_ENUM_SESSION) {
+		g_print ("%s %s-%s.%s\n", _("System restart required by:"), obj->id->name, obj->id->version, obj->id->arch);
+	} else if (obj->restart == PK_RESTART_ENUM_SESSION) {
 		/* TRANSLATORS: a package requires the session to be restarted */
-		g_print ("%s %s-%s.%s\n", _("Session restart required:"), id->name, id->version, id->arch);
-	} else if (restart == PK_RESTART_ENUM_APPLICATION) {
+		g_print ("%s %s-%s.%s\n", _("Session restart required:"), obj->id->name, obj->id->version, obj->id->arch);
+	} else if (obj->restart == PK_RESTART_ENUM_APPLICATION) {
 		/* TRANSLATORS: a package requires the application to be restarted */
-		g_print ("%s %s-%s.%s\n", _("Application restart required by:"), id->name, id->version, id->arch);
+		g_print ("%s %s-%s.%s\n", _("Application restart required by:"), obj->id->name, obj->id->version, obj->id->arch);
 	}
 }
 

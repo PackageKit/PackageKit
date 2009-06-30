@@ -34,6 +34,7 @@
 #include <packagekit-glib/pk-details-obj.h>
 #include <packagekit-glib/pk-category-obj.h>
 #include <packagekit-glib/pk-transaction-obj.h>
+#include <packagekit-glib/pk-require-restart-obj.h>
 
 G_BEGIN_DECLS
 
@@ -134,8 +135,7 @@ struct _PkClientClass
 							 PkErrorCodeEnum code,
 							 const gchar	*details);
 	void		(* require_restart)		(PkClient	*client,
-							 PkRestartEnum	 restart,
-							 PkPackageId	*id);
+							 PkRequireRestartObj	*require_restart);
 	void		(* message)			(PkClient	*client,
 							 PkMessageEnum	 message,
 							 const gchar	*details);
@@ -356,7 +356,7 @@ PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
 const GPtrArray	*pk_client_get_require_restart_list	(PkClient	*client);
 PkObjList	*pk_client_get_category_list		(PkClient	*client);
 PkObjList	*pk_client_get_distro_upgrade_list	(PkClient	*client);
-PkObjList	*pk_client_get_transaction_list	(PkClient	*client);
+PkObjList	*pk_client_get_transaction_list		(PkClient	*client);
 
 /* not job specific */
 gboolean	 pk_client_reset			(PkClient	*client,
