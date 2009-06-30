@@ -607,21 +607,27 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # NOTES:
         # use layman API
         # returns only official and supported repositories
-        # TODO: what filters are for ?
+        # and creates a dummy repo for portage tree
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
+
+        fltlist = filters.split(';')
 
         # get installed and available dbs
         installed_layman_db = layman.db.DB(layman.config.Config())
         available_layman_db = layman.db.RemoteDB(layman.config.Config())
 
-        for o in available_layman_db.overlays.keys():
-            if available_layman_db.overlays[o].is_official() \
-                    and available_layman_db.overlays[o].is_supported():
-                self.repo_detail(o,
-                        available_layman_db.overlays[o].description,
-                        is_repository_enabled(installed_layman_db, o))
+        # 'gentoo' is a dummy repo
+        self.repo_detail('gentoo', 'Gentoo Portage tree', True)
+
+        if FILTER_DEVELOPMENT in fltlist:
+            for o in available_layman_db.overlays.keys():
+                if available_layman_db.overlays[o].is_official() \
+                        and available_layman_db.overlays[o].is_supported():
+                    self.repo_detail(o,
+                            available_layman_db.overlays[o].description,
+                            is_repository_enabled(installed_layman_db, o))
 
     def get_requires(self, filters, pkgs, recursive):
         # TODO: filters
@@ -909,6 +915,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
+
+        # special case: trying to work with gentoo repo
+        if repoid == 'gentoo':
+            if not enable:
+                self.error(ERROR_CANNOT_DISABLE_REPOSITORY,
+                        "gentoo repository can't be disabled")
+            return
 
         # get installed and available dbs
         installed_layman_db = layman.db.DB(layman.config.Config())
