@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-06-29 14:39+0000\n"
-"PO-Revision-Date: 2009-06-29 17:49+0200\n"
+"POT-Creation-Date: 2009-06-30 14:32+0000\n"
+"PO-Revision-Date: 2009-06-30 17:53+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -188,13 +188,10 @@ msgid "Updated"
 msgstr "Zaktualizowano"
 
 #: ../client/pk-console.c:473 ../client/pk-console.c:475
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:410
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:412
 msgid "Percentage"
 msgstr "Procentowo"
 
 #: ../client/pk-console.c:475
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:412
 msgid "Unknown"
 msgstr "Nieznane"
 
@@ -408,7 +405,7 @@ msgstr "Nie można znaleźć pakietów do zainstalowania"
 #. TRANSLATORS: installing new packages from package list
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #: ../client/pk-console.c:1369
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:733
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:868
 #, c-format
 msgid "Installing packages"
 msgstr "Instalowanie pakietów"
@@ -500,7 +497,7 @@ msgstr "Podpolecenia:"
 #: ../client/pk-console.c:1768 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
 #: ../contrib/command-not-found/pk-command-not-found.c:521
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:446
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:532
 #: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Wyświetla dodatkowe informacje o debugowaniu"
@@ -922,177 +919,187 @@ msgstr "Nie znaleziono pakietów dla systemu"
 msgid "Installing..."
 msgstr "Instalowanie..."
 
+#. TRANSLATORS: we are starting to install the packages
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:186
+msgid "Starting install"
+msgstr "Rozpoczynanie instalacji"
+
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:370
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:379
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
 msgstr "Znalezienie pakietu %s nie powiodło się lub jest już zainstalowany: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:449
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:535
 msgid ""
 "Don't actually install any packages, only simulate what would be installed"
 msgstr "Nie instaluje żadnych pakietów, tylko symuluje instalację"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:452
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:538
 msgid "Do not install dependencies of the core packages"
 msgstr "Nie instaluje zależności podstawowych pakietów"
 
+#. command line argument, do we operate quietly
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:541
+msgid "Do not display information or progress"
+msgstr "Nie wyświetla informacji lub postępu"
+
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:470
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
 msgid "PackageKit Debuginfo Installer"
 msgstr "Instalator pakietów debugowania PackageKit"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:480
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:571
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "BŁĄD: proszę podać nazwy pakietów do zainstalowania."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:506
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:605
 #, c-format
 msgid "Getting sources list"
 msgstr "Pobieranie listy źródeł"
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:521
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:588
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:666
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:753
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:790
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:663
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:698
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:782
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:893
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:937
 #, c-format
 msgid "OK."
 msgstr "OK."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:626
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "Znaleziono %i włączone i %i wyłączone źródła."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:531
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:633
 #, c-format
 msgid "Finding debugging sources"
 msgstr "Wyszukiwanie źródeł pakietów debugowania"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:561
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:666
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "Znaleziono %i wyłączone repozytoria pakietów debugowania."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:568
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:673
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "Włączanie źródeł pakietów debugowania"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:575
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:654
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:688
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:740
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:777
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:683
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:767
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:811
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:878
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:922
 msgid "FAILED."
 msgstr "NIEUDANE."
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:591
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "Włączono %i źródła pakietów debugowania."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:598
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:708
 #, c-format
 msgid "Finding debugging packages"
 msgstr "Wyszukiwanie źródeł pakietów debugowania"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:609
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:720
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "Znalezienie pakietu %s nie powiodło się: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:632
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:743
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "Znalezienie pakietu debugowania %s nie powiodło się: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:657
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:771
 #, c-format
 msgid "Found no packages to install."
 msgstr "Nie znaleziono pakietów do zainstalowania."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:669
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
 #, c-format
 msgid "Found %i packages:"
 msgstr "Znaleziono %i pakiety:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:682
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:801
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "Wyszukiwanie pakietów zależnych od tych pakietów"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:691
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:814
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "Nie można znaleźć zależnych pakietów: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:705
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:830
 #, c-format
 msgid "Found %i extra packages."
 msgstr "Znaleziono %i dodatkowe pakiety."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:709
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:834
 #, c-format
 msgid "No extra packages required."
 msgstr "Dodatkowe pakiety nie są wymagane."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:715
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:843
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Znaleziono %i pakiety do zainstalowania:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:724
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:856
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "Pakiety nie zostaną zainstalowane w trybie symulacji"
 
 #. TRANSLATORS: coul dnot install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:743
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:881
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "Nie można zainstalować pakietów: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:770
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:913
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "Wyłączanie źródeł poprzednio włączonych"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:780
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:925
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "Nie można wyłączyć źródeł pakietów debugowania: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:793
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "Wyłączono %i źródła pakietów debugowania."
