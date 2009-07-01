@@ -300,11 +300,24 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return db.getcontents().keys()
 
-    def get_newer_cpv(self, cpv_list):
-        newer = cpv_list[0]
+    def get_newer_cpv(self, cpv_list, installed):
+        newer = ""
+
+        # get the first cpv following the installed rule
         for cpv in cpv_list:
-            if portage.pkgcmp(portage.pkgsplit(cpv), portage.pkgsplit(newer)) == 1:
+            if self.is_installed(cpv) == installed:
                 newer = cpv
+                break
+
+        if newer == "":
+            return ""
+
+        for cpv in cpv_list:
+            if self.is_installed(cpv) == installed:
+                if portage.pkgcmp(portage.pkgsplit(cpv),\
+                        portage.pkgsplit(newer)) == 1:
+                    newer = cpv
+
         return newer
 
     def get_metadata(self, cpv, keys, in_dict = False):
@@ -349,16 +362,37 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         if len(cpv_list) == 0:
             return cpv_list
 
-        if FILTER_NEWEST in fltlist:
-            # if FILTER_INSTALLED in fltlist, cpv_list=cpv_list
-            if FILTER_NOT_INSTALLED in fltlist:
-                cpv_list = [cpv_list[-1]]
-            elif FILTER_INSTALLED not in fltlist:
-                # cpv_list is not ordered so getting newer and filter others
-                newer_cpv = self.get_newer_cpv(cpv_list)
-                cpv_list = filter(
-                        lambda cpv: self.is_installed(cpv) or cpv == newer_cpv,
-                        cpv_list)
+        if FILTER_NEWEST not in fltlist:
+            return cpv_list
+
+        if FILTER_INSTALLED in fltlist:
+            # we have one package per slot, so it's the newest
+            return cpv_list
+
+        cpv_dict = {}
+
+        for cpv in cpv_list:
+            slot = self.get_metadata(cpv, ["SLOT"])[0]
+            if not cpv_dict.has_key(slot):
+                cpv_dict[slot] = [cpv]
+            else:
+                cpv_dict[slot].append(cpv)
+
+        # slots are sorted (dict), revert them to have newest slots first
+        slots = cpv_dict.keys()
+        slots.reverse()
+        # empty cpv_list, cpv are now in cpv_dict and cpv_list gonna be repop
+        cpv_list = []
+
+        for k in slots:
+            # if not_intalled on, no need to check for newest installed
+            if FILTER_NOT_INSTALLED not in fltlist:
+                newest_installed = self.get_newer_cpv(cpv_dict[k], True)
+                if newest_installed != "":
+                    cpv_list.append(newest_installed)
+            newest_available = self.get_newer_cpv(cpv_dict[k], False)
+            if newest_available != "":
+                cpv_list.append(newest_available)
 
         return cpv_list
 
