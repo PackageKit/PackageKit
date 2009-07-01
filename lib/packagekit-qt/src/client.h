@@ -368,6 +368,13 @@ public:
 		ErrorIncompatibleArchitecture,
 		ErrorNoSpaceOnDevice,
 		ErrorMediaChangeRequired,
+		ErrorNotAuthorized,
+		ErrorUpdateNotFound,
+		ErrorCannotInstallRepoUnsigned,
+		ErrorCannotUpdateRepoUnsigned,
+		ErrorCannotGetFilelist,
+		ErrorCannotGetRequires,
+		ErrorCannotDisableRepository,
 		UnknownErrorType
 	} ErrorType;
 
