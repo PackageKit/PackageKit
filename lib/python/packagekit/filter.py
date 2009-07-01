@@ -35,21 +35,21 @@ class PackagekitFilter(object, PackagekitPackage):
         for pkg in pkgs:
             if self.pre_process(pkg):
                 self.package_list.append((pkg, INFO_INSTALLED))
-            nevra = self._pkg_get_unique(pkg)
-            self.installed_unique[nevra] = pkg
+            name = self._pkg_get_name(pkg)
+            self.installed_unique[name] = pkg
 
     def add_available(self, pkgs):
         ''' add a list of packages that are available '''
         for pkg in pkgs:
-            nevra = self._pkg_get_unique(pkg)
-            if not self.installed_unique.has_key(nevra):
+            name = self._pkg_get_name(pkg)
+            if not self.installed_unique.has_key(name):
                 if self.pre_process(pkg):
                     self.package_list.append((pkg, INFO_AVAILABLE))
 
     def add_custom(self, pkg, info):
         ''' add a custom packages indervidually '''
-        nevra = self._pkg_get_unique(pkg)
-        if not self.installed_unique.has_key(nevra):
+        name = self._pkg_get_name(pkg)
+        if not self.installed_unique.has_key(name):
             if self.pre_process(pkg):
                 self.package_list.append((pkg, info))
 
@@ -82,7 +82,14 @@ class PackagekitFilter(object, PackagekitPackage):
         Return a unique string for the package
         Needed to be implemented in a sub class
         '''
-        return True
+        return None
+
+    def _pkg_get_name(self, pkg):
+        '''
+        Returns the name of the package used for duplicate filtering
+        Needed to be implemented in a sub class
+        '''
+        return None
 
     def _pkg_is_installed(self, pkg):
         '''
