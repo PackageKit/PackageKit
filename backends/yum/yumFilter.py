@@ -121,6 +121,12 @@ class YumFilter(PackagekitFilter):
         '''
         return "%s-%s:%s-%s.%s" % (pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch)
 
+    def _pkg_get_name(self, pkg):
+        '''
+        Returns the name of the package used for duplicate filtering
+        '''
+        return pkg.name
+
     def _pkg_is_installed(self, pkg):
         '''
         Return if the package is installed.

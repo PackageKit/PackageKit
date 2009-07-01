@@ -42,6 +42,13 @@ class ConaryFilter(PackagekitFilter):
         else:
             return False
 
+    def _pkg_get_name(self, pkg):
+        '''
+        Returns the name of the package used for duplicate filtering
+        '''
+        name,version,flavor = pkg.get("trove")
+        return name
+
     def _pkg_get_unique(self, pkg):
         '''
         Return a unique string for the package
