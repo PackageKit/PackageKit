@@ -229,7 +229,10 @@ def id_to_cpv(pkgid):
     if len(ret) < 4:
         raise "id_to_cpv: package id not valid"
 
-    return ret[0] + "-" + ret[1]
+    # remove slot info from version field
+    version = ret[1].split(':')[0]
+
+    return ret[0] + "-" + version
 
 def get_group(cp):
     ''' Return the group of the package
@@ -456,9 +459,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Transform the cpv (portage) to a package id (packagekit)
         '''
-        # TODO: manage SLOTS !
         package, version, rev = portage.pkgsplit(cpv)
-        pkg_keywords, repo = self.get_metadata(cpv, ["KEYWORDS", "repository"])
+        pkg_keywords, repo, slot = self.get_metadata(cpv,
+                ["KEYWORDS", "repository", "SLOT"])
 
         pkg_keywords = pkg_keywords.split()
         sys_keywords = self.portage_settings["ACCEPT_KEYWORDS"].split()
@@ -483,6 +486,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # don't want to see -r0
         if rev != "r0":
             version = version + "-" + rev
+        # add slot info if slot != 0
+        if slot != '0':
+            version = version + ':' + slot
 
         # if installed, repo should be 'installed', packagekit rule
         if self.is_installed(cpv):
