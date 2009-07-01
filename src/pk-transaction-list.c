@@ -609,7 +609,9 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 	guint wrong = 0;
 	guint no_commit = 0;
 	guint length;
+	guint unknown_role = 0;
 	PkTransactionItem *item;
+	PkRoleEnum role;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), 0);
 
@@ -632,6 +634,9 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 			wrong++;
 		if (item->running && item->finished)
 			wrong++;
+		role = pk_transaction_priv_get_role (item->transaction);
+		if (role == PK_ROLE_ENUM_UNKNOWN)
+			unknown_role++;
 	}
 
 	/* debug */
@@ -642,6 +647,10 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 		egg_warning ("%i have inconsistent flags", wrong);
 		ret = FALSE;
 	}
+
+	/* role not set */
+	if (unknown_role != 0)
+		egg_debug ("%i have an unknown role (GetTid then nothing?)", unknown_role);
 
 	/* some are not committed */
 	if (no_commit != 0)
