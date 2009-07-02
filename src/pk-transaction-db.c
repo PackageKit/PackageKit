@@ -767,7 +767,13 @@ pk_transaction_db_test (EggTest *test)
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
-	g_unlink (PK_TRANSACTION_DB_FILE);
+	ret = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
+	if (ret) {
+		egg_test_title (test, "remove old local database");
+		egg_warning ("Removing %s", PK_TRANSACTION_DB_FILE);
+		value = g_unlink (PK_TRANSACTION_DB_FILE);
+		egg_test_assert (test, (value == 0));
+	}
 #endif
 
 	/************************************************************/

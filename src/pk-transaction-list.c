@@ -861,6 +861,17 @@ pk_transaction_list_test (EggTest *test)
 	if (!egg_test_start (test, "PkTransactionList"))
 		return;
 
+	/* remove the self check file */
+#if PK_BUILD_LOCAL
+	ret = g_file_test ("./transactions.db", G_FILE_TEST_EXISTS);
+	if (ret) {
+		egg_test_title (test, "remove old local database");
+		egg_warning ("Removing %s", "./transactions.db");
+		size = g_unlink ("./transactions.db");
+		egg_test_assert (test, (size == 0));
+	}
+#endif
+
 	/* we get a cache object to reproduce the engine having it ref'd */
 	cache = pk_cache_new ();
 	db = pk_transaction_db_new ();
