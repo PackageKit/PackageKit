@@ -4364,7 +4364,7 @@ egg_test_transaction (EggTest *test)
 	 ************************************************************/
 #ifdef USE_SECURITY_POLKIT
 	egg_test_title (test, "map valid role to action");
-	action = pk_transaction_role_to_action (PK_ROLE_ENUM_UPDATE_PACKAGES);
+	action = pk_transaction_role_to_action_only_trusted (PK_ROLE_ENUM_UPDATE_PACKAGES);
 	if (egg_strequal (action, "org.freedesktop.packagekit.system-update"))
 		egg_test_success (test, NULL);
 	else
@@ -4372,7 +4372,7 @@ egg_test_transaction (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "map invalid role to action");
-	action = pk_transaction_role_to_action (PK_ROLE_ENUM_SEARCH_NAME);
+	action = pk_transaction_role_to_action_only_trusted (PK_ROLE_ENUM_SEARCH_NAME);
 	if (action == NULL)
 		egg_test_success (test, NULL);
 	else
