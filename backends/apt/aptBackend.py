@@ -713,6 +713,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
             # FIXME add some real data
             updates = self.get_id_from_package(pkg, force_candidate=False)
+            if updates is None:
+                continue
             obsoletes = ""
             vendor_url = ""
             restart = "none"
@@ -1573,6 +1575,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         cand_origin = pkg.candidateOrigin
         if not pkg.isInstalled or force_candidate:
             version = pkg.candidateVersion
+            if version is None:
+                return None
             if cand_origin:
                 origin = cand_origin[0].label
         else:
@@ -1587,6 +1591,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Send the Package signal for a given apt package
         """
         id = self.get_id_from_package(pkg, force_candidate)
+        if id is None:
+            return
         section = pkg.section.split("/")[-1]
         if info == None:
             if pkg.isInstalled:
