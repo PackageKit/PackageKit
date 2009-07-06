@@ -6,12 +6,12 @@ git shortlog PACKAGEKIT_0_4_8.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 2. Add download date to docs/html/pk-download.html, save file.
 
-3. Update library version if new ABI in configure.ac and change DEVELOPMENT_RELEASE if needed
+3. Update library version if new ABI or API in configure.ac
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.4.8"
-git tag -a -f -m "Release 0.4.8" PACKAGEKIT_0_4_8
+git commit -a -m "Release version 0.5.0"
+git tag -a -f -m "Release 0.5.0" PACKAGEKIT_0_5_0
 git push --tags
 git push
 git push git+ssh://hughsient@git.freedesktop.org/git/packagekit
@@ -35,9 +35,9 @@ git push
 10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-Subject: PackageKit 0.4.9 released!
+Subject: PackageKit 0.5.0 released!
 
-Today I released PackageKit 0.4.9.
+Today I released PackageKit 0.5.0.
 
 PackageKit release notes: http://cgit.freedesktop.org/packagekit/tree/NEWS
 
