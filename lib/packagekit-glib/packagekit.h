@@ -41,6 +41,7 @@
 #include <packagekit-glib/pk-package-ids.h>
 #include <packagekit-glib/pk-package-list.h>
 #include <packagekit-glib/pk-package-obj.h>
+#include <packagekit-glib/pk-require-restart-obj.h>
 #include <packagekit-glib/pk-service-pack.h>
 #include <packagekit-glib/pk-task-list.h>
 #include <packagekit-glib/pk-transaction-obj.h>

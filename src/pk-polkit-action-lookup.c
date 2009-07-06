@@ -90,6 +90,25 @@ pk_action_lookup_class_init (PkActionLookupClass *klass)
 }
 
 /**
+ * pk_action_lookup_cmdline_is_debuginfo_install:
+ **/
+static gboolean
+pk_action_lookup_cmdline_is_debuginfo_install (const gchar *cmdline)
+{
+	/* is the only location of this path that is valid */
+	if (g_strcmp0 (cmdline, "/usr/lib/pk-debuginfo-install") == 0)
+		return TRUE;
+
+#if 0
+	/* this is for debugging, and would be insecure in release code */
+	if (g_str_has_suffix (cmdline, "pk-debuginfo-install"))
+		return TRUE;
+#endif
+
+	return FALSE;
+}
+
+/**
  * pk_action_lookup_get_message:
  **/
 static gchar *
@@ -98,6 +117,7 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 {
 	PkRoleEnum role = PK_ROLE_ENUM_UNKNOWN;
 	gboolean only_trusted = TRUE;
+	const gchar *cmdline;
 	const gchar *role_text;
 	const gchar *only_trusted_text;
 	gchar *message = NULL;
@@ -115,6 +135,14 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 	only_trusted_text = polkit_details_lookup (details, "only-trusted");
 	if (only_trusted_text != NULL)
 		only_trusted = g_str_equal (only_trusted_text, "true");
+
+	/* get the command line */
+	cmdline = polkit_details_lookup (details, "cmdline");
+	if (role == PK_ROLE_ENUM_REPO_ENABLE &&
+	    pk_action_lookup_cmdline_is_debuginfo_install (cmdline)) {
+		message = g_strdup (N_("To install debugging packages, extra sources need to be enabled"));
+		goto out;
+	}
 
 	/* use the message shipped in the policy file */
 	if (only_trusted)
@@ -168,17 +196,34 @@ static gchar *
 pk_action_lookup_get_icon_name (PolkitBackendActionLookup *lookup, const gchar *action_id,
 				PolkitDetails *details, PolkitActionDescription *action_description)
 {
+	PkRoleEnum role = PK_ROLE_ENUM_UNKNOWN;
 	gboolean only_trusted = TRUE;
 	const gchar *only_trusted_text;
+	const gchar *role_text;
+	const gchar *cmdline;
 	gchar *value = NULL;
 
 	if (!g_str_has_prefix (action_id, "org.freedesktop.packagekit."))
 		goto out;
 
+	/* get role */
+	role_text = polkit_details_lookup (details, "role");
+	if (role_text != NULL)
+		role = pk_role_enum_from_text (role_text);
+
 	/* get only-trusted */
 	only_trusted_text = polkit_details_lookup (details, "only-trusted");
 	if (only_trusted_text != NULL)
 		only_trusted = g_str_equal (only_trusted_text, "true");
+
+	/* get the command line */
+	cmdline = polkit_details_lookup (details, "cmdline");
+	if (role == PK_ROLE_ENUM_REPO_ENABLE &&
+	    pk_action_lookup_cmdline_is_debuginfo_install (cmdline)) {
+		/* TODO: need a debugging icon */
+		value = g_strdup ("network-server");
+		goto out;
+	}
 
 	/* only-trusted */
 	if (!only_trusted) {
@@ -216,6 +261,13 @@ pk_action_lookup_get_details (PolkitBackendActionLookup *lookup, const gchar *ac
 	if (str != NULL) {
 		/* TRANSLATORS: if the transaction is forced to install only trusted packages */
 		polkit_details_insert (details, _("Only trusted"), str);
+	}
+
+	/* only-trusted */
+	str = polkit_details_lookup (action_details, "cmdline");
+	if (str != NULL) {
+		/* TRANSLATORS: the command line of the thing that wants the authentication */
+		polkit_details_insert (details, _("Command line"), str);
 	}
 
 	return details;

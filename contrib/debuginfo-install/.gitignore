@@ -1,0 +1,7 @@
+.deps
+.libs
+*.o
+pk-debuginfo-install
+manpage.*
+*.1
+

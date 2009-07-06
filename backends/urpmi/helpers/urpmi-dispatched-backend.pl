@@ -10,29 +10,6 @@
 # (at your option) any later version.
 #
 
-#
-# Dispatched backend implementation progress
-#
-# get-depends                   DONE
-# get-details                   DONE
-# get-distro-upgrades           DONE
-# get-files                     DONE
-# get-packages                  DONE
-# get-requires                  DONE
-# get-update-detail             DONE
-# get-updates                   DONE
-# install-packages		DONE
-# refresh-cache                 DONE
-# remove-packages               DONE
-# resolve                       DONE
-# search-details                DONE
-# search-file                   DONE
-# search-group                  DONE
-# search-name                   DONE
-# update-packages               DONE
-# update-system                 DONE
-#
-
 use strict;
 local $| = 1; # stdout autoflush
 
@@ -373,7 +350,7 @@ sub install_packages {
 
   my ($urpm, $args) = @_;
 
-  # FIXME: use only_trusted in @{$args}[0]
+  my $only_trusted = @{$args}[0];
   my @packageidstab = split(/&/, @{$args}[1]);
   
   my @names;
@@ -389,7 +366,7 @@ sub install_packages {
     caseinsensitive => 0,
     all => 0);
   eval {
-    perform_installation($urpm, \%requested);
+    perform_installation($urpm, \%requested, { only_trusted => $only_trusted });
   };
   _finished();
 }
@@ -663,7 +640,7 @@ sub update_packages {
 
   my ($urpm, $args) = @_;
 
-  # FIXME: use only_trusted in @{$args}[0]
+  my $only_trusted = @{$args}[0];
   my @packageidstab = split(/&/, @{$args}[1]);
 
   my @names;
@@ -689,7 +666,7 @@ sub update_packages {
     tonext:
   }
   eval {
-    perform_installation($urpm, \%requested);
+    perform_installation($urpm, \%requested, only_trusted => $only_trusted);
   };
   _finished();
 }
@@ -698,9 +675,9 @@ sub update_system {
   
   my ($urpm, $args) = @_;
 
-  # FIXME: use only_trusted in @{$args}[0]
+  my $only_trusted = @{$args}[0];
   eval {
-    perform_installation($urpm, {}, auto_select => 1);
+    perform_installation($urpm, {}, { auto_select => 1, only_trusted => $only_trusted});
   };
   _finished();
 }
@@ -735,7 +712,7 @@ sub _print_package_details {
   $description =~ s/\n/;/g;
   $description =~ s/\t/ /g;
   
-  pk_print_details(get_package_id($pkg), "N/A", $pkg->group, ensure_utf8($description), "N/A", $pkg->size);
+  pk_print_details(get_package_id($pkg), "N/A", get_pk_group($pkg->group), ensure_utf8($description), $xml_info_pkgs{$name}{url}, $pkg->size);
 }
 
 sub _print_package_files {

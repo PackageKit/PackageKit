@@ -1009,7 +1009,19 @@
             Do not refresh the package cache. This should be fast.
             This is very similar to search-name.
             This should search as much data as possible, including, if possible
-            repo names, package summaries, descriptions and URLs.
+            repo names, package summaries, descriptions, licenses and URLs.
+          </doc:para>
+          <doc:para>
+            Try to emit <doc:tt>installed</doc:tt> before
+            <doc:tt>available</doc:tt> packages first, as it allows the client
+            program to perform the GUI filtering and matching whilst the daemon is
+            running the transaction.
+          </doc:para>
+          <doc:para>
+            If the backend includes <doc:tt>installed</doc:tt> and
+            <doc:tt>available</doc:tt> versions of the same package when searching
+            then the <doc:tt>available</doc:tt> version will have to be filtered
+            in the backend.
           </doc:para>
           <doc:para>
             This method typically emits
@@ -1035,7 +1047,15 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A single word search term with no wildcard chars.
+              A single word search term with no wildcard chars. The search can
+              contain many words separated by spaces. In this case, the
+              search operator is <doc:tt>AND</doc:tt> and the words can be found
+              in any details section/field. For example, search of
+              <doc:tt>GPL games</doc:tt> should returns every games with a GPL
+              license.
+            </doc:para>
+            <doc:para>
+              The search should not be treated as case sensitive.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1082,6 +1102,10 @@
               A filename or fully qualified path and filename on the system.
               If the search term begins with a <doc:tt>/</doc:tt> it will be assumed the entire path has been given and only packages that contain this exact path and filename will be returned.
               If the search term does not start with <doc:tt>/</doc:tt> then it should be treated as a single filename, which can be in any directory.
+              Only one filename can be specified, which should not be escaped or surrounded in quotes.
+            </doc:para>
+            <doc:para>
+              The search is case sensitive, and should not be escaped or surrounded in quotes.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1098,6 +1122,18 @@
           </doc:para>
           <doc:para>
             Do not refresh the package cache. This should be fast.
+          </doc:para>
+          <doc:para>
+            Try to emit <doc:tt>installed</doc:tt> before
+            <doc:tt>available</doc:tt> packages first, as it allows the client
+            program to perform the GUI filtering and matching whilst the daemon is
+            running the transaction.
+          </doc:para>
+          <doc:para>
+            If the backend includes <doc:tt>installed</doc:tt> and
+            <doc:tt>available</doc:tt> versions of the same package when searching
+            then the <doc:tt>available</doc:tt> version will have to be filtered
+            in the backend.
           </doc:para>
           <doc:para>
             This method typically emits
@@ -1124,7 +1160,8 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              An enumerated group_type, or <doc:tt>unknown</doc:tt>
+              An enumerated group_type, or <doc:tt>unknown</doc:tt>. The search
+              can't contain spaces. It must contains only one group_type.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1153,10 +1190,6 @@
             <doc:tt>available</doc:tt> versions of the same package when searching
             then the <doc:tt>available</doc:tt> version will have to be filtered
             in the backend.
-          </doc:para>
-          <doc:para>
-            The search query in the backend should not be case sensitive, and
-            should not be sensitive to <doc:tt>_</doc:tt> or <doc:tt>-</doc:tt>.
           </doc:para>
           <doc:para>
             The search methods should return all results in all repositories.
@@ -1189,7 +1222,15 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A single word search term with no wildcard chars
+              A single word search term with no wildcard chars. The search term
+              can contain many words separated by spaces. In this case, the
+              search operator is <doc:tt>AND</doc:tt>. For example, search of
+              <doc:tt>gnome power</doc:tt> should returns
+              <doc:tt>gnome-power-manager</doc:tt> but not
+              <doc:tt>gnomesword</doc:tt> or <doc:tt>powertop</doc:tt>.
+            </doc:para>
+            <doc:para>
+              The search should not be treated as case sensitive.
             </doc:para>
           </doc:summary>
         </doc:doc>

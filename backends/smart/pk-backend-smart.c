@@ -120,6 +120,7 @@ backend_get_mime_types (PkBackend *backend)
 	                 "application/x-gzip;"	/* .tgz */
 	                 "application/x-bzip2;"	/* .tbz */
 	                 "application/x-lzma;"	/* .tlz */
+	                 "application/x-xz;"	/* .txz */
 	                 "application/x-arch-pkg");
 }
 
@@ -285,7 +286,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, BACKEND("refresh-cache"), NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("refresh-cache"), pk_backend_bool_to_text (force), NULL);
 }
 
 /**

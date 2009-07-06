@@ -129,6 +129,14 @@ sub get_mdv_groups {
   return @groups;
 }
 
+sub get_pk_group {
+  my ($mdv_group) = @_;
+  if(%{(MDV_GROUPS)}->{$mdv_group} eq "") {
+    return GROUP_UNKNOWN;
+  }
+  return %{(MDV_GROUPS)}->{$mdv_group};
+}
+
 sub package_belongs_to_pk_group {
   my ($pkg, $pk_group) = @_;
   my @groups = get_mdv_groups($pk_group);

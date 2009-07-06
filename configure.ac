@@ -3,7 +3,7 @@ AC_PREREQ(2.52)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [5])
-m4_define([pk_micro_version], [0])
+m4_define([pk_micro_version], [1])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -34,8 +34,8 @@ AC_SUBST(PK_VERSION)
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-LT_CURRENT=11
-LT_REVISION=7
+LT_CURRENT=12
+LT_REVISION=0
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -354,22 +354,24 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(browser_plugin, AS_HELP_STRING([--enable-browser-plugin],[Build browser plugin functionality]),
 	      enable_browser_plugin=$enableval,enable_browser_plugin=yes)
 if test x$enable_browser_plugin = xyes; then
-	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN, mozilla-plugin gio-unix-2.0 cairo pango gtk+-2.0 dbus-glib-1,
-	                  build_browser_plugin=yes, build_browser_plugin=no)
+	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN,	\
+			  mozilla-plugin	\
+			  gio-unix-2.0		\
+			  cairo			\
+			  pango			\
+			  gtk+-2.0 >= 2.14.0	\
+			  dbus-glib-1,
+			  build_browser_plugin=yes, build_browser_plugin=no)
 	AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
 	AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
 	if test $build_browser_plugin = "yes"; then
-		# Check if we have GdkAppLaunchContext (new in GTK+-2.14)
 
+		# check we have xulrunner headers
 		packagekit_save_CPPFLAGS="$CPPFLAGS"
 		packagekit_save_LDFLAGS="$LDFLAGS"
-
 		CPPFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_CFLAGS"
 		LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
-
-		AC_CHECK_FUNCS(gdk_app_launch_context_new)
-		AC_CHECK_HEADER(npfunctions.h, xulrunner_plugin_new=yes, xulrunner_plugin_new=no)
-
+		AC_CHECK_HEADER(npfunctions.h, have_xulrunner_npfunctions=yes, have_xulrunner_npfunctions=no)
 		CPPFLAGS="$packagekit_save_CPPFLAGS"
 		LDFLAGS="$packagekit_save_LDFLAGS"
 
@@ -381,12 +383,16 @@ if test x$enable_browser_plugin = xyes; then
 			MOZILLA_PLUGIN_DIR="$LIBDIR/mozilla/plugins"
 		fi
 		AC_SUBST(MOZILLA_PLUGIN_DIR)
+
+		# not got headers
+		if test $have_xulrunner_npfunctions = "no"; then
+			build_browser_plugin=no
+		fi
 	fi
 else
 	build_browser_plugin=no
 fi
 AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
-AM_CONDITIONAL(PK_XULRUNNER_PLUGIN_NEW, test $xulrunner_plugin_new = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Able to build gstreamer plugin
@@ -431,6 +437,13 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(cron, AS_HELP_STRING([--enable-cron],[Build cron background functionality]),
 	      build_cron=$enableval,build_cron=yes)
 AM_CONDITIONAL(PK_BUILD_CRON, test $build_cron = "yes")
+
+dnl ---------------------------------------------------------------------------
+dnl - Able to build debuginfo-install functionality
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(debuginfo-install, AS_HELP_STRING([--enable-debuginfo-install],[Build debuginfo-install functionality]),
+	      build_debuginfo_install=$enableval,build_debuginfo_install=yes)
+AM_CONDITIONAL(PK_BUILD_DEBUGINFO_INSTALL, test $build_debuginfo_install = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Able to build pm-utils script functionality
@@ -691,7 +704,6 @@ dnl ---------------------------------------------------------------------------
 AC_OUTPUT([
 Makefile
 etc/Makefile
-man/Makefile
 docs/Makefile
 docs/html/Makefile
 docs/html/img/Makefile
@@ -707,6 +719,7 @@ contrib/gtk-module/Makefile
 contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
 contrib/cron/Makefile
+contrib/debuginfo-install/Makefile
 contrib/pm-utils/Makefile
 contrib/ruck/Makefile
 contrib/ruck/src/Makefile
@@ -772,6 +785,7 @@ echo "
         Pango module:              ${build_gtk_module}
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}
+        debuginfo-install:         ${build_debuginfo_install}
         pm-utils scripts:          ${build_pm_utils}
         RUCK client:               ${build_ruck}
         QT library:                ${build_qt}

@@ -178,6 +178,9 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_UPDATE_NOT_FOUND,	"update-not-found"},
 	{PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,	"cannot-install-repo-unsigned"},
 	{PK_ERROR_ENUM_CANNOT_UPDATE_REPO_UNSIGNED,	"cannot-update-repo-unsigned"},
+	{PK_ERROR_ENUM_CANNOT_GET_FILELIST, "cannot-get-filelist"},
+	{PK_ERROR_ENUM_CANNOT_GET_REQUIRES, "cannot-get-requires"},
+	{PK_ERROR_ENUM_CANNOT_DISABLE_REPOSITORY, "cannot-disable-repository"},
 	{0, NULL}
 };
 

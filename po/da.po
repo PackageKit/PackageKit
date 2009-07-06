@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-06-21 14:14+0000\n"
-"PO-Revision-Date: 2009-06-21 22:47+0200\n"
+"POT-Creation-Date: 2009-07-02 19:34+0000\n"
+"PO-Revision-Date: 2009-07-03 16:52+0200\n"
 "Last-Translator: Kris Thomsen <lakristho@gmail.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "MIME-Version: 1.0\n"
@@ -41,7 +41,7 @@ msgstr "Falskt"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:237 ../src/pk-polkit-action-lookup.c:211
+#: ../client/pk-console.c:237 ../src/pk-polkit-action-lookup.c:256
 msgid "Role"
 msgstr "Rolle"
 
@@ -55,7 +55,8 @@ msgid "(seconds)"
 msgstr "(sekunder)"
 
 #. TRANSLATORS: this is The command line used to do the action
-#: ../client/pk-console.c:246
+#. TRANSLATORS: the command line of the thing that wants the authentication
+#: ../client/pk-console.c:246 ../src/pk-polkit-action-lookup.c:270
 msgid "Command line"
 msgstr "Kommandolinje"
 
@@ -404,7 +405,10 @@ msgid "No packages can be found to install"
 msgstr "Ingen pakker kunne findes til installation"
 
 #. TRANSLATORS: installing new packages from package list
+#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #: ../client/pk-console.c:1369
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:868
+#, c-format
 msgid "Installing packages"
 msgstr "Installerer pakker"
 
@@ -495,6 +499,7 @@ msgstr "Underkommandoer:"
 #: ../client/pk-console.c:1768 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
 #: ../contrib/command-not-found/pk-command-not-found.c:521
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:532
 #: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Vis ekstra fejlsøgningsinformation"
@@ -914,6 +919,192 @@ msgstr "Ingen pakker fundet til dit system"
 msgid "Installing..."
 msgstr "Installerer..."
 
+#. TRANSLATORS: we are starting to install the packages
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:186
+msgid "Starting install"
+msgstr "Starter installation"
+
+#. TRANSLATORS: we couldn't find the package name, non-fatal
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:379
+#, c-format
+msgid "Failed to find the package %s, or already installed: %s"
+msgstr "Kunne ikke finde pakken %s, eller pakken er allerede installeret: %s"
+
+#. command line argument, simulate what would be done, but don't actually do it
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:535
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"Installér ikke nogen pakker, lad kun som om de ville blive installeret"
+
+#. command line argument, do we skip packages that depend on the ones specified
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:538
+msgid "Do not install dependencies of the core packages"
+msgstr "Installér ikke afhængigheder til kerne-pakkerne"
+
+#. command line argument, do we operate quietly
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:541
+msgid "Do not display information or progress"
+msgstr "Vis ikke information eller fremgang"
+
+#. TRANSLATORS: tool that gets called when the command is not found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
+msgid "PackageKit Debuginfo Installer"
+msgstr "PackageKit installationsprogram til fejlsøgningsinformation"
+
+#. TRANSLATORS: the use needs to specify a list of package names on the command line
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:571
+#, c-format
+msgid "ERROR: Specify package names to install."
+msgstr "FEJL: Angiv pakkenavne som skal installeres."
+
+#. TRANSLATORS: we are getting the list of repositories
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:605
+#, c-format
+msgid "Getting sources list"
+msgstr "Henter liste over pakkearkiver"
+
+#. TRANSLATORS: all completed 100%
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:663
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:698
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:782
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:893
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:937
+#, c-format
+msgid "OK."
+msgstr "O.k."
+
+#. TRANSLATORS: tell the user what we found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:626
+#, c-format
+msgid "Found %i enabled and %i disabled sources."
+msgstr "Fandt %i aktiverede og %i deaktiverede pakkearkiver."
+
+#. TRANSLATORS: we're finding repositories that match out pattern
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:633
+#, c-format
+msgid "Finding debugging sources"
+msgstr "Finder fejlsøgningspakkearkiver"
+
+#. TRANSLATORS: tell the user what we found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:666
+#, c-format
+msgid "Found %i disabled debuginfo repos."
+msgstr "Fandt %i deaktiverede pakkearkiver med fejlsøgningsinformation."
+
+#. TRANSLATORS: we're now enabling all the debug sources we found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:673
+#, c-format
+msgid "Enabling debugging sources"
+msgstr "Aktiverer fejlsøgningspakkearkiver"
+
+#. TRANSLATORS: operation was not successful
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:683
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:767
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:811
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:878
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:922
+msgid "FAILED."
+msgstr "MISLYKKEDES."
+
+#. TRANSLATORS: tell the user how many we enabled
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
+#, c-format
+msgid "Enabled %i debugging sources."
+msgstr "Aktiverede %i fejlsøgningspakkearkiver."
+
+#. TRANSLATORS: we're now finding packages that match in all the repos
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:708
+#, c-format
+msgid "Finding debugging packages"
+msgstr "Finder fejlsøgningspakker"
+
+#. TRANSLATORS: we couldn't find the package name, non-fatal
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:720
+#, c-format
+msgid "Failed to find the package %s: %s"
+msgstr "Kunne ikke finde pakken \"%s\": %s"
+
+#. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:743
+#, c-format
+msgid "Failed to find the debuginfo package %s: %s"
+msgstr "Kunne ikke finde pakken med fejlsøgningsinformation \"%s\": %s"
+
+#. TRANSLATORS: no debuginfo packages could be found to be installed
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:771
+#, c-format
+msgid "Found no packages to install."
+msgstr "Fandt ingen pakker at installere."
+
+#. TRANSLATORS: tell the user we found some packages, and then list them
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
+#, c-format
+msgid "Found %i packages:"
+msgstr "Fandt %i pakker:"
+
+#. TRANSLATORS: tell the user we are searching for deps
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:801
+#, c-format
+msgid "Finding packages that depend on these packages"
+msgstr "Finder pakker som afhænger af disse pakker"
+
+#. TRANSLATORS: could not install, detailed error follows
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:814
+#, c-format
+msgid "Could not find dependant packages: %s"
+msgstr "Kunne ikke finde afhængige pakker: %s"
+
+#. TRANSLATORS: tell the user we found some more packages
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:830
+#, c-format
+msgid "Found %i extra packages."
+msgstr "Fandt %i ekstra pakker."
+
+#. TRANSLATORS: tell the user we found some more packages
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:834
+#, c-format
+msgid "No extra packages required."
+msgstr "Ingen ekstra pakker er krævet."
+
+#. TRANSLATORS: tell the user we found some packages (and deps), and then list them
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:843
+#, c-format
+msgid "Found %i packages to install:"
+msgstr "Fandt %i pakker at installere:"
+
+#. TRANSLATORS: simulate mode is a testing mode where we quit before the action
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:856
+#, c-format
+msgid "Not installing packages in simulate mode"
+msgstr "Installerer ikke pakker i simuleringstilstand"
+
+#. TRANSLATORS: coul dnot install, detailed error follows
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:881
+#, c-format
+msgid "Could not install packages: %s"
+msgstr "Kunne ikke installere pakker: %s"
+
+#. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:913
+#, c-format
+msgid "Disabling sources previously enabled"
+msgstr "Deaktiverer pakkearkiver som tidligere er aktiveret"
+
+#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:925
+#, c-format
+msgid "Could not disable the debugging sources: %s"
+msgstr "Kunne ikke deaktivere fejlsøgningspakkearkiverne: %s"
+
+#. TRANSLATORS: we disabled all the debugging repos that we enabled before
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
+#, c-format
+msgid "Disabled %i debugging sources."
+msgstr "Deaktiverede %i fejlsøgningspakkearkiver."
+
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
 msgstr "PackageKit-katalog"
@@ -1093,27 +1284,32 @@ msgstr "Kan ikke forbinde til systembussen"
 msgid "Error trying to start:"
 msgstr "Kunne ikke starte:"
 
+#: ../src/pk-polkit-action-lookup.c:143
+msgid "To install debugging packages, extra sources need to be enabled"
+msgstr "For at installere fejlsøgningspakker skal ekstra pakkearkiver aktiveres"
+
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:128 ../src/pk-polkit-action-lookup.c:147
+#: ../src/pk-polkit-action-lookup.c:156 ../src/pk-polkit-action-lookup.c:175
 msgid "The software is not from a trusted source."
 msgstr "Softwaren er ikke fra en betroet kilde."
 
 #. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:132
+#: ../src/pk-polkit-action-lookup.c:160
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Opdatér ikke denne pakke medmindre du er sikker på, at det er sikkert."
 
 #. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:136 ../src/pk-polkit-action-lookup.c:155
+#: ../src/pk-polkit-action-lookup.c:164 ../src/pk-polkit-action-lookup.c:183
 msgid "Malicious software can damage your computer or cause other harm."
 msgstr "Ondsindet software kan ødelægge din computer eller gøre anden skade."
 
 #. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:151
+#: ../src/pk-polkit-action-lookup.c:179
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Installér ikke denne pakke medmindre du er sikker på, at det er sikkert."
+msgstr ""
+"Installér ikke denne pakke medmindre du er sikker på, at det er sikkert."
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:218
+#: ../src/pk-polkit-action-lookup.c:263
 msgid "Only trusted"
 msgstr "Kun betroede"

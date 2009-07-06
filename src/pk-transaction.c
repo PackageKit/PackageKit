@@ -114,6 +114,7 @@ struct PkTransactionPrivate
 	gchar			*last_package_id;
 	gchar			*tid;
 	gchar			*sender;
+	gchar			*cmdline;
 	PkPackageList		*package_list;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
@@ -1279,43 +1280,6 @@ out:
 	return uid;
 }
 
-/**
- * pk_transaction_set_sender:
- */
-gboolean
-pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (sender != NULL, FALSE);
-	g_return_val_if_fail (transaction->priv->sender == NULL, FALSE);
-
-	egg_debug ("setting sender to %s", sender);
-	transaction->priv->sender = g_strdup (sender);
-	egg_dbus_monitor_assign (transaction->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, sender);
-
-	/* we get the UID for all callers as we need to know when to cancel */
-#ifdef USE_SECURITY_POLKIT
-	transaction->priv->subject = polkit_system_bus_name_new (sender);
-#endif
-	transaction->priv->uid = pk_transaction_get_uid (transaction, sender);
-
-	return TRUE;
-}
-
-/**
- * pk_transaction_release_tid:
- **/
-static gboolean
-pk_transaction_release_tid (PkTransaction *transaction)
-{
-	gboolean ret;
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	/* release the ID as we are returning an error */
-	ret = pk_transaction_list_remove (transaction->priv->transaction_list,
-					  transaction->priv->tid);
-	return ret;
-}
-
 #ifdef USE_SECURITY_POLKIT
 /**
  * pk_transaction_get_pid:
@@ -1350,7 +1314,6 @@ out:
 	g_free (sender);
 	return pid;
 }
-
 
 /**
  * pk_transaction_get_cmdline:
@@ -1388,15 +1351,50 @@ out:
 #endif
 
 /**
+ * pk_transaction_set_sender:
+ */
+gboolean
+pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+	g_return_val_if_fail (sender != NULL, FALSE);
+	g_return_val_if_fail (transaction->priv->sender == NULL, FALSE);
+
+	egg_debug ("setting sender to %s", sender);
+	transaction->priv->sender = g_strdup (sender);
+	egg_dbus_monitor_assign (transaction->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, sender);
+
+	/* we get the UID for all callers as we need to know when to cancel */
+#ifdef USE_SECURITY_POLKIT
+	transaction->priv->subject = polkit_system_bus_name_new (sender);
+	transaction->priv->cmdline = pk_transaction_get_cmdline (transaction, transaction->priv->subject);
+#endif
+	transaction->priv->uid = pk_transaction_get_uid (transaction, sender);
+
+	return TRUE;
+}
+
+/**
+ * pk_transaction_release_tid:
+ **/
+static gboolean
+pk_transaction_release_tid (PkTransaction *transaction)
+{
+	gboolean ret;
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+	/* release the ID as we are returning an error */
+	ret = pk_transaction_list_remove (transaction->priv->transaction_list,
+					  transaction->priv->tid);
+	return ret;
+}
+
+/**
  * pk_transaction_commit:
  **/
 G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_commit (PkTransaction *transaction)
 {
 	gboolean ret;
-#ifdef USE_SECURITY_POLKIT
-	gchar *cmdline;
-#endif
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
@@ -1426,10 +1424,9 @@ pk_transaction_commit (PkTransaction *transaction)
 		pk_transaction_db_set_uid (transaction->priv->transaction_db, transaction->priv->tid, transaction->priv->uid);
 
 #ifdef USE_SECURITY_POLKIT
-		/* save cmdline */
-		cmdline = pk_transaction_get_cmdline (transaction, transaction->priv->subject);
-		pk_transaction_db_set_cmdline (transaction->priv->transaction_db, transaction->priv->tid, cmdline);
-		g_free (cmdline);
+		/* save cmdline in db */
+		if (transaction->priv->cmdline != NULL)
+			pk_transaction_db_set_cmdline (transaction->priv->transaction_db, transaction->priv->tid, transaction->priv->cmdline);
 #endif
 
 		/* report to syslog */
@@ -1712,6 +1709,8 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	details = polkit_details_new ();
 	polkit_details_insert (details, "role", pk_role_enum_to_text (transaction->priv->role));
 	polkit_details_insert (details, "only-trusted", transaction->priv->cached_only_trusted ? "true" : "false");
+	if (transaction->priv->cmdline != NULL)
+		polkit_details_insert (details, "cmdline", transaction->priv->cmdline);
 
 	/* do authorization async */
 	polkit_authority_check_authorization (transaction->priv->authority,
@@ -3696,6 +3695,15 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 		return;
 	}
 
+	/* do not allow spaces */
+	if (strstr (search, " ") != NULL) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+				     "Invalid search containing spaces");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
@@ -4182,6 +4190,7 @@ pk_transaction_init (PkTransaction *transaction)
 #ifdef USE_SECURITY_POLKIT
 	transaction->priv->subject = NULL;
 #endif
+	transaction->priv->cmdline = NULL;
 	transaction->priv->uid = PK_TRANSACTION_UID_INVALID;
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
@@ -4290,6 +4299,7 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->priv->cached_value);
 	g_free (transaction->priv->tid);
 	g_free (transaction->priv->sender);
+	g_free (transaction->priv->cmdline);
 
 	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->cache);
@@ -4354,7 +4364,7 @@ egg_test_transaction (EggTest *test)
 	 ************************************************************/
 #ifdef USE_SECURITY_POLKIT
 	egg_test_title (test, "map valid role to action");
-	action = pk_transaction_role_to_action (PK_ROLE_ENUM_UPDATE_PACKAGES);
+	action = pk_transaction_role_to_action_only_trusted (PK_ROLE_ENUM_UPDATE_PACKAGES);
 	if (egg_strequal (action, "org.freedesktop.packagekit.system-update"))
 		egg_test_success (test, NULL);
 	else
@@ -4362,7 +4372,7 @@ egg_test_transaction (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "map invalid role to action");
-	action = pk_transaction_role_to_action (PK_ROLE_ENUM_SEARCH_NAME);
+	action = pk_transaction_role_to_action_only_trusted (PK_ROLE_ENUM_SEARCH_NAME);
 	if (action == NULL)
 		egg_test_success (test, NULL);
 	else

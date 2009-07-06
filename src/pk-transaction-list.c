@@ -609,7 +609,9 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 	guint wrong = 0;
 	guint no_commit = 0;
 	guint length;
+	guint unknown_role = 0;
 	PkTransactionItem *item;
+	PkRoleEnum role;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), 0);
 
@@ -632,6 +634,9 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 			wrong++;
 		if (item->running && item->finished)
 			wrong++;
+		role = pk_transaction_priv_get_role (item->transaction);
+		if (role == PK_ROLE_ENUM_UNKNOWN)
+			unknown_role++;
 	}
 
 	/* debug */
@@ -642,6 +647,10 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 		egg_warning ("%i have inconsistent flags", wrong);
 		ret = FALSE;
 	}
+
+	/* role not set */
+	if (unknown_role != 0)
+		egg_debug ("%i have an unknown role (GetTid then nothing?)", unknown_role);
 
 	/* some are not committed */
 	if (no_commit != 0)
@@ -851,6 +860,17 @@ pk_transaction_list_test (EggTest *test)
 
 	if (!egg_test_start (test, "PkTransactionList"))
 		return;
+
+	/* remove the self check file */
+#if PK_BUILD_LOCAL
+	ret = g_file_test ("./transactions.db", G_FILE_TEST_EXISTS);
+	if (ret) {
+		egg_test_title (test, "remove old local database");
+		egg_warning ("Removing %s", "./transactions.db");
+		size = g_unlink ("./transactions.db");
+		egg_test_assert (test, (size == 0));
+	}
+#endif
 
 	/* we get a cache object to reproduce the engine having it ref'd */
 	cache = pk_cache_new ();

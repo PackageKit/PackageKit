@@ -1,6 +1,6 @@
 %define glib2_version			2.16.1
-%define dbus_version			0.90
-%define dbus_glib_version		0.70
+%define dbus_version			1.1.1
+%define dbus_glib_version		0.74
 %define polkit_version			0.92
 %define libnm_glib_version		0.6.4
 %define alphatag			#ALPHATAG#
@@ -130,6 +130,14 @@ Requires: %{name} = %{version}-%{release}
 
 %description cron
 Crontab and utilities for running PackageKit as a cron job.
+
+%package debuginfo-install
+Summary: Facility to install debugging packages using PackageKit
+Group: System Environment/Base
+Requires: %{name} = %{version}-%{release}
+
+%description debuginfo-install
+Provides facility to install debugging packages using PackageKit.
 
 %package glib-devel
 Summary: GLib Libraries and headers for PackageKit
@@ -287,7 +295,9 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_datadir}/PackageKit/helpers/test_spawn
 %dir %{_datadir}/PackageKit/icons
 %{_datadir}/PackageKit/helpers/test_spawn/*
-%{_datadir}/man/man1/*.1.gz
+%{_datadir}/man/man1/pkcon.1.gz
+%{_datadir}/man/man1/pkmon.1.gz
+%{_datadir}/man/man1/pkgenpack.1.gz
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/mime/packages/packagekit-*.xml
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
@@ -351,6 +361,12 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %doc README AUTHORS NEWS COPYING
 %config %{_sysconfdir}/cron.daily/packagekit-background.cron
 %config(noreplace) %{_sysconfdir}/sysconfig/packagekit-background
+
+%files debuginfo-install
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_libexecdir}/pk-debuginfo-install
+%{_datadir}/man/man1/pk-debuginfo-install.1.gz
 
 %files browser-plugin
 %defattr(-,root,root,-)

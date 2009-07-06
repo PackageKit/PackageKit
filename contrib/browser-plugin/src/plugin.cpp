@@ -50,12 +50,11 @@
 
 #include "plugin.h"
 
-#define MIME_TYPES_HANDLED      "application/x-packagekit-plugin"
-#define PLUGIN_NAME             "Plugin for Installing Applications"
-#define MIME_TYPES_DESCRIPTION  MIME_TYPES_HANDLED":bsc:"PLUGIN_NAME
-#define PLUGIN_DESCRIPTION      PLUGIN_NAME
+#define MIME_TYPES_DESCRIPTION  "application/x-packagekit-plugin:bsc:PackageKit Plugin"
+#define PLUGIN_NAME             "PackageKit"
+#define PLUGIN_DESCRIPTION      "Plugin for Installing Applications"
 
-char* NPP_GetMIMEDescription(void)
+char* NP_GetMIMEDescription(void)
 {
 	return (char *)(MIME_TYPES_DESCRIPTION);
 }
@@ -80,7 +79,7 @@ make_module_resident()
 	Dl_info info;
 
 	/* Get the (absolute) filename of this module */
-	if (!dladdr((void *)NPP_GetMIMEDescription, &info)) {
+	if (!dladdr((void *)NP_GetMIMEDescription, &info)) {
 		g_warning("Can't find filename for module");
 		return;
 	}

@@ -6,7 +6,6 @@ SUBDIRS = 						\
 	po						\
 	policy						\
 	etc						\
-	man						\
 	data						\
 	lib						\
 	src						\
