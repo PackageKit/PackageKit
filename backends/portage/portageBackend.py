@@ -27,7 +27,8 @@ from packagekit.package import PackagekitPackage
 # portage imports
 # TODO: why some python app are adding try / catch around this ?
 import portage
-import _emerge
+import _emerge.actions
+import _emerge.stdout_spinner
 
 # layman imports
 import layman.db
@@ -274,8 +275,25 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         self.vardb = portage.db[portage.settings["ROOT"]]["vartree"].dbapi
         #self.portdb = portage.db[portage.settings["ROOT"]]["porttree"].dbapi
 
+        # TODO: should be removed when using non-verbose function API
+        self.orig_out = None
+        self.orig_err = None
+
         if lock:
             self.doLock()
+
+    # TODO: should be removed when using non-verbose function API
+    def block_output(self):
+        null_out = open('/dev/null', 'w')
+        self.orig_out = sys.stdout
+        self.orig_err = sys.stderr
+        sys.stdout = null_out
+        sys.stderr = null_out
+
+    # TODO: should be removed when using non-verbose function API
+    def unblock_output(self):
+        sys.stdout = self.orig_out
+        sys.stderr = self.orig_err
 
     def is_installed(self, cpv):
         if self.vardb.cpv_exists(cpv):
@@ -879,20 +897,35 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             mergetask.merge()
 
     def refresh_cache(self, force):
-        # TODO: use force ?
+        # NOTES: can't manage progress even if it could be better
+        # TODO: do not wait for exception, check timestamp
+        # TODO: message if overlay repo has changed (layman)
         self.status(STATUS_REFRESH_CACHE)
         self.allow_cancel(True)
         self.percentage(None)
 
-        myopts = {} # TODO: --quiet ?
-        myopts.pop("--quiet", None)
-        myopts["--quiet"] = True
-        settings, trees, mtimedb = _emerge.load_emerge_config()
-        spinner = _emerge.stdout_spinner()
+        myopts = {'--quiet': True}
+        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
+        spinner = _emerge.stdout_spinner.stdout_spinner()
+
+        # get installed and available dbs
+        installed_layman_db = layman.db.DB(layman.config.Config())
+
+        if force:
+            timestamp_path = os.path.join(
+                    settings["PORTDIR"], "metadata", "timestamp.chk")
+            if os.access(timestamp_path, os.F_OK):
+                os.remove(timestamp_path)
+
         try:
-            _emerge.action_sync(settings, trees, mtimedb, myopts, "")
-        finally:
-            self.percentage(100)
+            self.block_output()
+            for o in installed_layman_db.overlays.keys():
+                installed_layman_db.sync(o, True)
+            _emerge.actions.action_sync(settings, trees, mtimedb, myopts, "")
+            self.unblock_output()
+        except:
+            self.unblock_output()
+            self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     def remove_packages(self, allowdep, pkgs):
         # can't use allowdep: never removing dep
@@ -988,17 +1021,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         if enable and not is_repository_enabled(installed_layman_db, repoid):
             try:
                 # TODO: clean the trick to prevent outputs from layman
-                orig_out = sys.stdout
-                orig_err = sys.stderr
-                sys.stdout = open('/dev/null', 'w')
-                sys.stderr = open('/dev/null', 'w')
-
+                self.block_output()
                 installed_layman_db.add(available_layman_db.select(repoid),
                         quiet=True)
-
-                sys.stdout = orig_out
-                sys.stderr = orig_err
+                self.unblock_output()
             except Exception, e:
+                self.unblock_output()
                 self.error(ERROR_INTERNAL_ERROR,
                         "Failed to enable repository "+repoid+" : "+str(e))
                 return
