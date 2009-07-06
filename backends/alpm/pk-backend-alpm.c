@@ -1519,6 +1519,8 @@ backend_update_system_thread (PkBackend *backend)
 {
 	alpm_list_t *data = NULL;
 
+	/* FIXME: support only_trusted */
+
 	/* don't specify any flags for now */
 	pmtransflag_t flags = 0;
 
@@ -1547,7 +1549,7 @@ backend_update_system_thread (PkBackend *backend)
  * backend_update_system:
  */
 static void
-backend_update_system (PkBackend *backend)
+backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_thread_create (backend, backend_update_system_thread);
 }
