@@ -317,7 +317,10 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         apt.progress.FetchProgress.pulse(self)
         progress = int(self.pstart + self.percent/100 * \
                        (self.pend - self.pstart))
-        if self.pprev < progress:
+        # A backwards running progress is reported as a not available progress
+        if self.pprev > progress:
+            self._backend.percentage()
+        else:
             self._backend.percentage(progress)
             self.pprev = progress
         return True
