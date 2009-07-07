@@ -29,6 +29,7 @@ from packagekit.package import PackagekitPackage
 import portage
 import _emerge.actions
 import _emerge.stdout_spinner
+import _emerge.create_depgraph_params
 
 # layman imports
 import layman.db
@@ -195,7 +196,7 @@ CATEGORY_GROUP_MAP = {
         "sys-libs" : GROUP_OTHER,
         "sys-power" : GROUP_OTHER,
         "sys-process" : GROUP_OTHER,
-        "virtual" : GROUP_OTHER,
+        "virtual" : GROUP_OTHER, # TODO: what to do ?
         "www-apache" : GROUP_OTHER,
         "www-apps" : GROUP_OTHER,
         "www-client" : GROUP_OTHER,
@@ -523,49 +524,52 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                 info = INFO_AVAILABLE
         PackageKitBaseBackend.package(self, self.cpv_to_id(cpv), info, desc)
 
-    def get_depends(self, filters, pkgids, recursive):
+    def get_depends(self, filters, pkgs, recursive):
         # TODO: manage filters
         # TODO: optimize by using vardb for installed packages ?
+        # TODO: use depgraph.select_files to select multiple files
+        # TODO: print package in depends ?
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
-        for pkgid in pkgids:
-            cpv = id_to_cpv(pkgid)
+        for pkg in pkgs:
+            cpv = id_to_cpv(pkg)
 
-            # is cpv valid
-            if not portage.portdb.cpv_exists(cpv):
-                # self.warning ? self.error ?
-                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,
-                        "Could not find the package %s" % pkgid)
+            if not self.is_cpv_valid(cpv):
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                        "Package %s was not found" % pkg)
                 continue
 
             myopts = {}
             if recursive:
-                myopts.pop("--emptytree", None)
                 myopts["--emptytree"] = True
-            spinner = ""
-            settings, trees, mtimedb = _emerge.load_emerge_config()
-            myparams = _emerge.create_depgraph_params(myopts, "")
-            spinner = _emerge.stdout_spinner()
-            depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
+            spinner = _emerge.stdout_spinner.stdout_spinner()
+            settings, trees, _ = _emerge.actions.load_emerge_config()
+            myparams = _emerge.create_depgraph_params.create_depgraph_params(
+                    myopts, "")
+            depgraph = _emerge.depgraph.depgraph(
+                    settings, trees, myopts, myparams, spinner)
+
             retval, fav = depgraph.select_files(["="+cpv])
             if not retval:
-                self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
+                self.error(ERROR_INTERNAL_ERROR,
+                        "Wasn't able to get dependency graph")
                 continue
 
             if recursive:
                 # printing the whole tree
-                pkgs = depgraph.altlist(reversed=1)
-                for pkg in pkgs:
-                    if pkg[2] != cpv:
-                        self.package(pkg[2])
+                for p in depgraph.altlist(reversed=1):
+                    if p[2] != cpv:
+                        self.package(p[2])
             else: # !recursive
                 # only printing child of the root node
                 # actually, we have "=cpv" -> "cpv" -> children
-                root_node = depgraph.digraph.root_nodes()[0] # =cpv
-                root_node = depgraph.digraph.child_nodes(root_node)[0] # cpv
-                children = depgraph.digraph.child_nodes(root_node)
+                root_node = depgraph._dynamic_config.digraph.root_nodes()[0] # =cpv
+                root_node = depgraph._dynamic_config.digraph.child_nodes(
+                        root_node)[0] # cpv
+                children = depgraph._dynamic_config.digraph.child_nodes(
+                        root_node)
                 for child in children:
                     self.package(child[2])
 
@@ -906,7 +910,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         myopts = {'--quiet': True}
         settings, trees, mtimedb = _emerge.actions.load_emerge_config()
-        spinner = _emerge.stdout_spinner.stdout_spinner()
 
         # get installed and available dbs
         installed_layman_db = layman.db.DB(layman.config.Config())
@@ -1170,6 +1173,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def search_name(self, filters, keys):
         # NOTES: searching in package name, excluding category
+        # TODO: search for cat/pkg if '/' is found
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
