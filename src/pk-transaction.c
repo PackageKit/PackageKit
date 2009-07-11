@@ -1060,26 +1060,26 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 
 /**
  * pk_transaction_pre_transaction_checks:
- *
- * TODO: also check if package in InstallPackages is in the update lists
- *       and do the same check if this is so.
  */
 static gboolean
-pk_transaction_pre_transaction_checks (PkTransaction *transaction)
+pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids)
 {
 	PkPackageList *updates;
 	const PkPackageObj *obj;
 	guint i;
+	guint j;
 	guint length;
 	gboolean ret = FALSE;
 	gchar *package_id;
-	gchar **package_ids = NULL;
+	gchar **package_ids_security = NULL;
 	GPtrArray *list = NULL;
+	const gchar *package_id_tmp;
 
 	/* only do this for update actions */
 	if (transaction->priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
-	    transaction->priv->role != PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		egg_debug ("doing nothing, as not update");
+	    transaction->priv->role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	    transaction->priv->role != PK_ROLE_ENUM_INSTALL_PACKAGES) {
+		egg_debug ("doing nothing, as not update or install");
 		goto out;
 	}
 
@@ -1109,11 +1109,33 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction)
 		}
 	}
 
+	/* is a security update we are installing */
+	if (transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+		ret = FALSE;
+
+		/* do any of the packages we are updating match */
+		for (i=0; i < list->len; i++) {
+			package_id_tmp = g_ptr_array_index (list, i);
+			for (j=0; package_ids[j] != NULL; j++) {
+				if (g_strcmp0 (package_id_tmp, package_ids[j]) == 0) {
+					ret = TRUE;
+					break;
+				}
+			}
+		}
+
+		/* nothing matched */
+		if (!ret) {
+			egg_debug ("not installing a security update package");
+			goto out;
+		}
+	}
+
 	/* find files in security updates */
-	package_ids = pk_package_ids_from_array (list);
-	ret = pk_transaction_extra_check_library_restart (transaction->priv->transaction_extra, package_ids);
+	package_ids_security = pk_package_ids_from_array (list);
+	ret = pk_transaction_extra_check_library_restart (transaction->priv->transaction_extra, package_ids_security);
 out:
-	g_strfreev (package_ids);
+	g_strfreev (package_ids_security);
 	if (list != NULL) {
 		g_ptr_array_foreach (list, (GFunc) g_free, NULL);
 		g_ptr_array_free (list, TRUE);
@@ -1157,7 +1179,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_text (priv->role));
 
 	/* do any pre transaction checks */
-	ret = pk_transaction_pre_transaction_checks (transaction);
+	ret = pk_transaction_pre_transaction_checks (transaction, priv->cached_package_ids);
 
 	/* might have to reset again if we used the backend */
 	if (ret)
