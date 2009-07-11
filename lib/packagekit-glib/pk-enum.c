@@ -190,6 +190,8 @@ static const PkEnumMatch enum_restart[] = {
 	{PK_RESTART_ENUM_SYSTEM,		"system"},
 	{PK_RESTART_ENUM_SESSION,		"session"},
 	{PK_RESTART_ENUM_APPLICATION,		"application"},
+	{PK_RESTART_ENUM_SECURITY_SYSTEM,	"security-system"},
+	{PK_RESTART_ENUM_SECURITY_SESSION,	"security-session"},
 	{0, NULL}
 };
 
