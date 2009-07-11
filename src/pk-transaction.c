@@ -61,7 +61,7 @@
 #include "pk-shared.h"
 #include "pk-cache.h"
 #include "pk-notify.h"
-#include "pk-post-trans.h"
+#include "pk-transaction-extra.h"
 #include "pk-syslog.h"
 
 static void     pk_transaction_finalize		(GObject	    *object);
@@ -107,7 +107,7 @@ struct PkTransactionPrivate
 #endif
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy_pid;
-	PkPostTrans		*post_trans;
+	PkTransactionExtra		*transaction_extra;
 	PkSyslog		*syslog;
 
 	/* needed for gui coldplugging */
@@ -610,7 +610,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			/* process file lists on these packages */
 			if (list->len > 0) {
 				package_ids = pk_package_ids_from_array (list);
-				pk_post_trans_check_running_process (transaction->priv->post_trans, package_ids);
+				pk_transaction_extra_check_running_process (transaction->priv->transaction_extra, package_ids);
 				g_strfreev (package_ids);
 			}
 			g_ptr_array_foreach (list, (GFunc) g_free, NULL);
@@ -642,7 +642,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			/* process file lists on these packages */
 			if (list->len > 0) {
 				package_ids = pk_package_ids_from_array (list);
-				pk_post_trans_check_desktop_files (transaction->priv->post_trans, package_ids);
+				pk_transaction_extra_check_desktop_files (transaction->priv->transaction_extra, package_ids);
 				g_strfreev (package_ids);
 			}
 			g_ptr_array_foreach (list, (GFunc) g_free, NULL);
@@ -664,15 +664,15 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		/* generate the package list */
 		ret = pk_conf_get_bool (transaction->priv->conf, "UpdatePackageList");
 		if (ret)
-			pk_post_trans_update_package_list (transaction->priv->post_trans);
+			pk_transaction_extra_update_package_list (transaction->priv->transaction_extra);
 
 		/* refresh the desktop icon cache */
 		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFiles");
 		if (ret)
-			pk_post_trans_import_desktop_files (transaction->priv->post_trans);
+			pk_transaction_extra_import_desktop_files (transaction->priv->transaction_extra);
 
 		/* clear the firmware requests directory */
-		pk_post_trans_clear_firmware_requests (transaction->priv->post_trans);
+		pk_transaction_extra_clear_firmware_requests (transaction->priv->transaction_extra);
 	}
 
 	/* if we did not send this, ensure the GUI has the right state */
@@ -1111,7 +1111,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction)
 
 	/* find files in security updates */
 	package_ids = pk_package_ids_from_array (list);
-	ret = pk_post_trans_check_library_restart (transaction->priv->post_trans, package_ids);
+	ret = pk_transaction_extra_check_library_restart (transaction->priv->transaction_extra, package_ids);
 out:
 	g_strfreev (package_ids);
 	if (list != NULL) {
@@ -4312,12 +4312,12 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cancellable = g_cancellable_new ();
 #endif
 
-	transaction->priv->post_trans = pk_post_trans_new ();
-	g_signal_connect (transaction->priv->post_trans, "status-changed",
+	transaction->priv->transaction_extra = pk_transaction_extra_new ();
+	g_signal_connect (transaction->priv->transaction_extra, "status-changed",
 			  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
-	g_signal_connect (transaction->priv->post_trans, "progress-changed",
+	g_signal_connect (transaction->priv->transaction_extra, "progress-changed",
 			  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
-	g_signal_connect (transaction->priv->post_trans, "require-restart",
+	g_signal_connect (transaction->priv->transaction_extra, "require-restart",
 			  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
 
 	transaction->priv->transaction_db = pk_transaction_db_new ();
@@ -4418,7 +4418,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->proxy_pid);
 	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->syslog);
-	g_object_unref (transaction->priv->post_trans);
+	g_object_unref (transaction->priv->transaction_extra);
 #ifdef USE_SECURITY_POLKIT
 //	g_object_unref (transaction->priv->authority);
 	g_object_unref (transaction->priv->cancellable);

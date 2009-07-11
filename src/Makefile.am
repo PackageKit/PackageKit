@@ -55,6 +55,8 @@ shared_SOURCES =					\
 	pk-lsof.h					\
 	pk-transaction.c				\
 	pk-transaction.h				\
+	pk-transaction-extra.c				\
+	pk-transaction-extra.h				\
 	pk-backend.c					\
 	pk-backend.h					\
 	pk-backend-internal.h				\
@@ -62,8 +64,6 @@ shared_SOURCES =					\
 	pk-network.h					\
 	pk-shared.c					\
 	pk-shared.h					\
-	pk-post-trans.c					\
-	pk-post-trans.h					\
 	pk-time.h					\
 	pk-time.c					\
 	pk-network-stack.h				\
