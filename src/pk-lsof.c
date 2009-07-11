@@ -94,6 +94,43 @@ pk_lsof_data_new (guint pid, const gchar *filename)
 	return data;
 }
 
+typedef enum {
+	PK_LSOF_TYPE_MEM,
+	PK_LSOF_TYPE_DEL,
+	PK_LSOF_TYPE_TXT,
+	PK_LSOF_TYPE_UNKNOWN
+} PkLsofType;
+
+/**
+ * pk_lsof_type_to_text:
+ **/
+static const gchar *
+pk_lsof_type_to_text (PkLsofType type)
+{
+	if (type == PK_LSOF_TYPE_MEM)
+		return "mem";
+	if (type == PK_LSOF_TYPE_TXT)
+		return "txt";
+	if (type == PK_LSOF_TYPE_DEL)
+		return "del";
+	return "unknown";
+}
+
+/**
+ * pk_lsof_type_from_text:
+ **/
+static PkLsofType
+pk_lsof_type_from_text (const gchar *type)
+{
+	if (g_ascii_strcasecmp (type, "mem") == 0)
+		return PK_LSOF_TYPE_MEM;
+	if (g_ascii_strcasecmp (type, "txt") == 0)
+		return PK_LSOF_TYPE_TXT;
+	if (g_ascii_strcasecmp (type, "del") == 0)
+		return PK_LSOF_TYPE_DEL;
+	return PK_LSOF_TYPE_UNKNOWN;
+}
+
 /**
  * pk_lsof_refresh:
  **/
@@ -107,14 +144,15 @@ pk_lsof_refresh (PkLsof *lsof)
 	PkLsofData *data;
 	gchar **lines = NULL;
 	guint i;
-	const gchar *pid_text;
-	const gchar *type;
-	const gchar *filename;
+	const gchar *value;
+	gchar mode;
+	gint pid = -1;
+	PkLsofType type = PK_LSOF_TYPE_UNKNOWN;
 
 	g_return_val_if_fail (PK_IS_LSOF (lsof), FALSE);
 
 	/* run lsof to get all data */
-	ret = g_spawn_command_line_sync ("/usr/sbin/lsof", &stdout, &stderr, NULL, &error);
+	ret = g_spawn_command_line_sync ("/usr/sbin/lsof -Fpfn", &stdout, &stderr, NULL, &error);
 	if (!ret) {
 		egg_warning ("failed to get pids: %s", error->message);
 		g_error_free (error);
@@ -129,28 +167,40 @@ pk_lsof_refresh (PkLsof *lsof)
 	lines = g_strsplit (stdout, "\n", -1);
 	for (i=0; lines[i] != NULL; i++) {
 
-		/* parse: devhelp   11328   hughsie  mem       REG        8,2    65840  161702 /usr/lib/gio/modules/libgioremote-volume-monitor.so */
-		lines[i][17] = '\0';
-		lines[i][36] = '\0';
-		pid_text = &lines[i][10];
-		type = &lines[i][27];
-		filename = &lines[i][69+3];
-
-		/* only add memory mapped entries */
-		if (!g_str_has_prefix (type, "mem"))
+		/* get mode */
+		mode = lines[i][0];
+		if (mode == '\0')
 			continue;
 
-		/* not a system library */
-		if (strstr (filename, "/lib/") == NULL)
-			continue;
+		value = &lines[i][1];
+		switch (mode) {
+		case 'p':
+			pid = atoi (value);
+			break;
+		case 'f':
+			type = pk_lsof_type_from_text (value);
+			break;
+		case 'n':
+			if (type == PK_LSOF_TYPE_DEL ||
+			    type == PK_LSOF_TYPE_MEM) {
 
-		/* not a shared object */
-		if (strstr (filename, ".so") == NULL)
-			continue;
+				/* not a system library */
+				if (strstr (value, "/lib/") == NULL)
+					break;
 
-		/* add to array */
-		data = pk_lsof_data_new (atoi (pid_text), filename);
-		g_ptr_array_add (lsof->priv->list_data, data);
+				/* not a shared object */
+				if (strstr (value, ".so") == NULL)
+					break;
+
+				/* add to array */
+				data = pk_lsof_data_new (pid, value);
+				g_ptr_array_add (lsof->priv->list_data, data);
+			}
+			break;
+		default:
+			egg_debug ("ignoring %c=%s (type=%s)", mode, value, pk_lsof_type_to_text (type));
+			break;
+		}
 	}
 out:
 	g_strfreev (lines);
