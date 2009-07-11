@@ -56,6 +56,8 @@ gboolean	 pk_post_trans_check_running_process	(PkPostTrans	*post,
 							 gchar		**package_ids);
 gboolean	 pk_post_trans_check_desktop_files	(PkPostTrans	*post,
 							 gchar		**package_ids);
+gboolean	 pk_post_trans_check_library_restart	(PkPostTrans	*post,
+							 gchar		**package_ids);
 
 G_END_DECLS
 

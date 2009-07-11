@@ -38,6 +38,7 @@
 #include "pk-shared.h"
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
+#include "pk-lsof.h"
 
 #define PK_POST_TRANS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_POST_TRANS, PkPostTransPrivate))
 
@@ -48,14 +49,17 @@ struct PkPostTransPrivate
 	GMainLoop		*loop;
 	PkObjList		*running_exec_list;
 	PkPackageList		*list;
+	PkLsof			*lsof;
 	guint			 finished_id;
 	guint			 package_id;
 	GHashTable		*hash;
+	GPtrArray		*files_list;
 };
 
 enum {
 	PK_POST_TRANS_STATUS_CHANGED,
 	PK_POST_TRANS_PROGRESS_CHANGED,
+	PK_POST_TRANS_REQUIRE_RESTART,
 	PK_POST_TRANS_LAST_SIGNAL
 };
 
@@ -79,6 +83,16 @@ static void
 pk_post_trans_package_cb (PkBackend *backend, const PkPackageObj *obj, PkPostTrans *post)
 {
 	pk_obj_list_add (PK_OBJ_LIST(post->priv->list), obj);
+}
+
+/**
+ * pk_post_trans_set_require_restart:
+ **/
+static void
+pk_post_trans_set_require_restart (PkPostTrans *post, PkRestartEnum restart, const gchar *package_id)
+{
+	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
+	g_signal_emit (post, signals [PK_POST_TRANS_REQUIRE_RESTART], 0, restart, package_id);
 }
 
 /**
@@ -737,6 +751,260 @@ pk_post_trans_check_desktop_files (PkPostTrans *post, gchar **package_ids)
 }
 
 /**
+ * pk_post_trans_files_check_library_restart_cb:
+ **/
+static void
+pk_post_trans_files_check_library_restart_cb (PkBackend *backend, const gchar *package_id,
+					      const gchar *filelist, PkPostTrans *post)
+{
+	guint i;
+	guint len;
+	gchar **files = NULL;
+
+	files = g_strsplit (filelist, ";", 0);
+
+	/* check each file to see if it's a system shared library */
+	len = g_strv_length (files);
+	for (i=0; i<len; i++) {
+		/* not a system library */
+		if (strstr (files[i], "/lib/") == NULL)
+			continue;
+
+		/* not a shared object */
+		if (strstr (files[i], ".so") == NULL)
+			continue;
+
+		/* add as it matches the criteria */
+		egg_debug ("adding filename %s", files[i]);
+		g_ptr_array_add (post->priv->files_list, g_strdup (files[i]));
+	}
+}
+
+/**
+ * pk_post_trans_get_cmdline:
+ **/
+static gchar *
+pk_post_trans_get_cmdline (PkPostTrans *post, guint pid)
+{
+	gboolean ret;
+	gchar *filename = NULL;
+	gchar *cmdline = NULL;
+	GError *error = NULL;
+
+	/* get command line from proc */
+	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
+	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
+	if (!ret) {
+		egg_warning ("failed to get cmdline: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	g_free (filename);
+	return cmdline;
+}
+
+/**
+ * pk_post_trans_get_uid:
+ **/
+static gint
+pk_post_trans_get_uid (PkPostTrans *post, guint pid)
+{
+	gboolean ret;
+	gint uid = -1;
+	gchar *filename = NULL;
+	gchar *uid_text = NULL;
+	GError *error = NULL;
+
+	/* get command line from proc */
+	filename = g_strdup_printf ("/proc/%i/loginuid", pid);
+	ret = g_file_get_contents (filename, &uid_text, NULL, &error);
+	if (!ret) {
+		egg_warning ("failed to get cmdline: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* convert from text */
+	uid = atoi (uid_text);
+out:
+	g_free (filename);
+	g_free (uid_text);
+	return uid;
+}
+
+/**
+ * pk_post_trans_check_library_restart_emit:
+ **/
+static gboolean
+pk_post_trans_check_library_restart_emit (PkPostTrans *post, GPtrArray *pids)
+{
+	gint uid;
+	guint i;
+	guint pid;
+	gchar *filename;
+	gchar *cmdline;
+	gchar *cmdline_full;
+	gchar *package_id;
+	GPtrArray *files_session;
+	GPtrArray *files_system;
+	const PkPackageObj *obj;
+
+	/* create arrays */
+	files_session = g_ptr_array_new ();
+	files_system = g_ptr_array_new ();
+
+	/* find the package name of each pid */
+	for (i=0; i<pids->len; i++) {
+		pid = GPOINTER_TO_INT (g_ptr_array_index (pids, i));
+
+		/* get user */
+		uid = pk_post_trans_get_uid (post, pid);
+		if (uid < 0)
+			continue;
+
+		/* get command line */
+		cmdline = pk_post_trans_get_cmdline (post, pid);
+		if (cmdline == NULL)
+			continue;
+
+		/* prepend path if it does not already exist */
+		if (cmdline[0] == '/')
+			cmdline_full = g_strdup (cmdline);
+		else
+			cmdline_full = g_strdup_printf ("/usr/bin/%s", cmdline);
+
+		egg_warning ("pid=%i: %s (%i)", pid, cmdline_full, uid);
+		if (uid < 500)
+			g_ptr_array_add (files_system, cmdline_full);
+		else
+			g_ptr_array_add (files_session, cmdline_full);
+		g_free (cmdline);
+	}
+
+	/* we found nothing */
+	if (files_system->len == 0 && files_session->len == 0) {
+		egg_warning ("no pids could be resolved");
+		goto out;
+	}
+
+	/* process all session restarts */
+	for (i=0; i<files_session->len; i++) {
+		filename = g_ptr_array_index (files_session, i);
+
+		obj = pk_post_trans_get_installed_package_for_file (post, filename);
+		if (obj == NULL) {
+			egg_warning ("failed to find package for %s", filename);
+			continue;
+		}
+
+		package_id = pk_package_id_to_string (obj->id);
+		pk_post_trans_set_require_restart (post, PK_RESTART_ENUM_SECURITY_SESSION, package_id);
+		g_free (package_id);
+	}
+
+	/* process all system restarts */
+	for (i=0; i<files_system->len; i++) {
+		filename = g_ptr_array_index (files_system, i);
+
+		obj = pk_post_trans_get_installed_package_for_file (post, filename);
+		if (obj == NULL) {
+			egg_warning ("failed to find package for %s", filename);
+			continue;
+		}
+
+		package_id = pk_package_id_to_string (obj->id);
+		pk_post_trans_set_require_restart (post, PK_RESTART_ENUM_SECURITY_SYSTEM, package_id);
+		g_free (package_id);
+	}
+
+out:
+	g_ptr_array_foreach (files_session, (GFunc) g_free, NULL);
+	g_ptr_array_foreach (files_system, (GFunc) g_free, NULL);
+	g_ptr_array_free (files_session, TRUE);
+	g_ptr_array_free (files_system, TRUE);
+	return TRUE;
+}
+
+/**
+ * pk_post_trans_check_library_restart:
+ **/
+gboolean
+pk_post_trans_check_library_restart (PkPostTrans *post, gchar **package_ids)
+{
+	PkStore *store;
+	guint signal_files;
+	gboolean ret = TRUE;
+	gchar **files = NULL;
+	GPtrArray *pids;
+
+	g_return_val_if_fail (PK_IS_POST_TRANS (post), FALSE);
+
+	if (post->priv->backend->desc->get_files == NULL) {
+		egg_debug ("cannot get files");
+		return FALSE;
+	}
+
+	/* reset */
+	g_ptr_array_foreach (post->priv->files_list, (GFunc) g_free, NULL);
+	g_ptr_array_set_size (post->priv->files_list, 0);
+
+	/* get list from lsof */
+	ret = pk_lsof_refresh (post->priv->lsof);
+	if (!ret) {
+		egg_warning ("failed to refresh");
+		goto out;
+	}
+
+	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
+	pk_post_trans_set_progress_changed (post, 101);
+
+	store = pk_backend_get_store (post->priv->backend);
+	signal_files = g_signal_connect (post->priv->backend, "files",
+					 G_CALLBACK (pk_post_trans_files_check_library_restart_cb), post);
+
+	/* get all the files touched in the packages we just updated */
+	pk_backend_reset (post->priv->backend);
+	pk_store_set_strv (store, "package_ids", package_ids);
+	post->priv->backend->desc->get_files (post->priv->backend, package_ids);
+
+	/* wait for finished */
+	g_main_loop_run (post->priv->loop);
+
+	/* nothing to do */
+	if (post->priv->files_list->len == 0) {
+		egg_warning ("no files");
+		goto out;
+	}
+
+	/* get the list of PIDs */
+	files = pk_ptr_array_to_strv (post->priv->files_list);
+	pids = pk_lsof_get_pids_for_filenames (post->priv->lsof, files);
+
+	/* nothing depends on these libraries */
+	if (pids == NULL) {
+		egg_warning ("failed to get process list");
+		goto out;
+	}
+
+	/* nothing depends on these libraries */
+	if (pids->len == 0) {
+		egg_warning ("no processes depend on these libraries");
+		goto out;
+	}
+
+	/* emit */
+	pk_post_trans_check_library_restart_emit (post, pids);
+	g_ptr_array_free (pids, TRUE);
+
+	g_signal_handler_disconnect (post->priv->backend, signal_files);
+	pk_post_trans_set_progress_changed (post, 100);
+out:
+	g_strfreev (files);
+	return ret;
+}
+
+/**
  * pk_post_trans_finalize:
  **/
 static void
@@ -756,8 +1024,11 @@ pk_post_trans_finalize (GObject *object)
 	g_main_loop_unref (post->priv->loop);
 	sqlite3_close (post->priv->db);
 	g_hash_table_unref (post->priv->hash);
+	g_ptr_array_foreach (post->priv->files_list, (GFunc) g_free, NULL);
+	g_ptr_array_free (post->priv->files_list, TRUE);
 
 	g_object_unref (post->priv->backend);
+	g_object_unref (post->priv->lsof);
 	g_object_unref (post->priv->list);
 	g_object_unref (post->priv->running_exec_list);
 
@@ -782,6 +1053,11 @@ pk_post_trans_class_init (PkPostTransClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
 			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
+	signals [PK_POST_TRANS_REQUIRE_RESTART] =
+		g_signal_new ("require-restart",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 	g_type_class_add_private (klass, sizeof (PkPostTransPrivate));
 }
 
@@ -805,8 +1081,10 @@ pk_post_trans_init (PkPostTrans *post)
 	post->priv->loop = g_main_loop_new (NULL, FALSE);
 	post->priv->list = pk_package_list_new ();
 	post->priv->backend = pk_backend_new ();
+	post->priv->lsof = pk_lsof_new ();
 	post->priv->db = NULL;
 	post->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	post->priv->files_list = g_ptr_array_new ();
 
 	post->priv->finished_id =
 		g_signal_connect (post->priv->backend, "finished",

@@ -1059,11 +1059,75 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 }
 
 /**
+ * pk_transaction_pre_transaction_checks:
+ *
+ * TODO: also check if package in InstallPackages is in the update lists
+ *       and do the same check if this is so.
+ */
+static gboolean
+pk_transaction_pre_transaction_checks (PkTransaction *transaction)
+{
+	PkPackageList *updates;
+	const PkPackageObj *obj;
+	guint i;
+	guint length;
+	gboolean ret = FALSE;
+	gchar *package_id;
+	gchar **package_ids = NULL;
+	GPtrArray *list = NULL;
+
+	/* only do this for update actions */
+	if (transaction->priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
+	    transaction->priv->role != PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		egg_debug ("doing nothing, as not update");
+		goto out;
+	}
+
+	/* do we want to enable this codepath? */
+	ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUse");
+	if (!ret) {
+		egg_warning ("not checking for library restarts");
+		goto out;
+	}
+
+	/* do we have a cache */
+	updates = pk_cache_get_updates (transaction->priv->cache);
+	if (updates == NULL) {
+		egg_warning ("no updates cache");
+		goto out;
+	}
+
+	/* find security update packages */
+	list = g_ptr_array_new ();
+	length = pk_package_list_get_size (updates);
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (updates, i);
+		if (obj->info == PK_INFO_ENUM_SECURITY) {
+			package_id = pk_package_id_to_string (obj->id);
+			egg_debug ("security update: %s", package_id);
+			g_ptr_array_add (list, package_id);
+		}
+	}
+
+	/* find files in security updates */
+	package_ids = pk_package_ids_from_array (list);
+	ret = pk_post_trans_check_library_restart (transaction->priv->post_trans, package_ids);
+out:
+	g_strfreev (package_ids);
+	if (list != NULL) {
+		g_ptr_array_foreach (list, (GFunc) g_free, NULL);
+		g_ptr_array_free (list, TRUE);
+	}
+	return ret;
+}
+
+/**
  * pk_transaction_set_running:
  */
 G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_set_running (PkTransaction *transaction)
 {
+	gboolean ret;
 	PkBackendDesc *desc;
 	PkStore *store;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
@@ -1091,6 +1155,13 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
 	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_text (priv->role));
+
+	/* do any pre transaction checks */
+	ret = pk_transaction_pre_transaction_checks (transaction);
+
+	/* might have to reset again if we used the backend */
+	if (ret)
+		pk_backend_reset (transaction->priv->backend);
 
 	/* connect up the signals */
 	transaction->priv->signal_allow_cancel =
@@ -4246,6 +4317,8 @@ pk_transaction_init (PkTransaction *transaction)
 			  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
 	g_signal_connect (transaction->priv->post_trans, "progress-changed",
 			  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
+	g_signal_connect (transaction->priv->post_trans, "require-restart",
+			  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
 
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
