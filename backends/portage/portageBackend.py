@@ -30,6 +30,7 @@ import portage
 import _emerge.actions
 import _emerge.stdout_spinner
 import _emerge.create_depgraph_params
+import _emerge.AtomArg
 
 # layman imports
 import layman.db
@@ -525,53 +526,97 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         PackageKitBaseBackend.package(self, self.cpv_to_id(cpv), info, desc)
 
     def get_depends(self, filters, pkgs, recursive):
-        # TODO: manage filters
-        # TODO: optimize by using vardb for installed packages ?
-        # TODO: use depgraph.select_files to select multiple files
-        # TODO: print package in depends ?
+        # TODO: use only myparams ?
+        # TODO: error management
+
+        # FILTERS:
+        # - installed: ok
+        # - free: ok
+        # - newest: ignored because only one version of a package is installed
+
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
+        fltlist = filters.split(';')
+
+        cpv_input = []
+        cpv_list = []
+
         for pkg in pkgs:
             cpv = id_to_cpv(pkg)
-
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                         "Package %s was not found" % pkg)
-                continue
+                return
+            cpv_input.append('=' + cpv)
 
-            myopts = {}
-            if recursive:
-                myopts["--emptytree"] = True
-            spinner = _emerge.stdout_spinner.stdout_spinner()
-            settings, trees, _ = _emerge.actions.load_emerge_config()
-            myparams = _emerge.create_depgraph_params.create_depgraph_params(
-                    myopts, "")
-            depgraph = _emerge.depgraph.depgraph(
-                    settings, trees, myopts, myparams, spinner)
+        myopts = {}
+        myopts["--selective"] = True
+        myopts["--deep"] = True
+        spinner = _emerge.stdout_spinner.stdout_spinner()
+        settings, trees, _ = _emerge.actions.load_emerge_config()
+        myparams = _emerge.create_depgraph_params.create_depgraph_params(
+                myopts, "")
+        depgraph = _emerge.depgraph.depgraph(
+                settings, trees, myopts, myparams, spinner)
+        retval, fav = depgraph.select_files(cpv_input)
+        if not retval:
+            depgraph.display_problems()
+            self.error(ERROR_INTERNAL_ERROR,
+                    "Wasn't able to get dependency graph")
+            return
 
-            retval, fav = depgraph.select_files(["="+cpv])
-            if not retval:
-                self.error(ERROR_INTERNAL_ERROR,
-                        "Wasn't able to get dependency graph")
-                continue
+        def _add_children_to_list(cpv_list, node):
+            for n in depgraph._dynamic_config.digraph.child_nodes(node):
+                if n not in cpv_list:
+                    cpv_list.append(n)
+                    _add_children_to_list(cpv_list, n)
 
-            if recursive:
-                # printing the whole tree
-                for p in depgraph.altlist(reversed=1):
-                    if p[2] != cpv:
-                        self.package(p[2])
-            else: # !recursive
-                # only printing child of the root node
-                # actually, we have "=cpv" -> "cpv" -> children
-                root_node = depgraph._dynamic_config.digraph.root_nodes()[0] # =cpv
-                root_node = depgraph._dynamic_config.digraph.child_nodes(
-                        root_node)[0] # cpv
-                children = depgraph._dynamic_config.digraph.child_nodes(
-                        root_node)
-                for child in children:
-                    self.package(child[2])
+        for cpv in cpv_input:
+            for r in depgraph._dynamic_config.digraph.root_nodes():
+                if not isinstance(r, _emerge.AtomArg.AtomArg):
+                    continue
+                if r.atom == cpv:
+                    if recursive:
+                        _add_children_to_list(cpv_list, r)
+                    else:
+                        for n in \
+                                depgraph._dynamic_config.digraph.child_nodes(r):
+                            for c in \
+                                depgraph._dynamic_config.digraph.child_nodes(n):
+                                cpv_list.append(c)
+
+        def _filter_uninstall(cpv):
+            return cpv[3] != 'uninstall'
+        def _filter_installed(cpv):
+            return cpv[0] == 'installed'
+        def _filter_not_installed(cpv):
+            return cpv[0] != 'installed'
+
+        # removing packages going to be uninstalled
+        cpv_list = filter(_filter_uninstall, cpv_list)
+
+        # install filter
+        if FILTER_INSTALLED in fltlist:
+            cpv_list = filter(_filter_installed, cpv_list)
+        if FILTER_NOT_INSTALLED in fltlist:
+            cpv_list = filter(_filter_not_installed, cpv_list)
+
+        # now we can change cpv_list to a real cpv list
+        tmp_list = cpv_list[:]
+        cpv_list = []
+        for x in tmp_list:
+            cpv_list.append(x[2])
+        del tmp_list
+
+        # free filter
+        cpv_list = self.filter_free(cpv_list, fltlist)
+
+        for cpv in cpv_list:
+            # prevent showing input packages
+            if '=' + cpv not in cpv_input:
+                self.package(cpv)
 
     def get_details(self, pkgs):
         self.status(STATUS_INFO)
