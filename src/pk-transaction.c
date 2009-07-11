@@ -115,6 +115,7 @@ struct PkTransactionPrivate
 	gchar			*tid;
 	gchar			*sender;
 	gchar			*cmdline;
+	GPtrArray		*require_restart_list;
 	PkPackageList		*package_list;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
@@ -957,11 +958,35 @@ static void
 pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const gchar *package_id, PkTransaction *transaction)
 {
 	const gchar *restart_text;
+	const gchar *package_id_tmp;
+	GPtrArray *list;
+	gboolean found = FALSE;
+	guint i;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	restart_text = pk_restart_enum_to_text (restart);
+
+	/* filter out duplicates */
+	list = transaction->priv->require_restart_list;
+	for (i=0; i<list->len; i++) {
+		package_id_tmp = g_ptr_array_index (list, i);
+		if (g_strcmp0 (package_id, package_id_tmp) == 0) {
+			found = TRUE;
+			break;
+		}
+	}
+
+	/* ignore */
+	if (found) {
+		egg_debug ("ignoring %s (%s) as already sent", restart_text, package_id);
+		return;
+	}
+
+	/* add to duplicate list */
+	g_ptr_array_add (list, g_strdup (package_id));
+
 	egg_debug ("emitting require-restart %s, '%s'", restart_text, package_id);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_REQUIRE_RESTART], 0, restart_text, package_id);
 }
@@ -1044,6 +1069,10 @@ pk_transaction_set_running (PkTransaction *transaction)
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+
+	/* reset the require-restart list */
+	g_ptr_array_foreach (transaction->priv->require_restart_list, (GFunc) g_free, NULL);
+	g_ptr_array_set_size (transaction->priv->require_restart_list, 0);
 
 	/* prepare for use; the transaction list ensures this is safe */
 	pk_backend_reset (transaction->priv->backend);
@@ -4198,6 +4227,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->elapsed = 0;
 	transaction->priv->remaining = 0;
+	transaction->priv->require_restart_list = g_ptr_array_new ();
 	transaction->priv->backend = pk_backend_new ();
 	transaction->priv->cache = pk_cache_new ();
 	transaction->priv->conf = pk_conf_new ();
@@ -4285,6 +4315,9 @@ pk_transaction_finalize (GObject *object)
 	if (transaction->priv->subject != NULL)
 		g_object_unref (transaction->priv->subject);
 #endif
+
+	g_ptr_array_foreach (transaction->priv->require_restart_list, (GFunc) g_free, NULL);
+	g_ptr_array_free (transaction->priv->require_restart_list, TRUE);
 
 	g_free (transaction->priv->last_package_id);
 	g_free (transaction->priv->locale);
