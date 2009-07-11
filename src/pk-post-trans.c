@@ -102,14 +102,13 @@ pk_post_trans_set_progress_changed (PkPostTrans *post, guint percentage)
 }
 
 /**
- * pk_post_trans_import_desktop_files_get_package:
+ * pk_post_trans_get_installed_package_for_file:
  **/
-static gchar *
-pk_post_trans_import_desktop_files_get_package (PkPostTrans *post, const gchar *filename)
+static const PkPackageObj *
+pk_post_trans_get_installed_package_for_file (PkPostTrans *post, const gchar *filename)
 {
 	guint size;
-	gchar *name = NULL;
-	const PkPackageObj *obj;
+	const PkPackageObj *obj = NULL;
 	PkStore *store;
 
 	/* use PK to find the correct package */
@@ -136,12 +135,8 @@ pk_post_trans_import_desktop_files_get_package (PkPostTrans *post, const gchar *
 		egg_warning ("cannot get obj");
 		goto out;
 	}
-
-	/* strip the name */
-	name = g_strdup (obj->id->name);
-
 out:
-	return name;
+	return obj;
 }
 
 /**
@@ -271,6 +266,7 @@ pk_post_trans_sqlite_add_filename (PkPostTrans *post, const gchar *filename, con
 	gchar *md5 = NULL;
 	gchar *package = NULL;
 	gint rc = -1;
+	const PkPackageObj *obj;
 
 	/* if we've got it, use old data */
 	if (md5_opt != NULL)
@@ -279,14 +275,14 @@ pk_post_trans_sqlite_add_filename (PkPostTrans *post, const gchar *filename, con
 		md5 = pk_post_trans_get_filename_md5 (filename);
 
 	/* resolve */
-	package = pk_post_trans_import_desktop_files_get_package (post, filename);
-	if (package == NULL) {
+	obj = pk_post_trans_get_installed_package_for_file (post, filename);
+	if (obj == NULL) {
 		egg_warning ("failed to get list");
 		goto out;
 	}
 
 	/* add */
-	rc = pk_post_trans_sqlite_add_filename_details (post, filename, package, md5);
+	rc = pk_post_trans_sqlite_add_filename_details (post, filename, obj->id->name, md5);
 out:
 	g_free (md5);
 	g_free (package);
