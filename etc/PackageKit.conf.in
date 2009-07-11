@@ -116,6 +116,15 @@ UpdatePackageList=true
 # default=true
 UpdateCheckProcesses=true
 
+# Check for shared libraries that are in use, that are replaced by packages
+# that are marked as security updates.
+#
+# NOTE: Don't enable this for backends that are slow doing GetFiles() on
+# installed files.
+#
+# default=true
+CheckSharedLibrariesInUse=true
+
 # Check for updates in testing repositories when we check for updates
 #
 # NOTE: Don't enable this if you do not want testing updates to be checked
