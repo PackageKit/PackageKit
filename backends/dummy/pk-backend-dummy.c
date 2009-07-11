@@ -243,7 +243,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 		else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed"))
 			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
 		else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora"))
-			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/bin/ck-xinit-session");
+			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/bin/ck-xinit-session;/lib/libselinux.so.1");
 		else
 			pk_backend_files (backend, package_id, "/usr/share/gnome-power-manager;/usr/bin/ck-xinit-session");
 	}
