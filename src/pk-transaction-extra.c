@@ -641,7 +641,7 @@ gboolean
 pk_transaction_extra_check_running_process (PkTransactionExtra *post, gchar **package_ids)
 {
 	PkStore *store;
-	guint signal_files;
+	guint signal_files = 0;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (post), FALSE);
 
@@ -721,7 +721,7 @@ gboolean
 pk_transaction_extra_check_desktop_files (PkTransactionExtra *post, gchar **package_ids)
 {
 	PkStore *store;
-	guint signal_files;
+	guint signal_files = 0;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (post), FALSE);
 
@@ -933,7 +933,7 @@ gboolean
 pk_transaction_extra_check_library_restart (PkTransactionExtra *post, gchar **package_ids)
 {
 	PkStore *store;
-	guint signal_files;
+	guint signal_files = 0;
 	gboolean ret = TRUE;
 	gchar **files = NULL;
 	GPtrArray *pids;
@@ -1000,10 +1000,10 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *post, gchar **pa
 	/* emit */
 	pk_transaction_extra_check_library_restart_emit (post, pids);
 	g_ptr_array_free (pids, TRUE);
-
-	g_signal_handler_disconnect (post->priv->backend, signal_files);
-	pk_transaction_extra_set_progress_changed (post, 100);
 out:
+	pk_transaction_extra_set_progress_changed (post, 100);
+	if (signal_files > 0)
+		g_signal_handler_disconnect (post->priv->backend, signal_files);
 	g_strfreev (files);
 	return ret;
 }
