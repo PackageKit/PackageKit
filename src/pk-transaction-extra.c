@@ -767,7 +767,7 @@ pk_transaction_extra_files_check_library_restart_cb (PkBackend *backend, const g
 	len = g_strv_length (files);
 	for (i=0; i<len; i++) {
 		/* not a system library */
-		if (strstr (files[i], "/lib/") == NULL)
+		if (strstr (files[i], "/lib") == NULL)
 			continue;
 
 		/* not a shared object */
