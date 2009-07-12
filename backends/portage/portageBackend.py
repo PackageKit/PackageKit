@@ -753,11 +753,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         myopts = {}
         spinner = ""
         favorites = []
-        settings, trees, mtimedb = _emerge.load_emerge_config()
-        spinner = _emerge.stdout_spinner()
-        rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"],
-                portage._sets.load_default_config(
-                    self.portage_settings, trees["/"]))
+
+        spinner = _emerge.stdout_spinner.stdout_spinner()
+        settings, trees, _ = _emerge.actions.load_emerge_config()
+        rootconfig = _emerge.RootConfig.RootConfig(
+                self.portage_settings, trees["/"],
+                portage.sets.load_default_config(self.portage_settings,
+                    trees["/"]))
 
         for pkg in pkgs:
             cpv = id_to_cpv(pkg)
@@ -774,7 +776,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             required_set_names = ("system", "world")
             required_sets = {}
 
-            args_set = portage._sets.base.InternalPackageSet()
+            args_set = portage.sets.base.InternalPackageSet()
             args_set.update(["="+cpv]) # parameters is converted to atom
             # or use portage.dep_expand
 
@@ -783,12 +785,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                         "Was not able to generate atoms")
                 continue
             
-            depgraph = _emerge.depgraph(settings, trees, myopts,
-                    _emerge.create_depgraph_params(myopts, "remove"), spinner)
-            vardb = depgraph.trees["/"]["vartree"].dbapi
+            depgraph = _emerge.depgraph.depgraph(settings, trees, myopts,
+                    _emerge.create_depgraph_params.create_depgraph_params(
+                        myopts, "remove"), spinner)
+            vardb = depgraph._frozen_config.trees["/"]["vartree"].dbapi
 
             for s in required_set_names:
-                required_sets[s] = portage._sets.base.InternalPackageSet(
+                required_sets[s] = portage.sets.base.InternalPackageSet(
                         initial_atoms=rootconfig.setconfig.getSetAtoms(s))
 
             # TODO: error/warning if world = null or system = null ?
@@ -796,7 +799,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             # TODO: not sure it's needed. for deselect in emerge...
             required_sets["world"].clear()
             for pkg in vardb:
-                spinner.update()
                 try:
                     if args_set.findAtomForPackage(pkg) is None:
                         required_sets["world"].add("=" + pkg.cpv)
@@ -805,15 +807,15 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
             set_args = {}
             for s, pkg_set in required_sets.iteritems():
-                set_atom = portage._sets.SETPREFIX + s
-                set_arg = _emerge.SetArg(arg=set_atom, set=pkg_set,
-                        root_config=depgraph.roots[portage.settings["ROOT"]])
+                set_atom = portage.sets.SETPREFIX + s
+                set_arg = _emerge.SetArg.SetArg(arg=set_atom, set=pkg_set,
+                        root_config=depgraph._frozen_config.roots[portage.settings["ROOT"]])
                 set_args[s] = set_arg
                 for atom in set_arg.set:
-                    depgraph._dep_stack.append(
-                            _emerge.Dependency(atom=atom, root=portage.settings["ROOT"],
+                    depgraph._dynamic_config._dep_stack.append(
+                            _emerge.Dependency.Dependency(atom=atom, root=portage.settings["ROOT"],
                                 parent=set_arg))
-                    depgraph.digraph.add(set_arg, None)
+                    depgraph._dynamic_config.digraph.add(set_arg, None)
 
             if not depgraph._complete_graph():
                 self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
@@ -835,8 +837,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                 except portage.exception.InvalidDependString:
                     continue
 
-                if arg_atom and pkg in depgraph.digraph:
-                    parents = depgraph.digraph.parent_nodes(pkg)
+                if arg_atom and pkg in depgraph._dynamic_config.digraph:
+                    parents = depgraph._dynamic_config.digraph.parent_nodes(pkg)
                     for node in parents:
                         self.package(node[2])
 
