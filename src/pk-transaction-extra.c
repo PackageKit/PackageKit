@@ -650,7 +650,7 @@ pk_transaction_extra_check_running_process (PkTransactionExtra *post, gchar **pa
 		return FALSE;
 	}
 
-	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
 	pk_transaction_extra_set_progress_changed (post, 101);
 
 	store = pk_backend_get_store (post->priv->backend);
@@ -949,6 +949,10 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *post, gchar **pa
 	g_ptr_array_foreach (post->priv->files_list, (GFunc) g_free, NULL);
 	g_ptr_array_set_size (post->priv->files_list, 0);
 
+	/* set status */
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_SCAN_PROCESS_LIST);
+	pk_transaction_extra_set_progress_changed (post, 101);
+
 	/* get list from lsof */
 	ret = pk_lsof_refresh (post->priv->lsof);
 	if (!ret) {
@@ -956,8 +960,8 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *post, gchar **pa
 		goto out;
 	}
 
-	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
-	pk_transaction_extra_set_progress_changed (post, 101);
+	/* set status */
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_CHECK_LIBRARIES);
 
 	store = pk_backend_get_store (post->priv->backend);
 	signal_files = g_signal_connect (post->priv->backend, "files",
