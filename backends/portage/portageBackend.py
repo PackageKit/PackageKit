@@ -527,7 +527,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def get_depends(self, filters, pkgs, recursive):
         # TODO: use only myparams ?
-        # TODO: error management
+        # TODO: improve error management / info
+        # TODO: show DEPEND-only depends too
 
         # FILTERS:
         # - installed: ok
@@ -548,7 +549,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                         "Package %s was not found" % pkg)
-                return
+                continue
             cpv_input.append('=' + cpv)
 
         myopts = {}
@@ -558,11 +559,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         settings, trees, _ = _emerge.actions.load_emerge_config()
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
-        depgraph = _emerge.depgraph.depgraph(
-                settings, trees, myopts, myparams, spinner)
-        retval, fav = depgraph.select_files(cpv_input)
+
+        try:
+            self.block_output()
+            depgraph = _emerge.depgraph.depgraph(
+                    settings, trees, myopts, myparams, spinner)
+            retval, fav = depgraph.select_files(cpv_input)
+        finally:
+            self.unblock_output()
+
         if not retval:
-            depgraph.display_problems()
             self.error(ERROR_INTERNAL_ERROR,
                     "Wasn't able to get dependency graph")
             return
@@ -740,7 +746,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # TODO: filters
         # TODO: recursive not implemented
         # TODO: usefulness ? use cases
-        # TODO: work only on installed packages
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
         self.percentage(None)
@@ -751,16 +756,19 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         settings, trees, mtimedb = _emerge.load_emerge_config()
         spinner = _emerge.stdout_spinner()
         rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"],
-                portage._sets.load_default_config(self.portage_settings, trees["/"]))
+                portage._sets.load_default_config(
+                    self.portage_settings, trees["/"]))
 
         for pkg in pkgs:
             cpv = id_to_cpv(pkg)
 
-            # is cpv installed
-            # TODO: keep error msg ?
-            if not self.vardb.match(cpv):
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,
-                        "Package %s is not installed" % pkg)
+            if not self.is_cpv_valid(cpv):
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                        "Package %s was not found" % pkg)
+                continue
+            if not self.is_installed(cpv):
+                self.error(ERROR_CANNOT_GET_REQUIRES,
+                        "get-requires is only available for installed packages")
                 continue
 
             required_set_names = ("system", "world")
@@ -771,7 +779,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             # or use portage.dep_expand
 
             if not args_set:
-                self.error(ERROR_INTERNAL_ERROR, "Was not able to generate atoms")
+                self.error(ERROR_INTERNAL_ERROR,
+                        "Was not able to generate atoms")
                 continue
             
             depgraph = _emerge.depgraph(settings, trees, myopts,
