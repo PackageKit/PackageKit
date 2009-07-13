@@ -51,7 +51,6 @@ py-compile
 tags
 *.patch
 NEWS.new
-*.txt
 .lock-wscript
 .waf-*
 _build_
