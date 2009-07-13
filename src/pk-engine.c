@@ -149,6 +149,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_SET_PROXY, "CannotSetProxy"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NOT_SUPPORTED, "NotSupported"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_ALLOCATE_TID, "CannotAllocateTid"),
 			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -239,6 +240,8 @@ pk_engine_get_tid (PkEngine *engine, DBusGMethodInvocation *context)
 	gchar *new_tid;
 	gboolean ret;
 	gchar *sender = NULL;
+	GError *error;
+	GError *error_local = NULL;
 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
@@ -246,7 +249,14 @@ pk_engine_get_tid (PkEngine *engine, DBusGMethodInvocation *context)
 	sender = dbus_g_method_get_sender (context);
 	new_tid = pk_transaction_db_generate_id (engine->priv->transaction_db);
 
-	ret = pk_transaction_list_create (engine->priv->transaction_list, new_tid, sender);
+	ret = pk_transaction_list_create (engine->priv->transaction_list, new_tid, sender, &error_local);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_ALLOCATE_TID, "getting the tid failed: %s", error_local->message);
+		dbus_g_method_return_error (context, error);
+		g_error_free (error_local);
+		goto out;
+	}
+
 	egg_debug ("sending tid: '%s'", new_tid);
 
 	/* reset the timer */
@@ -254,6 +264,7 @@ pk_engine_get_tid (PkEngine *engine, DBusGMethodInvocation *context)
 
 	/* return TID */
 	dbus_g_method_return (context, new_tid);
+out:
 	g_free (new_tid);
 	g_free (sender);
 }

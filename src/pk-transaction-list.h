@@ -56,7 +56,8 @@ PkTransactionList *pk_transaction_list_new		(void);
 
 gboolean	 pk_transaction_list_create		(PkTransactionList	*tlist,
 							 const gchar		*tid,
-							 const gchar		*sender);
+							 const gchar		*sender,
+							 GError			**error);
 gboolean	 pk_transaction_list_remove		(PkTransactionList	*tlist,
 							 const gchar		*tid);
 gboolean	 pk_transaction_list_commit		(PkTransactionList	*tlist,

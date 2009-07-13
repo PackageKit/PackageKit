@@ -169,3 +169,12 @@ StateChangedTimeoutPriority=5
 # default=600
 StateChangedTimeoutNormal=600
 
+# The maximum number of requests a given user is able to request and queue
+#
+# Setting this lower decreases the risk of a local denial of service, but may
+# cause errors if the desktop client is doing many requests to the daemon in a
+# short period of time.
+#
+# default=25
+SimultaneousTransactionsForUid=25
+

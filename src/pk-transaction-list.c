@@ -42,6 +42,7 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
+#include "pk-conf.h"
 #include "pk-transaction-list.h"
 #include "org.freedesktop.PackageKit.Transaction.h"
 
@@ -63,6 +64,7 @@ struct PkTransactionListPrivate
 	GPtrArray		*array;
 	guint			 unwedge1_id;
 	guint			 unwedge2_id;
+	PkConf			*conf;
 };
 
 typedef struct {
@@ -76,6 +78,7 @@ typedef struct {
 	guint			 idle_id;
 	guint			 commit_id;
 	gulong			 finished_id;
+	guint			 uid;
 } PkTransactionItem;
 
 enum {
@@ -350,12 +353,37 @@ pk_transaction_list_no_commit_cb (PkTransactionItem *item)
 }
 
 /**
+ * pk_transaction_list_get_number_transactions_for_uid:
+ *
+ * Find all the transactions that are pending from this uid.
+ **/
+static guint
+pk_transaction_list_get_number_transactions_for_uid (PkTransactionList *tlist, guint uid)
+{
+	guint i;
+	GPtrArray *array;
+	PkTransactionItem *item;
+	guint count = 0;
+
+	/* find all the transactions in progress */
+	array = tlist->priv->array;
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+		if (item->uid == uid)
+			count++;
+	}
+	return count;
+}
+
+/**
  * pk_transaction_list_create:
  **/
 gboolean
-pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gchar *sender)
+pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gchar *sender, GError **error)
 {
-	gboolean ret;
+	guint count;
+	guint max_count;
+	gboolean ret = FALSE;
 	PkTransactionItem *item;
 	DBusGConnection *connection;
 
@@ -365,8 +393,10 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 	/* already added? */
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL) {
+		if (error != NULL)
+			*error = g_error_new (1, 0, "already added %s to list", tid);
 		egg_warning ("already added %s to list", tid);
-		return FALSE;
+		goto out;
 	}
 
 	/* add to the array */
@@ -394,13 +424,42 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 
 	/* set the TID on the transaction */
 	ret = pk_transaction_set_tid (item->transaction, item->tid);
-	if (!ret)
-		egg_error ("failed to set TID");
+	if (!ret) {
+		if (error != NULL)
+			*error = g_error_new (1, 0, "failed to set TID: %s", tid);
+		goto out;
+	}
 
 	/* set the DBUS sender on the transaction */
 	ret = pk_transaction_set_sender (item->transaction, sender);
-	if (!ret)
-		egg_error ("failed to set sender");
+	if (!ret) {
+		if (error != NULL)
+			*error = g_error_new (1, 0, "failed to set sender: %s", tid);
+		goto out;
+	}
+
+	/* get the uid for the transaction */
+	g_object_get (item->transaction,
+		      "uid", &item->uid,
+		      NULL);
+
+	/* find out the number of transactions this uid already has in progress */
+	count = pk_transaction_list_get_number_transactions_for_uid (tlist, item->uid);
+	egg_debug ("uid=%i, count=%i", item->uid, count);
+
+	/* would this take us over the maximum number of requests allowed */
+	max_count = pk_conf_get_int (tlist->priv->conf, "SimultaneousTransactionsForUid");
+	if (count > max_count) {
+		if (error != NULL)
+			*error = g_error_new (1, 0, "failed to allocate %s as uid %i already has %i transactions in progress", tid, item->uid, count);
+
+		/* free transaction, as it's never going to be added */
+		pk_transaction_list_item_free (item);
+
+		/* failure */
+		ret = FALSE;
+		goto out;
+	}
 
 	/* put on the bus */
 	dbus_g_object_type_install_info (PK_TYPE_TRANSACTION, &dbus_glib_pk_transaction_object_info);
@@ -412,7 +471,8 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 
 	egg_debug ("adding transaction %p, item %p", item->transaction, item);
 	g_ptr_array_add (tlist->priv->array, item);
-	return TRUE;
+out:
+	return ret;
 }
 
 /**
@@ -745,6 +805,7 @@ static void
 pk_transaction_list_init (PkTransactionList *tlist)
 {
 	tlist->priv = PK_TRANSACTION_LIST_GET_PRIVATE (tlist);
+	tlist->priv->conf = pk_conf_new ();
 	tlist->priv->array = g_ptr_array_new ();
 	tlist->priv->unwedge2_id = 0;
 	tlist->priv->unwedge1_id = g_timeout_add_seconds (PK_TRANSACTION_WEDGE_CHECK, (GSourceFunc) pk_transaction_list_wedge_check1, tlist);
@@ -772,6 +833,7 @@ pk_transaction_list_finalize (GObject *object)
 
 	g_ptr_array_foreach (tlist->priv->array, (GFunc) pk_transaction_list_item_free, NULL);
 	g_ptr_array_free (tlist->priv->array, TRUE);
+	g_object_unref (tlist->priv->conf);
 
 	G_OBJECT_CLASS (pk_transaction_list_parent_class)->finalize (object);
 }
