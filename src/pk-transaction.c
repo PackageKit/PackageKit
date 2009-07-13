@@ -184,6 +184,13 @@ enum {
 	PK_TRANSACTION_LAST_SIGNAL
 };
 
+enum
+{
+	PROP_0,
+	PROP_UID,
+	PROP_LAST
+};
+
 static guint	     signals [PK_TRANSACTION_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkTransaction, pk_transaction, G_TYPE_OBJECT)
@@ -4154,6 +4161,26 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 }
 
 /**
+ * pk_transaction_get_property:
+ **/
+static void
+pk_transaction_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkTransaction *transaction;
+
+	transaction = PK_TRANSACTION (object);
+
+	switch (prop_id) {
+	case PROP_UID:
+		g_value_set_uint (value, transaction->priv->uid);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
  * pk_transaction_class_init:
  * @klass: The PkTransactionClass
  **/
@@ -4163,6 +4190,15 @@ pk_transaction_class_init (PkTransactionClass *klass)
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->dispose = pk_transaction_dispose;
 	object_class->finalize = pk_transaction_finalize;
+	object_class->get_property = pk_transaction_get_property;
+
+	g_object_class_install_property (object_class,
+					 PROP_UID,
+					 g_param_spec_uint ("uid",
+							    "UID",
+							    "User ID that created the transaction",
+							    0, G_MAXUINT, 0,
+							    G_PARAM_READABLE));
 
 	signals [PK_TRANSACTION_ALLOW_CANCEL] =
 		g_signal_new ("allow-cancel",
