@@ -241,6 +241,7 @@ pk_transaction_error_get_type (void)
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_PACK_INVALID, "PackInvalid"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED, "MimeTypeNotSupported"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INVALID_PROVIDE, "InvalidProvide"),
+			ENUM_ENTRY (PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID, "NumberOfPackagesInvalid"),
 			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkTransactionError", values);
@@ -2121,6 +2122,8 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	gchar *package_ids_temp;
 	gchar *directory = NULL;
 	gint retval;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2142,6 +2145,17 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 		/* don't release tid */
 		pk_transaction_dbus_return_error (context, error);
 		goto out;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
 	}
 
 	/* check package_ids */
@@ -2268,6 +2282,8 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2296,6 +2312,17 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -2342,6 +2369,8 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2363,6 +2392,17 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -2456,6 +2496,8 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2477,6 +2519,17 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -2693,6 +2746,8 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2721,6 +2776,17 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -2809,6 +2875,8 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2830,6 +2898,17 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -3132,6 +3211,8 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3153,6 +3234,17 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -3332,6 +3424,8 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3353,6 +3447,17 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -3518,6 +3623,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	gchar *packages_temp;
 	guint i;
 	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3551,8 +3657,18 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 		return;
 	}
 
-	/* check for sanity */
+	/* check for length sanity */
 	length = g_strv_length (packages);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumItemsToResolve");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "Too many items to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check each package for sanity */
 	for (i=0; i<length; i++) {
 		ret = pk_strvalidate (packages[i]);
 		if (!ret) {
@@ -3972,6 +4088,8 @@ pk_transaction_update_packages (PkTransaction *transaction, gboolean only_truste
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3993,6 +4111,17 @@ pk_transaction_update_packages (PkTransaction *transaction, gboolean only_truste
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}

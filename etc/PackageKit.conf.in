@@ -178,3 +178,20 @@ StateChangedTimeoutNormal=600
 # default=25
 SimultaneousTransactionsForUid=25
 
+# The maximum number of items that can be resolved in one method
+#
+# Setting this lower decreases the risk of a local denial of service, but may
+# cause errors if the desktop client is trying to resolve a large number of
+# packages in one method.
+#
+# default=10
+MaximumItemsToResolve=10
+
+# The maximum number of packages that can be processed in one method
+#
+# Setting this lower decreases the risk of a local denial of service, but may
+# cause errors if the desktop client is trying to do a large transaction.
+#
+# default=2500
+MaximumPackagesToProcess=2500
+
