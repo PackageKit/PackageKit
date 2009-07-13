@@ -50,12 +50,6 @@ static void     pk_transaction_list_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionListPrivate))
 
-/* how long the transaction should be queriable after it is finished, in seconds */
-#define PK_TRANSACTION_LIST_KEEP_FINISHED_TIMEOUT	5
-
-/* how long the tid is valid before it's destroyed, in seconds */
-#define PK_TRANSACTION_LIST_CREATE_COMMIT_TIMEOUT	30
-
 /* the interval between each CST, in seconds */
 #define PK_TRANSACTION_WEDGE_CHECK			10
 
@@ -287,6 +281,7 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 {
 	guint i;
 	guint length;
+	guint timeout;
 	PkTransactionItem *item;
 	const gchar *tid;
 
@@ -321,8 +316,8 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
 	/* give the client a few seconds to still query the runner */
-	item->remove_id = g_timeout_add_seconds (PK_TRANSACTION_LIST_KEEP_FINISHED_TIMEOUT,
-						 (GSourceFunc) pk_transaction_list_remove_item_cb, item);
+	timeout = pk_conf_get_int (tlist->priv->conf, "TransactionKeepFinishedTimeout");
+	item->remove_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_transaction_list_remove_item_cb, item);
 
 	/* do the next transaction now if we have another queued */
 	length = tlist->priv->array->len;
@@ -344,8 +339,7 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 static gboolean
 pk_transaction_list_no_commit_cb (PkTransactionItem *item)
 {
-	egg_warning ("ID %s was not committed in %i seconds!",
-		     item->tid, PK_TRANSACTION_LIST_CREATE_COMMIT_TIMEOUT);
+	egg_warning ("ID %s was not committed in time!", item->tid);
 	pk_transaction_list_remove_internal (item->list, item);
 
 	/* never repeat */
@@ -383,6 +377,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 {
 	guint count;
 	guint max_count;
+	guint timeout;
 	gboolean ret = FALSE;
 	PkTransactionItem *item;
 	DBusGConnection *connection;
@@ -466,8 +461,8 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 	dbus_g_connection_register_g_object (connection, item->tid, G_OBJECT (item->transaction));
 
 	/* the client only has a finite amount of time to use the object, else it's destroyed */
-	item->commit_id = g_timeout_add_seconds (PK_TRANSACTION_LIST_CREATE_COMMIT_TIMEOUT,
-					      (GSourceFunc) pk_transaction_list_no_commit_cb, item);
+	timeout = pk_conf_get_int (tlist->priv->conf, "TransactionCreateCommitTimeout");
+	item->commit_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_transaction_list_no_commit_cb, item);
 
 	egg_debug ("adding transaction %p, item %p", item->transaction, item);
 	g_ptr_array_add (tlist->priv->array, item);

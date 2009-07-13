@@ -195,3 +195,22 @@ MaximumItemsToResolve=10
 # default=2500
 MaximumPackagesToProcess=2500
 
+# How long the transaction is valid before it's destroyed, in seconds
+#
+# The client only has a finite amount of time to use the object, else it is
+# destroyed. Setting this longer will allow malicious clients to queue up large
+# number of authentication requests, but setting this shorter will reduce the
+# amount of time the user has to authenticate.
+#
+# default=30
+TransactionCreateCommitTimeout=30
+
+# How long the transaction should be queriable after it is finished, in seconds
+#
+# Give the client a few seconds to still query the transaction after it has
+# finished by keeping it on the bus. Setting this larger allows clients to query
+# the transaction without accessing the database, but increases memory usage.
+#
+# default=5
+TransactionKeepFinishedTimeout=5
+
