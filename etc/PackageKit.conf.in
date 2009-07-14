@@ -175,8 +175,8 @@ StateChangedTimeoutNormal=600
 # cause errors if the desktop client is doing many requests to the daemon in a
 # short period of time.
 #
-# default=25
-SimultaneousTransactionsForUid=25
+# default=100
+SimultaneousTransactionsForUid=100
 
 # The maximum number of items that can be resolved in one method
 #
