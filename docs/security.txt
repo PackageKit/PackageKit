@@ -32,7 +32,8 @@ This may involve the user authenticating that they are either the user (by
 typing their password) or that they are an administrative user (by typing the
 root password or the password of a user designated as an administrative user).
 The authorization check can take some time, but the daemon can process other
-requests whilst waiting for user input.
+requests whilst waiting for user input. Please see the the PolicyKit-1 man page
+for more information.
 
 The packagekitd daemon is started using D-Bus system activation, which means it
 is started without any environment (no PATH, etc) and therefore is impossible to
@@ -46,7 +47,23 @@ the chosen method. This method will emit signals such as ::Package(), then
 ::Finished() and then after a number of seconds ::Destroy() which will remove
 the interface from the bus.
 
-Attack vectors:
+There is a concern that a session service can be written to automatically
+authenticate methods, and replace the native client, but this is not possible.
+
+When authenticating, polkitd-1 passes a cookie to the authentication agent. If
+the user enters the right password, the authentication agent calls
+AuthenticationAgentResponse on the Authority with the cookie for the
+authentication request. If the caller of AuthenticationAgentResponse is not
+uid 0, then it is ignored.
+
+The authentication setuid root polkit-agent-helper-1 only decides to invoke this
+method if the user actually successfully authenticated. This of course relies on
+polkit-agent-helper-1 being a secure program. This is easy to verify since
+this is just over 300 lines of code and only depends on PAM (which is supposed
+to be secure) up until we have decided that the user successfully authenticated.
+Only when that is done, we initialize other libraries to send the message.
+
+Possible attack vectors:
 
  * A client could cause a local DoS (denial of service) by repeatedly calling
  GetTid without then calling a method to use this TID. This is mitigated by
@@ -67,11 +84,6 @@ Attack vectors:
  exploit the underlying package system. This is mitigated by rejecting invalid
  input to methods, and testing filenames for existence before they are passed
  to the backend.
-
- * A session service can be written to automatically authenticate methods, and
- replace the native client. This is hard to mitigate, as as soon as you have
- untrusted code running in the session, it's very easy to load exploit code
- using GTK_MODULES into previously trusted applications, such as gpk-application.
 
  * Issuing a large amount of data to a method to cause a local denial of
  service, for instance calling Resolve with millions of parameters. This is
