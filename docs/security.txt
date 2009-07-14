@@ -10,10 +10,10 @@ untrusted input from the client, which means the daemon is security sensitive.
 First, a high level overview, in this case using the yum backend as an example:
 
   gpk-update-icon      gpk-application
-        |              _______/
-     [DBUS] __[DBUS]__/
-        |  /
-   packagekitd -- [DBUS] -- polkit-daemon-1
+        |                 ___/
+     [D-Bus]  __[D-Bus]__/
+        |    /
+   packagekitd -- [D-Bus] -- polkitd-1
         |
       [pipe]
         |
@@ -21,17 +21,20 @@ First, a high level overview, in this case using the yum backend as an example:
 
 packagekitd does not expose itself remotely over XMLRPC or other remote
 interface, and so a remote denial of service or exploit is impossible without a
-serious exploit of other services such as DBus. It advertises a simple interface
+serious exploit of other services such as D-Bus. It advertises a simple interface
 that can be queried by clients in unprivileged and privileged modes.
 The privileged modes are controlled using PolicyKit, and policy and the
-authentication mechanism is deferred to the polkit-daemon-1 service.
+authentication mechanism is deferred to the polkitd-1 service.
 
-When a privileged method is executed, the daemon asks polkit-daemon-1 for
-authentication, which then blocks until the authentication is completed. This
-is handled asynchronously, and the daemon can process other requests whilst
-waiting for user input.
+When a privileged method is executed, the daemon checks with polkitd-1 daemon
+for whether the client is authorized for the action it wants to perform.
+This may involve the user authenticating that they are either the user (by
+typing their password) or that they are an administrative user (by typing the
+root password or the password of a user designated as an administrative user).
+The authorization check can take some time, but the daemon can process other
+requests whilst waiting for user input.
 
-The packagekitd daemon is started using DBus system activation, which means it
+The packagekitd daemon is started using D-Bus system activation, which means it
 is started without any environment (no PATH, etc) and therefore is impossible to
 exploit by preloading other libraries. It is also running as uid 0, and so
 requires root privileges to inject code into it.
