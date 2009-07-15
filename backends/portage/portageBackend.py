@@ -337,7 +337,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         for cpv in cpv_list:
             if self.is_installed(cpv) == installed:
-                if portage.pkgcmp(portage.pkgsplit(cpv),\
+                if portage.pkgcmp(portage.pkgsplit(cpv), \
                         portage.pkgsplit(newer)) == 1:
                     newer = cpv
 
